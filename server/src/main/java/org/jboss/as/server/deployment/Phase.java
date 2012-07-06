@@ -186,6 +186,8 @@ public enum Phase {
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0800;
     public static final int STRUCTURE_WAR                               = 0x0900;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0A00;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER     = 0x0A10;
+    public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0A20;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0B00;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0C00;
     public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0D00;
@@ -199,7 +201,7 @@ public enum Phase {
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x1500;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x1600;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x1700;
-    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR = 0x1800;
+    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE_DESCRIPTOR = 0x1820;
     public static final int STRUCTURE_CLASS_PATH                        = 0x1900;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1A00;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;

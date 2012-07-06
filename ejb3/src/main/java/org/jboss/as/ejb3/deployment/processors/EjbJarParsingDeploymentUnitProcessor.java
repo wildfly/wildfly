@@ -264,8 +264,9 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         // Locate the descriptor
         final VirtualFile descriptor = getDescriptor(deploymentRoot, JBOSS_EJB3_XML);
         if (descriptor == null) {
-            // no descriptor found, nothing to do!
-            return null;
+            // no descriptor found
+            //but there may have been an ejb-jar element in jboss-all.xml
+            return deploymentUnit.getAttachment(EjbJarJBossAllParser.ATTACHMENT_KEY);
         }
 
         // get the XMLStreamReader and parse the descriptor
@@ -274,16 +275,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         try {
             XMLStreamReader reader = getXMLStreamReader(stream, descriptor, dtdInfo);
 
-            Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
-            parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
-            parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
-            parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
-            parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());
-            parsers.put("urn:iiop", new IIOPMetaDataParser());
-            parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
-            parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
-            parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
-            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(parsers);
+            final JBossEjb3MetaDataParser parser = new JBossEjb3MetaDataParser(createJbossEjbJarParsers());
 
             final EjbJarMetaData ejbJarMetaData = parser.parse(reader, dtdInfo, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
             return ejbJarMetaData;
@@ -296,5 +288,18 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
                 logger.warn("Ignoring exception while closing the InputStream ", ioe);
             }
         }
+    }
+
+    static Map<String, AbstractMetaDataParser<?>> createJbossEjbJarParsers() {
+        Map<String, AbstractMetaDataParser<?>> parsers = new HashMap<String, AbstractMetaDataParser<?>>();
+        parsers.put(EJBBoundClusteringMetaDataParser.NAMESPACE_URI, new EJBBoundClusteringMetaDataParser());
+        parsers.put("urn:security", new EJBBoundSecurityMetaDataParser());
+        parsers.put("urn:security-role", new SecurityRoleMetaDataParser());
+        parsers.put("urn:resource-adapter-binding", new EJBBoundResourceAdapterBindingMetaDataParser());
+        parsers.put("urn:iiop", new IIOPMetaDataParser());
+        parsers.put("urn:trans-timeout", new TransactionTimeoutMetaDataParser());
+        parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
+        parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
+        return parsers;
     }
 }

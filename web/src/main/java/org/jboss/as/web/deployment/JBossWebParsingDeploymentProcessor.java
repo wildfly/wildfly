@@ -88,6 +88,12 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                     // Ignore
                 }
             }
+        } else {
+            //jboss web embedded inside jboss-all.xml
+            final JBossWebMetaData jbMeta = deploymentUnit.getAttachment(WebJBossAllParser.ATTACHMENT_KEY);
+            if(jbMeta != null) {
+                warMetaData.setJbossWebMetaData(jbMeta);
+            }
         }
     }
 

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
+import org.jboss.as.appclient.deployment.AppClientJBossAllParser;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientDescriptorMethodProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
@@ -44,7 +45,9 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.dmr.ModelNode;
+import org.jboss.metadata.appclient.jboss.JBossClientMetaData;
 import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.appclient.subsystem.Constants.CONNECTION_PROPERTIES_URL;
@@ -86,6 +89,7 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 if (deployment != null && !deployment.isEmpty()) {
                     processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_APP_CLIENT, new ApplicationClientStructureProcessor(deployment));
                 }
+                processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<JBossClientMetaData>(AppClientJBossAllParser.ROOT_ELEMENT, AppClientJBossAllParser.ATTACHMENT_KEY, new AppClientJBossAllParser()));
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_APP_CLIENT_XML, new ApplicationClientParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
