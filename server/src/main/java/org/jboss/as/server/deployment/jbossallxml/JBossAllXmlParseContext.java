@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -41,7 +42,7 @@ class JBossAllXmlParseContext {
 
     private final DeploymentUnit deploymentUnit;
 
-    private final Map<String, Object> parseResults = new HashMap<String, Object>();
+    private final Map<QName, Object> parseResults = new HashMap<QName, Object>();
 
     public JBossAllXmlParseContext(final DeploymentUnit deploymentUnit) {
         this.deploymentUnit = deploymentUnit;
@@ -51,14 +52,14 @@ class JBossAllXmlParseContext {
         return deploymentUnit;
     }
 
-    public void addResult(final String namespace, final Object result, final Location location) throws XMLStreamException {
+    public void addResult(final QName namespace, final Object result, final Location location) throws XMLStreamException {
         if(parseResults.containsKey(namespace)) {
             throw ServerMessages.MESSAGES.duplicateJBossXmlNamespace(namespace, location);
         }
         parseResults.put(namespace, result);
     }
 
-    public Map<String, Object> getParseResults() {
+    public Map<QName, Object> getParseResults() {
         return Collections.unmodifiableMap(parseResults);
     }
 }

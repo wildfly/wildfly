@@ -84,9 +84,9 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
             return;
         }
         final XMLMapper mapper = XMLMapper.Factory.create();
-        final Map<String, AttachmentKey<?>> namespaceAttachments = new HashMap<String, AttachmentKey<?>>();
+        final Map<QName, AttachmentKey<?>> namespaceAttachments = new HashMap<QName, AttachmentKey<?>>();
         for(final JBossAllXMLParserDescription<?> parser : deploymentUnit.getAttachmentList(JBossAllXMLParserDescription.ATTACHMENT_KEY)) {
-            namespaceAttachments.put(parser.getRootElement().getNamespaceURI(), parser.getAttachmentKey());
+            namespaceAttachments.put(parser.getRootElement(), parser.getAttachmentKey());
             mapper.registerRootElement(parser.getRootElement(), new JBossAllXMLElementReader(parser));
         }
         mapper.registerRootElement(new QName(Namespace.JBOSS_1_0.getUriString(), JBOSS), Parser.INSTANCE);
@@ -96,8 +96,8 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
         parse(descriptor, mapper, context);
 
         //we use this map to detect the presence of two different but functionally equivalent namespaces
-        final Map<AttachmentKey<?>, String> usedNamespaces = new HashMap<AttachmentKey<?>, String>();
-        for(Map.Entry<String, Object> entry : context.getParseResults().entrySet()) {
+        final Map<AttachmentKey<?>, QName> usedNamespaces = new HashMap<AttachmentKey<?>, QName>();
+        for(Map.Entry<QName, Object> entry : context.getParseResults().entrySet()) {
             final AttachmentKey attachmentKey = namespaceAttachments.get(entry.getKey());
             if(usedNamespaces.containsKey(attachmentKey)) {
                 ServerMessages.MESSAGES.equivilentNamespacesInJBossXml(entry.getKey(), usedNamespaces.get(attachmentKey));
