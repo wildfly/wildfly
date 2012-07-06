@@ -20,6 +20,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -47,6 +48,8 @@ public class JBossDeploymentStructureParser12 implements XMLElementReader<ParseR
     public static final String NAMESPACE_1_2 = "urn:jboss:deployment-structure:1.2";
 
     public static final JBossDeploymentStructureParser12 INSTANCE = new JBossDeploymentStructureParser12();
+
+    static final JBossAllXMLParser<ParseResult> JBOSS_ALL_XML_PARSER = new JBossAllXmlParserAdaptor(INSTANCE);
 
     enum Element {
         JBOSS_DEPLOYMENT_STRUCTURE,

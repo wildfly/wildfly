@@ -19,30 +19,32 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.1">
-    <deployment>
-        <resources>
-            <resource-root path="WEB-INF/classes"  use-physical-code-source="true"/>
-        </resources>
-        <dependencies>
-            <module name="deployment.module.ignored"/>
-            <module name="deployment.module.available"/>
-        </dependencies>
-    </deployment>
-    <module name="deployment.module.ignored">
-        <resources>
-            <resource-root path="i/ignored.jar">
-                <filter>
-                    <exclude path="org/jboss/**/*"/>
-                </filter>
-            </resource-root>
-        </resources>
-    </module>
-    <module name="deployment.module.available">
-        <resources>
-            <resource-root path="a/available.jar" use-physical-code-source="true"/>
-        </resources>
-    </module>
+<jboss umlns="urn:jboss:1.0">
+    <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.1">
+        <deployment>
+            <resources>
+                <resource-root path="WEB-INF/classes" use-physical-code-source="true"/>
+            </resources>
+            <dependencies>
+                <module name="deployment.module.ignored"/>
+                <module name="deployment.module.available"/>
+            </dependencies>
+        </deployment>
+        <module name="deployment.module.ignored">
+            <resources>
+                <resource-root path="i/ignored.jar">
+                    <filter>
+                        <exclude path="org/jboss/**/*"/>
+                    </filter>
+                </resource-root>
+            </resources>
+        </module>
+        <module name="deployment.module.available">
+            <resources>
+                <resource-root path="a/available.jar" use-physical-code-source="true"/>
+            </resources>
+        </module>
 
-</jboss-deployment-structure>
+    </jboss-deployment-structure>
+</jboss>
 

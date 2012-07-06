@@ -39,8 +39,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.ServerService;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,8 +50,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
+import org.jboss.as.server.deployment.jbossallxml.JBossXmlParserRegisteringProcessor;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -82,6 +86,14 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
     public static final String[] DEPLOYMENT_STRUCTURE_DESCRIPTOR_LOCATIONS = {
             "META-INF/jboss-deployment-structure.xml",
             "WEB-INF/jboss-deployment-structure.xml"};
+
+    private static final AttachmentKey<ParseResult> RESULT_ATTACHMENT_KEY = AttachmentKey.create(ParseResult.class);
+
+    public static void registerJBossXMLParsers() {
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossXmlParserRegisteringProcessor<ParseResult>(ROOT_1_0, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser10.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossXmlParserRegisteringProcessor<ParseResult>(ROOT_1_1, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser11.JBOSS_ALL_XML_PARSER));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_XML_PARSER, new JBossXmlParserRegisteringProcessor<ParseResult>(ROOT_1_2, RESULT_ATTACHMENT_KEY, JBossDeploymentStructureParser12.JBOSS_ALL_XML_PARSER));
+    }
 
 
     private static final QName ROOT_1_0 = new QName(JBossDeploymentStructureParser10.NAMESPACE_1_0, "jboss-deployment-structure");
@@ -126,16 +138,24 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 break;
             }
         }
-        if (deploymentFile == null) {
+        ParseResult result = deploymentUnit.getAttachment(RESULT_ATTACHMENT_KEY);
+        if (deploymentFile == null && result == null) {
             return;
         }
         if (deploymentUnit.getParent() != null) {
-            ServerLogger.DEPLOYMENT_LOGGER.jbossDeploymentStructureIgnored(deploymentFile.getPathName());
+            if(deploymentFile != null) {
+                ServerLogger.DEPLOYMENT_LOGGER.jbossDeploymentStructureIgnored(deploymentFile.getPathName());
+            }
+            if(result != null) {
+                ServerLogger.DEPLOYMENT_LOGGER.jbossDeploymentStructureNamespaceIgnored(deploymentUnit.getName());
+            }
             return;
         }
 
         try {
-            final ParseResult result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
+            if(deploymentFile != null) {
+                result = parse(deploymentFile.getPhysicalFile(), deploymentUnit, moduleLoader);
+            }
 
             final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
             if (result.getEarSubDeploymentsIsolated() != null) {

@@ -51,7 +51,7 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
     static final String NAME = "add-deployer-chains";
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
-    static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
+    public static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
         final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> deployerMap = INSTANCE.deployerMap;
         deployerMap.get(phase).add(new RegisteredDeploymentUnitProcessor(priority, processor, subsystemName));
     }
