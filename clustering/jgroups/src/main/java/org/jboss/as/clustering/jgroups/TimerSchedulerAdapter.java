@@ -33,7 +33,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.jgroups.util.ThreadDecorator;
 import org.jgroups.util.ThreadFactory;
 import org.jgroups.util.TimeScheduler;
 
@@ -49,16 +48,6 @@ public class TimerSchedulerAdapter implements TimeScheduler {
 
     public TimerSchedulerAdapter(ScheduledExecutorService executor) {
         this.executor = executor;
-    }
-
-    @Override
-    public ThreadDecorator getThreadDecorator() {
-        return null;
-    }
-
-    @Override
-    public void setThreadDecorator(ThreadDecorator decorator) {
-        // Do nothing
     }
 
     @Override
