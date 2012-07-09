@@ -31,14 +31,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.HandlerUpdateProperties;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
 
 /**
  * Operation responsible for updating the properties of a periodic rotating log handler.
  *
  * @author John Bailey
  */
-public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<PeriodicRotatingFileHandler> {
+public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<PeriodicRotatingFileHandlerService> {
     public static final PeriodicHandlerUpdateProperties INSTANCE = new PeriodicHandlerUpdateProperties();
 
     private PeriodicHandlerUpdateProperties() {
@@ -47,15 +46,15 @@ public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<Per
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
-                                           final ModelNode originalModel, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+                                           final ModelNode originalModel, final PeriodicRotatingFileHandlerService handlerService) throws OperationFailedException {
         boolean requiresRestart = false;
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            handlerService.setAutoFlush(autoflush.asBoolean());
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
-            handler.setAppend(append.asBoolean());
+            handlerService.setAppend(append.asBoolean());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
@@ -63,25 +62,25 @@ public class PeriodicHandlerUpdateProperties extends HandlerUpdateProperties<Per
         }
         final ModelNode suffix = SUFFIX.resolveModelAttribute(context, model);
         if (suffix.isDefined()) {
-            handler.setSuffix(suffix.asString());
+            handlerService.setSuffix(suffix.asString());
         }
         return requiresRestart;
     }
 
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
-                                         final ModelNode originalModel, final PeriodicRotatingFileHandler handler) throws OperationFailedException {
+                                         final ModelNode originalModel, final PeriodicRotatingFileHandlerService handlerService) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, originalModel);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            handlerService.setAutoFlush(autoflush.asBoolean());
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, originalModel);
         if (append.isDefined()) {
-            handler.setAppend(append.asBoolean());
+            handlerService.setAppend(append.asBoolean());
         }
         final ModelNode suffix = SUFFIX.resolveModelAttribute(context, originalModel);
         if (suffix.isDefined()) {
-            handler.setSuffix(suffix.asString());
+            handlerService.setSuffix(suffix.asString());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, originalModel);
         if (file.isDefined()) {

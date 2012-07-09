@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 
 import java.util.List;
-import java.util.logging.Handler;
 
 import org.jboss.as.controller.AbstractModelUpdateHandler;
 import org.jboss.as.controller.OperationContext;
@@ -59,11 +58,10 @@ public class HandlerLevelChange extends AbstractModelUpdateHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
-        @SuppressWarnings("unchecked")
-        final ServiceController<Handler> controller = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(name));
+        final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerName(name));
         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
         if (controller != null && level.isDefined()) {
-            controller.getValue().setLevel(ModelParser.parseLevel(level));
+            ((HandlerService<?>) controller.getService()).setLevel(ModelParser.parseLevel(level));
         }
     }
 }

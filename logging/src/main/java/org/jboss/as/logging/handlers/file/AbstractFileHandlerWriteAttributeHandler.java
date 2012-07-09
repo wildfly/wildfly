@@ -30,6 +30,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.AbstractLogHandlerWriteAttributeHandler;
+import org.jboss.as.logging.handlers.HandlerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.FileHandler;
 
@@ -38,20 +39,20 @@ import org.jboss.logmanager.handlers.FileHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHandler> extends AbstractLogHandlerWriteAttributeHandler<T> {
+public abstract class AbstractFileHandlerWriteAttributeHandler<T extends AbstractFileHandlerService<?>> extends AbstractLogHandlerWriteAttributeHandler<T> {
 
     protected AbstractFileHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
         super(joinUnique(attributes, APPEND, AUTOFLUSH, FILE));
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final T handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final T handlerService) throws OperationFailedException {
         boolean requiresRestart = false;
         if (APPEND.getName().equals(attributeName)) {
-            handler.setAppend(resolvedValue.asBoolean());
+            handlerService.setAppend(resolvedValue.asBoolean());
             return true;
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(resolvedValue.asBoolean());
+            handlerService.setAutoFlush(resolvedValue.asBoolean());
         } else if (FILE.getName().equals(attributeName)) {
             requiresRestart = FileHandlers.changeFile(context, currentValue, resolvedValue, handlerName);
         }
@@ -59,11 +60,11 @@ public abstract class AbstractFileHandlerWriteAttributeHandler<T extends FileHan
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final T handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final T handlerService) throws OperationFailedException {
         if (APPEND.getName().equals(attributeName)) {
-            handler.setAppend(valueToRestore.asBoolean());
+            handlerService.setAppend(valueToRestore.asBoolean());
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(valueToRestore.asBoolean());
+            handlerService.setAutoFlush(valueToRestore.asBoolean());
         } else if (FILE.getName().equals(attributeName)) {
             FileHandlers.revertFileChange(context, valueToRestore, handlerName);
         }

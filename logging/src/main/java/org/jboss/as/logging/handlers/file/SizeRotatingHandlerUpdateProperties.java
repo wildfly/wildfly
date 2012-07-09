@@ -33,14 +33,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.HandlerUpdateProperties;
 import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
 
 /**
  * Operation responsible for updating the properties of a size based rotating log handler.
  *
  * @author John Bailey
  */
-public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties<SizeRotatingFileHandler> {
+public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties<SizeRotatingFileHandlerService> {
     public static final SizeRotatingHandlerUpdateProperties INSTANCE = new SizeRotatingHandlerUpdateProperties();
 
     private SizeRotatingHandlerUpdateProperties() {
@@ -49,15 +48,15 @@ public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
-                                           final ModelNode originalModel, final SizeRotatingFileHandler handler) throws OperationFailedException {
+                                           final ModelNode originalModel, final SizeRotatingFileHandlerService handlerService) throws OperationFailedException {
         boolean requiresRestart = false;
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            handlerService.setAutoFlush(autoflush.asBoolean());
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
-            handler.setAppend(append.asBoolean());
+            handlerService.setAppend(append.asBoolean());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
@@ -65,26 +64,26 @@ public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties
         }
         final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.resolveModelAttribute(context, model);
         if (maxBackupIndex.isDefined()) {
-            handler.setMaxBackupIndex(maxBackupIndex.asInt());
+            handlerService.setMaxBackupIndex(maxBackupIndex.asInt());
         }
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, model);
         if (rotateSizeNode.isDefined()) {
-            handler.setRotateSize(ModelParser.parseSize(rotateSizeNode));
+            handlerService.setRotateSize(ModelParser.parseSize(rotateSizeNode));
         }
         return requiresRestart;
     }
 
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
-                                         final ModelNode originalModel, final SizeRotatingFileHandler handler) throws OperationFailedException {
+                                         final ModelNode originalModel, final SizeRotatingFileHandlerService handlerService) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, originalModel);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            handlerService.setAutoFlush(autoflush.asBoolean());
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, originalModel);
         if (append.isDefined()) {
-            handler.setAppend(append.asBoolean());
+            handlerService.setAppend(append.asBoolean());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, originalModel);
         if (file.isDefined()) {
@@ -92,12 +91,12 @@ public class SizeRotatingHandlerUpdateProperties extends HandlerUpdateProperties
         }
         final ModelNode maxBackupIndex = MAX_BACKUP_INDEX.resolveModelAttribute(context, originalModel);
         if (maxBackupIndex.isDefined()) {
-            handler.setMaxBackupIndex(maxBackupIndex.asInt());
+            handlerService.setMaxBackupIndex(maxBackupIndex.asInt());
         }
 
         final ModelNode rotateSizeNode = ROTATE_SIZE.resolveModelAttribute(context, originalModel);
         if (rotateSizeNode.isDefined()) {
-            handler.setRotateSize(ModelParser.parseSize(rotateSizeNode));
+            handlerService.setRotateSize(ModelParser.parseSize(rotateSizeNode));
         }
     }
 }

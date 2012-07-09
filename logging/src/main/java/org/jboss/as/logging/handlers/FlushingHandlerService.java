@@ -38,7 +38,7 @@ public abstract class FlushingHandlerService<T extends ExtHandler> extends Handl
         return autoflush;
     }
 
-    public final synchronized void setAutoflush(final boolean autoflush) {
+    public final synchronized void setAutoFlush(final boolean autoflush) {
         this.autoflush = autoflush;
         final T handler = getValue();
         if (handler != null) {

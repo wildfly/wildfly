@@ -36,7 +36,7 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<ConsoleHandler> {
+public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<ConsoleHandlerService> {
     public static final ConsoleHandlerWriteAttributeHandler INSTANCE = new ConsoleHandlerWriteAttributeHandler();
 
     private ConsoleHandlerWriteAttributeHandler() {
@@ -44,39 +44,21 @@ public class ConsoleHandlerWriteAttributeHandler extends AbstractLogHandlerWrite
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final ConsoleHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final ConsoleHandlerService handlerService) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(resolvedValue.asString())) {
-                case SYSTEM_ERR: {
-                    handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                    break;
-                }
-                case SYSTEM_OUT: {
-                    handler.setTarget(ConsoleHandler.Target.SYSTEM_OUT);
-                    break;
-                }
-            }
+            handlerService.setTarget(Target.fromString(resolvedValue.asString()));
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(resolvedValue.asBoolean());
+            handlerService.setAutoFlush(resolvedValue.asBoolean());
         }
         return false;
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final ConsoleHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final ConsoleHandlerService handlerService) throws OperationFailedException {
         if (TARGET.getName().equals(attributeName)) {
-            switch (Target.fromString(valueToRestore.asString())) {
-                case SYSTEM_ERR: {
-                    handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                    break;
-                }
-                case SYSTEM_OUT: {
-                    handler.setTarget(ConsoleHandler.Target.SYSTEM_OUT);
-                    break;
-                }
-            }
+            handlerService.setTarget(Target.fromString(valueToRestore.asString()));
         } else if (AUTOFLUSH.getName().equals(attributeName)) {
-            handler.setAutoFlush(valueToRestore.asBoolean());
+            handlerService.setAutoFlush(valueToRestore.asBoolean());
         }
     }
 }

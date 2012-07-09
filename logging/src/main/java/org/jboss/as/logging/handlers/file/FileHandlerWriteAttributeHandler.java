@@ -29,6 +29,6 @@ import org.jboss.logmanager.handlers.FileHandler;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class FileHandlerWriteAttributeHandler extends AbstractFileHandlerWriteAttributeHandler<FileHandler> {
+public class FileHandlerWriteAttributeHandler extends AbstractFileHandlerWriteAttributeHandler<FileHandlerService> {
     public static final FileHandlerWriteAttributeHandler INSTANCE = new FileHandlerWriteAttributeHandler();
 }

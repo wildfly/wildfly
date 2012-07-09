@@ -23,7 +23,6 @@
 package org.jboss.as.logging.handlers.custom;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import static org.jboss.as.logging.handlers.custom.PropertiesConfigurator.setProperties;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -91,7 +90,7 @@ public final class CustomHandlerService extends HandlerService<Handler> {
     @Override
     protected void start(final StartContext context, final Handler handler) throws StartException {
         // Set the properties
-        setProperties(handler, properties);
+        PropertiesConfigurator.setProperties(handler, properties);
     }
 
     @Override
@@ -103,7 +102,7 @@ public final class CustomHandlerService extends HandlerService<Handler> {
         properties.add(property);
         final Handler handler = getValue();
         if (handler != null) {
-            setProperties(handler, this.properties);
+            PropertiesConfigurator.setProperties(handler, this.properties);
         }
     }
 
@@ -112,7 +111,12 @@ public final class CustomHandlerService extends HandlerService<Handler> {
         this.properties.addAll(properties);
         final Handler handler = getValue();
         if (handler != null) {
-            setProperties(handler, this.properties);
+            PropertiesConfigurator.setProperties(handler, this.properties);
         }
+    }
+
+    public synchronized void setProperties(final Collection<Property> properties) {
+        this.properties.clear();
+        addProperties(properties);
     }
 }

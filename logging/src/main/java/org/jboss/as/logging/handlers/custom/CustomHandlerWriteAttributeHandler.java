@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<Handler> {
+public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<CustomHandlerService> {
     public static final CustomHandlerWriteAttributeHandler INSTANCE = new CustomHandlerWriteAttributeHandler();
 
     private CustomHandlerWriteAttributeHandler() {
@@ -46,23 +46,23 @@ public class CustomHandlerWriteAttributeHandler extends AbstractLogHandlerWriteA
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final Handler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final CustomHandlerService handlerService) throws OperationFailedException {
         if (PROPERTIES.equals(attributeName)) {
             if (resolvedValue.getType() != ModelType.LIST) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(PROPERTIES, ModelType.LIST, resolvedValue.getType())));
             }
-            PropertiesConfigurator.setProperties(handler, resolvedValue.asPropertyList());
+            handlerService.setProperties(resolvedValue.asPropertyList());
         }
         return false;
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final Handler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final CustomHandlerService handlerService) throws OperationFailedException {
         if (PROPERTIES.equals(attributeName)) {
             if (valueToRestore.getType() != ModelType.LIST) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(PROPERTIES, ModelType.LIST, valueToRestore.getType())));
             }
-            PropertiesConfigurator.setProperties(handler, valueToRestore.asPropertyList());
+            handlerService.setProperties(valueToRestore.asPropertyList());
         }
     }
 }

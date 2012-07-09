@@ -41,7 +41,7 @@ import java.util.Locale;
  * @author John Bailey
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncHandler> {
+public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncHandlerService> {
     public static final AsyncHandlerUpdateProperties INSTANCE = new AsyncHandlerUpdateProperties();
 
     public static final String OPERATION_NAME = HandlerUpdateProperties.OPERATION_NAME;
@@ -51,11 +51,11 @@ public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncH
     }
 
     @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final AsyncHandler handler) throws OperationFailedException {
+    protected boolean applyUpdateToRuntime(OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final AsyncHandlerService handlerService) throws OperationFailedException {
         boolean requireRestart = false;
         final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, model);
         if (overflowAction.isDefined()) {
-            handler.setOverflowAction(ModelParser.parseOverflowAction(overflowAction));
+            handlerService.setOverflowAction(ModelParser.parseOverflowAction(overflowAction));
         }
 
         final ModelNode queueLength = QUEUE_LENGTH.resolveModelAttribute(context, model);
@@ -75,10 +75,10 @@ public class AsyncHandlerUpdateProperties extends HandlerUpdateProperties<AsyncH
     }
 
     @Override
-    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final AsyncHandler handler) throws OperationFailedException {
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final AsyncHandlerService handlerService) throws OperationFailedException {
         final ModelNode overflowAction = OVERFLOW_ACTION.resolveModelAttribute(context, originalModel);
         if (overflowAction.isDefined()) {
-            handler.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
+            handlerService.setOverflowAction(AsyncHandler.OverflowAction.valueOf(overflowAction.asString().toUpperCase(Locale.US)));
         }
     }
 }

@@ -29,14 +29,13 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.HandlerUpdateProperties;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.ConsoleHandler;
 
 /**
  * Operation responsible for updating the properties of a console logging handler.
  *
  * @author John Bailey
  */
-public class ConsoleHandlerUpdateProperties extends HandlerUpdateProperties<ConsoleHandler> {
+public class ConsoleHandlerUpdateProperties extends HandlerUpdateProperties<ConsoleHandlerService> {
     public static final ConsoleHandlerUpdateProperties INSTANCE = new ConsoleHandlerUpdateProperties();
 
     private ConsoleHandlerUpdateProperties() {
@@ -45,31 +44,13 @@ public class ConsoleHandlerUpdateProperties extends HandlerUpdateProperties<Cons
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
-                                           final ModelNode originalModel, final ConsoleHandler handler) throws OperationFailedException {
-        switch (Target.fromString(TARGET.resolveModelAttribute(context, model).asString())) {
-            case SYSTEM_ERR: {
-                handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                break;
-            }
-            case SYSTEM_OUT: {
-                handler.setTarget(ConsoleHandler.Target.SYSTEM_OUT);
-                break;
-            }
-        }
+                                           final ModelNode originalModel, final ConsoleHandlerService handlerService) throws OperationFailedException {
+        handlerService.setTarget(Target.fromString(TARGET.resolveModelAttribute(context, model).asString()));
         return false;
     }
 
     @Override
-    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final ConsoleHandler handler) throws OperationFailedException {
-         switch (Target.fromString(TARGET.resolveModelAttribute(context, originalModel).asString())) {
-            case SYSTEM_ERR: {
-                handler.setTarget(ConsoleHandler.Target.SYSTEM_ERR);
-                break;
-            }
-            case SYSTEM_OUT: {
-                handler.setTarget(ConsoleHandler.Target.SYSTEM_OUT);
-                break;
-            }
-        }
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final ConsoleHandlerService handlerService) throws OperationFailedException {
+        handlerService.setTarget(Target.fromString(TARGET.resolveModelAttribute(context, originalModel).asString()));
     }
 }

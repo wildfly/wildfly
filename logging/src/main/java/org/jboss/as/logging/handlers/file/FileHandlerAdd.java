@@ -34,7 +34,6 @@ import org.jboss.as.logging.handlers.FlushingHandlerAddProperties;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -60,7 +59,6 @@ public class FileHandlerAdd extends FlushingHandlerAddProperties<FileHandlerServ
         if (append.isDefined()) {
             service.setAppend(append.asBoolean());
         }
-        final ServiceTarget serviceTarget = context.getServiceTarget();
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
             newControllers.add(FileHandlers.addFile(context, serviceBuilder, service, file, name));
