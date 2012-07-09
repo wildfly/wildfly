@@ -22,6 +22,7 @@
 package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
@@ -57,7 +58,7 @@ import org.junit.Test;
 public class TypeConverterUnitTestCase {
 
 
-    @Test @Ignore("BIGINTEGER not working properly in dmr")
+    @Test
     public void testBigIntegerConverter() {
         ModelNode description = createDescription(ModelType.BIG_INTEGER);
         TypeConverter converter = getConverter(description);
@@ -176,7 +177,7 @@ public class TypeConverterUnitTestCase {
         assertToArray(converter, json);
     }
 
-    @Test @Ignore("no idea what to do here, perhaps a CompositeType?")
+    @Test
     public void testProperty() {
 
     }
@@ -453,6 +454,284 @@ public class TypeConverterUnitTestCase {
 
     }
 
+    @Test
+    public void testBigIntegerExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.BIG_INTEGER);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", newNode.asString());
+        assertToArray(converter, "1", "${this.should.not.exist.!!!!!:2}");
+
+    }
+
+    @Test
+    public void testBigDecimalExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.BIG_DECIMAL);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", newNode.asString());
+        assertToArray(converter, "1", "${this.should.not.exist.!!!!!:2}");
+    }
+
+    @Test
+    public void testIntExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.INT);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", newNode.asString());
+        assertToArray(converter, "1", "${this.should.not.exist.!!!!!:2}");
+    }
+
+    @Test
+    public void testBooleanExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.BOOLEAN);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:false}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:false}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:true}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:true}", newNode.asString());
+        assertToArray(converter, "true", "${this.should.not.exist.!!!!!:false}");
+    }
+
+    @Test
+    public void testDoubleExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.DOUBLE);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", newNode.asString());
+        assertToArray(converter, "1", "${this.should.not.exist.!!!!!:2}");
+    }
+
+    @Test
+    public void testStringExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.STRING);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:A}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:A}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:B}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:B}", newNode.asString());
+        assertToArray(converter, "A", "${this.should.not.exist.!!!!!:B}");
+    }
+
+    @Test
+    public void testStringVaultExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.STRING);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${VAULT::keystore_pass::password::xxx}")));
+        Assert.assertEquals("${VAULT::keystore_pass::password::xxx}", data);
+        ModelNode newNode = converter.toModelNode("${VAULT::keystore_pass::password::xxx}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${VAULT::keystore_pass::password::xxx}", newNode.asString());
+
+    }
+
+    @Test
+    public void testLongExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.LONG);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:1}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:2}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", newNode.asString());
+        assertToArray(converter, "1", "${this.should.not.exist.!!!!!:2}");
+    }
+
+    @Test
+    public void testTypeExpressionConverter() throws Exception {
+        ModelNode description = createExpressionDescription(ModelType.TYPE);
+        TypeConverter converter = getConverter(description);
+        String data = assertCast(String.class, converter.fromModelNode(new ModelNode().setExpression("${this.should.not.exist.!!!!!:OBJECT}")));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:OBJECT}", data);
+        ModelNode newNode = converter.toModelNode("${this.should.not.exist.!!!!!:LONG}");
+        Assert.assertEquals(ModelType.EXPRESSION, newNode.getType());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:LONG}", newNode.asString());
+        assertToArray(converter, "BOOLEAN", "${this.should.not.exist.!!!!!:LONG}");
+    }
+
+    @Test
+    public void testUndefinedTypeExpressionConverter() throws Exception {
+        ModelNode description = new ModelNode();
+        description.get(EXPRESSIONS_ALLOWED).set(true);
+        TypeConverter converter = getConverter(description);
+
+        ModelNode node = new ModelNode();
+        node.get("abc").setExpression("${this.should.not.exist.!!!!!:10}");
+        node.get("def").setExpression("${this.should.not.exist.!!!!!:false}");
+        node.protect();
+
+        String json = assertCast(String.class, converter.fromModelNode(node));
+        Assert.assertEquals(node, ModelNode.fromJSONString(json));
+        assertToArray(converter, json, null);
+    }
+
+    @Test
+    public void testSimpleTypeExpressionList() throws Exception {
+        ModelNode description = createDescription(ModelType.LIST, ModelType.INT);
+        description.get(EXPRESSIONS_ALLOWED).set(true);
+        TypeConverter converter = getConverter(description);
+        ArrayType<?> arrayType = assertCast(ArrayType.class, converter.getOpenType());
+
+        ModelNode node = new ModelNode();
+        node.addExpression("${this.should.not.exist.!!!!!:1}");
+        node.addExpression("${this.should.not.exist.!!!!!:2}");
+
+        String[] data = assertCast(String[].class, converter.fromModelNode(node));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", data[0]);
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", data[1]);
+
+        ModelNode newNode = converter.toModelNode(data);
+        Assert.assertEquals(node, newNode);
+    }
+
+    @Test
+    public void testSimpleTypeObjectExpressions() throws Exception {
+        ModelNode description = createDescription(ModelType.OBJECT, ModelType.LONG);
+        description.get(EXPRESSIONS_ALLOWED).set(true);
+        TypeConverter converter = getConverter(description);
+
+        assertMapType(assertCast(TabularType.class, converter.getOpenType()), SimpleType.STRING, SimpleType.STRING);
+
+        ModelNode node = new ModelNode();
+        node.get("one").setExpression("${this.should.not.exist.!!!!!:1}");
+        node.get("two").setExpression("${this.should.not.exist.!!!!!:2}");
+
+        TabularData tabularData = assertCast(TabularData.class, converter.fromModelNode(node));
+        Assert.assertEquals(2, tabularData.size());
+        Assert.assertEquals("${this.should.not.exist.!!!!!:1}", tabularData.get(new Object[] {"one"}).get("value"));
+        Assert.assertEquals("${this.should.not.exist.!!!!!:2}", tabularData.get(new Object[] {"two"}).get("value"));
+
+        Assert.assertEquals(node, converter.toModelNode(tabularData));
+    }
+
+    @Test
+    public void testBigIntegerEmptyConverter() {
+        ModelNode description = createDescription(ModelType.BIG_INTEGER);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.BIGINTEGER, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testBigDecimalEmptyConverter() {
+        ModelNode description = createDescription(ModelType.BIG_DECIMAL);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.BIGDECIMAL, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testIntEmptyConverter() {
+        ModelNode description = createDescription(ModelType.INT);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.INTEGER, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testBooleanEmptyConverter() {
+        ModelNode description = createDescription(ModelType.BOOLEAN);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.BOOLEAN, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testDoubleEmptyConverter() {
+        ModelNode description = createDescription(ModelType.DOUBLE);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.DOUBLE, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testStringEmptyConverter() {
+        ModelNode description = createDescription(ModelType.STRING);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.STRING, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testLongEmptyConverter() {
+        ModelNode description = createDescription(ModelType.LONG);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.LONG, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testTypeEmptyConverter() {
+        ModelNode description = createDescription(ModelType.TYPE);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(SimpleType.STRING, converter.getOpenType());
+        Assert.assertNull(converter.fromModelNode(new ModelNode().set("")));
+    }
+
+    @Test
+    public void testUndefinedTypeEmptyConverter() {
+        TypeConverter converter = getConverter(new ModelNode());
+        Assert.assertEquals(SimpleType.STRING, converter.getOpenType());
+
+        ModelNode node = new ModelNode();
+        node.get("abc");
+        node.get("def");
+        node.protect();
+
+        String json = assertCast(String.class, converter.fromModelNode(node));
+        Assert.assertEquals(node.resolve(), ModelNode.fromJSONString(json));
+        Assert.assertEquals(json, assertCast(String.class, converter.fromModelNode(node)));
+        assertToArray(converter, json);
+    }
+
+    @Test
+    public void testSimpleTypeEmptyList() throws Exception {
+        ModelNode description = createDescription(ModelType.LIST, ModelType.INT);
+        TypeConverter converter = getConverter(description);
+        Assert.assertEquals(ArrayType.getArrayType(SimpleType.INTEGER), converter.getOpenType());
+        ModelNode node = new ModelNode();
+        node.add("");
+        node.add("");
+        Assert.assertTrue(Arrays.equals(new Integer[] {null, null} , assertCast(Integer[].class, converter.fromModelNode(node))));
+    }
+
+    @Test
+    public void testSimpleTypeObjectEmpty() throws Exception {
+        ModelNode description = createDescription(ModelType.OBJECT, ModelType.LONG);
+        TypeConverter converter = getConverter(description);
+
+        assertMapType(assertCast(TabularType.class, converter.getOpenType()), SimpleType.STRING, SimpleType.LONG);
+
+        ModelNode node = new ModelNode();
+        node.get("one").set("");
+        node.get("two").set("");
+
+        TabularData tabularData = assertCast(TabularData.class, converter.fromModelNode(node));
+        Assert.assertEquals(2, tabularData.size());
+        Assert.assertNull(tabularData.get(new Object[] {"one"}).get("value"));
+        Assert.assertNull(tabularData.get(new Object[] {"two"}).get("value"));
+
+        ModelNode expected = new ModelNode();
+        expected.get("one");
+        expected.get("two");
+
+        Assert.assertEquals(expected, converter.toModelNode(tabularData));
+    }
+
     private OpenType<?> assertCompositeType(CompositeType composite, String name, String type, String description){
         return assertCompositeType(composite, name, type, description, true);
     }
@@ -501,9 +780,13 @@ public class TypeConverterUnitTestCase {
     }
 
     private TypeConverter getConverter(ModelNode description) {
-        return TypeConverter.getConverter(
-                description.hasDefined(TYPE) ? description.get(TYPE) : null,
-                description.hasDefined(VALUE_TYPE) ? description.get(VALUE_TYPE) : null);
+        return TypeConverter.getConverter(description);
+    }
+
+    private ModelNode createExpressionDescription(ModelType type) {
+        ModelNode node = createDescription(type);
+        node.get(EXPRESSIONS_ALLOWED).set(true);
+        return node;
     }
 
     private ModelNode createDescription(ModelType type) {

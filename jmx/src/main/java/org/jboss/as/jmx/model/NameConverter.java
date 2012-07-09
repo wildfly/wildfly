@@ -41,6 +41,19 @@ public class NameConverter {
         return sb.toString();
     }
 
+    public static String convertFromCamelCase(String word) {
+        StringBuilder sb = new StringBuilder();
+        for (char ch : word.toCharArray()) {
+            if (Character.isLowerCase(ch)) {
+                sb.append(ch);
+            } else {
+                sb.append("-");
+                sb.append(Character.toLowerCase(ch));
+            }
+        }
+        return sb.toString();
+    }
+
     private static String createValidName(String...parts) {
         StringBuilder sb = new StringBuilder(parts[0]);
         for (int i = 1 ; i < parts.length ; i++) {

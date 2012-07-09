@@ -22,6 +22,7 @@
 package org.jboss.as.jmx.model;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
@@ -54,15 +55,36 @@ import org.jboss.dmr.Property;
  */
 public abstract class TypeConverter {
 
+    private static final SimpleTypeConverter BIG_DECIMAL_NO_EXPR = new SimpleTypeConverter(BigDecimalValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter BIG_DECIMAL_EXPR = new SimpleTypeConverter(BigDecimalValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter BIG_INTEGER_NO_EXPR = new SimpleTypeConverter(BigIntegerValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter BIG_INTEGER_EXPR = new SimpleTypeConverter(BigIntegerValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter BOOLEAN_NO_EXPR = new SimpleTypeConverter(BooleanValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter BOOLEAN_EXPR = new SimpleTypeConverter(BooleanValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter BYTES_NO_EXPR = new SimpleTypeConverter(BytesValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter DOUBLE_NO_EXPR = new SimpleTypeConverter(DoubleValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter DOUBLE_EXPR = new SimpleTypeConverter(DoubleValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter STRING_NO_EXPR = new SimpleTypeConverter(StringValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter STRING_EXPR = new SimpleTypeConverter(StringValueAccessor.INSTANCE, true);
+    //TODO decide how properties should look
+    private static final SimpleTypeConverter PROPERTY_NO_EXPR = new SimpleTypeConverter(StringValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter PROPERTY_EXPR = new SimpleTypeConverter(StringValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter INT_NO_EXPR = new SimpleTypeConverter(IntegerValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter INT_EXPR = new SimpleTypeConverter(IntegerValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter LONG_NO_EXPR = new SimpleTypeConverter(LongValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter LONG_EXPR = new SimpleTypeConverter(LongValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter TYPE_NO_EXPR = new SimpleTypeConverter(ModelTypeValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter TYPE_EXPR = new SimpleTypeConverter(ModelTypeValueAccessor.INSTANCE, true);
+    private static final SimpleTypeConverter UNDEFINED_NO_EXPR = new SimpleTypeConverter(UndefinedValueAccessor.INSTANCE, false);
+    private static final SimpleTypeConverter UNDEFINED_EXPR = new SimpleTypeConverter(UndefinedValueAccessor.INSTANCE, true);
+
     public abstract OpenType<?> getOpenType();
     public abstract Object fromModelNode(final ModelNode node);
     public abstract ModelNode toModelNode(final Object o);
     public abstract Object[] toArray(final List<Object> list);
 
     static OpenType<?> convertToMBeanType(final ModelNode description) {
-        return getConverter(
-                description.hasDefined(TYPE) ? description.get(TYPE) : null,
-                description.hasDefined(VALUE_TYPE) ? description.get(VALUE_TYPE) : null).getOpenType();
+        return getConverter(description).getOpenType();
     }
 
     static ModelNode toModelNode(final ModelNode description, final Object value) {
@@ -70,17 +92,14 @@ public abstract class TypeConverter {
         if (value == null) {
             return node;
         }
-        final ModelNode typeNode = description.hasDefined(TYPE) ? description.get(TYPE) : null;
-        return getConverter(typeNode, description.hasDefined(VALUE_TYPE) ? description.get(VALUE_TYPE) : null).toModelNode(value);
+        return getConverter(description).toModelNode(value);
     }
 
     static Object fromModelNode(final ModelNode description, final ModelNode value) {
         if (value == null || !value.isDefined()) {
             return null;
         }
-        final ModelNode typeNode = description.hasDefined(TYPE) ? description.get(TYPE) : null;
-        final ModelNode valueNode = description.hasDefined(VALUE_TYPE) ? description.get(VALUE_TYPE) : null;
-        return getConverter(typeNode, valueNode).fromModelNode(value);
+        return getConverter(description).fromModelNode(value);
     }
 
     public static ModelType getType(ModelNode typeNode) {
@@ -94,44 +113,60 @@ public abstract class TypeConverter {
         }
     }
 
-    public static TypeConverter getConverter(ModelNode typeNode, ModelNode valueTypeNode) {
+    public static TypeConverter getConverter(ModelNode description) {
+        return getConverter(description.hasDefined(TYPE) ? description.get(TYPE) : null,
+                description.hasDefined(VALUE_TYPE) ? description.get(VALUE_TYPE) : null,
+                areExpressionsAllowed(description));
+    }
+
+    static TypeConverter getConverter(ModelNode typeNode, ModelNode valueTypeNode, boolean expressionsAllowed) {
         ModelType modelType = getType(typeNode);
         if (modelType == null) {
             return new ComplexTypeConverter(typeNode);
         }
+
         switch (modelType) {
         case BIG_DECIMAL:
-            return BigDecimalTypeConverter.INSTANCE;
+            return expressionsAllowed ? BIG_DECIMAL_EXPR: BIG_DECIMAL_NO_EXPR;
         case BIG_INTEGER:
-            return BigIntegerTypeConverter.INSTANCE;
+            return expressionsAllowed ? BIG_INTEGER_EXPR : BIG_INTEGER_NO_EXPR;
         case BOOLEAN:
-            return BooleanTypeConverter.INSTANCE;
+            return expressionsAllowed ? BOOLEAN_EXPR : BOOLEAN_NO_EXPR;
         case BYTES:
-            return BytesTypeConverter.INSTANCE;
+            //Allowing expressions for byte[] seems pointless
+            return BYTES_NO_EXPR;
         case DOUBLE:
-            return DoubleTypeConverter.INSTANCE;
-        case EXPRESSION:
-            return ExpressionTypeConverter.INSTANCE;
+            return expressionsAllowed ? DOUBLE_EXPR : DOUBLE_NO_EXPR;
         case STRING:
-            return StringTypeConverter.INSTANCE;
+            return expressionsAllowed ? STRING_EXPR : STRING_NO_EXPR;
         case PROPERTY:
-            return PropertyTypeConverter.INSTANCE;
+            return expressionsAllowed ? PROPERTY_EXPR : PROPERTY_NO_EXPR;
         case INT:
-            return IntegerTypeConverter.INSTANCE;
+            return expressionsAllowed ? INT_EXPR : INT_NO_EXPR;
         case LONG:
-            return LongTypeConverter.INSTANCE;
+            return expressionsAllowed ? LONG_EXPR : LONG_NO_EXPR;
         case TYPE:
-            return ModelTypeTypeConverter.INSTANCE;
-        case OBJECT:
-            return new ObjectTypeConverter(valueTypeNode);
-        case LIST:
-            return new ListTypeConverter(valueTypeNode);
+            return expressionsAllowed ? TYPE_EXPR : TYPE_NO_EXPR;
         case UNDEFINED:
-            return UndefinedTypeConverter.INSTANCE;
+            return expressionsAllowed ? UNDEFINED_EXPR : UNDEFINED_NO_EXPR;
+        case OBJECT:
+            return new ObjectTypeConverter(valueTypeNode, expressionsAllowed);
+        case LIST:
+            return new ListTypeConverter(valueTypeNode, expressionsAllowed);
         default:
             throw MESSAGES.unknownType(modelType);
         }
     }
+
+
+    private static boolean areExpressionsAllowed(ModelNode description) {
+        if (description.hasDefined(EXPRESSIONS_ALLOWED)) {
+            return description.get(EXPRESSIONS_ALLOWED).asBoolean();
+        }
+        return false;
+    }
+
+
 
     private static ModelNode nullNodeAsUndefined(ModelNode node) {
         if (node == null) {
@@ -140,20 +175,35 @@ public abstract class TypeConverter {
         return node;
     }
 
-    private static class BigDecimalTypeConverter extends TypeConverter {
-        static final BigDecimalTypeConverter INSTANCE = new BigDecimalTypeConverter();
+    private static class SimpleTypeConverter extends TypeConverter {
+        private final SimpleValueAccessor valueAccessor;
+        private final boolean expressions;
+
+        public SimpleTypeConverter(SimpleValueAccessor valueAccessor, boolean expressions) {
+            this.valueAccessor = valueAccessor;
+            this.expressions = expressions;
+        }
 
         @Override
         public OpenType<?> getOpenType() {
-            return SimpleType.BIGDECIMAL;
+            if (!expressions) {
+                return valueAccessor.getOpenType();
+            } else {
+                return SimpleType.STRING;
+            }
+
         }
 
         @Override
         public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
+            if (!expressions || valueAccessor == UndefinedValueAccessor.INSTANCE) {
+                if (node == null || !node.isDefined() || node.asString().isEmpty()) {
+                    return null;
+                }
+                return valueAccessor.fromModelNode(node);
+            } else {
+                return node.asString();
             }
-            return node.asBigDecimal();
         }
 
         @Override
@@ -161,284 +211,24 @@ public abstract class TypeConverter {
             if (o == null) {
                 return new ModelNode();
             }
-            return new ModelNode().set((BigDecimal)o);
+            if (expressions) {
+                String s = (String)o;
+                int start = s.indexOf("${");
+                if (start != -1 && s.indexOf('}', start) != -1) {
+                    return new ModelNode().setExpression(s);
+                }
+                return valueAccessor.toModelNode(valueAccessor.parseFromNonExpressionString(s));
+            } else {
+                return valueAccessor.toModelNode(o);
+            }
         }
 
         public Object[] toArray(final List<Object> list) {
-            return list.toArray(new BigDecimal[list.size()]);
-        }
-    }
-
-    private static class BigIntegerTypeConverter extends TypeConverter {
-        static final BigIntegerTypeConverter INSTANCE = new BigIntegerTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.BIGINTEGER;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
+            if (expressions) {
+                return list.toArray(new String[list.size()]);
+            } else {
+                return valueAccessor.toArray(list);
             }
-            return node.asBigInteger();
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((BigInteger)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new BigInteger[list.size()]);
-        }
-    }
-
-    private static class BooleanTypeConverter extends TypeConverter {
-        static final BooleanTypeConverter INSTANCE = new BooleanTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.BOOLEAN;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return Boolean.valueOf(node.asBoolean());
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((Boolean)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new Boolean[list.size()]);
-        }
-    }
-
-    private static class BytesTypeConverter extends TypeConverter {
-        static final BytesTypeConverter INSTANCE = new BytesTypeConverter();
-        static final ArrayType<byte[]> ARRAY_TYPE = ArrayType.getPrimitiveArrayType(byte[].class);
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return ARRAY_TYPE;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return node.asBytes();
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((byte[])o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new byte[list.size()][]);
-        }
-    }
-
-    private static class DoubleTypeConverter extends TypeConverter {
-        static final DoubleTypeConverter INSTANCE = new DoubleTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.DOUBLE;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return Double.valueOf(node.asDouble());
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((Double)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new Double[list.size()]);
-        }
-    }
-
-
-    private static class IntegerTypeConverter extends TypeConverter {
-        static final IntegerTypeConverter INSTANCE = new IntegerTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.INTEGER;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return Integer.valueOf(node.asInt());
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((Integer)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new Integer[list.size()]);
-        }
-    }
-
-    private static class StringTypeConverter extends TypeConverter {
-        static final StringTypeConverter INSTANCE = new StringTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.STRING;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return node.asString();
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((String)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new String[list.size()]);
-        }
-    }
-
-    private static class UndefinedTypeConverter extends TypeConverter {
-        static final UndefinedTypeConverter INSTANCE = new UndefinedTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.STRING;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return node.toJSONString(false);
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return ModelNode.fromJSONString((String)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new String[list.size()]);
-        }
-    }
-
-    private static class ExpressionTypeConverter extends StringTypeConverter {
-        static final ExpressionTypeConverter INSTANCE = new ExpressionTypeConverter();
-        //TODO this is probably fine?
-    }
-
-    private static class PropertyTypeConverter extends StringTypeConverter {
-        static final ExpressionTypeConverter INSTANCE = new ExpressionTypeConverter();
-        //TODO Decide how these should look
-    }
-
-    private static class LongTypeConverter extends TypeConverter {
-        static final LongTypeConverter INSTANCE = new LongTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.LONG;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return Long.valueOf(node.asLong());
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set((Long)o);
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new Long[list.size()]);
-        }
-    }
-
-    private static class ModelTypeTypeConverter extends TypeConverter {
-        static final ModelTypeTypeConverter INSTANCE = new ModelTypeTypeConverter();
-
-        @Override
-        public OpenType<?> getOpenType() {
-            return SimpleType.STRING;
-        }
-
-        @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
-            return String.valueOf(node.asString());
-        }
-
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
-            return new ModelNode().set(ModelType.valueOf((String)o));
-        }
-
-        public Object[] toArray(final List<Object> list) {
-            return list.toArray(new String[list.size()]);
         }
     }
 
@@ -446,12 +236,14 @@ public abstract class TypeConverter {
 
         final ModelNode valueTypeNode;
         final ModelType valueType;
+        final boolean expressionsAllowed;
         OpenType<?> openType;
 
-        ObjectTypeConverter(ModelNode valueTypeNode) {
+        ObjectTypeConverter(ModelNode valueTypeNode, boolean expressionsAllowed) {
             this.valueTypeNode = nullNodeAsUndefined(valueTypeNode);
             ModelType valueType = getType(valueTypeNode);
             this.valueType = valueType == ModelType.UNDEFINED ? null : valueType;
+            this.expressionsAllowed = expressionsAllowed;
         }
 
         @Override
@@ -459,19 +251,19 @@ public abstract class TypeConverter {
             if (openType != null) {
                 return openType;
             }
-            openType = getConverter(valueTypeNode, null).getOpenType();
-            if (openType instanceof CompositeType || !valueTypeNode.isDefined()) {
+            openType = getConverter(valueTypeNode, null, expressionsAllowed).getOpenType();
+            if (valueType == null && (openType instanceof CompositeType || !valueTypeNode.isDefined())) {
                 //For complex value types just return the composite type
                 return openType;
             }
             try {
                 CompositeType rowType = new CompositeType(
-                        "entry",
-                        "An entry",
+                        MESSAGES.compositeEntryTypeName(),
+                        MESSAGES.compositeEntryTypeDescription(),
                         new String[] {"key", "value"},
-                        new String[] {"The key", "The value"},
+                        new String[] {MESSAGES.compositeEntryKeyDescription(), MESSAGES.compositeEntryValueDescription()},
                         new OpenType[] {SimpleType.STRING, openType});
-                openType = new TabularType("A map", "The map is indexed by 'key'", rowType, new String[] {"key"});
+                openType = new TabularType(MESSAGES.compositeMapName(), MESSAGES.compositeMapDescription(), rowType, new String[] {"key"});
                 return openType;
             } catch (OpenDataException e1) {
                 throw new RuntimeException(e1);
@@ -486,7 +278,7 @@ public abstract class TypeConverter {
             if (valueType != null) {
                 return fromSimpleModelNode(node);
             } else {
-                TypeConverter converter = getConverter(valueTypeNode, null);
+                TypeConverter converter = getConverter(valueTypeNode, null, expressionsAllowed);
                 return converter.fromModelNode(node);
             }
         }
@@ -502,7 +294,7 @@ public abstract class TypeConverter {
                 }
             }
 
-            final TypeConverter converter = TypeConverter.getConverter(valueTypeNode, null);
+            final TypeConverter converter = TypeConverter.getConverter(valueTypeNode, null, expressionsAllowed);
             for (Map.Entry<String, ModelNode> prop : values.entrySet()) {
                 Map<String, Object> rowData = new HashMap<String, Object>();
                 rowData.put("key", prop.getKey());
@@ -523,11 +315,11 @@ public abstract class TypeConverter {
             }
             if (valueType == null) {
                 //complex
-                return TypeConverter.getConverter(valueTypeNode, null).toModelNode(o);
+                return TypeConverter.getConverter(valueTypeNode, null, expressionsAllowed).toModelNode(o);
             } else {
                 //map
                 final ModelNode node = new ModelNode();
-                final TypeConverter converter = TypeConverter.getConverter(valueTypeNode, null);
+                final TypeConverter converter = TypeConverter.getConverter(valueTypeNode, null, expressionsAllowed);
                 for (Map.Entry<String, Object> entry : ((Map<String, Object>)o).entrySet()) {
                     entry = convertTabularTypeEntryToMapEntry(entry);
                     node.get(entry.getKey()).set(converter.toModelNode(entry.getValue()));
@@ -595,15 +387,17 @@ public abstract class TypeConverter {
 
     private static class ListTypeConverter extends TypeConverter {
         final ModelNode valueTypeNode;
+        final boolean expressionsAllowed;
 
-        ListTypeConverter(ModelNode valueTypeNode) {
+        ListTypeConverter(ModelNode valueTypeNode, boolean expressionsAllowed) {
             this.valueTypeNode = nullNodeAsUndefined(valueTypeNode);
+            this.expressionsAllowed = expressionsAllowed;
         }
 
         @Override
         public OpenType<?> getOpenType() {
             try {
-                return ArrayType.getArrayType(getConverter(valueTypeNode, null).getOpenType());
+                return ArrayType.getArrayType(getConverter(valueTypeNode, null, expressionsAllowed).getOpenType());
             } catch (OpenDataException e) {
                 throw new RuntimeException(e);
             }
@@ -615,7 +409,7 @@ public abstract class TypeConverter {
                 return null;
             }
             final List<Object> list = new ArrayList<Object>();
-            final TypeConverter converter = getConverter(valueTypeNode, null);
+            final TypeConverter converter = getConverter(valueTypeNode, null, expressionsAllowed);
             for (ModelNode element : node.asList()) {
                 list.add(converter.fromModelNode(element));
             }
@@ -628,7 +422,7 @@ public abstract class TypeConverter {
                 return new ModelNode();
             }
             ModelNode node = new ModelNode();
-            final TypeConverter converter = getConverter(valueTypeNode, null);
+            final TypeConverter converter = getConverter(valueTypeNode, null, expressionsAllowed);
             for (Object value : (Object[])o) {
                 node.add(converter.toModelNode(value));
             }
@@ -674,10 +468,14 @@ public abstract class TypeConverter {
                 }
 
                 itemDescriptions.add(getDescription(current));
-                itemTypes.add(getConverter(current.get(TYPE), current.get(VALUE_TYPE)).getOpenType());
+                itemTypes.add(getConverter(current).getOpenType());
             }
             try {
-                return new CompositeType("Complex type", "A complex type", itemNames.toArray(new String[itemNames.size()]), itemDescriptions.toArray(new String[itemDescriptions.size()]), itemTypes.toArray(new OpenType[itemTypes.size()]));
+                return new CompositeType(MESSAGES.complexCompositeEntryTypeName(),
+                        MESSAGES.complexCompositeEntryTypeDescription(),
+                        itemNames.toArray(new String[itemNames.size()]),
+                        itemDescriptions.toArray(new String[itemDescriptions.size()]),
+                        itemTypes.toArray(new OpenType[itemTypes.size()]));
             } catch (OpenDataException e) {
                 throw new RuntimeException(e);
             }
@@ -705,7 +503,7 @@ public abstract class TypeConverter {
                 //Create a composite
                 final Map<String, Object> items = new HashMap<String, Object>();
                 for (String attrName : compositeType.keySet()) {
-                    TypeConverter converter = getConverter(typeNode.get(attrName, TYPE), typeNode.get(attrName, VALUE_TYPE));
+                    TypeConverter converter = getConverter(typeNode.get(attrName, TYPE), typeNode.get(attrName, VALUE_TYPE), areExpressionsAllowed(typeNode.get(attrName)));
                     items.put(attrName, converter.fromModelNode(node.get(attrName)));
                 }
 
@@ -731,9 +529,7 @@ public abstract class TypeConverter {
                     if (!typeNode.hasDefined(key)){
                         throw MESSAGES.unknownValue(key);
                     }
-                    final ModelNode type = typeNode.get(key).get(TYPE);
-                    final ModelNode valueType = typeNode.get(key).get(VALUE_TYPE);
-                    TypeConverter converter = getConverter(type, valueType);
+                    TypeConverter converter = getConverter(typeNode.get(key, TYPE), typeNode.get(key, VALUE_TYPE), areExpressionsAllowed(typeNode.get(key)));
                     node.get(key).set(converter.toModelNode(composite.get(key)));
                 }
                 return node;
@@ -748,4 +544,268 @@ public abstract class TypeConverter {
         }
     }
 
+    private abstract static class SimpleValueAccessor {
+        abstract OpenType<?> getOpenType();
+        abstract Object fromModelNode(ModelNode node);
+        abstract ModelNode toModelNode(Object o);
+        abstract Object[] toArray(final List<Object> list);
+        abstract Object parseFromNonExpressionString(String s);
+    }
+
+    private static class BigDecimalValueAccessor extends SimpleValueAccessor {
+        static final BigDecimalValueAccessor INSTANCE = new BigDecimalValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.BIGDECIMAL;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asBigDecimal();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((BigDecimal)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new BigDecimal[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return new BigDecimal(s);
+        }
+    }
+
+    private static class BigIntegerValueAccessor extends SimpleValueAccessor {
+        static final BigIntegerValueAccessor INSTANCE = new BigIntegerValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.BIGINTEGER;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asBigInteger();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((BigInteger)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new BigInteger[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return new BigInteger(s);
+        }
+    }
+
+    private static class BooleanValueAccessor extends SimpleValueAccessor {
+        static final BooleanValueAccessor INSTANCE = new BooleanValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.BOOLEAN;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asBoolean();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((Boolean)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new Boolean[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return Boolean.parseBoolean(s);
+        }
+    }
+
+    private static class BytesValueAccessor extends SimpleValueAccessor {
+        static final BytesValueAccessor INSTANCE = new BytesValueAccessor();
+        static final ArrayType<byte[]> ARRAY_TYPE = ArrayType.getPrimitiveArrayType(byte[].class);
+
+        OpenType<?> getOpenType() {
+            return ARRAY_TYPE;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.resolve().asBytes();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((byte[])o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new byte[list.size()][]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return s.getBytes();
+        }
+
+    }
+
+    private static class DoubleValueAccessor extends SimpleValueAccessor {
+        static final DoubleValueAccessor INSTANCE = new DoubleValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.DOUBLE;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asDouble();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((Double)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new Double[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return Double.parseDouble(s);
+        }
+    }
+
+
+    private static class IntegerValueAccessor extends SimpleValueAccessor {
+        static final IntegerValueAccessor INSTANCE = new IntegerValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.INTEGER;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asInt();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((Integer)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new Integer[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return Integer.parseInt(s);
+        }
+    }
+
+    private static class StringValueAccessor extends SimpleValueAccessor {
+        static final StringValueAccessor INSTANCE = new StringValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.STRING;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asString();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            if (o == null) {
+                return new ModelNode();
+            }
+            return new ModelNode().set((String)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new String[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return s;
+        }
+    }
+
+    private static class UndefinedValueAccessor extends SimpleValueAccessor {
+        static final UndefinedValueAccessor INSTANCE = new UndefinedValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.STRING;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.toJSONString(false);
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return ModelNode.fromJSONString((String)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new String[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return s;
+        }
+    }
+
+//    private static class ExpressionTypeConverter extends StringTypeConverter {
+//        static final ExpressionTypeConverter INSTANCE = new ExpressionTypeConverter();
+//        //TODO this is probably fine?
+//    }
+//
+//    private static class PropertyTypeConverter extends StringTypeConverter {
+//        static final ExpressionTypeConverter INSTANCE = new ExpressionTypeConverter();
+//        //TODO Decide how these should look
+//    }
+
+    private static class LongValueAccessor extends SimpleValueAccessor {
+        static final LongValueAccessor INSTANCE = new LongValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.LONG;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asLong();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set((Long)o);
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new Long[list.size()]);
+        }
+
+        @Override
+        Object parseFromNonExpressionString(String s) {
+            return Long.parseLong(s);
+        }
+    }
+
+    private static class ModelTypeValueAccessor extends SimpleValueAccessor {
+        static final ModelTypeValueAccessor INSTANCE = new ModelTypeValueAccessor();
+
+        OpenType<?> getOpenType() {
+            return SimpleType.STRING;
+        }
+
+        Object fromModelNode(final ModelNode node) {
+            return node.asString();
+        }
+
+        ModelNode toModelNode(final Object o) {
+            return new ModelNode().set(ModelType.valueOf((String)o));
+        }
+
+        Object[] toArray(final List<Object> list) {
+            return list.toArray(new String[list.size()]);
+        }
+
+        Object parseFromNonExpressionString(String s) {
+            return ModelType.valueOf(s);
+        }
+    }
 }

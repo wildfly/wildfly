@@ -308,10 +308,18 @@ class ModelControllerMBeanHelper {
 
         String realOperationName = null;
         OperationEntry opEntry = registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
-
         if (opEntry != null) {
             realOperationName = operationName;
         } else {
+            String opName = NameConverter.convertFromCamelCase(operationName);
+            opEntry = registration.getOperationEntry(PathAddress.EMPTY_ADDRESS, opName);
+            if (opEntry != null) {
+                realOperationName = opName;
+            }
+        }
+
+        if (opEntry == null) {
+            //Brute force search in case the operation name is not standard format
             Map<String, OperationEntry> ops = registration.getOperationDescriptions(PathAddress.EMPTY_ADDRESS, false);
             for (Map.Entry<String, OperationEntry> entry : ops.entrySet()) {
                 if (operationName.equals(NameConverter.convertToCamelCase(entry.getKey()))) {
