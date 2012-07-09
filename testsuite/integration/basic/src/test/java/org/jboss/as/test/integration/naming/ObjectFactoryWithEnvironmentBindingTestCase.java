@@ -106,39 +106,39 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
 
     @Test
     public void testBindingWithEnvironment() throws Exception {
-
         deployModule();
         LOGGER.info("Module deployed.");
-
-        // bind the object factory
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
-        address.add(BINDING, "java:global/b");
-        final ModelNode bindingAdd = new ModelNode();
-        bindingAdd.get(OP).set(ADD);
-        bindingAdd.get(OP_ADDR).set(address);
-        bindingAdd.get(BINDING_TYPE).set(OBJECT_FACTORY);
-        bindingAdd.get(MODULE).set(MODULE_NAME);
-        bindingAdd.get(CLASS).set(ObjectFactoryWithEnvironmentBinding.class.getName());
-        final ModelNode environment = new ModelNode();
-        for (Map.Entry<String, String> property : ENVIRONMENT_PROPERTIES.entrySet()) {
-            environment.add(property.getKey(), property.getValue());
+        try {
+            // bind the object factory
+            final ModelNode address = new ModelNode();
+            address.add(SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME);
+            address.add(BINDING, "java:global/b");
+            final ModelNode bindingAdd = new ModelNode();
+            bindingAdd.get(OP).set(ADD);
+            bindingAdd.get(OP_ADDR).set(address);
+            bindingAdd.get(BINDING_TYPE).set(OBJECT_FACTORY);
+            bindingAdd.get(MODULE).set(MODULE_NAME);
+            bindingAdd.get(CLASS).set(ObjectFactoryWithEnvironmentBinding.class.getName());
+            final ModelNode environment = new ModelNode();
+            for (Map.Entry<String, String> property : ENVIRONMENT_PROPERTIES.entrySet()) {
+                environment.add(property.getKey(), property.getValue());
+            }
+            bindingAdd.get(OBJECT_FACTORY_ENV).set(environment);
+            final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
+            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+            LOGGER.info("Object factory bound.");
+            // unbind the object factory
+            final ModelNode bindingRemove = new ModelNode();
+            bindingRemove.get(OP).set(REMOVE);
+            bindingRemove.get(OP_ADDR).set(address);
+            final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
+            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
+                    .isDefined());
+            LOGGER.info("Object factory unbound.");
+        } finally {
+            undeployModule();
+            LOGGER.info("Module undeployed.");
         }
-        bindingAdd.get(OBJECT_FACTORY_ENV).set(environment);
-        final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
-        Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-        LOGGER.info("Object factory bound.");
-
-        // unbind the object factory
-        final ModelNode bindingRemove = new ModelNode();
-        bindingRemove.get(OP).set(REMOVE);
-        bindingRemove.get(OP_ADDR).set(address);
-        final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
-        Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION).isDefined());
-        LOGGER.info("Object factory unbound.");
-
-        undeployModule();
-        LOGGER.info("Module undeployed.");
     }
 
     private void deployModule() throws IOException {
