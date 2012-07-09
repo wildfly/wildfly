@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Handler;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -58,7 +57,7 @@ import org.jboss.msc.service.ServiceRegistry;
  * @author John Bailey
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public abstract class HandlerUpdateProperties<T extends Handler> implements OperationStepHandler {
+public abstract class HandlerUpdateProperties<S extends HandlerService<?>> implements OperationStepHandler {
     public static final String OPERATION_NAME = "update-properties";
 
     private final Set<String> attributes;
@@ -97,35 +96,35 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
                     final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                     final String name = address.getLastElement().getValue();
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                    @SuppressWarnings("unchecked")
-                    final ServiceController<T> controller = (ServiceController<T>) serviceRegistry.getService(LogServices.handlerName(name));
+                    final ServiceController<?> controller = serviceRegistry.getService(LogServices.handlerName(name));
                     if (controller != null) {
-                        final T handler = controller.getValue();
+                        @SuppressWarnings("unchecked")
+                        final S handlerService = (S) controller.getService();
                         final ModelNode level = LEVEL.resolveModelAttribute(context, model);
                         final ModelNode formatter = FORMATTER.resolveModelAttribute(context, model);
                         final ModelNode encoding = ENCODING.resolveModelAttribute(context, model);
                         final ModelNode filter = FILTER.resolveModelAttribute(context, model);
                         if (level.isDefined()) {
-                            handler.setLevel(ModelParser.parseLevel(level));
+                            handlerService.setLevel(ModelParser.parseLevel(level));
                         }
 
                         if (formatter.isDefined()) {
-                            FormatterSpec.fromModelNode(context, model).apply(handler);
+                            handlerService.setFormatterSpec(FormatterSpec.fromModelNode(context, model));
                         }
 
                         if (encoding.isDefined()) {
                             try {
-                                handler.setEncoding(encoding.asString());
+                                handlerService.setEncoding(encoding.asString());
                             } catch (UnsupportedEncodingException e) {
                                 throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToSetHandlerEncoding()));
                             }
                         }
 
                         if (filter.isDefined()) {
-                            handler.setFilter(ModelParser.parseFilter(context, filter));
+                            handlerService.setFilter(ModelParser.parseFilter(context, filter));
                         }
 
-                        final boolean restartRequired = applyUpdateToRuntime(context, name, model, originalModel, handler);
+                        final boolean restartRequired = applyUpdateToRuntime(context, name, model, originalModel, handlerService);
                         // Copy the original defined values to the new model if the values are not defined.
                         copyOriginal(originalModel, model);
 
@@ -135,7 +134,7 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
 
                         if (context.completeStep() != OperationContext.ResultAction.KEEP) {
                             try {
-                                revertUpdateToRuntime(context, name, model, originalModel, handler);
+                                revertUpdateToRuntime(context, name, model, originalModel, handlerService);
                             } catch (Exception e) {
                                 ROOT_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
                                         operation.require(ModelDescriptionConstants.OP).asString(),
@@ -173,26 +172,26 @@ public abstract class HandlerUpdateProperties<T extends Handler> implements Oper
     /**
      * Hook to allow subclasses to make runtime changes to effect the attribute value change.
      *
-     * @param context       the context of the operation
-     * @param model         the model
-     * @param originalModel the original model
-     * @param handler       the log handler
+     * @param context        the context of the operation
+     * @param model          the model
+     * @param originalModel  the original model
+     * @param handlerService the log handler service
      *
      * @return {@code true} if the server requires restart to effect the attribute
      *         value change; {@code false} if not
      */
-    protected abstract boolean applyUpdateToRuntime(OperationContext context, String handlerName, ModelNode model, ModelNode originalModel, T handler) throws OperationFailedException;
+    protected abstract boolean applyUpdateToRuntime(OperationContext context, String handlerName, ModelNode model, ModelNode originalModel, S handlerService) throws OperationFailedException;
 
     /**
      * Hook to allow subclasses to revert runtime changes made in
-     * {@link #applyUpdateToRuntime(OperationContext, String, ModelNode, ModelNode, T)}.
+     * {@link #applyUpdateToRuntime(OperationContext, String, ModelNode, ModelNode, S)}.
      *
-     * @param context       the context of the operation
-     * @param model         the model
-     * @param originalModel the original model
-     * @param handler       the log handler
+     * @param context        the context of the operation
+     * @param model          the model
+     * @param originalModel  the original model
+     * @param handlerService the log handler service
      */
-    protected abstract void revertUpdateToRuntime(OperationContext context, String handlerName, ModelNode model, ModelNode originalModel, T handler)
+    protected abstract void revertUpdateToRuntime(OperationContext context, String handlerName, ModelNode model, ModelNode originalModel, S handlerService)
             throws OperationFailedException;
 
 

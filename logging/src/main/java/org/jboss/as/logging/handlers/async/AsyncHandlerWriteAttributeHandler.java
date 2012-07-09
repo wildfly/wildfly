@@ -28,17 +28,16 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.logging.util.ModelParser;
 import org.jboss.as.logging.handlers.AbstractLogHandlerWriteAttributeHandler;
+import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logmanager.handlers.AsyncHandler;
 
 /**
  * Date: 12.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<AsyncHandler> {
+public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAttributeHandler<AsyncHandlerService> {
 
     public static final AsyncHandlerWriteAttributeHandler INSTANCE = new AsyncHandlerWriteAttributeHandler();
 
@@ -47,9 +46,9 @@ public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAt
     }
 
     @Override
-    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final AsyncHandler handler) throws OperationFailedException {
+    protected boolean doApplyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final String handlerName, final AsyncHandlerService handlerService) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(ModelParser.parseOverflowAction(resolvedValue));
+            handlerService.setOverflowAction(ModelParser.parseOverflowAction(resolvedValue));
         } else if (SUBHANDLERS.getName().equals(attributeName)) {
             // Remove the subhandlers
             AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, currentValue, context, handlerName);
@@ -62,9 +61,9 @@ public class AsyncHandlerWriteAttributeHandler extends AbstractLogHandlerWriteAt
     }
 
     @Override
-    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final AsyncHandler handler) throws OperationFailedException {
+    protected void doRevertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode valueToRestore, final ModelNode valueToRevert, final String handlerName, final AsyncHandlerService handlerService) throws OperationFailedException {
         if (OVERFLOW_ACTION.getName().equals(attributeName)) {
-            handler.setOverflowAction(ModelParser.parseOverflowAction(valueToRestore));
+            handlerService.setOverflowAction(ModelParser.parseOverflowAction(valueToRestore));
         } else if (SUBHANDLERS.getName().equals(attributeName)) {
             // Remove the subhandlers
             AsyncHandlerUnassignSubhandler.removeHandlers(SUBHANDLERS, valueToRevert, context, handlerName);

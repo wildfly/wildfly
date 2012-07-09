@@ -37,7 +37,7 @@ import org.jboss.logmanager.handlers.FileHandler;
  *
  * @author John Bailey
  */
-public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHandler> {
+public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHandlerService> {
     public static final FileHandlerUpdateProperties INSTANCE = new FileHandlerUpdateProperties();
 
     private FileHandlerUpdateProperties() {
@@ -46,15 +46,15 @@ public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHan
 
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model,
-                                           final ModelNode originalModel, final FileHandler handler) throws OperationFailedException {
+                                           final ModelNode originalModel, final FileHandlerService handlerService) throws OperationFailedException {
         boolean requiresRestart = false;
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            handlerService.setAutoFlush(autoflush.asBoolean());
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, model);
         if (append.isDefined()) {
-            handler.setAppend(append.asBoolean());
+            handlerService.setAppend(append.asBoolean());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, model);
         if (file.isDefined()) {
@@ -64,14 +64,14 @@ public class FileHandlerUpdateProperties extends HandlerUpdateProperties<FileHan
     }
 
     @Override
-    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final FileHandler handler) throws OperationFailedException {
+    protected void revertUpdateToRuntime(final OperationContext context, final String handlerName, final ModelNode model, final ModelNode originalModel, final FileHandlerService handlerService) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, originalModel);
         if (autoflush.isDefined()) {
-            handler.setAutoFlush(autoflush.asBoolean());
+            handlerService.setAutoFlush(autoflush.asBoolean());
         }
         final ModelNode append = APPEND.resolveModelAttribute(context, originalModel);
         if (append.isDefined()) {
-            handler.setAppend(append.asBoolean());
+            handlerService.setAppend(append.asBoolean());
         }
         final ModelNode file = FILE.resolveModelAttribute(context, originalModel);
         if (file.isDefined()) {

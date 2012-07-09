@@ -55,7 +55,7 @@ public abstract class FlushingHandlerAddProperties<T extends FlushingHandlerServ
     protected void updateRuntime(final OperationContext context, final ServiceBuilder<Handler> serviceBuilder, final String name, final T service, final ModelNode model, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final ModelNode autoflush = AUTOFLUSH.resolveModelAttribute(context, model);
         if (autoflush.isDefined()) {
-            service.setAutoflush(autoflush.asBoolean());
+            service.setAutoFlush(autoflush.asBoolean());
         }
     }
 
