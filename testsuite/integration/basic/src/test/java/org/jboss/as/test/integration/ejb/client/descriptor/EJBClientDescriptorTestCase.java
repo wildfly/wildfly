@@ -22,6 +22,15 @@
 
 package org.jboss.as.test.integration.ejb.client.descriptor;
 
+import java.io.InputStream;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
+import javax.ejb.EJBException;
+import javax.naming.Context;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -34,19 +43,14 @@ import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.ejb.remote.common.EJBManagementUtil;
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.ejb.EJBException;
-import javax.naming.Context;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
+import org.osgi.framework.Bundle;
 
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
@@ -66,14 +70,12 @@ public class EJBClientDescriptorTestCase {
     private static final String MODULE_NAME_ONE = "ejb-client-descriptor-test";
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
     private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
+    private static final String BUNDLE_NAME_ONE = "ejb-client-descriptor-bundle";
     private static final String JBOSS_EJB_CLIENT_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_2_xml";
 
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
     private static final String outboundConnectionName = "ejb-client-descriptor-test-remote-outbound-connection";
-
-    private static boolean outboundSocketCreated;
-    private static boolean outboundConnectionCreated;
 
     static class EJBClientDescriptorTestCaseSetup implements ServerSetupTask {
 
@@ -81,13 +83,11 @@ public class EJBClientDescriptorTestCase {
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             final String socketBindingRef = "remoting";
             EJBManagementUtil.createLocalOutboundSocket(managementClient.getControllerClient(), "standard-sockets", outboundSocketName, socketBindingRef, Authentication.getCallbackHandler());
-            outboundSocketCreated = true;
             logger.info("Created local outbound socket " + outboundSocketName);
 
             final Map<String, String> connectionCreationOptions = new HashMap<String, String>();
             logger.info("Creatng remote outbound connection " + outboundConnectionName);
             EJBManagementUtil.createRemoteOutboundConnection(managementClient.getControllerClient(), outboundConnectionName, outboundSocketName, connectionCreationOptions, Authentication.getCallbackHandler());
-            outboundConnectionCreated = true;
             logger.info("Created remote outbound connection " + outboundConnectionName);
         }
 
@@ -108,7 +108,7 @@ public class EJBClientDescriptorTestCase {
     private Context context;
 
     @Deployment(name = "good-client-config", testable = false, managed = false)
-    public static Archive createDeployment() throws Exception {
+    public static JavaArchive createDeployment() throws Exception {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_ONE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -116,8 +116,24 @@ public class EJBClientDescriptorTestCase {
         return jar;
     }
 
+    @Deployment(name = "good-client-config-bundle", testable = false, managed = false)
+    public static JavaArchive createGoodClientConfigBundle() throws Exception {
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, BUNDLE_NAME_ONE + ".jar");
+        jar.addPackage(EchoBean.class.getPackage());
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.setManifest(new Asset() {
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(jar.getName());
+                builder.addBundleManifestVersion(2);
+                return builder.openStream();
+            }
+        });
+        return jar;
+    }
+
     @Deployment(name = "jboss-ejb-client_1_2_version", testable = false, managed = false)
-    public static Archive createJBossEJBClient12VersionDeployment() throws Exception {
+    public static JavaArchive createJBossEJBClient12VersionDeployment() throws Exception {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_1_2_MODULE_NAME + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -126,7 +142,7 @@ public class EJBClientDescriptorTestCase {
     }
 
     @Deployment(name = "no-ejb-receiver-client-config", testable = false, managed = false)
-    public static Archive createNoEJBReceiverConfigDeployment() throws Exception {
+    public static JavaArchive createNoEJBReceiverConfigDeployment() throws Exception {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_TWO + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -135,7 +151,7 @@ public class EJBClientDescriptorTestCase {
     }
 
     @Deployment(name = "local-and-remote-receviers-config", testable = false, managed = false)
-    public static Archive createLocalAndRemoteReceiverConfigDeployment() throws Exception {
+    public static JavaArchive createLocalAndRemoteReceiverConfigDeployment() throws Exception {
 
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_THREE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
@@ -165,6 +181,26 @@ public class EJBClientDescriptorTestCase {
     }
 
     /**
+     * Tests that a {@link Bundle} deployment containing jboss-ejb-client.xml with remoting EJB receivers configured, works as expected
+     * https://issues.jboss.org/browse/AS7-5009
+     */
+    @Test
+    public void testEJBClientContextConfigurationInOSGiBundle() throws Exception {
+        deployer.deploy("good-client-config-bundle");
+        try {
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + BUNDLE_NAME_ONE + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String echo = remoteEcho.echo(BUNDLE_NAME_ONE, msg);
+            logger.info("Received echo " + echo);
+            Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
+        } finally {
+            deployer.undeploy("good-client-config-bundle");
+        }
+    }
+
+    /**
      * Tests that a deployment with a jboss-ejb-client.xml with no EJB receivers configured, fails due to
      * non-availability of EJB receivers in the EJB client context
      *
@@ -179,7 +215,7 @@ public class EJBClientDescriptorTestCase {
             Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
             final String msg = "Hello world from a EJB client descriptor test!!!";
             try {
-                final String echo = remoteEcho.echo(MODULE_NAME_TWO, msg);
+                remoteEcho.echo(MODULE_NAME_TWO, msg);
                 Assert.fail("Exepcted to fail due to no EJB receivers availability");
             } catch (EJBException e) {
                 // no EJB receivers available, so expected to fail
@@ -233,7 +269,7 @@ public class EJBClientDescriptorTestCase {
             Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
             final String msg = "Hello world from a EJB client descriptor test!!!";
             try {
-                final String echo = remoteEcho.twoSecondEcho(JBOSS_EJB_CLIENT_1_2_MODULE_NAME, msg);
+                remoteEcho.twoSecondEcho(JBOSS_EJB_CLIENT_1_2_MODULE_NAME, msg);
                 Assert.fail("Expected to receive a timeout for the invocation");
             } catch (Exception e) {
                 // this will be thrown a UndeclaredThrowableException for reasons explained in the javadoc
