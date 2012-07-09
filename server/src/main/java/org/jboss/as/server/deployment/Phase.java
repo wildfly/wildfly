@@ -433,4 +433,5 @@ public enum Phase {
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;
     public static final int CLEANUP_EE                                  = 0x0200;
     public static final int CLEANUP_EJB                                 = 0x0300;
+    public static final int CLEANUP_ANNOTATION_INDEX                    = 0x0400;
 }
