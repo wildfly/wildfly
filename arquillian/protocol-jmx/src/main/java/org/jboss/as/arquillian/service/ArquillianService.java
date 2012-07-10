@@ -105,8 +105,8 @@ public class ArquillianService implements Service<ArquillianService> {
 
             @Override
             public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
-                switch (transition) {
-                    case STARTING_to_UP: {
+                switch (serviceController.getState()) {
+                    case UP: {
                         ServiceName serviceName = serviceController.getName();
                         String simpleName = serviceName.getSimpleName();
                         if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
@@ -122,8 +122,7 @@ public class ArquillianService implements Service<ArquillianService> {
                             }
                         }
                     }
-                    case START_FAILED_to_STARTING:
-                    case START_INITIATING_to_STARTING: {
+                    case STARTING: {
                         ServiceName serviceName = serviceController.getName();
                         String simpleName = serviceName.getSimpleName();
                         if(JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.DEPENDENCIES.toString())) {
