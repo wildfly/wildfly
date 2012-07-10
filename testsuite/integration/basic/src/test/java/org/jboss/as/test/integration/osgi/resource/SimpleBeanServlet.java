@@ -30,8 +30,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.framework.Bundle;
-
 /**
  * @author thomas.diesler@jboss.com
  * @since 10-Jul-2012
@@ -46,8 +44,7 @@ public class SimpleBeanServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Writer writer = resp.getWriter();
-        Bundle bundle = bean.getBundleContext().getBundle();
-        writer.write(bundle.toString());
+        writer.write(bean.getContextName());
         writer.close();
     }
 }

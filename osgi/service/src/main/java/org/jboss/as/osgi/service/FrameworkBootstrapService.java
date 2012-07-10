@@ -53,10 +53,13 @@ import javax.management.MBeanServer;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.InitialContext;
+import org.jboss.as.naming.ManagedReferenceInjector;
+import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState;
@@ -74,10 +77,12 @@ import org.jboss.modules.filter.PathFilter;
 import org.jboss.modules.filter.PathFilters;
 import org.jboss.modules.log.ModuleLogger;
 import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -115,7 +120,7 @@ import org.osgi.framework.ServiceReference;
  */
 public class FrameworkBootstrapService implements Service<Void> {
 
-    static final ServiceName FRAMEWORK_BOOTSTRAP = SERVICE_BASE_NAME.append("framework", "bootstrap");
+    static final ServiceName FRAMEWORK_BOOTSTRAP_NAME = SERVICE_BASE_NAME.append("framework", "bootstrap");
     static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
@@ -123,10 +128,9 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
     private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(final ServiceTarget target, OSGiRuntimeResource resource,
-            final ServiceVerificationHandler verificationHandler) {
+    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, ServiceListener<Object> verificationHandler) {
         FrameworkBootstrapService service = new FrameworkBootstrapService(resource);
-        ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP, service);
+        ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
@@ -158,6 +162,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceTarget serviceTarget = context.getChildTarget();
             AutoInstallIntegration.addService(serviceTarget);
             BundleInstallIntegration.addService(serviceTarget);
+            BundleContextBindingService.addService(serviceTarget);
             FrameworkModuleIntegration.addService(serviceTarget, props);
             JAXPServiceProvider.addService(serviceTarget);
             ModuleLoaderIntegration.addService(serviceTarget);
@@ -272,11 +277,9 @@ public class FrameworkBootstrapService implements Service<Void> {
 
         public static ServiceController<?> addService(final ServiceTarget target, OSGiRuntimeResource resource) {
             SystemServicesIntegration service = new SystemServicesIntegration(resource);
-            ServiceBuilder<SystemServicesPlugin> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PLUGIN,
-                    service);
+            ServiceBuilder<SystemServicesPlugin> builder = target.addService(IntegrationServices.SYSTEM_SERVICES_PLUGIN, service);
             builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedModelController);
-            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class,
-                    service.injectedServerEnvironment);
+            builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
             builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
             builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
@@ -464,8 +467,7 @@ public class FrameworkBootstrapService implements Service<Void> {
                 modid = modid.trim();
                 if (modid.length() > 0) {
                     ModuleIdentifier identifier = ModuleIdentifier.create(modid);
-                    specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader,
-                            identifier, false));
+                    specBuilder.addDependency(DependencySpec.createModuleDependencySpec(acceptAll, acceptAll, bootLoader, identifier, false));
                 }
             }
 
@@ -492,15 +494,13 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
     }
 
-    // This listener registers OSGi Services that are registered under javax.naming.spi.ObjectFactory with the AS7 naming
-    // system.
+    // Registers OSGi Services that are registered under javax.naming.spi.ObjectFactory with the AS7 naming system.
     private static class JNDIServiceListener implements org.osgi.framework.ServiceListener {
         private static final String OSGI_JNDI_URL_SCHEME = "osgi.jndi.url.scheme";
         private final BundleContext bundleContext;
 
         public JNDIServiceListener(BundleContext bundleContext) {
             this.bundleContext = bundleContext;
-
             try {
                 // Register the pre-existing services
                 ServiceReference[] refs = bundleContext.getServiceReferences(ObjectFactory.class.getName(), null);
@@ -551,6 +551,47 @@ public class FrameworkBootstrapService implements Service<Void> {
                 return Collections.singleton((String) property);
             }
             return Collections.emptyList();
+        }
+    }
+
+    public static final class BundleContextBindingService {
+
+        private static final String BUNDLE_CONTEXT_BINDING_NAME = "java:jboss/osgi/BundleContext";
+
+        private static ServiceController<?> addService(final ServiceTarget serviceTarget) {
+            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(BUNDLE_CONTEXT_BINDING_NAME);
+            BinderService binderService = new BinderService(bindInfo.getBindName()) {
+                @Override
+                public synchronized void start(StartContext context) throws StartException {
+                    super.start(context);
+                    ServiceController<?> controller = context.getController();
+                    controller.setMode(Mode.ACTIVE);
+                }
+            };
+            ServiceBuilder<?> builder = serviceTarget.addService(getBinderServiceName(), binderService);
+            builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
+            builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+            builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                    switch (transition) {
+                        case STARTING_to_UP: {
+                            LOGGER.infoBoundSystemContext(BUNDLE_CONTEXT_BINDING_NAME);
+                            break;
+                        }
+                        case START_REQUESTED_to_DOWN: {
+                            LOGGER.infoUnboundSystemContext(BUNDLE_CONTEXT_BINDING_NAME);
+                            break;
+                        }
+                    }
+                }
+            });
+            builder.setInitialMode(Mode.ON_DEMAND);
+            return builder.install();
+        }
+
+        public static ServiceName getBinderServiceName() {
+            ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(BUNDLE_CONTEXT_BINDING_NAME);
+            return bindInfo.getBinderServiceName();
         }
     }
 }

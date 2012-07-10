@@ -32,7 +32,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,6 +53,9 @@ public class BundleContextInjectionTestCase {
     private static final String WEBAPP_WAR = "webapp.war";
     private static final String SUB_WEBAPP_EAR = "sub-webapp.ear";
     private static final String SUB_WEBAPP_WAR = "sub-webapp.war";
+    private static final String MANAGED_BEAN_EAR = "managed.ear";
+    private static final String MANAGED_BEAN_WAR = "managed-webapp.war";
+    private static final String MANAGED_BEAN_JAR = "managed-beans.jar";
 
     @ArquillianResource
     URL targetURL;
@@ -71,6 +76,18 @@ public class BundleContextInjectionTestCase {
         return ear;
     }
 
+    @Deployment(name = MANAGED_BEAN_EAR, testable = false)
+    public static Archive<?> getManagedBeanEar() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, MANAGED_BEAN_WAR);
+        war.addClasses(SimpleBeanServlet.class);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MANAGED_BEAN_JAR);
+        jar.addClasses(SimpleManagedBean.class);
+        jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, MANAGED_BEAN_EAR);
+        ear.addAsModules(jar, war);
+        return ear;
+    }
+
     @Test
     @OperateOnDeployment(WEBAPP_WAR)
     public void testSimpleWar() throws Exception {
@@ -81,6 +98,13 @@ public class BundleContextInjectionTestCase {
     @Test
     @OperateOnDeployment(SUB_WEBAPP_EAR)
     public void testSimpleEar() throws Exception {
+        String result = performCall("simple", null);
+        Assert.assertEquals("system.bundle:0.0.0", result);
+    }
+
+    @Test
+    @OperateOnDeployment(MANAGED_BEAN_EAR)
+    public void testManagedBeanEar() throws Exception {
         String result = performCall("simple", null);
         Assert.assertEquals("system.bundle:0.0.0", result);
     }

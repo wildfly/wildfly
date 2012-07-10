@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.framework.Bundle;
+import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -47,8 +47,8 @@ public class SimpleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Writer writer = resp.getWriter();
-        Bundle bundle = context.getBundle();
-        writer.write(bundle.toString());
+        XBundle bundle = (XBundle) context.getBundle();
+        writer.write(bundle.getCanonicalName());
         writer.close();
     }
 }
