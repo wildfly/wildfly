@@ -38,6 +38,7 @@ import javax.net.ssl.SSLParameters;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.domain.http.server.security.AnonymousAuthenticator;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
 import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
@@ -122,7 +123,6 @@ public class ManagementHttpServer {
                 if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
                     plainTextDigest = Boolean.parseBoolean(mechConfig.get(DIGEST_PLAIN_TEXT));
                 }
-                // TODO - Let the authenticator pull it's own config?
                 auth = new DigestAuthenticator(securityRealm, plainTextDigest == false);
             } else if (authenticationMechanisms.contains(AuthenticationMechanism.PLAIN)) {
                 auth = new BasicAuthenticator(securityRealm);
@@ -141,6 +141,7 @@ public class ManagementHttpServer {
                 certAuthMode = CertAuth.NONE;
             }
         } else {
+            auth = new AnonymousAuthenticator();
             certAuthMode = CertAuth.NONE;
         }
 
