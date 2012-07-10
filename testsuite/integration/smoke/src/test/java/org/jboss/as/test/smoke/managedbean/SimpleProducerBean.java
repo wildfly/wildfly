@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.osgi.resource;
+package org.jboss.as.test.smoke.managedbean;
 
 import javax.annotation.ManagedBean;
-import javax.annotation.Resource;
-import org.jboss.osgi.resolver.XBundle;
-import org.osgi.framework.BundleContext;
+import javax.enterprise.inject.Produces;
 
 /**
- * @author thomas.diesler@jboss.com
- * @since 10-Jul-2012
+ * @author Thomas.Diesler@jboss.com
  */
-@ManagedBean("SimpleManagedBean")
-public class SimpleManagedBean {
+@ManagedBean("SimpleProducerBean")
+public class SimpleProducerBean {
 
-    @Resource
-    BundleContext context;
+    @Produces
+    public int number() {
+        return 100;
+    }
 
-    public String getContextName() {
-        XBundle bundle = (XBundle) context.getBundle();
-        return bundle.getCanonicalName();
+    @Produces
+    public String value() {
+        return "value";
     }
 }

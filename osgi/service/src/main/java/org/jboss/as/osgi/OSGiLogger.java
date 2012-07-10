@@ -96,4 +96,12 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11910, value = "Cannot resolve requirements: %s")
     void warnCannotResolve(Collection<Requirement> requirements);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11911, value = "Bound system context: %s")
+    void infoBoundSystemContext(String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11912, value = "Unbound system context: %s")
+    void infoUnboundSystemContext(String jndiName);
 }

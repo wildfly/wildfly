@@ -29,6 +29,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.osgi.service.FrameworkBootstrapService.BundleContextBindingService;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -46,6 +48,7 @@ import org.jboss.jandex.Type;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceName;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -55,8 +58,6 @@ import org.osgi.framework.BundleContext;
  * @since 03-Aug-2011
  */
 public class BundleContextDependencyProcessor implements DeploymentUnitProcessor {
-
-    public static AttachmentKey<Boolean> BUNDLE_CONTEXT_RESOURCE_KEY = AttachmentKey.create(Boolean.class);
 
     private static final ModuleIdentifier ORG_JBOSS_OSGI_RESOLVER = ModuleIdentifier.create("org.jboss.osgi.resolver");
     private static final ModuleIdentifier ORG_OSGI_CORE = ModuleIdentifier.create("org.osgi.core");
@@ -95,7 +96,9 @@ public class BundleContextDependencyProcessor implements DeploymentUnitProcessor
             ModuleDependency coreDep = new ModuleDependency(moduleLoader, ORG_OSGI_CORE, false, false, false, false);
             ModuleDependency resolverDep = new ModuleDependency(moduleLoader, ORG_JBOSS_OSGI_RESOLVER, false, false, false, false);
             moduleSpecification.addSystemDependencies(Arrays.asList(coreDep, resolverDep));
-            depUnit.putAttachment(BUNDLE_CONTEXT_RESOURCE_KEY, Boolean.TRUE);
+            // Add a dependency on the binder service
+            ServiceName binderServiceName = BundleContextBindingService.getBinderServiceName();
+            phaseContext.addDependency(binderServiceName, AttachmentKey.create(ManagedReferenceFactory.class));
         }
     }
 

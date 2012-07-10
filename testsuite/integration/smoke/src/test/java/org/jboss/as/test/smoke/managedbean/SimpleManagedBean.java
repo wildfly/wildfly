@@ -25,9 +25,7 @@ import javax.annotation.ManagedBean;
 
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 @ManagedBean("SimpleManagedBean")
 public class SimpleManagedBean {

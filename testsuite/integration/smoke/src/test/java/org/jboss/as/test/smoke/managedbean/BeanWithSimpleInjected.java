@@ -26,6 +26,7 @@ import org.jboss.logging.Logger;
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
@@ -34,7 +35,7 @@ import javax.interceptor.InvocationContext;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author Thomas.Diesler@jboss.com
  */
 @ManagedBean("BeanWithSimpleInjected")
 @Interceptors(InterceptorBean.class)
@@ -58,6 +59,12 @@ public class BeanWithSimpleInjected extends BeanParent {
         this.bean2 = bean;
     }
 
+    @Inject int number;
+
+    @Inject String value;
+
+    @Inject Instance<String> valueInstance;
+
     @PostConstruct
     public void start() {
         if(bean2 == null) {
@@ -74,6 +81,22 @@ public class BeanWithSimpleInjected extends BeanParent {
 
     public SimpleManagedBean getSimple() {
         return simple;
+    }
+
+    public SimpleManagedBean getSimple2() {
+        return simple2;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public String getValue2() {
+        return valueInstance.get();
     }
 
     @AroundInvoke
