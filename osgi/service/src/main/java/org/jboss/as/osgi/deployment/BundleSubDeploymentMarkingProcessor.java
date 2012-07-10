@@ -63,7 +63,7 @@ public class BundleSubDeploymentMarkingProcessor implements DeploymentUnitProces
             if (pathName.startsWith("lib/"))
                 continue;
 
-            //String relativeRootName = resourceRoot.getRootName().substring(deploymentRootName.length());
+            // Check if this sub deployment has a valid OSGi manifest - if so mark it
             Manifest manifest = ManifestAttachmentProcessor.getManifest(resourceRoot);
             if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
                 SubDeploymentMarker.mark(resourceRoot);
