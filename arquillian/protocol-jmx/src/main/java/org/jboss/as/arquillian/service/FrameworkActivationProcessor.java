@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -35,7 +36,6 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 
 /**
  * Uses the annotation index to check whether the OSGi needs to get activated.
@@ -47,9 +47,17 @@ public class FrameworkActivationProcessor {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
-    static void process(final ServiceContainer serviceContainer, final ServiceBuilder<ArquillianConfig> builder, final ArquillianConfig arqConfig) {
+    private static final AttachmentKey<Boolean> ADD_FRAMEWORK_DEP = AttachmentKey.create(Boolean.class);
 
-        final DeploymentUnit depUnit = arqConfig.getDeploymentUnit();
+    static void processDependencies(final ServiceBuilder<ArquillianConfig> builder, final ArquillianConfig arqConfig) {
+        final DeploymentUnit deploymentUnit = arqConfig.getDeploymentUnit();
+        Boolean addAttachment = deploymentUnit.getAttachment(ADD_FRAMEWORK_DEP);
+        if(addAttachment != null && addAttachment) {
+            arqConfig.addFrameworkDependency(builder);
+        }
+    }
+    static void handleParseAnnotations(final DeploymentUnit depUnit) {
+
         final CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
             log.warnf("Cannot find composite annotation index in: %s", depUnit);
@@ -69,7 +77,7 @@ public class FrameworkActivationProcessor {
                 String typeName = fieldInfo.type().toString();
                 if (typeName.startsWith("org.osgi.framework")) {
                     log.debugf("OSGi injection point of type '%s' detected: %s", typeName, fieldInfo.declaringClass());
-                    arqConfig.addFrameworkDependency(builder);
+                    depUnit.putAttachment(ADD_FRAMEWORK_DEP, true);
                     break;
                 }
             }
