@@ -701,26 +701,12 @@ class CommandContextImpl implements CommandContext {
             retry = false;
             try {
                 ModelControllerClient newClient = null;
-
                 CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-                long beforeConnect = System.currentTimeMillis();
                 ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
-                switch (initialConnection(tempClient)) {
-                    case SUCCESS:
-                        newClient = tempClient;
-                        break;
-                    case CONNECTION_FAILURE:
-                    throw new CommandLineException("The controller is not available at " + host + ":" + port + ", connect failed after " + (System.currentTimeMillis() - beforeConnect) + ")");
-                    case AUTHENTICATION_FAILURE:
-                        throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port);
-                    case SSL_FAILURE:
-                        retry = handleSSLFailure();
-                        if (retry == false) {
-                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
-                        }
-                        break;
+                retry = tryConnection(tempClient, host, port);
+                if(!retry) {
+                    newClient = tempClient;
                 }
-
                 initNewClient(newClient, host, port);
             } catch (UnknownHostException e) {
                 throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
@@ -850,7 +836,7 @@ class CommandContextImpl implements CommandContext {
     /**
      * Used to make a call to the server to verify that it is possible to connect.
      */
-    private ConnectStatus initialConnection(final ModelControllerClient client) {
+    private boolean tryConnection(final ModelControllerClient client, String host, int port) throws CommandLineException {
         try {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.setOperationName(Util.READ_ATTRIBUTE);
@@ -859,22 +845,26 @@ class CommandContextImpl implements CommandContext {
             client.execute(builder.buildRequest());
             // We don't actually care what the response is we just want to be sure the ModelControllerClient
             // does not throw an Exception.
-            return ConnectStatus.SUCCESS;
+            return false;
         } catch (Exception e) {
             try {
                 Throwable current = e;
                 while (current != null) {
                     if (current instanceof SaslException) {
-                        return ConnectStatus.AUTHENTICATION_FAILURE;
+                        throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port, current);
                     }
                     if (current instanceof SSLException) {
-                        return ConnectStatus.SSL_FAILURE;
+                        if (!handleSSLFailure()) {
+                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                        } else {
+                            return true;
+                        }
                     }
                     current = current.getCause();
                 }
 
                 // We don't know what happened, most likely a timeout.
-                return ConnectStatus.CONNECTION_FAILURE;
+                throw new CommandLineException("The controller is not available at " + host + ":" + port, e);
             } finally {
                 StreamUtils.safeClose(client);
             }
