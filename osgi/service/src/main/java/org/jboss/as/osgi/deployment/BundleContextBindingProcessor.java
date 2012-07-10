@@ -25,11 +25,7 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.naming.deployment.ContextNames.contextServiceNameOfComponent;
 import static org.jboss.as.naming.deployment.ContextNames.contextServiceNameOfModule;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX;
-
-import java.util.List;
-
-import javax.annotation.Resource;
+import static org.jboss.as.osgi.deployment.BundleContextDependencyProcessor.BUNDLE_CONTEXT_RESOURCE_KEY;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
@@ -44,12 +40,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.DotName;
-import org.jboss.jandex.FieldInfo;
-import org.jboss.jandex.Type;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -68,39 +58,13 @@ public class BundleContextBindingProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final EEModuleDescription moduleDesc = depUnit.getAttachment(EE_MODULE_DESCRIPTION);
-        if (moduleDesc == null) {
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        EEModuleDescription moduleDesc = depUnit.getAttachment(EE_MODULE_DESCRIPTION);
+        if (moduleDesc == null || !depUnit.hasAttachment(BUNDLE_CONTEXT_RESOURCE_KEY)) {
             return;
         }
 
-        final CompositeIndex compositeIndex = depUnit.getAttachment(COMPOSITE_ANNOTATION_INDEX);
-        if (compositeIndex == null) {
-            LOGGER.warnCannotFindAnnotationIndex(depUnit);
-            return;
-        }
-
-        // Check if we have a BundleContext injection point
-        boolean hasBundleContextResource = false;
-        final DotName resourceDotName = DotName.createSimple(Resource.class.getName());
-        final DotName targetDotName = DotName.createSimple(BundleContext.class.getName());
-        final List<AnnotationInstance> anList = compositeIndex.getAnnotations(resourceDotName);
-        for (AnnotationInstance an : anList) {
-            AnnotationTarget anTarget = an.target();
-            if (anTarget instanceof FieldInfo) {
-                FieldInfo fieldInfo = (FieldInfo) anTarget;
-                Type targetType = fieldInfo.type();
-                if (targetType.name().equals(targetDotName)) {
-                    hasBundleContextResource = true;
-                    break;
-                }
-            }
-        }
-        if (hasBundleContextResource == false) {
-            return;
-        }
-
-        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit)) {
             ServiceName serviceName = contextServiceNameOfModule(moduleDesc.getApplicationName(), moduleDesc.getModuleName());
             bindServices(depUnit, serviceTarget, moduleDesc, moduleDesc.getModuleName(), serviceName);
@@ -122,7 +86,7 @@ public class BundleContextBindingProcessor implements DeploymentUnitProcessor {
      * @param contextServiceName The service name of the context to bind to
      */
     private void bindServices(DeploymentUnit depUnit, ServiceTarget serviceTarget, EEModuleDescription description, String componentName, ServiceName contextServiceName) {
-        final ServiceName serviceName = contextServiceName.append("BundleContext");
+        ServiceName serviceName = contextServiceName.append("BundleContext");
         BinderService binderService = new BinderService("BundleContext");
         LOGGER.debugf("Install BundleContext binder service: %s", binderService);
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(serviceName, binderService);

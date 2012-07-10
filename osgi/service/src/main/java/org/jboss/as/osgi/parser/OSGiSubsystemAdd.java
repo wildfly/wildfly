@@ -38,6 +38,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.OSGiSubsystemExtension;
 import org.jboss.as.osgi.deployment.BundleActivateProcessor;
 import org.jboss.as.osgi.deployment.BundleContextBindingProcessor;
+import org.jboss.as.osgi.deployment.BundleContextDependencyProcessor;
 import org.jboss.as.osgi.deployment.BundleDeploymentProcessor;
 import org.jboss.as.osgi.deployment.BundleInstallProcessor;
 import org.jboss.as.osgi.deployment.BundleResolveProcessor;
@@ -119,6 +120,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_PROPERTIES, new OSGiXServiceParseProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_DEPLOYMENT, new BundleDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_SUBSYSTEM_ACTIVATOR, new SubsystemActivateProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_BUNDLE_CONTEXT, new BundleContextDependencyProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.REGISTER, Phase.REGISTER_BUNDLE_INSTALL, new BundleInstallProcessor(deploymentTracker));
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_RESOLVE_BUNDLE, new BundleResolveProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_RESOLVE_SUB_BUNDLE, new BundleResolveSubProcessor());
