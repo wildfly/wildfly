@@ -22,6 +22,10 @@
 
 package org.jboss.as.osgi.deployment;
 
+import java.util.List;
+
+import javax.annotation.ManagedBean;
+
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.DeploymentMarker;
@@ -74,9 +78,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             deployment.setAutoStart(!metadata.isFragment());
 
             // Prevent autostart for marked deployments
-            CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-            DotName markerName = DotName.createSimple(DeploymentMarker.class.getName());
-            for (AnnotationInstance marker : compositeIndex.getAnnotations(markerName)) {
+            for (AnnotationInstance marker : getAnnotationList(depUnit, DeploymentMarker.class)) {
                 if (marker.value("autoStart").asBoolean() == false) {
                     deployment.setAutoStart(false);
                     break;
@@ -98,10 +100,16 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
+    private List<AnnotationInstance> getAnnotationList(final DeploymentUnit depUnit, final Class<?> anClass) {
+        CompositeIndex index = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        return index.getAnnotations(DotName.createSimple(anClass.getName()));
+    }
+
     private boolean allowAdditionalModuleDependencies(final DeploymentUnit depUnit) {
         boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
         boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
-        return isWar || isEjb;
+        boolean isCDI = !getAnnotationList(depUnit, ManagedBean.class).isEmpty();
+        return isWar || isEjb || isCDI;
     }
 
     @Override
