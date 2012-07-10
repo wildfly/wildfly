@@ -86,7 +86,7 @@ public class SimpleEnterpriseArchiveTestCase {
 
     @Deployment(name = SIMPLE_EAR, testable = false)
     public static Archive<?> getSimpleEar() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
         war.addClasses(SimpleServlet.class, Echo.class);
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, SIMPLE_EAR);
         ear.addAsModule(war);
@@ -95,18 +95,6 @@ public class SimpleEnterpriseArchiveTestCase {
 
     @Deployment(name = WAR_STRUCTURE_EAR, testable = false)
     public static Archive<?> getWarStructureEar() {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ECHO_BUNDLE);
-        jar.addClasses(Echo.class);
-        jar.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(jar.getName());
-                builder.addBundleManifestVersion(2);
-                builder.addExportPackages(Echo.class);
-                return builder.openStream();
-            }
-        });
         final WebArchive war = ShrinkWrap.create(WebArchive.class, WAR_STRUCTURE_BUNDLE);
         war.addClasses(SimpleServlet.class);
         war.setManifest(new Asset() {
@@ -122,6 +110,20 @@ public class SimpleEnterpriseArchiveTestCase {
                 return builder.openStream();
             }
         });
+
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ECHO_BUNDLE);
+        jar.addClasses(Echo.class);
+        jar.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(jar.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addExportPackages(Echo.class);
+                return builder.openStream();
+            }
+        });
+
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, WAR_STRUCTURE_EAR);
         ear.add(jar, "/", ZipExporter.class);
         ear.addAsModule(war);

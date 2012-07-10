@@ -201,7 +201,7 @@ public enum Phase {
     public static final int STRUCTURE_EJB_JAR_IN_EAR                    = 0x1200;
     public static final int STRUCTURE_APPLICATION_CLIENT_IN_EAR         = 0x1300;
     public static final int STRUCTURE_MANAGED_BEAN_JAR_IN_EAR           = 0x1400;
-    public static final int STRUCTURE_BUNDLE_JAR_IN_EAR                 = 0x1450;
+    public static final int STRUCTURE_BUNDLE_SUB_DEPLOYMENT             = 0x1450;
     public static final int STRUCTURE_SAR_SUB_DEPLOY_CHECK              = 0x1500;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x1600;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x1700;
