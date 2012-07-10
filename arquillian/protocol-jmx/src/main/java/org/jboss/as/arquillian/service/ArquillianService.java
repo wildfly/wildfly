@@ -22,8 +22,6 @@
 
 package org.jboss.as.arquillian.service;
 
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
@@ -54,6 +52,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.osgi.framework.BundleContext;
+
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -121,7 +121,17 @@ public class ArquillianService implements Service<ArquillianService> {
                                 builder.install();
                             }
                         }
-
+                    }
+                    case START_FAILED_to_STARTING:
+                    case START_INITIATING_to_STARTING: {
+                        ServiceName serviceName = serviceController.getName();
+                        String simpleName = serviceName.getSimpleName();
+                        if(JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.DEPENDENCIES.toString())) {
+                            ServiceName parentName = serviceName.getParent();
+                            ServiceController<?> parentController = serviceContainer.getService(parentName);
+                            DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
+                            ArquillianConfigBuilder.handleParseAnnotations(depUnit);
+                        }
                     }
                 }
             }
@@ -198,7 +208,7 @@ public class ArquillianService implements Service<ArquillianService> {
         @Override
         public byte[] runTestMethod(final String className, final String methodName) {
             ArquillianConfig arqConfig = getArquillianConfig(className, 30000L);
-            Map<String, Object> properties = Collections.<String, Object> singletonMap(TEST_CLASS_PROPERTY, className);
+            Map<String, Object> properties = Collections.<String, Object>singletonMap(TEST_CLASS_PROPERTY, className);
             ContextManager contextManager = initializeContextManager(arqConfig, properties);
             try {
                 return super.runTestMethod(className, methodName);
