@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
@@ -57,15 +58,38 @@ public class ArquillianConfigBuilder {
 
     private static final String CLASS_NAME_TESTNG_RUNNER = "org.jboss.arquillian.testng.Arquillian";
 
+    private static final AttachmentKey<Set<String>> CLASSES = AttachmentKey.create(Set.class);
+
     ArquillianConfigBuilder(DeploymentUnit deploymentUnit) {
     }
 
     static ArquillianConfig processDeployment(ArquillianService arqService, DeploymentUnit depUnit) {
 
-        final CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if(compositeIndex == null) {
-            log.warnf("Cannot find composite annotation index in: %s", depUnit);
+        // Get Test Class Names
+        final Set<String> testClasses = depUnit.getAttachment(CLASSES);
+
+        // No tests found
+        if (testClasses == null || testClasses.isEmpty()) {
             return null;
+        }
+
+        // FIXME: Why do we get another service started event from a deployment INSTALLED service?
+        ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, testClasses);
+        if (arqService.getServiceContainer().getService(arqConfig.getServiceName()) != null) {
+            log.warnf("Arquillian config already registered: %s", arqConfig);
+            return null;
+        }
+
+        depUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
+        return arqConfig;
+    }
+
+    static void handleParseAnnotations(final DeploymentUnit deploymentUnit) {
+
+        final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        if(compositeIndex == null) {
+            log.warnf("Cannot find composite annotation index in: %s", deploymentUnit);
+            return;
         }
 
         // Got JUnit?
@@ -91,20 +115,6 @@ public class ArquillianConfigBuilder {
         for(final ClassInfo classInfo : testNgTests){
             testClasses.add(classInfo.name().toString());
         }
-
-        // No tests found
-        if (testClasses.isEmpty()) {
-            return null;
-        }
-
-        // FIXME: Why do we get another service started event from a deployment INSTALLED service?
-        ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, testClasses);
-        if (arqService.getServiceContainer().getService(arqConfig.getServiceName()) != null) {
-            log.warnf("Arquillian config already registered: %s", arqConfig);
-            return null;
-        }
-
-        depUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
-        return arqConfig;
+        deploymentUnit.putAttachment(CLASSES, testClasses);
     }
 }
