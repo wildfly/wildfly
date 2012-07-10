@@ -27,18 +27,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
-import static org.jboss.as.domain.http.server.Constants.HOST;
-import static org.jboss.as.domain.http.server.Constants.HTTP;
-import static org.jboss.as.domain.http.server.Constants.HTTPS;
+import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 
 import java.io.IOException;
 
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -60,14 +56,9 @@ public class DmrFailureReadinessFilter extends RealmReadinessFilter {
      */
     @Override
     void rejectRequest(HttpExchange exchange) throws IOException {
-        final Headers headers = exchange.getRequestHeaders();
-        String host = headers.getFirst(HOST);
-        String protocol = exchange.getHttpContext().getServer() instanceof HttpsServer ? HTTPS : HTTP;
-        String redirectUrl = protocol + "://" + host + redirectTo;
-
         ModelNode rejection = new ModelNode();
         rejection.get(OUTCOME).set(FAILED);
-        rejection.get(FAILURE_DESCRIPTION).set(MESSAGES.realmNotReadyMessage(redirectUrl));
+        rejection.get(FAILURE_DESCRIPTION).set(MESSAGES.realmNotReadyMessage(constructUrl(exchange, redirectTo)));
         rejection.get(ROLLED_BACK).set(Boolean.TRUE.toString());
 
         // Keep the response visible so it can easily be seen in network traces.

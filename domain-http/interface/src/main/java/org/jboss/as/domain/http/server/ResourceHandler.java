@@ -115,7 +115,7 @@ class ResourceHandler implements ManagementHttpHandler {
         lastModified = createDateFormat().format(new Date());
     }
 
-    String getDefaultUrl() {
+    String getDefaultPath() {
         return context + defaultResource;
     }
 
@@ -144,7 +144,7 @@ class ResourceHandler implements ManagementHttpHandler {
              * default resource.
              */
             Headers responseHeaders = http.getResponseHeaders();
-            responseHeaders.add(LOCATION, getDefaultUrl());
+            responseHeaders.add(LOCATION, getDefaultPath());
             http.sendResponseHeaders(MOVED_PERMENANTLY, 0);
             http.close();
 
