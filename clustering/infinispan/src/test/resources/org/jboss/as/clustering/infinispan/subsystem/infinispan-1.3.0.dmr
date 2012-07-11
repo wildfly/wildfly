@@ -1,157 +1,44 @@
 {"cache-container" => {
     "minimal" => {
-        "default-cache" => "local",
-        "local-cache" => {"local" => undefined}
+        "default-cache" => "local"
     },
     "maximal" => {
-        "module" => "org.infinispan",
-        "jndi-name" => "java:global/infinispan/maximal",
-        "replication-queue-executor" => "infinispan-repl-queue",
-        "default-cache" => "local",
-        "listener-executor" => "infinispan-listener",
         "aliases" => [
             "alias1",
             "alias2"
         ],
+        "default-cache" => "local",
         "eviction-executor" => "infinispan-eviction",
-        "replicated-cache" => {"repl" => {
-            "indexing" => "NONE",
-            "mode" => "ASYNC",
-            "batching" => true,
-            "start" => "EAGER",
-            "queue-size" => 1000,
-            "queue-flush-interval" => 10L,
-            "async-marshalling" => false,
-            "transaction" => {"TRANSACTION" => {
-                "mode" => "NON_DURABLE_XA",
-                "locking" => "OPTIMISTIC",
-                "stop-timeout" => 60000L
-            }},
-            "expiration" => {"EXPIRATION" => {
-                "lifespan" => 10L,
-                "max-idle" => 10L,
-                "interval" => 10000L
-            }},
-            "state-transfer" => {"STATE_TRANSFER" => {
-                "enabled" => true,
-                "chunk-size" => 10000,
-                "timeout" => 60000L
-            }},
-            "eviction" => {"EVICTION" => {
-                "strategy" => "FIFO",
-                "max-entries" => 20000
-            }},
-            "locking" => {"LOCKING" => {
-                "concurrency-level" => 2000,
-                "isolation" => "SERIALIZABLE",
-                "striping" => true,
-                "acquire-timeout" => 30000L
-            }},
-            "store" => {"STORE" => {
-                "shared" => false,
-                "passivation" => true,
-                "fetch-state" => true,
-                "singleton" => false,
-                "preload" => false,
-                "class" => "org.infinispan.loaders.file.FileCacheStore",
-                "purge" => true,
-                "write-behind" => {"WRITE_BEHIND" => {
-                    "modification-queue-size" => 2048,
-                    "flush-lock-timeout" => 2L,
-                    "thread-pool-size" => 1,
-                    "shutdown-timeout" => 20000L
-                }},
-                "property" => {"location" => {"value" => "${java.io.tmpdir}"}}
-            }}
-        }},
-        "invalidation-cache" => {"invalid" => {
-            "indexing" => "NONE",
-            "mode" => "ASYNC",
-            "batching" => true,
-            "start" => "LAZY",
-            "queue-size" => 1000,
-            "queue-flush-interval" => 10L,
-            "async-marshalling" => true,
-            "transaction" => {"TRANSACTION" => {
-                "mode" => "NON_XA",
-                "locking" => "OPTIMISTIC",
-                "stop-timeout" => 60000L
-            }},
-            "expiration" => {"EXPIRATION" => {
-                "lifespan" => 10L,
-                "max-idle" => 10L,
-                "interval" => 10000L
-            }},
-            "eviction" => {"EVICTION" => {
-                "strategy" => "LRU",
-                "max-entries" => 20000
-            }},
-            "locking" => {"LOCKING" => {
-                "concurrency-level" => 2000,
-                "isolation" => "READ_UNCOMMITTED",
-                "striping" => true,
-                "acquire-timeout" => 30000L
-            }},
-            "remote-store" => {"REMOTE_STORE" => {
-                "shared" => true,
-                "remote-servers" => [
-                    {"outbound-socket-binding" => "hotrod-server-1"},
-                    {"outbound-socket-binding" => "hotrod-server-2"}
-                ],
-                "passivation" => false,
-                "cache" => "default",
-                "fetch-state" => false,
-                "singleton" => true,
-                "preload" => true,
-                "tcp-no-delay" => true,
-                "socket-timeout" => 60000L,
-                "purge" => false,
-                "write-behind" => {"WRITE_BEHIND" => {
-                    "modification-queue-size" => 2048,
-                    "flush-lock-timeout" => 2L,
-                    "thread-pool-size" => 1,
-                    "shutdown-timeout" => 20000L
-                }},
-                "property" => {"hotrod.property" => {"value" => "value"}}
-            }}
-        }},
+        "jndi-name" => "java:global/infinispan/maximal",
+        "listener-executor" => "infinispan-listener",
+        "module" => "org.infinispan",
+        "replication-queue-executor" => "infinispan-repl-queue",
         "distributed-cache" => {"dist" => {
-            "virtual-nodes" => 2,
-            "indexing" => "ALL",
-            "remote-timeout" => 35000L,
-            "mode" => "SYNC",
-            "batching" => true,
-            "start" => "EAGER",
-            "l1-lifespan" => 1200000L,
             "async-marshalling" => true,
+            "batching" => true,
+            "l1-lifespan" => 1200000L,
+            "mode" => "SYNC",
+            "indexing" => "ALL",
             "owners" => 4,
-            "transaction" => {"TRANSACTION" => {
-                "mode" => "FULL_XA",
-                "locking" => "OPTIMISTIC",
-                "stop-timeout" => 60000L
+            "remote-timeout" => 35000L,
+            "start" => "EAGER",
+            "virtual-nodes" => 2,
+            "eviction" => {"EVICTION" => {
+                "max-entries" => 20000,
+                "strategy" => "UNORDERED"
             }},
             "expiration" => {"EXPIRATION" => {
+                "interval" => 10000L,
                 "lifespan" => 10L,
-                "max-idle" => 10L,
-                "interval" => 10000L
-            }},
-            "state-transfer" => {"STATE_TRANSFER" => {
-                "enabled" => true,
-                "chunk-size" => 10000,
-                "timeout" => 60000L
-            }},
-            "eviction" => {"EVICTION" => {
-                "strategy" => "UNORDERED",
-                "max-entries" => 20000
+                "max-idle" => 10L
             }},
             "locking" => {"LOCKING" => {
+                "acquire-timeout" => 30000L,
                 "concurrency-level" => 2000,
                 "isolation" => "READ_COMMITTED",
-                "striping" => true,
-                "acquire-timeout" => 30000L
+                "striping" => true
             }},
             "mixed-keyed-jdbc-store" => {"MIXED_KEYED_JDBC_STORE" => {
-                "shared" => true,
                 "binary-keyed-table" => {
                     "prefix" => "ispn_entry",
                     "batch-size" => 100,
@@ -169,6 +56,13 @@
                         "type" => "BIGINT"
                     }
                 },
+                "datasource" => "java:jboss/jdbc/store",
+                "fetch-state" => false,
+                "passivation" => false,
+                "preload" => true,
+                "purge" => false,
+                "shared" => true,
+                "singleton" => true,
                 "string-keyed-table" => {
                     "prefix" => "ispn_bucket",
                     "batch-size" => 100,
@@ -186,267 +80,367 @@
                         "type" => "BIGINT"
                     }
                 },
-                "passivation" => false,
+                "write-behind" => {"WRITE_BEHIND" => {
+                    "flush-lock-timeout" => 2L,
+                    "modification-queue-size" => 2048,
+                    "shutdown-timeout" => 20000L,
+                    "thread-pool-size" => 1
+                }}
+            }},
+            "state-transfer" => {"STATE_TRANSFER" => {
+                "chunk-size" => 10000,
+                "enabled" => true,
+                "timeout" => 60000L
+            }},
+            "transaction" => {"TRANSACTION" => {
+                "locking" => "OPTIMISTIC",
+                "mode" => "FULL_XA",
+                "stop-timeout" => 60000L
+            }}
+        }},
+        "invalidation-cache" => {"invalid" => {
+            "async-marshalling" => true,
+            "batching" => true,
+            "mode" => "ASYNC",
+            "queue-flush-interval" => 10L,
+            "queue-size" => 1000,
+            "indexing" => "NONE",
+            "start" => "LAZY",
+            "eviction" => {"EVICTION" => {
+                "max-entries" => 20000,
+                "strategy" => "LRU"
+            }},
+            "expiration" => {"EXPIRATION" => {
+                "interval" => 10000L,
+                "lifespan" => 10L,
+                "max-idle" => 10L
+            }},
+            "locking" => {"LOCKING" => {
+                "acquire-timeout" => 30000L,
+                "concurrency-level" => 2000,
+                "isolation" => "READ_UNCOMMITTED",
+                "striping" => true
+            }},
+            "remote-store" => {"REMOTE_STORE" => {
+                "cache" => "default",
                 "fetch-state" => false,
-                "singleton" => true,
+                "passivation" => false,
                 "preload" => true,
                 "purge" => false,
-                "datasource" => "java:jboss/jdbc/store",
+                "remote-servers" => [
+                    {"outbound-socket-binding" => "hotrod-server-1"},
+                    {"outbound-socket-binding" => "hotrod-server-2"}
+                ],
+                "shared" => true,
+                "singleton" => true,
+                "socket-timeout" => 60000L,
+                "tcp-no-delay" => true,
+                "property" => {"hotrod.property" => {"value" => "value"}},
                 "write-behind" => {"WRITE_BEHIND" => {
-                    "modification-queue-size" => 2048,
                     "flush-lock-timeout" => 2L,
-                    "thread-pool-size" => 1,
-                    "shutdown-timeout" => 20000L
+                    "modification-queue-size" => 2048,
+                    "shutdown-timeout" => 20000L,
+                    "thread-pool-size" => 1
                 }}
+            }},
+            "transaction" => {"TRANSACTION" => {
+                "locking" => "OPTIMISTIC",
+                "mode" => "NON_XA",
+                "stop-timeout" => 60000L
             }}
         }},
         "local-cache" => {"local" => {
-            "module" => "org.infinispan",
             "batching" => true,
+            "module" => "org.infinispan",
             "start" => "EAGER",
             "indexing" => "LOCAL",
-            "transaction" => {"TRANSACTION" => {
-                "mode" => "FULL_XA",
-                "locking" => "OPTIMISTIC",
-                "stop-timeout" => 60000L
+            "eviction" => {"EVICTION" => {
+                "max-entries" => 20000,
+                "strategy" => "LIRS"
             }},
             "expiration" => {"EXPIRATION" => {
+                "interval" => 10000L,
                 "lifespan" => 10L,
-                "max-idle" => 10L,
-                "interval" => 10000L
-            }},
-            "eviction" => {"EVICTION" => {
-                "strategy" => "LIRS",
-                "max-entries" => 20000
-            }},
-            "locking" => {"LOCKING" => {
-                "concurrency-level" => 2000,
-                "isolation" => "NONE",
-                "striping" => true,
-                "acquire-timeout" => 30000L
+                "max-idle" => 10L
             }},
             "file-store" => {"FILE_STORE" => {
-                "shared" => true,
-                "passivation" => false,
                 "fetch-state" => false,
-                "singleton" => true,
-                "preload" => true,
-                "relative-to" => "jboss.server.temp.dir",
+                "passivation" => false,
                 "path" => "path",
+                "preload" => true,
                 "purge" => false,
+                "relative-to" => "jboss.server.temp.dir",
+                "shared" => true,
+                "singleton" => true,
                 "write-behind" => {"WRITE_BEHIND" => {
-                    "modification-queue-size" => 2048,
                     "flush-lock-timeout" => 2L,
-                    "thread-pool-size" => 1,
-                    "shutdown-timeout" => 20000L
+                    "modification-queue-size" => 2048,
+                    "shutdown-timeout" => 20000L,
+                    "thread-pool-size" => 1
                 }}
+            }},
+            "locking" => {"LOCKING" => {
+                "acquire-timeout" => 30000L,
+                "concurrency-level" => 2000,
+                "isolation" => "NONE",
+                "striping" => true
+            }},
+            "transaction" => {"TRANSACTION" => {
+                "locking" => "OPTIMISTIC",
+                "mode" => "FULL_XA",
+                "stop-timeout" => 60000L
+            }}
+        }},
+        "replicated-cache" => {"repl" => {
+            "async-marshalling" => false,
+            "batching" => true,
+            "mode" => "ASYNC",
+            "queue-flush-interval" => 10L,
+            "queue-size" => 1000,
+            "start" => "EAGER",
+            "indexing" => "NONE",
+            "eviction" => {"EVICTION" => {
+                "max-entries" => 20000,
+                "strategy" => "FIFO"
+            }},
+            "expiration" => {"EXPIRATION" => {
+                "interval" => 10000L,
+                "lifespan" => 10L,
+                "max-idle" => 10L
+            }},
+            "locking" => {"LOCKING" => {
+                "acquire-timeout" => 30000L,
+                "concurrency-level" => 2000,
+                "isolation" => "SERIALIZABLE",
+                "striping" => true
+            }},
+            "state-transfer" => {"STATE_TRANSFER" => {
+                "chunk-size" => 10000,
+                "enabled" => true,
+                "timeout" => 60000L
+            }},
+            "store" => {"STORE" => {
+                "class" => "org.infinispan.loaders.file.FileCacheStore",
+                "fetch-state" => true,
+                "passivation" => true,
+                "preload" => false,
+                "purge" => true,
+                "shared" => false,
+                "singleton" => false,
+                "property" => {"location" => {"value" => "${java.io.tmpdir}"}},
+                "write-behind" => {"WRITE_BEHIND" => {
+                    "flush-lock-timeout" => 2L,
+                    "modification-queue-size" => 2048,
+                    "shutdown-timeout" => 20000L,
+                    "thread-pool-size" => 1
+                }}
+            }},
+            "transaction" => {"TRANSACTION" => {
+                "locking" => "OPTIMISTIC",
+                "mode" => "NON_DURABLE_XA",
+                "stop-timeout" => 60000L
             }}
         }},
         "transport" => {"TRANSPORT" => {
-            "lock-timeout" => 120000L,
             "cluster" => "maximal-cluster",
-            "stack" => "tcp",
-            "executor" => "transport-executor"
+            "executor" => "transport-executor",
+            "lock-timeout" => 120000L,
+            "stack" => "tcp"
         }}
     },
     "capedwarf" => {
         "default-cache" => "default",
-        "replicated-cache" => {
-            "data" => {
-                "mode" => "ASYNC",
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NON_XA",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
-                "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
-                }},
-                "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
-                    "fetch-state" => true,
-                    "singleton" => false,
-                    "preload" => true,
-                    "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
-                }}
-            },
-            "metadata" => {
-                "mode" => "ASYNC",
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NON_XA",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
-                "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
-                }},
-                "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
-                    "fetch-state" => true,
-                    "singleton" => false,
-                    "preload" => true,
-                    "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
-                }}
-            },
-            "memcache" => {
-                "mode" => "ASYNC",
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NON_XA",
-                    "locking" => "PESSIMISTIC",
-                    "stop-timeout" => 30000
-                }},
-                "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
-                }}
-            }
-        },
         "distributed-cache" => {
             "default" => {
-                "indexing" => "LOCAL",
                 "mode" => "ASYNC",
-                "indexing-properties" => {
-                    "hibernate.search.default.directory_provider" => "infinispan",
-                    "hibernate.search.infinispan.cachemanager_jndiname" => "java:jboss/infinispan/container/HibernateSearch",
-                    "hibernate.search.default.worker.backend" => "jgroups"
-                },
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NON_XA",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
+                "indexing" => "LOCAL",
                 "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
                 }},
                 "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
                     "fetch-state" => true,
-                    "singleton" => false,
+                    "passivation" => true,
                     "preload" => true,
+                    "purge" => false,
                     "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NON_XA",
+                    "stop-timeout" => 30000
                 }}
             },
             "dist" => {
                 "mode" => "ASYNC",
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NON_XA",
-                    "locking" => "PESSIMISTIC",
-                    "stop-timeout" => 30000
-                }},
                 "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
                 }},
                 "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
                     "fetch-state" => true,
-                    "singleton" => false,
+                    "passivation" => true,
                     "preload" => true,
+                    "purge" => false,
                     "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "PESSIMISTIC",
+                    "mode" => "NON_XA",
+                    "stop-timeout" => 30000
                 }}
             },
             "tasks" => {
-                "indexing" => "LOCAL",
                 "mode" => "ASYNC",
-                "indexing-properties" => {
-                    "hibernate.search.default.directory_provider" => "infinispan",
-                    "hibernate.search.infinispan.cachemanager_jndiname" => "java:jboss/infinispan/container/HibernateSearch",
-                    "hibernate.search.default.worker.backend" => "jgroups"
-                },
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NON_XA",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
+                "indexing" => "LOCAL",
                 "eviction" => {"EVICTION" => {
-                    "strategy" => "LIRS",
-                    "max-entries" => 10000
+                    "max-entries" => 10000,
+                    "strategy" => "LIRS"
                 }},
                 "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
                     "fetch-state" => true,
-                    "singleton" => false,
+                    "passivation" => true,
                     "preload" => true,
+                    "purge" => false,
                     "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NON_XA",
+                    "stop-timeout" => 30000
                 }}
             }
         },
-        "transport" => {"TRANSPORT" => {"lock-timeout" => 60000L}}
+        "replicated-cache" => {
+            "data" => {
+                "mode" => "ASYNC",
+                "eviction" => {"EVICTION" => {
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
+                }},
+                "file-store" => {"FILE_STORE" => {
+                    "fetch-state" => true,
+                    "passivation" => true,
+                    "preload" => true,
+                    "purge" => false,
+                    "relative-to" => "jboss.server.data.dir",
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NON_XA",
+                    "stop-timeout" => 30000
+                }}
+            },
+            "metadata" => {
+                "mode" => "ASYNC",
+                "eviction" => {"EVICTION" => {
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
+                }},
+                "file-store" => {"FILE_STORE" => {
+                    "fetch-state" => true,
+                    "passivation" => true,
+                    "preload" => true,
+                    "purge" => false,
+                    "relative-to" => "jboss.server.data.dir",
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NON_XA",
+                    "stop-timeout" => 30000
+                }}
+            },
+            "memcache" => {
+                "mode" => "ASYNC",
+                "eviction" => {"EVICTION" => {
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "PESSIMISTIC",
+                    "mode" => "NON_XA",
+                    "stop-timeout" => 30000
+                }}
+            }
+        },
+        "transport" => {"TRANSPORT" => {
+            "lock-timeout" => 60000L
+
+        }}
     },
     "HibernateSearch" => {
         "default-cache" => "LuceneIndexesMetadata",
         "replicated-cache" => {
             "LuceneIndexesMetadata" => {
-                "mode" => "SYNC",
                 "batching" => true,
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NONE",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
+                "mode" => "SYNC",
                 "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
                 }},
                 "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
                     "fetch-state" => true,
-                    "singleton" => false,
+                    "passivation" => true,
                     "preload" => true,
+                    "purge" => false,
                     "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NONE",
+                    "stop-timeout" => 30000
                 }}
             },
             "LuceneIndexesData" => {
-                "mode" => "SYNC",
                 "batching" => true,
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NONE",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
+                "mode" => "SYNC",
                 "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
                 }},
                 "file-store" => {"FILE_STORE" => {
-                    "shared" => false,
-                    "passivation" => true,
                     "fetch-state" => true,
-                    "singleton" => false,
+                    "passivation" => true,
                     "preload" => true,
+                    "purge" => false,
                     "relative-to" => "jboss.server.data.dir",
-                    "purge" => false
+                    "shared" => false,
+                    "singleton" => false
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NONE",
+                    "stop-timeout" => 30000
                 }}
             },
             "LuceneIndexesLocking" => {
-                "mode" => "SYNC",
                 "batching" => true,
-                "transaction" => {"TRANSACTION" => {
-                    "mode" => "NONE",
-                    "locking" => "OPTIMISTIC",
-                    "stop-timeout" => 30000
-                }},
+                "mode" => "SYNC",
                 "eviction" => {"EVICTION" => {
-                    "strategy" => "NONE",
-                    "max-entries" => -1
+                    "max-entries" => -1,
+                    "strategy" => "NONE"
+                }},
+                "transaction" => {"TRANSACTION" => {
+                    "locking" => "OPTIMISTIC",
+                    "mode" => "NONE",
+                    "stop-timeout" => 30000
                 }}
             }
         },
-        "transport" => {"TRANSPORT" => {"lock-timeout" => 60000L}}
+        "transport" => {"TRANSPORT" => {
+            "lock-timeout" => 60000L
+        }}
     }
 }}

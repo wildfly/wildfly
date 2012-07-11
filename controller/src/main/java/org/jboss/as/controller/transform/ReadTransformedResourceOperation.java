@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.ModelVersion;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -43,13 +44,23 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         this.transformerRegistry = transformerRegistry;
     }
 
-    private ModelNode transformReadResourceResult(final ImmutableManagementResourceRegistration managementResourceRegistration, ModelNode original, String subsystem, int major, int minor, int micro) {
+    private ModelNode transformReadResourceResult(final OperationContext context, ModelNode original, String subsystem, int major, int minor, int micro) {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
-        Resource root = TransformerRegistry.modelToResource(managementResourceRegistration, rootData, true);
-        Resource transformed = transformerRegistry.getTransformedSubsystemResource(root, managementResourceRegistration, subsystem, major, minor, micro);
+        final ModelNode subsystems = new ModelNode();
+        subsystems.get(subsystem).set(major + "." + minor);
 
-        return Resource.Tools.readModel(transformed);
+        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(1, 0, 0), subsystems, TransformationTarget.TransformationTargetType.SERVER);
+        final Transformers transformers = Transformers.Factory.create(target);
+        final ResourceTransformationContext ctx = Transformers.Factory.getTransformationContext(target, context);
+
+        final ImmutableManagementResourceRegistration rr = context.getRootResourceRegistration();
+        Resource root = TransformerRegistry.modelToResource(rr, rootData, true);
+        Resource transformed = transformers.transformResource(ctx, root) ;
+
+        final ModelNode model = Resource.Tools.readModel(transformed);
+
+        return model;
     }
 
     @Override
@@ -58,14 +69,13 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         final int major = operation.get(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION).asInt();
         final int minor = operation.get(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION).asInt();
         final int micro = operation.get(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION).asInt();
-        final ImmutableManagementResourceRegistration rr = context.getResourceRegistration();
         // Add a step to transform the result of a READ_RESOURCE.
         // Do this first, Stage.IMMEDIATE
         final ModelNode readResourceResult = new ModelNode();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                ModelNode transformed = transformReadResourceResult(rr, readResourceResult, subsystem, major, minor, micro);
+                ModelNode transformed = transformReadResourceResult(context, readResourceResult, subsystem, major, minor, micro);
                 context.getResult().set(transformed);
                 context.completeStep();
             }

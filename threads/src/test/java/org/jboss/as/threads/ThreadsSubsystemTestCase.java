@@ -1262,11 +1262,6 @@ public class ThreadsSubsystemTestCase {
                 }
 
                 @Override
-                public void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer) {
-
-                }
-
-                @Override
                 public TransformersSubRegistration registerModelTransformers(ModelVersionRange version, ResourceTransformer resourceTransformer) {
                     return null;
                 }

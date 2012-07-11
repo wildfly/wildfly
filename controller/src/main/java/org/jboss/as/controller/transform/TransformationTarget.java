@@ -46,15 +46,15 @@ public interface TransformationTarget {
      * @param subsystemName the subsystem name
      * @return the version of the specified subsystem, {@code null} if it does not exist
      */
-    String getSubsystemVersion(String subsystemName);
+    ModelVersion getSubsystemVersion(String subsystemName);
 
     /**
-     * Get the subsystem information.
+     * Resolve a resource transformer for agiven address.
      *
-     * @param subsystemName the subsystem name
-     * @return the subsystem information
+     * @param address the path address
+     * @return the transformer
      */
-    SubsystemInformation getSubsystemInformation(final String subsystemName);
+    ResourceTransformer resolveTransformer(PathAddress address);
 
     /**
      * Resolve an operation transformer for a given address.
@@ -65,16 +65,6 @@ public interface TransformationTarget {
      */
     OperationTransformer resolveTransformer(PathAddress address, String operationName);
 
-    SubsystemTransformer getSubsystemTransformer(final String subsystemName);
-
-    /**
-     * Return info about need for transformation for this target to take place
-     * For instance if target is of same version as current server no need to go trough transformation
-     *
-     * @return boolean that tells transformers api if transformation should be performed
-     */
-    boolean isTransformationNeeded();
-
     /**
      * Add version information for a subsystem.
      *
@@ -83,6 +73,14 @@ public interface TransformationTarget {
      * @param minorVersion the minor version of the subsystem's management API
      */
     void addSubsystemVersion(String subsystemName, int majorVersion, int minorVersion);
+
+    /**
+     * Add version information for a subsystem.
+     *
+     * @param subsystemName the subsystem name
+     * @param version the version
+     */
+    void addSubsystemVersion(String subsystemName, ModelVersion version);
 
     public enum TransformationTargetType {
 
