@@ -36,7 +36,7 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.StorageState;
-import org.jboss.osgi.framework.StorageStateProvider;
+import org.jboss.osgi.framework.StorageStatePlugin;
 import org.osgi.framework.BundleException;
 
 /**
@@ -89,7 +89,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
     }
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
-        StorageStateProvider storageProvider = (StorageStateProvider) phaseContext.getServiceRegistry().getRequiredService(Services.STORAGE_STATE_PROVIDER).getValue();
+        StorageStatePlugin storageProvider = (StorageStatePlugin) phaseContext.getServiceRegistry().getRequiredService(Services.STORAGE_STATE_PLUGIN).getValue();
         StorageState storageState = storageProvider.getByLocation(deployment.getLocation());
         if (storageState != null) {
             deployment.addAttachment(StorageState.class, storageState);
