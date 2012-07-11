@@ -23,7 +23,6 @@
 package org.jboss.as.osgi;
 
 import java.io.File;
-
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;
@@ -70,11 +69,11 @@ public interface OSGiMessages {
     @Message(id = 11956, value = "Failed to create Framework services")
     StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
 
-    @Message(id = 11957, value = "Failed to install deployment: %s")
-    StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
+    //@Message(id = 11957, value = "Failed to install deployment: %s")
+    //StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
 
     @Message(id = 11958, value = "Failed to register module: %s")
-    StartException startFailedToRegisterModule(@Cause Throwable th, Module module);
+    DeploymentUnitProcessingException deploymentFailedToRegisterModule(@Cause Throwable th, Module module);
 
     @Message(id = 11959, value = "StartLevel service not available")
     String startLevelServiceNotAvailable();

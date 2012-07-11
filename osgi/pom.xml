@@ -42,5 +42,6 @@
     <modules>
         <module>configadmin</module>
         <module>service</module>
+        <module>web</module>
     </modules>
 </project>

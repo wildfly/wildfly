@@ -56,6 +56,7 @@ public class SimplePackageAdminTestCase {
     public static JavaArchive create() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq466-bundle");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -72,7 +73,7 @@ public class SimplePackageAdminTestCase {
 
         assertNotNull("PackageAdmin injected", packageAdmin);
 
-        assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         assertEquals("arq466-bundle", bundle.getSymbolicName());
 
         Bundle[] bundles = packageAdmin.getBundles("arq466-bundle", null);

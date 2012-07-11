@@ -124,10 +124,6 @@ public final class Attachments {
     public static final AttachmentKey<Manifest> MANIFEST = AttachmentKey.create(Manifest.class);
 
     /**
-     *  A flag indicating whether the presence of a bundle manifest attributes should be ignored and a bundle not created
-     */
-    public static final AttachmentKey<Boolean> IGNORE_OSGI = AttachmentKey.create(Boolean.class);
-    /**
      * Available when the deployment contains a valid OSGi manifest
      */
     public static final AttachmentKey<Manifest> OSGI_MANIFEST = AttachmentKey.create(Manifest.class);
@@ -207,6 +203,12 @@ public final class Attachments {
     //
 
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
+
+    //
+    // REGISTER
+    //
+
+    public static final AttachmentKey<BundleState> BUNDLE_STATE_KEY = AttachmentKey.create(BundleState.class);
 
     //
     // DEPENDENCIES
@@ -297,5 +299,13 @@ public final class Attachments {
     private Attachments() {
     }
 
-
+    /**
+     * The state of an OSGi bundle deployment
+     */
+    public static enum BundleState {
+        INSTALLED,
+        RESOLVED,
+        ACTIVE,
+        UNINSTALLED
+    }
 }

@@ -53,7 +53,6 @@ import org.jboss.modules.Module;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
-import static org.jboss.as.server.deployment.Attachments.OSGI_MANIFEST;
 
 /**
  * Class that provides common functionality required by processors that process environment information from deployment descriptors.
@@ -83,10 +82,6 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
     public final void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.hasAttachment(OSGI_MANIFEST)) {
-            return;
-        }
-
         final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
