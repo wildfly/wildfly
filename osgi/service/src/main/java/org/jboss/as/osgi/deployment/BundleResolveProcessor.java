@@ -58,14 +58,22 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (depUnit.hasAttachment(Attachments.MODULE))
+            return;
+
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (bundle == null || deployment.isAutoStart() == false)
             return;
 
-        if (depUnit.hasAttachment(Attachments.MODULE))
+        // Only process the top level deployment
+        if (depUnit.getParent() != null)
             return;
 
+        resolveBundle(depUnit, bundle);
+    }
+
+    static void resolveBundle(DeploymentUnit depUnit, XBundle bundle) {
         XBundleRevision brev = bundle.getBundleRevision();
         XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
@@ -75,6 +83,8 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
             BundleWiring wiring = (BundleWiring) wiremap.get(brev);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
             depUnit.putAttachment(OSGiConstants.BUNDLE_WIRING_KEY, wiring);
+            Module module = brev.getModuleClassLoader().getModule();
+            depUnit.putAttachment(Attachments.MODULE, module);
         } catch (ResolutionException ex) {
             LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());
         }
@@ -82,5 +92,6 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(OSGiConstants.BUNDLE_WIRING_KEY);
     }
 }
