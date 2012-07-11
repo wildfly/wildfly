@@ -29,32 +29,39 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
-import org.jboss.osgi.resolver.XBundleRevision;
-import org.osgi.framework.Bundle;
 
 /**
- * Attach the {@link Module} resulting from a successfully resolved {@link Bundle}
+ * Attach the {@link Module} for a resolved bundle sub deployment.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Jun-2012
+ * @since 04-Jul-2012
  */
-public class ResolvedModuleAttachmentProcessor implements DeploymentUnitProcessor {
+public class BundleResolveSubProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
-        if (bundle == null || bundle.isResolved() == false)
+        if (depUnit.hasAttachment(Attachments.MODULE))
             return;
 
-        XBundleRevision brev = bundle.getBundleRevision();
-        Module module = brev.getModuleClassLoader().getModule();
-        depUnit.putAttachment(Attachments.MODULE, module);
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        if (bundle == null || deployment.isAutoStart() == false)
+            return;
+
+        // Only process the sub deployments
+        if (depUnit.getParent() == null)
+            return;
+
+        BundleResolveProcessor.resolveBundle(depUnit, bundle);
     }
+
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(OSGiConstants.BUNDLE_WIRING_KEY);
     }
 }
