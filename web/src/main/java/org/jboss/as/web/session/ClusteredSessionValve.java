@@ -38,6 +38,7 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.as.clustering.web.BatchingManager;
+import org.jboss.logging.Logger;
 import org.jboss.servlet.http.HttpEvent;
 
 /**
@@ -51,6 +52,9 @@ import org.jboss.servlet.http.HttpEvent;
  * @version $Revision: 87464 $
  */
 public class ClusteredSessionValve extends ValveBase implements Lifecycle {
+
+    protected static final Logger log = Logger.getLogger(ClusteredSessionValve.class);
+
     // The info string for this Valve
     private static final String info = "ClusteredSessionValve/1.0";
 
@@ -88,6 +92,10 @@ public class ClusteredSessionValve extends ValveBase implements Lifecycle {
      */
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
+        if (log.isTraceEnabled()) {
+            log.tracef("handling request %s", request.getRequestURI());
+        }
+
         handleRequest(request, response, null, false);
     }
 
@@ -105,6 +113,7 @@ public class ClusteredSessionValve extends ValveBase implements Lifecycle {
 
     private void handleRequest(Request request, Response response, HttpEvent event, boolean isEvent) throws IOException,
             ServletException {
+
         // Initialize the context and store the request and response objects
         // for any clustering code that has no direct access to these objects
         SessionReplicationContext.enterWebapp(request, response, true);
