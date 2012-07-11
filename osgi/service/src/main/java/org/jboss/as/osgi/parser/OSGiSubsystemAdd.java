@@ -23,8 +23,10 @@ package org.jboss.as.osgi.parser;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.ServiceLoader;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -33,16 +35,17 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.osgi.OSGiSubsystemExtension;
 import org.jboss.as.osgi.deployment.BundleActivateProcessor;
 import org.jboss.as.osgi.deployment.BundleContextBindingProcessor;
 import org.jboss.as.osgi.deployment.BundleDeploymentProcessor;
 import org.jboss.as.osgi.deployment.BundleInstallProcessor;
 import org.jboss.as.osgi.deployment.BundleResolveProcessor;
-import org.jboss.as.osgi.deployment.ResolvedModuleAttachmentProcessor;
 import org.jboss.as.osgi.deployment.ModuleRegisterProcessor;
 import org.jboss.as.osgi.deployment.OSGiBundleInfoParseProcessor;
 import org.jboss.as.osgi.deployment.OSGiManifestStructureProcessor;
 import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
+import org.jboss.as.osgi.deployment.ResolvedModuleAttachmentProcessor;
 import org.jboss.as.osgi.deployment.SubsystemActivateProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
@@ -122,6 +125,14 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_BUNDLE_ACTIVATE, new BundleActivateProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
+
+        // Perform boottime on subsystem extensions
+        ClassLoader classLoader = OSGiSubsystemExtension.class.getClassLoader();
+        Iterator<OSGiSubsystemExtension> services = ServiceLoader.load(OSGiSubsystemExtension.class, classLoader).iterator();
+        while(services.hasNext()) {
+            OSGiSubsystemExtension extension = services.next();
+            extension.performBoottime(context, operation, model, verificationHandler, newControllers);
+        }
 
         // Add the subsystem state as a service
         newControllers.add(SubsystemState.addService(serviceTarget, activationMode));

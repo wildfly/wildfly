@@ -25,10 +25,12 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleException;
@@ -49,6 +51,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
             try {
                 bundle.start();
+                depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
             } catch (BundleException ex) {
                 LOGGER.errorCannotStartBundle(ex, bundle);
             }
@@ -62,6 +65,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         if (bundle != null && deployment.isAutoStart()) {
             try {
                 bundle.stop();
+                depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
             } catch (BundleException ex) {
                 LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
             }

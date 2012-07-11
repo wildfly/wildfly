@@ -21,29 +21,36 @@
  */
 package org.jboss.as.test.smoke.osgi.bundleA;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import javax.annotation.PostConstruct;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
+import org.jboss.as.test.smoke.osgi.bundleB.Echo;
 
 @SuppressWarnings("serial")
 @WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
 public class SimpleServlet extends HttpServlet {
 
-    private volatile String message;
+    private volatile Echo echo;
 
     @PostConstruct
     public void messageSetup() {
-        message = "Simple Servlet called with input=";
+        echo = new Echo() {
+            @Override
+            public String echo(String msg) {
+                return "Simple Servlet called with input=" + msg;
+            }
+        };
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String msg = req.getParameter("input");
         Writer writer = resp.getWriter();
-        writer.write(message + msg);
+        writer.write(echo.echo(msg));
     }
 }

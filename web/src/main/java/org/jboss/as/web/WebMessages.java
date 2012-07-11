@@ -22,12 +22,15 @@
 
 package org.jboss.as.web;
 
+import java.util.concurrent.TimeoutException;
+
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /** *
@@ -338,25 +341,12 @@ public interface WebMessages {
     @Message(id = 18097, value = "TLD file %s not contained in root %s")
     String tldFileNotContainedInRoot(String tldPath, String rootPath);
 
-    /**
-     * A message indicating the metric is unknown.
-     *
-     * @param metric the unknown metric.
-     *
-     * @return the message.
-     */
     @Message(id = 18098, value = "Unknown metric %s")
     String unknownMetric(Object metric);
 
-    /**
-     * A message indicating the {@link org.jboss.as.web.session.AbstractSessionManager#processExpirationPassivation()}
-     * failed.
-     *
-     * @param message the message from the cause
-     *
-     * @return the message.
-     */
     @Message(id = 18099, value = "processExpirationPassivation(): failed with exception: %s")
     String processExpirationPassivationException(String message);
 
+    @Message(id = 18100, value = "Timeout context service activation: %s")
+    TimeoutException timeoutContextActivation(ServiceName service);
 }
