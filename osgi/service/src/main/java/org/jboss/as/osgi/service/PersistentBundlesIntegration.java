@@ -56,7 +56,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.PersistentBundlesComplete;
-import org.jboss.osgi.framework.PersistentBundlesHandler;
+import org.jboss.osgi.framework.PersistentBundlesPlugin;
 import org.osgi.framework.Bundle;
 
 /**
@@ -65,11 +65,11 @@ import org.osgi.framework.Bundle;
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2012
  */
-public class PersistentBundlesIntegration implements PersistentBundlesHandler {
+public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
 
     public static ServiceController<?> addService(ServiceTarget serviceTarget, InitialDeploymentTracker deploymentTracker) {
         PersistentBundlesIntegration service = new PersistentBundlesIntegration();
-        ServiceBuilder<PersistentBundlesHandler> builder = serviceTarget.addService(IntegrationServices.PERSISTENT_BUNDLES_HANDLER, service);
+        ServiceBuilder<PersistentBundlesPlugin> builder = serviceTarget.addService(IntegrationServices.PERSISTENT_BUNDLES_PLUGIN, service);
         builder.addDependencies(IntegrationServices.AUTOINSTALL_COMPLETE, InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();

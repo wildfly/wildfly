@@ -22,57 +22,49 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-
-import java.io.IOException;
-import java.util.Properties;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.resolver.XBundle;
+import org.osgi.framework.BundleException;
 
 /**
- * Processes deployments that contain META-INF/jbosgi-xservice.properties
+ * Attempt to activate the OSGi deployment.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 20-Jun-2012
  */
-public class OSGiXServiceParseProcessor implements DeploymentUnitProcessor {
-
-    public static final String XSERVICE_PROPERTIES_NAME = "META-INF/jbosgi-xservice.properties";
+public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
-        // Check if we already have an OSGi deployment
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
-            return;
-
-        // Get the OSGi XService properties
-        VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-        VirtualFile xserviceFile = virtualFile.getChild(XSERVICE_PROPERTIES_NAME);
-        if (xserviceFile.exists() == false)
-            return;
-
-        try {
-            Properties props = new Properties();
-            props.load(xserviceFile.openStream());
-            OSGiMetaData metadata = OSGiMetaDataBuilder.load(props);
-            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
-        } catch (IOException ex) {
-            throw MESSAGES.cannotParseOSGiMetadata(ex, xserviceFile);
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
+            try {
+                bundle.start();
+            } catch (BundleException ex) {
+                LOGGER.errorCannotStartBundle(ex, bundle);
+            }
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.OSGI_METADATA_KEY);
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        if (bundle != null && deployment.isAutoStart()) {
+            try {
+                bundle.stop();
+            } catch (BundleException ex) {
+                LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
+            }
+        }
     }
 }

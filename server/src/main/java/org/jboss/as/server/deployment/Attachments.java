@@ -209,6 +209,10 @@ public final class Attachments {
     public static final AttachmentKey<AbstractVaultReader> VAULT_READER_ATTACHMENT_KEY = AttachmentKey.create(AbstractVaultReader.class);
 
     //
+    // REGISTER
+    //
+
+    //
     // DEPENDENCIES
     //
     public static final AttachmentKey<AttachmentList<ModuleDependency>> MANIFEST_DEPENDENCIES = AttachmentKey.createList(ModuleDependency.class);
