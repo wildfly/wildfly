@@ -26,7 +26,8 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.SPACE;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.domain.management.security.ConsoleWrapper;
 
@@ -74,19 +75,36 @@ public class ConfirmationChoice implements State {
                 return yesState;
             case NO:
                 return noState;
-            default:
-                return new ErrorState(theConsole, MESSAGES.invalidConfirmationResponse(), this);
+            default: {
+                List<String> acceptedValues = new ArrayList<String>(4);
+                acceptedValues.add(MESSAGES.yes());
+                if (MESSAGES.shortYes().length() > 0) {
+                    acceptedValues.add(MESSAGES.shortYes());
+                }
+                acceptedValues.add(MESSAGES.no());
+                if (MESSAGES.shortNo().length() > 0) {
+                    acceptedValues.add(MESSAGES.shortNo());
+                }
+                StringBuilder sb = new StringBuilder(acceptedValues.get(0));
+                for (int i = 1; i < acceptedValues.size() - 1; i++) {
+                    sb.append(", ");
+                    sb.append(acceptedValues.get(i));
+                }
+
+                return new ErrorState(theConsole, MESSAGES.invalidConfirmationResponse(sb.toString(),
+                        acceptedValues.get(acceptedValues.size() - 1)), this);
+            }
         }
     }
 
     private int convertResponse(final String response) {
         if (response != null) {
-            String temp = response.toLowerCase(Locale.ENGLISH);
-            if ("yes".equals(temp) || "y".equals(temp)) {
+            String temp = response.toLowerCase(); // We now need to match on the current local.
+            if (MESSAGES.yes().equals(temp) || MESSAGES.shortYes().equals(temp)) {
                 return YES;
             }
 
-            if ("no".equals(temp) || "n".equals(temp)) {
+            if (MESSAGES.no().equals(temp) || MESSAGES.shortNo().equals(temp)) {
                 return NO;
             }
         }

@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.management.security.state;
 
-import org.jboss.as.domain.management.security.ConsoleWrapper;
-
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.DEFAULT_MANAGEMENT_REALM;
 import static org.jboss.as.domain.management.security.AddPropertiesUser.NEW_LINE;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import org.jboss.as.domain.management.security.ConsoleWrapper;
 
 /**
  * State to prompt the user for the realm, username and password to use, this State can be called back to so allows for a
@@ -99,7 +99,7 @@ public class PromptNewUserState implements State {
                     continuingState = new ErrorState(theConsole, MESSAGES.duplicateUser(stateValues.getUserName()), duplicateContinuing, stateValues);
                 } else {
                     String message = MESSAGES.aboutToUpdateUser(stateValues.getUserName());
-                    String prompt = MESSAGES.isCorrectPrompt();
+                    String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
 
                     stateValues.setExistingUser(true);
                     continuingState = new ConfirmationChoice(theConsole,message, prompt, continuingState, duplicateContinuing);
