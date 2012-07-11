@@ -149,7 +149,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
             for (ModuleDependency moduleDep : dependencies) {
                 ModuleIdentifier moduleId = moduleDep.getIdentifier();
                 if (moduleDependencies.get(moduleId) != null) {
-                    LOGGER.debugf("  Skipping already defined dependency on module: %s", moduleId);
+                    LOGGER.debugf("  -dependency on %s (skipped)", moduleId);
                     continue;
                 }
                 // Build import filter
@@ -167,7 +167,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
                 ModuleLoader moduleLoader = moduleDep.getModuleLoader();
                 boolean optional = moduleDep.isOptional();
                 DependencySpec depSpec = DependencySpec.createModuleDependencySpec(importFilter, exportFilter, moduleLoader, moduleId, optional);
-                LOGGER.debugf("  %s", depSpec);
+                LOGGER.debugf("  +%s", depSpec);
                 builder.addDependency(depSpec);
             }
         }

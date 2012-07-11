@@ -40,6 +40,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
+import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.spi.BundleInfo;
 
 /**
@@ -69,7 +70,8 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            deployment.setAutoStart(!info.getOSGiMetadata().isFragment());
+            OSGiMetaData metadata = info.getOSGiMetadata();
+            deployment.setAutoStart(!metadata.isFragment());
 
             // Prevent autostart for marked deployments
             CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);

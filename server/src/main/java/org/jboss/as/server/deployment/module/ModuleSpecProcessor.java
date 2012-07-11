@@ -57,6 +57,7 @@ import org.jboss.msc.value.ImmediateValue;
  * @author John Bailey
  * @author Stuart Douglas
  * @author Marius Bogoevici
+ * @author Thomas.Diesler@jboss.com
  */
 public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
@@ -65,24 +66,35 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     private static final ServerLogger logger = ServerLogger.DEPLOYMENT_LOGGER;
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.hasAttachment(Attachments.MODULE))
-            return;
-
-        final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        if (mainRoot == null)
             return;
 
         // No {@link ModuleSpec} creation for OSGi deployments
         if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST))
             return;
 
+        deployModuleSpec(phaseContext);
+    }
+
+    @Override
+    public void undeploy(final DeploymentUnit deploymentUnit) {
+        deploymentUnit.removeAttachment(MARKER);
+    }
+
+    private void deployModuleSpec(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.hasAttachment(MARKER))
             return;
 
         deploymentUnit.putAttachment(MARKER, true);
+
+        final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        if (mainRoot == null)
+            return;
 
         // Add internal resource roots
         final ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
@@ -141,7 +153,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
     private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
                                             final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
-        logger.debug("Creating module" + moduleIdentifier);
+        logger.debug("Creating module: " + moduleIdentifier);
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         for (final DependencySpec dep : moduleSpecification.getModuleSystemDependencies()) {
             specBuilder.addDependency(dep);
@@ -244,7 +256,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private static void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)
+    private void addResourceRoot(final ModuleSpec.Builder specBuilder, final ResourceRoot resource)
             throws DeploymentUnitProcessingException {
         try {
             if (resource.getExportFilters().isEmpty()) {
@@ -261,11 +273,6 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         } catch (IOException e) {
             throw ServerMessages.MESSAGES.failedToCreateVFSResourceLoader(resource.getRootName(), e);
         }
-    }
-
-    @Override
-    public void undeploy(DeploymentUnit context) {
-        context.removeAttachment(MARKER);
     }
 
 }
