@@ -25,6 +25,8 @@ package org.jboss.as.arquillian.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
@@ -35,6 +37,8 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Uses the annotation index to check whether there is a class annotated
@@ -75,9 +79,31 @@ public class ArquillianConfigBuilder {
 
         // FIXME: Why do we get another service started event from a deployment INSTALLED service?
         ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, testClasses);
-        if (arqService.getServiceContainer().getService(arqConfig.getServiceName()) != null) {
-            log.warnf("Arquillian config already registered: %s", arqConfig);
-            return null;
+        ServiceController<?> service = arqService.getServiceContainer().getService(arqConfig.getServiceName());
+        if (service != null) {
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            service.setMode(ServiceController.Mode.REMOVE);
+            service.addListener(new AbstractServiceListener<Object>() {
+                @Override
+                public void listenerAdded(ServiceController<? extends Object> serviceController) {
+                    if(serviceController.getState() == ServiceController.State.REMOVED) {
+                        latch.countDown();
+                    }
+                }
+
+                @Override
+                public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
+                    if(serviceController.getState() == ServiceController.State.REMOVED) {
+                        latch.countDown();
+                    }
+                }
+            });
+            try {
+                latch.await(20, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         depUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
