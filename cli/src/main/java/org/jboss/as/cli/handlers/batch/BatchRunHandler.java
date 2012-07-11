@@ -58,6 +58,7 @@ public class BatchRunHandler extends BaseOperationCommand {
         boolean failed = false;
         try {
             super.doHandle(ctx);
+            ctx.printLine("The batch executed successfully");
         } catch(CommandLineException e) {
             failed = true;
             throw e;
