@@ -58,7 +58,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (bundle == null || deployment.isAutoStart() == false)
             return;
 

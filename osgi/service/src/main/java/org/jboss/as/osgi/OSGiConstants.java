@@ -26,9 +26,13 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
+import org.jboss.osgi.spi.BundleInfo;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleWiring;
 
 /**
@@ -58,4 +62,16 @@ public interface OSGiConstants {
 
     /** Attachment key for a registered {@link XBundleRevision}. */
     AttachmentKey<XBundleRevision> REGISTERED_MODULE_KEY = AttachmentKey.create(XBundleRevision.class);
+
+    /** Attachment key for {@link OSGiMetaData} */
+    AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
+
+    /** Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected. */
+    AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+
+    /** Attachment key for the OSGi system context. */
+    AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
+
+    /** Attachment key for the installed {@link XBundle}. */
+    AttachmentKey<XBundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(XBundle.class);
 }

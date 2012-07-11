@@ -24,6 +24,7 @@ package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -55,13 +56,13 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
             return;
 
         // Get the manifest from the deployment's virtual file
-        OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
         if (metadata != null) {
             try {
                 // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
                 VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
                 BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName, metadata);
-                depUnit.putAttachment(Attachments.BUNDLE_INFO, info);
+                depUnit.putAttachment(OSGiConstants.BUNDLE_INFO_KEY, info);
             } catch (BundleException ex) {
                 throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
             }
@@ -70,6 +71,6 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(Attachments.BUNDLE_INFO);
+        depUnit.removeAttachment(OSGiConstants.BUNDLE_INFO_KEY);
     }
 }
