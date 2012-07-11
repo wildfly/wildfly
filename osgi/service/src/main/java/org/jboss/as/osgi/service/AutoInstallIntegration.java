@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -60,24 +61,26 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
+import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.framework.AutoInstallComplete;
-import org.jboss.osgi.framework.AutoInstallHandler;
+import org.jboss.osgi.framework.AutoInstallPlugin;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.StorageState;
-import org.jboss.osgi.framework.StorageStateProvider;
+import org.jboss.osgi.framework.StorageStatePlugin;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.XRequirementBuilder;
 import org.jboss.osgi.resolver.MavenCoordinates;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XCapability;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
-import org.jboss.osgi.resolver.XResourceBuilderFactory;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.osgi.vfs.AbstractVFS;
@@ -96,10 +99,10 @@ import org.osgi.service.startlevel.StartLevel;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-class AutoInstallIntegration extends AbstractService<AutoInstallHandler> implements AutoInstallHandler {
+class AutoInstallIntegration extends AbstractService<AutoInstallPlugin> implements AutoInstallPlugin {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
+    private final InjectedValue<StorageStatePlugin> injectedStorageProvider = new InjectedValue<StorageStatePlugin>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
     private final InjectedValue<PackageAdmin> injectedPackageAdmin = new InjectedValue<PackageAdmin>();
@@ -110,12 +113,12 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
 
     static ServiceController<?> addService(final ServiceTarget target) {
         AutoInstallIntegration service = new AutoInstallIntegration();
-        ServiceBuilder<?> builder = target.addService(IntegrationServices.AUTOINSTALL_HANDLER, service);
+        ServiceBuilder<?> builder = target.addService(IntegrationServices.AUTOINSTALL_PLUGIN, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, service.injectedPackageAdmin);
-        builder.addDependency(Services.STORAGE_STATE_PROVIDER, StorageStateProvider.class, service.injectedStorageProvider);
+        builder.addDependency(Services.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, service.injectedStorageProvider);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, service.injectedStartLevel);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
@@ -201,7 +204,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
                 LOGGER.tracef("Installing initial module capability: %s", identifier);
 
                 // Attempt to load the module from the modules hierarchy
-                Module module = null;
+                final Module module;
                 try {
                     ModuleLoader moduleLoader = Module.getBootModuleLoader();
                     module = moduleLoader.loadModule(moduleId);
@@ -209,16 +212,22 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
                     throw MESSAGES.startFailedCannotResolveInitialCapability(ex, identifier);
                 }
                 if (module != null) {
-                    OSGiMetaData metadata = getModuleMetadata(module);
-                    XResourceBuilder builder = XResourceBuilderFactory.create();
+                    final OSGiMetaData metadata = getModuleMetadata(module);
+                    final BundleContext syscontext = injectedSystemContext.getValue();
+                    XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                        @Override
+                        public XBundleRevision createResource() {
+                            return new AbstractBundleRevisionAdaptor(syscontext, module);
+                        }
+                    };
+                    XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
                     if (metadata != null) {
                         builder.loadFrom(metadata);
                     } else {
                         builder.loadFrom(module);
                     }
-                    XResource res = builder.getResource();
-                    res.addAttachment(Module.class, module);
-                    injectedEnvironment.getValue().installResources(res);
+                    XResource resource = builder.getResource();
+                    injectedEnvironment.getValue().installResources(resource);
                     return true;
                 }
             }
@@ -293,7 +302,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             dep.setStartLevel(level.intValue());
             dep.setAutoStart(true);
         }
-        StorageStateProvider storageProvider = injectedStorageProvider.getValue();
+        StorageStatePlugin storageProvider = injectedStorageProvider.getValue();
         StorageState storageState = storageProvider.getByLocation(dep.getLocation());
         if (storageState != null) {
             dep.addAttachment(StorageState.class, storageState);
@@ -307,7 +316,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
     }
 
     private OSGiMetaData getModuleMetadata(Module module) throws IOException {
-
         URL manifestURL = module.getClassLoader().getResource(JarFile.MANIFEST_NAME);
         if (manifestURL != null) {
             InputStream input = manifestURL.openStream();
@@ -329,7 +337,9 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
         if (entryFile.exists()) {
             FileInputStream input = new FileInputStream(entryFile);
             try {
-                return OSGiMetaDataBuilder.load(input);
+                Properties props = new Properties();
+                props.load(input);
+                return OSGiMetaDataBuilder.load(props);
             } finally {
                 input.close();
             }

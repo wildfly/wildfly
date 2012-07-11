@@ -19,28 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.smoke.osgi.bundleA;
 
-package org.jboss.as.ejb3.deployment;
+import java.io.IOException;
+import java.io.Writer;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
+import javax.annotation.PostConstruct;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.jboss.as.test.smoke.osgi.bundleB.Echo;
 
-/**
- * Marks a {@link DeploymentUnit} as a EJB deployment.
- *
- * @author Jaikiran Pai
- */
-public class EjbDeploymentMarker {
+@SuppressWarnings("serial")
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
+public class SimpleServlet extends HttpServlet {
 
-    private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
+    private volatile Echo echo;
 
-    public static void mark(final DeploymentUnit deployment) {
-        deployment.putAttachment(ATTACHMENT_KEY, true);
+    @PostConstruct
+    public void messageSetup() {
+        echo = new Echo() {
+            @Override
+            public String echo(String msg) {
+                return "Simple Servlet called with input=" + msg;
+            }
+        };
     }
 
-    public static boolean isEjbDeployment(final DeploymentUnit deploymentUnit) {
-        final Boolean val = deploymentUnit.getAttachment(ATTACHMENT_KEY);
-        return val != null && val;
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String msg = req.getParameter("input");
+        Writer writer = resp.getWriter();
+        writer.write(echo.echo(msg));
     }
-
 }

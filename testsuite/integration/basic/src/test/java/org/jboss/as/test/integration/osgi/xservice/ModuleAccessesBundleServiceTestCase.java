@@ -125,7 +125,7 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.modules,org.jboss.logging,org.jboss.osgi.framework,deployment.example-xservice-mab-target-bundle:0.0.0");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.modules,org.jboss.logging,org.jboss.osgi.framework,deployment.example-xservice-mab-target-bundle");
                 return builder.openStream();
             }
         });
