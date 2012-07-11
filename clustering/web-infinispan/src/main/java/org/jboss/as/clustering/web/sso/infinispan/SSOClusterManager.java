@@ -96,7 +96,8 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @Override
     public void addSession(String ssoId, final FullyQualifiedSessionId sessionId) {
-        this.trace("addSession(): adding Session %s to cached session set for SSO %s", sessionId.getSessionId(), ssoId);
+        if (log.isTraceEnabled())
+            log.tracef("addSession(): adding Session %s to cached session set for SSO %s", sessionId.getSessionId(), ssoId);
 
         final SessionKey key = new SessionKey(ssoId);
         SessionOperation<Void> operation = new SessionOperation<Void>() {
@@ -138,7 +139,8 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @Override
     public void logout(final String ssoId) {
-        trace("Registering logout of SSO %s in clustered cache", ssoId);
+        if (log.isTraceEnabled())
+            log.tracef("Registering logout of SSO %s in clustered cache", ssoId);
 
         Operation<Void> operation = new Operation<Void>() {
             @Override
@@ -167,7 +169,8 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @Override
     public void register(String ssoId, String authType, String username, String password) {
-        trace("Registering SSO %s in clustered cache", ssoId);
+        if (log.isTraceEnabled())
+            log.tracef("Registering SSO %s in clustered cache", ssoId);
 
         storeCredentials(ssoId, authType, username, password);
     }
@@ -181,7 +184,8 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @Override
     public void removeSession(String ssoId, final FullyQualifiedSessionId sessionId) {
-        trace("removeSession(): removing Session %s from cached session set for SSO %s", sessionId.getSessionId(), ssoId);
+        if (log.isTraceEnabled())
+            log.tracef("removeSession(): removing Session %s from cached session set for SSO %s", sessionId.getSessionId(), ssoId);
 
         final SessionKey key = new SessionKey(ssoId);
         SessionOperation<Boolean> operation = new SessionOperation<Boolean>() {
@@ -210,7 +214,8 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @Override
     public void updateCredentials(String ssoId, String authType, String username, String password) {
-        trace("Updating credentials for SSO %s in clustered cache", ssoId);
+        if (log.isTraceEnabled())
+            log.tracef("Updating credentials for SSO %s in clustered cache", ssoId);
 
         storeCredentials(ssoId, authType, username, password);
     }
@@ -227,18 +232,31 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @CacheEntryRemoved
     public void cacheEntryRemoved(CacheEntryRemovedEvent<SSOKey, ?> event) {
+        if (log.isTraceEnabled()) {
+            boolean isPre = event.isPre() ;
+            boolean isOriginLocal = event.isOriginLocal();
+            log.tracef("Received CacheEntryRemovedEvent from cluster: isPre = %s isOrigin = %s",
+                    Boolean.toString(isPre), Boolean.toString(isOriginLocal));
+        }
+
         if (event.isPre()) return;
 
         SSOKey key = event.getKey();
         String ssoId = key.getId();
 
         if (key instanceof SessionKey) {
-            trace("cacheEntryRemoved ssoId = %s", ssoId);
+            if (log.isTraceEnabled())
+                log.tracef("cacheEntryRemoved ssoId = %s", ssoId);
 
             if (!event.isOriginLocal()) {
-                this.ssoValve.deregister(key.getId());
+                if (log.isTraceEnabled())
+                    log.trace("cacheEntryRemoved: event is not local- degeristering SSO key");
+
+                this.ssoValve.deregisterLocal(key.getId());
             }
             // signal the case that we have zero sessions for this ssoId
+            if (log.isTraceEnabled())
+                log.trace("CacheEntryRemoved: notifying SSO empty");
             this.ssoValve.notifySSOEmpty(ssoId);
         }
     }
@@ -270,19 +288,28 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
      */
     @CacheEntryModified
     public void cacheEntryModified(CacheEntryModifiedEvent<SSOKey, ?> event) {
+        if (log.isTraceEnabled()) {
+            boolean isPre = event.isPre() ;
+            boolean isOriginLocal = event.isOriginLocal();
+            log.tracef("Received CacheEntryModifiedEvent from cluster: isPre = %s isOrigin = %s",
+                    Boolean.toString(isPre), Boolean.toString(isOriginLocal));
+        }
+
         if (event.isPre() || event.isOriginLocal()) return;
 
         SSOKey key = event.getKey();
         String ssoId = key.getId();
 
         if (key instanceof CredentialKey) {
-            trace("received a credentials modified message for SSO %s", ssoId);
+            if (log.isTraceEnabled())
+                log.tracef("received a credentials modified message for SSO %s", ssoId);
             SSOCredentials credentials = (SSOCredentials) event.getValue();
             if (credentials != null) {
                 this.ssoValve.remoteUpdate(ssoId, credentials);
             }
         } else if (key instanceof SessionKey) {
-            trace("received a session modified message for SSO %s", ssoId);
+            if (log.isTraceEnabled())
+                log.tracef("received a session modified message for SSO %s", ssoId);
             if (!this.notifySSOEmpty(ssoId)) {
                 this.ssoValve.notifySSONotEmpty(ssoId);
             }
@@ -351,9 +378,4 @@ public final class SSOClusterManager implements org.jboss.as.clustering.web.sso.
     abstract class SessionOperation<R> implements CacheInvoker.Operation<SessionKey, Map<FullyQualifiedSessionId, Void>, R> {
     }
 
-    private void trace(String message, Object... args) {
-        if (log.isTraceEnabled()) {
-            log.tracef(message, args);
-        }
-    }
 }

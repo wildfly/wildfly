@@ -36,6 +36,14 @@ public interface SSOLocalManager {
     void deregister(String ssoId);
 
     /**
+     * Callback from the SSOClusterManager notifying the local manager that an SSO has been deregistered on another node,
+     * but that invalidation operations should not be propagated to remote nodes.
+     *
+     * @param ssoId Single sign on identifier to deregister
+     */
+    void deregisterLocal(String ssoId);
+
+    /**
      * Callback from the SSOClusterManager notifying the local manager that the credentials associated with an SSO have been
      * modified on another node.
      *
