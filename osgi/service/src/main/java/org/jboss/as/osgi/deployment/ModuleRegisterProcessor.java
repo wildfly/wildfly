@@ -57,20 +57,20 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
 
         // Create the {@link ModuleRegisterService}
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+        final XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         final Module module = depUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         if (bundle == null && module != null && moduleSpecification.isPrivateModule() == false) {
             LOGGER.infoRegisterModule(module.getIdentifier());
             try {
-                final BundleContext context = depUnit.getAttachment(Attachments.SYSTEM_CONTEXT);
+                final BundleContext context = depUnit.getAttachment(OSGiConstants.SYSTEM_CONTEXT_KEY);
                 XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
                     @Override
                     public XBundleRevision createResource() {
                         return new AbstractBundleRevisionAdaptor(context, module);
                     }
                 };
-                OSGiMetaData metadata = depUnit.getAttachment(Attachments.OSGI_METADATA);
+                OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
                 XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
                 XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
                 if (metadata != null) {

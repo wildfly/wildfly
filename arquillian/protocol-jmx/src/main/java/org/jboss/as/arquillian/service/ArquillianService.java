@@ -34,6 +34,7 @@ import javax.management.MBeanServer;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.testenricher.osgi.BundleContextAssociation;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
@@ -221,7 +222,7 @@ public class ArquillianService implements Service<ArquillianService> {
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
             final DeploymentUnit depUnit = config.getDeploymentUnit();
-            final XBundle bundle = depUnit.getAttachment(Attachments.INSTALLED_BUNDLE);
+            final XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
             final Module module = depUnit.getAttachment(Attachments.MODULE);
             if (bundle == null && module != null) {
                 builder.add(new TCCLSetupAction(module.getClassLoader()));

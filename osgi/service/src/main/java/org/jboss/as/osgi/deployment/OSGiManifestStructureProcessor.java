@@ -24,6 +24,7 @@ package org.jboss.as.osgi.deployment;
 
 import java.util.jar.Manifest;
 
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -48,7 +49,7 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.OSGI_MANIFEST) || depUnit.hasAttachment(Attachments.OSGI_METADATA))
+        if (depUnit.hasAttachment(Attachments.OSGI_MANIFEST) || depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
             return;
 
         final ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -60,13 +61,13 @@ public class OSGiManifestStructureProcessor implements DeploymentUnitProcessor {
         if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
             depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
             OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
-            depUnit.putAttachment(Attachments.OSGI_METADATA, metadata);
+            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
         }
     }
 
     @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
         deploymentUnit.removeAttachment(Attachments.OSGI_MANIFEST);
-        deploymentUnit.removeAttachment(Attachments.OSGI_METADATA);
+        deploymentUnit.removeAttachment(OSGiConstants.OSGI_METADATA_KEY);
     }
 }
