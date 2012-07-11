@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -28,8 +29,9 @@ class DefaultSubsystemTransformer implements ResourceTransformer {
     }
 
     @Override
-    public ModelNode transformModel(TransformationContext context, ModelNode model) {
-        return model;
+    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) {
+        final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+        childContext.processChildren(resource);
     }
 
 }

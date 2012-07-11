@@ -41,12 +41,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.DomainModelTransformers;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
@@ -156,9 +156,9 @@ public class OperationTransformationTestCase {
                 return operation;
             }
         };
-        final DomainModelTransformers transformers = new DomainModelTransformers();
+        final TransformerRegistry transformers = TransformerRegistry.Factory.create(null);
 
-        final TransformersSubRegistration subsystem = transformers.registerSubsystemTransformers("test", ModelVersion.create(1), ResourceTransformer.ORIGINAL);
+        final TransformersSubRegistration subsystem = transformers.registerSubsystemTransformers("test", ModelVersion.create(1), ResourceTransformer.DEFAULT);
         subsystem.registerOperationTransformer("test", transformer);
 
         final OperationTransformerRegistry server = transformers.resolveServer(ModelVersion.create(1, 2, 3), subsystems);

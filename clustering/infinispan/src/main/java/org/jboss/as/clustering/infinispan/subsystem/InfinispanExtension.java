@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.ModelVersion;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -133,7 +134,9 @@ public class InfinispanExtension implements Extension {
         registerClusteredCacheAttributeHandlers(distributed);
         registerSharedStateCacheAttributeHandlers(distributed);
         CacheWriteAttributeHandler.DISTRIBUTED_CACHE_ATTR.registerAttributes(distributed);
-        subsystem.registerSubsystemTransformer(new InfinispanSubsystemTransformer_1_3());
+
+        // Register the model transformers
+        subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
     }
 
     /**

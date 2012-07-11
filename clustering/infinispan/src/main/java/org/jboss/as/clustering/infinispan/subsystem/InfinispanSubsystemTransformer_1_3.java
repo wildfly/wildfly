@@ -11,14 +11,13 @@ import org.jboss.dmr.Property;
 public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransformer {
 
     public InfinispanSubsystemTransformer_1_3() {
-        super(1, 3, 0);
+        super("infinispan");
     }
 
     @Override
     public ModelNode transformModel(TransformationContext context, ModelNode model) {
         for (Property p : model.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
             ModelNode container = p.getValue();
-            container.remove(ModelKeys.MODULE);
             for (Property cache : container.asPropertyList()) {
                 transformCache(cache.getValue());
             }
@@ -28,6 +27,8 @@ public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransfo
     }
 
     private void transformCache(final ModelNode cache) {
-       cache.remove(ModelKeys.INDEXING_PROPERTIES);
+        if(cache.hasDefined(ModelKeys.INDEXING_PROPERTIES)) {
+            cache.remove(ModelKeys.INDEXING_PROPERTIES);
+        }
     }
 }
