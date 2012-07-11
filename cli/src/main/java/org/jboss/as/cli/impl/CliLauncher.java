@@ -194,7 +194,7 @@ public class CliLauncher {
                     for(Object prop : props.keySet()) {
                         SecurityActions.setSystemProperty((String)prop, (String)props.get(prop));
                     }
-                } else {
+                } else if(!(arg.startsWith("-D") || arg.equals("-XX:"))) {// skip system properties and jvm options
                     // assume it's commands
                     if(file != null) {
                         argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time: " + arg;
