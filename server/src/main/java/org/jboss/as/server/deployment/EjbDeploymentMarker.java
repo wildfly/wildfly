@@ -20,10 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3.deployment;
+package org.jboss.as.server.deployment;
 
-import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
  * Marks a {@link DeploymentUnit} as a EJB deployment.
