@@ -30,7 +30,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.BytesValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -68,7 +70,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("1"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setAllowExpression(true).build();
+            .setAllowExpression(true)
+            .setValidator(new StringBytesLengthValidator(0,23,true,true))
+            .build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
             .setAlternatives("process-id-socket-binding")
