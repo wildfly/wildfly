@@ -39,11 +39,14 @@ import org.apache.catalina.SessionEvent;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
+import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.clustering.web.sso.FullyQualifiedSessionId;
 import org.jboss.as.clustering.web.sso.SSOClusterManager;
 import org.jboss.as.clustering.web.sso.SSOCredentials;
 import org.jboss.as.clustering.web.sso.SSOLocalManager;
 import org.jboss.as.web.WebLogger;
+import org.jboss.as.web.session.ClusteredSession;
+import org.jboss.as.web.session.notification.ClusteredSessionNotificationCause;
 
 /**
  * A <strong>Valve</strong> that supports a "single sign on" user experience, where the security identity of a user who
@@ -229,6 +232,8 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      */
     @Override
     public void sessionEvent(SessionEvent event) {
+        WebLogger.WEB_SSO_LOGGER.tracef("received SessionEvent %s", event.toString());
+
         // We only care about session destroyed events
         if (!Session.SESSION_DESTROYED_EVENT.equals(event.getType()))
             return;
@@ -312,6 +317,8 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      */
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
+        WebLogger.WEB_SSO_LOGGER.tracef("handling request %s", request.getRequestURI());
+
         request.removeNote(Constants.REQ_SSOID_NOTE);
 
         // Has a valid user already been authenticated?
@@ -481,6 +488,51 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         // but it will be removed on the next request since it is no longer
         // in the cache
     }
+
+    /**
+     * Deregister the specified single sign on identifier, and invalidate any associated sessions,
+     * not propagating invalidation across the cluster.
+     *
+     * @param ssoId Single sign on identifier to deregister
+     */
+    @Override
+    public void deregisterLocal(String ssoId) {
+        WebLogger.WEB_SSO_LOGGER.tracef("Deregistering locally sso id '%s'", ssoId);
+
+        // It's possible we don't have the SSO locally but it's in
+        // the emptySSOs map; if so remove it
+        emptySSOs.remove(ssoId);
+
+        // Look up and remove the corresponding SingleSignOnEntry
+        SingleSignOnEntry sso = null;
+        synchronized (cache) {
+            sso = (SingleSignOnEntry) cache.remove(ssoId);
+        }
+
+        if (sso == null)
+            return;
+
+        // Expire any associated sessions
+        for (Session session: sso.findSessions()) {
+            WebLogger.WEB_SSO_LOGGER.tracef(" Invalidating session %s", session);
+            // Remove from reverse cache first to avoid recursion
+            synchronized (reverse) {
+                reverse.remove(session);
+            }
+            // Invalidate this session, but do not propagate to other nodes
+            ClusteredSession<OutgoingDistributableSessionData> clusteredSession =
+                    (ClusteredSession<OutgoingDistributableSessionData>) session ;
+            boolean notify = true ;
+            boolean localCall = false ;
+            boolean localOnly = true ;
+            clusteredSession.expire(notify, localCall, localOnly, ClusteredSessionNotificationCause.INVALIDATE);
+        }
+
+        // NOTE: Clients may still possess the old single sign on cookie,
+        // but it will be removed on the next request since it is no longer
+        // in the cache
+    }
+
 
     /**
      * Deregister the given SSO, invalidating any associated sessions, then notify any cluster of the logout.
