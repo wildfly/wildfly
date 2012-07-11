@@ -749,6 +749,12 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-cli</artifactId>
+                    <classifier>client</classifier>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-client-all</artifactId>
                     <scope>provided</scope>
                 </dependency>

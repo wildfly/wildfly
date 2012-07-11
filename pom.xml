@@ -897,6 +897,13 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-cli</artifactId>
+                <classifier>client</classifier>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-client-all</artifactId>
                 <version>${project.version}</version>
             </dependency>
