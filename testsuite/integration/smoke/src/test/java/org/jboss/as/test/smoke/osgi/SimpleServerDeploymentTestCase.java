@@ -101,7 +101,7 @@ public class SimpleServerDeploymentTestCase {
 
         // Find the deployed bundle
         Bundle bundle = OSGiFrameworkUtils.getDeployedBundle(context, GOOD_BUNDLE, null);
-        assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
         server.undeploy(runtimeName);
         assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
@@ -128,6 +128,7 @@ public class SimpleServerDeploymentTestCase {
     public static JavaArchive getGoodBundleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, GOOD_BUNDLE);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);
@@ -142,6 +143,7 @@ public class SimpleServerDeploymentTestCase {
     public static JavaArchive getBadBundleArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BAD_BUNDLE_VERSION);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 builder.addManifestHeader(Constants.BUNDLE_MANIFESTVERSION, "2");
@@ -157,6 +159,7 @@ public class SimpleServerDeploymentTestCase {
     public static JavaArchive getLazyActivationArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, ACTIVATE_LAZILY);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);

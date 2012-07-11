@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi;
 
+import java.util.Collection;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -29,9 +31,10 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
+import org.osgi.resource.Requirement;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -54,17 +57,17 @@ public interface OSGiLogger extends BasicLogger {
     @Message(id = 11900, value = "Cannot start bundle: %s")
     void errorCannotStartBundle(@Cause Throwable cause, Bundle bundle);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11901, value = "Problem adding module: %s")
-    void errorAddingModule(@Cause Throwable cause, String moduleId);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11901, value = "Problem adding module: %s")
+    //void errorAddingModule(@Cause Throwable cause, String moduleId);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11902, value = "Failed to uninstall deployment: %s")
-    void errorFailedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11902, value = "Failed to uninstall deployment: %s")
+    //void errorFailedToUninstallDeployment(@Cause Throwable cause, Deployment deployment);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11903, value = "Cannot add module as it was not found: %s")
-    void errorModuleNotFound(String moduleId);
+    //@LogMessage(level = ERROR)
+    //@Message(id = 11903, value = "Cannot add module as it was not found: %s")
+    //void errorModuleNotFound(String moduleId);
 
     @LogMessage(level = WARN)
     @Message(id = 11904, value = "Cannot find composite annotation index in: %s")
@@ -80,17 +83,17 @@ public interface OSGiLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 11907, value = "Register module: %s")
-    void infoRegisterModule(Module module);
+    void infoRegisterModule(ModuleIdentifier moduleId);
 
     @LogMessage(level = INFO)
     @Message(id = 11908, value = "Unregister module: %s")
-    void infoUnregisterModule(Module module);
+    void infoUnregisterModule(ModuleIdentifier moduleId);
 
     @LogMessage(level = ERROR)
     @Message(id = 11909, value = "Management operation '%s' failed")
     void errorInOperationHandler(@Cause Throwable cause, String opname);
 
-    @LogMessage(level = ERROR)
-    @Message(id = 11910, value = "Cannot stop bundle: %s")
-    void errorCannotStopBundle(@Cause Throwable cause, Bundle bundle);
+    @LogMessage(level = WARN)
+    @Message(id = 11910, value = "Cannot resolve requirements: %s")
+    void warnCannotResolve(Collection<Requirement> requirements);
 }

@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2005, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2010, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,27 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.osgi.bundle;
 
+package org.jboss.as.test.smoke.osgi.bundleB;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import javax.ejb.Local;
+import javax.ejb.LocalBean;
+import javax.ejb.Remote;
+import javax.ejb.Stateful;
 
 /**
- * A Service Activator
- *
- * @author thomas.diesler@jboss.com
- * @since 24-Apr-2009
+ * @author Thomas.Diesler@jboss.com
+ * @since 02-Jul-2012
  */
-public class SimpleActivator implements BundleActivator
-{
-   public void start(BundleContext context)
-   {
-      // Register a service
-      context.registerService(SimpleService.class.getName(), new SimpleService(), null);
-   }
+@Stateful
+@LocalBean
+@Local(Echo.class)
+@Remote(RemoteEcho.class)
+public class SampleSFSB implements RemoteEcho {
 
-   public void stop(BundleContext context)
-   {
-   }
+    @Override
+    public String echo(String msg) {
+        return msg;
+    }
 }

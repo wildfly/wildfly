@@ -42,53 +42,50 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class SubDeploymentProcessor implements DeploymentUnitProcessor {
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        final ResourceRoot deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         final ServiceVerificationHandler serviceVerificationHandler = deploymentUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
 
-        final List<ResourceRoot> childRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if (childRoots != null) {
-            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-            ServiceName previous = null;
-            for (final ResourceRoot childRoot : childRoots) {
-                if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
-                    continue;
-                }
-                final Resource resource = DeploymentModelUtils.createSubDeployment(childRoot.getRootName(), deploymentUnit);
-                final ImmutableManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT);
-                final ManagementResourceRegistration mutableRegistration =  deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
-                final AbstractVaultReader vaultReader = deploymentUnit.getAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY);
-                final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, mutableRegistration, resource, serviceVerificationHandler, vaultReader);
-
-                final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());
-                final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getName(), relativePath);
-
-                serviceTarget.addService(serviceName, service)
-                        .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
-                        .setInitialMode(ServiceController.Mode.ACTIVE)
-                        .install();
-                phaseContext.addDeploymentDependency(serviceName, Attachments.SUB_DEPLOYMENTS);
-                //we also need a dep on the first phase of the sub deployments
-                phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, serviceName.append(ServiceName.of(Phase.STRUCTURE.name())));
-                previous = serviceName;
+        final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+        final List<ResourceRoot> childRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        for (final ResourceRoot childRoot : childRoots) {
+            if (childRoot == deploymentResourceRoot || !SubDeploymentMarker.isSubDeployment(childRoot)) {
+                continue;
             }
+            final Resource resource = DeploymentModelUtils.createSubDeployment(childRoot.getRootName(), deploymentUnit);
+            final ImmutableManagementResourceRegistration registration = deploymentUnit.getAttachment(DeploymentModelUtils.REGISTRATION_ATTACHMENT);
+            final ManagementResourceRegistration mutableRegistration =  deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+            final AbstractVaultReader vaultReader = deploymentUnit.getAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY);
+            final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, mutableRegistration, resource, serviceVerificationHandler, vaultReader);
+
+            final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());
+            final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getName(), relativePath);
+
+            serviceTarget.addService(serviceName, service)
+                    .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+            phaseContext.addDeploymentDependency(serviceName, Attachments.SUB_DEPLOYMENTS);
+            //we also need a dep on the first phase of the sub deployments
+            phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, serviceName.append(ServiceName.of(Phase.STRUCTURE.name())));
         }
     }
 
+    @Override
     public void undeploy(DeploymentUnit deploymentUnit) {
-        final List<ResourceRoot> childRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-        if (childRoots != null) {
-            final ServiceRegistry serviceRegistry = deploymentUnit.getServiceRegistry();
-            for (final ResourceRoot childRoot : childRoots) {
-                if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
-                    continue;
-                }
-                final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getName(), childRoot.getRootName());
-                final ServiceController<?> serviceController = serviceRegistry.getService(serviceName);
-                if (serviceController != null) {
-                    serviceController.setMode(ServiceController.Mode.REMOVE);
-                }
+        final ServiceRegistry serviceRegistry = deploymentUnit.getServiceRegistry();
+        final List<ResourceRoot> childRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        for (final ResourceRoot childRoot : childRoots) {
+            if (!SubDeploymentMarker.isSubDeployment(childRoot)) {
+                continue;
+            }
+            final ServiceName serviceName = Services.deploymentUnitName(deploymentUnit.getName(), childRoot.getRootName());
+            final ServiceController<?> serviceController = serviceRegistry.getService(serviceName);
+            if (serviceController != null) {
+                serviceController.setMode(ServiceController.Mode.REMOVE);
             }
         }
     }

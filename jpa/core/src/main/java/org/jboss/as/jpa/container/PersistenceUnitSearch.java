@@ -85,7 +85,6 @@ public class PersistenceUnitSearch {
         }
 
         List<ResourceRoot> resourceRoots = unit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
                 name = findWithinLibraryJar(unit, resourceRoot, persistenceUnitName);

@@ -70,6 +70,7 @@ import java.util.List;
  *
  * @author Emanuel Muckenhuber
  * @author Tomaz Cerar
+ * @author Thomas.Diesler@jboss.com
  */
 class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
 

@@ -19,6 +19,7 @@ package org.jboss.as.test.smoke.osgi;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.osgi.StartLevelAware;
+import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.test.osgi.OSGiFrameworkUtils;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -47,6 +48,7 @@ import static org.junit.Assert.fail;
  * @since 07-Jun-2011
  */
 @RunWith(Arquillian.class)
+@DeploymentMarker(autoStart = false)
 public class SimpleStartLevelTestCase {
 
     public static final int TIMEOUT = 6000;
@@ -63,9 +65,10 @@ public class SimpleStartLevelTestCase {
     @Deployment
     @StartLevelAware(startLevel = 3)
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq465-bundle");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "startlevel-bundle");
         archive.addClass(OSGiFrameworkUtils.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -88,7 +91,7 @@ public class SimpleStartLevelTestCase {
             assertEquals("Initial bundle start level", 1, initialStartLevel);
 
             assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
-            assertEquals("arq465-bundle", bundle.getSymbolicName());
+            assertEquals("startlevel-bundle", bundle.getSymbolicName());
 
             int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
             assertEquals("Bundle start level", 3, bundleStartLevel);
