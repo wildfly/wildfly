@@ -183,7 +183,7 @@ public class CliLauncher {
             }
 
             if(version) {
-                cmdCtx = new CommandContextImpl();
+                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, false, connect);
                 VersionHandler.INSTANCE.handle(cmdCtx);
                 return;
             }
