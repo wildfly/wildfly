@@ -991,19 +991,24 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-sar</artifactId>
+                </dependency>
+                
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-security</artifactId>
                 </dependency>
-
+                
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-sos</artifactId>
                 </dependency>
-
+                
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-sar</artifactId>
+                    <artifactId>jboss-as-system-jmx</artifactId>
                 </dependency>
-
+                
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-threads</artifactId>
