@@ -32,11 +32,11 @@ import javax.servlet.http.HttpServletResponse;
 
 
 @SuppressWarnings("serial")
-@WebServlet(name = "SimpleBeanServlet", urlPatterns = { "/simple" })
-public class SimpleBeanServlet extends HttpServlet {
+@WebServlet(name = "ComplexBeanServlet", urlPatterns = { "/complex" })
+public class ComplexBeanServlet extends HttpServlet {
 
     @Resource
-    SimpleManagedBean bean;
+    ComplexManagedBean bean;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

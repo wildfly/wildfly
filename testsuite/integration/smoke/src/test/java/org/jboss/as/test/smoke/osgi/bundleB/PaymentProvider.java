@@ -21,22 +21,11 @@
  */
 package org.jboss.as.test.smoke.osgi.bundleB;
 
-import javax.annotation.ManagedBean;
-import javax.annotation.Resource;
-import javax.sql.DataSource;
-
-
 /**
  * @author Thomas.Diesler@jboss.com
  * @since 09-Jul-2012
  */
-@ManagedBean("SimpleManagedBean")
-public class SimpleManagedBean {
+public interface PaymentProvider {
 
-    @Resource(name="java:jboss/datasources/ExampleDS")
-    DataSource dataSource;
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
+    String getName();
 }
