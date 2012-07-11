@@ -4,11 +4,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
-* @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * The operation transformer. For basic implementations {@see AbstractOperationTransformer}.
  *
- * @deprecated experimental interface; may be removed or change without warning. Should not be used outside the main JBoss AS codebase
+* @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
 */
-@Deprecated
 public interface OperationTransformer {
 
     /**

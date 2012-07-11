@@ -94,12 +94,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         final TransformersSubRegistration renamed = transformers.registerSubResource(RENAMED, AliasOperationTransformer.replaceLastElement(PathElement.pathElement("element", "renamed")));
     }
 
-    static ResourceTransformer RESOURCE_TRANSFORMER = new ResourceTransformer() {
-        @Override
-        public ModelNode transformModel(TransformationContext context, ModelNode model) {
-            return model;
-        }
-    };
+    static ResourceTransformer RESOURCE_TRANSFORMER = ResourceTransformer.DEFAULT;
 
     static class UpdateTransformer implements OperationTransformer {
 

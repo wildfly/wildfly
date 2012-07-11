@@ -474,7 +474,8 @@ public abstract class AbstractSubsystemTest {
      * @param modelVersion the model version
      */
     protected void checkSubsystemTransformer(KernelServices kernelServices, final ModelNode legacyModel, ModelVersion modelVersion) {
-        compare(legacyModel, kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName), true);
+        final ModelNode result = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
+        compare(legacyModel, result, true);
     }
 
 

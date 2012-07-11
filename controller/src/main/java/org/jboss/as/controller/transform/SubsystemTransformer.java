@@ -14,9 +14,6 @@ package org.jboss.as.controller.transform;
  */
 @Deprecated
 public interface SubsystemTransformer extends ResourceTransformer {
-    int getMajorManagementVersion();
 
-    int getMinorManagementVersion();
 
-    int getMicroManagementVersion();
 }

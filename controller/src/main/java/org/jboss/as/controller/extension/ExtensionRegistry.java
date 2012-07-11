@@ -574,13 +574,8 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public void registerSubsystemTransformer(SubsystemTransformer subsystemTransformer) {
-            transformerRegistry.registerSubsystemTransformer(name, subsystemTransformer);
-        }
-
-        @Override
         public TransformersSubRegistration registerModelTransformers(final ModelVersionRange range, final ResourceTransformer subsystemTransformer) {
-            return transformerRegistry.getDomainTransformers().registerSubsystemTransformers(name, range, subsystemTransformer);
+            return transformerRegistry.registerSubsystemTransformers(name, range, subsystemTransformer);
         }
 
         private ManagementResourceRegistration getDummyRegistration() {

@@ -26,11 +26,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.OperationValidator;
-import org.jboss.as.controller.registry.GlobalTransformerRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.controller.transform.DomainModelTransformers;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.server.Services;
@@ -170,10 +168,9 @@ public class KernelServices {
         PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
         if (opAddr.size() > 0 && opAddr.getElement(0).equals(pathElement)) {
             TransformerRegistry transformerRegistry = extensionRegistry.getTransformerRegistry();
-            DomainModelTransformers transformers = transformerRegistry.getDomainTransformers();
 
             PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            OperationTransformerRegistry registry = transformers.resolveServer(modelVersion, createSubsystemVersionRegistry(modelVersion));
+            OperationTransformerRegistry registry = transformerRegistry.resolveServer(modelVersion, createSubsystemVersionRegistry(modelVersion));
 
             //TODO Initialise this
             TransformationContext transformationContext = null;
