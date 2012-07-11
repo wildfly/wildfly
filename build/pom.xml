@@ -961,6 +961,11 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-osgi-web</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-platform-mbean</artifactId>
                 </dependency>
 

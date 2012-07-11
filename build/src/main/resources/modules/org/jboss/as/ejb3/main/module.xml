@@ -85,11 +85,10 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.staxmapper"/>
-
         <!-- For parser DUP -->
         <module name="org.jboss.vfs"/>
         <module name="org.picketbox"/>
-
+        
         <module name="org.omg.api"/>
         <module name="org.picketbox"/>
     </dependencies>

@@ -44,12 +44,12 @@ import java.util.Set;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ejb3.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;

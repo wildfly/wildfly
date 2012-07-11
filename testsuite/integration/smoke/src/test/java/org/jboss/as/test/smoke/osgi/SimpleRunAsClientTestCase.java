@@ -32,8 +32,8 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleActivator;
-import org.jboss.as.test.smoke.osgi.bundle.SimpleService;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleActivator;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -78,9 +78,6 @@ public class SimpleRunAsClientTestCase {
         try {
             Long bundleId = getBundleId(getControllerClient(), SYMBOLIC_NAME, null);
             Assert.assertNotNull("Bundle found", bundleId);
-            Assert.assertEquals("INSTALLED", getBundleState(getControllerClient(), bundleId));
-
-            Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), bundleId));
             Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), bundleId));
 
             ModelNode info = getBundleInfo(getControllerClient(), bundleId);
