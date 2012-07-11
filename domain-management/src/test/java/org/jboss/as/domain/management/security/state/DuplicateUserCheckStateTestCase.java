@@ -48,7 +48,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(MESSAGES.aboutToAddUser(values.getUserName(), values.getRealm())).
                 expectedDisplayText(AddPropertiesUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.isCorrectPrompt()).
+                expectedDisplayText(MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?").
                 expectedDisplayText(" ").
                 expectedInput("yes").
                 expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getPropertiesFiles().get(0).getCanonicalPath())).
