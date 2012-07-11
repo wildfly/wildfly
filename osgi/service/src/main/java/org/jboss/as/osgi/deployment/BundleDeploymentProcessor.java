@@ -22,6 +22,8 @@
 
 package org.jboss.as.osgi.deployment;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
@@ -66,7 +68,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
-            deployment.setAutoStart(true);
+            deployment.setAutoStart(!info.getOSGiMetadata().isFragment());
 
             // Prevent autostart for marked deployments
             CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
@@ -94,9 +96,9 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private boolean allowAdditionalModuleDependencies(final DeploymentUnit depUnit) {
-        //boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
+        boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
         //boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
-        return false;
+        return isWar;
     }
 
     @Override

@@ -69,7 +69,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                 XMLStreamReader xmlReader = inputFactory.createXMLStreamReader(is);
 
                 final JBossWebMetaData jBossWebMetaData = JBossWebMetaDataParser.parse(xmlReader, JBossDescriptorPropertyReplacement.propertyReplacer(deploymentUnit));
-                warMetaData.setJbossWebMetaData(jBossWebMetaData);
+                warMetaData.setJBossWebMetaData(jBossWebMetaData);
                 // if the jboss-web.xml has a distinct-name configured, then attach the value to this
                 // deployment unit
                 if (jBossWebMetaData.getDistinctName() != null) {
@@ -92,7 +92,7 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
             //jboss web embedded inside jboss-all.xml
             final JBossWebMetaData jbMeta = deploymentUnit.getAttachment(WebJBossAllParser.ATTACHMENT_KEY);
             if(jbMeta != null) {
-                warMetaData.setJbossWebMetaData(jbMeta);
+                warMetaData.setJBossWebMetaData(jbMeta);
             }
         }
     }

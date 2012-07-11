@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -72,6 +73,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         try {
             Map<Resource, Wiring> wiremap = resolver.resolveAndApply(context);
             BundleWiring wiring = (BundleWiring) wiremap.get(brev);
+            depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
             depUnit.putAttachment(OSGiConstants.BUNDLE_WIRING_KEY, wiring);
         } catch (ResolutionException ex) {
             LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());

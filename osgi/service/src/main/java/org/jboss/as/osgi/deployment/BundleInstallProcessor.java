@@ -22,9 +22,12 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
+
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -75,6 +78,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException(ex);
             }
             phaseContext.addDeploymentDependency(serviceName, OSGiConstants.INSTALLED_BUNDLE_KEY);
+            depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
             depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
         }
     }
@@ -85,6 +89,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         ServiceController<?> controller = serviceName != null ? depUnit.getServiceRegistry().getService(serviceName) : null;
         if (controller != null) {
             controller.setMode(Mode.REMOVE);
+            depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.UNINSTALLED);
         }
     }
 

@@ -50,7 +50,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
-import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.msc.service.ServiceName;
@@ -123,16 +122,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             // handle WEB-INF/classes/META-INF/persistence.xml
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            //find the resource root for WEB-INF/classes
-            ResourceRoot classesRoot = deploymentRoot;
-            for (ResourceRoot resourceRoot : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
-                if (ModuleRootMarker.isModuleRoot(resourceRoot)) {
-                    if (resourceRoot.getRoot().getPathName().contains("WEB-INF/classes")) {
-                        classesRoot = resourceRoot;
-                        break;
-                    }
-                }
-            }
 
             VirtualFile persistence_xml = deploymentRoot.getRoot().getChild(WEB_PERSISTENCE_XML);
             parse(persistence_xml, listPUHolders, deploymentUnit);
@@ -144,8 +133,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
             // look for persistence.xml in jar files in the META-INF/persistence.xml directory (these are not currently
             // handled as subdeployments)
-            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
-            assert resourceRoots != null;
+            List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
             for (ResourceRoot resourceRoot : resourceRoots) {
                 if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_FILE_EXTENSION)) {
                     listPUHolders = new ArrayList<PersistenceUnitMetadataHolder>(1);
@@ -182,7 +170,6 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             // Parsing persistence.xml in EJB jar/war files is handled as subdeployments.
             // We need to handle jars in the EAR/lib folder here
             List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
-            assert resourceRoots != null;
             for (ResourceRoot resourceRoot : resourceRoots) {
                 // look at lib/*.jar files that aren't subdeployments (subdeployments are passed
                 // to deploy(DeploymentPhaseContext)).
