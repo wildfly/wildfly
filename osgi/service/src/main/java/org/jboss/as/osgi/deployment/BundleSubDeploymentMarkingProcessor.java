@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 
@@ -48,12 +49,12 @@ public class BundleSubDeploymentMarkingProcessor implements DeploymentUnitProces
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (!DeploymentTypeMarker.isType(DeploymentType.EAR, depUnit)) {
             return;
         }
-        ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-        List<ResourceRoot> potentialSubDeployments = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        ResourceRoot deploymentRoot = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        List<ResourceRoot> potentialSubDeployments = depUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : potentialSubDeployments) {
             if (IgnoreMetaInfMarker.isIgnoreMetaInf(resourceRoot))
                 continue;
@@ -64,9 +65,12 @@ public class BundleSubDeploymentMarkingProcessor implements DeploymentUnitProces
                 continue;
 
             // Check if this sub deployment has a valid OSGi manifest - if so mark it
+            // Make this module private so that other modules in the deployment don't create a direct dependency
             Manifest manifest = ManifestAttachmentProcessor.getManifest(resourceRoot);
+            ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
             if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
                 SubDeploymentMarker.mark(resourceRoot);
+                moduleSpec.setPrivateModule(true);
             }
         }
     }

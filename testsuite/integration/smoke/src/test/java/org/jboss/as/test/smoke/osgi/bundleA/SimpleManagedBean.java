@@ -21,27 +21,20 @@
  */
 package org.jboss.as.test.smoke.osgi.bundleA;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
 
-import javax.annotation.Resource;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.annotation.ManagedBean;
 
 
-@SuppressWarnings("serial")
-@WebServlet(name = "SimpleBeanServlet", urlPatterns = { "/simple" })
-public class SimpleBeanServlet extends HttpServlet {
+/**
+ * @author Thomas.Diesler@jboss.com
+ * @since 09-Jul-2012
+ */
+@ManagedBean
+public class SimpleManagedBean {
 
-    @Resource
-    SimpleManagedBean bean;
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        Writer writer = resp.getWriter();
-        writer.write("" + bean.getPaymentProviders());
-        writer.close();
+    public List<String> getPaymentProviders() {
+        return Arrays.asList("Paypal", "Visa");
     }
 }

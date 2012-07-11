@@ -22,12 +22,13 @@
 
 package org.jboss.as.test.smoke.osgi;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.ManagedBean;
-import javax.sql.DataSource;
 
 import junit.framework.Assert;
 
@@ -36,9 +37,18 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.osgi.OSGiManagementOperations;
+import org.jboss.as.test.smoke.osgi.bundleA.ComplexBeanServlet;
+import org.jboss.as.test.smoke.osgi.bundleA.ComplexManagedBean;
+import org.jboss.as.test.smoke.osgi.bundleA.PaymentProviderActivatorPaypal;
 import org.jboss.as.test.smoke.osgi.bundleA.SimpleBeanServlet;
-import org.jboss.as.test.smoke.osgi.bundleB.SimpleManagedBean;
+import org.jboss.as.test.smoke.osgi.bundleA.PaymentProviderActivatorVisa;
+import org.jboss.as.test.smoke.osgi.bundleA.SimpleManagedBean;
+import org.jboss.as.test.smoke.osgi.bundleB.PaymentProvider;
+import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -49,6 +59,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.BundleActivator;
 
 /**
  * Tests CDI deployments with OSGi metadata
@@ -67,20 +78,23 @@ public class SimpleManagedBeanTestCase {
     private static final String COMPLEX_EAR = "complex.ear";
     private static final String COMPLEX_WAR = "complex.war";
     private static final String COMPLEX_CDI_JAR = "complex-cdi.jar";
+    private static final String VISA_PROVIDER_BUNDLE = "visa-bundle.jar";
+    private static final String PAYPAL_PROVIDER_BUNDLE = "paypal-bundle.jar";
 
     @ArquillianResource
     URL targetURL;
 
+    @ArquillianResource
+    ManagementClient managementClient;
+
     @Deployment(name = SIMPLE_EAR, testable = false)
     public static Archive<?> getSimpleEar() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
         war.addClasses(SimpleBeanServlet.class);
-
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SIMPLE_CDI_JAR);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, SIMPLE_CDI_JAR);
         jar.addClasses(SimpleManagedBean.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, SIMPLE_EAR);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, SIMPLE_EAR);
         ear.addAsModule(war);
         ear.addAsModule(jar);
         return ear;
@@ -88,42 +102,86 @@ public class SimpleManagedBeanTestCase {
 
     @Deployment(name = COMPLEX_EAR, testable = false)
     public static Archive<?> getComplexEar() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, COMPLEX_WAR);
-        war.addClasses(SimpleBeanServlet.class);
-
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, COMPLEX_CDI_JAR);
-        jar.addClasses(SimpleManagedBean.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, COMPLEX_WAR);
+        war.addClasses(ComplexBeanServlet.class);
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, COMPLEX_CDI_JAR);
+        jar.addClasses(ComplexManagedBean.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         jar.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(jar.getName());
+                builder.addBundleSymbolicName(COMPLEX_CDI_JAR);
                 builder.addBundleManifestVersion(2);
-                builder.addExportPackages(SimpleManagedBean.class);
-                builder.addImportPackages(ManagedBean.class, DataSource.class);
+                builder.addImportPackages(PaymentProvider.class);
+                builder.addImportPackages(ManagedBean.class);
                 return builder.openStream();
             }
         });
-
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, COMPLEX_EAR);
+        JavaArchive visa = ShrinkWrap.create(JavaArchive.class, VISA_PROVIDER_BUNDLE);
+        visa.addClasses(PaymentProviderActivatorVisa.class, PaymentProvider.class);
+        visa.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(VISA_PROVIDER_BUNDLE);
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(PaymentProviderActivatorVisa.class);
+                builder.addExportPackages(PaymentProvider.class);
+                builder.addImportPackages(PaymentProvider.class, BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        JavaArchive paypal = ShrinkWrap.create(JavaArchive.class, PAYPAL_PROVIDER_BUNDLE);
+        paypal.addClasses(PaymentProviderActivatorPaypal.class, PaymentProvider.class);
+        paypal.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(PAYPAL_PROVIDER_BUNDLE);
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(PaymentProviderActivatorPaypal.class);
+                builder.addExportPackages(PaymentProvider.class);
+                builder.addImportPackages(PaymentProvider.class, BundleActivator.class);
+                return builder.openStream();
+            }
+        });
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, COMPLEX_EAR);
         ear.addAsModule(war);
         ear.addAsModule(jar);
+        ear.addAsModule(visa);
+        ear.addAsModule(paypal);
         return ear;
     }
 
     @Test
     @OperateOnDeployment(SIMPLE_EAR)
     public void testSimpleEar() throws Exception {
-        String result = performCall("simple", null);
-        Assert.assertEquals("H2 JDBC Driver", result);
+        Assert.assertEquals("[Paypal, Visa]", performCall("simple", null));
     }
 
     @Test
     @OperateOnDeployment(COMPLEX_EAR)
     public void testComplexEar() throws Exception {
-        String result = performCall("simple", null);
-        Assert.assertEquals("H2 JDBC Driver", result);
+        Assert.assertEquals("[Paypal, Visa]", performCall("complex", null));
+
+        ModelControllerClient client = managementClient.getControllerClient();
+        ModelNode resultMap = OSGiManagementOperations.getBundleInfo(client, VISA_PROVIDER_BUNDLE);
+        assertEquals("ACTIVE", resultMap.get("state").asString());
+        resultMap = OSGiManagementOperations.getBundleInfo(client, PAYPAL_PROVIDER_BUNDLE);
+        assertEquals("ACTIVE", resultMap.get("state").asString());
+
+        OSGiManagementOperations.bundleStop(client, VISA_PROVIDER_BUNDLE);
+        Assert.assertEquals("[Paypal]", performCall("complex", null));
+
+        OSGiManagementOperations.bundleStop(client, PAYPAL_PROVIDER_BUNDLE);
+        Assert.assertEquals("[]", performCall("complex", null));
+
+        OSGiManagementOperations.bundleStart(client, VISA_PROVIDER_BUNDLE);
+        Assert.assertEquals("[Visa]", performCall("complex", null));
+
+        OSGiManagementOperations.bundleStart(client, PAYPAL_PROVIDER_BUNDLE);
+        Assert.assertEquals("[Paypal, Visa]", performCall("complex", null));
     }
 
     private String performCall(String pattern, String param) throws Exception {

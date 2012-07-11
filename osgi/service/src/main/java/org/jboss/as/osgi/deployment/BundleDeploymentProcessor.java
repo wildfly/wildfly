@@ -91,11 +91,14 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             // Make sure the framework uses the same module id as the server
             ModuleIdentifier identifier = depUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
             deployment.addAttachment(ModuleIdentifier.class, identifier);
+
             // Allow additional dependencies for the set of supported deployemnt types
             if (allowAdditionalModuleDependencies(depUnit)) {
                 ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
                 deployment.addAttachment(ModuleSpecification.class, moduleSpec);
             }
+
+            // Attach the bundle deployment
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
     }
