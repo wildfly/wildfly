@@ -121,6 +121,7 @@
 
     <target name="copy-client">
         <copy file="${org.jboss.as:jboss-as-client-all:jar}" tofile="${output.dir}/bin/client/jboss-client.jar"/>
+        <copy file="${org.jboss.as:jboss-as-cli:jar:client}" tofile="${output.dir}/bin/client/jboss-cli-client.jar"/>
     </target>
 
     <target name="minimalistic" depends="base, copy-standalone-minimalistic"/>
