@@ -36,7 +36,7 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
-import static org.jboss.as.ejb3.deployment.EjbDeploymentMarker.isEjbDeployment;
+import static org.jboss.as.server.deployment.EjbDeploymentMarker.isEjbDeployment;
 
 /**
  * Responsible for adding appropriate Java EE {@link org.jboss.as.server.deployment.module.ModuleDependency module dependencies}
