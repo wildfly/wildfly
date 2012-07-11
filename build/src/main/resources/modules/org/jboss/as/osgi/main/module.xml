@@ -52,5 +52,9 @@
         <module name="org.jboss.osgi.spi"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.osgi.core"/>
+        <!-- 
+        	Optional Extensions 
+        -->
+        <module name="org.jboss.as.osgi.web" optional="true" services="import"/>
     </dependencies>
 </module>

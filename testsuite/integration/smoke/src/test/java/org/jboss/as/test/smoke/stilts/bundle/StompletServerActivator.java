@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jboss.as.test.smoke.stilts.bundle;
-
 
 import java.io.InputStream;
 
+import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.XRequirementBuilder;
@@ -32,7 +31,7 @@ import org.osgi.resource.Capability;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.RepositoryContent;
 
-
+@DeploymentMarker(autoStart = false)
 public class StompletServerActivator implements BundleActivator {
 
     @Override
@@ -49,7 +48,7 @@ public class StompletServerActivator implements BundleActivator {
         XRepository repository = getRepository(context);
         XRequirement req = XRequirementBuilder.create(moduleid).getRequirement();
         Capability cap = repository.findProviders(req).iterator().next();
-        InputStream input = ((RepositoryContent)cap.getResource()).getContent();
+        InputStream input = ((RepositoryContent) cap.getResource()).getContent();
         return context.installBundle(moduleid.toString(), input);
     }
 

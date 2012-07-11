@@ -569,13 +569,13 @@ public interface ServerMessages {
     XMLStreamException unexpectedContent(String kind, QName name, String text, @Param Location location);
 
     @Message(id = 18755, value = "No method found with id: %s on class (or its super class) %s")
-    DeploymentUnitProcessingException noMethodFound(MethodIdentifier method, Class clazz);
+    DeploymentUnitProcessingException noMethodFound(MethodIdentifier method, Class<?> clazz);
 
     @Message(id = 18756, value = "Method cannot be null")
     IllegalArgumentException nullMethod();
 
     @Message(id = 18757, value = "Error getting reflective information for %s with ClassLoader %s")
-    RuntimeException errorGettingReflectiveInformation(Class clazz, ClassLoader cl, @Param Throwable cause);
+    RuntimeException errorGettingReflectiveInformation(Class<?> clazz, ClassLoader cl, @Param Throwable cause);
 
     @Message(id = 18758, value = "External Module Service already started")
     IllegalStateException externalModuleServiceAlreadyStarted();
@@ -627,4 +627,7 @@ public interface ServerMessages {
 
     @Message(id = 18774, value = "Error loading jboss-all.xml from %s")
     DeploymentUnitProcessingException errorLoadingJBossXmlFile(String path, @Cause XMLStreamException e);
+
+    @Message(id = 18775, value = "Cannot obtain required module for: %s")
+    IllegalStateException nullModuleAttachment(DeploymentUnit depUnit);
 }

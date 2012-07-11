@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
-import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 /**
@@ -72,17 +71,15 @@ public class LegacyBundleTestCase {
         assertEquals("legacy-bundle", bundle.getHeaders().get(BUNDLE_NAME));
         assertEquals(Version.emptyVersion, bundle.getVersion());
 
-        // Assert that the bundle is in state RESOLVED
-        // Note when the test bundle contains the test case it
-        // must be resolved already when this test method is called
-        Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
-
-        // Start the bundle
-        bundle.start();
+        // Assert that the bundle is in state ACTIVE
         Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
 
         // Stop the bundle
         bundle.stop();
         Assert.assertEquals(Bundle.RESOLVED, bundle.getState());
+
+        // Start the bundle
+        bundle.start();
+        Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
     }
 }

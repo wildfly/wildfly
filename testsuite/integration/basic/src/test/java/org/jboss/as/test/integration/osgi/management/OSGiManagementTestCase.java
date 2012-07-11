@@ -76,6 +76,7 @@ public class OSGiManagementTestCase {
     private static JavaArchive createTestBundle(final String bsn, final String version) {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, bsn);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(bsn);
@@ -91,6 +92,7 @@ public class OSGiManagementTestCase {
     public static JavaArchive createTestFragment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-fragment");
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
@@ -178,19 +180,19 @@ public class OSGiManagementTestCase {
 
         ModelNode resultMap = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
         assertEquals(testBundleId.toString(), resultMap.get("id").asString());
-        assertEquals("INSTALLED", resultMap.get("state").asString());
+        assertEquals("ACTIVE", resultMap.get("state").asString());
         assertEquals("1", resultMap.get("startlevel").asString());
         assertEquals("bundle", resultMap.get("type").asString());
         assertEquals("test-bundle", resultMap.get("symbolic-name").asString());
         assertEquals("999.0.0", resultMap.get("version").asString());
 
-        assertTrue(OSGiManagementOperations.bundleStart(getControllerClient(), testBundleId));
-        ModelNode resultMap2 = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
-        assertEquals("ACTIVE", resultMap2.get("state").asString());
-
         assertTrue(OSGiManagementOperations.bundleStop(getControllerClient(), testBundleId));
         ModelNode resultMap3 = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
         assertEquals("RESOLVED", resultMap3.get("state").asString());
+
+        assertTrue(OSGiManagementOperations.bundleStart(getControllerClient(), testBundleId));
+        ModelNode resultMap2 = OSGiManagementOperations.getBundleInfo(getControllerClient(), testBundleId);
+        assertEquals("ACTIVE", resultMap2.get("state").asString());
 
         deployer.deploy("test-fragment");
         Long testFragId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-fragment", Version.parseVersion("0.0.0"));
@@ -228,23 +230,24 @@ public class OSGiManagementTestCase {
             assertEquals("ACTIVE", resultMap.get(ModelConstants.STATE).asString());
 
             assertTrue(OSGiManagementOperations.setFrameworkStartLevel(getControllerClient(), 0));
-            waitForBundleState("RESOLVED", testBundleId, 10000);
+            if (!waitForBundleStateAfterStartLevelChange("RESOLVED", testBundleId, 10000)) {
+                fail("Bundle not RESOLVED");
+            }
         } finally {
             assertTrue(OSGiManagementOperations.setFrameworkStartLevel(getControllerClient(), initial));
         }
     }
 
-    private void waitForBundleState(String state, long bundleId, int timeout) throws Exception {
-        do {
+    private boolean waitForBundleStateAfterStartLevelChange(String state, long bundleId, int timeout) throws Exception {
+        while (timeout > 0) {
             ModelNode node = OSGiManagementOperations.getBundleInfo(getControllerClient(), bundleId);
-            if (state.equals(node.get(ModelConstants.STATE).asString()))
-                return;
-
+            if (state.equals(node.get(ModelConstants.STATE).asString())) {
+                return true;
+            }
             timeout -= 500;
             Thread.sleep(500);
-        } while (timeout > 0);
-
-        fail("Desired bundle state not reached: " + state);
+        };
+        return false;
     }
 
     private ModelControllerClient getControllerClient() {

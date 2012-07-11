@@ -43,7 +43,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleInstallHandler;
+import org.jboss.osgi.framework.BundleInstallPlugin;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
@@ -55,7 +55,7 @@ import org.osgi.framework.BundleException;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class BundleInstallIntegration implements BundleInstallHandler {
+public class BundleInstallIntegration implements BundleInstallPlugin {
 
     private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
@@ -65,7 +65,7 @@ public class BundleInstallIntegration implements BundleInstallHandler {
 
     public static ServiceController<?> addService(final ServiceTarget target) {
         BundleInstallIntegration service = new BundleInstallIntegration();
-        ServiceBuilder<BundleInstallHandler> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_HANDLER, service);
+        ServiceBuilder<BundleInstallPlugin> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_PLUGIN, service);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
@@ -90,7 +90,7 @@ public class BundleInstallIntegration implements BundleInstallHandler {
     }
 
     @Override
-    public BundleInstallHandler getValue() throws IllegalStateException, IllegalArgumentException {
+    public BundleInstallPlugin getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 

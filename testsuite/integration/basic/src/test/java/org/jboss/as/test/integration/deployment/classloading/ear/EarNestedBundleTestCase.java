@@ -21,18 +21,23 @@
  */
 package org.jboss.as.test.integration.deployment.classloading.ear;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.InputStream;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,32 +50,79 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class EarNestedBundleTestCase {
 
-    @Deployment
-    public static Archive<?> deploy() {
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "as945.ear");
-        JavaArchive earLib = ShrinkWrap.create(JavaArchive.class);
-        earLib.addClass(EarNestedBundleTestCase.class);
-        ear.addAsLibraries(earLib);
+    private static final String TEST_CLASS_NAME = EarNestedBundleTestCase.class.getName();
+    private static final String OTHER_CLASS_NAME = TestAA.class.getName();
 
-        final JavaArchive osgiLib = ShrinkWrap.create(JavaArchive.class, "nested-bundle.jar");
-        osgiLib.addClass(TestAA.class);
-        osgiLib.setManifest(new Asset() {
+    private static final String SIMPLE_EAR = "simple.ear";
+    private static final String NESTED_BUNDLE_EAR = "nested-bundle.ear";
+
+    private ModuleLoader moduleLoader;
+
+    @Before
+    public void setUp() {
+        ModuleClassLoader classLoader = (ModuleClassLoader) EarNestedBundleTestCase.class.getClassLoader();
+        moduleLoader = classLoader.getModule().getModuleLoader();
+    }
+
+    @Deployment(name = SIMPLE_EAR)
+    public static Archive<?> getSimpleDeployment() {
+        JavaArchive jarA = ShrinkWrap.create(JavaArchive.class, "jarA.jar");
+        jarA.addClass(EarNestedBundleTestCase.class);
+
+        JavaArchive jarB = ShrinkWrap.create(JavaArchive.class, "jarB.jar");
+        jarB.addClass(TestAA.class);
+
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, SIMPLE_EAR);
+        ear.addAsLibrary(jarA);
+        ear.addAsLibrary(jarB);
+        return ear;
+    }
+
+    @Deployment(name = NESTED_BUNDLE_EAR)
+    public static Archive<?> getWarDeployment() {
+        JavaArchive jarA = ShrinkWrap.create(JavaArchive.class, "jarA.jar");
+        jarA.addClass(EarNestedBundleTestCase.class);
+
+        final JavaArchive bundle = ShrinkWrap.create(JavaArchive.class, "nested-bundle.jar");
+        bundle.addClass(TestAA.class);
+        bundle.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(osgiLib.getName());
+                builder.addBundleSymbolicName(bundle.getName());
                 builder.addBundleManifestVersion(2);
                 return builder.openStream();
             }
         });
-        ear.addAsLibraries(osgiLib);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, NESTED_BUNDLE_EAR);
+        ear.addAsLibrary(jarA);
+        ear.addAsModule(bundle);
         return ear;
     }
 
     @Test
-    public void testBundleLibAccessible() throws ClassNotFoundException {
-        ClassLoader warLoader = EarNestedBundleTestCase.class.getClassLoader();
-        Class<?> clazz = warLoader.loadClass("org.jboss.as.test.integration.deployment.classloading.ear.TestAA");
-        ClassLoader bundleLoader = clazz.getClassLoader();
-        assertTrue(bundleLoader.toString().contains("ModuleClassLoader for Module \"deployment.as945.ear:main\""));
+    @OperateOnDeployment(SIMPLE_EAR)
+    public void testNestedJars() throws Exception {
+        ModuleIdentifier earModuleId = ModuleIdentifier.fromString("deployment.simple.ear:main");
+        Module earModule = moduleLoader.loadModule(earModuleId);
+        Class<?> testClass = earModule.getClassLoader().loadClass(TEST_CLASS_NAME);
+        ModuleClassLoader testClassLoader = (ModuleClassLoader) testClass.getClassLoader();
+        Assert.assertEquals(earModuleId, testClassLoader.getModule().getIdentifier());
+        Class<?> clazz = testClassLoader.loadClass(OTHER_CLASS_NAME);
+        ModuleClassLoader otherClassLoader = (ModuleClassLoader) clazz.getClassLoader();
+        Assert.assertEquals(earModuleId, otherClassLoader.getModule().getIdentifier());
+    }
+
+    @Test
+    @OperateOnDeployment(NESTED_BUNDLE_EAR)
+    public void testNestedBundle() throws Exception {
+        ModuleIdentifier earModuleId = ModuleIdentifier.fromString("deployment.nested-bundle.ear:main");
+        Module earModule = moduleLoader.loadModule(earModuleId);
+        Class<?> testClass = earModule.getClassLoader().loadClass(TEST_CLASS_NAME);
+        ModuleClassLoader testClassLoader = (ModuleClassLoader) testClass.getClassLoader();
+        Assert.assertEquals(earModuleId, testClassLoader.getModule().getIdentifier());
+        Class<?> clazz = testClassLoader.loadClass(OTHER_CLASS_NAME);
+        ModuleClassLoader otherClassLoader = (ModuleClassLoader) clazz.getClassLoader();
+        ModuleIdentifier otherModuleId = ModuleIdentifier.fromString("deployment.nested-bundle.ear.nested-bundle.jar:main");
+        Assert.assertEquals(otherModuleId, otherClassLoader.getModule().getIdentifier());
     }
 }
