@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
@@ -97,8 +98,8 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
 
     private boolean allowAdditionalModuleDependencies(final DeploymentUnit depUnit) {
         boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
-        //boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
-        return isWar;
+        boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
+        return isWar || isEjb;
     }
 
     @Override
