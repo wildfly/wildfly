@@ -885,7 +885,11 @@
         <module-def name="org.jboss.as.security">
             <maven-resource group="org.jboss.as" artifact="jboss-as-security"/>
         </module-def>
-
+    	
+    	<module-def name="org.jboss.as.system-jmx">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-system-jmx"/>
+        </module-def>
+        
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>

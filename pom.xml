@@ -1102,6 +1102,12 @@
                 <artifactId>jboss-as-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-sos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -1111,7 +1117,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-sos</artifactId>
+                <artifactId>jboss-as-system-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6084,6 +6090,7 @@
                 <module>osgi</module>
                 <module>pojo</module>
                 <module>remoting-test</module>
+                <module>system-jmx</module>
                 <module>sar</module>
                 <module>security</module>
                 <module>spec-api</module>
