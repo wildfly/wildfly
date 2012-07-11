@@ -29,6 +29,7 @@ import org.jboss.as.controller.remote.RemoteProxyController;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
@@ -83,7 +84,7 @@ public interface TransformingProxyController extends ProxyController {
                 }
 
                 @Override
-                public Resource transformResource(TransformationContext context, Resource resource) {
+                public Resource transformResource(ResourceTransformationContext context, Resource resource) {
                     return transformers.transformResource(context, resource);
 
                 }

@@ -57,7 +57,7 @@ public interface Transformers {
      * @param resource to transform
      * @return transformed resource, or same if no transformation was needed
      */
-    Resource transformResource(TransformationContext context, Resource resource);
+    Resource transformResource(ResourceTransformationContext context, Resource resource);
 
     public static class Factory {
         private Factory() {
@@ -67,12 +67,13 @@ public interface Transformers {
             return new TransformersImpl(target);
         }
 
-        public static TransformationContext getTransformationContext(final Transformers transformers, final OperationContext context) {
+        public static ResourceTransformationContext getTransformationContext(final Transformers transformers, final OperationContext context) {
             return getTransformationContext(transformers.getTarget(), context);
         }
 
-        public static TransformationContext getTransformationContext(final TransformationTarget target, final OperationContext context) {
-            return new TransformersImpl.DelegateTransformContext(context, target);
+        public static ResourceTransformationContext getTransformationContext(final TransformationTarget target, final OperationContext context) {
+            // TODO differentiate between operation / resource transformation
+            return ResourceTransformationContextImpl.create(context, target);
         }
     }
 

@@ -49,6 +49,7 @@ import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -91,29 +92,14 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         final TransformersSubRegistration transformers =  subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), new ResourceTransformer() {
 
             @Override
-            public ModelNode transformModel(TransformationContext context, ModelNode model) {
-                ModelNode transformed = model.clone();
-                return transformed;
-            }
-        });
-
-        subsystem.registerSubsystemTransformer(new AbstractSubsystemTransformer(1, 0, 0) {
-
-            @Override
-            public ModelNode transformModel(TransformationContext context, ModelNode model) {
-                ModelNode transformed = model.clone();
-                transformed.remove("new-element");
-                if (transformed.has("renamed")) {
-                    ModelNode node = transformed.remove("renamed");
-                    if (node.has("element")) {
-                        node = node.remove("element");
-                        transformed.get("element", "renamed").set(node);
-                    }
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) {
+                final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                for(final Resource.ResourceEntry entry : resource.getChildren("renamed")) {
+                    childContext.processChild(PathElement.pathElement("element", "renamed"), entry);
                 }
-                return transformed;
             }
-        });
 
+        });
 
         transformers.registerOperationTransformer("update", new UpdateTransformer());
 
