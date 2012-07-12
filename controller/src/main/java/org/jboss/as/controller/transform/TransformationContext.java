@@ -1,10 +1,12 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
 * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -63,5 +65,17 @@ public interface TransformationContext {
      * @return the read-only resource
      */
     Resource readResourceFromRoot(PathAddress address);
+
+    /**
+     * Resolve an expression.
+     *
+     * In some cases an outdated target might not understand expressions for a given attribute, therefore it needs to be
+     * resolve before being sent to the target.
+     *
+     * @param node the node
+     * @return the resolved expression
+     * @throws OperationFailedException
+     */
+    ModelNode resolveExpressions(ModelNode node) throws OperationFailedException;
 
 }

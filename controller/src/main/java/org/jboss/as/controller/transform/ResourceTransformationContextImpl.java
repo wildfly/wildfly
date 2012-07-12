@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -48,7 +50,8 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         final Resource root = Resource.Factory.create();
         final Resource original = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true);
         final ImmutableManagementResourceRegistration registration = context.getRootResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS);
-        final OriginalModel originalModel = new OriginalModel(original, context.getRunningMode(), context.getProcessType(), target, registration);
+        final ExpressionResolver expressionResolver = TransformerExpressionResolver.create(context, target.getTargetType());
+        final OriginalModel originalModel = new OriginalModel(original, context.getRunningMode(), context.getProcessType(), target, registration, expressionResolver);
         return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel);
     }
 
@@ -199,6 +202,11 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     }
 
     @Override
+    public ModelNode resolveExpressions(final ModelNode node) throws OperationFailedException {
+        return originalModel.expressionResolver.resolveExpressions(node);
+    }
+
+    @Override
     public Resource getTransformedRoot() {
         return root;
     }
@@ -210,13 +218,15 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         private final ProcessType type;
         private final TransformationTarget target;
         private final ImmutableManagementResourceRegistration registration;
+        private final ExpressionResolver expressionResolver;
 
-        OriginalModel(Resource original, RunningMode mode, ProcessType type, TransformationTarget target, ImmutableManagementResourceRegistration registration) {
+        OriginalModel(Resource original, RunningMode mode, ProcessType type, TransformationTarget target, ImmutableManagementResourceRegistration registration, ExpressionResolver expressionResolver) {
             this.original = original;
             this.mode = mode;
             this.type = type;
             this.target = target;
             this.registration = registration;
+            this.expressionResolver = expressionResolver;
         }
 
         Resource get(final PathAddress address) {

@@ -23,8 +23,11 @@ public class TransformationTargetImpl implements TransformationTarget {
     private final TransformerRegistry transformerRegistry;
     private final Map<String, ModelVersion> subsystemVersions = Collections.synchronizedMap(new HashMap<String, ModelVersion>());
     private final OperationTransformerRegistry operationTransformers;
+    private final TransformationTargetType type;
 
-    private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version, final Map<PathAddress, ModelVersion> subsystemVersions, final OperationTransformerRegistry transformers) {
+    private TransformationTargetImpl(final TransformerRegistry transformerRegistry, final ModelVersion version,
+                                     final Map<PathAddress, ModelVersion> subsystemVersions, final OperationTransformerRegistry transformers,
+                                     final TransformationTargetType type) {
         this.version = version;
         this.transformerRegistry = transformerRegistry;
         this.extensionRegistry = transformerRegistry.getExtensionRegistry();
@@ -33,6 +36,7 @@ public class TransformationTargetImpl implements TransformationTarget {
             this.subsystemVersions.put(name, p.getValue());
         }
         this.operationTransformers = transformers;
+        this.type = type;
     }
 
     public static TransformationTargetImpl create(final TransformerRegistry transformerRegistry, final ModelVersion version, final ModelNode subsystems, final TransformationTargetType type) {
@@ -48,7 +52,7 @@ public class TransformationTargetImpl implements TransformationTarget {
             default:
                 registry = transformerRegistry.resolveHost(version, subsystems);
         }
-        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry);
+        return new TransformationTargetImpl(transformerRegistry, version, subsystems, registry, type);
     }
 
     @Deprecated
@@ -103,4 +107,8 @@ public class TransformationTargetImpl implements TransformationTarget {
         transformerRegistry.addSubsystem(operationTransformers, subsystemName, version);
     }
 
+    @Override
+    public TransformationTargetType getTargetType() {
+        return type;
+    }
 }
