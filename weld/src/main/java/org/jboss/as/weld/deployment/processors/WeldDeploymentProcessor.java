@@ -56,6 +56,7 @@ import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
+import org.jboss.as.weld.deployment.CdiAnnotationMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.TCCLSingletonService;
@@ -94,6 +95,12 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (!WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+
+            //if there are CDI annotation present and this is the top level deployment we log a warning
+            if (deploymentUnit.getParent() == null && CdiAnnotationMarker.cdiAnnotationsPresent(deploymentUnit)) {
+                WeldLogger.DEPLOYMENT_LOGGER.cdiAnnotationsButNoBeansXML(deploymentUnit);
+            }
+
             return;
         }
 

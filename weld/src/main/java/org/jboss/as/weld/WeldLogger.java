@@ -25,6 +25,7 @@ package org.jboss.as.weld;
 import java.lang.reflect.Member;
 import java.net.URL;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -101,4 +102,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(value = "Warning while parsing %s:%s %s", id = 16011)
     void beansXmlValidationError(URL file, int line , String message);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(value = "Deployment %s contains CDI annotations but beans.xml was not found.", id = 16012)
+    void cdiAnnotationsButNoBeansXML(DeploymentUnit deploymentUnit);
 }

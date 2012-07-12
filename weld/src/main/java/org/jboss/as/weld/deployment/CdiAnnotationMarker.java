@@ -25,7 +25,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
 /**
- * Marker for CDI deployments.
+ * Marker for deployments that have CDI annotations present
  */
 public final class CdiAnnotationMarker {
     /**
@@ -52,13 +52,7 @@ public final class CdiAnnotationMarker {
         }
     }
 
-    /**
-     * Return the information about the deployment regarding CDI.
-     *
-     * @param deploymentUnit to be verified
-     * @return true if the deployment is marked as a CDI one
-     */
-    public static boolean isCdiDeployment(final DeploymentUnit deploymentUnit) {
+    public static boolean cdiAnnotationsPresent(final DeploymentUnit deploymentUnit) {
         DeploymentUnit deployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
         Boolean val = deployment.getAttachment(ATTACHMENT_KEY);
         return val != null && val;
