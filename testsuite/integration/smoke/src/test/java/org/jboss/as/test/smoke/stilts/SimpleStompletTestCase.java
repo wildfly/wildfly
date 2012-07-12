@@ -16,7 +16,6 @@
  */
 package org.jboss.as.test.smoke.stilts;
 
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
 import static org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet.DESTINATION_QUEUE_ONE;
 
 import java.io.InputStream;
@@ -33,6 +32,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.osgi.OSGiManagementOperations;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.smoke.stilts.bundle.SimpleStompletActivator;
 import org.jboss.as.test.smoke.stilts.bundle.StompletServerActivator;
@@ -84,17 +84,18 @@ public class SimpleStompletTestCase {
     ManagementClient managementClient;
 
     @Deployment(testable = false)
-    public static Archive<?> getTestArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_NAME);
-        archive.addClasses(SimpleStompletActivator.class, SimpleStomplet.class);
+    public static Archive<?> getStompletServerProviderArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_SERVER_PROVIDER);
+        archive.addClasses(StompletServerActivator.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(SimpleStompletActivator.class);
-                builder.addImportPackages(BundleActivator.class, Logger.class);
-                builder.addDynamicImportPackages("org.projectodd.stilts.*");
+                builder.addBundleActivator(StompletServerActivator.class);
+                builder.addImportPackages(XRequirementBuilder.class, XRequirement.class, Requirement.class, Repository.class);
+                builder.addImportPackages(BundleActivator.class, PackageAdmin.class, ModuleIdentifier.class);
                 return builder.openStream();
             }
         });
@@ -104,88 +105,93 @@ public class SimpleStompletTestCase {
     @Test
     public void testSendWithNoTx() throws Exception {
 
-        // Provide the stomplet server
-        deployer.deploy(STOMPLET_SERVER_PROVIDER);
-        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), STOMPLET_SERVER_PROVIDER));
+        Assert.assertTrue("Bundle started", OSGiManagementOperations.bundleStart(getControllerClient(), STOMPLET_SERVER_PROVIDER));
 
-        // Find the stomplet bundle and start it
-        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), STOMPLET_NAME));
+        deployer.deploy(STOMPLET_NAME);
+        try {
+            StompClient client = new StompClient("stomp://" + url.getHost());
+            client.connect();
 
-        StompClient client = new StompClient("stomp://" + url.getHost());
-        client.connect();
+            final Set<String> outbound = new HashSet<String>();
+            final CountDownLatch outboundLatch = new CountDownLatch(2);
+            SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
+            builder.withMessageHandler(new MessageHandler() {
+                @Override
+                public void handle(StompMessage message) {
+                    String content = message.getContentAsString();
+                    outbound.add(content);
+                    outboundLatch.countDown();
+                }
+            });
+            ClientSubscription subscription = builder.start();
 
-        final Set<String> outbound = new HashSet<String>();
-        final CountDownLatch outboundLatch = new CountDownLatch(2);
-        SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
-        builder.withMessageHandler(new MessageHandler() {
-            public void handle(StompMessage message) {
-                String content = message.getContentAsString();
-                outbound.add(content);
-                outboundLatch.countDown();
-            }
-        });
-        ClientSubscription subscription = builder.start();
+            client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg1"));
+            client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
 
-        client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg1"));
-        client.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
+            Assert.assertTrue("No latch timeout", outboundLatch.await(10, TimeUnit.SECONDS));
+            Assert.assertTrue("Contains msg1", outbound.contains("msg1"));
+            Assert.assertTrue("Contains msg2", outbound.contains("msg2"));
 
-        Assert.assertTrue("No latch timeout", outboundLatch.await(10, TimeUnit.SECONDS));
-        Assert.assertTrue("Contains msg1", outbound.contains("msg1"));
-        Assert.assertTrue("Contains msg2", outbound.contains("msg2"));
-
-        subscription.unsubscribe();
-        client.disconnect();
-
-        deployer.undeploy(STOMPLET_SERVER_PROVIDER);
+            subscription.unsubscribe();
+            client.disconnect();
+        } finally {
+            deployer.undeploy(STOMPLET_NAME);
+        }
     }
 
     @Test
     public void testSendWithTxCommit() throws Exception {
+        deployer.deploy(STOMPLET_NAME);
+        try {
+            StompClient client = new StompClient("stomp://" + url.getHost());
+            client.connect();
 
-        StompClient client = new StompClient("stomp://" + url.getHost());
-        client.connect();
+            final Set<String> outbound = new HashSet<String>();
+            final CountDownLatch outboundLatch = new CountDownLatch(2);
+            SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
+            builder.withMessageHandler(new MessageHandler() {
+                @Override
+                public void handle(StompMessage message) {
+                    String content = message.getContentAsString();
+                    outbound.add(content);
+                    outboundLatch.countDown();
+                }
+            });
+            ClientSubscription subscription = builder.start();
 
-        final Set<String> outbound = new HashSet<String>();
-        final CountDownLatch outboundLatch = new CountDownLatch(2);
-        SubscriptionBuilder builder = client.subscribe(DESTINATION_QUEUE_ONE);
-        builder.withMessageHandler(new MessageHandler() {
-            public void handle(StompMessage message) {
-                String content = message.getContentAsString();
-                outbound.add(content);
-                outboundLatch.countDown();
-            }
-        });
-        ClientSubscription subscription = builder.start();
+            ClientTransaction tx = client.begin();
+            tx.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg1"));
+            tx.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
+            tx.commit();
 
-        ClientTransaction tx = client.begin();
-        tx.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg1"));
-        tx.send(StompMessages.createStompMessage(DESTINATION_QUEUE_ONE, "msg2"));
-        tx.commit();
+            Assert.assertTrue("No latch timeout", outboundLatch.await(3, TimeUnit.SECONDS));
+            Assert.assertTrue("Contains msg1", outbound.contains("msg1"));
+            Assert.assertTrue("Contains msg2", outbound.contains("msg2"));
 
-        Assert.assertTrue("No latch timeout", outboundLatch.await(3, TimeUnit.SECONDS));
-        Assert.assertTrue("Contains msg1", outbound.contains("msg1"));
-        Assert.assertTrue("Contains msg2", outbound.contains("msg2"));
-
-        subscription.unsubscribe();
-        client.disconnect();
+            subscription.unsubscribe();
+            client.disconnect();
+        } finally {
+            deployer.undeploy(STOMPLET_NAME);
+        }
     }
 
     private ModelControllerClient getControllerClient() {
         return managementClient.getControllerClient();
     }
 
-    @Deployment(name = STOMPLET_SERVER_PROVIDER, managed = false, testable = false)
-    public static Archive<?> getStompletServerProviderArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_SERVER_PROVIDER);
-        archive.addClasses(StompletServerActivator.class);
+    @Deployment(name = STOMPLET_NAME, managed = false, testable = false)
+    public static Archive<?> getTestArchive() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, STOMPLET_NAME);
+        archive.addClasses(SimpleStompletActivator.class, SimpleStomplet.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(StompletServerActivator.class);
-                builder.addImportPackages(XRequirementBuilder.class, XRequirement.class, Requirement.class, Repository.class);
-                builder.addImportPackages(BundleActivator.class, PackageAdmin.class, ModuleIdentifier.class);
+                builder.addBundleActivator(SimpleStompletActivator.class);
+                builder.addImportPackages(BundleActivator.class, Logger.class);
+                builder.addDynamicImportPackages("org.projectodd.stilts.*");
                 return builder.openStream();
             }
         });
