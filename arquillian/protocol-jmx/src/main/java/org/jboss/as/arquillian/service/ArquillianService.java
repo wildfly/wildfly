@@ -105,7 +105,7 @@ public class ArquillianService implements Service<ArquillianService> {
 
             @Override
             public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
-                switch (serviceController.getState()) {
+                switch (transition.getAfter()) {
                     case UP: {
                         ServiceName serviceName = serviceController.getName();
                         String simpleName = serviceName.getSimpleName();
