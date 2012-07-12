@@ -44,7 +44,7 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         this.transformerRegistry = transformerRegistry;
     }
 
-    private ModelNode transformReadResourceResult(final OperationContext context, ModelNode original, String subsystem, int major, int minor, int micro) {
+    private ModelNode transformReadResourceResult(final OperationContext context, ModelNode original, String subsystem, int major, int minor, int micro) throws OperationFailedException {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
         final ModelNode subsystems = new ModelNode();

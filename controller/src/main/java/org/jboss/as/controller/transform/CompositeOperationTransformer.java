@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import org.jboss.dmr.ModelNode;
@@ -37,11 +38,11 @@ import java.util.List;
 class CompositeOperationTransformer implements OperationTransformer {
 
     @Override
-    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+    public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         return transformOperation(context, address, operation, false);
     }
 
-    TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation, final boolean nested) {
+    TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation, final boolean nested) throws OperationFailedException {
         assert address.size() == 0;
         final ModelNode composite = operation.clone();
         composite.get(STEPS).setEmptyList();

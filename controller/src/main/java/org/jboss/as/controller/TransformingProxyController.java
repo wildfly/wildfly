@@ -63,8 +63,9 @@ public interface TransformingProxyController extends ProxyController {
      * @param operation the operation to transform.
      * @param context the operation context
      * @return the transformed operation
+     * @throws OperationFailedException
      */
-    OperationTransformer.TransformedOperation transformOperation(OperationContext context, ModelNode operation);
+    OperationTransformer.TransformedOperation transformOperation(OperationContext context, ModelNode operation) throws OperationFailedException;
 
     public static class Factory {
 
@@ -78,13 +79,13 @@ public interface TransformingProxyController extends ProxyController {
                 }
 
                 @Override
-                public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode original) {
+                public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode original) throws OperationFailedException {
                     final ModelNode operation = proxy.translateOperationForProxy(original);
                     return transformers.transformOperation(context, operation);
                 }
 
                 @Override
-                public Resource transformResource(ResourceTransformationContext context, Resource resource) {
+                public Resource transformResource(ResourceTransformationContext context, Resource resource) throws OperationFailedException {
                     return transformers.transformResource(context, resource);
 
                 }
@@ -124,7 +125,7 @@ public interface TransformingProxyController extends ProxyController {
         }
 
         @Override
-        public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) {
+        public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final TransformationContext transformationContext = Transformers.Factory.getTransformationContext(transformers, context);
             return transformers.transformOperation(transformationContext, operation);
         }
