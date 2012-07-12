@@ -44,6 +44,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -94,7 +95,16 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         final TransformersSubRegistration renamed = transformers.registerSubResource(RENAMED, AliasOperationTransformer.replaceLastElement(PathElement.pathElement("element", "renamed")));
     }
 
-    static ResourceTransformer RESOURCE_TRANSFORMER = ResourceTransformer.DEFAULT;
+    static ResourceTransformer RESOURCE_TRANSFORMER = new ResourceTransformer() {
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+            final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+            for(final Resource.ResourceEntry entry : resource.getChildren("renamed")) {
+                childContext.processChild(PathElement.pathElement("element", "renamed"), entry);
+            }
+        }
+
+    };
 
     static class UpdateTransformer implements OperationTransformer {
 

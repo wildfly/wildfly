@@ -22,8 +22,17 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -34,7 +43,6 @@ import org.jboss.as.controller.remote.TransactionalOperationImpl;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
@@ -78,18 +86,27 @@ class HostControllerUpdateTask {
         final TransactionalProtocolClient client = proxyController.getProtocolClient();
         final OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
-        final OperationTransformer.TransformedOperation transformationResult = proxyController.transformOperation(context, operation);
-        final ModelNode transformedOperation = transformationResult.getTransformedOperation();
-        final OperationResultTransformer resultTransformer = transformationResult.getResultTransformer();
-        final ProxyOperation proxyOperation = new ProxyOperation(name, transformedOperation, messageHandler, operationAttachments);
         final SubsystemInfoOperationListener subsystemListener = new SubsystemInfoOperationListener(listener, proxyController.getTransformers());
         try {
-            final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
-            return new ExecutedHostRequest(result, resultTransformer);
-        } catch (IOException e) {
+            final OperationTransformer.TransformedOperation transformationResult = proxyController.transformOperation(context, operation);
+            final ModelNode transformedOperation = transformationResult.getTransformedOperation();
+            final OperationResultTransformer resultTransformer = transformationResult.getResultTransformer();
+            final ProxyOperation proxyOperation = new ProxyOperation(name, transformedOperation, messageHandler, operationAttachments);
+            try {
+                final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
+                return new ExecutedHostRequest(result, resultTransformer);
+            } catch (IOException e) {
+                // Handle protocol failures
+                final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
+                subsystemListener.operationPrepared(result);
+                return new ExecutedHostRequest(result.getFinalResult(), resultTransformer);
+            }
+        } catch (OperationFailedException e) {
+            // Handle transformation failures
+            final ProxyOperation proxyOperation = new ProxyOperation(name, operation, messageHandler, operationAttachments);
             final TransactionalProtocolClient.PreparedOperation<ProxyOperation> result = BlockingQueueOperationListener.FailedOperation.create(proxyOperation, e);
             subsystemListener.operationPrepared(result);
-            return new ExecutedHostRequest(result.getFinalResult(), resultTransformer);
+            return new ExecutedHostRequest(result.getFinalResult(), OperationResultTransformer.ORIGINAL_RESULT);
         }
     }
 

@@ -234,7 +234,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
             final ServerTaskExecutor taskExecutor = new ServerTaskExecutor(context, submittedTasks, preparedResults) {
 
                 @Override
-                protected boolean execute(TransactionalProtocolClient.TransactionalOperationListener<ServerTaskExecutor.ServerOperation> listener, ServerIdentity server, ModelNode original) {
+                protected boolean execute(TransactionalProtocolClient.TransactionalOperationListener<ServerTaskExecutor.ServerOperation> listener, ServerIdentity server, ModelNode original) throws OperationFailedException {
                     ProxyController proxy = hostProxies.get(server.getHostName());
                     if (proxy == null) {
                         if (localHostName.equals(server.getHostName())) {
