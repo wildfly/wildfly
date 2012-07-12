@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
@@ -71,16 +72,18 @@ public interface ResourceTransformationContext extends TransformationContext {
      * Process all children of a given resource.
      *
      * @param resource the resource
+     * @throws OperationFailedException
      */
-    void processChildren(Resource resource);
+    void processChildren(Resource resource) throws OperationFailedException;
 
     /**
      * Process a child.
      *
      * @param element the path element
      * @param child the child
+     * @throws  OperationFailedException
      */
-    void processChild(PathElement element, Resource child);
+    void processChild(PathElement element, Resource child) throws OperationFailedException;
 
     /**
      * Get the transformed root.

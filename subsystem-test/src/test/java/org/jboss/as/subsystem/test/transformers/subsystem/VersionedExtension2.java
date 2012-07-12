@@ -92,7 +92,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         final TransformersSubRegistration transformers =  subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), new ResourceTransformer() {
 
             @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) {
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
                 final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
                 for(final Resource.ResourceEntry entry : resource.getChildren("renamed")) {
                     childContext.processChild(PathElement.pathElement("element", "renamed"), entry);

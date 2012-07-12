@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -58,7 +59,7 @@ public class TransformersImpl implements Transformers {
     }
 
     @Override
-    public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode operation) {
+    public OperationTransformer.TransformedOperation transformOperation(final TransformationContext context, final ModelNode operation) throws OperationFailedException {
 //        if (!target.isTransformationNeeded()) {
 //            return operation;
 //        }
@@ -75,7 +76,7 @@ public class TransformersImpl implements Transformers {
     }
 
     @Override
-    public Resource transformResource(final ResourceTransformationContext context, Resource resource) {
+    public Resource transformResource(final ResourceTransformationContext context, Resource resource) throws OperationFailedException {
 //        if (!target.isTransformationNeeded()) {
 //            return resource;
 //        }

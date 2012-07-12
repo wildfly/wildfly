@@ -27,6 +27,7 @@ import java.util.Locale;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -101,7 +102,7 @@ public class OperationTransformationTestCase {
     }
 
     @Test
-    public void testDiscardOperation() {
+    public void testDiscardOperation() throws OperationFailedException  {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set("discard");
         operation.get(ModelDescriptionConstants.OP_ADDR).set(TEST_DISCARD.toModelNode());
@@ -109,7 +110,7 @@ public class OperationTransformationTestCase {
     }
 
     @Test
-    public void testBasicTransformation() {
+    public void testBasicTransformation() throws OperationFailedException  {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set("normal");
         operation.get(ModelDescriptionConstants.OP_ADDR).set(TEST_NORMAL.toModelNode());
@@ -120,7 +121,7 @@ public class OperationTransformationTestCase {
     }
 
     @Test
-    public void testDefaultPolicy() {
+    public void testDefaultPolicy() throws OperationFailedException {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set("normal");
         operation.get(ModelDescriptionConstants.OP_ADDR).set(TEST_NORMAL.toModelNode());
@@ -170,11 +171,11 @@ public class OperationTransformationTestCase {
         Assert.assertEquals(transformer, host.resolveOperationTransformer(profile.append(address), "test").getTransformer());
     }
 
-    protected ModelNode transform(final ModelNode operation, int major, int minor) {
+    protected ModelNode transform(final ModelNode operation, int major, int minor) throws OperationFailedException {
         return transform(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)), operation, major, minor);
     }
 
-    protected ModelNode transform(final PathAddress address, final ModelNode operation, int major, int minor) {
+    protected ModelNode transform(final PathAddress address, final ModelNode operation, int major, int minor) throws OperationFailedException {
         final String operationName = operation.require(ModelDescriptionConstants.OP).asString();
         final OperationTransformerRegistry transformerRegistry = registry.create(ModelVersion.create(major, minor), Collections.<PathAddress, ModelVersion>emptyMap());
         final OperationTransformerRegistry.OperationTransformerEntry entry = transformerRegistry.resolveOperationTransformer(address, operationName);
