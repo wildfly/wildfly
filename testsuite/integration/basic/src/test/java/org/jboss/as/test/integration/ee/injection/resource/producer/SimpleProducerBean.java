@@ -36,7 +36,7 @@ import javax.sql.DataSource;
 @ManagedBean
 public class SimpleProducerBean {
 
-    @Resource(name = "java:jboss/datasources/ExampleDS")
+    @Resource(lookup = "java:jboss/datasources/ExampleDS")
     DataSource dataSource;
 
     @Produces
