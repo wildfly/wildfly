@@ -92,10 +92,15 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier identifier = depUnit.getAttachment(Attachments.MODULE_IDENTIFIER);
             deployment.addAttachment(ModuleIdentifier.class, identifier);
 
+
             // Allow additional dependencies for the set of supported deployemnt types
             if (allowAdditionalModuleDependencies(depUnit)) {
                 ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
                 deployment.addAttachment(ModuleSpecification.class, moduleSpec);
+            } else {
+                // Make this module private so that other modules in the deployment don't create a direct dependency
+                ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                moduleSpec.setPrivateModule(true);
             }
 
             // Attach the bundle deployment
