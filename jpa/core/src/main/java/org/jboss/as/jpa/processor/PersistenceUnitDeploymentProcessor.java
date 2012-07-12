@@ -297,7 +297,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 provider = lookupProvider(pu);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, persistenceUnitRegistry);
 
             phaseContext.getDeploymentUnit().addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
@@ -374,8 +374,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addInjection(service.getPropertiesInjector(), properties)
-                .addInjection(persistenceUnitRegistry.getInjector());
+                .addInjection(service.getPropertiesInjector(), properties);
 
             // get async executor from Services.addServerExecutorDependency
             addServerExecutorDependency(builder, service.getExecutorInjector(), false);
