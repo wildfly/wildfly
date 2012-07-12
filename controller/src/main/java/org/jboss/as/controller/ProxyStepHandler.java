@@ -56,7 +56,7 @@ public class ProxyStepHandler implements OperationStepHandler {
     }
 
     @Override
-    public void execute(OperationContext context, ModelNode operation) {
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         OperationMessageHandler messageHandler = new DelegatingMessageHandler(context);
 
         final AtomicReference<ModelController.OperationTransaction> txRef = new AtomicReference<ModelController.OperationTransaction>();

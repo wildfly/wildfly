@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -29,7 +30,7 @@ class DefaultSubsystemTransformer implements ResourceTransformer {
     }
 
     @Override
-    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) {
+    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
         final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
         childContext.processChildren(resource);
     }

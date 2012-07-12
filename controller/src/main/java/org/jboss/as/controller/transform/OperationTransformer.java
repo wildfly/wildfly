@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
@@ -17,8 +18,9 @@ public interface OperationTransformer {
      * @param address the path address
      * @param operation the operation
      * @return the transformed operation
+     * @throws OperationFailedException
      */
-    TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation);
+    TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException;
 
     public class TransformedOperation implements OperationResultTransformer {
 

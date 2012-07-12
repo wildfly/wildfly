@@ -51,7 +51,7 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
         this.transformers = transformers;
     }
 
-    private Resource transformResource(final OperationContext context, Resource root) {
+    private Resource transformResource(final OperationContext context, Resource root) throws OperationFailedException {
         return transformers.transformResource(Transformers.Factory.getTransformationContext(transformers, context), root);
     }
 

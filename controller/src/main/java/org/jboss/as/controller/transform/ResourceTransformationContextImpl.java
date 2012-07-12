@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -143,7 +144,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     }
 
     @Override
-    public void processChildren(final Resource resource) {
+    public void processChildren(final Resource resource) throws OperationFailedException {
         final Set<String> types = resource.getChildTypes();
         for(final String type : types) {
             for(final Resource.ResourceEntry child : resource.getChildren(type)) {
@@ -153,7 +154,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     }
 
     @Override
-    public void processChild(final PathElement element, Resource child) {
+    public void processChild(final PathElement element, Resource child) throws OperationFailedException {
         final PathAddress childAddress = current.append(element);
         final ResourceTransformer transformer = resolveTransformer(childAddress);
         final ResourceTransformationContext childContext = new ResourceTransformationContextImpl(root, childAddress, originalModel);

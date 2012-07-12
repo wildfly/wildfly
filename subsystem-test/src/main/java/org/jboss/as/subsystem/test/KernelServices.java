@@ -1,5 +1,6 @@
 package org.jboss.as.subsystem.test;
 
+import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -160,7 +161,7 @@ public class KernelServices {
      * @return the transformed operation
      * @throws IllegalStateException if this is not the test's main model controller
      */
-    public ModelNode transformOperation(ModelVersion modelVersion, ModelNode operation) {
+    public ModelNode transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException {
         if (legacyServices == null) {
             throw new IllegalStateException("Can only be called for the main controller");
         }

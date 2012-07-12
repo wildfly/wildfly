@@ -5,7 +5,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
 
 /**
 * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
