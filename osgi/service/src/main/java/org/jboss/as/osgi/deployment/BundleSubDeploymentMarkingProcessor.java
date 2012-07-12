@@ -35,7 +35,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.IgnoreMetaInfMarker;
 import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
-import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 
@@ -65,12 +64,9 @@ public class BundleSubDeploymentMarkingProcessor implements DeploymentUnitProces
                 continue;
 
             // Check if this sub deployment has a valid OSGi manifest - if so mark it
-            // Make this module private so that other modules in the deployment don't create a direct dependency
             Manifest manifest = ManifestAttachmentProcessor.getManifest(resourceRoot);
-            ModuleSpecification moduleSpec = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
             if (OSGiManifestBuilder.isValidBundleManifest(manifest)) {
                 SubDeploymentMarker.mark(resourceRoot);
-                moduleSpec.setPrivateModule(true);
             }
         }
     }
