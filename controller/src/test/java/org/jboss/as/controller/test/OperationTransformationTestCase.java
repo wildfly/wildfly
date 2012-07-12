@@ -223,6 +223,11 @@ public class OperationTransformationTestCase {
         public Resource readResourceFromRoot(final PathAddress address) {
             return Resource.Tools.navigate(resourceRoot, address);
         }
+
+        @Override
+        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+            return node;
+        }
     };
 
     // As usual

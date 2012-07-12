@@ -82,6 +82,13 @@ public interface TransformationTarget {
      */
     void addSubsystemVersion(String subsystemName, ModelVersion version);
 
+    /**
+     * Get the type of the target.
+     *
+     * @return the target type
+     */
+    TransformationTargetType getTargetType();
+
     public enum TransformationTargetType {
 
         DOMAIN,
