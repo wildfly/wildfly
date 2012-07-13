@@ -272,7 +272,11 @@ public class OperationTransformerRegistry {
         }
 
         public ResourceTransformerEntry resolveResourceTransformer(Iterator<PathElement> iterator, String value, ResourceTransformerEntry inheritedEntry) {
-            return get(value).resolveResourceTransformer(iterator, inheritedEntry);
+            final OperationTransformerRegistry registry = get(value);
+            if(registry == null) {
+                return inheritedEntry;
+            }
+            return registry.resolveResourceTransformer(iterator, inheritedEntry);
         }
     }
 

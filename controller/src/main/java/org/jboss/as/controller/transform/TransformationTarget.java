@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 
 /**
@@ -88,6 +89,13 @@ public interface TransformationTarget {
      * @return the target type
      */
     TransformationTargetType getTargetType();
+
+    /**
+     * Get the extension registry.
+     *
+     * @return the extension registry
+     */
+    ExtensionRegistry getExtensionRegistry();
 
     public enum TransformationTargetType {
 

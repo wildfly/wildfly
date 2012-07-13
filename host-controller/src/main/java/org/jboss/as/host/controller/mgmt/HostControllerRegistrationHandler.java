@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller.mgmt;
 
+import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
@@ -36,6 +37,7 @@ import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,6 +76,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.threads.AsyncFutureTask;
@@ -280,27 +283,35 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 context.completeStep();
                 return;
             }
-            // Read the domain root model
-            final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+            // Read the extensions (with recursive true, otherwise the entries are runtime=true - which are going to be ignored for transformation)
+            final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(EXTENSION)), true);
             // Check the mgmt version
             final ModelNode hostInfo = registrationContext.hostInfo;
             boolean as711 = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt() == 1 && hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt() == 1;
-            final Transformers transformers;
             if(as711) {
                 final OperationFailedException failure = HostControllerMessages.MESSAGES.unsupportedManagementVersionForHost(
                         hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt(), hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt(), 1, 2);
                 registrationContext.failed(failure);
                 throw failure;
-            } else {
-                // Build the extensions list
-                final ModelNode extensions = new ModelNode();
-                final Collection<Resource.ResourceEntry> resources = root.getChildren(EXTENSION);
-                for(final Resource.ResourceEntry entry : resources) {
-                    extensions.add(entry.getName());
-                }
-                // Remotely resolve the subsystem versions and create the transformation
-                transformers = registrationContext.createTransfomers(transformerRegistry, extensions);
             }
+            // Initialize the transformers
+            final int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
+            final int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
+            final int micro = hostInfo.hasDefined(MANAGEMENT_MICRO_VERSION) ? hostInfo.get(MANAGEMENT_MICRO_VERSION).asInt() : 0;
+            final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(major, minor, micro), Collections.<PathAddress, ModelVersion>emptyMap(), TransformationTarget.TransformationTargetType.HOST);
+            final Transformers transformers = Transformers.Factory.create(target);
+            // Build the extensions list
+            final ModelNode extensions = new ModelNode();
+            final Resource transformed = transformers.transformResource(Transformers.Factory.getTransformationContext(target, context), root);
+            final Collection<Resource.ResourceEntry> resources = transformed.getChildren(EXTENSION);
+            for(final Resource.ResourceEntry entry : resources) {
+                extensions.add(entry.getName());
+            }
+            if(! extensions.isDefined()) {
+                throw new OperationFailedException(extensions);
+            }
+            // Remotely resolve the subsystem versions and create the transformation
+            registrationContext.processSubsystems(transformers, extensions);
             // Now run the read-domain model operation
             final ReadMasterDomainModelHandler handler = new ReadMasterDomainModelHandler(transformers);
             context.addStep(READ_DOMAIN_MODEL, handler, OperationContext.Stage.MODEL);
@@ -364,10 +375,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
          * Create the transformers. This will remotely resolve the subsystem versions.
          *
          * @param extensions the extensions
-         * @return the transformers
          * @throws OperationFailedException
          */
-        private Transformers createTransfomers(final TransformerRegistry transformerRegistry, final ModelNode extensions) throws OperationFailedException {
+        private void processSubsystems(final Transformers transformers, final ModelNode extensions) throws OperationFailedException {
+            this.transformers = transformers;
             final ModelNode subsystems = executeBlocking(new IOTask<ModelNode>() {
                 @Override
                 void sendMessage(FlushableDataOutput output) throws IOException {
@@ -377,14 +388,12 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             if(failed) {
                 throw new OperationFailedException(new ModelNode("failed to setup transformers"));
             }
-            // Initialize the transformers
-            final int major = hostInfo.get(MANAGEMENT_MAJOR_VERSION).asInt();
-            final int minor = hostInfo.get(MANAGEMENT_MINOR_VERSION).asInt();
-            final int micro = hostInfo.hasDefined(MANAGEMENT_MICRO_VERSION) ? hostInfo.get(MANAGEMENT_MICRO_VERSION).asInt() : 0;
-            final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(major, minor, micro), subsystems, TransformationTarget.TransformationTargetType.HOST);
-            final Transformers transformers = Transformers.Factory.create(target);
-            this.transformers = transformers;
-            return transformers;
+            final TransformationTarget target = transformers.getTarget();
+            for(final Property subsystem : subsystems.asPropertyList()) {
+                final String subsystemName = subsystem.getName();
+                final ModelNode version = subsystem.getValue();
+                target.addSubsystemVersion(subsystemName, ModelVersion.fromString(version.asString()));
+            }
         }
 
         protected void setSubsystems(final ModelNode resolved, final ManagementRequestContext<RegistrationContext> responseChannel) {

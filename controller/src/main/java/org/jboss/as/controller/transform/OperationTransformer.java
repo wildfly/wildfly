@@ -47,4 +47,14 @@ public interface OperationTransformer {
 
     }
 
+    OperationTransformer DEFAULT = new OperationTransformer() {
+       @Override
+       public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode original) throws OperationFailedException {
+           // Forward unmodified
+           return new TransformedOperation(original, OperationResultTransformer.ORIGINAL_RESULT);
+       }
+    };
+
+
+
 }

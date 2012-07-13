@@ -335,6 +335,10 @@ public class DomainModelUtil {
             final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
             root.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper, false);
         }
+
+        // Initialize the domain transformers
+        DomainTransformers.initializeDomainRegistry(extensionRegistry.getTransformerRegistry());
+
     }
 
     public static void validateRolloutPlanStructure(ModelNode plan) throws OperationFailedException {
