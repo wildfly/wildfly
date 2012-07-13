@@ -666,10 +666,9 @@ public class ModelControllerImplUnitTestCase {
         operation.get(OP_ADDR).setEmptyList();
         operation.get("type").set("child");
         final ModelNode result = controller.execute(operation, null, null, null);
-        System.out.println(result);
-        assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
-
+        assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        assertTrue(result.get(RESULT).hasDefined("child"));
+        assertEquals(2, result.get(RESULT, "child").asPropertyList().size());
     }
 
     public static ModelNode getOperation(String opName, String attr, int val) {

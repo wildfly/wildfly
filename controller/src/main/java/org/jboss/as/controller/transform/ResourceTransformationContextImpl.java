@@ -55,6 +55,12 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
         return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel);
     }
 
+    static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {
+        final Resource root = Resource.Factory.create();
+        final OriginalModel originalModel = new OriginalModel(model,  runningMode, type, target, registration,resolver);
+        return new ResourceTransformationContextImpl(root, PathAddress.EMPTY_ADDRESS, originalModel);
+    }
+
     ResourceTransformationContextImpl(Resource root, PathAddress address, final OriginalModel originalModel) {
         this.root = root;
         this.current = address;
@@ -86,7 +92,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
     public ResourceTransformationContext addTransformedResourceFromRoot(PathAddress absoluteAddress, Resource toAdd) {
         // Only keep the mode, drop all children
         final Resource copy = Resource.Factory.create();
-        if(copy != null) {
+        if(toAdd != null) {
             copy.writeModel(toAdd.getModel());
         }
         return addTransformedRecursiveResourceFromRoot(absoluteAddress, copy);

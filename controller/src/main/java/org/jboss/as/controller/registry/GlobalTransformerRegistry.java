@@ -87,12 +87,20 @@ public class GlobalTransformerRegistry {
         registerTransformer(address.iterator(), ModelVersion.create(major, minor), operationName, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
     }
 
+    public void createDiscardingChildRegistry(final PathAddress address, final ModelVersion version) {
+        createChildRegistry(address.iterator(), version, DISCARD, OperationTransformerRegistry.DISCARD);
+    }
+
     public void createChildRegistry(final PathAddress address, final ModelVersion version, OperationTransformer transformer) {
         createChildRegistry(address.iterator(), version, RESOURCE_TRANSFORMER, new OperationTransformerRegistry.OperationTransformerEntry(transformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
     }
 
     public void createChildRegistry(final PathAddress address, final ModelVersion version, ResourceTransformer resourceTransformer, boolean inherited) {
         createChildRegistry(address.iterator(), version, new OperationTransformerRegistry.ResourceTransformerEntry(resourceTransformer, inherited), OperationTransformerRegistry.FORWARD);
+    }
+
+    public void createChildRegistry(final PathAddress address, final ModelVersion version, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
+        createChildRegistry(address.iterator(), version, new OperationTransformerRegistry.ResourceTransformerEntry(resourceTransformer, false), new OperationTransformerRegistry.OperationTransformerEntry(operationTransformer, OperationTransformerRegistry.TransformationPolicy.TRANSFORM));
     }
 
     /**
@@ -297,5 +305,6 @@ public class GlobalTransformerRegistry {
     }
 
     static OperationTransformerRegistry.ResourceTransformerEntry RESOURCE_TRANSFORMER = new OperationTransformerRegistry.ResourceTransformerEntry(ResourceTransformer.DEFAULT, false);
+    static OperationTransformerRegistry.ResourceTransformerEntry DISCARD = new OperationTransformerRegistry.ResourceTransformerEntry(ResourceTransformer.DISCARD, false);
 
 }

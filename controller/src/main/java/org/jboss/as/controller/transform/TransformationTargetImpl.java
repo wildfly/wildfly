@@ -111,4 +111,9 @@ public class TransformationTargetImpl implements TransformationTarget {
     public TransformationTargetType getTargetType() {
         return type;
     }
+
+    @Override
+    public ExtensionRegistry getExtensionRegistry() {
+        return extensionRegistry;
+    }
 }

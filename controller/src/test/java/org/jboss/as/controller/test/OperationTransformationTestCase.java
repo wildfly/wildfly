@@ -26,6 +26,7 @@ import java.util.Locale;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -44,10 +45,13 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
@@ -171,6 +175,63 @@ public class OperationTransformationTestCase {
         Assert.assertEquals(transformer, host.resolveOperationTransformer(profile.append(address), "test").getTransformer());
     }
 
+    @Test
+    public void testConcreteRegistry() throws Exception {
+
+        final PathElement one = PathElement.pathElement(ModelDescriptionConstants.EXTENSION, "org.test.one");
+        final PathElement two = PathElement.pathElement(ModelDescriptionConstants.EXTENSION, "org.test.two");
+
+        final Resource resource = Resource.Factory.create();
+        resource.registerChild(one, Resource.Factory.create());
+        resource.registerChild(two, Resource.Factory.create());
+
+        final TransformerRegistry transformers = TransformerRegistry.Factory.create(null);
+
+        transformers.getDomainRegistration(ModelVersion.create(1, 2)).registerSubResource(one, true);
+        transformers.getDomainRegistration(ModelVersion.create(1, 3)).registerSubResource(two, true);
+
+        final TransformationTarget target10 = create(transformers, ModelVersion.create(1, 0));
+        final Resource transformed10 = transform(target10, resource);
+        Assert.assertEquals(2, transformed10.getChildren(ModelDescriptionConstants.EXTENSION).size());
+        Assert.assertNotNull(transformed10.getChild(one));
+        Assert.assertNotNull(transformed10.getChild(one));
+
+        final TransformationTarget target12 = create(transformers, ModelVersion.create(1, 2));
+        final Resource transformed12 = transform(target12, resource);
+        Assert.assertEquals(1, transformed12.getChildren(ModelDescriptionConstants.EXTENSION).size());
+        Assert.assertNull(transformed12.getChild(one));
+        Assert.assertNotNull(transformed12.getChild(two));
+
+        final TransformationTarget target13 = create(transformers, ModelVersion.create(1, 3));
+        final Resource transformed13 = transform(target13, resource);
+        Assert.assertEquals(1, transformed13.getChildren(ModelDescriptionConstants.EXTENSION).size());
+        Assert.assertNull(transformed13.getChild(two));
+        Assert.assertNotNull(transformed13.getChild(one));
+    }
+
+    @Test
+    public void testAddSubsystem() throws Exception {
+
+        final ModelVersion subsystem = ModelVersion.create(1, 2);
+        final TransformerRegistry registry = TransformerRegistry.Factory.create(null);
+        registry.registerSubsystemTransformers("test", subsystem, ResourceTransformer.DISCARD);
+
+        final TransformationTarget target = create(registry, ModelVersion.create(1, 2, 3));
+        target.addSubsystemVersion("test", subsystem);
+
+
+    }
+
+    protected TransformationTarget create(final TransformerRegistry registry, ModelVersion version) {
+        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), TransformationTarget.TransformationTargetType.HOST);
+    }
+
+    protected Resource transform(final TransformationTarget target, final Resource root) throws OperationFailedException {
+        final Transformers transformers = Transformers.Factory.create(target);
+        final ResourceTransformationContext ctx = Transformers.Factory.create(target, root, resourceRegistration, resolver, RunningMode.NORMAL, ProcessType.HOST_CONTROLLER);
+        return transformers.transformResource(ctx, root);
+    }
+
     protected ModelNode transform(final ModelNode operation, int major, int minor) throws OperationFailedException {
         return transform(PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)), operation, major, minor);
     }
@@ -239,5 +300,12 @@ public class OperationTransformationTestCase {
     };
 
     private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
+
+    private static final ExpressionResolver resolver = new ExpressionResolver() {
+        @Override
+        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+            return node;
+        }
+    };
 
 }
