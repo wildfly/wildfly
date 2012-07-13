@@ -36,9 +36,12 @@ import org.jboss.as.clustering.ResponseFilter;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.BatchServiceTarget;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -82,11 +85,19 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String container) {
-        target.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
-        target.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        final BatchServiceTarget batchTarget = target.batchTarget();
+        batchTarget.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
+        batchTarget.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        final ServiceListener<T> listener = new AbstractServiceListener<T>() {
+            @Override
+            public void serviceRemoveRequested(ServiceController<? extends T> controller) {
+                batchTarget.removeServices();
+            }
+        };
         return AsynchronousService.addService(target, this.singletonServiceName, this)
                 .addDependency(ServiceProviderRegistryService.getServiceName(container), ServiceProviderRegistry.class, this.registryRef)
                 .addDependency(ServiceName.JBOSS.append(DEFAULT_CONTAINER, container), GroupRpcDispatcher.class, this.dispatcherRef)
+                .addListener(listener)
         ;
     }
 
