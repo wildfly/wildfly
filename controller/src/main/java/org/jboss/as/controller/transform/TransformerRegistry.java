@@ -165,21 +165,9 @@ public final class TransformerRegistry {
         for(final Property property : subsystems.asPropertyList()) {
             final String name = property.getName();
             final PathAddress address = base.append(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name));
-            versions.put(address, convert(property.getValue().asString()));
+            versions.put(address, ModelVersion.fromString(property.getValue().asString()));
         }
         return versions;
-    }
-
-    static ModelVersion convert(final String version) {
-        final String[] s = version.split("\\.");
-        final int length = s.length;
-        if(length > 3) {
-            throw new IllegalStateException();
-        }
-        int major = Integer.valueOf(s[0]);
-        int minor = length > 1 ? Integer.valueOf(s[1]) : 0;
-        int micro = length == 3 ? Integer.valueOf(s[2]) : 0;
-        return ModelVersion.create(major, minor, micro);
     }
 
     public static ResourceDefinition loadSubsystemDefinition(final String subsystemName, int majorVersion, int minorVersion) {
@@ -218,19 +206,36 @@ public final class TransformerRegistry {
 
         @Override
         public TransformersSubRegistration registerSubResource(PathElement element) {
-            return registerSubResource(element, false);
+            return registerSubResource(element, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
         }
 
         @Override
         public TransformersSubRegistration registerSubResource(PathElement element, boolean discard) {
-            return registerSubResource(element, null);
+            if(discard) {
+                final PathAddress address = current.append(element);
+                for(final ModelVersion version : range.getVersions()) {
+                    registry.createDiscardingChildRegistry(address, version);
+                }
+                return new TransformersSubRegistrationImpl(range, registry, address);
+            }
+            return registerSubResource(element, ResourceTransformer.DEFAULT, OperationTransformer.DEFAULT);
         }
 
         @Override
         public TransformersSubRegistration registerSubResource(PathElement element, OperationTransformer operationTransformer) {
+            return registerSubResource(element, ResourceTransformer.DEFAULT, operationTransformer);
+        }
+
+        @Override
+        public TransformersSubRegistration registerSubResource(PathElement element, ResourceTransformer resourceTransformer) {
+            return registerSubResource(element, resourceTransformer, OperationTransformer.DEFAULT);
+        }
+
+        @Override
+        public TransformersSubRegistration registerSubResource(PathElement element, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer) {
             final PathAddress address = current.append(element);
             for(final ModelVersion version : range.getVersions()) {
-                registry.createChildRegistry(address, version, operationTransformer);
+                registry.createChildRegistry(address, version, resourceTransformer, operationTransformer);
             }
             return new TransformersSubRegistrationImpl(range, registry, address);
         }

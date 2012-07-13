@@ -22,8 +22,12 @@
 
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -77,6 +81,10 @@ public interface Transformers {
         public static ResourceTransformationContext getTransformationContext(final TransformationTarget target, final OperationContext context) {
             // TODO differentiate between operation / resource transformation
             return ResourceTransformationContextImpl.create(context, target);
+        }
+
+        public static ResourceTransformationContext create(TransformationTarget target, Resource model, ImmutableManagementResourceRegistration registration, ExpressionResolver resolver, RunningMode runningMode, ProcessType type) {
+            return ResourceTransformationContextImpl.create(target, model, registration, resolver, runningMode, type);
         }
     }
 
