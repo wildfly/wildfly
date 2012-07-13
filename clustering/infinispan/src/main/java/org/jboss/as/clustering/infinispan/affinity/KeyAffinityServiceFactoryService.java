@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,27 +22,61 @@
 
 package org.jboss.as.clustering.infinispan.affinity;
 
+import java.security.AccessController;
 import java.util.Collections;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyAffinityServiceImpl;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.remoting.transport.Address;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
- * Key affinity service that only generates keys for use by the local node.
- * Returns a trivial implementation if the specified cache is not distributed.
+ * Service that returns a key affinity service factory that will only generate keys for use by the local node.
+ * Factory returns a trivial implementation if the specified cache is not distributed.
  * @author Paul Ferraro
  */
-public class LocalKeyAffinityServiceFactory implements KeyAffinityServiceFactory {
-    private final Executor executor;
-    private final int bufferSize;
+public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServiceFactory>, KeyAffinityServiceFactory {
 
-    public LocalKeyAffinityServiceFactory(Executor executor, int bufferSize) {
-        this.executor = executor;
+    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("infinispan", "affinity");
+
+    public static ServiceName getServiceName(String container) {
+        return SERVICE_NAME.append(container);
+    }
+
+    private final int bufferSize;
+    private volatile ExecutorService executor;
+
+    public KeyAffinityServiceFactoryService(int bufferSize) {
         this.bufferSize = bufferSize;
+    }
+
+    @Override
+    public KeyAffinityServiceFactory getValue() {
+        return this;
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        final ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
+        final String namePattern = "KeyAffinityService Thread Pool -- %t";
+        final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null, AccessController.getContext());
+
+        this.executor = Executors.newCachedThreadPool(threadFactory);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        this.executor.shutdown();
     }
 
     @Override

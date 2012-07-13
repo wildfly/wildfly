@@ -36,6 +36,7 @@ import javax.management.MBeanServer;
 
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
@@ -122,7 +123,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ModelNode resolvedValue = null ;
         // make default cache non required (AS7-3488)
         final String defaultCache = (resolvedValue = CommonAttributes.DEFAULT_CACHE.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
-        final String jndiNameString = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
+        final String jndiName = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final String listenerExecutor = (resolvedValue = CommonAttributes.LISTENER_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final String evictionExecutor = (resolvedValue = CommonAttributes.EVICTION_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final String replicationQueueExecutor = (resolvedValue = CommonAttributes.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
@@ -178,7 +179,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         controllers.add(this.installContainerService(target, name, aliases, initialMode, verificationHandler));
 
         // install a name service entry for the cache container
-        controllers.add(this.installJndiService(target, name, jndiNameString, verificationHandler));
+        controllers.add(this.installJndiService(target, name, InfinispanJndiName.createCacheContainerJndiName(jndiName, name), verificationHandler));
+
+        controllers.add(this.installKeyAffinityServiceFactoryService(target, name, verificationHandler));
 
         log.debugf("%s cache container installed", name);
         return controllers;
@@ -190,12 +193,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final String containerName = address.getLastElement().getValue();
 
         // need to remove all container-related services started, in reverse order
+        context.removeService(KeyAffinityServiceFactoryService.getServiceName(containerName));
+
         // remove the BinderService entry
         ModelNode resolvedValue = null;
-        final String jndiNameString = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
-        final String jndiName = InfinispanJndiName.createCacheContainerJndiNameOrDefault(jndiNameString, containerName);
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
-        context.removeService(bindInfo.getBinderServiceName()) ;
+        final String jndiName = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(InfinispanJndiName.createCacheContainerJndiName(jndiName, containerName));
+        context.removeService(bindInfo.getBinderServiceName());
 
         // remove the cache container
         context.removeService(EmbeddedCacheManagerService.getServiceName(containerName));
@@ -210,6 +214,13 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
             context.removeService(channelServiceName);
         }
+    }
+
+    ServiceController<?> installKeyAffinityServiceFactoryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+        return AsynchronousService.addService(target, KeyAffinityServiceFactoryService.getServiceName(containerName), new KeyAffinityServiceFactoryService(10), false, true)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 
     ServiceController<?> installChannelService(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
@@ -270,9 +281,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ;
     }
 
-    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiNameString, ServiceVerificationHandler verificationHandler) {
-
-        final String jndiName = InfinispanJndiName.createCacheContainerJndiNameOrDefault(jndiNameString, containerName);
+    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiName, ServiceVerificationHandler verificationHandler) {
 
         final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);

@@ -42,23 +42,13 @@ public class InfinispanJndiName {
         return value.startsWith("java:") ? JndiName.of(value) : JndiName.of(DEFAULT_JNDI_NAMESPACE).append(value.startsWith("/") ? value.substring(1) : value);
     }
 
-    public static String createCacheJndiNameOrDefault(String jndiNameString, String containerName, String cacheName) {
-        JndiName jndiName = null ;
-        if (jndiNameString != null) {
-           jndiName = InfinispanJndiName.toJndiName(jndiNameString) ;
-        } else {
-            jndiName = InfinispanJndiName.defaultCacheJndiName(containerName, cacheName);
-        }
+    public static String createCacheJndiName(String jndiNameString, String containerName, String cacheName) {
+        JndiName jndiName = (jndiNameString != null) ? InfinispanJndiName.toJndiName(jndiNameString) : InfinispanJndiName.defaultCacheJndiName(containerName, cacheName);
         return jndiName.getAbsoluteName();
     }
 
-    public static String createCacheContainerJndiNameOrDefault(String jndiNameString, String containerName) {
-        JndiName jndiName = null ;
-        if (jndiNameString != null) {
-           jndiName = InfinispanJndiName.toJndiName(jndiNameString) ;
-        } else {
-            jndiName = InfinispanJndiName.defaultCacheContainerJndiName(containerName);
-        }
+    public static String createCacheContainerJndiName(String jndiNameString, String containerName) {
+        JndiName jndiName = (jndiNameString != null) ? InfinispanJndiName.toJndiName(jndiNameString) : InfinispanJndiName.defaultCacheContainerJndiName(containerName);
         return jndiName.getAbsoluteName();
     }
 }
