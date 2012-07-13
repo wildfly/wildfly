@@ -174,6 +174,7 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("restart-required", new RestartRequiredHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("dependent-service", new DependentServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("remove-dependent-service", new RemoveDependentServiceHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("read-wildcards", new WildcardReadHandler(), DESC_PROVIDER, true);
 
             rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true);
             rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true);
@@ -656,6 +657,19 @@ public class ModelControllerImplUnitTestCase {
     public void testRemoveDependentNonRecursive() throws Exception {
         useNonRecursive = true;
         testRemoveDependentService();
+    }
+
+    @Test
+    public void testWildCardNavigation() throws Exception {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-wildcards");
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get("type").set("child");
+        final ModelNode result = controller.execute(operation, null, null, null);
+        System.out.println(result);
+        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
+
     }
 
     public static ModelNode getOperation(String opName, String attr, int val) {
@@ -1155,6 +1169,18 @@ public class ModelControllerImplUnitTestCase {
                 context.completeStep();
             }
         }
+    }
+
+    static final class WildcardReadHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            final String type = operation.require("type").asString();
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(type)));
+            context.getResult().set(Resource.Tools.readModel(resource));
+            context.completeStep();
+        }
+
     }
 
     public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
