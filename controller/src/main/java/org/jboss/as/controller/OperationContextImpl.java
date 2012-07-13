@@ -468,16 +468,17 @@ final class OperationContextImpl extends AbstractOperationContext {
             final PathElement element = iterator.next();
             // Allow wildcard navigation for the last element
             if(element.isWildcard() && ! iterator.hasNext()) {
-                model = Resource.Factory.create();
                 final Set<Resource.ResourceEntry> children = model.getChildren(element.getKey());
                 if(children.isEmpty()) {
-                    final Set<String> childrenTypes = getResourceRegistration().getChildNames(address);
+                    final PathAddress parent = address.subAddress(0, address.size() -1);
+                    final Set<String> childrenTypes = modelController.getRootRegistration().getChildNames(parent);
                     if(! childrenTypes.contains(element.getKey())) {
                         throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
                     }
                     // Return an empty model
-                    return model;
+                    return Resource.Factory.create();
                 }
+                model = Resource.Factory.create();
                 for(final Resource.ResourceEntry entry : children) {
                     model.registerChild(entry.getPathElement(), entry);
                 }
