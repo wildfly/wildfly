@@ -24,9 +24,6 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
-
 import java.util.List;
 import java.util.Map;
 
@@ -255,11 +252,11 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
-        return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+        return ServiceModuleLoader.moduleSpecServiceName(identifier);
     }
 
     private ServiceName getModuleServiceName(ModuleIdentifier identifier) {
-        return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+        return ServiceModuleLoader.moduleServiceName(identifier);
     }
 
     @Override
