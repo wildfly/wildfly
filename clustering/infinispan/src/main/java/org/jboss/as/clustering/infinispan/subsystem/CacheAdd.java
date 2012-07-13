@@ -204,7 +204,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         controllers.add(this.installCacheService(target, containerName, cacheName, defaultCache, initialMode, config, verificationHandler));
 
         // install a name service entry for the cache
-        controllers.add(this.installJndiService(target, containerName, cacheName, jndiName, verificationHandler));
+        controllers.add(this.installJndiService(target, containerName, cacheName, InfinispanJndiName.createCacheJndiName(jndiName, containerName, cacheName), verificationHandler));
         log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
 
         return controllers;
@@ -222,9 +222,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // remove all services started by CacheAdd, in reverse order
         // remove the binder service
         ModelNode resolvedValue = null;
-        final String jndiNameString = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
-        final String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
-        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        final String jndiName = (resolvedValue = CommonAttributes.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
+        ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(InfinispanJndiName.createCacheJndiName(jndiName, containerName, cacheName));
         context.removeService(bindInfo.getBinderServiceName()) ;
         // remove the CacheService instance
         context.removeService(CacheService.getServiceName(containerName, cacheName));
@@ -304,9 +303,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     @SuppressWarnings("rawtypes")
-    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String cacheName, String jndiNameString, ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installJndiService(ServiceTarget target, String containerName, String cacheName, String jndiName, ServiceVerificationHandler verificationHandler) {
 
-        final String jndiName = InfinispanJndiName.createCacheJndiNameOrDefault(jndiNameString, containerName, cacheName);
         final ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
         final BinderService binder = new BinderService(bindInfo.getBindName());
