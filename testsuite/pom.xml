@@ -862,6 +862,70 @@
             </properties>
         </profile>
 
+        <!-- DB2 -->
+        <profile>
+            <id>db2.profile</id>
+            <activation><property><name>ds</name><value>db2</value></property></activation>
+            <properties>
+                <ds.db>db2</ds.db>
+                <ds.jdbc.driver>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.ibm.db2.jcc.DB2Driver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:db2://localhost:60000/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>4.11.77</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- MS SQL 2005 -->
+        <profile>
+            <id>mssql2005.profile</id>
+            <activation><property><name>ds</name><value>mssql2005</value></property></activation>
+            <properties>
+                <ds.db>mssql</ds.db>
+                <ds.jdbc.driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.microsoft.sqlserver.jdbc.SQLServerDriver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:sqlserver://localhost:1433;DatabaseName=test</ds.jdbc.url>
+                <ds.jdbc.driver.version>3.0.1301.101</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Oracle -->
+        <profile>
+            <id>oracle11.profile</id>
+            <activation><property><name>ds</name><value>oracle11</value></property></activation>
+            <properties>
+                <ds.db>oracle</ds.db>
+                <ds.jdbc.driver>oracle.jdbc.driver.OracleDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>oracle.jdbc.driver.OracleDriver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:oracle:thin:@localhost:1521:test</ds.jdbc.url>
+                <ds.jdbc.driver.version>11.2.0.2.0</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- PostgreSQL -->
+        <profile>
+            <id>postgresql.profile</id>
+            <activation><property><name>ds</name><value>postgresql</value></property></activation>
+            <properties>
+                <ds.db>oracle</ds.db>
+                <ds.jdbc.driver>org.postgresql.Driver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>org.postgresql.Driver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:postgresql://localhost:5432/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>8.4.702</ds.jdbc.driver.version>
+            </properties>
+        </profile>
+
+        <!-- Sybase -->
+        <profile>
+            <id>sybase.profile</id>
+            <activation><property><name>ds</name><value>sybase</value></property></activation>
+            <properties>
+                <ds.db>sybase</ds.db>
+                <ds.jdbc.driver>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver>
+                <ds.jdbc.driver-xa>com.sybase.jdbc4.jdbc.SybDriver</ds.jdbc.driver-xa>
+                <ds.jdbc.url>jdbc:sybase:Tds:localhost:5000/test</ds.jdbc.url>
+                <ds.jdbc.driver.version>26502</ds.jdbc.driver.version>
+            </properties>
+        </profile>
 
 
         <!-- JaCoCo test coverage. Will set ${jvm.args.jacoco} to be used in Arquillian config. -->
