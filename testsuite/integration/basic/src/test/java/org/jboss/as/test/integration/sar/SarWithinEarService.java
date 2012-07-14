@@ -22,74 +22,18 @@
 
 package org.jboss.as.test.integration.sar;
 
-import org.jboss.system.ServiceMBean;
-
 /**
  * User: jpai
  */
-public class SarWithinEarService implements SarWithinEarServiceMBean, ServiceMBean {
+public class SarWithinEarService implements SarWithinEarServiceMBean {
 
     public SarWithinEarService() {
 
     }
 
+
     @Override
     public int add(int x, int y) {
         return x + y;
-    }
-
-    @Override
-    public String getName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    @Override
-    public int getState() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-
-    @Override
-    public String getStateString() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-
-    @Override
-    public void jbossInternalLifecycle(String method) throws Exception {
-        // TODO Auto-generated method stub
-        
-    }
-
-
-    @Override
-    public void create() throws Exception {
-        // TODO Auto-generated method stub
-        
-    }
-
-
-    @Override
-    public void start() throws Exception {
-        // TODO Auto-generated method stub
-        
-    }
-
-
-    @Override
-    public void stop() {
-        // TODO Auto-generated method stub
-        
-    }
-
-
-    @Override
-    public void destroy() {
-        // TODO Auto-generated method stub
-        
     }
 }
