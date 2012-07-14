@@ -80,7 +80,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         // Attach the deployment and activate the framework
         if (deployment != null) {
             phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDependency(IntegrationServices.BOOTSTRAP_BUNDLES_ACTIVE, AttachmentKey.create(Object.class));
             phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
             depUnit.putAttachment(OSGiConstants.DEPLOYMENT_KEY, deployment);
         }
