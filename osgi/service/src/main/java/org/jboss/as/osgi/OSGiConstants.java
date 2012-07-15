@@ -33,7 +33,6 @@ import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.spi.BundleInfo;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.wiring.BundleWiring;
 
 /**
  * OSGi Subsystem constants
@@ -56,9 +55,6 @@ public interface OSGiConstants {
 
     /** Attachment key for a bundle deployment. */
     AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
-
-    /** Attachment key for the {@link BundleWiring} of a resolved bundle. */
-    AttachmentKey<BundleWiring> BUNDLE_WIRING_KEY = AttachmentKey.create(BundleWiring.class);
 
     /** Attachment key for a registered {@link XBundleRevision}. */
     AttachmentKey<XBundleRevision> REGISTERED_MODULE_KEY = AttachmentKey.create(XBundleRevision.class);

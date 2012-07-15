@@ -24,15 +24,15 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
-import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -177,7 +177,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      * Add a {@link ModuleSpec} for and OSGi module as a service that can later be looked up by the {@link ServiceModuleLoader}
      */
     @Override
-    public void addModule(final ModuleSpec moduleSpec) {
+    public void addModuleSpec(XBundleRevision brev, final ModuleSpec moduleSpec) {
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         LOGGER.tracef("Add module spec to loader: %s", identifier);
         ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
@@ -195,12 +195,18 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      * The {@link ServiceModuleLoader} cannot load these modules.
      */
     @Override
-    public void addModule(final Module module) {
+    public void addModule(XBundleRevision brev, final Module module) {
         ServiceName moduleServiceName = getModuleServiceName(module.getIdentifier());
         if (serviceContainer.getService(moduleServiceName) == null) {
             LOGGER.debugf("Add module to loader: %s", module.getIdentifier());
             serviceTarget.addService(moduleServiceName, new ValueService<Module>(new ImmediateValue<Module>(module))).install();
         }
+    }
+
+    @Override
+    public ServiceName createModuleService(XBundleRevision brev, ModuleIdentifier identifier) {
+        List<ModuleDependency> dependencies = Collections.emptyList();
+        return ModuleLoadService.install(serviceTarget, identifier, dependencies);
     }
 
     /**
@@ -255,11 +261,12 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
-        return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+        return ServiceModuleLoader.moduleSpecServiceName(identifier);
     }
 
-    private ServiceName getModuleServiceName(ModuleIdentifier identifier) {
-        return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+    @Override
+    public ServiceName getModuleServiceName(ModuleIdentifier identifier) {
+        return ServiceModuleLoader.moduleServiceName(identifier);
     }
 
     @Override
