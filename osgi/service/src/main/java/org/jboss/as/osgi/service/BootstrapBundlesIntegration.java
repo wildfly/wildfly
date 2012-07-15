@@ -50,7 +50,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
@@ -61,8 +60,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.AutoInstallComplete;
-import org.jboss.osgi.framework.AutoInstallHandler;
+import org.jboss.osgi.framework.BootstrapBundlesResolved;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Constants;
 import org.jboss.osgi.framework.IntegrationServices;
@@ -95,7 +93,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-class AutoInstallIntegration extends AbstractService<AutoInstallHandler> implements AutoInstallHandler {
+class BootstrapBundlesIntegration extends AbstractService<Void> {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<StorageStateProvider> injectedStorageProvider = new InjectedValue<StorageStateProvider>();
@@ -109,8 +107,8 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
     private File bundlesDir;
 
     static ServiceController<?> addService(final ServiceTarget target) {
-        AutoInstallIntegration service = new AutoInstallIntegration();
-        ServiceBuilder<?> builder = target.addService(IntegrationServices.AUTOINSTALL_HANDLER, service);
+        BootstrapBundlesIntegration service = new BootstrapBundlesIntegration();
+        ServiceBuilder<?> builder = target.addService(IntegrationServices.BOOTSTRAP_BUNDLES_INSTALLED, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(RepositoryProvider.SERVICE_NAME, Repository.class, service.injectedRepository);
@@ -125,7 +123,7 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
         return builder.install();
     }
 
-    AutoInstallIntegration() {
+    BootstrapBundlesIntegration() {
     }
 
     @Override
@@ -153,32 +151,17 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
                     iterator.remove();
             }
 
+            // Create the RESOLVED service that listens on the bundle INSTALL services
             final Set<ServiceName> resolvableServices = new LinkedHashSet<ServiceName>();
-            AutoInstallComplete installComplete = new AutoInstallComplete() {
+            BootstrapBundlesResolved bootstrapResolved = new BootstrapBundlesResolved() {
 
                 @Override
                 protected boolean allServicesAdded(Set<ServiceName> trackedServices) {
-                    return configcaps.size() == trackedServices.size();
-                }
-
-                @Override
-                public void start(StartContext context) throws StartException {
-                    // Resolve all bundles up until and including the Framework beginning start level
-                    Set<Bundle> resolvableBundles = new LinkedHashSet<Bundle>();
-                    ServiceContainer serviceContainer = context.getController().getServiceContainer();
-                    for (ServiceName serviceName : resolvableServices) {
-                        ServiceController<?> requiredService = serviceContainer.getRequiredService(serviceName);
-                        resolvableBundles.add((Bundle) requiredService.getValue());
-                    }
-                    Bundle[] bundleArr = resolvableBundles.toArray(new Bundle[resolvableBundles.size()]);
-                    PackageAdmin packageAdmin = injectedPackageAdmin.getValue();
-                    packageAdmin.resolveBundles(bundleArr);
-                    super.start(context);
+                    return resolvableServices.size() == trackedServices.size();
                 }
             };
-            installComplete.install(context.getChildTarget());
-            ServiceListener<Bundle> listener = installComplete.getListener();
-
+            bootstrapResolved.install(context.getChildTarget());
+            ServiceListener<Bundle> listener = bootstrapResolved.getListener();
             for (OSGiCapability configcap : configcaps) {
                 ServiceName serviceName = installInitialCapability(configcap, listener);
                 int startLevel = configcap.getStartLevel() != null ? configcap.getStartLevel() : 1;
@@ -298,11 +281,6 @@ class AutoInstallIntegration extends AbstractService<AutoInstallHandler> impleme
             dep.addAttachment(StorageState.class, storageState);
         }
         return bundleManager.installBundle(dep, listener);
-    }
-
-    @Override
-    public synchronized AutoInstallIntegration getValue() throws IllegalStateException {
-        return this;
     }
 
     private OSGiMetaData getModuleMetadata(Module module) throws IOException {
