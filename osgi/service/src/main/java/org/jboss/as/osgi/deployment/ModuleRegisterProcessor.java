@@ -22,35 +22,19 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.service.ModuleRegistrationTracker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XEnvironment;
-import org.jboss.osgi.resolver.XResource;
-import org.jboss.osgi.resolver.XResourceBuilder;
-import org.jboss.osgi.resolver.XResourceBuilderFactory;
 
 /**
  * Processes deployments that have a Module attached.
@@ -62,95 +46,37 @@ import org.jboss.osgi.resolver.XResourceBuilderFactory;
  */
 public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
 
+    private final ModuleRegistrationTracker registrationTracker;
+
+    public ModuleRegisterProcessor(ModuleRegistrationTracker tracker) {
+        this.registrationTracker = tracker;
+    }
+
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Create the {@link ModuleRegisterService}
+        // Don't register EAR deployments
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, depUnit))
+            return;
+
+        // Don't register Bundle deployments
+        if (depUnit.hasAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY))
+            return;
+
+        // Don't register private module deployments
         final Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (module != null) {
-            OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
-            ModuleRegisterService.addService(phaseContext, module, metadata);
-        }
+        final ModuleSpecification moduleSpecification = depUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        if (module == null || moduleSpecification.isPrivateModule())
+            return;
+
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
+        registrationTracker.registerModule(module, metadata);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         final Module module = depUnit.getAttachment(Attachments.MODULE);
-        if (module != null) {
-            ModuleRegisterService.removeService(depUnit);
-        }
-    }
-
-    private static class ModuleRegisterService implements Service<ModuleRegisterService> {
-
-        public static final ServiceName SERVICE_NAME_BASE = SERVICE_BASE_NAME.append("module", "registration");
-
-        private final Module module;
-        private final OSGiMetaData metadata;
-        private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
-        private XResource resource;
-
-
-        private ModuleRegisterService(Module module, OSGiMetaData metadata) {
-            this.module = module;
-            this.metadata = metadata;
-        }
-
-        public static void addService(DeploymentPhaseContext phaseContext, Module module, OSGiMetaData metadata) {
-            final ModuleRegisterService service = new ModuleRegisterService(module, metadata);
-            final ServiceName serviceName = getServiceName(module.getIdentifier());
-            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-            ServiceBuilder<ModuleRegisterService> builder = serviceTarget.addService(serviceName, service);
-            builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, service.injectedEnvironment);
-            builder.addDependency(ServiceModuleLoader.moduleServiceName(module.getIdentifier()));
-            builder.install();
-        }
-
-        public static void removeService(DeploymentUnit deploymentUnit) {
-            final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            ServiceName serviceName = getServiceName(module.getIdentifier());
-            final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getService(serviceName);
-            if (serviceController != null) {
-                serviceController.setMode(Mode.REMOVE);
-            }
-        }
-
-        public synchronized void start(StartContext context) throws StartException {
-            ServiceController<?> controller = context.getController();
-            LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
-            LOGGER.infoRegisterModule(module);
-            try {
-                XResourceBuilder builder = XResourceBuilderFactory.create();
-                if (metadata != null) {
-                    builder.loadFrom(metadata);
-                } else {
-                    builder.loadFrom(module);
-                }
-                resource = builder.getResource();
-                resource.addAttachment(Module.class, module);
-                injectedEnvironment.getValue().installResources(resource);
-            } catch (Throwable th) {
-                throw MESSAGES.startFailedToRegisterModule(th, module);
-            }
-        }
-
-        public synchronized void stop(StopContext context) {
-            ServiceController<?> controller = context.getController();
-            LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-            if (resource != null) {
-                LOGGER.infoUnregisterModule(module);
-                injectedEnvironment.getValue().uninstallResources(resource);
-            }
-        }
-
-        @Override
-        public ModuleRegisterService getValue() throws IllegalStateException {
-            return this;
-        }
-
-        private static ServiceName getServiceName(ModuleIdentifier moduleIdentifier) {
-            return SERVICE_NAME_BASE.append(moduleIdentifier.toString());
-        }
+        registrationTracker.unregisterModule(module);
     }
 }

@@ -83,6 +83,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         defaultDependencies.add("deployment.arquillian-service");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
+        defaultDependencies.add("org.osgi.core");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
