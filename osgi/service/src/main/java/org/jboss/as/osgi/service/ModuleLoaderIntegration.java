@@ -27,8 +27,11 @@ import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFI
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SERVICE_PREFIX;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_SPEC_SERVICE_PREFIX;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.moduleservice.ModuleLoadService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
@@ -121,10 +124,10 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      * Add a {@link ModuleSpec} for and OSGi module as a service that can later be looked up by the {@link ServiceModuleLoader}
      */
     @Override
-    public void addModule(final ModuleSpec moduleSpec) {
+    public void addModuleSpec(XResource resource, ModuleSpec moduleSpec) {
         ModuleIdentifier identifier = moduleSpec.getModuleIdentifier();
         LOGGER.tracef("Add module spec to loader: %s", identifier);
-        ServiceName moduleSpecName = ServiceModuleLoader.moduleSpecServiceName(identifier);
+        ServiceName moduleSpecName = getModuleSpecServiceName(identifier);
         serviceTarget.addService(moduleSpecName, new ValueService<ModuleSpec>(new ImmediateValue<ModuleSpec>(moduleSpec))).install();
     }
 
@@ -138,7 +141,7 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      * The {@link ServiceModuleLoader} cannot load these modules.
      */
     @Override
-    public void addModule(final Module module) {
+    public void addModule(XResource resource, Module module) {
         ServiceName moduleServiceName = getModuleServiceName(module.getIdentifier());
         if (serviceContainer.getService(moduleServiceName) == null) {
             LOGGER.debugf("Add module to loader: %s", module.getIdentifier());
@@ -146,11 +149,17 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         }
     }
 
+    @Override
+    public ServiceName createModuleService(XResource resource, ModuleIdentifier identifier) {
+        List<ModuleDependency> dependencies = Collections.emptyList();
+        return ModuleLoadService.install(serviceTarget, identifier, dependencies);
+    }
+
     /**
      * Remove the {@link Module} and {@link ModuleSpec} services associated with the given identifier.
      */
     @Override
-    public void removeModule(ModuleIdentifier identifier) {
+    public void removeModule(XResource resource, ModuleIdentifier identifier) {
         ServiceName serviceName = getModuleSpecServiceName(identifier);
         ServiceController<?> controller = serviceContainer.getService(serviceName);
         if (controller != null) {
@@ -186,12 +195,13 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
         throw new UnsupportedOperationException();
     }
 
-    private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
-        return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+    @Override
+    public ServiceName getModuleServiceName(ModuleIdentifier identifier) {
+        return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
 
-    private ServiceName getModuleServiceName(ModuleIdentifier identifier) {
-        return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
+    private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
+        return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
 
     @Override

@@ -147,7 +147,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             Module.registerContentHandlerFactoryModule(coreFrameworkModule);
 
             ServiceTarget serviceTarget = context.getChildTarget();
-            AutoInstallIntegration.addService(serviceTarget);
+            BootstrapBundlesIntegration.addService(serviceTarget);
             BundleInstallIntegration.addService(serviceTarget);
             FrameworkModuleIntegration.addService(serviceTarget, props);
             JAXPServiceProvider.addService(serviceTarget);
