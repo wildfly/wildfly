@@ -22,15 +22,28 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_ACTIVE;
+import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_INSTALLED;
+import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_RESOLVED;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.internal.FrameworkActive;
 
 /**
  * Activates the OSGi subsystem if an OSGi deployment is detected.
@@ -39,6 +52,8 @@ import org.jboss.osgi.framework.Services;
  * @since 20-Jun-2012
  */
 public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
+
+    private AtomicBoolean subsystemActivated = new AtomicBoolean();
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -49,8 +64,10 @@ public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
-            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            if (subsystemActivated.compareAndSet(false, true)) {
+                SubsystemActivationService.addService(phaseContext.getServiceTarget());
+            }
+            phaseContext.addDependency(SubsystemActivationService.SUBSYTEM_ACTIVATOR_NAME, AttachmentKey.create(Void.class));
             phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
             phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         }
@@ -58,5 +75,32 @@ public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
+    }
+
+    /**
+     * {@link FrameworkActive} has a dependency on the bootstrap & persistent bundles being activated.
+     * The persistent bundles pass through this DUP on server startup - so we cannot simply create
+     * a phase dependency on {@link FrameworkActive}.
+     *
+     * Instead we create a dependency on this service, which has dependencies the boostrap bundle services,
+     * which allow the persistent bundle services to get started. Additionally we explicitly set the mode
+     * for {@link FrameworkActive} to ACTIVE so it does not go down again when it has no more dependees.
+     */
+    static class SubsystemActivationService extends AbstractService<Void> {
+
+        static ServiceName SUBSYTEM_ACTIVATOR_NAME = OSGiConstants.SERVICE_BASE_NAME.append("subsystem", "activator");
+
+        static void addService(ServiceTarget serviceTarget) {
+            SubsystemActivationService service = new SubsystemActivationService();
+            ServiceBuilder<Void> builder = serviceTarget.addService(SUBSYTEM_ACTIVATOR_NAME, service);
+            builder.addDependencies(BOOTSTRAP_BUNDLES_INSTALLED, BOOTSTRAP_BUNDLES_RESOLVED, BOOTSTRAP_BUNDLES_ACTIVE);
+            builder.install();
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            ServiceRegistry serviceRegistry = context.getController().getServiceContainer();
+            serviceRegistry.getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
+        }
     }
 }

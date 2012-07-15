@@ -23,7 +23,6 @@
 package org.jboss.as.osgi.deployment;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,9 +43,6 @@ public class BundleResolveSubProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.MODULE))
-            return;
-
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (bundle == null || deployment.isAutoStart() == false)
@@ -56,12 +52,11 @@ public class BundleResolveSubProcessor implements DeploymentUnitProcessor {
         if (depUnit.getParent() == null)
             return;
 
-        BundleResolveProcessor.resolveBundle(depUnit, bundle);
+        BundleResolveProcessor.resolveBundle(phaseContext, bundle);
     }
 
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.BUNDLE_WIRING_KEY);
     }
 }

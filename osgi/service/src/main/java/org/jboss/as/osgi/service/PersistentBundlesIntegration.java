@@ -55,8 +55,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.framework.IntegrationServices;
-import org.jboss.osgi.framework.PersistentBundlesComplete;
-import org.jboss.osgi.framework.PersistentBundlesPlugin;
+import org.jboss.osgi.framework.PersistentBundlesResolved;
 import org.osgi.framework.Bundle;
 
 /**
@@ -65,12 +64,12 @@ import org.osgi.framework.Bundle;
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2012
  */
-public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
+public class PersistentBundlesIntegration extends AbstractService<Void> {
 
     public static ServiceController<?> addService(ServiceTarget serviceTarget, InitialDeploymentTracker deploymentTracker) {
         PersistentBundlesIntegration service = new PersistentBundlesIntegration();
-        ServiceBuilder<PersistentBundlesPlugin> builder = serviceTarget.addService(IntegrationServices.PERSISTENT_BUNDLES_PLUGIN, service);
-        builder.addDependencies(IntegrationServices.AUTOINSTALL_COMPLETE, InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
+        ServiceBuilder<Void> builder = serviceTarget.addService(IntegrationServices.PERSISTENT_BUNDLES_INSTALLED, service);
+        builder.addDependencies(IntegrationServices.BOOTSTRAP_BUNDLES_ACTIVE, InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
@@ -90,11 +89,6 @@ public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
         LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
     }
 
-    @Override
-    public PersistentBundlesIntegration getValue() {
-        return this;
-    }
-
     public static class InitialDeploymentTracker {
 
         static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = SERVICE_BASE_NAME.append("initial", "deployments", "COMPLETE");
@@ -108,7 +102,8 @@ public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
         public InitialDeploymentTracker(final OperationContext context, final Activation activationMode) {
 
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            final PersistentBundlesComplete installComplete = new PersistentBundlesComplete() {
+            final PersistentBundlesResolved installResolved = new PersistentBundlesResolved() {
+
                 @Override
                 protected boolean allServicesAdded(Set<ServiceName> trackedServices) {
                     synchronized (bundleInstallServices) {
@@ -116,7 +111,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
                     }
                 }
             };
-            ServiceBuilder<Void> installCompleteBuilder = installComplete.install(serviceTarget);
+            ServiceBuilder<Void> installCompleteBuilder = installResolved.install(serviceTarget);
             installCompleteBuilder.setInitialMode(activationMode == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
 
             deploymentNames = getDeploymentNames(context);
@@ -137,7 +132,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
 
             final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
             final ServiceTarget listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
-            bundleInstallListener = installComplete.getListener();
+            bundleInstallListener = installResolved.getListener();
             ServiceListener<Object> listener = new AbstractServiceListener<Object>() {
                 @Override
                 public void transition(ServiceController<? extends Object> controller, Transition transition) {
@@ -154,7 +149,7 @@ public class PersistentBundlesIntegration implements PersistentBundlesPlugin {
                                         if (deploymentCount.get() == 0) {
                                             listenerTarget.removeListener(this);
                                             initialDeploymentsComplete(serviceTarget);
-                                            installComplete.checkAndComplete();
+                                            installResolved.checkAndComplete();
                                         }
                                 }
                             }

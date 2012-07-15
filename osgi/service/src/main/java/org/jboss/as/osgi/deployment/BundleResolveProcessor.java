@@ -25,8 +25,6 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import java.util.Collections;
-import java.util.Map;
-
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.Attachments.BundleState;
@@ -34,16 +32,16 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
-import org.osgi.framework.wiring.BundleWiring;
-import org.osgi.resource.Resource;
-import org.osgi.resource.Wiring;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
@@ -58,9 +56,6 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(Attachments.MODULE))
-            return;
-
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (bundle == null || deployment.isAutoStart() == false)
@@ -70,21 +65,21 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         if (depUnit.getParent() != null)
             return;
 
-        resolveBundle(depUnit, bundle);
+        resolveBundle(phaseContext, bundle);
     }
 
-    static void resolveBundle(DeploymentUnit depUnit, XBundle bundle) {
+    static void resolveBundle(DeploymentPhaseContext phaseContext, XBundle bundle) {
         XBundleRevision brev = bundle.getBundleRevision();
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
         XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
         try {
-            Map<Resource, Wiring> wiremap = resolver.resolveAndApply(context);
-            BundleWiring wiring = (BundleWiring) wiremap.get(brev);
+            resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
-            depUnit.putAttachment(OSGiConstants.BUNDLE_WIRING_KEY, wiring);
-            Module module = brev.getModuleClassLoader().getModule();
-            depUnit.putAttachment(Attachments.MODULE, module);
+            ModuleIdentifier identifier = brev.getModuleIdentifier();
+            ServiceName moduleService = ServiceModuleLoader.moduleServiceName(identifier);
+            phaseContext.addDeploymentDependency(moduleService, Attachments.MODULE);
         } catch (ResolutionException ex) {
             LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());
         }
@@ -92,6 +87,5 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.BUNDLE_WIRING_KEY);
     }
 }
