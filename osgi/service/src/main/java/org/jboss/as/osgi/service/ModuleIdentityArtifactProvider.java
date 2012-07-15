@@ -99,10 +99,10 @@ final class ModuleIdentityArtifactProvider extends AbstractService<Void> impleme
         ServerEnvironment serverEnvironment = injectedEnvironment.getValue();
         bundlesDir = serverEnvironment.getBundlesDir();
         if (bundlesDir.isDirectory() == false)
-            throw MESSAGES.illegalStateArtifactBaseLocation(bundlesDir);
+            throw MESSAGES.startArtifactBaseLocation(bundlesDir);
         modulesDir = new File(bundlesDir.getParent() + File.separator + "modules");
         if (modulesDir.isDirectory() == false)
-            throw MESSAGES.illegalStateArtifactBaseLocation(modulesDir);
+            throw MESSAGES.startArtifactBaseLocation(modulesDir);
     }
 
     @Override

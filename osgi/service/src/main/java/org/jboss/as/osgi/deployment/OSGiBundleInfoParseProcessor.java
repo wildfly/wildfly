@@ -34,6 +34,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.jboss.vfs.VirtualFile;
@@ -67,6 +69,8 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
                 VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
                 info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName);
                 depUnit.putAttachment(OSGiConstants.BUNDLE_INFO_KEY, info);
+                OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+                depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
             } catch (BundleException ex) {
                 throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
             }

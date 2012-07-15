@@ -117,7 +117,6 @@ public class ArquillianService implements Service<ArquillianService> {
                             if (arqConfig != null) {
                                 log.infof("Arquillian deployment detected: %s", arqConfig);
                                 ServiceBuilder<ArquillianConfig> builder = arqConfig.buildService(serviceTarget, serviceController);
-                                FrameworkActivationProcessor.processDependencies(builder, arqConfig);
                                 builder.install();
                             }
                         }
@@ -130,7 +129,6 @@ public class ArquillianService implements Service<ArquillianService> {
                             ServiceController<?> parentController = serviceContainer.getService(parentName);
                             DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
                             ArquillianConfigBuilder.handleParseAnnotations(depUnit);
-                            FrameworkActivationProcessor.handleParseAnnotations(depUnit);
                         }
                     }
                 }

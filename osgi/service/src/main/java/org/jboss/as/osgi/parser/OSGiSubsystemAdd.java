@@ -36,6 +36,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.osgi.deployment.BundleContextBindingProcessor;
 import org.jboss.as.osgi.deployment.BundleDeploymentProcessor;
 import org.jboss.as.osgi.deployment.BundleInstallProcessor;
+import org.jboss.as.osgi.deployment.FrameworkActivateProcessor;
 import org.jboss.as.osgi.deployment.ModuleRegisterProcessor;
 import org.jboss.as.osgi.deployment.OSGiBundleInfoParseProcessor;
 import org.jboss.as.osgi.deployment.OSGiManifestStructureProcessor;
@@ -43,8 +44,8 @@ import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
+import org.jboss.as.osgi.service.InitialDeploymentTracker;
+import org.jboss.as.osgi.service.ModuleRegistrationTracker;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -76,12 +77,14 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         return resource;
     }
 
+    @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) {
         if (operation.has(ModelConstants.ACTIVATION)) {
             model.get(ModelConstants.ACTIVATION).set(operation.get(ModelConstants.ACTIVATION));
         }
     }
 
+    @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
@@ -89,25 +92,29 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final Activation activationMode = getActivationMode(operation);
-        final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, activationMode);
+        final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, verificationHandler);
+        final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
 
         context.addStep(new OperationStepHandler() {
+            @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                newControllers.add(PersistentBundlesIntegration.addService(serviceTarget, deploymentTracker));
                 newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, verificationHandler));
+                newControllers.add(registrationTracker.install(serviceTarget, verificationHandler));
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 
         context.addStep(new AbstractDeploymentChainStep() {
+            @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_OSGI_MANIFEST, new OSGiManifestStructureProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_BUNDLE_INFO, new OSGiBundleInfoParseProcessor());
-                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_XSERVICE_PROPERTIES, new OSGiXServiceParseProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_PROPERTIES, new OSGiXServiceParseProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_DEPLOYMENT, new BundleDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_SUBSYSTEM_ACTIVATOR, new FrameworkActivateProcessor(deploymentTracker));
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_BUNDLE_CONTEXT_BINDING, new BundleContextBindingProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_OSGI_DEPLOYMENT, new BundleInstallProcessor(deploymentTracker));
-                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_OSGI_MODULE, new ModuleRegisterProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_OSGI_MODULE, new ModuleRegisterProcessor(registrationTracker));
             }
         }, OperationContext.Stage.RUNTIME);
 
