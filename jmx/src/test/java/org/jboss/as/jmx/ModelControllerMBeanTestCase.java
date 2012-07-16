@@ -26,6 +26,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -38,9 +46,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -249,17 +259,35 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(IntOperationWithParams.OPERATION_JMX_NAME, op.getName());
         Assert.assertEquals("Test2", op.getDescription());
         Assert.assertEquals(String.class.getName(), op.getReturnType());
-        Assert.assertEquals(3, op.getSignature().length);
+        Assert.assertEquals(5, op.getSignature().length);
+
         Assert.assertEquals("param1", op.getSignature()[0].getName());
         Assert.assertEquals("Param1", op.getSignature()[0].getDescription());
         Assert.assertEquals(Long.class.getName(), op.getSignature()[0].getType());
+
         Assert.assertEquals("param2", op.getSignature()[1].getName());
         Assert.assertEquals("Param2", op.getSignature()[1].getDescription());
         Assert.assertEquals(String[].class.getName(), op.getSignature()[1].getType());
+
         Assert.assertEquals("param3", op.getSignature()[2].getName());
         Assert.assertEquals("Param3", op.getSignature()[2].getDescription());
         Assert.assertEquals(TabularData.class.getName(), op.getSignature()[2].getType());
         assertMapType(assertCast(OpenMBeanParameterInfo.class, op.getSignature()[2]).getOpenType(), SimpleType.STRING, SimpleType.INTEGER);
+
+        Assert.assertEquals("param4", op.getSignature()[3].getName());
+        Assert.assertEquals("Param4", op.getSignature()[3].getDescription());
+        Assert.assertEquals(Integer.class.getName(), op.getSignature()[3].getType());
+        OpenMBeanParameterInfo parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[3]);
+        Assert.assertEquals(6, parameterInfo.getDefaultValue());
+        Assert.assertEquals(5, parameterInfo.getMinValue());
+        Assert.assertEquals(10, parameterInfo.getMaxValue());
+
+        Assert.assertEquals("param5", op.getSignature()[4].getName());
+        Assert.assertEquals("Param5", op.getSignature()[4].getDescription());
+        Assert.assertEquals(Integer.class.getName(), op.getSignature()[4].getType());
+        parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[4]);
+        Assert.assertNull(parameterInfo.getDefaultValue());
+        Assert.assertEquals(new HashSet<Object>(Arrays.asList(3, 5, 7)), parameterInfo.getLegalValues());
 
         op = findOperation(operations, ComplexOperation.OPERATION_NAME);
         Assert.assertEquals(ComplexOperation.OPERATION_NAME, op.getName());
@@ -792,8 +820,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         String result = assertCast(String.class, connection.invoke(
                 name,
                 IntOperationWithParams.OPERATION_JMX_NAME,
-                new Object[] {100L, new String[] {"A"}, Collections.singletonMap("test", 3)},
-                new String[] {Long.class.getName(), String[].class.getName(), Map.class.getName()}));
+                new Object[] {100L, new String[] {"A"}, Collections.singletonMap("test", 3), 5, 5},
+                new String[] {Long.class.getName(), String[].class.getName(), Map.class.getName(), Integer.class.getName(), Integer.class.getName()}));
         Assert.assertEquals("A105", result);
         Assert.assertTrue(IntOperationWithParams.INSTANCE_NO_EXPRESSIONS.invoked);
 
@@ -1473,6 +1501,18 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
                 node.get(REQUEST_PROPERTIES, "param3", VALUE_TYPE).set(ModelType.INT);
                 node.get(REQUEST_PROPERTIES, "param3", DESCRIPTION).set("Param3");
                 node.get(REQUEST_PROPERTIES, "param3", EXPRESSIONS_ALLOWED).set(allowExpressions);
+                node.get(REQUEST_PROPERTIES, "param4", TYPE).set(ModelType.INT);
+                node.get(REQUEST_PROPERTIES, "param4", DESCRIPTION).set("Param4");
+                node.get(REQUEST_PROPERTIES, "param4", EXPRESSIONS_ALLOWED).set(allowExpressions);
+                node.get(REQUEST_PROPERTIES, "param4", DEFAULT).set(6);
+                node.get(REQUEST_PROPERTIES, "param4", MIN).set(5);
+                node.get(REQUEST_PROPERTIES, "param4", MAX).set(10);
+                node.get(REQUEST_PROPERTIES, "param5", TYPE).set(ModelType.INT);
+                node.get(REQUEST_PROPERTIES, "param5", DESCRIPTION).set("Param5");
+                node.get(REQUEST_PROPERTIES, "param5", EXPRESSIONS_ALLOWED).set(allowExpressions);
+                node.get(REQUEST_PROPERTIES, "param5", ALLOWED).add(3);
+                node.get(REQUEST_PROPERTIES, "param5", ALLOWED).add(5);
+                node.get(REQUEST_PROPERTIES, "param5", ALLOWED).add(7);
                 node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
                 node.get(REPLY_PROPERTIES, DESCRIPTION).set("Return");
                 return node;
