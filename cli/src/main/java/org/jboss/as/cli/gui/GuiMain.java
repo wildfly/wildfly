@@ -47,6 +47,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
+import org.jboss.as.cli.gui.metacommand.OpenScriptAction;
 import org.jboss.as.cli.gui.metacommand.UndeployAction;
 
 /**
@@ -77,7 +78,10 @@ public class GuiMain {
 
     private static CliGuiContext makeGuiContext(CommandContext cmdCtx) {
         CliGuiContext cliGuiCtx = new CliGuiContext();
-        CommandExecutor executor = new CommandExecutor(cliGuiCtx, cmdCtx);
+
+        cliGuiCtx.setCommandContext(cmdCtx);
+
+        CommandExecutor executor = new CommandExecutor(cliGuiCtx);
         cliGuiCtx.setExecutor(executor);
 
         JTextPane output = new JTextPane();
@@ -133,10 +137,22 @@ public class GuiMain {
 
     public static JMenuBar makeMenuBar(CliGuiContext cliGuiCtx) {
         JMenuBar menuBar = new JMenuBar();
-        menuBar.add(makeMetaCmdMenu(cliGuiCtx));
+        menuBar.add(makeDeploymentsMenu(cliGuiCtx));
+        menuBar.add(makeScriptMenu(cliGuiCtx));
         JMenu lfMenu = makeLookAndFeelMenu(cliGuiCtx);
         if (lfMenu != null) menuBar.add(lfMenu);
         return menuBar;
+    }
+
+    private static JMenu makeScriptMenu(CliGuiContext cliGuiCtx) {
+        JMenu scriptMenu = new JMenu("Scripts");
+        scriptMenu.setMnemonic(KeyEvent.VK_S);
+
+        JMenuItem openScript = new JMenuItem(new OpenScriptAction(cliGuiCtx));
+        openScript.setMnemonic(KeyEvent.VK_O);
+        scriptMenu.add(openScript);
+
+        return scriptMenu;
     }
 
     private static JMenu makeLookAndFeelMenu(CliGuiContext cliGuiCtx) {
@@ -179,17 +195,16 @@ public class GuiMain {
         }
     }
 
-    private static JMenu makeMetaCmdMenu(CliGuiContext cliGuiCtx) {
-        JMenu metaCmdMenu = new JMenu("Meta Commands");
-        metaCmdMenu.setMnemonic(KeyEvent.VK_M);
-
+    private static JMenu makeDeploymentsMenu(CliGuiContext cliGuiCtx) {
+        JMenu metaCmdMenu = new JMenu("Deployments");
+        metaCmdMenu.setMnemonic(KeyEvent.VK_D);
 
         JMenuItem deploy = new JMenuItem(new DeployAction(cliGuiCtx));
         deploy.setMnemonic(KeyEvent.VK_D);
         metaCmdMenu.add(deploy);
 
         JMenuItem unDeploy = new JMenuItem(new UndeployAction(cliGuiCtx));
-        deploy.setMnemonic(KeyEvent.VK_U);
+        unDeploy.setMnemonic(KeyEvent.VK_U);
         metaCmdMenu.add(unDeploy);
 
         return metaCmdMenu;

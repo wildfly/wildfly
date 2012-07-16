@@ -36,9 +36,9 @@ public class CommandExecutor {
     private ModelControllerClient client;
     private CommandContext cmdCtx;
 
-    public CommandExecutor(CliGuiContext cliGuiCtx, CommandContext cmdCtx) {
+    public CommandExecutor(CliGuiContext cliGuiCtx) {
         this.cliGuiCtx = cliGuiCtx;
-        this.cmdCtx = cmdCtx;
+        this.cmdCtx = cliGuiCtx.getCommmandContext();
         this.client = cmdCtx.getModelControllerClient();
     }
 
