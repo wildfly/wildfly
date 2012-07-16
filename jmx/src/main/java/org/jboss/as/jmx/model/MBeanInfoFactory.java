@@ -22,10 +22,14 @@
 package org.jboss.as.jmx.model;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
@@ -51,6 +55,7 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ObjectName;
+import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenMBeanAttributeInfo;
 import javax.management.openmbean.OpenMBeanAttributeInfoSupport;
 import javax.management.openmbean.OpenMBeanConstructorInfo;
@@ -253,8 +258,29 @@ public class MBeanInfoFactory {
                             getDescription(prop.getValue()),
                             converters.convertToMBeanType(value),
                             new ImmutableDescriptor(descriptions)));
+
         }
         return params.toArray(new OpenMBeanParameterInfo[params.size()]);
+    }
+
+    private Object getIfExists(final ModelNode parentNode, final String name) {
+        if (parentNode.has(DEFAULT)) {
+            ModelNode defaultNode = parentNode.get(DEFAULT);
+            return TypeConverter.fromModelNode(parentNode, defaultNode);
+        } else {
+            return null;
+        }
+    }
+
+    private Comparable getIfExistsAsComparable(final ModelNode parentNode, final String name) {
+        if (parentNode.has(name)) {
+            ModelNode defaultNode = parentNode.get(name);
+            Object value = TypeConverter.fromModelNode(parentNode, defaultNode);
+            if (value instanceof Comparable) {
+                return (Comparable) value;
+            }
+        }
+        return null;
     }
 
     private OpenType<?> getReturnType(ModelNode opNode) {
