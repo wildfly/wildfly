@@ -46,6 +46,10 @@ class SecurityActions {
                 return getTCLAction().getSystemProperty(name);
             }
 
+            public static void setSystemProperty(String name, String value) {
+                getTCLAction().setSystemProperty(name, value);
+            }
+
             public static ClassLoader getClassLoader(Class<?> cls) {
                 return getTCLAction().getClassLoader(cls);
             }
@@ -65,6 +69,11 @@ class SecurityActions {
             @Override
             public String getSystemProperty(String name) {
                 return System.getProperty(name);
+            }
+
+            @Override
+            public void setSystemProperty(String name, String value) {
+                System.setProperty(name, value);
             }
 
             @Override
@@ -99,6 +108,16 @@ class SecurityActions {
             }
 
             @Override
+            public void setSystemProperty(final String name, final String value) {
+                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        System.setProperty(name, value);
+                        return null;
+                    }
+                });
+            }
+
+            @Override
             public ClassLoader getClassLoader(final Class<?> cls) {
                 return (ClassLoader) AccessController.doPrivileged(new PrivilegedAction<Object>() {
                     public Object run() {
@@ -123,6 +142,8 @@ class SecurityActions {
 
         String getSystemProperty(String name);
 
+        void setSystemProperty(String name, String value);
+
         String getEnvironmentVariable(String name);
     }
 
@@ -132,6 +153,10 @@ class SecurityActions {
 
     protected static String getSystemProperty(String name) {
         return TCLAction.UTIL.getSystemProperty(name);
+    }
+
+    protected static void setSystemProperty(String name, String value) {
+        TCLAction.UTIL.setSystemProperty(name, value);
     }
 
     protected static ClassLoader getClassLoader(Class<?> cls) {

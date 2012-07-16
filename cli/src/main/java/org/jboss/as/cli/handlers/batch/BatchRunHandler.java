@@ -25,21 +25,21 @@ import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.Util;
+import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
-import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
+import org.jboss.as.cli.handlers.BaseOperationCommand;
 import org.jboss.dmr.ModelNode;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class BatchRunHandler extends CommandHandlerWithHelp {
+public class BatchRunHandler extends BaseOperationCommand {
 
-    public BatchRunHandler() {
-        super("batch-run", true);
+    public BatchRunHandler(CommandContext ctx) {
+        super(ctx, "batch-run", true);
     }
 
     @Override
@@ -54,7 +54,23 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
+        boolean failed = false;
+        try {
+            super.doHandle(ctx);
+            ctx.printLine("The batch executed successfully");
+        } catch(CommandLineException e) {
+            failed = true;
+            throw e;
+        } finally{
+            if(!failed) {
+                ctx.getBatchManager().discardActiveBatch();
+            }
+        }
+    }
+
+    @Override
+    protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
 
         final BatchManager batchManager = ctx.getBatchManager();
         if(!batchManager.isBatchActive()) {
@@ -68,18 +84,6 @@ public class BatchRunHandler extends CommandHandlerWithHelp {
             throw new CommandFormatException("The batch is empty.");
         }
 
-        final ModelNode composite = batch.toRequest();
-        ModelNode result;
-        try {
-            result = ctx.getModelControllerClient().execute(composite);
-        } catch (Exception e) {
-            throw new CommandFormatException("Failed to execute batch: " + e.getLocalizedMessage());
-        }
-        if(Util.isSuccess(result)) {
-            batchManager.discardActiveBatch();
-            ctx.printLine("The batch executed successfully.");
-        } else {
-            throw new CommandFormatException("Failed to execute batch: " + Util.getFailureDescription(result));
-        }
+        return batch.toRequest();
     }
 }
