@@ -47,11 +47,6 @@
         	   	 <include name="docs/**"/>
         	   </fileset>
         </copy>
-        <chmod perm="755">
-            <fileset dir="${output.dir}/bin">
-                <include name="**/*.sh"/>
-            </fileset>
-        </chmod>
         <!-- Convert .bat files to DOS line endings -->
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.bat" eol="crlf" />
         <!-- Convert .sh files to Unix line endings -->    	
@@ -60,6 +55,11 @@
         <!-- These files contain digested passwords, which should not be visible to external users -->
         <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+        <chmod perm="755">
+            <fileset dir="${output.dir}/bin">
+                <include name="**/*.sh"/>
+            </fileset>
+        </chmod>
     </target>
 
     <target name="copy-standalone" description="Copy all standard configurations">
