@@ -21,6 +21,7 @@ package org.jboss.as.cli.gui;
 import java.awt.Window;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.jboss.as.cli.CommandContext;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -29,12 +30,17 @@ import org.jboss.dmr.ModelNode;
  */
 public class CliGuiContext {
 
+    private CommandContext cmdCtx;
     private CommandExecutor executor;
     private JPanel mainPanel;
     private CommandLine cmdLine;
     private boolean isStandalone;
 
     CliGuiContext() {
+    }
+
+    void setCommandContext(CommandContext cmdCtx) {
+        this.cmdCtx = cmdCtx;
     }
 
     void setExecutor(CommandExecutor executor) {
@@ -62,6 +68,14 @@ public class CliGuiContext {
      */
     public boolean isStandalone() {
         return this.isStandalone;
+    }
+
+    /**
+     * Get the command context.
+     * @return The command context.
+     */
+    public CommandContext getCommmandContext() {
+        return this.cmdCtx;
     }
 
     /**
