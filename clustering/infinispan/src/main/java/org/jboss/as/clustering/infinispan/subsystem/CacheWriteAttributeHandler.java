@@ -110,7 +110,7 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
 
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : attributeDefinitions.values()) {
-           registry.registerReadWriteAttribute(attr.getName(), CacheReadAttributeHandler.INSTANCE, this, flags);
+           registry.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, this);
         }
     }
 

@@ -44,7 +44,6 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
@@ -451,13 +450,13 @@ public abstract class AbstractSubsystemTest {
         }
     }
 
-    /**
+   /* *//**
      * Checks that the subsystem can be transformed into the expected target DMR
      *
      * @param kernelServices the kernel services for the started controller
      * @param modelVersion the target subsystem model version
      * @throws IOException if
-     */
+     *//*
     protected void checkSubsystemTransformer(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
         ModelNode legacyModel = legacy.readWholeModel();
@@ -467,18 +466,71 @@ public abstract class AbstractSubsystemTest {
 
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
         compare(legacyModel, transformed, true);
-    }
+    }*/
 
     /**
      * Checks that the subsystem can be transformed into the expected target DMR
      *
      * @param kernelServices the kernel services for the started controller
-     * @param legacyModel the dmr model for the target subsystem version
      * @param modelVersion the model version
      */
-    protected void checkSubsystemTransformer(KernelServices kernelServices, final ModelNode legacyModel, ModelVersion modelVersion) {
+    protected void checkSubsystemTransformer(KernelServices kernelServices, ModelVersion modelVersion) {
         final ModelNode result = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
-        compare(legacyModel, result, true);
+        checkModelAgainstDefinition(result, modelVersion);
+
+    }
+
+    private void checkModelAgainstDefinition(final ModelNode model, final ModelVersion modelVersion) {
+        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(mainSubsystemName, modelVersion);
+        ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
+        checkModel(model, rr);
+    }
+
+    private void checkModel(final ModelNode model, ManagementResourceRegistration rr) {
+        final Set<String> children = rr.getChildNames(PathAddress.EMPTY_ADDRESS);
+        final Set<String> attributeNames = rr.getAttributeNames(PathAddress.EMPTY_ADDRESS);
+        for (ModelNode el : model.asList()) {
+            String name = el.asProperty().getName();
+            ModelNode value = el.asProperty().getValue();
+            if (attributeNames.contains(name)) {
+                AttributeAccess aa = rr.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
+                Assert.assertNotNull("Attribute " + name + " is not known", aa);
+                AttributeDefinition ad = aa.getAttributeDefinition();
+                Assert.assertEquals("Attribute " + name + " type mismatch", value.getType(), ad.getType());
+                try {
+                    ad.getValidator().validateParameter(name, value);
+                } catch (OperationFailedException e) {
+                    Assert.fail("validation for attribute '" + name + "' failed, " + e.getMessage());
+                }
+
+            } else if (!children.contains(name)) {
+                Assert.fail("Element '" + name + "' is not known in target definition");
+            }
+        }
+
+        for (PathElement pe : rr.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+            if (pe.isWildcard()) {
+                if (children.contains(pe.getKey())&&model.hasDefined(pe.getKey())) {
+                    for (ModelNode v : model.get(pe.getKey()).asList()) {
+                        String name = v.asProperty().getName();
+                        ModelNode value = v.asProperty().getValue();
+                        ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
+                        Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                        checkModel(value, sub);
+                    }
+                }
+            } else {
+                if (children.contains(pe.getKeyValuePair())) {
+                    String name = pe.getValue();
+                    ModelNode value = model.get(pe.getKeyValuePair());
+                    ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
+                    Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                    checkModel(value, sub);
+                }
+            }
+        }
+
+
     }
 
 
