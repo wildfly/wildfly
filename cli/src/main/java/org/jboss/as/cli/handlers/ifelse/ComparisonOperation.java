@@ -47,7 +47,13 @@ abstract class ComparisonOperation extends BaseOperation {
             throw new CommandLineException(getName() + " expects 2 operands but got " + operands.size());
         }
         final Object left = operands.get(0).resolveValue(ctx, response);
+        if(left == null) {
+            return false;
+        }
         final Object right = operands.get(1).resolveValue(ctx, response);
+        if(right == null) {
+            return false;
+        }
         if(!(left instanceof ModelNode) || !(right instanceof ModelNode)) {
             throw new CommandLineException("Operands aren't instances of org.jboss.dmr.ModelNode: " +
                 left.getClass().getName() + ", " + right.getClass().getName());
