@@ -125,6 +125,32 @@ public class PathsTestCase extends AbstractControllerTestBase {
         checkPath(result, "add2", "123", "add1", false);
     }
 
+    /**
+     * https://issues.jboss.org/browse/AS7-4917
+     */
+    @Test
+    public void testAddPathWithExpression() throws Exception {
+        String key = "my.path.expression";
+        String value = "log1234";
+        try {
+            System.setProperty(key, value);
+
+            ModelNode operation = createOperation(ADD);
+            operation.get(OP_ADDR).add(PATH, "path_with_expression");
+            operation.get(PATH).set("/path/${" + key + "}");
+            executeForResult(operation);
+
+            ModelNode result = readResource();
+            Assert.assertTrue(result.hasDefined(PATH));
+            Assert.assertEquals(2, result.get(PATH).keys().size());
+            checkPath(result, "path_with_expression", "/path/${" + key + "}", null, false);
+
+            checkServiceAndPathEntry("path_with_expression", "/path/" + value, null);
+        } finally {
+            System.clearProperty(key);
+        }
+    }
+
     @Test
     public void testRemovePath() throws Exception {
         testAddPath();
