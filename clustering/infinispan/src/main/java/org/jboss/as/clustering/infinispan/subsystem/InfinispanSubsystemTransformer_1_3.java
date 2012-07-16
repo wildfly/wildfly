@@ -17,18 +17,25 @@ public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransfo
     @Override
     public ModelNode transformModel(TransformationContext context, ModelNode model) {
         for (Property p : model.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
-            ModelNode container = p.getValue();
-            for (Property cache : container.asPropertyList()) {
-                transformCache(cache.getValue());
-            }
-            model.get(ModelKeys.CACHE_CONTAINER, p.getName()).set(container);
+            transformCache(model, p.getName(), ModelKeys.DISTRIBUTED_CACHE);
+            transformCache(model, p.getName(), ModelKeys.CACHE);
+            transformCache(model, p.getName(), ModelKeys.REPLICATED_CACHE);
+            transformCache(model, p.getName(), ModelKeys.INVALIDATION_CACHE);
+            transformCache(model, p.getName(), ModelKeys.LOCAL_CACHE);
         }
         return model;
     }
 
-    private void transformCache(final ModelNode cache) {
-        if(cache.hasDefined(ModelKeys.INDEXING_PROPERTIES)) {
-            cache.remove(ModelKeys.INDEXING_PROPERTIES);
+    private void transformCache(final ModelNode model, final String containerName, final String cacheType) {
+        ModelNode cacheHolder = model.get(ModelKeys.CACHE_CONTAINER, containerName, cacheType);
+        if (!cacheHolder.isDefined()) { return; }
+        for (Property c : cacheHolder.asPropertyList()) {
+            ModelNode cache = c.getValue();
+
+            if (cache.hasDefined(ModelKeys.INDEXING_PROPERTIES)) {
+                cache.remove(ModelKeys.INDEXING_PROPERTIES);
+            }
+            model.get(ModelKeys.CACHE_CONTAINER, containerName, cacheType, c.getName()).set(cache);
         }
     }
 }

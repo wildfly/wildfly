@@ -22,17 +22,15 @@
 
 package org.jboss.as.controller.transform;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Basic transformer working on the basis of the model rather the resource. This however
@@ -62,10 +60,10 @@ public abstract class AbstractResourceModelTransformer implements ResourceTransf
         final ModelNode recursive = Resource.Tools.readModel(resource);
         final ModelNode result = transformModel(context, recursive);
         // Create the target registration based on the old resource definition
-        final TransformationTarget target = context.getTarget();
+        /*final TransformationTarget target = context.getTarget();
         final ResourceDefinition definition = loader.load(target);
-        final ManagementResourceRegistration targetDefinition = ManagementResourceRegistration.Factory.create(definition);
-        final Resource transformed = TransformationUtils.modelToResource(targetDefinition, result, false);
+        final ManagementResourceRegistration targetDefinition = ManagementResourceRegistration.Factory.create(definition);*/
+        final Resource transformed = TransformationUtils.modelToResource(context.getResourceRegistration(PathAddress.EMPTY_ADDRESS), result, false);
         // Add the model recursively
         context.addTransformedRecursiveResource(PathAddress.EMPTY_ADDRESS, transformed);
     }

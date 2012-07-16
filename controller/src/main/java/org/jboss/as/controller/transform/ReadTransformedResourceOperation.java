@@ -1,6 +1,5 @@
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.ModelVersion;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -9,6 +8,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.Locale;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -48,7 +48,7 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
         final ModelNode subsystems = new ModelNode();
-        subsystems.get(subsystem).set(major + "." + minor);
+        subsystems.get(subsystem).set(major + "." + minor+"."+micro);
 
         final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(1, 0, 0), subsystems, TransformationTarget.TransformationTargetType.SERVER);
         final Transformers transformers = Transformers.Factory.create(target);

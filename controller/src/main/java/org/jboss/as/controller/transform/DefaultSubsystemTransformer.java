@@ -2,21 +2,15 @@ package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-
-import java.util.List;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 class DefaultSubsystemTransformer implements ResourceTransformer {
-    private ManagementResourceRegistration getSubsystemRegistration(final String subsystemName, int majorVersion, int minorVersion) {
+   /* private ManagementResourceRegistration getSubsystemRegistration(final String subsystemName, int majorVersion, int minorVersion) {
 
-        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, majorVersion, minorVersion);
+        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, majorVersion, minorVersion, 0);
         return ManagementResourceRegistration.Factory.create(rd);
     }
 
@@ -27,7 +21,7 @@ class DefaultSubsystemTransformer implements ResourceTransformer {
         }
 
         return ModelMatcher.getRules(currentDefinition, targetDefinition);
-    }
+    }*/
 
     @Override
     public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
