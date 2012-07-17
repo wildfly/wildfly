@@ -33,9 +33,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Data source statistics testCase
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -129,8 +129,8 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
 
     @Test
     public void testTwoDs() throws Exception {
-        ModelNode ds1 = createDataSource(false, 1, 10, false);
-        ModelNode ds2 = createDataSource(false, 5, 6, true);
+        ModelNode ds1 = createDataSource(false, 0, 10, false);
+        ModelNode ds2 = createDataSource(false, 0, 6, true);
 
         testStatistics(ds1);
         testStatistics(ds2);
@@ -151,7 +151,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
     @Test
     public void testTwoXaDs() throws Exception {
         ModelNode ds1 = createDataSource(true, 0, 1, false);
-        ModelNode ds2 = createDataSource(true, 1, 1, true);
+        ModelNode ds2 = createDataSource(true, 0, 1, true);
 
         testStatistics(ds1);
         testStatistics(ds2);
@@ -163,8 +163,8 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
 
     @Test
     public void testXaPlusDs() throws Exception {
-        ModelNode ds1 = createDataSource(false, 3, 3, false);
-        ModelNode ds2 = createDataSource(true, 1, 4, true);
+        ModelNode ds1 = createDataSource(false, 0, 3, false);
+        ModelNode ds2 = createDataSource(true, 0, 4, true);
 
         testStatistics(ds1);
         testStatistics(ds2);
