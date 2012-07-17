@@ -59,7 +59,7 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_MODULES_ID, false, false, false, false));
-        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_AS_SYSTEM_JMX_ID, false, false, false, false));
+        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_AS_SYSTEM_JMX_ID, true, false, false, false));
     }
 
     public void undeploy(final DeploymentUnit context) {
