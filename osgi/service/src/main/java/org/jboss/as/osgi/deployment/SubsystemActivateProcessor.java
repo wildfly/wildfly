@@ -40,6 +40,9 @@ import org.jboss.osgi.framework.Services;
  */
 public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
 
+    public SubsystemActivateProcessor() {
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -47,10 +50,11 @@ public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
         phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, OSGiConstants.SYSTEM_CONTEXT_KEY);
         phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
 
+        // Not a bundle deployment - do nothing
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
             phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.AUTOINSTALL_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDependency(IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE, AttachmentKey.create(Object.class));
             phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
             phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         }
