@@ -22,6 +22,18 @@
 
 package org.jboss.as.jmx;
 
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.InvalidAttributeValueException;
+import javax.management.MBeanException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.management.openmbean.OpenType;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelType;
 import org.jboss.logging.Cause;
@@ -29,16 +41,6 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
-
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.InvalidAttributeValueException;
-import javax.management.MBeanException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
 
 /**
  * Date: 05.11.2011
@@ -287,5 +289,11 @@ public interface JmxMessages {
      */
     @Message(id = 11349, value = "Need the name parameter for wildcard add")
     IllegalStateException wildcardNameParameterRequired();
+
+    //From now on master needs to be checked for ids
+
+    //exists in master
+    @Message(id = 11353, value="Expression can not be converted into target type %s")
+    IllegalArgumentException expressionCannotBeConvertedIntoTargeteType(OpenType<?> type);
 }
 
