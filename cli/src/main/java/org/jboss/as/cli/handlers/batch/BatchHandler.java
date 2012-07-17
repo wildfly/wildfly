@@ -21,6 +21,10 @@
  */
 package org.jboss.as.cli.handlers.batch;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,11 +33,18 @@ import java.util.Set;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.Util;
+import org.jboss.as.cli.batch.Batch;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
+import org.jboss.as.cli.handlers.DefaultFilenameTabCompleter;
+import org.jboss.as.cli.handlers.FilenameTabCompleter;
+import org.jboss.as.cli.handlers.WindowsFilenameTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
  *
@@ -43,8 +54,9 @@ public class BatchHandler extends CommandHandlerWithHelp {
 
     private final ArgumentWithoutValue l;
     private final ArgumentWithValue name;
+    private final ArgumentWithValue file;
 
-    public BatchHandler() {
+    public BatchHandler(CommandContext ctx) {
         super("batch");
 
         l = new ArgumentWithoutValue(this, "-l");
@@ -78,14 +90,30 @@ public class BatchHandler extends CommandHandlerWithHelp {
                 return nextCharIndex;
 
             }}, 0, "--name");
-        name.addCantAppearAfter(l);
+        name.setExclusive(true);
+
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
+        file = new ArgumentWithValue(this, pathCompleter, "--file") {
+            @Override
+            public String getValue(ParsedCommandLine args) {
+                String value = super.getValue(args);
+                if(value != null) {
+                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    value = pathCompleter.translatePath(value);
+                }
+                return value;
+            }
+        };
+        file.setExclusive(true);
     }
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.handlers.CommandHandlerWithHelp#doHandle(org.jboss.as.cli.CommandContext)
      */
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         BatchManager batchManager = ctx.getBatchManager();
 
@@ -105,9 +133,50 @@ public class BatchHandler extends CommandHandlerWithHelp {
         }
 
         if(batchManager.isBatchActive()) {
-            throw new CommandFormatException("Can't start a new batch while in batch mode.");
+            throw new CommandLineException("Can't start a new batch while in batch mode.");
         }
 
+        final String path = file.getValue(ctx.getParsedCommandLine());
+        if(path != null) {
+            final File f = new File(path);
+            if(!f.exists()) {
+                throw new CommandLineException("File " + f.getAbsolutePath() + " does not exist.");
+            }
+
+            final File currentDir = ctx.getCurrentDir();
+            final File baseDir = f.getParentFile();
+            if(baseDir != null) {
+                ctx.setCurrentDir(baseDir);
+            }
+
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(f));
+                String line = reader.readLine();
+                batchManager.activateNewBatch();
+                final Batch batch = batchManager.getActiveBatch();
+                while(line != null) {
+                    batch.add(ctx.toBatchedCommand(line));
+                    line = reader.readLine();
+                }
+            } catch(IOException e) {
+                batchManager.discardActiveBatch();
+                throw new CommandLineException("Failed to read file " + f.getAbsolutePath(), e);
+            } catch(CommandFormatException e) {
+                batchManager.discardActiveBatch();
+                throw new CommandLineException("Failed to create batch from " + f.getAbsolutePath(), e);
+            } finally {
+                if(baseDir != null) {
+                    ctx.setCurrentDir(currentDir);
+                }
+                if(reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {}
+                }
+            }
+            return;
+        }
         final String name = this.name.getValue(ctx.getParsedCommandLine());
 
         boolean activated;
@@ -125,14 +194,14 @@ public class BatchHandler extends CommandHandlerWithHelp {
                 }
             }
         } else if(name != null) {
-            throw new CommandFormatException("'" + name + "' not found among the held back batches.");
+            throw new CommandLineException("'" + name + "' not found among the held back batches.");
         } else {
             activated = batchManager.activateNewBatch();
         }
 
         if(!activated) {
             // that's more like illegal state
-            throw new CommandFormatException("Failed to activate batch.");
+            throw new CommandLineException("Failed to activate batch.");
         }
     }
 }
