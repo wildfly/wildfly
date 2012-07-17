@@ -57,7 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(LongRunningThreadsCheckTestCase.TestCaseSetup.class)
-//@Ignore("AS7-4185")
+@Ignore("causing an osgi error during server reload")
 public class LongRunningThreadsCheckTestCase extends JcaMgmtBase {
 
     public static String ctx = "customContext";
