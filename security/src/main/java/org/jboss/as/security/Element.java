@@ -34,11 +34,11 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
-    ACL("acl"),
-    ACL_MODULE("acl-module"),
-    ADDITIONAL_PROPERTIES("additional-properties"),
-    AUDIT("audit"),
-    AUTH_MODULE("auth-module"),
+    ACL(Constants.ACL),
+    ACL_MODULE(Constants.ACL_MODULE),
+    ADDITIONAL_PROPERTIES(Constants.ADDITIONAL_PROPERTIES),
+    AUDIT(Constants.AUDIT),
+    AUTH_MODULE(Constants.AUTH_MODULE),
     AUTHENTICATION("authentication"),
     AUTHENTICATION_JASPI("authentication-jaspi"),
     AUTHORIZATION("authorization"),
