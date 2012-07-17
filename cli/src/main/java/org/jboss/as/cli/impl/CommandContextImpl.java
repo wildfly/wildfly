@@ -343,7 +343,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
 
         // batch commands
-        cmdRegistry.registerHandler(new BatchHandler(), "batch");
+        cmdRegistry.registerHandler(new BatchHandler(this), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
         cmdRegistry.registerHandler(new BatchListHandler(), "list-batch");
         cmdRegistry.registerHandler(new BatchHoldbackHandler(), "holdback-batch");
