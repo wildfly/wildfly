@@ -172,6 +172,13 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
                         }
                     }
                 }
+                if (adapterModule == null && pu.getPersistenceProviderClassName() != null) {
+                    adapterModule = Configuration.getProviderAdapterModuleNameFromProviderClassName(pu.getPersistenceProviderClassName());
+                    if (adapterModule != null) {
+                        pu.getProperties().put(Configuration.ADAPTER_MODULE, adapterModule);
+                    }
+                }
+
                 if (adapterModule != null) {
                     ROOT_LOGGER.debugf("%s is configured to use adapter module '%s'", pu.getPersistenceUnitName(), adapterModule);
                     moduleDependencies.add(adapterModule);
