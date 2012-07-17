@@ -55,6 +55,12 @@ public class Configuration {
 
     public static final String PROVIDER_MODULE_TOPLINK = "oracle.toplink";
 
+    public static final String PROVIDER_MODULE_DATANUCLEUS = "org.datanucleus";
+
+    public static final String PROVIDER_MODULE_DATANUCLEUS_GAE = "org.datanucleus:appengine";
+
+    public static final String PROVIDER_MODULE_OPENJPA = "org.apache.openjpa";
+
     /**
      * default if no PROVIDER_MODULE is specified.
      */
@@ -83,6 +89,17 @@ public class Configuration {
     public static final String PROVIDER_CLASS_ECLIPSELINK = "org.eclipse.persistence.jpa.PersistenceProvider";
 
     /**
+     * DataNucleus provider
+     */
+    public static final String PROVIDER_CLASS_DATANUCLEUS = "org.datanucleus.api.jpa.PersistenceProviderImpl";
+
+    /**
+     * DataNucleus provider GAE
+     */
+    public static final String PROVIDER_CLASS_DATANUCLEUS_GAE = "org.datanucleus.store.appengine.jpa.DatastorePersistenceProvider";
+
+    public static final String PROVIDER_CLASS_OPENJPA = "org.apache.openjpa.persistence.PersistenceProviderImpl";
+    /**
      * default provider class
      */
     public static final String PROVIDER_CLASS_DEFAULT = PROVIDER_CLASS_HIBERNATE;
@@ -103,6 +120,8 @@ public class Configuration {
      * Hibernate 3 persistence provider adaptor
      */
     public static final String ADAPTER_MODULE_HIBERNATE3 = "org.jboss.as.jpa.hibernate:3";
+
+    public static final String ADAPTER_MODULE_OPENJPA = "org.jboss.as.jpa.openjpa";
 
     /**
      * name of the AS module that contains the persistence provider adapter
@@ -136,6 +155,9 @@ public class Configuration {
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK_ESSENTIALS, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_TOPLINK, PROVIDER_MODULE_TOPLINK);
         providerClassToModuleName.put(PROVIDER_CLASS_ECLIPSELINK, PROVIDER_MODULE_ECLIPSELINK);
+        providerClassToModuleName.put(PROVIDER_CLASS_DATANUCLEUS, PROVIDER_MODULE_DATANUCLEUS);
+        providerClassToModuleName.put(PROVIDER_CLASS_DATANUCLEUS_GAE, PROVIDER_MODULE_DATANUCLEUS_GAE);
+        providerClassToModuleName.put(PROVIDER_CLASS_OPENJPA, PROVIDER_MODULE_OPENJPA);
     }
 
     /**
@@ -146,6 +168,17 @@ public class Configuration {
      */
     public static String getProviderModuleNameFromProviderClassName(final String providerClassName) {
         return providerClassToModuleName.get(providerClassName);
+    }
+
+        // key = provider class name, value = adapter module name
+    private static final Map<String, String> providerClassToAdapterModuleName = new HashMap<String, String>();
+
+    static {
+        providerClassToAdapterModuleName.put(PROVIDER_CLASS_OPENJPA, ADAPTER_MODULE_OPENJPA);
+    }
+
+    public static String getProviderAdapterModuleNameFromProviderClassName(final String providerClassName) {
+        return providerClassToAdapterModuleName.get(providerClassName);
     }
 
 }
