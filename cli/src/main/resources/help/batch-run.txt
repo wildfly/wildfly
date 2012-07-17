@@ -1,6 +1,6 @@
 SYNOPSIS
 
-    run-batch
+    run-batch [--headers={operation_header (;operation_header)*}]
 
 DESCRIPTION
 
@@ -10,4 +10,5 @@ DESCRIPTION
 
 ARGUMENTS
 
-    n/a
+ --headers  - a list of operation headers separated by a semicolon. For the list of supported
+              headers, please, refer to the domain management documentation or use tab-completion.
