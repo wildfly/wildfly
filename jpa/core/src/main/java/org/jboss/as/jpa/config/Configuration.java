@@ -25,6 +25,8 @@ package org.jboss.as.jpa.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+
 /**
  * configuration properties that may appear in persistence.xml
  *
@@ -151,6 +153,29 @@ public class Configuration {
      */
     public static String getProviderModuleNameFromProviderClassName(final String providerClassName) {
         return providerClassToModuleName.get(providerClassName);
+    }
+
+    /**
+     * Determine if class file transformer is needed for the specified persistence unit
+     *
+     * if the persistence provider is Hibernate and use_class_enhancer is not true, don't need a class transformer.
+     * for other persistence providers, the transformer is assumed to be needed.
+     *
+     * @param pu
+     * @return true if class file transformer support is needed for pu
+     */
+    public static boolean needClassFileTransformer(PersistenceUnitMetadata pu) {
+        boolean result = true;
+        String provider = pu.getPersistenceProviderClassName();
+        if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
+            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
+        }
+        else if (provider == null
+            || provider.equals(Configuration.PROVIDER_CLASS_HIBERNATE)) {
+            String useHibernateClassEnhancer = pu.getProperties().getProperty("hibernate.ejb.use_class_enhancer");
+            result = "true".equals(useHibernateClassEnhancer);
+        }
+        return result;
     }
 
 }

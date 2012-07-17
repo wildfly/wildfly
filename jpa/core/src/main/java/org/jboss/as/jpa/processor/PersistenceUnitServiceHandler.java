@@ -243,16 +243,13 @@ public class PersistenceUnitServiceHandler {
                     // only start the persistence unit if JPA_CONTAINER_MANAGED is true
                     String jpaContainerManaged = pu.getProperties().getProperty(Configuration.JPA_CONTAINER_MANAGED);
                     boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
-                    boolean allowClassTransformer = true;
-                    if (pu.getProperties().containsKey(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER)) {
-                        allowClassTransformer = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_CONTAINER_CLASS_TRANSFORMER));
-                    }
+                    boolean needClassTransformer = Configuration.needClassFileTransformer(pu);
                     boolean startThisPu = false;
                     if (deployPU) {
                         if (startEarly) {
-                            if (false == allowClassTransformer) {
+                            if (false == needClassTransformer) {
                                 // will start later when startEarly == false
-                                JPA_LOGGER.tracef("persistence unit %s in deployment %s is configured to not allow class transformer to be set, no class rewriting will be allowed",
+                                JPA_LOGGER.tracef("persistence unit %s in deployment %s is configured to not need class transformer to be set, no class rewriting will be allowed",
                                     pu.getPersistenceUnitName(), deploymentUnit.getName());
                             }
                             else {
@@ -261,7 +258,7 @@ public class PersistenceUnitServiceHandler {
                         }
                         else { // !startEarly
                             // PUs that have Configuration.JPA_CONTAINER_CLASS_TRANSFORMER = false will start during INSTALL phase
-                            if (false == allowClassTransformer) {
+                            if (false == needClassTransformer) {
                                 startThisPu = true;
                             }
                         }
@@ -308,7 +305,7 @@ public class PersistenceUnitServiceHandler {
                 provider = lookupProvider(pu);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, persistenceUnitRegistry);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE);
 
             phaseContext.getDeploymentUnit().addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
@@ -389,8 +386,7 @@ public class PersistenceUnitServiceHandler {
             }
 
             builder.setInitialMode(ServiceController.Mode.ACTIVE)
-                .addInjection(service.getPropertiesInjector(), properties)
-                .addInjection(PersistenceUnitRegistryImpl.INSTANCE.getInjector());
+                .addInjection(service.getPropertiesInjector(), properties);
 
             // get async executor from Services.addServerExecutorDependency
             addServerExecutorDependency(builder, service.getExecutorInjector(), false);

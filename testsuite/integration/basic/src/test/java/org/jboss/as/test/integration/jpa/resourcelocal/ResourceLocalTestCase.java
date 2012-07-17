@@ -55,7 +55,6 @@ public class ResourceLocalTestCase {
                     "    </description>" +
                     "  <non-jta-data-source>java:app/DataSource</non-jta-data-source>" +
                     "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                    "<property name=\"jboss.as.jpa.classtransformer\" value=\"false\"/>" +
                     "</properties>" +
                     "  </persistence-unit>" +
                     "</persistence>";

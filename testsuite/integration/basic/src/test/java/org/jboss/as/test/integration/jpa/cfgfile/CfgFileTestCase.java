@@ -49,19 +49,7 @@ public class CfgFileTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_cfgfile";
 
-    private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            "		<properties> " +
-            "			<property name=\"hibernate.ejb.cfgfile\" value=\"hibernate.cfg.xml\"/>" +
-            "		</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>"; 
-
-  private static final String hibernate_cfg_xml =
+    private static final String hibernate_cfg_xml =
 		"<?xml version='1.0' encoding='utf-8'?>\n " +
 		  "<!DOCTYPE hibernate-configuration PUBLIC\n" +
 		  "\"-//Hibernate/Hibernate Configuration DTD 3.0//EN\"\n" +
@@ -75,6 +63,7 @@ public class CfgFileTestCase {
 		  	"  </session-factory>" +
 		  "</hibernate-configuration>";
     
+
     @Deployment
     public static Archive<?> deploy() {
 
@@ -83,7 +72,7 @@ public class CfgFileTestCase {
             Employee.class,
             SFSB1.class
         );
-        jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        jar.addAsManifestResource(CfgFileTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsResource(new StringAsset(hibernate_cfg_xml), "hibernate.cfg.xml");
         return jar; 
     

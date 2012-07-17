@@ -141,30 +141,10 @@ public enum Phase {
      */
     DEPENDENCIES(null),
     CONFIGURE_MODULE(null),
+
     /**
-     * Processors that need to start/complete before the deployment classloader is used to load application classes, belong here.
-     *
-     * Upon entry, this phase performs the following actions:
-     * <ul>
-     * <li></li>
-     * </ul>
-     * <p>
-     * Processors in this phase have access to the following phase attachments:
-     * <ul>
-     * <li>{@link Attachments#BLAH} - description here</li>
-     * </ul>
-     * <p>
-     * Processors in this phase have access to the following deployment unit attachments, in addition to those defined
-     * for the previous phase:
-     * <ul>
-     * <li>{@link Attachments#BLAH} - description here</li>
-     * </ul>
-     * <p>
-     * In this phase, these phase attachments may be modified:
-     * <ul>
-     * <li>{@link Attachments#BLAH} - description here</li>
-     * </ul>
-     * <p>
+     * Processors that need to start/complete before the deployment classloader is used to load application classes,
+     * belong in the FIRST_MODULE_USE phase.
      */
     FIRST_MODULE_USE(null),
     POST_MODULE(null),
@@ -357,12 +337,12 @@ public enum Phase {
     public static final int CONFIGURE_RESOLVE_SUB_BUNDLE                = 0x0300;
 
     // FIRST_MODULE_USE
-    public static final int FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x050; // need to be before POST_MODULE_REFLECTION_INDEX
+    public static final int FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x0100; // need to be before POST_MODULE_REFLECTION_INDEX
                                                                                          // and anything that could load class definitions
-    public static final int FIRST_MODULE_USE_INTERCEPTORS               = 0x0110;
-    public static final int FIRST_MODULE_USE_PERSISTENCE_PREPARE        = 0x0115;
-    public static final int FIRST_MODULE_USE_DSXML_DEPLOYMENT           = 0x0120;
-    public static final int FIRST_MODULE_USE_TRANSFORMER                = 0x0130;
+    public static final int FIRST_MODULE_USE_INTERCEPTORS               = 0x0200;
+    public static final int FIRST_MODULE_USE_PERSISTENCE_PREPARE        = 0x0300;
+    public static final int FIRST_MODULE_USE_DSXML_DEPLOYMENT           = 0x0400;
+    public static final int FIRST_MODULE_USE_TRANSFORMER                = 0x0500;
 
 
     // POST_MODULE
