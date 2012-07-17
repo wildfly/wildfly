@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
 /**
@@ -50,7 +51,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
             try {
-                bundle.start();
+                bundle.start(Bundle.START_TRANSIENT | Bundle.START_ACTIVATION_POLICY);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
             } catch (BundleException ex) {
                 LOGGER.errorCannotStartBundle(ex, bundle);
@@ -64,7 +65,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (bundle != null && deployment.isAutoStart()) {
             try {
-                bundle.stop();
+                bundle.stop(Bundle.STOP_TRANSIENT);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
             } catch (BundleException ex) {
                 LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
