@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.management.openmbean.ArrayType;
 import javax.management.openmbean.CompositeData;
@@ -53,6 +54,8 @@ import org.jboss.dmr.Property;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class TypeConverter {
+
+    private static final Pattern VAULT_PATTERN = Pattern.compile("\\$\\{VAULT::.*::.*::.*\\}");
 
     public abstract OpenType<?> getOpenType();
     public abstract Object fromModelNode(final ModelNode node);
@@ -140,7 +143,65 @@ public abstract class TypeConverter {
         return node;
     }
 
-    private static class BigDecimalTypeConverter extends TypeConverter {
+
+    protected ModelNode resolveSimpleType(ModelNode node) {
+        if (node.getType() == ModelType.EXPRESSION) {
+            return node.resolve();
+        }
+        return node;
+    }
+
+
+    private abstract static class SimpleTypeConverter extends TypeConverter {
+        @Override
+        public Object fromModelNode(final ModelNode node) {
+            if (node == null || !node.isDefined() || node.asString().length() == 0) {
+                return null;
+            }
+
+            if (node.getType() == ModelType.EXPRESSION) {
+                if (!VAULT_PATTERN.matcher(node.asString()).matches()) {
+                    return internalFromModelNode(node.resolve());
+                }
+            }
+            return internalFromModelNode(node);
+        }
+
+        public ModelNode toModelNode(final Object o) {
+            if (o == null) {
+                return new ModelNode();
+            }
+            boolean possibleExpression = false;
+            if (o instanceof String) {
+                possibleExpression = isPossibleExpression((String)o);
+            }
+            if (possibleExpression) {
+                return createPossibleExpression((String)o);
+            }
+
+            try {
+                return internalToModelNode(o);
+            } catch (ClassCastException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+
+        abstract ModelNode internalToModelNode(final Object o);
+
+        abstract Object internalFromModelNode(final ModelNode node);
+
+        private boolean isPossibleExpression(String s) {
+            int start = s.indexOf("${");
+            return start != -1 && s.indexOf('}', start) != -1;
+        }
+
+        ModelNode createPossibleExpression(String s) {
+            throw MESSAGES.expressionCannotBeConvertedIntoTargeteType(getOpenType());
+        }
+    }
+
+
+    private static class BigDecimalTypeConverter extends SimpleTypeConverter {
         static final BigDecimalTypeConverter INSTANCE = new BigDecimalTypeConverter();
 
         @Override
@@ -149,18 +210,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return node.asBigDecimal();
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((BigDecimal)o);
         }
 
@@ -169,7 +224,7 @@ public abstract class TypeConverter {
         }
     }
 
-    private static class BigIntegerTypeConverter extends TypeConverter {
+    private static class BigIntegerTypeConverter extends SimpleTypeConverter {
         static final BigIntegerTypeConverter INSTANCE = new BigIntegerTypeConverter();
 
         @Override
@@ -178,18 +233,11 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return node.asBigInteger();
         }
 
-        @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((BigInteger)o);
         }
 
@@ -198,7 +246,7 @@ public abstract class TypeConverter {
         }
     }
 
-    private static class BooleanTypeConverter extends TypeConverter {
+    private static class BooleanTypeConverter extends SimpleTypeConverter {
         static final BooleanTypeConverter INSTANCE = new BooleanTypeConverter();
 
         @Override
@@ -207,18 +255,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return Boolean.valueOf(node.asBoolean());
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((Boolean)o);
         }
 
@@ -249,7 +291,11 @@ public abstract class TypeConverter {
             if (o == null) {
                 return new ModelNode();
             }
-            return new ModelNode().set((byte[])o);
+            try {
+                return new ModelNode().set((byte[])o);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e);
+            }
         }
 
         public Object[] toArray(final List<Object> list) {
@@ -257,7 +303,7 @@ public abstract class TypeConverter {
         }
     }
 
-    private static class DoubleTypeConverter extends TypeConverter {
+    private static class DoubleTypeConverter extends SimpleTypeConverter {
         static final DoubleTypeConverter INSTANCE = new DoubleTypeConverter();
 
         @Override
@@ -266,18 +312,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return Double.valueOf(node.asDouble());
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((Double)o);
         }
 
@@ -287,7 +327,7 @@ public abstract class TypeConverter {
     }
 
 
-    private static class IntegerTypeConverter extends TypeConverter {
+    private static class IntegerTypeConverter extends SimpleTypeConverter {
         static final IntegerTypeConverter INSTANCE = new IntegerTypeConverter();
 
         @Override
@@ -296,18 +336,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return Integer.valueOf(node.asInt());
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((Integer)o);
         }
 
@@ -316,7 +350,7 @@ public abstract class TypeConverter {
         }
     }
 
-    private static class StringTypeConverter extends TypeConverter {
+    private static class StringTypeConverter extends SimpleTypeConverter {
         static final StringTypeConverter INSTANCE = new StringTypeConverter();
 
         @Override
@@ -325,27 +359,26 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return node.asString();
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((String)o);
         }
 
         public Object[] toArray(final List<Object> list) {
             return list.toArray(new String[list.size()]);
         }
+
+        @Override
+        ModelNode createPossibleExpression(String s) {
+            return new ModelNode().setExpression(s);
+        }
     }
 
-    private static class UndefinedTypeConverter extends TypeConverter {
+    private static class UndefinedTypeConverter extends SimpleTypeConverter {
         static final UndefinedTypeConverter INSTANCE = new UndefinedTypeConverter();
 
         @Override
@@ -354,18 +387,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return node.toJSONString(false);
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return ModelNode.fromJSONString((String)o);
         }
 
@@ -384,7 +411,7 @@ public abstract class TypeConverter {
         //TODO Decide how these should look
     }
 
-    private static class LongTypeConverter extends TypeConverter {
+    private static class LongTypeConverter extends SimpleTypeConverter {
         static final LongTypeConverter INSTANCE = new LongTypeConverter();
 
         @Override
@@ -393,18 +420,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return Long.valueOf(node.asLong());
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set((Long)o);
         }
 
@@ -413,7 +434,7 @@ public abstract class TypeConverter {
         }
     }
 
-    private static class ModelTypeTypeConverter extends TypeConverter {
+    private static class ModelTypeTypeConverter extends SimpleTypeConverter {
         static final ModelTypeTypeConverter INSTANCE = new ModelTypeTypeConverter();
 
         @Override
@@ -422,18 +443,12 @@ public abstract class TypeConverter {
         }
 
         @Override
-        public Object fromModelNode(final ModelNode node) {
-            if (node == null || !node.isDefined()) {
-                return null;
-            }
+        Object internalFromModelNode(final ModelNode node) {
             return String.valueOf(node.asString());
         }
 
         @Override
-        public ModelNode toModelNode(final Object o) {
-            if (o == null) {
-                return new ModelNode();
-            }
+        public ModelNode internalToModelNode(final Object o) {
             return new ModelNode().set(ModelType.valueOf((String)o));
         }
 
