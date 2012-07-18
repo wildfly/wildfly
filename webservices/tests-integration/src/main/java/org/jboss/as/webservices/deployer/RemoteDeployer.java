@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -47,12 +48,14 @@ import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.wsf.spi.deployer.Deployer;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -65,6 +68,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.security.Constants.AUTHENTICATION;
@@ -98,6 +102,7 @@ public final class RemoteDeployer implements Deployer {
     private final ModelControllerClient modelControllerClient;
     private final Map<String, Integer> securityDomainUsers = new HashMap<String, Integer>(1);
     private final Map<String, Integer> archiveCounters = new HashMap<String, Integer>();
+    private final Semaphore httpsConnSemaphore = new Semaphore(1);
 
     public RemoteDeployer() throws IOException {
         final String host = System.getProperty(JBWS_DEPLOYER_HOST);
@@ -255,6 +260,41 @@ public final class RemoteDeployer implements Deployer {
         }
     }
 
+    public void addHttpsConnector(Map<String, String> sslOptions) throws Exception {
+        httpsConnSemaphore.acquire();
+        try {
+            final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
+            final ModelNode steps = composite.get(STEPS);
+            ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", ADD);
+            op.get("socket-binding").set("https");
+            op.get("scheme").set("https");
+            op.get("protocol").set("HTTP/1.1");
+            op.get("secure").set(true);
+            op.get("enabled").set(true);
+            steps.add(op);
+            ModelNode ssl = createOpNode("subsystem=web/connector=jbws-test-https-connector/ssl=configuration", ADD);
+            if (sslOptions != null) {
+                for (final String k : sslOptions.keySet()) {
+                    ssl.get(k).set(sslOptions.get(k));
+                }
+            }
+            steps.add(ssl);
+            applyUpdate(composite, getModelControllerClient());
+        } catch (Exception e) {
+            httpsConnSemaphore.release();
+            throw e;
+        }
+    }
+
+    public void removeHttpsConnector() throws Exception {
+        try {
+            ModelNode op = createOpNode("subsystem=web/connector=jbws-test-https-connector", REMOVE);
+            applyUpdate(op, getModelControllerClient());
+        } finally {
+            httpsConnSemaphore.release();
+        }
+    }
+
     private ModelControllerClient getModelControllerClient() {
         return modelControllerClient;
     }
@@ -313,6 +353,21 @@ public final class RemoteDeployer implements Deployer {
                 }
             }
         };
+    }
+
+    public static ModelNode createOpNode(String address, String operation) {
+        ModelNode op = new ModelNode();
+        // set address
+        ModelNode list = op.get("address").setEmptyList();
+        if (address != null) {
+            String[] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
+        }
+        op.get("operation").set(operation);
+        return op;
     }
 
     private static String getSystemProperty(final String name, final String defaultValue) {
