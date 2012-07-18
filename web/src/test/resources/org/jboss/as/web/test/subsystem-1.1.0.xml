@@ -1,7 +1,6 @@
 <!-- 
-   This file should be kept in sync with subsystem-1.1.0.xml
+   This file should be kept in sync with subsystem.xml. The only known difference is the commented out stuff below - see https://issues.jboss.org/browse/JBPAPP-9314
   -->
-
         <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="true">
             <configuration>
                 <static-resources max-depth="5"/>
@@ -20,10 +19,15 @@
                     ca-certificate-password="changeit"
                     keystore-type="PKCS12" truststore-type="JKS" />
             </connector>
+            <!--
+              Version 1.1.0 does not support referencing virtual-server from connector 
+            -->
+            <!-- 
             <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
                 <virtual-server name="vs1" />
                 <virtual-server name="vs2" />
             </connector>
+             -->
             <virtual-server name="default-host" enable-welcome-root="true">
                <alias name="localhost" />
                <alias name="example.com" />

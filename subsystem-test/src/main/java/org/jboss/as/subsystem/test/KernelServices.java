@@ -161,6 +161,7 @@ public class KernelServices {
         return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
     }
 
+
     /**
      * Execute an operation in the  controller containg the passed in version of the subsystem.
      * The operation and results will be translated from the format for the main controller to the
@@ -220,8 +221,10 @@ public class KernelServices {
                 return operationTransformer.transformOperation(transformationContext, address, operation);
             }
         }
-        return null;
+        return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
     }
+
+
 
     /*
      * Execute an operation in the model controller, expecting succes and return the "result" node

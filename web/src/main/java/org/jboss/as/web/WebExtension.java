@@ -22,6 +22,7 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
@@ -30,6 +31,8 @@ import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -39,6 +42,13 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.AliasOperationTransformer;
+import org.jboss.as.controller.transform.AliasOperationTransformer.AddressTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
  * The web extension.
@@ -133,9 +143,12 @@ public class WebExtension implements Extension {
         // configuration=container
         registration.registerSubModel(WebContainerDefinition.INSTANCE);
 
+
         //deployment
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebDeploymentDefinition.INSTANCE);
         deployments.registerSubModel(WebDeploymentServletDefinition.INSTANCE);
+
+        registerTransformers_1_1_0(subsystem);
     }
 
     /**
@@ -148,6 +161,71 @@ public class WebExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
 
         context.setProfileParsingCompletionHandler(new DefaultJsfProfileCompletionHandler());
+    }
+
+    private void registerTransformers_1_1_0(SubsystemRegistration registration) {
+
+        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 1, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+            @Override
+            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
+                if (model.hasDefined(Constants.CONNECTOR)) {
+                    for (String name : model.get(Constants.CONNECTOR).keys()) {
+                        swap(model.get(Constants.CONNECTOR, name), SSL_PATH, SSL_ALIAS);
+                    }
+                }
+                if (model.hasDefined(Constants.VIRTUAL_SERVER)) {
+                    for (String name : model.get(Constants.VIRTUAL_SERVER).keys()) {
+                        ModelNode virtualServer = model.get(Constants.VIRTUAL_SERVER, name);
+                        swap(virtualServer, SSO_PATH, SSO_ALIAS);
+                        swap(virtualServer, ACCESS_LOG_PATH, ACCESS_LOG_ALIAS);
+                        swap(virtualServer.get(ACCESS_LOG_ALIAS.getKey(), ACCESS_LOG_ALIAS.getValue()), DIRECTORY_PATH, DIRECTORY_ALIAS);
+                    }
+                }
+
+                return model;
+            }
+
+            private void swap(ModelNode parent, PathElement original, PathElement old) {
+                if (parent.hasDefined(original.getKey()) && parent.get(original.getKey()).hasDefined(original.getValue())) {
+                    ModelNode sslConfig = parent.get(original.getKey()).remove(original.getValue());
+                    parent.get(old.getKey(), old.getValue()).set(sslConfig);
+                }
+            }
+        });
+
+        TransformersSubRegistration connectors = transformers.registerSubResource(CONNECTOR_PATH);
+        connectors.registerOperationTransformer(ADD, new OperationTransformer() {
+            @Override
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                    throws OperationFailedException {
+                if (operation.hasDefined(Constants.VIRTUAL_SERVER)) {
+                    throw WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314();
+                }
+                return new TransformedOperation(operation, TransformedOperation.ORIGINAL_RESULT);
+            }
+        });
+
+
+        TransformersSubRegistration ssl = connectors.registerSubResource(SSL_PATH, AliasOperationTransformer.replaceLastElement(SSL_ALIAS));
+        TransformersSubRegistration virtualServer = transformers.registerSubResource(HOST_PATH);
+        TransformersSubRegistration sso = virtualServer.registerSubResource(SSO_PATH, AliasOperationTransformer.replaceLastElement(SSO_ALIAS));
+        TransformersSubRegistration accessLog = virtualServer.registerSubResource(ACCESS_LOG_PATH, AliasOperationTransformer.replaceLastElement(ACCESS_LOG_ALIAS));
+        TransformersSubRegistration accessLogDir = accessLog.registerSubResource(DIRECTORY_PATH, AliasOperationTransformer.create(new AddressTransformer() {
+            @Override
+            public PathAddress transformAddress(PathAddress address) {
+                PathAddress copy = PathAddress.EMPTY_ADDRESS;
+                for (PathElement element : address) {
+                    if (element.getKey().equals(Constants.CONFIGURATION)) {
+                        copy = copy.append(ACCESS_LOG_ALIAS);
+                    } else if (element.getKey().equals(Constants.SETTING)) {
+                        copy = copy.append(DIRECTORY_ALIAS);
+                    } else {
+                        copy = copy.append(element);
+                    }
+                }
+                return copy;
+            }
+        }));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
