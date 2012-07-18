@@ -354,14 +354,36 @@ final class ManagedProcess {
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(source)));
                 final OutputStreamWriter writer = new OutputStreamWriter(target);
                 String s;
+                String prevEscape = "";
                 while ((s = reader.readLine()) != null) {
+                    // Has ANSI?
+                    int i = s.lastIndexOf('\033');
+                    int j = i != -1 ? s.indexOf('m', i) : 0;
+
                     synchronized (target) {
                         writer.write('[');
                         writer.write(processName);
                         writer.write("] ");
+                        writer.write(prevEscape);
                         writer.write(s);
+
+                        // Reset if there was ANSI
+                        if (j != 0 || prevEscape != "") {
+                            writer.write("\033[0m");
+                        }
                         writer.write('\n');
                         writer.flush();
+                    }
+
+
+                    // Remember escape code for the next line
+                    if (j != 0) {
+                        String escape = s.substring(i, j + 1);
+                        if (!"\033[0m".equals(escape)) {
+                            prevEscape = escape;
+                        } else {
+                            prevEscape = "";
+                        }
                     }
                 }
                 source.close();
