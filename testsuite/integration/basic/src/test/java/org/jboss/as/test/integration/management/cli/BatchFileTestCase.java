@@ -64,7 +64,7 @@ public class BatchFileTestCase {
     }
 
     @Test
-    public void testSuccessfulTry() throws Exception {
+    public void testBatchFile() throws Exception {
         createFile(new String[]{"/system-property=batchfiletest:add(value=true)"});
 
         final CommandContext ctx = CLITestUtil.getCommandContext();
@@ -90,6 +90,39 @@ public class BatchFileTestCase {
             assertEquals("add", op.get("operation").asString());
             assertEquals("true", op.get("value").asString());
             ctx.handle("discard-batch");
+        } finally {
+            ctx.terminateSession();
+        }
+    }
+
+    @Test
+    public void testRunBatchFile() throws Exception {
+        createFile(new String[]{"/system-property=batchfiletest:add(value=true)"});
+
+        final CommandContext ctx = CLITestUtil.getCommandContext();
+        try {
+            ctx.connectController();
+            final ModelNode batchRequest = ctx.buildRequest("run-batch --file=" + TMP_FILE.getAbsolutePath() + " --headers={allow-resource-service-restart=true}");
+            assertTrue(batchRequest.hasDefined("operation"));
+            assertEquals("composite", batchRequest.get("operation").asString());
+            assertTrue(batchRequest.hasDefined("address"));
+            assertTrue(batchRequest.get("address").asList().isEmpty());
+            assertTrue(batchRequest.hasDefined("steps"));
+            List<ModelNode> steps = batchRequest.get("steps").asList();
+            assertEquals(1, steps.size());
+            final ModelNode op = steps.get(0);
+            assertTrue(op.hasDefined("address"));
+            List<Property> address = op.get("address").asPropertyList();
+            assertEquals(1, address.size());
+            assertEquals("system-property", address.get(0).getName());
+            assertEquals("batchfiletest", address.get(0).getValue().asString());
+
+            assertTrue(op.hasDefined("operation"));
+            assertEquals("add", op.get("operation").asString());
+            assertEquals("true", op.get("value").asString());
+            assertTrue(batchRequest.hasDefined("operation-headers"));
+            final ModelNode headers = batchRequest.get("operation-headers");
+            assertEquals("true", headers.get("allow-resource-service-restart").asString());
         } finally {
             ctx.terminateSession();
         }

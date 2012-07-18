@@ -222,7 +222,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         final ParsedCommandLine args = ctx.getParsedCommandLine();
