@@ -199,7 +199,6 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         final ModelNode request = buildRequest(ctx);
-        addHeaders(ctx, request);
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         final ModelNode response;

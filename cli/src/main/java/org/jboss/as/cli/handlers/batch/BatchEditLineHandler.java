@@ -113,6 +113,11 @@ public class BatchEditLineHandler extends CommandHandlerWithHelp {
     }
 
     @Override
+    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+        // argument validation is performed during request construction
+    }
+
+    @Override
     public boolean isAvailable(CommandContext ctx) {
         if(!super.isAvailable(ctx)) {
             return false;
