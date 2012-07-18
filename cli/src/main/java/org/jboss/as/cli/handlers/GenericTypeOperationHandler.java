@@ -409,9 +409,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         return true;
     }
 
+    @Override
     public void addArgument(CommandArgument arg) {
     }
 
+    @Override
     protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
         // argument validation is performed during request construction
     }
