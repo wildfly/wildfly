@@ -22,13 +22,21 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE;
+import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
+
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.service.FrameworkActivationService;
+import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 
@@ -38,9 +46,12 @@ import org.jboss.osgi.framework.Services;
  * @author Thomas.Diesler@jboss.com
  * @since 20-Jun-2012
  */
-public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
+public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
 
-    public SubsystemActivateProcessor() {
+    private final InitialDeploymentTracker deploymentTracker;
+
+    public FrameworkActivateProcessor(InitialDeploymentTracker deploymentTracker) {
+        this.deploymentTracker = deploymentTracker;
     }
 
     @Override
@@ -53,8 +64,19 @@ public class SubsystemActivateProcessor implements DeploymentUnitProcessor {
         // Not a bundle deployment - do nothing
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
-            phaseContext.getServiceRegistry().getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
-            phaseContext.addDependency(IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE, AttachmentKey.create(Object.class));
+            ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
+
+            // Install the {@link FrameworkActivationService} if not done so already
+            if (serviceRegistry.getService(IntegrationServices.BOOTSTRAP_BUNDLES_INSTALL) == null) {
+                ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
+                FrameworkActivationService.addService(deploymentTracker.getServiceTarget(), verificationHandler);
+            }
+
+            // Setup a dependency on the the next phase. Persistent bundles have a dependency on the bootstrap bundles
+            ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : BOOTSTRAP_BUNDLES_COMPLETE;
+            phaseContext.addDeploymentDependency(phaseDependency, AttachmentKey.create(Object.class));
+
+            // Make these services available for a bundle deployment only
             phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
             phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
         }

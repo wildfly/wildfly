@@ -53,6 +53,7 @@ import javax.management.MBeanServer;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.naming.InitialContext;
@@ -82,8 +83,8 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -126,19 +127,21 @@ public class FrameworkBootstrapService implements Service<Void> {
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
+    private final ServiceVerificationHandler verificationHandler;
     private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, ServiceListener<Object> verificationHandler) {
-        FrameworkBootstrapService service = new FrameworkBootstrapService(resource);
+    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, ServiceVerificationHandler verificationHandler) {
+        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, verificationHandler);
         ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
-        builder.addListener(verificationHandler);
+        builder.addListener(Inheritance.ONCE, verificationHandler);
         return builder.install();
     }
 
-    private FrameworkBootstrapService(OSGiRuntimeResource resource) {
+    private FrameworkBootstrapService(OSGiRuntimeResource resource, ServiceVerificationHandler verificationHandler) {
+        this.verificationHandler = verificationHandler;
         this.resource = resource;
     }
 
@@ -160,20 +163,21 @@ public class FrameworkBootstrapService implements Service<Void> {
             Module.registerContentHandlerFactoryModule(coreFrameworkModule);
 
             ServiceTarget serviceTarget = context.getChildTarget();
-            BootstrapBundlesIntegration.addService(serviceTarget);
+            Activation activation = subsystemState.getActivationPolicy();
+            if (activation == Activation.EAGER) {
+                FrameworkActivationService.addService(serviceTarget, verificationHandler);
+            }
+
             BundleInstallIntegration.addService(serviceTarget);
             BundleContextBindingService.addService(serviceTarget);
             FrameworkModuleIntegration.addService(serviceTarget, props);
             JAXPServiceProvider.addService(serviceTarget);
             ModuleLoaderIntegration.addService(serviceTarget);
-            PersistentBundlesIntegration.addService(serviceTarget);
             ResolverService.addService(serviceTarget);
             SystemServicesIntegration.addService(serviceTarget, resource);
 
             // Configure the {@link Framework} builder
-            Activation activation = subsystemState.getActivationPolicy();
-            Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.ON_DEMAND);
-            FrameworkBuilder builder = new FrameworkBuilder(props, initialMode);
+            FrameworkBuilder builder = new FrameworkBuilder(props);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(serviceTarget);
 
@@ -571,7 +575,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             };
             ServiceBuilder<?> builder = serviceTarget.addService(getBinderServiceName(), binderService);
             builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
-            builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+            builder.addDependency(Services.FRAMEWORK_ACTIVE);
             builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
                 public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                     switch (transition) {
