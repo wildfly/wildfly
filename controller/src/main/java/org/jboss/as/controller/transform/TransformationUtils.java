@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
@@ -88,8 +89,8 @@ class TransformationUtils {
     public static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined) {
         Resource res = Resource.Factory.create();
         ModelNode value = new ModelNode();
+        Set<String> allFields = model.keys();
         for (String name : reg.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
-            //todo we need to handle cases where there is data on original model but attributes are not on IMRR
             if (includeUndefined) {
                 value.get(name).set(model.get(name));
             } else {
@@ -97,6 +98,7 @@ class TransformationUtils {
                     value.get(name).set(model.get(name));
                 }
             }
+            allFields.remove(name);
         }
         if (!value.isDefined() && model.isDefined() && reg.getChildAddresses(PathAddress.EMPTY_ADDRESS).size() == 0) {
             value.setEmptyObject();
@@ -118,9 +120,13 @@ class TransformationUtils {
             } else {
                 ModelNode subModel = model.get(path.getKeyValuePair());
                 if (subModel.isDefined()) {
-                    res.registerChild(path, modelToResource(sub, subModel));
+                    res.registerChild(path, modelToResource(sub, subModel,includeUndefined));
                 }
             }
+            allFields.remove(path.getKey());
+        }
+        if (!allFields.isEmpty()){
+            throw new RuntimeException("Model contains fields that are not know in definition, fields: "+allFields);
         }
         return res;
     }

@@ -320,7 +320,8 @@ public abstract class AbstractSubsystemTest {
      * @return the result contents
      */
     protected static ModelNode checkResultAndGetContents(ModelNode result) {
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        boolean success = SUCCESS.equals(result.get(OUTCOME).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString(),success);
         Assert.assertTrue(result.hasDefined(RESULT));
         return result.get(RESULT);
     }
@@ -521,7 +522,9 @@ public abstract class AbstractSubsystemTest {
                         ModelNode value = v.asProperty().getValue();
                         ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
                         Assert.assertNotNull("Child with name '" + name + "' not found", sub);
-                        checkModel(value, sub);
+                        if (value.isDefined()){
+                            checkModel(value, sub);
+                        }
                     }
                 }
             } else {
@@ -530,7 +533,9 @@ public abstract class AbstractSubsystemTest {
                     ModelNode value = model.get(pe.getKeyValuePair());
                     ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
                     Assert.assertNotNull("Child with name '" + name + "' not found", sub);
-                    checkModel(value, sub);
+                    if (value.isDefined()){
+                        checkModel(value, sub);
+                    }
                 }
             }
         }
