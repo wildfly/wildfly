@@ -28,9 +28,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
@@ -67,15 +69,27 @@ class ChildFirstClassLoader extends URLClassLoader {
     private static final RepositorySystem REPOSITORY_SYSTEM = newRepositorySystem();
     private static final String AETHER_API_NAME = "/org/sonatype/aether/aether-api/";
 
-    ClassLoader parent;
+    private final ClassLoader parent;
+    private final List<Pattern> parentFirst;
+    private final List<Pattern> childFirst;
 
-    ChildFirstClassLoader(ClassLoader parent, URL...urls) {
+
+    ChildFirstClassLoader(ClassLoader parent, List<Pattern> parentFirst, List<Pattern> childFirst, URL...urls) {
         super(urls, parent);
         assert parent != null : "Null parent";
+        assert parentFirst != null : "Null parent first";
+        assert childFirst != null : "Null child first";
         this.parent = parent;
+        this.childFirst = childFirst;
+        this.parentFirst = parentFirst;
     }
 
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+
+        if (loadFromParentOnly(name)) {
+            return parent.loadClass(name);
+        }
+
         // First, check if the class has already been loaded
         Class<?> c = findLoadedClass(name);
         if (c == null) {
@@ -97,6 +111,24 @@ class ChildFirstClassLoader extends URLClassLoader {
         return c;
     }
 
+    private boolean loadFromParentOnly(String className) {
+        boolean parent = false;
+        for (Pattern pattern : parentFirst) {
+            if (pattern.matcher(className).matches()) {
+                parent = true;
+                break;
+            }
+        }
+
+        if (parent) {
+            for (Pattern pattern : childFirst) {
+                if (pattern.matcher(className).matches()) {
+                    return false;
+                }
+            }
+        }
+        return parent;
+    }
 
     static URL createSimpleResourceURL(String resource) throws MalformedURLException {
         URL url = ChildFirstClassLoader.class.getResource(resource);

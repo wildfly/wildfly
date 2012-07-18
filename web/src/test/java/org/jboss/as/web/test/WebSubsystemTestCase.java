@@ -40,16 +40,22 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.web.Constants;
 import org.jboss.as.web.WebExtension;
+import org.jboss.as.web.WebMessages;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
 /**
  *
  * @author Jean-Frederic Clere
+ * @author Kabir Khan
  */
 public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
@@ -88,6 +94,87 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         testAccessLogAlias(services, noAliasModel, aliasModel);
     }
 
+    @Test
+    public void testTransformation_1_1_0_JBPAPP_9134() throws Exception {
+        String subsystemXml = readResource("subsystem.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml);
+
+        //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
+        //which is why we need to include the jboss-as-controller artifact.
+        //In addition its WebVirtualHostDefinition references methods in SimpleListAttributeDefinition$Builder which
+        //no longer exist.
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
+            .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+            .addParentFirstClassPattern("org.jboss.as.controller.*")
+            .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
+            //TODO look at readding the removed method to SimpleListAttributeDefinitionBuilder so we don't have to do this silly exclusion
+            .addChildFirstClassPattern("org.jboss.as.controller.SimpleListAttributeDefinition*");
+
+        try {
+            builder.build();
+            Assert.fail("Expected failure since we have a virtual-servers referenced by connectors");
+        } catch (OperationFailedException expected) {
+            Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314().getMessage(), expected.getMessage());
+        }
+    }
+
+    @Test
+    public void testTransformation_1_1_0() throws Exception {
+        String subsystemXml = readResource("subsystem-1.1.0.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml);
+
+        //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
+        //which is why we need to include the jboss-as-controller artifact.
+        //In addition its WebVirtualHostDefinition references methods in SimpleListAttributeDefinition$Builder which
+        //no longer exist.
+        builder.createLegacyKernelServicesBuilder(null, modelVersion)
+            .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
+            .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+            .addParentFirstClassPattern("org.jboss.as.controller.*")
+            .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
+            //TODO look at readding the removed method to SimpleListAttributeDefinitionBuilder so we don't have to do this silly exclusion
+            .addChildFirstClassPattern("org.jboss.as.controller.SimpleListAttributeDefinition*");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+
+        checkSubsystemTransformer(mainServices, modelVersion);
+
+        ModelNode mainModel = mainServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
+        ModelNode legacyModel = legacyServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
+
+        //Now do some checks to make sure that the actual data is correct in the transformed model
+        ModelNode sslConfig = mainModel.get(Constants.CONNECTOR, "https", Constants.CONFIGURATION, Constants.SSL);
+        Assert.assertTrue(sslConfig.isDefined());
+        Assert.assertFalse(legacyModel.get(Constants.CONNECTOR, "https", Constants.CONFIGURATION, Constants.SSL).isDefined());
+        compare(sslConfig, legacyModel.get(Constants.CONNECTOR, "https", Constants.SSL, Constants.CONFIGURATION), true);
+
+        ModelNode ssoConfig = mainModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.SSO);
+        Assert.assertTrue(ssoConfig.isDefined());
+        Assert.assertFalse(legacyModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.SSO).isDefined());
+        compare(ssoConfig, legacyModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.SSO, Constants.CONFIGURATION), true);
+
+        ModelNode mainAccessLog = mainModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.ACCESS_LOG);
+        Assert.assertTrue(mainAccessLog.isDefined());
+        Assert.assertFalse(legacyModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.CONFIGURATION, Constants.ACCESS_LOG).isDefined());
+        ModelNode legacyAccessLog = legacyModel.get(Constants.VIRTUAL_SERVER, "default-host", Constants.ACCESS_LOG, Constants.CONFIGURATION);
+        Assert.assertTrue(legacyAccessLog.isDefined());
+        ModelNode mainDir = mainAccessLog.remove(Constants.SETTING).get(Constants.DIRECTORY);
+        Assert.assertTrue(mainDir.isDefined());
+        Assert.assertFalse(legacyAccessLog.hasDefined(Constants.SETTING));
+        ModelNode legacyDir = legacyAccessLog.remove(Constants.DIRECTORY).get(Constants.CONFIGURATION);
+        Assert.assertTrue(legacyDir.isDefined());
+        compare(mainDir, legacyDir);
+        compare(mainAccessLog, legacyAccessLog, true);
+    }
+
+
     private void testSSLAlias(KernelServices services, ModelNode noAliasModel, ModelNode aliasModel) throws Exception {
         //Check the aliased entry is not there
         String[] targetAddr = getAddress(SUBSYSTEM, SUBSYSTEM_NAME, CONNECTOR, "https", CONFIGURATION, SSL);
@@ -105,7 +192,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         testChangeAttribute(services, "domain", "domain123", "123domain", targetAddr, aliasAddr);
     }
 
-    public void testAccessLogAlias(KernelServices services, ModelNode noAliasModel, ModelNode aliasModel) throws Exception {
+    private void testAccessLogAlias(KernelServices services, ModelNode noAliasModel, ModelNode aliasModel) throws Exception {
         String[] targetAddr = getAddress(SUBSYSTEM, SUBSYSTEM_NAME, VIRTUAL_SERVER, "default-host", CONFIGURATION, ACCESS_LOG);
         String[] aliasAddr = getAddress(SUBSYSTEM, SUBSYSTEM_NAME, VIRTUAL_SERVER, "default-host", ACCESS_LOG, CONFIGURATION);
         testAliases(services, noAliasModel, aliasModel, targetAddr, aliasAddr);
