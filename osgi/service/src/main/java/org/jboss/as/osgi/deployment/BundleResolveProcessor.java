@@ -26,7 +26,6 @@ import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import java.util.Collections;
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -53,20 +52,13 @@ import org.osgi.service.resolver.ResolutionException;
  */
 public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
-    private final InitialDeploymentTracker deploymentTracker;
-
-    public BundleResolveProcessor(InitialDeploymentTracker deploymentTracker) {
-        this.deploymentTracker = deploymentTracker;
-    }
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
-        boolean bootstrapBundle = deploymentTracker.hasDeploymentName(depUnit.getName());
-        if (bundle == null || !deployment.isAutoStart() || bootstrapBundle)
+        if (bundle == null || !deployment.isAutoStart())
             return;
 
         // Only process the top level deployment
