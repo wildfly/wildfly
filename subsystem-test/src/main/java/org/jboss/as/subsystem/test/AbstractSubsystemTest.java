@@ -450,13 +450,13 @@ public abstract class AbstractSubsystemTest {
         }
     }
 
-   /* *//**
+    /*
      * Checks that the subsystem can be transformed into the expected target DMR
      *
      * @param kernelServices the kernel services for the started controller
      * @param modelVersion the target subsystem model version
      * @throws IOException if
-     *//*
+    */
     protected void checkSubsystemTransformer(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
         ModelNode legacyModel = legacy.readWholeModel();
@@ -466,7 +466,7 @@ public abstract class AbstractSubsystemTest {
 
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
         compare(legacyModel, transformed, true);
-    }*/
+    }
 
     /**
      * Checks that the subsystem can be transformed into the expected target DMR
@@ -474,10 +474,15 @@ public abstract class AbstractSubsystemTest {
      * @param kernelServices the kernel services for the started controller
      * @param modelVersion the model version
      */
-    protected void checkSubsystemTransformer(KernelServices kernelServices, ModelVersion modelVersion) {
+    protected void checkSubsystemTransformer(KernelServices kernelServices, final ModelNode legacyModel, ModelVersion modelVersion) {
         final ModelNode result = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
-        checkModelAgainstDefinition(result, modelVersion);
+        compare(legacyModel, result, true);
+    }
 
+
+    protected void checkModelAgainstDefinition(KernelServices kernelServices, ModelVersion modelVersion) {
+        final ModelNode result = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
+        checkModelAgainstDefinition(result,modelVersion);
     }
 
     private void checkModelAgainstDefinition(final ModelNode model, final ModelVersion modelVersion) {
