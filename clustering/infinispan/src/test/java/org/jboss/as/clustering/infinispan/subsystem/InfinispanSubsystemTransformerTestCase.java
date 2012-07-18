@@ -48,6 +48,6 @@ public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBas
     @Test
     public void testTransformer_1_3_0() throws Exception {
         KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, getSubsystemXml());
-        checkSubsystemTransformer(services, ModelVersion.create(1, 3));
+        checkModelAgainstDefinition(services, ModelVersion.create(1, 3));
     }
 }
