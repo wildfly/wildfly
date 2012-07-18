@@ -3,12 +3,11 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
-rem $Id$
 
 @if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
 
 if "%OS%" == "Windows_NT" (
+  setlocal
   set "DIRNAME=%~dp0%"
 ) else (
   set DIRNAME=.\
@@ -21,6 +20,7 @@ if "x%DOMAIN_CONF%" == "x" (
 if exist "%DOMAIN_CONF%" (
    echo Calling "%DOMAIN_CONF%"
    call "%DOMAIN_CONF%" %*
+   set JAVA_OPTS=
 ) else (
    echo Config file not found "%DOMAIN_CONF%"
 )
@@ -42,15 +42,6 @@ if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
 )
 
 set DIRNAME=
-
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=domain.bat"
-)
-
-rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
@@ -107,28 +98,29 @@ echo   JBOSS_HOME: %JBOSS_HOME%
 echo.
 echo   JAVA: %JAVA%
 echo.
-echo   JAVA_OPTS: %JAVA_OPTS%
+echo   PC JAVA_OPTS: %PROCESS_CONTROLLER_JAVA_OPTS%
+echo   HC JAVA_OPTS: %HOST_CONTROLLER_JAVA_OPTS%
 echo.
 echo ===============================================================================
 echo.
 
 :RESTART
 "%JAVA%" %PROCESS_CONTROLLER_JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\process-controller.log" ^
- "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+  "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\process-controller.log" ^
+  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+  -jar "%RUNJAR%" ^
     -mp "%JBOSS_MODULEPATH%" ^
-     org.jboss.as.process-controller ^
+    org.jboss.as.process-controller ^
     -jboss-home "%JBOSS_HOME%" ^
     -jvm "%JAVA%" ^
     -mp "%JBOSS_MODULEPATH%" ^
     -- ^
-    "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\host-controller.log" ^
-    "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
-    %HOST_CONTROLLER_JAVA_OPTS% ^
-    -- ^
-    -default-jvm "%JAVA%" ^
-    %*
+      "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\host-controller.log" ^
+      "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+      %HOST_CONTROLLER_JAVA_OPTS% ^
+      -- ^
+        -default-jvm "%JAVA%" ^
+        %*
 
 if ERRORLEVEL 10 goto RESTART
 
