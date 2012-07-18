@@ -24,11 +24,12 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -46,15 +47,22 @@ import org.jboss.osgi.framework.Services;
 public final class FrameworkActivationService extends AbstractService<Void> {
 
     public static final ServiceName FRAMEWORK_ACTIVATION_NAME = SERVICE_BASE_NAME.append("framework", "activation");
+    private static final AtomicBoolean frameworkActivated = new AtomicBoolean();
 
-    public static ServiceController<?> addService(ServiceTarget target, ServiceVerificationHandler verificationHandler) {
-        FrameworkActivationService service = new FrameworkActivationService();
-        ServiceBuilder<?> builder = target.addService(FRAMEWORK_ACTIVATION_NAME, service);
-        builder.addListener(Inheritance.ALL, verificationHandler);
-        return builder.install();
+    public static void addService(ServiceTarget target, ServiceVerificationHandler verificationHandler) {
+        if (frameworkActivated.compareAndSet(false, true)) {
+            FrameworkActivationService service = new FrameworkActivationService();
+            ServiceBuilder<?> builder = target.addService(FRAMEWORK_ACTIVATION_NAME, service);
+            builder.addListener(Inheritance.ALL, verificationHandler);
+            builder.install();
+        }
     }
 
     private FrameworkActivationService() {
+    }
+
+    public static boolean activated() {
+        return frameworkActivated.get();
     }
 
     @Override
@@ -65,4 +73,5 @@ public final class FrameworkActivationService extends AbstractService<Void> {
         ServiceContainer serviceContainer = context.getController().getServiceContainer();
         serviceContainer.getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
     }
+
 }
