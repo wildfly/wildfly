@@ -43,6 +43,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +51,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
 
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore // AS7-5210 - unstable test
 public class SingletonTestCase {
 
     @ArquillianResource
