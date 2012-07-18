@@ -142,7 +142,7 @@ public class ArchiveHandler extends BatchModeCommandHandler {
     }
 
     @Override
-    protected void doHandle(CommandContext ctx) throws CommandFormatException {
+    protected void doHandle(CommandContext ctx) throws CommandLineException {
         ModelNode request;
         try {
             request = buildRequest(ctx);

@@ -977,8 +977,6 @@ class CommandContextImpl implements CommandContext {
         return batchManager;
     }
 
-    private final DefaultCallbackHandler tmpBatched = new DefaultCallbackHandler();
-
     @Override
     public BatchedCommand toBatchedCommand(String line) throws CommandFormatException {
         return new DefaultBatchedCommand(line, buildRequest(line, true));
@@ -997,38 +995,29 @@ class CommandContextImpl implements CommandContext {
 
         final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
         try {
-            this.parsedCmd = tmpBatched;
+            this.parsedCmd = new DefaultCallbackHandler();
             resetArgs(line);
-        } catch (CommandFormatException e) {
-            this.parsedCmd = originalParsedArguments;
-            throw e;
-        }
 
-        if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
-            try {
+            if (parsedCmd.getFormat() == OperationFormat.INSTANCE) {
                 final ModelNode request = this.parsedCmd.toOperationRequest(this);
                 StringBuilder op = new StringBuilder();
                 op.append(prefixFormatter.format(parsedCmd.getAddress()));
                 op.append(line.substring(line.indexOf(':')));
                 return request;
-            } finally {
-                this.parsedCmd = originalParsedArguments;
             }
-        }
 
-        final CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
-        if (handler == null) {
-            throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
-        }
-        if(batchMode) {
-            if(!handler.isBatchMode(this)) {
-                throw new OperationFormatException("The command is not allowed in a batch.");
+            final CommandHandler handler = cmdRegistry.getCommandHandler(parsedCmd.getOperationName());
+            if (handler == null) {
+                throw new OperationFormatException("No command handler for '" + parsedCmd.getOperationName() + "'.");
             }
-        } else if (!(handler instanceof OperationCommand)) {
-            throw new OperationFormatException("The command does not translate to an operation request.");
-        }
+            if(batchMode) {
+                if(!handler.isBatchMode(this)) {
+                    throw new OperationFormatException("The command is not allowed in a batch.");
+                }
+            } else if (!(handler instanceof OperationCommand)) {
+                throw new OperationFormatException("The command does not translate to an operation request.");
+            }
 
-        try {
             return ((OperationCommand) handler).buildRequest(this);
         } finally {
             this.parsedCmd = originalParsedArguments;
@@ -1108,10 +1097,6 @@ class CommandContextImpl implements CommandContext {
         } catch (Throwable t) {
             t.printStackTrace();
         }
-    }
-
-    private enum ConnectStatus {
-        SUCCESS, AUTHENTICATION_FAILURE, SSL_FAILURE, CONNECTION_FAILURE
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {
