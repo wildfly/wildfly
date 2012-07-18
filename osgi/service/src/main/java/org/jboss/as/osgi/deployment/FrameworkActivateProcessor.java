@@ -36,8 +36,6 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.osgi.framework.IntegrationServices;
 import org.jboss.osgi.framework.Services;
 
 /**
@@ -64,10 +62,9 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
         // Not a bundle deployment - do nothing
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
-            ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
 
             // Install the {@link FrameworkActivationService} if not done so already
-            if (serviceRegistry.getService(IntegrationServices.BOOTSTRAP_BUNDLES_INSTALL) == null) {
+            if (FrameworkActivationService.activated() == false) {
                 ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
                 FrameworkActivationService.addService(deploymentTracker.getServiceTarget(), verificationHandler);
             }
