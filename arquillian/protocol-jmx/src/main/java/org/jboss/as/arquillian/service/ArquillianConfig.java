@@ -83,7 +83,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     void addFrameworkDependency(ServiceBuilder<ArquillianConfig> builder) {
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
+        builder.addDependency(Services.FRAMEWORK_ACTIVE);
     }
 
     ServiceName getServiceName() {

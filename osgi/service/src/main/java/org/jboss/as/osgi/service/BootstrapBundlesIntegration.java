@@ -101,7 +101,8 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     private File bundlesDir;
 
     static ServiceController<Void> addService(final ServiceTarget target) {
-        return new BootstrapBundlesIntegration().install(target);
+        BootstrapBundlesIntegration service = new BootstrapBundlesIntegration();
+        return service.install(target);
     }
 
     BootstrapBundlesIntegration() {
@@ -123,14 +124,11 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        super.start(context);
-
         ServiceController<?> serviceController = context.getController();
         LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
         final BundleContext syscontext = injectedSystemContext.getValue();
         final List<Deployment> deployments = new ArrayList<Deployment>();
-        final ServiceTarget serviceTarget = context.getChildTarget();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
             bundlesDir = serverEnvironment.getBundlesDir();
@@ -156,7 +154,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         }
 
         // Install the bundles from the given locations
-        installBootstrapBundles(serviceTarget, deployments);
+        installBootstrapBundles(context.getChildTarget(), deployments);
     }
 
     private boolean installInitialModuleCapability(OSGiCapability osgicap) throws Exception {
