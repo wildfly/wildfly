@@ -1,11 +1,14 @@
 package org.jboss.as.subsystem.test;
 
-import org.jboss.as.controller.OperationFailedException;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ControlledProcessState;
@@ -22,6 +26,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -30,6 +35,8 @@ import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.server.Services;
@@ -152,6 +159,7 @@ public class KernelServices {
         return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
     }
 
+
     /**
      * Transforms an operation in the main controller to the format expected by the model controller containing
      * the legacy subsystem
@@ -161,7 +169,7 @@ public class KernelServices {
      * @return the transformed operation
      * @throws IllegalStateException if this is not the test's main model controller
      */
-    public ModelNode transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException {
+    public OperationTransformer.TransformedOperation transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException {
         if (legacyServices == null) {
             throw new IllegalStateException("Can only be called for the main controller");
         }
@@ -175,9 +183,41 @@ public class KernelServices {
 
             //TODO Initialise this
             TransformationContext transformationContext = null;
-            return registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer().transformOperation(transformationContext, address, operation).getTransformedOperation();
+            return registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer().transformOperation(transformationContext, address, operation);
         }
-        return operation;
+        return new OperationTransformer.TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+    }
+
+
+
+    /*
+     * Execute an operation in the model controller, expecting succes and return the "result" node
+     *
+     * @param operation the operation to execute
+     * @return the result of the operation
+     * @throws OperationFailedException if the operation failed
+     */
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = executeOperation(operation);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp.get(RESULT);
+    }
+
+    /**
+     * Execute an operation in the model controller, expecting failure.
+     * Gives a junit {@link AssertionFailedError} if the operation did not fail.
+     *
+     * @param operation the operation to execute
+     * @return the result of the operation
+     */
+    public void executeForFailure(ModelNode operation) {
+        try {
+            executeForResult(operation);
+            Assert.fail("Should have given error");
+        } catch (OperationFailedException expected) {
+        }
     }
 
     /**

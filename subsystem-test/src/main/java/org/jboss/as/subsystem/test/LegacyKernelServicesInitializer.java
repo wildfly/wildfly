@@ -84,4 +84,8 @@ public interface LegacyKernelServicesInitializer {
      * @throws IllegalArgumentException if the resolved {@code artifactGav} does not contain a version
      */
     LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException;
+
+    LegacyKernelServicesInitializer addParentFirstClassPattern(String pattern);
+
+    LegacyKernelServicesInitializer addChildFirstClassPattern(String pattern);
 }

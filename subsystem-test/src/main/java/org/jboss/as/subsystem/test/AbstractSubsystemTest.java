@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -733,32 +734,6 @@ public abstract class AbstractSubsystemTest {
         Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
     }
 
-    private ClassLoader createChildFirstClassLoader(String...resources) throws MalformedURLException {
-        URL[] urls = new URL[resources.length];
-        int i = 0;
-        for (String resource : resources) {
-            URL url = this.getClass().getResource(resource);
-            if (url == null) {
-                ClassLoader cl = this.getClass().getClassLoader();
-                if (cl == null) {
-                    cl = ClassLoader.getSystemClassLoader();
-                }
-                url = cl.getResource(resource);
-                if (url == null) {
-                    File file = new File(resource);
-                    if (file.exists()) {
-                        url = file.toURI().toURL();
-                    }
-                }
-            }
-            if (url == null) {
-                throw new IllegalArgumentException("Could not find resource " + resource);
-            }
-            urls[i++] = url;
-        }
-        return new ChildFirstClassLoader(this.getClass().getClassLoader(), urls);
-    }
-
     private String removeNamespace(String xml) {
         return xml.replaceFirst(" xmlns=\".*\"", "");
     }
@@ -841,7 +816,8 @@ public abstract class AbstractSubsystemTest {
 
                 List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
                 for (ModelNode op : bootOperations) {
-                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op);
+
+                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
                     if (transformed != null) {
                         transformedBootOperations.add(transformed);
                     }
@@ -888,6 +864,8 @@ public abstract class AbstractSubsystemTest {
         private String extensionClassName;
         private ModelVersion modelVersion;
         private List<URL> classloaderURLs = new ArrayList<URL>();
+        private List<Pattern> parentFirst = new ArrayList<Pattern>();
+        private List<Pattern> childFirst = new ArrayList<Pattern>();
 
         public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelVersion modelVersion) {
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
@@ -919,9 +897,25 @@ public abstract class AbstractSubsystemTest {
             return this;
         }
 
+        @Override
+        public LegacyKernelServiceInitializerImpl addParentFirstClassPattern(String pattern) {
+            parentFirst.add(compilePattern(pattern));
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServiceInitializerImpl addChildFirstClassPattern(String pattern) {
+            childFirst.add(compilePattern(pattern));
+            return this;
+        }
+
+        private Pattern compilePattern(String pattern) {
+            return Pattern.compile(pattern.replace(".", "\\.").replace("*", ".*"));
+        }
+
         private KernelServices install(List<ModelNode> bootOperations) throws Exception {
             ClassLoader parent = this.getClass().getClassLoader() != null ? this.getClass().getClassLoader() : null;
-            ClassLoader legacyCl = new ChildFirstClassLoader(parent, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
+            ClassLoader legacyCl = new ChildFirstClassLoader(parent, parentFirst, childFirst, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
 
             Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
             Assert.assertEquals(legacyCl, clazz.getClassLoader());
