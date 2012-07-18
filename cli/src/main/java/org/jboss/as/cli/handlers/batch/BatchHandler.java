@@ -115,18 +115,26 @@ public class BatchHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
-        BatchManager batchManager = ctx.getBatchManager();
+        final BatchManager batchManager = ctx.getBatchManager();
 
-        if(l.isPresent(ctx.getParsedCommandLine())) {
-            Set<String> heldbackNames = batchManager.getHeldbackNames();
+        final boolean list = l.isPresent(ctx.getParsedCommandLine());
+        final String path = file.getValue(ctx.getParsedCommandLine());
+        final String name = this.name.getValue(ctx.getParsedCommandLine());
+
+        if(list) {
+            if(path != null || name != null) {
+                throw new CommandFormatException("-l is exclusive, neither --file nor name can appear with -l.");
+            }
+
+            final Set<String> heldbackNames = batchManager.getHeldbackNames();
             if(!heldbackNames.isEmpty()) {
                 List<String> names = new ArrayList<String>(heldbackNames.size());
-                for (String name : heldbackNames) {
-                    names.add(name == null ? "<unnamed>" : name);
+                for (String heldbackName : heldbackNames) {
+                    names.add(heldbackName == null ? "<unnamed>" : heldbackName);
                 }
                 Collections.sort(names);
-                for (String name : names) {
-                    ctx.printLine(name);
+                for (String heldbackName : names) {
+                    ctx.printLine(heldbackName);
                 }
             }
             return;
@@ -136,8 +144,11 @@ public class BatchHandler extends CommandHandlerWithHelp {
             throw new CommandLineException("Can't start a new batch while in batch mode.");
         }
 
-        final String path = file.getValue(ctx.getParsedCommandLine());
         if(path != null) {
+            if(name != null) {
+                throw new CommandFormatException("Either --file or name argument can be specified at a time.");
+            }
+
             final File f = new File(path);
             if(!f.exists()) {
                 throw new CommandLineException("File " + f.getAbsolutePath() + " does not exist.");
@@ -177,7 +188,6 @@ public class BatchHandler extends CommandHandlerWithHelp {
             }
             return;
         }
-        final String name = this.name.getValue(ctx.getParsedCommandLine());
 
         boolean activated;
         if(batchManager.isHeldback(name)) {
