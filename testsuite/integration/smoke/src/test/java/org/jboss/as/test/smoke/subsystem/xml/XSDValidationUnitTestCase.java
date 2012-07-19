@@ -24,8 +24,17 @@ package org.jboss.as.test.smoke.subsystem.xml;
 import org.junit.Test;
 
 import javax.xml.XMLConstants;
+import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.jboss.metadata.parser.util.XMLResourceResolver;
+import javax.xml.validation.Validator;
+import javax.xml.transform.dom.DOMSource;
+import java.net.URL;
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * A XSDValidationUnitTestCase.
@@ -42,9 +51,24 @@ public class XSDValidationUnitTestCase extends AbstractValidationUnitTest {
     }
 
     private void validateXsd(final File xsdFile) throws Exception {
+	DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder parser = factory.newDocumentBuilder();
+        Document document = parser.parse(xsdFile);
+
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         schemaFactory.setErrorHandler(new ErrorHandlerImpl());
-        schemaFactory.setResourceResolver(DEFAULT_RESOURCE_RESOLVER);
-        schemaFactory.newSchema(xsdFile.toURI().toURL());
+        schemaFactory.setResourceResolver(new XMLResourceResolver());
+
+        Schema schema = schemaFactory.newSchema(resource("schema/XMLSchema.xsd"));
+        Validator validator = schema.newValidator();
+        validator.validate(new DOMSource(document));
+    }
+
+    private URL resource(final String name) {
+        final ClassLoader classLoader = getClass().getClassLoader();
+        final URL resource = classLoader.getResource(name);
+        assertNotNull("Can't locate resource " + name + " on " + classLoader, resource);
+        return resource;
     }
 }
