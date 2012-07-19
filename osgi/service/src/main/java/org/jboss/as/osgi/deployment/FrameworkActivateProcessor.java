@@ -22,8 +22,11 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE;
 import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
+
+import java.util.List;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiConstants;
@@ -35,6 +38,11 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
+import org.jboss.jandex.DotName;
+import org.jboss.jandex.FieldInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
 
@@ -56,30 +64,54 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         // Always make the system context & the environment available
+        // [TODO] [AS7-5215] Deployments unecessarily trigger Framework create service
         phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, OSGiConstants.SYSTEM_CONTEXT_KEY);
         phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
 
-        // Not a bundle deployment - do nothing
+        // Check whether this is an OSGi deployment or whether it wants to have an OSGi type injected
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY)) {
+        if (!depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY) && !hasValidInjectionPoint(depUnit))
+            return;
 
-            // Install the {@link FrameworkActivationService} if not done so already
-            if (FrameworkActivationService.activated() == false) {
-                ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
-                FrameworkActivationService.addService(deploymentTracker.getServiceTarget(), verificationHandler);
-            }
-
-            // Setup a dependency on the the next phase. Persistent bundles have a dependency on the bootstrap bundles
-            ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : BOOTSTRAP_BUNDLES_COMPLETE;
-            phaseContext.addDeploymentDependency(phaseDependency, AttachmentKey.create(Object.class));
-
-            // Make these services available for a bundle deployment only
-            phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
-            phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
+        // Install the {@link FrameworkActivationService} if not done so already
+        if (FrameworkActivationService.activated() == false) {
+            ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
+            FrameworkActivationService.addService(deploymentTracker.getServiceTarget(), verificationHandler);
         }
+
+        // Setup a dependency on the the next phase. Persistent bundles have a dependency on the bootstrap bundles
+        ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : BOOTSTRAP_BUNDLES_COMPLETE;
+        phaseContext.addDeploymentDependency(phaseDependency, AttachmentKey.create(Object.class));
+
+        // Make these services available for a bundle deployment only
+        phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
+        phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
+    }
+
+    /*
+     *  Check for injection target fields of type org.osgi.framework.*
+     */
+    private boolean hasValidInjectionPoint(DeploymentUnit depUnit) {
+        boolean result = false;
+        DotName dotName = DotName.createSimple("javax.inject.Inject");
+        CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        List<AnnotationInstance> annotationList = compositeIndex.getAnnotations(dotName);
+        for (AnnotationInstance instance : annotationList) {
+            AnnotationTarget target = instance.target();
+            if (target instanceof FieldInfo) {
+                FieldInfo fieldInfo = (FieldInfo) target;
+                String typeName = fieldInfo.type().toString();
+                if (typeName.startsWith("org.osgi.framework")) {
+                    LOGGER.debugf("OSGi injection point of type '%s' detected: %s", typeName, fieldInfo.declaringClass());
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 }
