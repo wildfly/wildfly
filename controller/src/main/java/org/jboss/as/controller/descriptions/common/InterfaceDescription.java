@@ -38,7 +38,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -162,7 +161,7 @@ public class InterfaceDescription {
             localName(Element.ANY), localName(Element.NOT)
     };
 
-    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING)
+    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING,true)
             .build();
 
     public static final AttributeDefinition ANY_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_ADDRESS, ModelType.BOOLEAN)
@@ -226,7 +225,7 @@ public class InterfaceDescription {
     public static final AttributeDefinition[] ROOT_ATTRIBUTES = new AttributeDefinition[] {
 
             ANY_ADDRESS, ANY_IPV4_ADDRESS, ANY_IPV6_ADDRESS, INET_ADDRESS, LINK_LOCAL_ADDRESS,
-            LOOPBACK, LOOPBACK_ADDRESS, MULTICAST, NIC, NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS,
+            LOOPBACK, LOOPBACK_ADDRESS, MULTICAST, NAME, NIC, NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS,
             SITE_LOCAL_ADDRESS, SUBNET_MATCH, UP, VIRTUAL, ANY, NOT
 
     };

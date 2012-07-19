@@ -24,6 +24,7 @@ package org.jboss.as.controller.transform;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
@@ -83,14 +84,14 @@ class TransformationUtils {
         return new LegacyResourceDefinition(desc);
     }
 
-    public static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model) {
-        return modelToResource(reg, model, false);
+    public static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined) {
+        return modelToResource(reg, model, includeUndefined, PathAddress.EMPTY_ADDRESS);
     }
 
-    public static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined) {
+    private static Resource modelToResource(final ImmutableManagementResourceRegistration reg, final ModelNode model, boolean includeUndefined, PathAddress fullPath) {
         Resource res = Resource.Factory.create();
         ModelNode value = new ModelNode();
-        Set<String> allFields = model.keys();
+        Set<String> allFields = new HashSet<String>(model.keys());
         for (String name : reg.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
             if (includeUndefined) {
                 value.get(name).set(model.get(name));
@@ -114,20 +115,20 @@ class TransformationUtils {
                 if (subModel.isDefined()) {
                     for (Property p : subModel.asPropertyList()) {
                         if (p.getValue().isDefined()) {
-                            res.registerChild(PathElement.pathElement(path.getKey(), p.getName()), modelToResource(sub, p.getValue(), includeUndefined));
+                            res.registerChild(PathElement.pathElement(path.getKey(), p.getName()), modelToResource(sub, p.getValue(), includeUndefined, fullPath.append(path)));
                         }
                     }
                 }
             } else {
                 ModelNode subModel = model.get(path.getKeyValuePair());
                 if (subModel.isDefined()) {
-                    res.registerChild(path, modelToResource(sub, subModel,includeUndefined));
+                    res.registerChild(path, modelToResource(sub, subModel, includeUndefined, fullPath.append(path)));
                 }
             }
             allFields.remove(path.getKey());
         }
         if (!allFields.isEmpty()){
-            throw ControllerMessages.MESSAGES.modelFieldsNotKnown(allFields);
+            throw ControllerMessages.MESSAGES.modelFieldsNotKnown(allFields, fullPath);
         }
         return res;
     }

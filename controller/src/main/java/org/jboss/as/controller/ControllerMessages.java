@@ -2510,6 +2510,6 @@ public interface ControllerMessages {
     @Message(id = 14872, value = "Resource registration is not an alias")
     IllegalStateException resourceRegistrationIsNotAnAlias();
 
-    @Message(id = 14873, value = "Model contains fields that are not know in definition, fields: %s")
-    RuntimeException modelFieldsNotKnown(Set<String> fields);
+    @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
+    RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
 }

@@ -235,6 +235,15 @@ public class PathAddress implements Iterable<PathElement> {
         return append(address.pathAddressList);
     }
 
+    public PathAddress append(String key, String value) {
+        return append(PathElement.pathElement(key, value));
+    }
+
+    public PathAddress append(String key) {
+        return append(PathElement.pathElement(key));
+    }
+
+
     /**
      * Navigate to this address in the given model node.
      *

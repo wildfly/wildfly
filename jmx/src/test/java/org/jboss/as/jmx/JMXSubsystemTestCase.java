@@ -34,14 +34,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.List;
-
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -545,7 +543,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                                         ManagementResourceRegistration rootRegistration) {
-            rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
+            //rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
         }
 
         @Override
