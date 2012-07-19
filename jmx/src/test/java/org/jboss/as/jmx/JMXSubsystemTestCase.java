@@ -474,8 +474,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         op = createOperation(WRITE_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
         op.get(NAME).set(CommonAttributes.DOMAIN_NAME);
         op.get(VALUE).set("discarded");
-        //TODO Why is this null?
-        Assert.assertNull(mainServices.transformOperation(oldVersion, op));
+        final TransformedOperation operation = mainServices.transformOperation(oldVersion, op);
+        Assert.assertNotNull(operation);
+        Assert.assertNull(operation.getTransformedOperation());
 
         op = createOperation(READ_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
         op.get(NAME).set(CommonAttributes.DOMAIN_NAME);

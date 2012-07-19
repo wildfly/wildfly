@@ -163,6 +163,7 @@ public class JMXExtension implements Extension {
         expressions.discardOperations(ADD, REMOVE, WRITE_ATTRIBUTE_OPERATION, READ_ATTRIBUTE_OPERATION);
 
         TransformersSubRegistration resolved = transformers.registerSubResource(ShowModelResourceResolved.INSTANCE.getPathElement());
+        resolved.discardOperations(WRITE_ATTRIBUTE_OPERATION);
         resolved.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
             @Override
             protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
