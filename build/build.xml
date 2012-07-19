@@ -96,12 +96,51 @@
         <!-- Copy the EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-ejb:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
-                <include name="schema/ejb-jar*.xsd"/>
-                <include name="schema/jboss-ejb3*.xsd"/>
+                <include name="schema/*.xsd"/>
                 <include name="dtd/ejb-jar*.dtd"/>
             </patternset>
             <mapper type="flatten"/>
         </unzip>
+
+        <!-- Copy the jboss-metadata-appclient specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.metadata:jboss-metadata-appclient:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="schema/*.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
+        <!-- Copy the jboss-metadata-ear specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.metadata:jboss-metadata-ear:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="dtd/*.dtd"/>
+                <include name="schema/*.xsd"/>
+                <exclude name="schema/jboss-app_6_0.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
+        <!-- Copy the jboss-metadata-common specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.metadata:jboss-metadata-common:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="dtd/*.dtd"/>
+                <include name="schema/*.xsd"/>
+                <exclude name="dtd/XMLSchema.dtd"/>
+                <exclude name="dtd/datatypes.dtd"/>
+                <exclude name="schema/xml.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
+        <!-- Copy the jboss-metadata-web specific schemas to the JBOSS_HOME/docs/schema folder -->
+        <unzip src="${org.jboss.metadata:jboss-metadata-web:jar}" dest="${output.dir}/docs/schema/">
+            <patternset>
+                <include name="dtd/*.dtd"/>
+                <include name="schema/*.xsd"/>
+            </patternset>
+            <mapper type="flatten"/>
+        </unzip>
+
         <!-- Copy the JBoss AS7 EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
         <unzip src="${org.jboss.as:jboss-as-ejb3:jar}" dest="${output.dir}/docs/schema/">
             <patternset>
