@@ -6,7 +6,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -44,13 +46,13 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         this.transformerRegistry = transformerRegistry;
     }
 
-    private ModelNode transformReadResourceResult(final OperationContext context, ModelNode original, String subsystem, int major, int minor, int micro) throws OperationFailedException {
+    private ModelNode transformReadResourceResult(final OperationContext context, ModelNode original, String subsystem, final ModelVersion version) throws OperationFailedException {
         ModelNode rootData = original.get(ModelDescriptionConstants.RESULT);
 
-        final ModelNode subsystems = new ModelNode();
-        subsystems.get(subsystem).set(major + "." + minor+"."+micro);
+        Map<PathAddress,ModelVersion> subsystemVersions = new HashMap<PathAddress, ModelVersion>();
+        subsystemVersions.put(PathAddress.EMPTY_ADDRESS.append(ModelDescriptionConstants.SUBSYSTEM,subsystem),version);
 
-        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(1, 0, 0), subsystems, TransformationTarget.TransformationTargetType.SERVER);
+        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(1, 0, 0),subsystemVersions , TransformationTarget.TransformationTargetType.SERVER);
         final Transformers transformers = Transformers.Factory.create(target);
         final ResourceTransformationContext ctx = Transformers.Factory.getTransformationContext(target, context);
 
@@ -69,13 +71,14 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         final int major = operation.get(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION).asInt();
         final int minor = operation.get(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION).asInt();
         final int micro = operation.get(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION).asInt();
+        final ModelVersion version= ModelVersion.create(major,minor,micro);
         // Add a step to transform the result of a READ_RESOURCE.
         // Do this first, Stage.IMMEDIATE
         final ModelNode readResourceResult = new ModelNode();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                ModelNode transformed = transformReadResourceResult(context, readResourceResult, subsystem, major, minor, micro);
+                ModelNode transformed = transformReadResourceResult(context, readResourceResult, subsystem, version);
                 context.getResult().set(transformed);
                 context.completeStep();
             }

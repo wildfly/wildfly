@@ -40,16 +40,13 @@ import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -59,12 +56,10 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
-import org.jboss.as.controller.transform.ResourceTransformationContext;
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
@@ -142,22 +137,15 @@ public class JMXExtension implements Extension {
 
     private void registerTransformers1_0_0(SubsystemRegistration registration) {
         // Register the transformers
-        final TransformersSubRegistration transformers =  registration.registerModelTransformers(ModelVersion.create(1, 0, 0), new ResourceTransformer() {
+        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 0, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
             @Override
-            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
-                    throws OperationFailedException {
-
-                boolean showModel = resource.hasChild(PathElement.pathElement(CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED));
-
-                final Resource transformed = Resource.Factory.create();
-                transformed.getModel().get(CommonAttributes.SHOW_MODEL).set(showModel);
-                context.addTransformedResource(PathAddress.EMPTY_ADDRESS, transformed);
-
-                PathElement pathElement = PathElement.pathElement(CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX);
-                context.processChild(pathElement, resource.getChild(pathElement));
+            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
+                boolean showModel = model.get(CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED).isDefined();
+                ModelNode result = model.clone();
+                result.get(CommonAttributes.SHOW_MODEL).set(showModel);
+                return result;
             }
         });
-
 
         TransformersSubRegistration expressions = transformers.registerSubResource(ShowModelResourceExpression.INSTANCE.getPathElement());
         expressions.discardOperations(ADD, REMOVE, WRITE_ATTRIBUTE_OPERATION, READ_ATTRIBUTE_OPERATION);
@@ -316,8 +304,7 @@ public class JMXExtension implements Extension {
 
             final ModelNode connector = new ModelNode();
             connector.get(OP).set(ADD);
-            connector.get(OP_ADDR).add(SUBSYSTEM).add(JMX);
-            connector.get(OP_ADDR).add(REMOTING_CONNECTOR).add(CommonAttributes.JMX);
+            connector.get(OP_ADDR).add(SUBSYSTEM, JMX).add(REMOTING_CONNECTOR, CommonAttributes.JMX);
 
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
