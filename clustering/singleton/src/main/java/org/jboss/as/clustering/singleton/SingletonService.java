@@ -40,6 +40,7 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.BatchServiceTarget;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -78,6 +79,22 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         this.service = service;
         this.serviceName = serviceName.append("service");
         this.singletonServiceName = serviceName;
+    }
+
+    /*
+     * Retain for binary-compatibility w/7.1.2.Final
+     */
+    @Deprecated
+    public ServiceBuilder<T> build(ServiceContainer target) {
+        return this.build((ServiceTarget) target);
+    }
+
+    /*
+     * Retain for binary-compatibility w/7.1.2.Final
+     */
+    @Deprecated
+    public ServiceBuilder<T> build(ServiceContainer target, String container) {
+        return this.build((ServiceTarget) target, DEFAULT_CONTAINER);
     }
 
     public ServiceBuilder<T> build(ServiceTarget target) {
