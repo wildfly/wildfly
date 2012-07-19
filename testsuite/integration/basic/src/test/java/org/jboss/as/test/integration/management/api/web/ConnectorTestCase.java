@@ -208,7 +208,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
     public void testAddAndRemoveRollbacks() throws Exception {
 
         // execute and rollback add socket
-        ModelNode addSocketOp = getAddSocketBindingOp(Connector.HTTP);
+        ModelNode addSocketOp = getAddSocketBindingOp(Connector.HTTPJIO);
         ModelNode ret = executeAndRollbackOperation(addSocketOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -216,7 +216,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addSocketOp);
 
         // execute and rollback add connector
-        ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTP);
+        ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(addConnectorOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -224,10 +224,10 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addConnectorOp);
 
         // check it is listed
-        assertTrue(getConnectorList().contains("test-" + Connector.HTTP.getName() + "-connector"));
+        assertTrue(getConnectorList().contains("test-" + Connector.HTTPJIO.getName() + "-connector"));
 
         // execute and rollback remove connector
-        ModelNode removeConnOp = getRemoveConnectorOp(Connector.HTTP);
+        ModelNode removeConnOp = getRemoveConnectorOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(removeConnOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -241,7 +241,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
 
         // execute and rollback remove socket binding
-        ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTP);
+        ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(removeSocketOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
