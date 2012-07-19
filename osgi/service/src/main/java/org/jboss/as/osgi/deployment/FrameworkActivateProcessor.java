@@ -74,10 +74,8 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
             return;
 
         // Install the {@link FrameworkActivationService} if not done so already
-        if (FrameworkActivationService.activated() == false) {
-            ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
-            FrameworkActivationService.addService(deploymentTracker.getServiceTarget(), verificationHandler);
-        }
+        ServiceVerificationHandler verificationHandler = depUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER);
+        FrameworkActivationService.activateOnce(verificationHandler);
 
         // Setup a dependency on the the next phase. Persistent bundles have a dependency on the bootstrap bundles
         ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : BOOTSTRAP_BUNDLES_COMPLETE;

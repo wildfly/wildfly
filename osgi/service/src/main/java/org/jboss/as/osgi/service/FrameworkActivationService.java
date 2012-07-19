@@ -22,16 +22,18 @@
 
 package org.jboss.as.osgi.service;
 
+
 import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -47,23 +49,35 @@ import org.jboss.osgi.framework.Services;
  */
 public final class FrameworkActivationService extends AbstractService<Void> {
 
-    public static final ServiceName FRAMEWORK_ACTIVATION_NAME = SERVICE_BASE_NAME.append("framework", "activation");
-    private static final AtomicBoolean frameworkActivated = new AtomicBoolean();
+    private static ServiceName FRAMEWORK_ACTIVATION = SERVICE_BASE_NAME.append("framework", "activation");
 
-    public static void addService(ServiceTarget target, ServiceVerificationHandler verificationHandler) {
-        if (frameworkActivated.compareAndSet(false, true)) {
-            FrameworkActivationService service = new FrameworkActivationService();
-            ServiceBuilder<?> builder = target.addService(FRAMEWORK_ACTIVATION_NAME, service);
-            builder.addListener(Inheritance.ALL, verificationHandler);
-            builder.install();
+    private static AtomicBoolean frameworkActivated = new AtomicBoolean(false);
+    private static FrameworkActivationService INSTANCE;
+    private final ServiceTarget serviceTarget;
+
+    public static void create(ServiceTarget serviceTarget, Activation activation, ServiceVerificationHandler verificationHandler) {
+        INSTANCE = new FrameworkActivationService(serviceTarget);
+        if (activation == Activation.EAGER) {
+            INSTANCE.activateInternal(verificationHandler);
         }
     }
 
-    private FrameworkActivationService() {
+    public static boolean activateOnce(ServiceVerificationHandler verificationHandler) {
+        return INSTANCE.activateInternal(verificationHandler);
     }
 
-    public static boolean activated() {
-        return frameworkActivated.get();
+    private FrameworkActivationService(ServiceTarget serviceTarget) {
+        this.serviceTarget = serviceTarget;
+    }
+
+    private boolean activateInternal(ServiceVerificationHandler verificationHandler) {
+        boolean activate = frameworkActivated.compareAndSet(false, true);
+        if (activate) {
+            ServiceBuilder<Void> builder = serviceTarget.addService(FRAMEWORK_ACTIVATION, INSTANCE);
+            builder.addListener(Inheritance.ALL, verificationHandler);
+            builder.install();
+        }
+        return activate;
     }
 
     @Override

@@ -164,9 +164,7 @@ public class FrameworkBootstrapService implements Service<Void> {
 
             ServiceTarget serviceTarget = context.getChildTarget();
             Activation activation = subsystemState.getActivationPolicy();
-            if (activation == Activation.EAGER) {
-                FrameworkActivationService.addService(serviceTarget, verificationHandler);
-            }
+            FrameworkActivationService.create(serviceTarget, activation, verificationHandler);
 
             BundleInstallIntegration.addService(serviceTarget);
             BundleContextBindingService.addService(serviceTarget);
