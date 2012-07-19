@@ -43,9 +43,11 @@ import org.jboss.msc.service.ServiceTarget;
  * An extension point for the OSGi subsystem
  *
  * @author thomas.diesler@jboss.com
+ * @author David Bosschaert
  * @since 11-Jul-2012
  */
 public class WebExtension implements OSGiSubsystemExtension {
+
 
     @Override
     public void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
@@ -64,6 +66,7 @@ public class WebExtension implements OSGiSubsystemExtension {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAB_SERVLETCONTEXTFACTORY, new WabServletContextFactoryProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_DEPLOYMENT, new WebContextActivationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
