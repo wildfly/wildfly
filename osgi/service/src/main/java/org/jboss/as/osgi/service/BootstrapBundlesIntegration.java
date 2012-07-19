@@ -48,7 +48,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
@@ -99,11 +98,6 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private File bundlesDir;
-
-    static ServiceController<Void> addService(final ServiceTarget target) {
-        BootstrapBundlesIntegration service = new BootstrapBundlesIntegration();
-        return service.install(target);
-    }
 
     BootstrapBundlesIntegration() {
         super(BOOTSTRAP_BUNDLES);

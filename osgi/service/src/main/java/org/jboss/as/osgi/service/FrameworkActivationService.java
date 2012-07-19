@@ -36,6 +36,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.StopContext;
 import org.jboss.osgi.framework.Services;
 
 /**
@@ -68,8 +69,18 @@ public final class FrameworkActivationService extends AbstractService<Void> {
     @Override
     public void start(StartContext context) throws StartException {
         ServiceTarget serviceTarget = context.getChildTarget();
-        BootstrapBundlesIntegration.addService(serviceTarget);
-        PersistentBundlesIntegration.addService(serviceTarget);
+
+        // Install the bootstrap bundle service
+        new BootstrapBundlesIntegration(){
+            public void stop(StopContext context) {
+                frameworkActivated.set(false);
+            }
+        }.install(serviceTarget);
+
+        // Install the persistent bundle service
+        new PersistentBundlesIntegration().install(serviceTarget);
+
+        // Explicitly activate the Framework
         ServiceContainer serviceContainer = context.getController().getServiceContainer();
         serviceContainer.getRequiredService(Services.FRAMEWORK_ACTIVE).setMode(Mode.ACTIVE);
     }

@@ -65,12 +65,7 @@ public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> 
     static final ServiceName INITIAL_DEPLOYMENTS = SERVICE_BASE_NAME.append("initial", "deployments");
     static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
 
-    public static ServiceController<Void> addService(ServiceTarget serviceTarget) {
-        PersistentBundlesIntegration service = new PersistentBundlesIntegration();
-        return service.install(serviceTarget);
-    }
-
-    private PersistentBundlesIntegration() {
+    PersistentBundlesIntegration() {
         super(PERSISTENT_BUNDLES);
     }
 
@@ -84,6 +79,8 @@ public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> 
         ServiceController<?> serviceController = context.getController();
         LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
 
+        // This actually does not install any bundle deployments
+        // At server startup the persistet bundles are deployed like any other persistet deployment
         List<Deployment> deployments = Collections.emptyList();
         installBootstrapBundles(context.getChildTarget(), deployments);
     }
@@ -126,6 +123,8 @@ public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> 
 
         @Override
         protected boolean trackService(ServiceController<? extends Object> controller) {
+            // [TODO] currently we track all persistet deployments.
+            // If one fails it would mean that the OSGi framwork does not bootstrap
             return deploymentPhaseServices.contains(controller.getName());
         }
 
