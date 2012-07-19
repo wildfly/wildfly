@@ -34,6 +34,7 @@ import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -50,7 +51,7 @@ public final class MethodInjectionTarget extends InjectionTarget {
         super(className, name, paramType);
     }
 
-    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
+    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional, final boolean appClient) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final String paramType = getDeclaredValueClassName();
@@ -81,6 +82,10 @@ public final class MethodInjectionTarget extends InjectionTarget {
         Method method = iterator.next();
         if (iterator.hasNext()) {
             throw MESSAGES.multipleMethodsFound(name, paramType, className);
+        }
+        // if not app client then static method injection is not acceptable
+        if (!appClient && Modifier.isStatic(method.getModifiers())) {
+            throw MESSAGES.staticMethodInjectionNotAcceptable(method);
         }
         return new ManagedReferenceMethodInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, method, optional);
     }

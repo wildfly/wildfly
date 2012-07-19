@@ -27,6 +27,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -54,7 +55,7 @@ public final class FieldInjectionTarget extends InjectionTarget {
         super(className, name, fieldType);
     }
 
-    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
+    public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional, final boolean appClient) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final Module module = deploymentUnit.getAttachment(MODULE);
@@ -69,6 +70,10 @@ public final class FieldInjectionTarget extends InjectionTarget {
         final Field field = classIndex.getField(name);
         if (field == null) {
             throw MESSAGES.fieldNotFound(name);
+        }
+        // if not app client then static field injection is not acceptable
+        if (!appClient && Modifier.isStatic(field.getModifiers())) {
+            throw MESSAGES.staticFieldInjectionNotAcceptable(name);
         }
         return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field, optional);
     }
