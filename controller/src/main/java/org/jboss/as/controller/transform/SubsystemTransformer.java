@@ -5,14 +5,12 @@ package org.jboss.as.controller.transform;
  * Every version of model must have its own implementation of this interface.
  *
  * SubsystemTransformer's must then be registered in extension by calling
- * {@link org.jboss.as.controller.SubsystemRegistration#registerSubsystemTransformer(SubsystemTransformer)}
+ * {@link org.jboss.as.controller.SubsystemRegistration#registerModelTransformers(org.jboss.as.controller.ModelVersionRange, ResourceTransformer)}
  *
  *
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  *
- * @deprecated experimental interface; may be removed or change without warning. Should not be used outside the main JBoss AS codebase
  */
-@Deprecated
 public interface SubsystemTransformer extends ResourceTransformer {
 
 

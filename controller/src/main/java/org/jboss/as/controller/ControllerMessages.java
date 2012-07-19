@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -2510,4 +2509,7 @@ public interface ControllerMessages {
 
     @Message(id = 14872, value = "Resource registration is not an alias")
     IllegalStateException resourceRegistrationIsNotAnAlias();
+
+    @Message(id = 14873, value = "Model contains fields that are not know in definition, fields: %s")
+    RuntimeException modelFieldsNotKnown(Set<String> fields);
 }
