@@ -103,15 +103,11 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
-        //In addition its WebVirtualHostDefinition references methods in SimpleListAttributeDefinition$Builder which
-        //no longer exist.
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
             .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
             .addParentFirstClassPattern("org.jboss.as.controller.*")
-            .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
-            //TODO look at readding the removed method to SimpleListAttributeDefinitionBuilder so we don't have to do this silly exclusion
-            .addChildFirstClassPattern("org.jboss.as.controller.SimpleListAttributeDefinition*");
+            .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
 
         try {
             builder.build();
@@ -130,15 +126,11 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
-        //In addition its WebVirtualHostDefinition references methods in SimpleListAttributeDefinition$Builder which
-        //no longer exist.
         builder.createLegacyKernelServicesBuilder(null, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
             .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
             .addParentFirstClassPattern("org.jboss.as.controller.*")
-            .addChildFirstClassPattern("org.jboss.as.controller.alias.*")
-            //TODO look at readding the removed method to SimpleListAttributeDefinitionBuilder so we don't have to do this silly exclusion
-            .addChildFirstClassPattern("org.jboss.as.controller.SimpleListAttributeDefinition*");
+            .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

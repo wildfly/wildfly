@@ -22,11 +22,12 @@
 
 package org.jboss.as.controller;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -189,6 +190,14 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         }
 
         public static Builder of(final String name, final AttributeDefinition valueType) {
+            return new Builder(name, valueType);
+        }
+
+        /**
+         * Reintroduced since some legacy subsystems require this method, and they now get booted up
+         * for transformers subsystem testing.
+         */
+        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
             return new Builder(name, valueType);
         }
 
