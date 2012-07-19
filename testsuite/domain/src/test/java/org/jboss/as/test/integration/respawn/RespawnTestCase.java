@@ -79,7 +79,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  */
 public class RespawnTestCase {
 
-    private static final int TIMEOUT = 30000;
+    private static final int TIMEOUT = 120000;
     private static final String HOST_CONTROLLER = "host-controller";
     private static final String PROCESS_CONTROLLER = "process";
     private static final String SERVER_ONE = "respawn-one";
@@ -303,7 +303,7 @@ public class RespawnTestCase {
             if (hasOne && hasTwo) {
                 break;
             }
-            Thread.sleep(200);
+            Thread.sleep(250);
         } while (System.currentTimeMillis() < time);
         Assert.assertTrue(hasOne);
         Assert.assertTrue(hasTwo);

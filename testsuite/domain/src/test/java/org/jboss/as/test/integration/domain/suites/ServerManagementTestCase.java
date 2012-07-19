@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.domain.suites;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -45,13 +44,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START_SERVERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.checkState;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -65,12 +62,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -161,12 +154,8 @@ public class ServerManagementTestCase {
         Assert.assertTrue(exists(client, newServerConfigAddress));
         Assert.assertFalse(exists(client, newRunningServerAddress));
 
-        final ModelNode startServer = new ModelNode();
-        startServer.get(OP).set(START);
-        startServer.get(OP_ADDR).set(newServerConfigAddress);
-        result = client.execute(startServer);
-        validateResponse(result);
-        waitUntilState(client, newServerConfigAddress, "STARTED");
+        startServer(client, "slave", "new-server");
+        Assert.assertTrue(checkState(client, newServerConfigAddress, "STARTED"));
 
         Assert.assertTrue(exists(client, newServerConfigAddress));
         Assert.assertTrue(exists(client, newRunningServerAddress));
@@ -177,7 +166,7 @@ public class ServerManagementTestCase {
         stopServer.get("blocking").set(true);
         result = client.execute(stopServer);
         validateResponse(result);
-        waitUntilState(client, newServerConfigAddress, "DISABLED");
+        Assert.assertTrue(checkState(client, newServerConfigAddress, "DISABLED"));
 
         Assert.assertTrue(exists(client, newServerConfigAddress));
         Assert.assertFalse(exists(client, newRunningServerAddress));

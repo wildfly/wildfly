@@ -35,7 +35,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
 
-    private int startupTimeoutInSeconds = 45;
+    private int startupTimeoutInSeconds = 120;
 
     private boolean outputToConsole = true;
 
