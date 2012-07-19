@@ -56,6 +56,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class DomainTestUtils {
 
+    private static final int DEFAULT_TIMEOUT = 60;
+
     private DomainTestUtils() {
         //
     }
@@ -178,7 +180,7 @@ public class DomainTestUtils {
      * @throws IOException
      */
     public static void waitUntilState(final ModelControllerClient client, final ModelNode serverAddress, final String state) throws IOException {
-        waitUntilState(client, serverAddress, state, 30, TimeUnit.SECONDS);
+        waitUntilState(client, serverAddress, state, DEFAULT_TIMEOUT, TimeUnit.SECONDS);
     }
 
     /**
@@ -229,6 +231,43 @@ public class DomainTestUtils {
             }
             throw ex;
         }
+    }
+
+    /**
+     * Start a managed server.
+     *
+     * @param connection the mgmt connection
+     * @param host the host name
+     * @param server the server name
+     * @return the server state
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static String startServer(final ModelControllerClient connection, final String host, final String server) throws IOException, MgmtOperationException {
+        return startServer(connection, host, server, true);
+    }
+
+    /**
+     * Start a managed server.
+     *
+     * @param connection the mgmt connection
+     * @param host the host name
+     * @param server the server name
+     * @param blocking whether to block until the server is started
+     * @return the server state
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static String startServer(final ModelControllerClient connection, final String host, final String server, final boolean blocking) throws IOException, MgmtOperationException {
+        final ModelNode address = getServerConfigAddress(host, server);
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("start");
+        operation.get(OP_ADDR).set(address);
+        operation.get("blocking").set(blocking);
+        // Start
+        executeForResult(operation, connection);
+        // Check the starte
+        return getServerState(connection, address);
     }
 
     /**

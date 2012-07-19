@@ -44,12 +44,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
@@ -91,14 +89,13 @@ public class ServerRestartRequiredTestCase {
 
         final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
 
-        final ModelNode startServer = new ModelNode();
-        startServer.get(OP).set("start");
-        startServer.get(OP_ADDR).set(reloadOneAddress);
-        client.execute(startServer);
-        DomainTestUtils.waitUntilState(client, reloadOneAddress, "STARTED");
-        startServer.get(OP_ADDR).set(reloadTwoAddress);
-        client.execute(startServer);
-        DomainTestUtils.waitUntilState(client, reloadTwoAddress, "STARTED");
+        // Start reload-one
+        startServer(client, "master", "reload-one");
+        // Start reload-two
+        startServer(client, "slave", "reload-two");
+        // Check the states
+        waitUntilState(client, reloadOneAddress, "STARTED");
+        waitUntilState(client, reloadTwoAddress, "STARTED");
     }
 
     @AfterClass
@@ -110,10 +107,10 @@ public class ServerRestartRequiredTestCase {
             stopServer.get(OP).set("stop");
             stopServer.get(OP_ADDR).set(reloadOneAddress);
             client.execute(stopServer);
-            DomainTestUtils.waitUntilState(client, reloadOneAddress, "DISABLED");
+            waitUntilState(client, reloadOneAddress, "DISABLED");
             stopServer.get(OP_ADDR).set(reloadTwoAddress);
             client.execute(stopServer);
-            DomainTestUtils.waitUntilState(client, reloadTwoAddress, "DISABLED");
+            waitUntilState(client, reloadTwoAddress, "DISABLED");
         } finally {
             DomainTestSuite.stopSupport();
             testSupport = null;
