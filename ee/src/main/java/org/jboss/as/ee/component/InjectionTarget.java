@@ -86,11 +86,12 @@ public abstract class InjectionTarget {
      * @param factoryValue     the value to inject
      * @param deploymentUnit   the deployment unit
      * @param optional         If this is an optional injection
+     * @param appClient        indicates if the invocation is in the context of an app client
      * @return the interceptor factory
      * @throws DeploymentUnitProcessingException
      *          if an error occurs
      */
-    public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException;
+    public abstract InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional, final boolean appClient) throws DeploymentUnitProcessingException;
 
     @Override
     public boolean equals(final Object o) {

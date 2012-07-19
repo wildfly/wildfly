@@ -65,6 +65,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     //injections that have been set in the components deployment descriptor
     private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
 
+    private final boolean appClient;
 
     /**
      * Construct a new instance.
@@ -72,11 +73,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
      * @param applicationName    the application name (which is same as the module name if the .ear is absent)
      * @param moduleName         the module name
      * @param earApplicationName The application name (which is null if the .ear is absent)
+     * @param appClient          indicates if the process type is an app client
      */
-    public EEModuleDescription(final String applicationName, final String moduleName, final String earApplicationName) {
+    public EEModuleDescription(final String applicationName, final String moduleName, final String earApplicationName, final boolean appClient) {
         this.applicationName = applicationName;
         this.moduleName = moduleName;
         this.earApplicationName = earApplicationName;
+        this.appClient = appClient;
     }
 
     /**
@@ -167,6 +170,10 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public boolean hasComponent(final String name) {
         return componentsByName.containsKey(name);
+    }
+
+    public boolean isAppClient() {
+        return appClient;
     }
 
     public void setModuleName(String moduleName) {
