@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -126,7 +127,7 @@ class TransformationUtils {
             allFields.remove(path.getKey());
         }
         if (!allFields.isEmpty()){
-            throw new RuntimeException("Model contains fields that are not know in definition, fields: "+allFields);
+            throw ControllerMessages.MESSAGES.modelFieldsNotKnown(allFields);
         }
         return res;
     }
