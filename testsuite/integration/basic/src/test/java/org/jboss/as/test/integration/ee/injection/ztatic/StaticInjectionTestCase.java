@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,27 +24,22 @@ package org.jboss.as.test.integration.ee.injection.ztatic;
 
 import static org.junit.Assert.fail;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that the Resource injection as specified by Java EE spec works as expected
- * <p/>
- * User: Jaikiran Pai
+ * Tests static field and method injection for EE apps.
+ * 
+ * @author Eduardo Martins
+ * 
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -54,56 +49,48 @@ public class StaticInjectionTestCase {
 
     private static final String FIELD_DEPLOYMENT_NAME = "static-field-injection-test-du";
     private static final String METHOD_DEPLOYMENT_NAME = "static-method-injection-test-du";
-    
+
     @ArquillianResource
     private Deployer deployer;
 
     @Deployment(name = FIELD_DEPLOYMENT_NAME, managed = false)
     public static WebArchive createFieldTestDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, FIELD_DEPLOYMENT_NAME+".war");
-        //war.addPackage(TestEJB.class.getPackage());
-        war.addClasses(FieldTestEJB.class,StaticInjectionTestCase.class);
-        war.addAsWebInfResource(StaticInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
-        return war;
-    }
-    
-    @Deployment(name = METHOD_DEPLOYMENT_NAME, managed = false)
-    public static WebArchive createMethodTestDeployment() {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, METHOD_DEPLOYMENT_NAME+".war");
-        war.addClasses(MethodTestEJB.class,StaticInjectionTestCase.class);
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, FIELD_DEPLOYMENT_NAME + ".war");
+        // war.addPackage(TestEJB.class.getPackage());
+        war.addClasses(FieldTestEJB.class, StaticInjectionTestCase.class);
         war.addAsWebInfResource(StaticInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
         return war;
     }
 
-    /**
-     * 
-     */
+    @Deployment(name = METHOD_DEPLOYMENT_NAME, managed = false)
+    public static WebArchive createMethodTestDeployment() {
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, METHOD_DEPLOYMENT_NAME + ".war");
+        war.addClasses(MethodTestEJB.class, StaticInjectionTestCase.class);
+        war.addAsWebInfResource(StaticInjectionTestCase.class.getPackage(), "web.xml", "web.xml");
+        return war;
+    }
+
     @Test
     public void testStaticFieldInjection() {
         try {
-           deployer.deploy(FIELD_DEPLOYMENT_NAME);
-           // deploy should have failed
-           deployer.undeploy(FIELD_DEPLOYMENT_NAME);
-           fail();
-        }
-        catch (Exception e) {
-            logger.info(e);
+            deployer.deploy(FIELD_DEPLOYMENT_NAME);
+            // deploy should have failed
+            deployer.undeploy(FIELD_DEPLOYMENT_NAME);
+            fail();
+        } catch (Exception e) {
+            logger.info("As expected, failed to deploy EE component with static injection.", e);
         }
     }
-    
-    /**
-     * 
-     */
+
     @Test
     public void testStaticMethodInjection() {
         try {
-           deployer.deploy(METHOD_DEPLOYMENT_NAME);
-           // deploy should have failed
-           deployer.undeploy(METHOD_DEPLOYMENT_NAME);
-           fail();
-        }
-        catch (Exception e) {
-            logger.info(e);
+            deployer.deploy(METHOD_DEPLOYMENT_NAME);
+            // deploy should have failed
+            deployer.undeploy(METHOD_DEPLOYMENT_NAME);
+            fail();
+        } catch (Exception e) {
+            logger.info("As expected, failed to deploy EE component with static injection.", e);
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,23 +23,20 @@
 package org.jboss.as.test.integration.ee.injection.ztatic;
 
 import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
-import javax.ejb.TimerService;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
 
 /**
- * User: jpai
+ * An EJB that "asks" for the forbidden static method injection.
+ * 
+ * @author Eduardo Martins
+ * 
  */
 @Stateless
+@SuppressWarnings("unused")
 public class MethodTestEJB {
 
     private static String simpleStringFromDeploymentDescriptor;
-    
+
     @Resource(name = "simpleString")
     private static void setSimpleStringFromDeploymentDescriptor(String s) {
         simpleStringFromDeploymentDescriptor = s;
