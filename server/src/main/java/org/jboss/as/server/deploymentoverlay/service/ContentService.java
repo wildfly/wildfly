@@ -17,7 +17,7 @@ public class ContentService implements Service<ContentService> {
     public static final ServiceName SERVICE_NAME = DeploymentOverlayService.SERVICE_NAME.append("contentService");
 
     private final InjectedValue<ContentRepository> contentRepositoryInjectedValue = new InjectedValue<ContentRepository>();
-    private final InjectedValue<DeploymentOverlayService> contentServiceInjectedValue = new InjectedValue<DeploymentOverlayService>();
+    private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<DeploymentOverlayService>();
 
     private final String path;
     private final byte[] contentHash;
@@ -30,12 +30,12 @@ public class ContentService implements Service<ContentService> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        contentServiceInjectedValue.getValue().addContentService(this);
+        deploymentOverlayServiceInjectedValue.getValue().addContentService(this);
     }
 
     @Override
     public void stop(final StopContext context) {
-        contentServiceInjectedValue.getValue().removeContentService(this);
+        deploymentOverlayServiceInjectedValue.getValue().removeContentService(this);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class ContentService implements Service<ContentService> {
         return contentRepositoryInjectedValue;
     }
 
-    public InjectedValue<DeploymentOverlayService> getContentServiceInjectedValue() {
-        return contentServiceInjectedValue;
+    public InjectedValue<DeploymentOverlayService> getDeploymentOverlayServiceInjectedValue() {
+        return deploymentOverlayServiceInjectedValue;
     }
 }

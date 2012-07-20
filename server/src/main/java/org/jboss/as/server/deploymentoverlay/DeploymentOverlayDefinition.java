@@ -1,9 +1,5 @@
 package org.jboss.as.server.deploymentoverlay;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -18,17 +14,6 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
 
     private static final AttributeDefinition[] ATTRIBUTES = { };
 
-    public static final Map<String, AttributeDefinition> ATTRIBUTE_MAP;
-
-    static {
-        Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        for(AttributeDefinition attr : ATTRIBUTES) {
-            map.put(attr.getName(), attr);
-        }
-
-        ATTRIBUTE_MAP = Collections.unmodifiableMap(map);
-    }
-
     public static AttributeDefinition[] attributes() {
         return ATTRIBUTES.clone();
     }
@@ -42,7 +27,7 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : ATTRIBUTE_MAP.values()) {
+        for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attr, null);
         }
     }

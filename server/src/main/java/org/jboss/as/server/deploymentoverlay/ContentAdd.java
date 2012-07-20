@@ -66,7 +66,7 @@ public class ContentAdd extends AbstractAddStepHandler {
         final ContentService service = new ContentService(path, content);
 
         ServiceBuilder<ContentService> builder = context.getServiceTarget().addService(serviceName, service)
-                .addDependency(DeploymentOverlayService.SERVICE_NAME.append(name), DeploymentOverlayService.class, service.getContentServiceInjectedValue())
+                .addDependency(DeploymentOverlayService.SERVICE_NAME.append(name), DeploymentOverlayService.class, service.getDeploymentOverlayServiceInjectedValue())
                 .addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.getContentRepositoryInjectedValue());
         if(verificationHandler != null) {
             builder.addListener(verificationHandler);
