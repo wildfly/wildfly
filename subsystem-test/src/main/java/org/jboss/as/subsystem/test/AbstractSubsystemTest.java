@@ -893,7 +893,7 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException {
-            ChildFirstClassLoader.createMavenGavURL(artifactGav);
+            classloaderURLs.add(ChildFirstClassLoader.createMavenGavURL(artifactGav));
             return this;
         }
 
