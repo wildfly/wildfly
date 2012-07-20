@@ -63,7 +63,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         executeOperation(op);
 
         // add connector
-        op = getAddConnectorOp(conn, keyPEMFile, certPEMFile, keyStoreFile, password);
+        op = getAddConnectorOp(conn, keyStoreFile, password);
         executeOperation(op);
 
         // check it is listed
@@ -76,7 +76,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         return op;
     }
 
-    private ModelNode getAddConnectorOp(Connector conn, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) {
+    private ModelNode getAddConnectorOp(Connector conn, String keyStoreFile, String password) {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
 
@@ -89,12 +89,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         steps.add(op);
         if (conn.isSecure()) {
             ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/ssl=configuration", "add");
-            if (conn.equals(Connector.HTTPSNATIVE)) {
-                ssl.get("certificate-key-file").set(keyPEMFile);
-                ssl.get("certificate-file").set(certPEMFile);
-            } else {
-                ssl.get("certificate-key-file").set(keyStoreFile);
-            }
+            ssl.get("certificate-key-file").set(keyStoreFile);
             ssl.get("password").set(password);
             steps.add(ssl);
         }
