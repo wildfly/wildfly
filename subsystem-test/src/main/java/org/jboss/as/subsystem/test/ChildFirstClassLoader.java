@@ -65,7 +65,7 @@ import org.sonatype.aether.version.VersionScheme;
 class ChildFirstClassLoader extends URLClassLoader {
 
     private static final RepositorySystem REPOSITORY_SYSTEM = newRepositorySystem();
-    private static final String AETHER_API_NAME = "/org/sonatype/aether/aether-api/";
+    private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/sonatype/aether/aether-api/" : "\\org\\sonatype\\aether\\aether-api\\";
 
     ClassLoader parent;
 
