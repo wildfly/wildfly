@@ -69,11 +69,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SimpleWebAppTestCase {
 
-    private static final String SIMPLE_WAR = "war-example.war";
-    private static final String WAR_STRUCTURE_BUNDLE = "war-structure-bundle.war";
-    private static final String OSGI_STRUCTURE_BUNDLE = "osgi-structure-bundle.war";
-    private static final String WEB_APPLICATION_BUNDLE_A = "osgi-webapp-a.wab";
-    private static final String WEB_APPLICATION_BUNDLE_B = "osgi-webapp-b.wab";
+    private static final String SIMPLE_WAR = "simple.war";
+    private static final String BUNDLE_A_WAR = "bundle-a.war";
+    private static final String BUNDLE_B1_WAR = "bundle-b1.war";
+    private static final String BUNDLE_B2_WAB = "bundle-b2.wab";
+    private static final String BUNDLE_C_WAB = "bundle-c.wab";
 
     @ArquillianResource
     URL targetURL;
@@ -85,13 +85,15 @@ public class SimpleWebAppTestCase {
     public static Archive<?> getWarDeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
         archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
         return archive;
     }
 
-    @Deployment(name = WAR_STRUCTURE_BUNDLE, testable = false)
+    @Deployment(name = BUNDLE_A_WAR, testable = false)
     public static Archive<?> getWarStructureDeployment() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, WAR_STRUCTURE_BUNDLE);
+        final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
         archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -107,10 +109,11 @@ public class SimpleWebAppTestCase {
         return archive;
     }
 
-    @Deployment(name = OSGI_STRUCTURE_BUNDLE, testable = false)
+    @Deployment(name = BUNDLE_B1_WAR, testable = false)
     public static Archive<?> getOSGiStructureDeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, OSGI_STRUCTURE_BUNDLE);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B1_WAR);
         archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -125,10 +128,11 @@ public class SimpleWebAppTestCase {
         return archive;
     }
 
-    @Deployment(name = WEB_APPLICATION_BUNDLE_A, testable = false)
+    @Deployment(name = BUNDLE_B2_WAB, testable = false)
     public static Archive<?> getWebAppBundleDeploymentA() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEB_APPLICATION_BUNDLE_A);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B2_WAB);
         archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -143,10 +147,11 @@ public class SimpleWebAppTestCase {
         return archive;
     }
 
-    @Deployment(name = WEB_APPLICATION_BUNDLE_B, testable = false)
+    @Deployment(name = BUNDLE_C_WAB, testable = false)
     public static Archive<?> getWebAppBundleDeploymentB() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, WEB_APPLICATION_BUNDLE_B);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
         archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -167,42 +172,57 @@ public class SimpleWebAppTestCase {
     public void testSimpleWar() throws Exception {
         String result = performCall("simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
+        // Test resource access
+        result = performCall("message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
     }
 
     @Test
-    @OperateOnDeployment(WAR_STRUCTURE_BUNDLE)
-    public void testWarStructureBundle() throws Exception {
+    @OperateOnDeployment(BUNDLE_A_WAR)
+    public void testSimpleBundleWithWarStructure() throws Exception {
         String result = performCall("simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
+        // Test resource access
+        result = performCall("message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
     }
 
     @Test
-    @OperateOnDeployment(OSGI_STRUCTURE_BUNDLE)
-    public void testOSGiStructureBundle() throws Exception {
+    @OperateOnDeployment(BUNDLE_B1_WAR)
+    public void testSimpleBundleWithWarExtension() throws Exception {
         String result = performCall("simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
+        // Test resource access
+        result = performCall("message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
     }
 
     @Test
-    @OperateOnDeployment(WEB_APPLICATION_BUNDLE_A)
-    public void testWebApplicationBundleA() throws Exception {
-        String result = performCall("osgi-webapp-a", "simple", "Hello");
+    @OperateOnDeployment(BUNDLE_B2_WAB)
+    public void testSimpleBundleWithWabExtension() throws Exception {
+        String result = performCall("bundle-b2", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
+        // Test resource access
+        result = performCall("bundle-b2", "message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
     }
 
     @Test
-    @OperateOnDeployment(WEB_APPLICATION_BUNDLE_B)
-    public void testWebApplicationBundleB() throws Exception {
+    @OperateOnDeployment(BUNDLE_C_WAB)
+    public void testSimpleBundleStartStop() throws Exception {
 
-        ModelNode info = getBundleInfo(getControllerClient(), WEB_APPLICATION_BUNDLE_B);
+        ModelNode info = getBundleInfo(getControllerClient(), BUNDLE_C_WAB);
         Assert.assertEquals("ACTIVE", info.get(ModelConstants.STATE).asString());
-        Assert.assertEquals(WEB_APPLICATION_BUNDLE_B, info.get(ModelConstants.SYMBOLIC_NAME).asString());
+        Assert.assertEquals(BUNDLE_C_WAB, info.get(ModelConstants.SYMBOLIC_NAME).asString());
 
         String result = performCall("osgi-webapp", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
 
-        Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
-        Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
+        result = performCall("osgi-webapp", "message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
+
+        Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), BUNDLE_C_WAB));
+        Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), BUNDLE_C_WAB));
 
         try {
             performCall("osgi-webapp", "simple", "Hello");
@@ -211,11 +231,21 @@ public class SimpleWebAppTestCase {
             // expected
         }
 
-        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
-        Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), WEB_APPLICATION_BUNDLE_B));
+        try {
+            performCall("osgi-webapp", "message.txt", null);
+            Assert.fail("IOException expected");
+        } catch (IOException ex) {
+            // expected
+        }
+
+        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), BUNDLE_C_WAB));
+        Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), BUNDLE_C_WAB));
 
         result = performCall("osgi-webapp", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
+
+        result = performCall("osgi-webapp", "message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
     }
 
     private String performCall(String pattern, String param) throws Exception {
@@ -227,7 +257,7 @@ public class SimpleWebAppTestCase {
         if (targetURL.getPath().isEmpty() && context != null) {
             urlspec += "/" + context + "/";
         }
-        URL url = new URL(urlspec + pattern + "?input=" + param);
+        URL url = new URL(urlspec + pattern + (param != null ? "?input=" + param : ""));
         return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 

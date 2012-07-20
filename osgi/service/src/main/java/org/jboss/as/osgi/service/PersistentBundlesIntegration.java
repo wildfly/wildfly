@@ -24,10 +24,9 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
-import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE;
-import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_INSTALL;
 import static org.jboss.osgi.framework.IntegrationServices.PERSISTENT_BUNDLES;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,16 +44,15 @@ import org.jboss.dmr.Property;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.osgi.framework.BootstrapBundlesResolve;
-import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.BootstrapBundlesInstall;
 import org.jboss.osgi.framework.IntegrationServices.BootstrapPhase;
 import org.jboss.osgi.framework.util.ServiceTracker;
-import org.jboss.osgi.resolver.XBundle;
 
 /**
  * A service that provides persistent bundles on framework startup.
@@ -62,22 +60,29 @@ import org.jboss.osgi.resolver.XBundle;
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2012
  */
-public class PersistentBundlesIntegration extends AbstractService<Void> {
+public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     static final ServiceName INITIAL_DEPLOYMENTS = SERVICE_BASE_NAME.append("initial", "deployments");
     static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
 
-    public static ServiceController<Void> addService(ServiceTarget serviceTarget) {
-        PersistentBundlesIntegration service = new PersistentBundlesIntegration();
-        ServiceName serviceName = BootstrapPhase.serviceName(IntegrationServices.PERSISTENT_BUNDLES, BootstrapPhase.INSTALL);
-        ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, service);
-        builder.addDependencies(BOOTSTRAP_BUNDLES_INSTALL, BOOTSTRAP_BUNDLES_COMPLETE);
-        builder.addDependencies(INITIAL_DEPLOYMENTS_COMPLETE);
-        builder.setInitialMode(Mode.ON_DEMAND);
-        return builder.install();
+    PersistentBundlesIntegration() {
+        super(PERSISTENT_BUNDLES);
     }
 
-    private PersistentBundlesIntegration() {
+    @Override
+    protected void addServiceDependencies(ServiceBuilder<Void> builder) {
+        builder.addDependencies(INITIAL_DEPLOYMENTS_COMPLETE);
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        ServiceController<?> serviceController = context.getController();
+        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+
+        // This actually does not install any bundle deployments
+        // At server startup the persistet bundles are deployed like any other persistet deployment
+        List<Deployment> deployments = Collections.emptyList();
+        installBootstrapBundles(context.getChildTarget(), deployments);
     }
 
     public static class InitialDeploymentTracker extends ServiceTracker<Object> {
@@ -88,7 +93,6 @@ public class PersistentBundlesIntegration extends AbstractService<Void> {
         private final ServiceTarget serviceTarget;
         private final Set<String> deploymentNames;
 
-        private ServiceTracker<XBundle> bundleInstallListener;
         private ServiceTarget listenerTarget;
 
         public InitialDeploymentTracker(OperationContext context, ServiceVerificationHandler verificationHandler) {
@@ -109,26 +113,18 @@ public class PersistentBundlesIntegration extends AbstractService<Void> {
                 listenerTarget.addListener(Inheritance.ALL, this);
             }
 
-            // Setup the bundle install listener
-            bundleInstallListener = new ServiceTracker<XBundle>() {
-
-                @Override
-                protected boolean allServicesAdded(Set<ServiceName> trackedServices) {
-                    return deploymentInstallComplete.get();
-                }
-
-                @Override
-                protected void complete() {
-                    installResolveService(serviceTarget, installedServices);
-                }
-            };
-
             // Check the tracker for completeness
             checkAndComplete();
         }
 
+        public ServiceTarget getServiceTarget() {
+            return serviceTarget;
+        }
+
         @Override
         protected boolean trackService(ServiceController<? extends Object> controller) {
+            // [TODO] currently we track all persistet deployments.
+            // If one fails it would mean that the OSGi framwork does not bootstrap
             return deploymentPhaseServices.contains(controller.getName());
         }
 
@@ -145,11 +141,6 @@ public class PersistentBundlesIntegration extends AbstractService<Void> {
             }
             deploymentInstallComplete.set(true);
             initialDeploymentsComplete(serviceTarget);
-            bundleInstallListener.checkAndComplete();
-        }
-
-        public ServiceListener<XBundle> getBundleInstallListener() {
-            return bundleInstallListener;
         }
 
         public boolean isComplete() {
@@ -183,10 +174,6 @@ public class PersistentBundlesIntegration extends AbstractService<Void> {
                 LOGGER.tracef("Expecting initial deployments: %s", result);
             }
             return result;
-        }
-
-        private ServiceController<Void> installResolveService(ServiceTarget serviceTarget, Set<ServiceName> installedServices) {
-            return new BootstrapBundlesResolve<Void>(PERSISTENT_BUNDLES, installedServices).install(serviceTarget);
         }
 
         private ServiceController<Void> initialDeploymentsComplete(ServiceTarget serviceTarget) {

@@ -26,16 +26,15 @@ import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import java.util.Collections;
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.Attachments.BundleState;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
@@ -53,20 +52,13 @@ import org.osgi.service.resolver.ResolutionException;
  */
 public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
-    private final InitialDeploymentTracker deploymentTracker;
-
-    public BundleResolveProcessor(InitialDeploymentTracker deploymentTracker) {
-        this.deploymentTracker = deploymentTracker;
-    }
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
-        boolean bootstrapBundle = deploymentTracker.hasDeploymentName(depUnit.getName());
-        if (bundle == null || !deployment.isAutoStart() || bootstrapBundle)
+        if (bundle == null || !deployment.isAutoStart())
             return;
 
         // Only process the top level deployment
@@ -85,8 +77,14 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         try {
             resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
-            ModuleIdentifier identifier = brev.getModuleIdentifier();
-            ServiceName moduleService = ServiceModuleLoader.moduleServiceName(identifier);
+
+            // Add a dependency on the Bundle RESOLVED service
+            ServiceName bundleInstall = brev.getBundle().adapt(ServiceName.class);
+            ServiceName bundleResolve = bundleInstall.getParent().append("RESOLVED");
+            phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
+
+            // Add a dependency on the Module service
+            ServiceName moduleService = ServiceModuleLoader.moduleServiceName(brev.getModuleIdentifier());
             phaseContext.addDeploymentDependency(moduleService, Attachments.MODULE);
         } catch (ResolutionException ex) {
             LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());

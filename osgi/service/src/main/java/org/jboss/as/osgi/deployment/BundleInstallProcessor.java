@@ -65,13 +65,10 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             ServiceName serviceName;
             try {
                 final BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
-                if (!deploymentTracker.isComplete() && deploymentTracker.hasDeploymentName(depUnit.getName())) {
+                if (deploymentTracker.hasDeploymentName(depUnit.getName())) {
                     restoreStorageState(phaseContext, deployment);
-                    serviceName = bundleManager.installBundle(deployment, deploymentTracker.getBundleInstallListener());
-                    deploymentTracker.registerBundleInstallService(serviceName);
-                } else {
-                    serviceName = bundleManager.installBundle(deployment, null);
                 }
+                serviceName = bundleManager.installBundle(deployment, null);
             } catch (BundleException ex) {
                 throw new DeploymentUnitProcessingException(ex);
             }
