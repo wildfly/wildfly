@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,33 +23,32 @@ package org.jboss.system;
 
 /**
  * The Service interface.
- *      
+ *
  * @author <a href="mailto:marc.fleury@jboss.org">Marc Fleury</a>.
  * @version $Revision: 81032 $
  */
-public interface Service
-{
-   /**
-    * create the service, do expensive operations etc
-    * 
-    * @throws Exception for any error
-    */
-   void create() throws Exception;
-   
-   /**
-    * start the service, create is already called
-    * 
-    * @throws Exception for any error
-    */
-   void start() throws Exception;
-   
-   /**
-    * stop the service
-    */
-   void stop();
-   
-   /**
-    * destroy the service, tear down 
-    */
-   void destroy();
+public interface Service {
+    /**
+     * create the service, do expensive operations etc
+     *
+     * @throws Exception for any error
+     */
+    void create() throws Exception;
+
+    /**
+     * start the service, create is already called
+     *
+     * @throws Exception for any error
+     */
+    void start() throws Exception;
+
+    /**
+     * stop the service
+     */
+    void stop();
+
+    /**
+     * destroy the service, tear down
+     */
+    void destroy();
 }

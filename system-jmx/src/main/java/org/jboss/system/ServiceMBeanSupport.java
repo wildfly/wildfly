@@ -32,9 +32,9 @@ import org.jboss.logging.Logger;
  * An abstract base class JBoss services can subclass to implement a service that conforms to the ServiceMBean interface.
  * Subclasses must override {@link #getName} method and should override {@link #startService}, and {@link #stopService} as
  * approriate.
- * 
+ *
  * @see ServiceMBean
- * 
+ *
  * @author <a href="mailto:rickard.oberg@telkel.com">Rickard Öberg</a>
  * @author Scott.Stark@jboss.org
  * @author <a href="mailto:andreas@jboss.org">Andreas Schaefer</a>
@@ -67,22 +67,24 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Construct a <t>ServiceMBeanSupport</tt>.
-     * 
+     *
      * <p>
      * Sets up logging.
      */
     public ServiceMBeanSupport() {
         // can not call this(Class) because we need to call getClass()
         this.log = Logger.getLogger(getClass().getName());
-        log.trace("Constructing");
+        if (log.isTraceEnabled()) {
+            log.trace("Constructing");
+        }
     }
 
     /**
      * Construct a <t>ServiceMBeanSupport</tt>.
-     * 
+     *
      * <p>
      * Sets up logging.
-     * 
+     *
      * @param type The class type to determine category name from.
      */
     public ServiceMBeanSupport(final Class<?> type) {
@@ -91,10 +93,10 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Construct a <t>ServiceMBeanSupport</tt>.
-     * 
+     *
      * <p>
      * Sets up logging.
-     * 
+     *
      * @param category The logger category name.
      */
     public ServiceMBeanSupport(final String category) {
@@ -103,17 +105,19 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Construct a <t>ServiceMBeanSupport</tt>.
-     * 
+     *
      * @param log The logger to use.
      */
     public ServiceMBeanSupport(final Logger log) {
         this.log = log;
-        log.trace("Constructing");
+        if (log.isTraceEnabled()) {
+            log.trace("Constructing");
+        }
     }
 
     /**
      * Use the short class name as the default for the service name.
-     * 
+     *
      * @return a description of the mbean
      */
     public String getName() {
@@ -198,22 +202,28 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         // || state == STOPPING || state == STOPPED)
         if (state != REGISTERED) {
             createIgnored = true;
-            log.debug("Ignoring create call; current state is " + getStateString());
+            if (log.isDebugEnabled()) {
+                log.debug("Ignoring create call; current state is " + getStateString());
+            }
             return;
         }
 
         createIgnored = false;
-        log.debug("Creating " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Creating " + jbossInternalDescription());
+        }
 
         try {
             createService();
             state = CREATED;
         } catch (Exception e) {
-            log.debug("Initialization failed " + jbossInternalDescription(), e);
+            log.warn("Initialization failed " + jbossInternalDescription(), e);
             throw e;
         }
 
-        log.debug("Created " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Created " + jbossInternalDescription());
+        }
 
         if (startIgnored) {
             start();
@@ -223,25 +233,31 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
     protected void jbossInternalStart() throws Exception {
         if (state != CREATED && state != STOPPED) {
             startIgnored = true;
-            log.debug("Ignoring start call; current state is " + getStateString());
+            if (log.isDebugEnabled()) {
+                log.debug("Ignoring start call; current state is " + getStateString());
+            }
             return;
         }
 
         startIgnored = false;
 
         state = STARTING;
-        log.debug("Starting " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Starting " + jbossInternalDescription());
+        }
 
         try {
             startService();
         } catch (Exception e) {
             state = FAILED;
-            log.debug("Starting failed " + jbossInternalDescription(), e);
+            log.warn("Starting failed " + jbossInternalDescription(), e);
             throw e;
         }
 
         state = STARTED;
-        log.debug("Started " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Started " + jbossInternalDescription());
+        }
 
         if (stopIgnored) {
             stop();
@@ -251,13 +267,17 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
     protected void jbossInternalStop() {
         if (state != STARTED) {
             stopIgnored = true;
-            log.debug("Ignoring stop call; current state is " + getStateString());
+            if (log.isDebugEnabled()) {
+                log.debug("Ignoring stop call; current state is " + getStateString());
+            }
             return;
         }
 
         stopIgnored = false;
         state = STOPPING;
-        log.debug("Stopping " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Stopping " + jbossInternalDescription());
+        }
 
         try {
             stopService();
@@ -268,7 +288,9 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         }
 
         state = STOPPED;
-        log.debug("Stopped " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Stopped " + jbossInternalDescription());
+        }
 
         if (destroyIgnored) {
             destroy();
@@ -278,12 +300,16 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
     protected void jbossInternalDestroy() {
         if (state != STOPPED) {
             destroyIgnored = true;
-            log.debug("Ignoring destroy call; current state is " + getStateString());
+            if (log.isDebugEnabled()) {
+                log.debug("Ignoring destroy call; current state is " + getStateString());
+            }
             return;
         }
 
         destroyIgnored = false;
-        log.debug("Destroying " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Destroying " + jbossInternalDescription());
+        }
 
         try {
             destroyService();
@@ -291,7 +317,9 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
             log.warn("Destroying failed " + jbossInternalDescription(), t);
         }
         state = DESTROYED;
-        log.debug("Destroyed " + jbossInternalDescription());
+        if (log.isDebugEnabled()) {
+            log.debug("Destroyed " + jbossInternalDescription());
+        }
 
         if (unregisterIgnored) {
             postDeregister();
@@ -304,11 +332,11 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Callback method of {@link MBeanRegistration} before the MBean is registered at the JMX Agent.
-     * 
+     *
      * <p>
      * <b>Attention</b>: Always call this method when you overwrite it in a subclass because it saves the Object Name of the
      * MBean.
-     * 
+     *
      * @param server Reference to the JMX Agent this MBean is registered on
      * @param name Name specified by the creator of the MBean. Note that you can overwrite it when the given ObjectName is null
      *        otherwise the change is discarded (maybe a bug in JMX-RI).
@@ -325,7 +353,9 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     public void postRegister(Boolean registrationDone) {
         if (!registrationDone.booleanValue()) {
-            log.info("Registration is not done -> stop");
+            if (log.isDebugEnabled()) {
+                log.debug("Registration is not done -> stop");
+            }
             stop();
         } else {
             state = REGISTERED;
@@ -345,7 +375,9 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
     public void postDeregister() {
         if (state != DESTROYED) {
             unregisterIgnored = true;
-            log.debug("Ignoring postDeregister call; current state is " + getStateString());
+            if (log.isDebugEnabled()) {
+                log.debug("Ignoring postDeregister call; current state is " + getStateString());
+            }
             return;
         }
         unregisterIgnored = false;
@@ -360,7 +392,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Sub-classes should override this method if they only need to set their object name during MBean pre-registration.
-     * 
+     *
      * @param server the mbeanserver
      * @param name the suggested name, maybe null
      * @return the object name
@@ -372,11 +404,11 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Sub-classes should override this method to provide custum 'create' logic.
-     * 
+     *
      * <p>
      * This method is empty, and is provided for convenience when concrete service classes do not need to perform anything
      * specific for this state change.
-     * 
+     *
      * @throws Exception for any error
      */
     protected void createService() throws Exception {
@@ -384,11 +416,11 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Sub-classes should override this method to provide custum 'start' logic.
-     * 
+     *
      * <p>
      * This method is empty, and is provided for convenience when concrete service classes do not need to perform anything
      * specific for this state change.
-     * 
+     *
      * @throws Exception for any error
      */
     protected void startService() throws Exception {
@@ -396,11 +428,11 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Sub-classes should override this method to provide custum 'stop' logic.
-     * 
+     *
      * <p>
      * This method is empty, and is provided for convenience when concrete service classes do not need to perform anything
      * specific for this state change.
-     * 
+     *
      * @throws Exception for any error
      */
     protected void stopService() throws Exception {
@@ -408,11 +440,11 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     /**
      * Sub-classes should override this method to provide custum 'destroy' logic.
-     * 
+     *
      * <p>
      * This method is empty, and is provided for convenience when concrete service classes do not need to perform anything
      * specific for this state change.
-     * 
+     *
      * @throws Exception for any error
      */
     protected void destroyService() throws Exception {
