@@ -19,7 +19,6 @@
 package org.jboss.as.controller.operations.common;
 
 
-import org.jboss.as.controller.AttributeDefinition;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -28,12 +27,12 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.dmr.ModelNode;
@@ -73,11 +72,7 @@ public class InterfaceAddHandler extends AbstractAddStepHandler implements Descr
     }
 
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-
-        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        model.get(ModelDescriptionConstants.NAME).set(address.getLastElement().getValue());
-
-        for(final AttributeDefinition definition : ATTRIBUTES) {
+       for(final AttributeDefinition definition : ATTRIBUTES) {
             if(specified || operation.hasDefined(definition.getName())) {
                 validateAndSet(definition, operation, model);
             }
