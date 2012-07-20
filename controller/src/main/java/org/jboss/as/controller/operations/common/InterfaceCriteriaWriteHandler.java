@@ -22,24 +22,24 @@
 
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -67,6 +67,14 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         for(final AttributeDefinition def : InterfaceDescription.ROOT_ATTRIBUTES) {
             registration.registerReadWriteAttribute(def, null, this);
         }
+        registration.registerReadOnlyAttribute(InterfaceDescription.NAME,new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+                context.getResult().set(address.getLastElement().getValue());
+                context.completeStep();
+            }
+        });
     }
 
     private final boolean updateRuntime;
