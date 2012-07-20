@@ -22,6 +22,7 @@
 
 package org.jboss.as.txn.subsystem;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -156,26 +157,19 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
+    static final AttributeDefinition[] attributes = new AttributeDefinition[] {
+            BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
+            PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, ENABLE_STATISTICS, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE
+    };
+
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-
-        resourceRegistration.registerReadWriteAttribute(BINDING, null, new ReloadRequiredWriteAttributeHandler(BINDING));
-        resourceRegistration.registerReadWriteAttribute(STATUS_BINDING, null, new ReloadRequiredWriteAttributeHandler(STATUS_BINDING));
-        resourceRegistration.registerReadWriteAttribute(RECOVERY_LISTENER, null, new ReloadRequiredWriteAttributeHandler(RECOVERY_LISTENER));
-        resourceRegistration.registerReadWriteAttribute(NODE_IDENTIFIER, null, new ReloadRequiredWriteAttributeHandler(NODE_IDENTIFIER));
-        resourceRegistration.registerReadWriteAttribute(PROCESS_ID_UUID, null, new ReloadRequiredWriteAttributeHandler(PROCESS_ID_UUID));
-        resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_BINDING, null, new ReloadRequiredWriteAttributeHandler(PROCESS_ID_SOCKET_BINDING));
-        resourceRegistration.registerReadWriteAttribute(PROCESS_ID_SOCKET_MAX_PORTS, null, new ReloadRequiredWriteAttributeHandler(PROCESS_ID_SOCKET_MAX_PORTS));
-        resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(RELATIVE_TO));
-        resourceRegistration.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler(PATH));
-        resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, null, new ReloadRequiredWriteAttributeHandler(ENABLE_STATISTICS));
-        resourceRegistration.registerReadWriteAttribute(ENABLE_TSM_STATUS, null, new ReloadRequiredWriteAttributeHandler(ENABLE_TSM_STATUS));
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_TIMEOUT, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_TIMEOUT));
-        resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_RELATIVE_TO));
-        resourceRegistration.registerReadWriteAttribute(OBJECT_STORE_PATH, null, new ReloadRequiredWriteAttributeHandler(OBJECT_STORE_PATH));
-        resourceRegistration.registerReadWriteAttribute(JTS, null, new ReloadRequiredWriteAttributeHandler(JTS));
-        resourceRegistration.registerReadWriteAttribute(USEHORNETQSTORE, null, new ReloadRequiredWriteAttributeHandler(USEHORNETQSTORE));
+        // Register all attributes
+        for(final AttributeDefinition def : attributes) {
+            resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
+        }
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
