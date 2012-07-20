@@ -30,7 +30,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.BytesValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
+import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -50,24 +52,26 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.BINDING.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition STATUS_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATUS_BINDING, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.STATUS_BINDING.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition RECOVERY_LISTENER = new SimpleAttributeDefinitionBuilder(CommonAttributes.RECOVERY_LISTENER, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.RECOVERY_LISTENER.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     //core environment
     public static final SimpleAttributeDefinition NODE_IDENTIFIER = new SimpleAttributeDefinitionBuilder(CommonAttributes.NODE_IDENTIFIER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("1"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setValidator(new StringBytesLengthValidator(0,23,true,true))
             .build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
@@ -80,7 +84,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAlternatives("process-id-uuid")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.BINDING.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_SOCKET_MAX_PORTS = new SimpleAttributeDefinitionBuilder("process-id-socket-max-ports", ModelType.INT, true)
             .setValidator(new IntRangeValidator(1, true))
@@ -88,59 +92,59 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setRequires("process-id-socket-binding")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.SOCKET_PROCESS_ID_MAX_PORTS.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("var"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .build();
+            .setAllowExpression(true).build();
 
     //coordinator environment
     public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
             .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
             .setXmlName(Attribute.ENABLE_TSM_STATUS.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition DEFAULT_TIMEOUT = new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_TIMEOUT, ModelType.INT, true)
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setDefaultValue(new ModelNode().set(300))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO is this runtime-changeable?
             .setXmlName(Attribute.DEFAULT_TIMEOUT.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     //object store
     public static final SimpleAttributeDefinition OBJECT_STORE_RELATIVE_TO = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_RELATIVE_TO, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
     public static final SimpleAttributeDefinition OBJECT_STORE_PATH = new SimpleAttributeDefinitionBuilder(CommonAttributes.OBJECT_STORE_PATH, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("tx-object-store"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setXmlName(Attribute.PATH.getLocalName())
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition JTS = new SimpleAttributeDefinitionBuilder(CommonAttributes.JTS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)  //I think the use of statics in arjunta will require a JVM restart
-            .build();
+            .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition USEHORNETQSTORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USEHORNETQSTORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
-            .build();
+            .setAllowExpression(true).build();
 
     private final boolean registerRuntimeOnly;
 
