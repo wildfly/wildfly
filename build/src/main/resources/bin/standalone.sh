@@ -10,17 +10,17 @@ DEBUG_PORT="8787"
 while [ "$#" -gt 0 ]
 do
     case "$1" in
-      (-d|--debug) 
+      -d|--debug)
           DEBUG_MODE=true
           shift
           if [ -n "$1" ]; then
               DEBUG_PORT=$1
           fi
           ;;
-      (--) 
+      --)
           shift 
           break;;
-      (*)  
+      *)
           break;;
     esac
     shift
