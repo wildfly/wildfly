@@ -21,6 +21,10 @@
 */
 package org.jboss.as.jmx.model;
 
+import static javax.management.JMX.DEFAULT_VALUE_FIELD;
+import static javax.management.JMX.LEGAL_VALUES_FIELD;
+import static javax.management.JMX.MAX_VALUE_FIELD;
+import static javax.management.JMX.MIN_VALUE_FIELD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -45,6 +49,7 @@ import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +60,6 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ObjectName;
-import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenMBeanAttributeInfo;
 import javax.management.openmbean.OpenMBeanAttributeInfoSupport;
 import javax.management.openmbean.OpenMBeanConstructorInfo;
@@ -244,13 +248,28 @@ public class MBeanInfoFactory {
         if (!opNode.hasDefined(REQUEST_PROPERTIES)) {
             return EMPTY_PARAMETERS;
         }
-        List<OpenMBeanParameterInfo> params = new ArrayList<OpenMBeanParameterInfo>();
-        for (Property prop : opNode.get(REQUEST_PROPERTIES).asPropertyList()) {
+        List<Property> propertyList = opNode.get(REQUEST_PROPERTIES).asPropertyList();
+        List<OpenMBeanParameterInfo> params = new ArrayList<OpenMBeanParameterInfo>(propertyList.size());
+        for (Property prop : propertyList) {
             ModelNode value = prop.getValue();
-            final String paramName = NameConverter.convertToCamelCase(prop.getName());
+            String paramName = NameConverter.convertToCamelCase(prop.getName());
 
-            Map<String, String> descriptions = new HashMap<String, String>();
-            descriptions.put(DESC_EXPRESSIONS_ALLOWED, String.valueOf(prop.getValue().hasDefined(EXPRESSIONS_ALLOWED) && prop.getValue().get(EXPRESSIONS_ALLOWED).asBoolean()));
+            Map<String, Object> descriptions = new HashMap<String, Object>(4);
+
+            boolean expressionsAllowed = prop.getValue().hasDefined(EXPRESSIONS_ALLOWED) && prop.getValue().get(EXPRESSIONS_ALLOWED).asBoolean();
+            descriptions.put(DESC_EXPRESSIONS_ALLOWED, String.valueOf(expressionsAllowed));
+
+            if (!expressionsAllowed) {
+                Object defaultValue = getIfExists(value, DEFAULT);
+                descriptions.put(DEFAULT_VALUE_FIELD, defaultValue);
+                if (value.has(ALLOWED)) {
+                    List<ModelNode> allowed = value.get(ALLOWED).asList();
+                    descriptions.put(LEGAL_VALUES_FIELD, new HashSet<ModelNode>(allowed));
+                } else {
+                    descriptions.put(MIN_VALUE_FIELD, getIfExistsAsComparable(value, MIN));
+                    descriptions.put(MAX_VALUE_FIELD, getIfExistsAsComparable(value, MAX));
+                }
+            }
 
             params.add(
                     new OpenMBeanParameterInfoSupport(
@@ -266,7 +285,7 @@ public class MBeanInfoFactory {
     private Object getIfExists(final ModelNode parentNode, final String name) {
         if (parentNode.has(DEFAULT)) {
             ModelNode defaultNode = parentNode.get(DEFAULT);
-            return TypeConverter.fromModelNode(parentNode, defaultNode);
+            return converters.fromModelNode(parentNode, defaultNode);
         } else {
             return null;
         }
@@ -275,7 +294,7 @@ public class MBeanInfoFactory {
     private Comparable getIfExistsAsComparable(final ModelNode parentNode, final String name) {
         if (parentNode.has(name)) {
             ModelNode defaultNode = parentNode.get(name);
-            Object value = TypeConverter.fromModelNode(parentNode, defaultNode);
+            Object value = converters.fromModelNode(parentNode, defaultNode);
             if (value instanceof Comparable) {
                 return (Comparable) value;
             }
