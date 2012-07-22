@@ -2487,4 +2487,7 @@ public interface ControllerMessages {
 
     @Message(id = 14865, value = "Stream was closed")
     IOException streamWasClosed();
+
+    @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
+    RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
 }
