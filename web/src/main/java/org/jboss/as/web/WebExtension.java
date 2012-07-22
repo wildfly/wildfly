@@ -178,7 +178,8 @@ public class WebExtension implements Extension {
                         ModelNode virtualServer = model.get(Constants.VIRTUAL_SERVER, name);
                         swap(virtualServer, SSO_PATH, SSO_ALIAS);
                         swap(virtualServer, ACCESS_LOG_PATH, ACCESS_LOG_ALIAS);
-                        swap(virtualServer.get(ACCESS_LOG_ALIAS.getKey(), ACCESS_LOG_ALIAS.getValue()), DIRECTORY_PATH, DIRECTORY_ALIAS);
+                        ModelNode accessLog = virtualServer.get(ACCESS_LOG_ALIAS.getKey(), ACCESS_LOG_ALIAS.getValue());
+                        swap(accessLog, DIRECTORY_PATH, DIRECTORY_ALIAS);
                     }
                 }
 
@@ -187,8 +188,12 @@ public class WebExtension implements Extension {
 
             private void swap(ModelNode parent, PathElement original, PathElement old) {
                 if (parent.hasDefined(original.getKey()) && parent.get(original.getKey()).hasDefined(original.getValue())) {
-                    ModelNode sslConfig = parent.get(original.getKey()).remove(original.getValue());
-                    parent.get(old.getKey(), old.getValue()).set(sslConfig);
+                    ModelNode sslConfig = parent.get(original.getKey(),original.getValue());
+                    parent.get(old.getKey(), old.getValue()).set(sslConfig.clone());
+                    parent.get(original.getKey()).remove(original.getValue());
+                    if (parent.get(original.getKey()).asList().isEmpty()){
+                        parent.remove(original.getKey());
+                    }
                 }
             }
         });
