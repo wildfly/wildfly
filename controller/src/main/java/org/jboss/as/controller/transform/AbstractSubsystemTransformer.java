@@ -17,7 +17,7 @@ public abstract class AbstractSubsystemTransformer extends AbstractResourceModel
             @Override
             public ResourceDefinition load(TransformationTarget target) {
                 final ModelVersion version = target.getSubsystemVersion(subsystemName);
-                return TransformationUtils.loadSubsystemDefinition(subsystemName, version.getMajor(), version.getMinor());
+                return TransformationUtils.loadSubsystemDefinition(subsystemName, version);
             }
         });
     }
