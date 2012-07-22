@@ -329,7 +329,7 @@
       <xs:documentation>Configuration information for one SSL configuration.</xs:documentation>
     </xs:annotation>
     <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="key-alias" default="jboss"/>
+    <xs:attribute name="key-alias" type="xs:string"/>
     <xs:attribute name="password">
       <xs:annotation>
         <xs:documentation>Password for both keystore</xs:documentation>

@@ -11,7 +11,6 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -34,7 +33,6 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
                     .setAllowNull(true)
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode("jboss"))
                     .setAllowExpression(true)
                     .build();
 
