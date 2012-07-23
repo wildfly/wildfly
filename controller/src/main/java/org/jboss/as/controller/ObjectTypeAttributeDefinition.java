@@ -54,7 +54,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     /*
      * Constructor which allows specifying a custom ParameterValidator. Disabled by default.
      */
-    private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
+    protected ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
                                           final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
                                           final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);

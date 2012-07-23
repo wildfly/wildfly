@@ -22,31 +22,24 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-
 import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
-import org.jboss.as.controller.operations.validation.MinMaxValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.resolvers.HandlerResolver;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.config.PropertyConfigurable;
 
 /**
@@ -54,16 +47,16 @@ import org.jboss.logmanager.config.PropertyConfigurable;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-//todo replace with   SimpleListAttributeDefinition
-public class LogHandlerListAttributeDefinition extends ListAttributeDefinition implements ConfigurationProperty<Set<String>> {
-    private final SimpleAttributeDefinition valueType;
+public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefinition implements ConfigurationProperty<Set<String>> {
     private final String propertyName;
     private final HandlerResolver resolver = HandlerResolver.INSTANCE;
 
-    LogHandlerListAttributeDefinition(final String name, final String xmlName, final String propertyName, final SimpleAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, flags);
+    LogHandlerListAttributeDefinition(final String name, final String xmlName, final String propertyName, final AttributeDefinition valueType,
+                                      final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
+                                      final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,final DeprecationData deprecationData,
+                                      final AttributeAccess.Flag... flags) {
+        super(name, xmlName, valueType,allowNull, minSize, maxSize,  alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, flags);
         this.propertyName = propertyName;
-        this.valueType = valueType;
     }
 
     @Override
@@ -91,124 +84,52 @@ public class LogHandlerListAttributeDefinition extends ListAttributeDefinition i
         throw LoggingMessages.MESSAGES.unsupportedMethod("setPropertyValue", getClass().getName());
     }
 
-    @Override
-    public ModelNode addResourceAttributeDescription(ResourceBundle bundle, String prefix, ModelNode resourceDescription) {
-        final ModelNode result = super.addResourceAttributeDescription(bundle, prefix, resourceDescription);
-        addValueTypeDescription(result, prefix, bundle);
-        return result;
-    }
 
-    @Override
-    public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
-        final ModelNode result = super.addOperationParameterDescription(bundle, prefix, operationDescription);
-        addValueTypeDescription(result, prefix, bundle);
-        return result;
-    }
-
-
-    @Override
-    protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
-        node.get(VALUE_TYPE, valueType.getName()).set(getValueTypeDescription(false));
-    }
-
-
-    protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(false);
-        valueTypeDesc.get(DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, prefix));
-        node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-    }
-
-    @Override
-    protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(false);
-        valueTypeDesc.get(DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, valueType.getName()));
-        node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-    }
-
-    @Override
-    protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        final ModelNode valueTypeDesc = getValueTypeDescription(true);
-        valueTypeDesc.get(DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
-        node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-    }
 
     @Override
     public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
             for (ModelNode handler : resourceModel.get(getName()).asList()) {
-                valueType.marshallAsElement(handler, writer);
+                getValueType().marshallAsElement(handler, writer);
             }
             writer.writeEndElement();
         }
     }
 
-    private ModelNode getValueTypeDescription(boolean forOperation) {
-        final ModelNode result = new ModelNode();
-        result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
-        result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
-        result.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(valueType.isAllowExpression());
-        if (forOperation) {
-            result.get(ModelDescriptionConstants.REQUIRED).set(!valueType.isAllowNull());
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, LogHandlerListAttributeDefinition> {
+
+        private String propertyName;
+        private AttributeDefinition valueType;
+
+
+        Builder(final String name, final SimpleAttributeDefinition valueType) {
+            super(name, ModelType.LIST);
+            this.valueType = valueType;
         }
-        result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        final ModelNode defaultValue = valueType.getDefaultValue();
-        if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
-            result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
+
+        /**
+         * Creates a builder for {@link LogHandlerListAttributeDefinition}.
+         *
+         * @param name      the name of the attribute
+         * @param valueType the value type for the list entry
+         *
+         * @return the builder
+         */
+        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
+            return new Builder(name, valueType);
         }
-        MeasurementUnit measurementUnit = valueType.getMeasurementUnit();
-        if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
-            result.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
+
+        public LogHandlerListAttributeDefinition build() {
+            if (xmlName == null) xmlName = name;
+            if (maxSize < 1) maxSize = Integer.MAX_VALUE;
+            if (propertyName == null) propertyName = name;
+            return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
-        final String[] alternatives = valueType.getAlternatives();
-        if (alternatives != null) {
-            for (final String alternative : alternatives) {
-                result.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
-            }
+
+        public Builder setPropertyName(final String propertyName) {
+            this.propertyName = propertyName;
+            return this;
         }
-        final String[] requires = valueType.getRequires();
-        if (requires != null) {
-            for (final String required : requires) {
-                result.get(ModelDescriptionConstants.REQUIRES).add(required);
-            }
-        }
-        final ParameterValidator validator = valueType.getValidator();
-        if (validator instanceof MinMaxValidator) {
-            MinMaxValidator minMax = (MinMaxValidator) validator;
-            Long min = minMax.getMin();
-            if (min != null) {
-                switch (valueType.getType()) {
-                    case STRING:
-                    case LIST:
-                    case OBJECT:
-                        result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
-                        break;
-                    default:
-                        result.get(ModelDescriptionConstants.MIN).set(min);
-                }
-            }
-            Long max = minMax.getMax();
-            if (max != null) {
-                switch (valueType.getType()) {
-                    case STRING:
-                    case LIST:
-                    case OBJECT:
-                        result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
-                        break;
-                    default:
-                        result.get(ModelDescriptionConstants.MAX).set(max);
-                }
-            }
-        }
-        if (validator instanceof AllowedValuesValidator) {
-            AllowedValuesValidator avv = (AllowedValuesValidator) validator;
-            List<ModelNode> allowed = avv.getAllowedValues();
-            if (allowed != null) {
-                for (ModelNode ok : allowed) {
-                    result.get(ModelDescriptionConstants.ALLOWED).add(ok);
-                }
-            }
-        }
-        return result;
     }
 }

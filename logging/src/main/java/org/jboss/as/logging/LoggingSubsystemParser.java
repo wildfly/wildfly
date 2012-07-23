@@ -209,7 +209,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case CATEGORY: {
-                    CATEGORY.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -282,7 +281,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -348,7 +346,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
 
         final ModelNode node = new ModelNode();
-        node.get(OP).set(LoggerOperations.ROOT_LOGGER_ADD_OPERATION_NAME);
+        node.get(OP).set(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME);
         node.get(OP_ADDR).set(address).add(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -399,7 +397,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -475,7 +472,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -556,7 +552,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -631,7 +626,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -715,7 +709,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             required.remove(attribute);
             switch (attribute) {
                 case NAME: {
-                    NAME.parseAndSetParameter(value, node, reader);
                     name = value;
                     break;
                 }
@@ -895,7 +888,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (name == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
             }
-            node.get(PROPERTIES).add(name, new ModelNode(value));
+            node.get(PROPERTIES.getName()).add(name, new ModelNode(value));
             if (reader.nextTag() != END_ELEMENT) {
                 throw unexpectedElement(reader);
             }
@@ -1302,9 +1295,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     }
 
     private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(PROPERTIES)) {
+        if (node.hasDefined(PROPERTIES.getName())) {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
-            final List<Property> props = node.get(PROPERTIES).asPropertyList();
+            final List<Property> props = node.get(PROPERTIES.getName()).asPropertyList();
             for (Property prop : props) {
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
