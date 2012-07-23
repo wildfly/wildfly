@@ -866,7 +866,6 @@
             <socket-binding name="txn-status-manager" port="4713"/>
             <socket-binding name="messaging" port="5445" />
             <socket-binding name="messaging-throughput" port="5455"/>
-            <socket-binding name="osgi-http" interface="management" port="8090"/>
             <outbound-socket-binding name="mail-smtp">
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>

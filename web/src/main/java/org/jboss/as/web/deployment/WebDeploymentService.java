@@ -149,7 +149,11 @@ public class WebDeploymentService implements Service<StandardContext> {
 
         /**
          * Start the web context asynchronously.
-         * This would happen during normal WAR deployment
+         *
+         * This would happen during OSGi webapp deployment.
+         *
+         * No DUP can assume that all dependencies are available to make a blocking call
+         * instead it should call this method.
          */
         public synchronized void startAsync() {
             controller.setMode(Mode.ACTIVE);
@@ -157,8 +161,8 @@ public class WebDeploymentService implements Service<StandardContext> {
 
         /**
          * Start the web context synchronously.
-         * This would happen when an OSGi Web Application Bundle (WAB) transitions to {@link Bundle#ACTIVE}
-         * i.e. the WAB starts
+         *
+         * This would happen when the OSGi webapp gets explicitly started.
          */
         public synchronized boolean start(long timeout, TimeUnit unit) throws TimeoutException {
             boolean result = true;
@@ -171,8 +175,8 @@ public class WebDeploymentService implements Service<StandardContext> {
 
         /**
          * Stop the web context synchronously.
-         * This would happen when an OSGi Web Application Bundle (WAB) transitions to {@link Bundle#RESOLVED}
-         * i.e. the WAB stops
+         *
+         * This would happen when the OSGi webapp gets explicitly stops.
          */
         public synchronized boolean stop(long timeout, TimeUnit unit) {
             boolean result = true;

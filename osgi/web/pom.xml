@@ -45,6 +45,14 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-osgi-service</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.framework</groupId>
+            <artifactId>jbosgi-framework-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.enterprise</artifactId>
+        </dependency>
     </dependencies>
 
     <!-- Build -->

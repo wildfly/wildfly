@@ -31,6 +31,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiSubsystemExtension;
 import org.jboss.as.osgi.parser.OSGiExtension;
 import org.jboss.as.osgi.web.WebContextActivationProcessor.WebContextLifecycleInterceptor;
+import org.jboss.as.osgi.web.httpservice.HttpServiceFactoryService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -50,12 +51,12 @@ public class WebExtension implements OSGiSubsystemExtension {
     public void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                newControllers.add(WebContextLifecycleInterceptor.addService(serviceTarget));
+                ServiceTarget serviceTarget = context.getServiceTarget();
+                newControllers.add(WebContextLifecycleInterceptor.addService(serviceTarget, verificationHandler));
+                newControllers.add(HttpServiceFactoryService.addService(serviceTarget, verificationHandler));
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);

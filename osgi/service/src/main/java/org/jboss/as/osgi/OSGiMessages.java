@@ -23,6 +23,7 @@
 package org.jboss.as.osgi;
 
 import java.io.File;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;
@@ -33,6 +34,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.vfs.VirtualFile;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 
 /**
@@ -86,4 +88,19 @@ public interface OSGiMessages {
 
     @Message(id = 11962, value = "Illegal repository base location: %s")
     IllegalStateException illegalStateArtifactBaseLocation(File dir);
+
+    @Message(id = 11963, value = "Invalid servlet alias: %s")
+    String invalidServletAlias(String alias);
+
+    @Message(id = 11964, value = "Invalid resource name: %s")
+    String invalidResourceName(String name);
+
+    @Message(id = 11965, value = "HttpService mapping does not exist: %s")
+    String aliasMappingDoesNotExist(String alias);
+
+    @Message(id = 11966, value = "HttpService mapping '%s' not owned by bundle: %s")
+    String aliasMappingNotOwnedByBundle(String alias, Bundle bundle);
+
+    @Message(id = 11967, value = "HttpService mapping already exists: %s")
+    String aliasMappingAlreadyExists(String alias);
 }
