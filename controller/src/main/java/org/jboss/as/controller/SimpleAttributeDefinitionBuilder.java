@@ -149,6 +149,11 @@ public class SimpleAttributeDefinitionBuilder extends AbstractAttributeDefinitio
     public SimpleAttributeDefinitionBuilder setStorageRuntime() {
         return super.setStorageRuntime();
     }
+
+    @Override
+    public SimpleAttributeDefinitionBuilder setRestartAllServices() {
+        return super.setRestartAllServices();
+    }
     /*
     ---------------------------------------------------------------------------------
     end methods that are here only for binary compatibilty

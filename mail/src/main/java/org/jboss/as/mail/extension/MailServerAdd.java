@@ -1,6 +1,7 @@
 package org.jboss.as.mail.extension;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -25,10 +26,9 @@ public class MailServerAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF.validateAndSet(operation,model);
-        MailServerDefinition.SSL.validateAndSet(operation,model);
-        MailServerDefinition.USERNAME.validateAndSet(operation,model);
-        MailServerDefinition.PASSWORD.validateAndSet(operation,model);
+        for (AttributeDefinition def : MailServerWriteAttributeHandler.ATTRIBUTES){
+            def.validateAndSet(operation,model);
+        }
     }
 
 }

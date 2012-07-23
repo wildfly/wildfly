@@ -1,6 +1,14 @@
 package org.jboss.as.mail.extension;
 
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import javax.mail.Session;
+
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
@@ -8,14 +16,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import javax.mail.Session;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Service that provides a javax.mail.Session.
@@ -84,6 +84,7 @@ public class MailSessionService implements Service<Session> {
         props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
         if (server.isSslEnabled()) {
             props.setProperty(getPropKey(protocol, "ssl.enable"), "true");
+        }else if (server.isTlsEnabled()){
             props.setProperty(getPropKey(protocol, "starttls.enable"), "true");
         }
         if (server.getCredentials() != null) {

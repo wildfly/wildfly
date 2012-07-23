@@ -15,7 +15,8 @@ public enum Attribute {
     DEBUG(MailSubsystemModel.DEBUG),
     FROM(MailSubsystemModel.FROM),
     OUTBOUND_SOCKET_BINDING_REF(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF),
-    SSL(MailSubsystemModel.SSL);
+    SSL(MailSubsystemModel.SSL),
+    TLS(MailSubsystemModel.TLS);
 
     private final String name;
 

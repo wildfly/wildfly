@@ -1,5 +1,14 @@
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.JNDI_NAME;
+import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
+
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -20,16 +29,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-
-import java.util.List;
-
-import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
-import static org.jboss.as.mail.extension.MailSubsystemModel.JNDI_NAME;
-import static org.jboss.as.mail.extension.MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF;
-import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
-import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 /**
  * @author Tomaz Cerar
@@ -181,7 +180,8 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         final String socket = MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(operationContext,model).asString();
         final Credentials credentials = readCredentials(operationContext, model);
         boolean ssl = MailServerDefinition.SSL.resolveModelAttribute(operationContext, model).asBoolean();
-        return new MailSessionServer(socket, credentials, ssl);
+        boolean tls = MailServerDefinition.TLS.resolveModelAttribute(operationContext, model).asBoolean();
+        return new MailSessionServer(socket, credentials, ssl,tls);
     }
 
     private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
