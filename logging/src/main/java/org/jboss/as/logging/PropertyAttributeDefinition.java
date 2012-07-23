@@ -22,6 +22,9 @@
 
 package org.jboss.as.logging;
 
+import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ParameterCorrector;
@@ -41,8 +44,11 @@ public class PropertyAttributeDefinition extends SimpleAttributeDefinition imple
     private final ModelNodeResolver<String> resolver;
     private final String propertyName;
 
-    public PropertyAttributeDefinition(final String name, final String xmlName, final String propertyName, final ModelNodeResolver<String> resolver, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit, final ParameterCorrector corrector, final ParameterValidator validator, final boolean validateNull, String[] alternatives, String[] requires, Flag... flags) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, flags);
+    public PropertyAttributeDefinition(final String name, final String xmlName, final String propertyName, final ModelNodeResolver<String> resolver, final ModelNode defaultValue, final ModelType type,
+                                       final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit, final ParameterCorrector corrector,
+                                       final ParameterValidator validator, final boolean validateNull, final String[] alternatives, final String[] requires,
+                                       final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData, final Flag... flags) {
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, flags);
         this.propertyName = propertyName;
         this.resolver = resolver;
     }
@@ -104,5 +110,57 @@ public class PropertyAttributeDefinition extends SimpleAttributeDefinition imple
     @Override
     public String toString() {
         return String.format("%s{propertyName=%s,attributeName=%s}", getClass().getName(), propertyName, getName());
+    }
+
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, PropertyAttributeDefinition> {
+
+        private ModelNodeResolver<String> resolver;
+        private String propertyName;
+
+        Builder(final String name, final ModelType type) {
+            super(name, type);
+        }
+
+        /**
+         * Creates a builder for {@link PropertyAttributeDefinition}.
+         *
+         * @param name the name of the attribute
+         * @param type the attribute type
+         *
+         * @return a builder
+         */
+        public static Builder of(final String name, final ModelType type) {
+            return new Builder(name, type);
+        }
+
+        /**
+         * Creates a builder for {@link PropertyAttributeDefinition}.
+         *
+         * @param name      the name of the attribute
+         * @param type      the attribute type
+         * @param allowNull {@code true} if {@code null} is allowed, otherwise {@code false}
+         *
+         * @return a builder
+         */
+        public static Builder of(final String name, final ModelType type, final boolean allowNull) {
+            return new Builder(name, type).setAllowNull(allowNull);
+        }
+
+        public PropertyAttributeDefinition build() {
+            if (xmlName == null) xmlName = name;
+            if (propertyName == null) propertyName = name;
+            return new PropertyAttributeDefinition(name, xmlName, propertyName, resolver, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+        }
+
+        public Builder setPropertyName(final String propertyName) {
+            this.propertyName = propertyName;
+            return this;
+        }
+
+        public Builder setResolver(final ModelNodeResolver<String> resolver) {
+            this.resolver = resolver;
+            return this;
+        }
     }
 }

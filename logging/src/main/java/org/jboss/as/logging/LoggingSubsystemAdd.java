@@ -50,17 +50,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  */
 class LoggingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final LoggingSubsystemAdd ADD_INSTANCE = new LoggingSubsystemAdd();
+    static final LoggingSubsystemAdd INSTANCE = new LoggingSubsystemAdd();
+    private LoggingSubsystemAdd(){
+
+    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) {
-        model.get(CommonAttributes.LOGGER).setEmptyObject();
-        model.get(CommonAttributes.ASYNC_HANDLER).setEmptyObject();
-        model.get(CommonAttributes.CONSOLE_HANDLER).setEmptyObject();
-        model.get(CommonAttributes.CUSTOM_HANDLER).setEmptyObject();
-        model.get(CommonAttributes.FILE_HANDLER).setEmptyObject();
-        model.get(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER).setEmptyObject();
-        model.get(CommonAttributes.SIZE_ROTATING_FILE_HANDLER).setEmptyObject();
+        model.setEmptyObject();
     }
 
     @Override
@@ -77,7 +74,7 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         final LogContextConfiguration logContextConfiguration = ConfigurationPersistence.getOrCreateConfigurationPersistence().getLogContextConfiguration();
         try {
             // root logger
-            if (!resource.hasChild(LoggingExtension.rootLoggerPath)) {
+            if (!resource.hasChild(LoggingExtension.ROOT_LOGGER_PATH)) {
                 LoggingLogger.ROOT_LOGGER.tracef("Removing the root logger configuration.");
                 logContextConfiguration.removeLoggerConfiguration(CommonAttributes.ROOT_LOGGER_NAME);
             }

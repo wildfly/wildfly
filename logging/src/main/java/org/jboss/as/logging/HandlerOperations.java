@@ -22,24 +22,16 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.logging.CommonAttributes.APPEND;
-import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.NAME;
-import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
-import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
-import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
-import static org.jboss.as.logging.CommonAttributes.SUFFIX;
-import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.LoggerOperations.ADD_HANDLER;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 
@@ -58,6 +50,7 @@ import org.jboss.as.logging.LoggingOperations.LoggingAddOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingRemoveOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingUpdateOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandler;
+import org.jboss.as.logging.resolvers.FilterResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.Logger;
@@ -67,11 +60,6 @@ import org.jboss.logmanager.config.HandlerConfiguration;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.logmanager.config.LoggerConfiguration;
 import org.jboss.logmanager.formatters.PatternFormatter;
-import org.jboss.logmanager.handlers.AsyncHandler;
-import org.jboss.logmanager.handlers.ConsoleHandler;
-import org.jboss.logmanager.handlers.FileHandler;
-import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
-import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -79,87 +67,9 @@ import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
  */
 final class HandlerOperations {
 
-    public static final String UPDATE_OPERATION_NAME = "update-properties";
-    public static final String CHANGE_LEVEL_OPERATION_NAME = "change-log-level";
-    public static final String ADD_SUBHANDLER_OPERATION_NAME = "assign-subhandler";
-    public static final String REMOVE_SUBHANDLER_OPERATION_NAME = "unassign-subhandler";
-    public static final String CHANGE_FILE_OPERATION_NAME = "change-file";
-
     private static final AttachmentKey<Map<String, String>> DISABLED_HANDLERS_KEY = new AttachmentKey<Map<String, String>>();
     private static final Object HANDLER_LOCK = new Object();
 
-
-    /*
-     * Configurations
-     */
-    static final AttributeDefinition[] ASYNC_HANDLER_ATTRIBUTES = {
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER,
-            QUEUE_LENGTH,
-            OVERFLOW_ACTION,
-            SUBHANDLERS
-    };
-
-    static final AttributeDefinition[] CUSTOM_HANDLER_ADD_ATTRIBUTES = {
-            CLASS,
-            MODULE,
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER
-            // TODO (jrp) consider adding PROPERTIES
-    };
-    static final AttributeDefinition[] CUSTOM_HANDLER_ATTRIBUTES = {
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER
-            // TODO (jrp) consider adding PROPERTIES
-    };
-
-    static final AttributeDefinition[] FILE_HANDLER_ATTRIBUTES = {
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER,
-            AUTOFLUSH,
-            APPEND,
-            FILE
-    };
-
-    static final AttributeDefinition[] PERIODIC_FILE_HANDLER_ATTRIBUTES = {
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER,
-            AUTOFLUSH,
-            APPEND,
-            FILE,
-            SUFFIX
-    };
-
-    static final AttributeDefinition[] ROTATE_FILE_HANDLER_ATTRIBUTES = {
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER,
-            AUTOFLUSH,
-            APPEND,
-            FILE,
-            MAX_BACKUP_INDEX,
-            ROTATE_SIZE
-    };
-
-    static final AttributeDefinition[] CONSOLE_HANDLER_ATTRIBUTES = {
-            LEVEL,
-            ENCODING,
-            FORMATTER,
-            FILTER,
-            AUTOFLUSH,
-            TARGET
-    };
 
     /**
      * A step handler for updating logging handler properties.
@@ -180,9 +90,6 @@ final class HandlerOperations {
             for (AttributeDefinition attribute : attributes) {
                 attribute.validateAndSet(operation, model);
             }
-            if (operation.hasDefined(PROPERTIES)) {
-                model.get(PROPERTIES).set(operation.get(PROPERTIES));
-            }
         }
 
         @Override
@@ -198,11 +105,6 @@ final class HandlerOperations {
                         context.restartRequired();
                     }
                 }
-                if (model.hasDefined(PROPERTIES)) {
-                    for (Property property : model.get(PROPERTIES).asPropertyList()) {
-                        configuration.setPropertyValueString(property.getName(), property.getValue().asString());
-                    }
-                }
             }
             performRuntime(context, configuration, name, model);
         }
@@ -212,22 +114,16 @@ final class HandlerOperations {
             final HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(name);
             if (configuration != null) {
                 if (attributes != null) {
+                    // Remove all properties from the operation, they will be added if there are any previously
+                    if (model.hasDefined(PROPERTIES.getName())) {
+                        for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
+                            configuration.removeProperty(property.getName());
+                        }
+                    }
                     for (AttributeDefinition attribute : attributes) {
                         handleProperty(attribute, context, originalModel, logContextConfiguration, configuration);
                         if (Logging.requiresRestart(attribute.getFlags())) {
                             context.restartRequired();
-                        }
-                    }
-                    // Remove all properties from the operation
-                    if (model.hasDefined(PROPERTIES)) {
-                        for (Property property : model.get(PROPERTIES).asPropertyList()) {
-                            configuration.removeProperty(property.getName());
-                        }
-                    }
-                    // Re-add properties from the original model
-                    if (originalModel.hasDefined(PROPERTIES)) {
-                        for (Property property : originalModel.get(PROPERTIES).asPropertyList()) {
-                            configuration.setPropertyValueString(property.getName(), property.getValue().asString());
                         }
                     }
                 }
@@ -258,19 +154,20 @@ final class HandlerOperations {
             this.attributes = attributes;
         }
 
-        protected HandlerAddOperationStepHandler(final Class<? extends Handler> type, final AttributeDefinition[] attributes, final String... constructionProperties) {
+        protected HandlerAddOperationStepHandler(final Class<? extends Handler> type, final AttributeDefinition[] attributes, final ConfigurationProperty<?>... constructionProperties) {
             this.type = type;
-            this.constructionProperties = constructionProperties;
             this.attributes = attributes;
+            final List<String> names = new ArrayList<String>();
+            for (ConfigurationProperty<?> prop : constructionProperties) {
+                names.add(prop.getPropertyName());
+            }
+            this.constructionProperties = names.toArray(new String[names.size()]);
         }
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             for (AttributeDefinition attribute : attributes) {
                 attribute.validateAndSet(operation, model);
-            }
-            if (operation.hasDefined(PROPERTIES)) {
-                model.get(PROPERTIES).set(operation.get(PROPERTIES));
             }
         }
 
@@ -296,14 +193,6 @@ final class HandlerOperations {
                 if (!skip)
                     handleProperty(attribute, context, model, logContextConfiguration, configuration);
             }
-            if (model.hasDefined(PROPERTIES)) {
-                for (Property property : model.get(PROPERTIES).asPropertyList()) {
-                    final String resolvedValue = property.getValue().asString();
-                    final String currentValue = configuration.getPropertyValueString(property.getName());
-                    if (!(resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue)))
-                        configuration.setPropertyValueString(property.getName(), property.getValue().asString());
-                }
-            }
         }
 
         @Override
@@ -326,7 +215,6 @@ final class HandlerOperations {
                 className = type.getName();
                 moduleName = null;
             }
-
             final HandlerConfiguration configuration;
             // Check for construction parameters
             if (constructionProperties == null) {
@@ -343,7 +231,7 @@ final class HandlerOperations {
      */
     public static class LogHandlerWriteAttributeHandler extends LoggingWriteAttributeHandler {
 
-        protected LogHandlerWriteAttributeHandler(final AttributeDefinition[] attributes) {
+        protected LogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
             super(attributes);
         }
 
@@ -362,7 +250,7 @@ final class HandlerOperations {
                     handleProperty(ENCODING, context, value, logContextConfiguration, configuration, false);
                 } else if (SUBHANDLERS.getName().equals(attributeName)) {
                     handleProperty(SUBHANDLERS, context, value, logContextConfiguration, configuration, false);
-                } else if (PROPERTIES.equals(attributeName)) {
+                } else if (PROPERTIES.getName().equals(attributeName)) {
                     for (Property property : value.asPropertyList()) {
                         configuration.setPropertyValueString(property.getName(), property.getValue().asString());
                     }
@@ -535,48 +423,6 @@ final class HandlerOperations {
     };
 
     /**
-     * Operation step handlers for {@link org.jboss.logmanager.handlers.AsyncHandler}.
-     */
-    public static final HandlerAddOperationStepHandler ADD_ASYNC_HANDLER = new HandlerAddOperationStepHandler(AsyncHandler.class, ASYNC_HANDLER_ATTRIBUTES, QUEUE_LENGTH.getPropertyName());
-    public static final HandlerUpdateOperationStepHandler UPDATE_ASYNC_PROPERTIES = new HandlerUpdateOperationStepHandler(ASYNC_HANDLER_ATTRIBUTES);
-    public static final LogHandlerWriteAttributeHandler ASYNC_WRITE_HANDLER = new LogHandlerWriteAttributeHandler(ASYNC_HANDLER_ATTRIBUTES);
-
-    /**
-     * Operation step handlers for {@link FileHandler}.
-     */
-    public static HandlerAddOperationStepHandler ADD_FILE_HANDLER = new HandlerAddOperationStepHandler(FileHandler.class, FILE_HANDLER_ATTRIBUTES, FILE.getPropertyName(), APPEND.getPropertyName());
-    public static HandlerUpdateOperationStepHandler UPDATE_FILE_HANDLER_PROPERTIES = new HandlerUpdateOperationStepHandler(FILE_HANDLER_ATTRIBUTES);
-    public static LogHandlerWriteAttributeHandler WRITE_FILE_HANDLER_ATTRIBUTES = new LogHandlerWriteAttributeHandler(FILE_HANDLER_ATTRIBUTES);
-
-    /**
-     * Operation step handlers for {@link PeriodicRotatingFileHandler}.
-     */
-    public static HandlerAddOperationStepHandler ADD_PERIODIC__ROTATING_FILE_HANDLER = new HandlerAddOperationStepHandler(PeriodicRotatingFileHandler.class, PERIODIC_FILE_HANDLER_ATTRIBUTES, FILE.getPropertyName(), APPEND.getPropertyName());
-    public static HandlerUpdateOperationStepHandler UPDATE_PERIODIC_ROTATING_FILE_HANDLER_PROPERTIES = new HandlerUpdateOperationStepHandler(PERIODIC_FILE_HANDLER_ATTRIBUTES);
-    public static LogHandlerWriteAttributeHandler WRITE_PERIODIC__ROTATING_FILE_HANDLER_ATTRIBUTES = new LogHandlerWriteAttributeHandler(PERIODIC_FILE_HANDLER_ATTRIBUTES);
-
-    /**
-     * Operation step handlers for {@link SizeRotatingFileHandler}.
-     */
-    public static HandlerAddOperationStepHandler ADD_SIZE_ROTATING_FILE_HANDLER = new HandlerAddOperationStepHandler(SizeRotatingFileHandler.class, ROTATE_FILE_HANDLER_ATTRIBUTES, FILE.getPropertyName(), APPEND.getPropertyName());
-    public static HandlerUpdateOperationStepHandler UPDATE_SIZE_ROTATING_FILE_HANDLER_PROPERTIES = new HandlerUpdateOperationStepHandler(ROTATE_FILE_HANDLER_ATTRIBUTES);
-    public static LogHandlerWriteAttributeHandler WRITE_SIZE_ROTATING_FILE_HANDLER_ATTRIBUTES = new LogHandlerWriteAttributeHandler(ROTATE_FILE_HANDLER_ATTRIBUTES);
-
-    /**
-     * Operation step handlers for {@link ConsoleHandler}
-     */
-    public static HandlerAddOperationStepHandler ADD_CONSOLE_HANDLER = new HandlerAddOperationStepHandler(ConsoleHandler.class, CONSOLE_HANDLER_ATTRIBUTES);
-    public static HandlerUpdateOperationStepHandler UPDATE_CONSOLE_PROPERTIES = new HandlerUpdateOperationStepHandler(CONSOLE_HANDLER_ATTRIBUTES);
-    public static LogHandlerWriteAttributeHandler CONSOLE_WRITE_ATTRIBUTES = new LogHandlerWriteAttributeHandler(CONSOLE_HANDLER_ATTRIBUTES);
-
-    /**
-     * Operation step handlers for custom handlers
-     */
-    public static HandlerAddOperationStepHandler ADD_CUSTOM_HANDLER = new HandlerAddOperationStepHandler(null, CUSTOM_HANDLER_ADD_ATTRIBUTES);
-    public static HandlerUpdateOperationStepHandler UPDATE_CUSTOM_PROPERTIES = new HandlerUpdateOperationStepHandler(CUSTOM_HANDLER_ATTRIBUTES);
-    public static LogHandlerWriteAttributeHandler CUSTOM_HANDLER_WRITE_ATTRIBUTES = new LogHandlerWriteAttributeHandler(CUSTOM_HANDLER_ATTRIBUTES);
-
-    /**
      * Handle updating the configuration.
      *
      * @param attribute               the attribute definition
@@ -624,7 +470,8 @@ final class HandlerOperations {
             fmtConfig.setPropertyValueString("pattern", resolvedValue);
             configuration.setFormatterName(formatterName);
         } else if (attribute.getName().equals(FILTER.getName())) {
-            final String resolvedValue = (resolveValue ? FILTER.resolvePropertyValue(context, model) : FILTER.resolver().resolveValue(context, model));
+            final ModelNode valueNode = (resolveValue ? FILTER.resolveModelAttribute(context, model) : model);
+            final String resolvedValue = FilterResolver.INSTANCE.resolveValue(context, valueNode);
             configuration.setFilter(resolvedValue);
         } else if (attribute.getName().equals(LEVEL.getName())) {
             final String resolvedValue = (resolveValue ? LEVEL.resolvePropertyValue(context, model) : LEVEL.resolver().resolveValue(context, model));
@@ -635,9 +482,17 @@ final class HandlerOperations {
                 throw createOperationFailure(LoggingMessages.MESSAGES.cannotAddHandlerToSelf(configuration.getName()));
             }
             configuration.setHandlerNames(resolvedValue);
+        } else if (attribute.getName().equals(NAME.getName())) {
+            // no-op just ignore the name attribute
+        } else if (attribute.getName().equals(PROPERTIES.getName())) {
+            if (model.hasDefined(PROPERTIES.getName())) {
+                for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
+                    configuration.setPropertyValueString(property.getName(), property.getValue().asString());
+                }
+            }
         } else {
-            if (attribute instanceof PropertyAttributeDefinition) {
-                ((PropertyAttributeDefinition) attribute).setPropertyValue(context, model, configuration);
+            if (attribute instanceof ConfigurationProperty<?>) {
+                ((ConfigurationProperty<?>) attribute).setPropertyValue(context, model, configuration);
             } else {
                 LoggingLogger.ROOT_LOGGER.invalidPropertyAttribute(attribute.getName());
             }
@@ -678,7 +533,8 @@ final class HandlerOperations {
                 result = false;
             }
         } else if (attribute.getName().equals(FILTER.getName())) {
-            final String resolvedValue = FILTER.resolvePropertyValue(context, model);
+            final ModelNode valueNode = FILTER.resolveModelAttribute(context, model);
+            final String resolvedValue = FilterResolver.INSTANCE.resolveValue(context, valueNode);
             final String currentValue = configuration.getFilter();
             result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
         } else if (attribute.getName().equals(LEVEL.getName())) {
@@ -689,6 +545,17 @@ final class HandlerOperations {
             final Collection<String> resolvedValue = SUBHANDLERS.resolvePropertyValue(context, model);
             final Collection<String> currentValue = configuration.getHandlerNames();
             result = (resolvedValue == null ? currentValue == null : resolvedValue.containsAll(currentValue));
+        } else if (attribute.getName().equals(PROPERTIES.getName())) {
+            result = true;
+            if (model.hasDefined(PROPERTIES.getName())) {
+                for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
+                    final String resolvedValue = property.getValue().asString();
+                    final String currentValue = configuration.getPropertyValueString(property.getName());
+                    if (!(resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue))) {
+                        return false;
+                    }
+                }
+            }
         } else {
             if (attribute instanceof PropertyAttributeDefinition) {
                 final PropertyAttributeDefinition propAttribute = ((PropertyAttributeDefinition) attribute);
