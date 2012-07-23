@@ -23,8 +23,24 @@
 package org.jboss.as.test.integration.ejb.entity.cmp;
 
 import javax.naming.InitialContext;
+
+import org.jboss.arquillian.container.test.api.Deployer;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Before;
+
 import static org.junit.Assert.fail;
 
 /**
@@ -36,6 +52,11 @@ public abstract class AbstractCmpTest {
 
     protected static void addDeploymentAssets(final JavaArchive jar) {
         jar.addPackage(TransactionWrappingSessionBean.class.getPackage());
+        jar.addAsServiceProvider(ServiceActivator.class, TableCleaner.class);
+        jar.addClass(TableCleaner.class);
+        jar.addClass(TableCleaner.CleanerService.class);
+        jar.addClass(TableCleaner.CleanerListener.class);
+        jar.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
     }
 
     public InitialContext getInitialContext() {
