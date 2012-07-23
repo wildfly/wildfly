@@ -30,6 +30,8 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -102,7 +104,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } else if (type.equals(LOOKUP)) {
             installLookup(context, name, model, verificationHandler, newControllers);
         } else {
-            throw new OperationFailedException(new ModelNode().set("Unknown binding type " + type));
+            throw NamingMessages.MESSAGES.unknownBindingType(type);
         }
     }
 
@@ -148,7 +150,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         try {
             module = Module.getBootModuleLoader().loadModule(moduleID);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not load module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotLoadModule(moduleID);
         }
 
         final ObjectFactory objectFactoryClassInstance;
@@ -159,13 +161,13 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             final Class<?> clazz = module.getClassLoader().loadClass(className);
             objectFactoryClassInstance = (ObjectFactory) clazz.newInstance();
         } catch (ClassNotFoundException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not load class " + className + " from module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotLoadClassFromModule(className, moduleID);
         } catch (InstantiationException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not instantiate instance of class " + className + " from module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotInstantiateClassInstanceFromModule(className, moduleID);
         } catch (IllegalAccessException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Could not instantiate instance of class " + className + " from module " + moduleID));
+            throw NamingMessages.MESSAGES.couldNotInstantiateClassInstanceFromModule(className, moduleID);
         } catch (ClassCastException e) {
-            throw new OperationFailedException(e, new ModelNode().set("Class " + className + " from module " + moduleID + " was not an instance of ObjectFactory"));
+            throw NamingMessages.MESSAGES.notAnInstanceOfObjectFactory(className, moduleID);
         } finally {
             SecurityActions.setContextClassLoader(cl);
         }
@@ -271,8 +273,14 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
             return Double.parseDouble(value);
         } else if (type.equals("boolean") || type.equals("java.lang.Boolean")) {
             return Boolean.parseBoolean(value);
+        } else if (type.equals(URL.class.getName())) {
+            try {
+                return new URL(value);
+            } catch (MalformedURLException e) {
+                throw NamingMessages.MESSAGES.unableToTransformURLBindingValue(value,e);
+            }
         } else {
-            throw new OperationFailedException(new ModelNode().set("Unknown primitive type " + type));
+            throw NamingMessages.MESSAGES.unsupportedSimpleBindingType(type);
         }
 
     }
@@ -293,7 +301,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         } else if (type.equals(LOOKUP)) {
             model.get(LOOKUP).set(operation.require(LOOKUP).asString());
         } else {
-            throw new OperationFailedException(new ModelNode().set("Unknown binding type " + type));
+            throw NamingMessages.MESSAGES.unknownBindingType(type);
         }
     }
 }
