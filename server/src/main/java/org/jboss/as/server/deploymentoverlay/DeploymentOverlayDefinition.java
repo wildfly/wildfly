@@ -3,6 +3,7 @@ package org.jboss.as.server.deploymentoverlay;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -20,7 +21,7 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
 
     private DeploymentOverlayDefinition() {
         super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_PATH,
-                DeploymentOverlayModel.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),
+                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),
                 DeploymentOverlayAdd.INSTANCE,
                 DeploymentOverlayRemove.INSTANCE);
     }

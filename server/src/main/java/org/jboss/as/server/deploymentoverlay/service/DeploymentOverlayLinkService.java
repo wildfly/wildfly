@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deploymentoverlay.service;
 
+import java.util.regex.Pattern;
+
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -40,12 +42,18 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
     private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<DeploymentOverlayService>();
     private final String deployment;
     private final DeploymentOverlayPriority priority;
-    private final boolean wildcard;
+    private final Pattern pattern;
+    private final boolean regex;
 
-    public DeploymentOverlayLinkService(final String deployment, final DeploymentOverlayPriority priority) {
+    public DeploymentOverlayLinkService(final String deployment, final boolean regex, final DeploymentOverlayPriority priority) {
         this.deployment = deployment;
         this.priority = priority;
-        this.wildcard = deployment.contains("*");
+        this.regex = regex;
+        if (regex) {
+            this.pattern = Pattern.compile(deployment);
+        } else {
+            this.pattern = null;
+        }
     }
 
     @Override
@@ -71,15 +79,19 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
         return deploymentOverlayServiceInjectedValue;
     }
 
-    public boolean isWildcard() {
-        return wildcard;
-    }
-
     public DeploymentOverlayPriority getPriority() {
         return priority;
     }
 
     public String getDeployment() {
         return deployment;
+    }
+
+    public Pattern getPattern() {
+        return pattern;
+    }
+
+    public boolean isRegex() {
+        return regex;
     }
 }
