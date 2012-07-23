@@ -53,6 +53,15 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition WORKER_TASK_MAX_THREADS = createIntAttribute(CommonAttributes.WORKER_TASK_MAX_THREADS, Attribute.WORKER_TASK_MAX_THREADS, 16);
     static final SimpleAttributeDefinition WORKER_WRITE_THREADS = createIntAttribute(CommonAttributes.WORKER_WRITE_THREADS, Attribute.WORKER_WRITE_THREADS, 1);
 
+    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
+            WORKER_READ_THREADS,
+            WORKER_TASK_CORE_THREADS,
+            WORKER_TASK_KEEPALIVE,
+            WORKER_TASK_LIMIT,
+            WORKER_TASK_MAX_THREADS,
+            WORKER_WRITE_THREADS
+    };
+
     private final ProcessType processType;
 
     public RemotingSubsystemRootResource(final ProcessType processType) {
@@ -65,12 +74,9 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        registerReadWriteIntAttribute(resourceRegistration, WORKER_READ_THREADS);
-        registerReadWriteIntAttribute(resourceRegistration, WORKER_TASK_CORE_THREADS);
-        registerReadWriteIntAttribute(resourceRegistration, WORKER_TASK_KEEPALIVE);
-        registerReadWriteIntAttribute(resourceRegistration, WORKER_TASK_LIMIT);
-        registerReadWriteIntAttribute(resourceRegistration, WORKER_TASK_MAX_THREADS);
-        registerReadWriteIntAttribute(resourceRegistration, WORKER_WRITE_THREADS);
+        for(final AttributeDefinition attribute : ATTRIBUTES) {
+            registerReadWriteIntAttribute(resourceRegistration, attribute);
+        }
     }
 
     private void registerReadWriteIntAttribute(ManagementResourceRegistration resourceRegistration, AttributeDefinition attr) {

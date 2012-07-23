@@ -243,7 +243,16 @@ public abstract class AttributeDefinition {
      *              this attribute's name
      * @throws OperationFailedException if the value is not valid
      */
-    public ModelNode resolveModelAttribute(OperationContext context, final ModelNode model) throws OperationFailedException {
+    public ModelNode resolveModelAttribute(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        return resolveModelAttribute(new ExpressionResolver() {
+            @Override
+            public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+                return context.resolveExpressions(node);
+            }
+        }, model);
+    }
+
+    public ModelNode resolveModelAttribute(final ExpressionResolver resolver, final ModelNode model) throws OperationFailedException {
         final ModelNode node = new ModelNode();
         if(model.has(name)) {
             node.set(model.get(name));
@@ -251,7 +260,7 @@ public abstract class AttributeDefinition {
         if (!node.isDefined() && defaultValue.isDefined()) {
             node.set(defaultValue);
         }
-        final ModelNode resolved = context.resolveExpressions(node);
+        final ModelNode resolved = resolver.resolveExpressions(node);
         validator.validateParameter(name, resolved);
         return resolved;
     }

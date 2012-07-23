@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ProcessType;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 
 import java.util.List;
@@ -33,8 +35,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * Add operation handler for the remoting subsystem.
@@ -48,21 +50,15 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
     static final RemotingSubsystemAdd SERVER = new RemotingSubsystemAdd(true);
 
     private final boolean server;
-
     private RemotingSubsystemAdd(final boolean server) {
         this.server = server;
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        // initialize the connectors
-        model.get(CONNECTOR);
-        RemotingSubsystemRootResource.WORKER_READ_THREADS.validateAndSet(operation, model);
-        RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.validateAndSet(operation, model);
-        RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.validateAndSet(operation, model);
-        RemotingSubsystemRootResource.WORKER_TASK_LIMIT.validateAndSet(operation, model);
-        RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.validateAndSet(operation, model);
-        RemotingSubsystemRootResource.WORKER_WRITE_THREADS.validateAndSet(operation, model);
+        for(final AttributeDefinition attribute : RemotingSubsystemRootResource.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
     }
 
     @Override
@@ -80,20 +76,19 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         final String nodeName = SecurityActions.getSystemProperty(RemotingExtension.NODE_NAME_PROPERTY);
         final EndpointService endpointService = new EndpointService(nodeName, EndpointService.EndpointType.SUBSYSTEM);
         // todo configure option map
-        final OptionMap map = OptionMap.builder()
-                .set(Options.WORKER_READ_THREADS, RemotingSubsystemRootResource.WORKER_READ_THREADS.resolveModelAttribute(context, model).asInt())
-                .set(Options.WORKER_TASK_CORE_THREADS, RemotingSubsystemRootResource.WORKER_TASK_CORE_THREADS.resolveModelAttribute(context, model).asInt())
-                .set(Options.WORKER_TASK_KEEPALIVE, RemotingSubsystemRootResource.WORKER_TASK_KEEPALIVE.resolveModelAttribute(context, model).asInt())
-                .set(Options.WORKER_TASK_LIMIT, RemotingSubsystemRootResource.WORKER_TASK_LIMIT.resolveModelAttribute(context, model).asInt())
-                .set(Options.WORKER_TASK_MAX_THREADS, RemotingSubsystemRootResource.WORKER_TASK_MAX_THREADS.resolveModelAttribute(context, model).asInt())
-                .set(Options.WORKER_WRITE_THREADS, RemotingSubsystemRootResource.WORKER_WRITE_THREADS.resolveModelAttribute(context, model).asInt())
-                .set(Options.WORKER_READ_THREADS, RemotingSubsystemRootResource.WORKER_READ_THREADS.resolveModelAttribute(context, model).asInt())
-                .getMap();
+        final OptionMap map = EndpointConfigFactory.create(context, model);
         endpointService.setOptionMap(map);
 
-        ServiceBuilder<?> builder = context.getServiceTarget()
-                .addService(RemotingServices.SUBSYSTEM_ENDPOINT, endpointService);
-
+        // In case of a managed server the subsystem endpoint might already be installed {@see DomainServerCommunicationServices}
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        if(context.getProcessType() == ProcessType.DOMAIN_SERVER) {
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(RemotingServices.SUBSYSTEM_ENDPOINT);
+            if(controller != null) {
+                // if installed, just skip the rest
+                return;
+            }
+        }
+        final ServiceBuilder<?> builder = serviceTarget.addService(RemotingServices.SUBSYSTEM_ENDPOINT, endpointService);
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);
         }

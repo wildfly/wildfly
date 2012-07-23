@@ -122,7 +122,6 @@ class TransformerExpressionResolver implements ExpressionResolver {
     private static final int RESOLVED = 3;
     private static final int DEFAULT = 4;
 
-
     private static String replaceProperties(final String value, final Map<String, String> systemProperties, final Map<String, String> env) {
         final StringBuilder builder = new StringBuilder();
         final int len = value.length();

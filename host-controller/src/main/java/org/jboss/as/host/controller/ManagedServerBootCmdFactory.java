@@ -1,20 +1,23 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
- * as indicated by the @authors tag. All rights reserved.
- * See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
- * This copyrighted material is made available to anyone wishing to use,
- * modify, copy, or redistribute it subject to the terms and conditions
- * of the GNU Lesser General Public License, v. 2.1.
- * This program is distributed in the hope that it will be useful, but WITHOUT A
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
- * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
- * You should have received a copy of the GNU Lesser General Public License,
- * v.2.1 along with this distribution; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA  02110-1301, USA.
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.host.controller;
 
@@ -22,8 +25,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -69,6 +74,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     private final JvmElement jvmElement;
     private final HostControllerEnvironment environment;
     private final boolean managementSubsystemEndpoint;
+    private final ModelNode endpointConfig = new ModelNode();
 
     ManagedServerBootCmdFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment) {
         this.serverName = serverName;
@@ -98,12 +104,17 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
                 break;
             }
         }
-
-        boolean managementSubsystemEndpoint = false;
-        if (serverGroup.hasDefined(MANAGEMENT_SUBSYSTEM_ENDPOINT)) {
-            managementSubsystemEndpoint = serverGroup.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean();
+        // Use the subsystem endpoint
+        // TODO by default use the subsystem endpoint
+        this.managementSubsystemEndpoint = serverGroup.get(MANAGEMENT_SUBSYSTEM_ENDPOINT).asBoolean(false);
+        // Get the endpoint configuration
+        if(managementSubsystemEndpoint) {
+            final String profileName = serverGroup.get(PROFILE).asString();
+            final ModelNode profile = domainModel.get(PROFILE, profileName);
+            if(profile.hasDefined(SUBSYSTEM) && profile.hasDefined("remoting")) {
+                endpointConfig.set(profile.get(SUBSYSTEM, "remoting"));
+            }
         }
-        this.managementSubsystemEndpoint = managementSubsystemEndpoint;
 
         final String jvmName = serverVMName != null ? serverVMName : groupVMName;
         final ModelNode hostVM = jvmName != null ? hostModel.get(JVM, jvmName) : null;
@@ -116,8 +127,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
      * @return the process boot configuration
      */
     public ManagedServerBootConfiguration createConfiguration() {
-        return new ProcessedBootConfiguration(getServerLaunchCommand(),
-                 getServerLaunchEnvironment(), isManagementSubsystemEndpoint(), environment);
+        return this;
     }
 
     /** {@inheritDoc} */
@@ -190,6 +200,11 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     @Override
     public boolean isManagementSubsystemEndpoint() {
         return managementSubsystemEndpoint;
+    }
+
+    @Override
+    public ModelNode getSubsystemEndpointConfiguration() {
+        return endpointConfig;
     }
 
     private String getJavaCommand() {
@@ -281,42 +296,6 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
             path = new File(path, segment);
         }
         return path.getAbsolutePath();
-    }
-
-    static class ProcessedBootConfiguration implements ManagedServerBootConfiguration {
-
-        List<String> command;
-        Map<String, String> environment;
-        boolean managementSubsystemEndpoint;
-        HostControllerEnvironment hostControllerEnvironment;
-
-        ProcessedBootConfiguration(List<String> command, Map<String, String> environment,
-                                   boolean managementSubsystemEndpoint, HostControllerEnvironment hostControllerEnvironment) {
-            this.command = command;
-            this.environment = environment;
-            this.managementSubsystemEndpoint = managementSubsystemEndpoint;
-            this.hostControllerEnvironment = hostControllerEnvironment;
-        }
-
-        @Override
-        public Map<String, String> getServerLaunchEnvironment() {
-            return environment;
-        }
-
-        @Override
-        public List<String> getServerLaunchCommand() {
-            return command;
-        }
-
-        @Override
-        public HostControllerEnvironment getHostControllerEnvironment() {
-            return hostControllerEnvironment;
-        }
-
-        @Override
-        public boolean isManagementSubsystemEndpoint() {
-            return managementSubsystemEndpoint;
-        }
     }
 
 }
