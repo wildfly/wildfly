@@ -1,20 +1,5 @@
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
-import java.util.List;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -22,6 +7,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF;
 import static org.jboss.as.mail.extension.MailServerDefinition.PASSWORD;
 import static org.jboss.as.mail.extension.MailServerDefinition.SSL;
+import static org.jboss.as.mail.extension.MailServerDefinition.TLS;
 import static org.jboss.as.mail.extension.MailServerDefinition.USERNAME;
 import static org.jboss.as.mail.extension.MailSessionDefinition.DEBUG;
 import static org.jboss.as.mail.extension.MailSessionDefinition.FROM;
@@ -35,6 +21,21 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER;
 import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
+
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The default subsystem parser / writer
@@ -84,6 +85,7 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             writer.writeEmptyElement(Element.forName(elementName).getLocalName());
         }
         SSL.marshallAsAttribute(server, false, writer);
+        TLS.marshallAsAttribute(server, false, writer);
         OUTBOUND_SOCKET_BINDING_REF.marshallAsAttribute(server, false, writer);
         if (credentials) {
             writer.writeEmptyElement(Element.LOGIN.getLocalName());
@@ -109,7 +111,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case MAIL_1_0: {
+                case MAIL_1_0:
+                case MAIL_1_1:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case MAIL_SESSION: {
@@ -159,7 +162,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         list.add(operation);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case MAIL_1_0: {
+                case MAIL_1_0:
+                case MAIL_1_1:{
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SMTP_SERVER: {
@@ -207,6 +211,8 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
             }
             if (attr == Attribute.SSL) {
                 SSL.parseAndSetParameter(value, operation, reader);
+            }else if (attr == Attribute.TLS){
+                TLS.parseAndSetParameter(value, operation, reader);
             }
         }
         if (socketBindingRef == null) {

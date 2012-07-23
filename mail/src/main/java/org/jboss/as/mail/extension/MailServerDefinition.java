@@ -38,6 +38,13 @@ public class MailServerDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
+    protected static final SimpleAttributeDefinition TLS =
+            new SimpleAttributeDefinitionBuilder(MailSubsystemModel.TLS, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
     protected static final SimpleAttributeDefinition USERNAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.USER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)

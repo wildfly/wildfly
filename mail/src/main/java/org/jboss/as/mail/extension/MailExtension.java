@@ -1,7 +1,14 @@
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER_PATH;
+import static org.jboss.as.mail.extension.MailSubsystemModel.TLS;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -10,8 +17,12 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 
 /**
@@ -35,11 +46,12 @@ public class MailExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_0.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_1.getUriString(), parser);
     }
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
 
@@ -60,6 +72,34 @@ public class MailExtension implements Extension {
         // /subsystem=mail/mail-session=java:/Mail/server=smtp
         session.registerSubModel(MailServerDefinition.INSTANCE_SMTP);
         subsystem.registerXMLElementWriter(parser);
+        TransformersSubRegistration serverTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+            @Override
+            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
+                for (Property p : model.get(MAIL_SESSION_PATH.getKey()).asPropertyList()) {
+                    for (Property server : p.getValue().get(MailSubsystemModel.SERVER_TYPE).asPropertyList()) {
+                        ModelNode serverModel = server.getValue();
+                        if (serverModel.has(TLS)) {
+                            serverModel.remove(TLS);
+                        }
+                        model.get(MailSubsystemModel.MAIL_SESSION,p.getName(),MailSubsystemModel.SERVER_TYPE,server.getName()).set(serverModel);
+                    }
+                }
+
+                return model;
+            }
+        })
+                .registerSubResource(MAIL_SESSION_PATH).registerSubResource(SMTP_SERVER_PATH);
+        serverTransformers.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
+            @Override
+            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
+                if (operation.has(TLS)) {
+                    operation.remove(TLS);
+                }
+                return operation;
+            }
+        });
+
+
     }
 
 }

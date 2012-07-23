@@ -1,6 +1,8 @@
 package org.jboss.as.mail.extension;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -24,28 +26,28 @@ public class MailSessionDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition JNDI_NAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.JNDI_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setXmlName(MailSubsystemModel.JNDI_NAME)
                     .setRestartAllServices()
                     .build();
     protected static final SimpleAttributeDefinition FROM =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.FROM, ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setDefaultValue(null)
-                    .setXmlName(MailSubsystemModel.FROM)
                     .setRestartAllServices()
+                    .setAllowExpression(true)
                     .setAllowNull(true)
                     .build();
     protected static final SimpleAttributeDefinition DEBUG =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.DEBUG, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
-                    .setXmlName(MailSubsystemModel.DEBUG)
                     .setDefaultValue(new ModelNode(false))
                     .setRestartAllServices()
                     .build();
 
+    private static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
+
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        MailSessionWriteAttributeHandler.INSTANCE.registerAttributes(rootResourceRegistration);
+        for (AttributeDefinition attr : ATTRIBUTES) {
+            rootResourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
+        }
     }
 
 

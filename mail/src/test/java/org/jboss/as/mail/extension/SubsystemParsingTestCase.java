@@ -1,6 +1,18 @@
 package org.jboss.as.mail.extension;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.io.IOException;
+import java.util.List;
+
 import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -11,37 +23,11 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
 public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
-    private String SUBSYSTEM_XML =
-            " <subsystem xmlns=\"urn:jboss:domain:mail:1.0\">\n" +
-                    "            <mail-session jndi-name=\"java:/Mail\" from=\"tomaz.cerar@gmail.com\" >\n" +
-                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\" ssl=\"true\">\n" +
-                    "                       <login name=\"nobody\" password=\"pass\"/>\n" +
-                    "                </smtp-server>\n" +
-                    "                <pop3-server outbound-socket-binding-ref=\"mail-pop3\"/>\n" +
-                    "                <imap-server outbound-socket-binding-ref=\"mail-imap\">\n" +
-                    "                    <login name=\"nobody\" password=\"pass\"/>\n" +
-                    "                </imap-server>\n" +
-                    "           </mail-session>\n" +
-                    "            <mail-session debug=\"true\" jndi-name=\"java:jboss/mail/Default\" >\n" +
-                    "                <smtp-server outbound-socket-binding-ref=\"mail-smtp\"/>\n" +
-                    "            </mail-session>\n" +
-                    "        </subsystem>";
+
     private static final Logger log = Logger.getLogger(SubsystemParsingTestCase.class);
 
     public SubsystemParsingTestCase() {
@@ -54,7 +40,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testParseSubsystem() throws Exception {
         //Parse the subsystem xml into operations
-        List<ModelNode> operations = super.parse(SUBSYSTEM_XML);
+        List<ModelNode> operations = super.parse(getSubsystemXml());
 
         ///Check that we have the expected number of operations
         log.info("operations: " + operations);
@@ -72,13 +58,19 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Override
+    protected void standardSubsystemTest(String configId, boolean compareXml) throws Exception {
+        super.standardSubsystemTest(configId, false);
+    }
+
+    @Override
     protected String getSubsystemXml() throws IOException {
-        return SUBSYSTEM_XML;
+        return readResource("subsystem_1_0.xml");
     }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return new Initializer();
     }
+
 
     private class Initializer extends AdditionalInitialization {
         @Override

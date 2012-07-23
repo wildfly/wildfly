@@ -21,6 +21,7 @@ public interface MailSubsystemModel {
     String DEBUG = "debug";
     String OUTBOUND_SOCKET_BINDING_REF = "outbound-socket-binding-ref";
     String SSL = "ssl";
+    String TLS = "tls";
     String FROM = "from";
     String POP3 = "pop3";
     String SMTP = "smtp";
