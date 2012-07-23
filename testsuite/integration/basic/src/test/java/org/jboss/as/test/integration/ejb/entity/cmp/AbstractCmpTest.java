@@ -52,11 +52,7 @@ public abstract class AbstractCmpTest {
 
     protected static void addDeploymentAssets(final JavaArchive jar) {
         jar.addPackage(TransactionWrappingSessionBean.class.getPackage());
-        jar.addAsServiceProvider(ServiceActivator.class, TableCleaner.class);
-        jar.addClass(TableCleaner.class);
-        jar.addClass(TableCleaner.CleanerService.class);
-        jar.addClass(TableCleaner.CleanerListener.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
+
     }
 
     public InitialContext getInitialContext() {

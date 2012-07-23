@@ -24,8 +24,11 @@ package org.jboss.as.test.integration.ejb.entity.cmp.relationship;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
+import org.jboss.as.test.integration.ejb.entity.cmp.TableCleaner;
+import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 
 /**
@@ -45,6 +48,12 @@ public abstract class AbstractRelationshipTest extends AbstractCmpTest {
         jar.addPackage(AbstractRelationshipTest.class.getPackage());
         jar.addAsManifestResource(AbstractRelationshipTest.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(AbstractRelationshipTest.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsServiceProvider(ServiceActivator.class, TableCleaner.class);
+        jar.addClass(TableCleaner.class);
+        jar.addClass(TableCleaner.CleanerService.class);
+        jar.addClass(TableCleaner.CleanerListener.class);
+        jar.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
+
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }
