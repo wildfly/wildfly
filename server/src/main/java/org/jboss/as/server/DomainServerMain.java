@@ -27,15 +27,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.PrintStream;
-import java.io.Serializable;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 
-import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.process.protocol.StreamUtils;
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.remoting.EndpointService;
-import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.domain.HostControllerClient;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.logmanager.Level;
@@ -53,15 +47,11 @@ import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.remoting3.RemotingOptions;
 import org.jboss.stdio.LoggingOutputStream;
 import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 import org.jboss.threads.AsyncFuture;
-import org.xnio.OptionMap;
 
 /**
  * The main entry point for domain-managed server instances.
@@ -163,48 +153,6 @@ public final class DomainServerMain {
         // Once the input stream is cut off, shut down
         System.exit(0);
         throw new IllegalStateException(); // not reached
-    }
-
-    private static void addCommunicationServices(final ServiceTarget serviceTarget, final String serverName, final String serverProcessName, final byte[] authKey,
-            final InetSocketAddress managementSocket, final boolean managementSubsystemEndpoint, final boolean isReconnect) {
-
-        final ServiceName endpointName = ManagementRemotingServices.MANAGEMENT_ENDPOINT;
-        ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME), EndpointService.EndpointType.MANAGEMENT, OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE), null, null);
-
-        // Install the communication services
-        final int port = managementSocket.getPort();
-        final String host = managementSocket.getAddress().getHostAddress();
-        HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey);
-        serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, service)
-                .addDependency(endpointName, Endpoint.class, service.getEndpointInjector())
-                .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getProcessStateServiceInjectedValue())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-    }
-
-    public static final class HostControllerCommunicationActivator implements ServiceActivator, Serializable {
-        private static final long serialVersionUID = -633960958861565102L;
-        private final InetSocketAddress managementSocket;
-        private final String serverName;
-        private final String serverProcessName;
-        private final byte[] authKey;
-        private final boolean managementSubsystemEndpoint;
-
-        public HostControllerCommunicationActivator(final InetSocketAddress managementSocket, final String serverName, final String serverProcessName, final byte[] authKey, final boolean managementSubsystemEndpoint) {
-            this.managementSocket = managementSocket;
-            this.serverName = serverName;
-            this.serverProcessName = serverProcessName;
-            this.authKey = authKey;
-            this.managementSubsystemEndpoint = managementSubsystemEndpoint;
-        }
-
-        @Override
-        public void activate(final ServiceActivatorContext serviceActivatorContext) {
-            final ServiceTarget serviceTarget = serviceActivatorContext.getServiceTarget();
-            // TODO - Correct the authKey propagation.
-            addCommunicationServices(serviceTarget, serverName, serverProcessName, authKey, managementSocket, managementSubsystemEndpoint, false);
-        }
     }
 
     static <T> T getRequiredService(final ServiceContainer container, final ServiceName serviceName, Class<T> type) {

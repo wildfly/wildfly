@@ -48,6 +48,7 @@ import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.server.DomainServerCommunicationServices;
 import org.jboss.as.server.ServerStartTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.marshalling.Marshaller;
@@ -525,6 +526,14 @@ class ManagedServer {
          * Get whether the native management remoting connector should use the endpoint set up by
          */
         boolean isManagementSubsystemEndpoint();
+
+        /**
+         * Get the subsystem endpoint configuration, in case we use the subsystem.
+         *
+         * @return the subsystem endpoint config
+         */
+        ModelNode getSubsystemEndpointConfiguration();
+
     }
 
     static enum InternalState {
@@ -609,8 +618,10 @@ class ManagedServer {
             // Get the standalone boot updates
             final List<ModelNode> bootUpdates = Collections.emptyList(); // bootConfiguration.getBootUpdates();
             final Map<String, String> launchProperties = parseLaunchProperties(bootConfiguration.getServerLaunchCommand());
+            final boolean useSubsystemEndpoint = bootConfiguration.isManagementSubsystemEndpoint();
+            final ModelNode endpointConfig = bootConfiguration.getSubsystemEndpointConfiguration();
             // Send std.in
-            final ServiceActivator hostControllerCommActivator = HostCommunicationServices.createServerCommunicationActivator(managementSocket, serverName, serverProcessName, authKey, bootConfiguration.isManagementSubsystemEndpoint());
+            final ServiceActivator hostControllerCommActivator = DomainServerCommunicationServices.create(endpointConfig, managementSocket, serverName, serverProcessName, authKey, useSubsystemEndpoint);
             final ServerStartTask startTask = new ServerStartTask(hostControllerName, serverName, 0, Collections.<ServiceActivator>singletonList(hostControllerCommActivator), bootUpdates, launchProperties);
             final Marshaller marshaller = MARSHALLER_FACTORY.createMarshaller(CONFIG);
             final OutputStream os = processControllerClient.sendStdin(serverProcessName);
