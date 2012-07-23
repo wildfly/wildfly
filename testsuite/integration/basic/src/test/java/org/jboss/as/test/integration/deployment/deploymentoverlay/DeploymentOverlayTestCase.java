@@ -109,7 +109,8 @@ public class DeploymentOverlayTestCase {
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_WILDCARD);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get(ModelDescriptionConstants.DEPLOYMENT).set("*.war");
+            op.get(ModelDescriptionConstants.DEPLOYMENT).set(".*.war");
+            op.get(ModelDescriptionConstants.REGULAR_EXPRESSION).set(true);
             op.get(ModelDescriptionConstants.DEPLOYMENT_OVERLAY).set(TEST_WILDCARD);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }

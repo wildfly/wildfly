@@ -5,6 +5,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.repository.ContentRepository;
@@ -29,7 +30,7 @@ public class ContentDefinition extends SimpleResourceDefinition {
 
     public ContentDefinition(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
         super(DeploymentOverlayModel.CONTENT_PATH,
-                DeploymentOverlayModel.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY + "." + ModelDescriptionConstants.CONTENT),
+                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.CONTENT),
                 new ContentAdd(contentRepository, remoteRepository),
                 ContentRemove.INSTANCE);
     }

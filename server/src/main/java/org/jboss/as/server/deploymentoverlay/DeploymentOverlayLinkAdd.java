@@ -43,11 +43,12 @@ public class DeploymentOverlayLinkAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
         final String deployment = DeploymentOverlayLinkDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
         final String deploymentOverlay = DeploymentOverlayLinkDefinition.DEPLOYMENT_OVERLAY.resolveModelAttribute(context, model).asString();
-        installServices(context, verificationHandler, newControllers, name, deployment, deploymentOverlay, priority);
+        final Boolean regularExpression = DeploymentOverlayLinkDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
+        installServices(context, verificationHandler, newControllers, name, deployment, deploymentOverlay, regularExpression, priority);
     }
 
-    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deployment, final String deploymentOverlay, final DeploymentOverlayPriority priority) {
-        final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(deployment, priority);
+    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deployment, final String deploymentOverlay, final boolean regularExpression, final DeploymentOverlayPriority priority) {
+        final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(deployment, regularExpression, priority);
 
         final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(name);
         ServiceBuilder<DeploymentOverlayLinkService> builder = context.getServiceTarget().addService(serviceName, service)

@@ -12,7 +12,6 @@ import org.jboss.msc.service.ServiceName;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
- *
  * Removes a link between a deployment overlay and a deployment
  *
  * @author Stuart Douglas
@@ -31,7 +30,8 @@ public class DeploymentOverlayLinkRemove extends AbstractRemoveStepHandler {
         final String name = address.getLastElement().getValue();
         final String deployment = DeploymentOverlayLinkDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
         final String deploymentOverlay = DeploymentOverlayLinkDefinition.DEPLOYMENT_OVERLAY.resolveModelAttribute(context, model).asString();
-        DeploymentOverlayLinkAdd.installServices(context, null, null, name, deployment, deploymentOverlay, priority);
+        final Boolean regularExpression = DeploymentOverlayLinkDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
+        DeploymentOverlayLinkAdd.installServices(context, null, null, name, deployment, deploymentOverlay, regularExpression, priority);
     }
 
     @Override
