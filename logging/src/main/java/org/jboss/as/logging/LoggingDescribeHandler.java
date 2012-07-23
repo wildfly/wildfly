@@ -27,7 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.logging.loggers.RootLoggerAdd;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -58,7 +58,7 @@ import static org.jboss.as.logging.CommonAttributes.PERIODIC_ROTATING_FILE_HANDL
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -75,14 +75,15 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
     static final LoggingDescribeHandler INSTANCE = new LoggingDescribeHandler();
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
         final ModelNode result = context.getResult();
         result.add(LoggingSubsystemAdd.createOperation(rootAddress.toModelNode()));
+
         if (model.hasDefined(ROOT_LOGGER)) {
-            final ModelNode add = Util.getEmptyOperation(RootLoggerAdd.OPERATION_NAME, rootAddress.append(LoggingExtension.rootLoggerPath).toModelNode());
-            final ModelNode rootLogger = model.get(ROOT_LOGGER, ROOT_LOGGER_NAME);
+            final ModelNode add = Util.getEmptyOperation(LoggerOperations.ROOT_LOGGER_ADD_OPERATION_NAME, rootAddress.append(LoggingExtension.rootLoggerPath).toModelNode());
+            final ModelNode rootLogger = model.get(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME);
             copy(LEVEL, rootLogger, add);
             copy(FILTER, rootLogger, add);
             copy(HANDLERS, rootLogger, add);
@@ -94,6 +95,7 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
                 copy(NAME, prop.getValue(), add);
                 copy(CATEGORY, prop.getValue(), add);
                 copy(USE_PARENT_HANDLERS, prop.getValue(), add);
+                copy(FILTER, prop.getValue(), add);
                 copy(HANDLERS, prop.getValue(), add);
                 copy(LEVEL, prop.getValue(), add);
                 result.add(add);
@@ -129,6 +131,8 @@ public class LoggingDescribeHandler implements OperationStepHandler, Description
                 result.add(defineSizeRotatingFileHandler(prop.getName(), prop.getValue(), rootAddress));
             }
         }
+
+        // Add the default handlers
         context.completeStep();
     }
 

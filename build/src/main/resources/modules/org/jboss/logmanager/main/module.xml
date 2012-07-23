@@ -27,5 +27,8 @@
         <!-- Insert resources here -->
     </resources>
 
-    <dependencies/>
+    <dependencies>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.as.logging" services="import"/>
+    </dependencies>
 </module>

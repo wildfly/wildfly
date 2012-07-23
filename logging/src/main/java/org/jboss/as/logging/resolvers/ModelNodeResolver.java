@@ -20,44 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.logging.validators;
+package org.jboss.as.logging.resolvers;
 
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
-import static org.jboss.as.logging.Logging.createOperationFailure;
-
-import java.text.SimpleDateFormat;
-
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class SuffixValidator extends ModelTypeValidator {
+public interface ModelNodeResolver<T> {
 
-    public SuffixValidator() {
-        this(false);
-    }
-
-    public SuffixValidator(final boolean nullable) {
-        super(ModelType.STRING, nullable);
-    }
-
-    @Override
-    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-        super.validateParameter(parameterName, value);
-        if (value.isDefined()) {
-            final String suffix = value.asString();
-            try {
-                new SimpleDateFormat(suffix);
-                if (suffix.contains("s") || suffix.contains("S")) {
-                    throw createOperationFailure(MESSAGES.invalidSuffix(suffix));
-                }
-            } catch (IllegalArgumentException e) {
-                throw createOperationFailure(MESSAGES.invalidSuffix(suffix));
-            }
-        }
-    }
+    /**
+     * Formats the attribute to the desired type.
+     *
+     * @param context the operation context
+     * @param value   the value to format
+     *
+     * @return the formatted value
+     *
+     * @throws OperationFailedException if an error occurs
+     */
+    T resolveValue(OperationContext context, ModelNode value) throws OperationFailedException;
 }

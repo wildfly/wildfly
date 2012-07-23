@@ -23,6 +23,7 @@
 package org.jboss.as.logging.validators;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.Logging.createOperationFailure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
         nodeValues = new ArrayList<ModelNode>(attributes.length);
         for (AttributeDefinition attribute : attributes) {
             allowedValues.put(attribute.getName(), attribute);
-            nodeValues.add(new ModelNode().set(attribute.getName()));
+            nodeValues.add(new ModelNode(attribute.getName()));
         }
     }
 
@@ -65,7 +66,7 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
                 if (allowedValues.containsKey(key)) {
                     allowedValues.get(key).getValidator().validateParameter(key, value.get(key));
                 } else {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidValueTypeKey(key, allowedValues.keySet())));
+                    throw createOperationFailure(MESSAGES.invalidValueTypeKey(key, allowedValues.keySet()));
                 }
             }
         }
@@ -82,6 +83,6 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
             if (attr.getType() != ModelType.OBJECT)
                 result.add(attr.getType());
         }
-        return result.toArray(new ModelType[]{});
+        return result.toArray(new ModelType[result.size()]);
     }
 }

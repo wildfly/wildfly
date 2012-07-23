@@ -75,7 +75,7 @@ import static org.jboss.as.logging.CommonAttributes.REPLACE;
 import static org.jboss.as.logging.CommonAttributes.REPLACEMENT;
 import static org.jboss.as.logging.CommonAttributes.REPLACE_ALL;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER;
-import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
+import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 import static org.jboss.as.logging.CommonAttributes.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
@@ -90,15 +90,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.logging.handlers.console.Target;
-import org.jboss.as.logging.loggers.RootLoggerAdd;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -140,7 +137,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final Set<String> handlerNames = new HashSet<String>();
         boolean gotRoot = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
+            final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
+            switch (namespace) {
                 case LOGGING_1_0:
                 case LOGGING_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
@@ -166,6 +164,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             break;
                         }
                         case CUSTOM_HANDLER: {
+                            if (namespace == Namespace.LOGGING_1_0)
+                                throw unexpectedElement(reader);
                             parseCustomHandlerElement(reader, address, list, handlerNames);
                             break;
                         }
@@ -348,8 +348,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
 
         final ModelNode node = new ModelNode();
-        node.get(OP).set(RootLoggerAdd.OPERATION_NAME);
-        node.get(OP_ADDR).set(address).add(ROOT_LOGGER, ROOT_LOGGER_NAME);
+        node.get(OP).set(LoggerOperations.ROOT_LOGGER_ADD_OPERATION_NAME);
+        node.get(OP_ADDR).set(address).add(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
@@ -895,7 +895,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             if (name == null) {
                 throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
             }
-            node.get(PROPERTIES).add(name, new ModelNode().set(value));
+            node.get(PROPERTIES).add(name, new ModelNode(value));
             if (reader.nextTag() != END_ELEMENT) {
                 throw unexpectedElement(reader);
             }
@@ -917,7 +917,6 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     switch (element) {
                         case HANDLER: {
                             node.add(readStringAttributeElement(reader, "name"));
-                            // HANDLER.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader.getLocation());
                             break;
                         }
                         default:
@@ -1039,6 +1038,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
+
         if (node.hasDefined(ASYNC_HANDLER)) {
             final ModelNode handlers = node.get(ASYNC_HANDLER);
 
@@ -1117,7 +1117,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             }
         }
         if (node.hasDefined(ROOT_LOGGER)) {
-            writeRootLogger(writer, node.get(ROOT_LOGGER, ROOT_LOGGER_NAME));
+            writeRootLogger(writer, node.get(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME));
         }
         writer.writeEndElement();
     }

@@ -22,9 +22,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.HashMap;
@@ -34,8 +32,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -45,7 +41,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
@@ -64,27 +59,25 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
     @BeforeClass
     public static void setupLoggingDir() {
-        logDir = new File("target/logs");
-        logDir.mkdirs();
-        for (String name : logDir.list()) {
-            new File(logDir, name).delete();
+        logDir = LoggingTestEnvironment.get().getLogDir();
+        for (File file : logDir.listFiles()) {
+            file.delete();
         }
-        System.setProperty("jboss.server.log.dir", logDir.getAbsolutePath());
     }
 
     @Test
     public void testChangeRootLogLevel() throws Exception {
 
-        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
+        KernelServices kernelServices = installInController(LoggingTestEnvironment.get(), readResource("/operations.xml"));
 
-        // add new file loger so we can track logged messages
-        File logFile = new File(logDir, "test-fh.log");
+        // add new file logger so we can track logged messages
+        File logFile = createLogFile();
         if (logFile.exists()) assertTrue(logFile.delete());
         addFileHandler(kernelServices, "test-logger", "TRACE", logFile, true);
 
         Level[] levels = new Logger.Level[] {Level.ERROR, Level.WARN,
-            Level.INFO, Level.DEBUG, Level.TRACE};
-        Map<Level, Integer> levelOrd = new HashMap<Level,Integer>();
+                Level.INFO, Level.DEBUG, Level.TRACE};
+        Map<Level, Integer> levelOrd = new HashMap<Level, Integer>();
         levelOrd.put(Level.FATAL, 0);
         levelOrd.put(Level.ERROR, 1);
         levelOrd.put(Level.WARN, 2);
@@ -93,7 +86,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         levelOrd.put(Level.TRACE, 5);
 
         // log messages on all levels with different root logger level settings
-        for(Level level : levels) {
+        for (Level level : levels) {
             // change root log level
             ModelNode op = createOpNode("subsystem=logging/root-logger=ROOT", "change-root-log-level");
             op.get("level").set(level.name());
@@ -115,8 +108,8 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         boolean[][] logFound = new boolean[levelOrd.size()][levelOrd.size()];
 
         List<String> logLines = FileUtils.readLines(logFile);
-        for(String line : logLines) {
-            if (! line.contains("RootLoggerTestCaseTST")) continue; // not our log
+        for (String line : logLines) {
+            if (!line.contains("RootLoggerTestCaseTST")) continue; // not our log
             String[] lWords = line.split(" +");
             try {
                 Level lineLogLevel = Level.valueOf(lWords[1]);
@@ -129,9 +122,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
                 throw new Exception("Unexpected log:" + line);
             }
         }
-        for(Level level : levels) {
+        for (Level level : levels) {
             int rl = levelOrd.get(level);
-            for(int ll = 0; ll <= rl; ll++) assertTrue(logFound[ll][rl]);
+            for (int ll = 0; ll <= rl; ll++) assertTrue(logFound[ll][rl]);
         }
 
     }
@@ -140,10 +133,10 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     @Ignore("AS7-2385")
     public void testSetRootLogger() throws Exception {
 
-        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
+        KernelServices kernelServices = installInController(LoggingTestEnvironment.get(), readResource("/operations.xml"));
 
-        // add new file loger so we can test root logger change
-        File logFile = new File(logDir, "test-fh.log");
+        // add new file logger so we can test root logger change
+        File logFile = createLogFile();
         if (logFile.exists()) assertTrue(logFile.delete());
         addFileHandler(kernelServices, "test-logger", "TRACE", logFile, false);
 
@@ -156,7 +149,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         // set new root logger
         op = createOpNode("subsystem=logging", "set-root-logger");
         op.get("level").set(rootLogger.get("level"));
-        for(String handler : handlers) op.get("handlers").add(handler);
+        for (String handler : handlers) op.get("handlers").add(handler);
         op.get("handlers").add("test-logger");
         kernelServices.executeOperation(op);
 
@@ -184,9 +177,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testAddRemoveFileHandler() throws Exception {
-        KernelServices kernelServices = installInController(new LoggingAdditionalInitialization(), readResource("/operations.xml"));
+        KernelServices kernelServices = installInController(LoggingTestEnvironment.get(), readResource("/operations.xml"));
 
-        File logFile = new File(logDir, "test-fh.log");
+        File logFile = createLogFile();
         if (logFile.exists()) assertTrue(logFile.delete());
 
         // add file handler
@@ -243,7 +236,6 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     }
 
 
-
     private void addFileHandler(KernelServices kernelServices, String name, String level, File file, boolean assign) throws Exception {
 
         // add file handler
@@ -281,7 +273,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         // set address
         ModelNode list = op.get("address").setEmptyList();
         if (address != null) {
-            String [] pathSegments = address.split("/");
+            String[] pathSegments = address.split("/");
             for (String segment : pathSegments) {
                 String[] elements = segment.split("=");
                 list.add(elements[0], elements[1]);
@@ -297,17 +289,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         return ret;
     }
 
-    private static class LoggingAdditionalInitialization extends AdditionalInitialization {
-
-        @Override
-        protected ControllerInitializer createControllerInitializer() {
-            return new ControllerInitializer() {
-                {
-                    addPath("jboss.server.log.dir", new File("target/logs").getAbsolutePath(), null);
-                }
-            };
-        }
-
+    private static File createLogFile() {
+        return new File(logDir, "test-fh.log");
     }
-
 }

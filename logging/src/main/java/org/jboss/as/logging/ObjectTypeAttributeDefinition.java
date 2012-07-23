@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,13 +33,13 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ParameterCorrector;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.as.logging.validators.ObjectTypeValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -49,12 +49,12 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
+public class ObjectTypeAttributeDefinition extends PropertyAttributeDefinition {
     private final AttributeDefinition[] valueTypes;
     private final String suffix;
 
-    private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), false, alternatives, requires, flags);
+    ObjectTypeAttributeDefinition(final String name, final String xmlName, final String propertyName, final String suffix, final ModelNodeResolver<String> resolver, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, propertyName, resolver, null, ModelType.OBJECT, allowNull, false, null, corrector, new ObjectTypeValidator(allowNull, valueTypes), false, alternatives, requires, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";
@@ -176,67 +176,5 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             }
         }
         return result;
-    }
-
-    public static class Builder {
-        private final String name;
-        private String suffix;
-        private final AttributeDefinition[] valueTypes;
-        private ParameterCorrector corrector;
-        private String xmlName;
-        private boolean allowNull;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
-
-        public Builder(final String name, final AttributeDefinition... valueTypes) {
-            this.name = name;
-            this.valueTypes = valueTypes;
-            this.allowNull = true;
-        }
-
-        public static Builder of(final String name, final AttributeDefinition... valueTypes) {
-            return new Builder(name, valueTypes);
-        }
-
-        public ObjectTypeAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
-            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, corrector, alternatives, requires, flags);
-        }
-
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
-        }
-
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setCorrector(final ParameterCorrector corrector) {
-            this.corrector = corrector;
-            return this;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
-        public Builder setSuffix(final String suffix) {
-            this.suffix = suffix;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
-            return this;
-        }
     }
 }
