@@ -28,6 +28,7 @@ import static org.jboss.as.web.WebSubsystemServices.JBOSS_WEB;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -102,11 +103,12 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
         private ServiceRegistration registration;
 
-        public static ServiceController<LifecycleInterceptor> addService(ServiceTarget serviceTarget) {
+        public static ServiceController<LifecycleInterceptor> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
             WebContextLifecycleInterceptor service = new WebContextLifecycleInterceptor();
             ServiceBuilder<LifecycleInterceptor> builder = serviceTarget.addService(JBOSS_WEB_LIFECYCLE_INTERCEPTOR, service);
             builder.addDependency(SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
             builder.addDependency(FRAMEWORK_ACTIVE);
+            builder.addListener(verificationHandler);
             builder.setInitialMode(Mode.PASSIVE);
             return builder.install();
         }

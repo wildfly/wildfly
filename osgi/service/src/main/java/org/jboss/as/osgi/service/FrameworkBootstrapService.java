@@ -126,7 +126,6 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
-    private final InjectedValue<SocketBinding> httpServerPortBinding = new InjectedValue<SocketBinding>();
     private final ServiceVerificationHandler verificationHandler;
     private final OSGiRuntimeResource resource;
 
@@ -135,7 +134,6 @@ public class FrameworkBootstrapService implements Service<Void> {
         ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
-        builder.addDependency(JBOSS_BINDING_NAME.append("osgi-http"), SocketBinding.class, service.httpServerPortBinding);
         builder.addListener(Inheritance.ONCE, verificationHandler);
         return builder.install();
     }
@@ -199,10 +197,6 @@ public class FrameworkBootstrapService implements Service<Void> {
     }
 
     private void setupIntegrationProperties(StartContext context, Map<String, Object> props) {
-
-        // Configure the OSGi HttpService port
-        // [TODO] This will go away once the HTTP subsystem from AS implements the OSGi HttpService.
-        props.put("org.osgi.service.http.port", "" + httpServerPortBinding.getValue().getSocketAddress().getPort());
 
         // Setup the Framework's storage area.
         String storage = (String) props.get(Constants.FRAMEWORK_STORAGE);

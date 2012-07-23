@@ -35,7 +35,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
 import org.osgi.resource.Requirement;
-
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
@@ -104,4 +103,12 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11912, value = "Unbound system context: %s")
     void infoUnboundSystemContext(String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11913, value = "Register HttpService alias: %s")
+    void infoRegisterHttpServiceAlias(String alias);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11914, value = "Unregister HttpService alias: %s")
+    void infoUnregisterHttpServiceAlias(String alias);
 }

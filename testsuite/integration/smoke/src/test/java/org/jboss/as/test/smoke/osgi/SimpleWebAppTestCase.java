@@ -54,6 +54,7 @@ import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -69,11 +70,13 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class SimpleWebAppTestCase {
 
-    private static final String SIMPLE_WAR = "simple.war";
-    private static final String BUNDLE_A_WAR = "bundle-a.war";
-    private static final String BUNDLE_B1_WAR = "bundle-b1.war";
-    private static final String BUNDLE_B2_WAB = "bundle-b2.wab";
-    private static final String BUNDLE_C_WAB = "bundle-c.wab";
+    static final String SIMPLE_WAR = "simple.war";
+    static final String BUNDLE_A_WAR = "bundle-a.war";
+    static final String BUNDLE_B1_WAR = "bundle-b1.war";
+    static final String BUNDLE_B2_WAB = "bundle-b2.wab";
+    static final String BUNDLE_C_WAB = "bundle-c.wab";
+
+    static final Asset STRING_ASSET = new StringAsset("Hello from Resource");
 
     @ArquillianResource
     URL targetURL;
@@ -85,7 +88,7 @@ public class SimpleWebAppTestCase {
     public static Archive<?> getWarDeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
         archive.addClasses(SimpleServlet.class, Echo.class);
-        archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsWebResource(STRING_ASSET, "message.txt");
         return archive;
     }
 
@@ -93,7 +96,7 @@ public class SimpleWebAppTestCase {
     public static Archive<?> getWarStructureDeployment() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
         archive.addClasses(SimpleServlet.class, Echo.class);
-        archive.addAsWebResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsWebResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -113,7 +116,7 @@ public class SimpleWebAppTestCase {
     public static Archive<?> getOSGiStructureDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B1_WAR);
         archive.addClasses(SimpleServlet.class, Echo.class);
-        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -132,7 +135,7 @@ public class SimpleWebAppTestCase {
     public static Archive<?> getWebAppBundleDeploymentA() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B2_WAB);
         archive.addClasses(SimpleServlet.class, Echo.class);
-        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -151,7 +154,7 @@ public class SimpleWebAppTestCase {
     public static Archive<?> getWebAppBundleDeploymentB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
         archive.addClasses(SimpleServlet.class, Echo.class);
-        archive.addAsResource("osgi/webapp/message.txt", "message.txt");
+        archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {

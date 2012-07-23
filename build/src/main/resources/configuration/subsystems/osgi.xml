@@ -31,5 +31,4 @@
    <supplement name="osgi-only-example">
       <replacement placeholder="@@activation@@" attributeValue="eager"/>
    </supplement>
-   <socket-binding name="osgi-http" interface="management" port="8090"/>
 </config>
