@@ -23,6 +23,7 @@ package org.jboss.as.web.deployment;
 
 import static org.jboss.as.web.WebLogger.WEB_LOGGER;
 import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -40,12 +41,12 @@ import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -145,6 +146,13 @@ public class WebDeploymentService implements Service<StandardContext> {
 
         ContextActivator(ServiceController<StandardContext> controller) {
             this.controller = controller;
+        }
+
+        /**
+         * Provide access to the Servlet Context.
+         */
+        public StandardContext getContext() {
+            return controller.getValue();
         }
 
         /**

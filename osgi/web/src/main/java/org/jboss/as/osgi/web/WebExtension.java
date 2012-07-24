@@ -68,6 +68,7 @@ public class WebExtension implements OSGiSubsystemExtension {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAB_SERVLETCONTEXTFACTORY, new WabServletContextFactoryProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_DEPLOYMENT, new WebContextActivationProcessor());
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_SERVLETCONTEXT_SERVICE, new WabServletContextServiceProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
