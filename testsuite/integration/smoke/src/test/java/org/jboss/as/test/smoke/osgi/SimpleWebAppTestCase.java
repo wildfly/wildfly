@@ -48,7 +48,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.smoke.osgi.bundleA.SimpleServlet;
-import org.jboss.as.test.smoke.osgi.bundleA.TestServlet;
+import org.jboss.as.test.smoke.osgi.bundleA.TestServletContext;
 import org.jboss.as.test.smoke.osgi.bundleB.Echo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
@@ -61,6 +61,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Test webapp deployemnts as OSGi bundles
@@ -178,7 +179,7 @@ public class SimpleWebAppTestCase {
     @Deployment(name = BUNDLE_D_WAB, testable = false)
     public static Archive<?> getWebAppBundleDeploymentC() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_D_WAB);
-        archive.addClass(TestServlet.class);
+        archive.addClass(TestServletContext.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -187,8 +188,8 @@ public class SimpleWebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
-                builder.addImportPackages(BundleContext.class);
-                builder.addManifestHeader("Web-ContextPath",  "/test");
+                builder.addImportPackages(BundleContext.class, ServiceTracker.class);
+                builder.addManifestHeader("Web-ContextPath",  "/testcontext");
                 return builder.openStream();
             }
         });
@@ -278,9 +279,9 @@ public class SimpleWebAppTestCase {
 
     @Test
     @OperateOnDeployment(BUNDLE_D_WAB)
-    public void testBundleContextFromServlet() throws Exception {
-        String result = performCall("test", "test", "ignored");
-        Assert.assertEquals("Servlet hosted in: bundle-d.wab", result);
+    public void testServletContext() throws Exception {
+        String result = performCall("testcontext", "testservletcontext", "ignored");
+        Assert.assertEquals("ServletContext: bundle-d.wab|/testcontext", result);
     }
 
     private String performCall(String pattern, String param) throws Exception {
