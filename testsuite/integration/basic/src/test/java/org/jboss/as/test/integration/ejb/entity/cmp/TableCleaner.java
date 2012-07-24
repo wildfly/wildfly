@@ -28,6 +28,7 @@ import java.util.Properties;
 
 
 import org.jboss.logging.Logger;
+import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -50,8 +51,10 @@ public class TableCleaner implements ServiceActivator {
 
     @Override
     public void activate(ServiceActivatorContext serviceActivatorContext) throws ServiceRegistryException {
+        String deployment = ((ModuleClassLoader) getClass().getClassLoader()).getModule().getIdentifier().getName().replaceFirst("deployment.", "");
+        log.info("Activating cleaner for deployment: " + deployment);
         serviceActivatorContext.getServiceTarget().addService(ServiceName.of("cleaner-launcher-installer-thing"), new CleanerService())
-                .addDependency(ServiceName.parse("jboss.deployment.unit.\"cmp-relationship.jar\".jdbc.store-manager.start-barrier"))
+                .addDependency(ServiceName.parse("jboss.deployment.unit.\"" + deployment + "\".jdbc.store-manager.start-barrier"))
                 .install();
     }
 
