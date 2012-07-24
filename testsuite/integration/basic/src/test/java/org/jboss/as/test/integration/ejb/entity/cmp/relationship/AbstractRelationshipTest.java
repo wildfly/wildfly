@@ -48,11 +48,6 @@ public abstract class AbstractRelationshipTest extends AbstractCmpTest {
         jar.addPackage(AbstractRelationshipTest.class.getPackage());
         jar.addAsManifestResource(AbstractRelationshipTest.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(AbstractRelationshipTest.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
-        jar.addAsServiceProvider(ServiceActivator.class, TableCleaner.class);
-        jar.addClass(TableCleaner.class);
-        jar.addClass(TableCleaner.CleanerService.class);
-        jar.addClass(TableCleaner.CleanerListener.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: com.h2database.h2\n"), "MANIFEST.MF");
 
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
