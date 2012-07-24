@@ -381,4 +381,11 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 14625, value = "We have no transformer for subsystem: %s-%d.%d model transfer can break!")
     void transformerNotFound(String subsystemName, int major, int minor);
+
+    /**
+     * Logs a warning message indicating that an operation was interrupted before service stability was reached
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 14626, value = "Operation was interrupted before stability could be reached")
+    void interruptedWaitingStability();
 }
