@@ -679,6 +679,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     modelController.awaitContainerMonitor(true, 1);
                 }  catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    MGMT_OP_LOGGER.interruptedWaitingStability();
                 }
             }
         } finally {
