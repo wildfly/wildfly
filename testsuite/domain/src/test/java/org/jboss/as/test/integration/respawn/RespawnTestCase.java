@@ -55,6 +55,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xnio.IoUtils;
 
@@ -77,6 +78,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
+@Ignore // AST-5242 - Unstable
 public class RespawnTestCase {
 
     private static final int TIMEOUT = 120000;
