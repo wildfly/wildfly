@@ -302,8 +302,9 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         @Override
         public void run() {
             boolean interrupted = false;
+            ParallelBootOperationContext operationContext = null;
             try {
-                final OperationContext operationContext = new ParallelBootOperationContext(transactionControl, processState,
+                operationContext = new ParallelBootOperationContext(transactionControl, processState,
                         primaryContext, runtimeOps, controllingThread);
                 for (ParsedBootOp op : bootOperations) {
                     final OperationStepHandler osh = op.handler == null ? rootRegistration.getOperationHandler(op.address, op.operationName) : op.handler;
@@ -336,6 +337,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     }
                 } else {
                     transactionControl.operationCompleted(transactionControl.response);
+                }
+
+                if (operationContext != null) {
+                    operationContext.close();
                 }
 
                 if (interrupted) {
