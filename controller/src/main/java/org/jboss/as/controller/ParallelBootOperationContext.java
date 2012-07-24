@@ -58,6 +58,10 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         AbstractOperationContext.controllingThread.set(controllingThread);
     }
 
+    void close() {
+        AbstractOperationContext.controllingThread.remove();
+    }
+
     @Override
     public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         if (activeStep == null) {
