@@ -283,6 +283,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    void waitForRemovals() {
+        // nothing to do
+    }
+
+    @Override
     public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return primaryContext.resolveExpressions(node);
     }

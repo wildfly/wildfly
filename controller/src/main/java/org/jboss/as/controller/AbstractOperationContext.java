@@ -626,6 +626,8 @@ abstract class AbstractOperationContext implements OperationContext {
 
     abstract void releaseStepLocks(Step step);
 
+    abstract void waitForRemovals() throws InterruptedException;
+
     class Step {
         private final OperationStepHandler handler;
         final ModelNode response;
@@ -734,6 +736,7 @@ abstract class AbstractOperationContext implements OperationContext {
                             rollbackHandler.handleRollback(AbstractOperationContext.this, operation);
                         } finally {
                             SecurityActions.setThreadContextClassLoader(oldTccl);
+                            waitForRemovals();
                         }
                     }
                 } catch (Exception e) {
