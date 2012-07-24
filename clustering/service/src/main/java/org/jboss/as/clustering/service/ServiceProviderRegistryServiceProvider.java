@@ -24,6 +24,7 @@ package org.jboss.as.clustering.service;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.GroupMembershipNotifier;
+import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.ChannelDependentServiceProvider;
@@ -44,12 +45,16 @@ public class ServiceProviderRegistryServiceProvider implements ChannelDependentS
 
     @Override
     public ServiceController<?> install(ServiceTarget target, String cluster) {
+        final ServiceName name = this.getServiceName(cluster);
         @SuppressWarnings("rawtypes")
         final InjectedValue<Cache> cache = new InjectedValue<Cache>();
+        final InjectedValue<GroupRpcDispatcher> dispatcher = new InjectedValue<GroupRpcDispatcher>();
         final InjectedValue<GroupMembershipNotifier> notifier = new InjectedValue<GroupMembershipNotifier>();
-        return target.addService(this.getServiceName(cluster), new ServiceProviderRegistryService(cache, notifier))
+        final ServiceName serviceName = CoreGroupCommunicationService.getServiceName(cluster);
+        return target.addService(name, new ServiceProviderRegistryService(name, cache, dispatcher, notifier))
                 .addDependency(CacheService.getServiceName(cluster, null), Cache.class, cache)
-                .addDependency(CoreGroupCommunicationService.getServiceName(cluster), GroupMembershipNotifier.class, notifier)
+                .addDependency(serviceName, GroupRpcDispatcher.class, dispatcher)
+                .addDependency(serviceName, GroupMembershipNotifier.class, notifier)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
