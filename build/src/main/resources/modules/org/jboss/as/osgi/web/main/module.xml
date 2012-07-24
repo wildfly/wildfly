@@ -41,6 +41,7 @@
         <module name="org.jboss.osgi.deployment"/>
         <module name="org.jboss.osgi.framework"/>
         <module name="org.jboss.osgi.resolver"/>
+        <module name="org.jboss.modules"/>
         <module name="org.osgi.core"/>
         <module name="org.osgi.enterprise"/>
     </dependencies>

@@ -50,6 +50,7 @@ import org.jboss.osgi.deployment.interceptor.AbstractLifecycleInterceptor;
 import org.jboss.osgi.deployment.interceptor.InvocationContext;
 import org.jboss.osgi.deployment.interceptor.LifecycleInterceptor;
 import org.jboss.osgi.deployment.interceptor.LifecycleInterceptorException;
+import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.osgi.framework.Bundle;
@@ -60,17 +61,16 @@ import org.osgi.framework.ServiceRegistration;
  * Start/stop an OSGi webapp context according to bundle lifecycle changes.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 26-Jun-2012
  */
 public class WebContextActivationProcessor implements DeploymentUnitProcessor {
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
         if (activator != null && bundle != null) {
-
             // Start the context when the bundle will get started automatically
             Deployment deployment = bundle.adapt(Deployment.class);
             if (deployment.isAutoStart()) {
@@ -93,11 +93,6 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
     }
 
     public static class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implements Service<LifecycleInterceptor> {
-
-        // [TODO] move these to a better integration point
-        static final ServiceName SYSTEM_CONTEXT = ServiceName.of("jbosgi", "SystemContext");
-        static final ServiceName FRAMEWORK_ACTIVE = ServiceName.of("jbosgi", "framework", "ACTIVE");
-
         static final ServiceName JBOSS_WEB_LIFECYCLE_INTERCEPTOR = JBOSS_WEB.append("lifecycle-interceptor");
 
         private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
@@ -106,8 +101,8 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         public static ServiceController<LifecycleInterceptor> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
             WebContextLifecycleInterceptor service = new WebContextLifecycleInterceptor();
             ServiceBuilder<LifecycleInterceptor> builder = serviceTarget.addService(JBOSS_WEB_LIFECYCLE_INTERCEPTOR, service);
-            builder.addDependency(SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
-            builder.addDependency(FRAMEWORK_ACTIVE);
+            builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
+            builder.addDependency(Services.FRAMEWORK_ACTIVE);
             builder.addListener(verificationHandler);
             builder.setInitialMode(Mode.PASSIVE);
             return builder.install();
@@ -129,6 +124,12 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         public void invoke(int state, InvocationContext context) {
             XBundle bundle = (XBundle) context.getBundle();
             XBundleRevision brev = bundle.getBundleRevision();
+
+            WabServletContextFactory wscf = brev.getAttachment(WabServletContextFactory.class);
+            if (wscf != null) {
+                wscf.setBundleContext(bundle.getBundleContext());
+            }
+
             ContextActivator activator = brev.getAttachment(ContextActivator.class);
             if (activator != null) {
                 switch (state) {
