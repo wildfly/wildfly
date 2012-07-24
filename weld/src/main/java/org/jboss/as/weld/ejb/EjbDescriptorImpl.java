@@ -93,8 +93,8 @@ public class EjbDescriptorImpl<T> implements EjbDescriptor<T> {
                     Method m = index.getMethod(method.getMethodIdentifier());
                     if(m != null) {
                         removeMethods.add(m);
-                        break;
                     }
+                    c = c.getSuperclass();
                 }
             }
             this.removeMethods = Collections.unmodifiableSet(removeMethods);
