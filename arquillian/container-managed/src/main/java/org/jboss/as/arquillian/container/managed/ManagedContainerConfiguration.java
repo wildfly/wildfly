@@ -54,7 +54,7 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name",  "standalone.xml");
 
-    private boolean allowConnectingToRunningServer = false;
+    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty("allowConnectingToRunningServer", "false"));
 
     private boolean enableAssertions = true;
 
@@ -68,6 +68,10 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
         // if no javaHome is set use java.home of already running jvm
         if (javaHome == null || javaHome.isEmpty()) {
             javaHome = System.getProperty("java.home");
+        }
+        // if no jbossHome is set use jboss.home of already running jvm
+        if (jbossHome == null || jbossHome.isEmpty()) {
+            jbossHome = System.getProperty("jboss.home");
         }
     }
 
