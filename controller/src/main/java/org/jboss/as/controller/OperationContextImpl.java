@@ -143,17 +143,25 @@ final class OperationContextImpl extends AbstractOperationContext {
             MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
             // First wait until any removals we've initiated have begun processing, otherwise
             // the ContainerStateMonitor may not have gotten the notification causing it to untick
-            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-            synchronized (map) {
-                while (!map.isEmpty()) {
-                    map.wait();
-                }
-            }
+            waitForRemovals();
             ContainerStateMonitor.ContainerStateChangeReport changeReport = modelController.awaitContainerStateChangeReport(1);
             // If any services are missing, add a verification handler to see if we caused it
             if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
                 ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
                 addStep(new ModelNode(), new ModelNode(), PathAddress.EMPTY_ADDRESS, removalVerificationHandler, Stage.VERIFY);
+            }
+        }
+    }
+
+    @Override
+    protected void waitForRemovals() throws InterruptedException {
+        if (affectsRuntime && !cancelled) {
+            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
+            synchronized (map) {
+                while (!map.isEmpty() && !cancelled) {
+                    MGMT_OP_LOGGER.info(map);
+                    map.wait();
+                }
             }
         }
     }
@@ -661,7 +669,6 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     void releaseStepLocks(AbstractOperationContext.Step step) {
-
         try {
             if (this.lockStep == step) {
                 modelController.releaseLock();
