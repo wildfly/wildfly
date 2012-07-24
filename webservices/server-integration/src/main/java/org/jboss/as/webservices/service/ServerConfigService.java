@@ -35,7 +35,6 @@ import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -51,7 +50,6 @@ import org.jboss.wsf.spi.management.ServerConfig;
  */
 public final class ServerConfigService implements Service<ServerConfig> {
 
-    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private final AbstractServerConfig serverConfig;
 
     private ServerConfigService(final AbstractServerConfig serverConfig) {
@@ -84,7 +82,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig, final ServiceListener<Object> listener) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
-        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
+        builder.addDependency(DependencyType.OPTIONAL, WSServices.MBEAN_SERVICE, MBeanServer.class, serverConfig.getMBeanServerInjector());
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);

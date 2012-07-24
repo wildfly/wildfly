@@ -30,12 +30,10 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 
 /**

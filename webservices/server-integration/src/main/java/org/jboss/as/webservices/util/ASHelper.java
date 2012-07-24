@@ -46,8 +46,11 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.SecurityUtil;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.deployment.Endpoint;
 
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXRPC_ENDPOINTS_KEY;
@@ -292,4 +295,10 @@ public final class ASHelper {
         return service != null ? service.getValue() : null;
     }
 
+    public static String getDeploymentSecurityDomainName(final Deployment dep) {
+        JBossWebMetaData metadata = dep.getAttachment(JBossWebMetaData.class);
+        String metaDataSecurityDomain = metadata != null ? metadata.getSecurityDomain() : null;
+        return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY
+            : SecurityUtil.unprefixSecurityDomain(metaDataSecurityDomain.trim());
+    }
 }

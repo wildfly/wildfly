@@ -30,7 +30,6 @@ import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -48,7 +47,6 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
  */
 public final class EndpointRegistryService implements Service<EndpointRegistry> {
 
-    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private static final EndpointRegistryService INSTANCE = new EndpointRegistryService();
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
     private volatile EndpointRegistry registry;
@@ -82,7 +80,7 @@ public final class EndpointRegistryService implements Service<EndpointRegistry> 
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServiceListener<Object> listener) {
         final ServiceBuilder<EndpointRegistry> builder = serviceTarget.addService(WSServices.REGISTRY_SERVICE, INSTANCE);
-        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, INSTANCE.getMBeanServerInjector());
+        builder.addDependency(DependencyType.OPTIONAL, WSServices.MBEAN_SERVICE, MBeanServer.class, INSTANCE.getMBeanServerInjector());
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         return builder.install();
