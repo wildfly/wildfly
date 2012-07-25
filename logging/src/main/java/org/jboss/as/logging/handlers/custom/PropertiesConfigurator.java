@@ -22,7 +22,8 @@
 
 package org.jboss.as.logging.handlers.custom;
 
-import org.jboss.dmr.Property;
+import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -36,8 +37,9 @@ import java.util.TimeZone;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import static org.jboss.as.logging.LoggingLogger.ROOT_LOGGER;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import org.apache.log4j.Appender;
+import org.apache.log4j.AppenderSkeleton;
+import org.jboss.dmr.Property;
 
 /**
  * Date: 15.08.2011
@@ -52,6 +54,7 @@ class PropertiesConfigurator {
     private PropertiesConfigurator(final Handler handler) {
         this.handler = handler;
         methods = new HashMap<String, Method>();
+        org.apache.log4j.BasicConfigurator.configure();
     }
 
 
@@ -66,6 +69,12 @@ class PropertiesConfigurator {
         result.loadSetterMethods();
         for (Property property : properties) {
             result.setProperty(property);
+        }
+        if (result.isLog4jAppender()) {
+            final Appender appender = result.getAppender();
+            if (appender instanceof AppenderSkeleton) {
+                AppenderSkeleton.class.cast(appender).activateOptions();
+            }
         }
     }
 
@@ -82,7 +91,15 @@ class PropertiesConfigurator {
             if (methods.containsKey(setterMethod)) {
                 final Method method = methods.get(setterMethod);
                 final Object arg = getArgument(method, property.getName(), property.getValue().asString());
-                method.invoke(handler, arg);
+                if (isLog4jAppender()) {
+                    final Appender appender = getAppender();
+                    if (appender == null) {
+                        throw MESSAGES.handlerClosed(property.getName(), property.getValue().asString());
+                    }
+                    method.invoke(appender, arg);
+                } else {
+                    method.invoke(handler, arg);
+                }
                 ROOT_LOGGER.debugf("Set property '%s' with value of '%s' on handler '%s'.", property.getName(), property.getValue().asString(), handler.getClass().getName());
             } else {
                 ROOT_LOGGER.unknownProperty(property.getName(), handler.getClass().getName());
@@ -124,7 +141,7 @@ class PropertiesConfigurator {
         } else if (paramType == double.class || paramType == Double.class) {
             argument = Double.valueOf(propValue);
         } else if (paramType == char.class || paramType == Character.class) {
-            argument = Character.valueOf(propValue.length() > 0 ? propValue.charAt(0) : 0);
+            argument = propValue.length() > 0 ? propValue.charAt(0) : 0;
         } else if (paramType == BigDecimal.class) {
             argument = new BigDecimal(propValue);
         } else if (paramType == File.class) {
@@ -147,7 +164,16 @@ class PropertiesConfigurator {
      * Loads all the setter methods found in the handler class.
      */
     private void loadSetterMethods() {
-        final Class<? extends Handler> handlerClass = handler.getClass();
+        final Class<?> handlerClass;
+        if (isLog4jAppender()) {
+            final Appender appender = getAppender();
+            if (appender == null) {
+                throw MESSAGES.handlerClosed();
+            }
+            handlerClass = appender.getClass();
+        } else {
+            handlerClass = handler.getClass();
+        }
         for (Method method : handlerClass.getMethods()) {
             final int modifiers = method.getModifiers();
             if (Modifier.isStatic(modifiers) || !Modifier.isPublic(modifiers)) {
@@ -165,6 +191,14 @@ class PropertiesConfigurator {
             }
             methods.put(method.getName(), method);
         }
+    }
+
+    private boolean isLog4jAppender() {
+        return handler instanceof Log4jAppenderHandler;
+    }
+
+    private Appender getAppender() {
+        return Log4jAppenderHandler.class.cast(handler).getAppender();
     }
 
     /**

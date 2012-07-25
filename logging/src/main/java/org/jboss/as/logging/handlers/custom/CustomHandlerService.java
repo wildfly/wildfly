@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Handler;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.WriterAppender;
 import org.jboss.as.logging.handlers.HandlerService;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -66,12 +68,14 @@ public final class CustomHandlerService extends HandlerService<Handler> {
     @Override
     protected Handler createHandler() throws StartException {
         final Handler handler;
-        final ModuleLoader moduleLoader = Module.forClass(CustomHandlerService.class).getModuleLoader();
+        final ModuleLoader moduleLoader = ModuleLoader.forClass(CustomHandlerService.class);
         final ModuleIdentifier id = ModuleIdentifier.create(moduleName);
         try {
             final Class<?> handlerClass = Class.forName(className, false, moduleLoader.loadModule(id).getClassLoader());
             if (Handler.class.isAssignableFrom(handlerClass)) {
                 handler = (Handler) handlerClass.newInstance();
+            } else if (Appender.class.isAssignableFrom(handlerClass)) {
+                handler = new Log4jAppenderHandler((Appender) handlerClass.newInstance(), true);
             } else {
                 throw MESSAGES.invalidType(className, Handler.class);
             }
