@@ -3,6 +3,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -31,58 +32,75 @@ public class IronJacamarRegistrator {
 
     public void invoke() {
         PathElement ijPe = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
-        ManagementResourceRegistration ironJacamarChild = parentRegistration.getSubModel(PathAddress.pathAddress(ijPe));
-        if (ironJacamarChild == null) {
-            ironJacamarChild = parentRegistration.registerSubModel(ijPe, ResourceAdaptersSubsystemProviders.IRONJACAMAR_DESC);
+        ManagementResourceRegistration ironJacamarChild;
+
+        try {
+            ironJacamarChild = parentRegistration.registerSubModel(new SimpleResourceDefinition(ijPe, ResourceAdaptersSubsystemProviders.IRONJACAMAR_DESC));
+        } catch (IllegalArgumentException iae) {
+            ironJacamarChild = parentRegistration.getSubModel(PathAddress.pathAddress(ijPe));
         }
 
         PathElement raPath = PathElement.pathElement(RESOURCEADAPTER_NAME);
-        ManagementResourceRegistration raChild = ironJacamarChild.getSubModel(PathAddress.pathAddress(raPath));
-        if (raChild == null) {
-            raChild = ironJacamarChild.registerSubModel(raPath, RESOURCEADAPTER_RO_DESC);
+        ManagementResourceRegistration raChild;
+        try {
+            raChild = ironJacamarChild.registerSubModel(new SimpleResourceDefinition(raPath, RESOURCEADAPTER_RO_DESC));
+        } catch (IllegalArgumentException iae) {
+            raChild = ironJacamarChild.getSubModel(PathAddress.pathAddress(raPath));
         }
 
         PathElement configPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
-        ManagementResourceRegistration configChild = raChild.getSubModel(PathAddress.pathAddress(configPath));
-        if (configChild == null) {
-            configChild = raChild.registerSubModel(configPath, CONFIG_PROPERTIES_RO_DESC);
-            configChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+        ManagementResourceRegistration configChild;
+        try {
+            configChild = raChild.registerSubModel(new SimpleResourceDefinition(configPath, CONFIG_PROPERTIES_RO_DESC));
+
+        } catch (IllegalArgumentException iae) {
+            configChild = raChild.getSubModel(PathAddress.pathAddress(configPath));
         }
+        configChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+
 
         PathElement connDefPath = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
-        ManagementResourceRegistration connChild = raChild.getSubModel(PathAddress.pathAddress(connDefPath));
-        if (connChild == null) {
-            connChild = raChild.registerSubModel(connDefPath, CONNECTION_DEFINITION_RO_DESC);
-            connChild.registerOperationHandler("flush-idle-connection-in-pool",
-                    PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-            connChild.registerOperationHandler("flush-all-connection-in-pool",
-                    PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-            connChild.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
-                    TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+        ManagementResourceRegistration connChild;
+        try {
+            connChild = raChild.registerSubModel(new SimpleResourceDefinition(connDefPath, CONNECTION_DEFINITION_RO_DESC));
+        } catch (IllegalArgumentException iae) {
+            connChild = raChild.getSubModel(PathAddress.pathAddress(connDefPath));
         }
+        connChild.registerOperationHandler("flush-idle-connection-in-pool",
+                PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+        connChild.registerOperationHandler("flush-all-connection-in-pool",
+                PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+        connChild.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
+                TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+
 
         PathElement connDefConfigPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
-        ManagementResourceRegistration connDefConfigChild = connChild.getSubModel(PathAddress.pathAddress(connDefConfigPath));
-        if (connDefConfigChild == null) {
-            connDefConfigChild = connChild.registerSubModel(connDefConfigPath, CONFIG_PROPERTIES_RO_DESC);
-            connDefConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
-
+        ManagementResourceRegistration connDefConfigChild;
+        try {
+            connDefConfigChild = connChild.registerSubModel(new SimpleResourceDefinition(connDefConfigPath, CONFIG_PROPERTIES_RO_DESC));
+        } catch (IllegalArgumentException iae) {
+            connDefConfigChild = connChild.getSubModel(PathAddress.pathAddress(connDefConfigPath));
         }
+        connDefConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
 
 
         PathElement adminObjectPath = PathElement.pathElement(ADMIN_OBJECTS_NAME);
-        ManagementResourceRegistration adminObjectChild = raChild.getSubModel(PathAddress.pathAddress(adminObjectPath));
-        if (adminObjectChild == null) {
-            adminObjectChild = raChild.registerSubModel(adminObjectPath, ADMIN_OBJECT_RO_DESC);
+        ManagementResourceRegistration adminObjectChild;
+        try {
+            adminObjectChild = raChild.registerSubModel(new SimpleResourceDefinition(adminObjectPath, ADMIN_OBJECT_RO_DESC));
+        } catch (IllegalArgumentException iae) {
+            adminObjectChild = raChild.getSubModel(PathAddress.pathAddress(adminObjectPath));
         }
 
         PathElement adminObjectConfigPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
-        ManagementResourceRegistration adminObjectConfigChild = adminObjectChild.getSubModel(PathAddress.pathAddress(adminObjectConfigPath));
-        if (adminObjectConfigChild == null) {
-            adminObjectConfigChild = adminObjectChild.registerSubModel(adminObjectConfigPath, CONFIG_PROPERTIES_RO_DESC);
-            adminObjectConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
-
+        ManagementResourceRegistration adminObjectConfigChild;
+        try {
+            adminObjectConfigChild = adminObjectChild.registerSubModel(new SimpleResourceDefinition(adminObjectConfigPath, CONFIG_PROPERTIES_RO_DESC));
+        } catch (IllegalArgumentException iae) {
+            adminObjectConfigChild = adminObjectChild.getSubModel(PathAddress.pathAddress(adminObjectConfigPath));
         }
+        adminObjectConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+
 
 
     }
