@@ -349,7 +349,7 @@ public interface LoggingMessages {
     /**
      * A message indicating the handler is attached to the loggers.
      *
-     * @param handlerName the name of the attached handler.
+     * @param handlerName the name of tha attached handler.
      * @param loggers     a collection of the logger names.
      *
      * @return the message.
@@ -366,4 +366,23 @@ public interface LoggingMessages {
      */
     @Message(id = 11559, value = "Cannot add handler (%s) to itself")
     String cannotAddHandlerToSelf(String handlerName);
+
+    /**
+     * An exception indicating a handlers properties cannot be retrieved if it has been closed.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 11560, value = "Cannot find properties on closed handler.")
+    IllegalStateException handlerClosed();
+
+    /**
+     * An exception indicating a property cannot be set on a closed handler.
+     *
+     * @param name  the name of the property
+     * @param value the value of the property
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = Message.INHERIT, value = "Cannot set property '%s' on a closed handler with value '%s'.")
+    IllegalStateException handlerClosed(String name, String value);
 }

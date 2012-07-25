@@ -59,6 +59,12 @@
         </properties>
     </custom-handler>
 
+    <custom-handler name="log4jAppender" module="org.apache.log4j" class="org.apache.log4j.ConsoleAppender">
+        <properties>
+            <property name="target" value="System.out"/>
+        </properties>
+    </custom-handler>
+
     <periodic-rotating-file-handler name="FILE">
         <encoding value="UTF-8" />
         <filter>
