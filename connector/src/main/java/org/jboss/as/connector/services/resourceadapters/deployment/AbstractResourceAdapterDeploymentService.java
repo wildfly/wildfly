@@ -100,8 +100,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
 
-    private final List<ServiceName> jndiServices = new LinkedList<ServiceName>();
-
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
     }
@@ -227,10 +225,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return ccmValue;
     }
 
-    public List<ServiceName> getJndiServices()  {
-        return jndiServices;
-    }
-
     protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
 
         protected final ServiceTarget serviceTarget;
@@ -276,7 +270,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 connectionFactoryBuilder.addDependency(deploymentServiceName);
 
             connectionFactoryBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-            jndiServices.add(connectionFactoryServiceName);
 
             final ConnectionFactoryReferenceFactoryService referenceFactoryService = new ConnectionFactoryReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
@@ -284,7 +277,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            jndiServices.add(referenceFactoryServiceName);
 
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
             final BinderService binderService = new BinderService(bindInfo.getBindName());
@@ -311,7 +303,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             }
                         }
                     }).setInitialMode(ServiceController.Mode.ACTIVE).install();
-            jndiServices.add(bindInfo.getBinderServiceName());
 
             // AS7-2222: Just hack it
             if (cf instanceof javax.resource.Referenceable) {
@@ -338,14 +329,12 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(adminObjectServiceName, adminObjectService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
-            jndiServices.add(adminObjectServiceName);
 
             final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
             final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getAdminObjectInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
-            jndiServices.add(referenceFactoryServiceName);
 
             final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
             final BinderService binderService = new BinderService(bindInfo.getBindName());
@@ -373,7 +362,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                             }
                         }
                     }).setInitialMode(ServiceController.Mode.ACTIVE).install();
-            jndiServices.add(binderServiceName);
 
             // AS7-2222: Just hack it
             if (ao instanceof javax.resource.Referenceable) {
