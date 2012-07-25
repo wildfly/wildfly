@@ -21,38 +21,18 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 import static org.jboss.osgi.framework.IntegrationServices.PERSISTENT_BUNDLES;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.Services;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BootstrapBundlesInstall;
-import org.jboss.osgi.framework.IntegrationServices.BootstrapPhase;
-import org.jboss.osgi.framework.util.ServiceTracker;
 
 /**
  * A service that provides persistent bundles on framework startup.
@@ -62,16 +42,14 @@ import org.jboss.osgi.framework.util.ServiceTracker;
  */
 public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
-    static final ServiceName INITIAL_DEPLOYMENTS = SERVICE_BASE_NAME.append("initial", "deployments");
-    static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
-
     PersistentBundlesIntegration() {
         super(PERSISTENT_BUNDLES);
     }
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<Void> builder) {
-        builder.addDependencies(INITIAL_DEPLOYMENTS_COMPLETE);
+        builder.addDependencies(InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
+        builder.addDependencies(ModuleRegistrationTracker.MODULE_REGISTRATION_COMPLETE);
     }
 
     @Override
@@ -83,102 +61,5 @@ public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> 
         // At server startup the persistet bundles are deployed like any other persistet deployment
         List<Deployment> deployments = Collections.emptyList();
         installBootstrapBundles(context.getChildTarget(), deployments);
-    }
-
-    public static class InitialDeploymentTracker extends ServiceTracker<Object> {
-
-        private final AtomicBoolean deploymentInstallComplete = new AtomicBoolean(false);
-        private final Set<ServiceName> deploymentPhaseServices = new HashSet<ServiceName>();
-        private final Set<ServiceName> installedServices = new HashSet<ServiceName>();
-        private final ServiceTarget serviceTarget;
-        private final Set<String> deploymentNames;
-
-        private ServiceTarget listenerTarget;
-
-        public InitialDeploymentTracker(OperationContext context, ServiceVerificationHandler verificationHandler) {
-
-            serviceTarget = context.getServiceTarget();
-            deploymentNames = getDeploymentNames(context);
-
-            // Get the INSTALL phase service names
-            for (String deploymentName : deploymentNames) {
-                ServiceName serviceName = Services.deploymentUnitName(deploymentName);
-                deploymentPhaseServices.add(serviceName.append(Phase.INSTALL.toString()));
-            }
-
-            // Register this tracker with the server controller
-            if (!deploymentNames.isEmpty()) {
-                ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
-                listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
-                listenerTarget.addListener(Inheritance.ALL, this);
-            }
-
-            // Check the tracker for completeness
-            checkAndComplete();
-        }
-
-        public ServiceTarget getServiceTarget() {
-            return serviceTarget;
-        }
-
-        @Override
-        protected boolean trackService(ServiceController<? extends Object> controller) {
-            // [TODO] currently we track all persistet deployments.
-            // If one fails it would mean that the OSGi framwork does not bootstrap
-            return deploymentPhaseServices.contains(controller.getName());
-        }
-
-        @Override
-        protected boolean allServicesAdded(Set<ServiceName> trackedServices) {
-            return deploymentPhaseServices.size() == trackedServices.size();
-        }
-
-        @Override
-        protected void complete() {
-            LOGGER.tracef("Initial deployments complete");
-            if (listenerTarget != null) {
-                listenerTarget.removeListener(this);
-            }
-            deploymentInstallComplete.set(true);
-            initialDeploymentsComplete(serviceTarget);
-        }
-
-        public boolean isComplete() {
-            return deploymentInstallComplete.get();
-        }
-
-        public boolean hasDeploymentName(String depname) {
-            return deploymentNames.contains(depname);
-        }
-
-        public void registerBundleInstallService(ServiceName serviceName) {
-            synchronized (installedServices) {
-                LOGGER.tracef("Register bundle install service: %s", serviceName);
-                installedServices.add(serviceName);
-            }
-        }
-
-        private Set<String> getDeploymentNames(OperationContext context) {
-            final Set<String> result = new HashSet<String>();
-            final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
-            final ModelNode depmodel = model.get(ModelDescriptionConstants.DEPLOYMENT);
-            if (depmodel.isDefined()) {
-                final List<ModelNode> deploymentNodes = depmodel.asList();
-                for (ModelNode node : deploymentNodes) {
-                    Property property = node.asProperty();
-                    ModelNode enabled = property.getValue().get(ModelDescriptionConstants.ENABLED);
-                    if (enabled.isDefined() && enabled.asBoolean()) {
-                        result.add(property.getName());
-                    }
-                }
-                LOGGER.tracef("Expecting initial deployments: %s", result);
-            }
-            return result;
-        }
-
-        private ServiceController<Void> initialDeploymentsComplete(ServiceTarget serviceTarget) {
-            return serviceTarget.addService(INITIAL_DEPLOYMENTS_COMPLETE, new AbstractService<Void>() {
-            }).install();
-        }
     }
 }

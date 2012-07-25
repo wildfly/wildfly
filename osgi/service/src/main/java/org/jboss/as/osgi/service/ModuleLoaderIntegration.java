@@ -26,8 +26,10 @@ import static org.jboss.as.server.Services.JBOSS_SERVICE_MODULE_LOADER;
 import static org.jboss.as.server.moduleservice.ServiceModuleLoader.MODULE_PREFIX;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
@@ -213,18 +215,16 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
      * Remove the {@link Module} and {@link ModuleSpec} services associated with the given identifier.
      */
     @Override
-    public void removeModule(ModuleIdentifier identifier) {
-        ServiceName serviceName = getModuleSpecServiceName(identifier);
-        ServiceController<?> controller = serviceContainer.getService(serviceName);
-        if (controller != null) {
-            LOGGER.debugf("Remove module spec fom loader: %s", serviceName);
-            controller.setMode(Mode.REMOVE);
-        }
-        serviceName = getModuleServiceName(identifier);
-        controller = serviceContainer.getService(serviceName);
-        if (controller != null) {
-            LOGGER.debugf("Remove module fom loader: %s", serviceName);
-            controller.setMode(Mode.REMOVE);
+    public void removeModule(XBundleRevision brev, ModuleIdentifier identifier) {
+        Set<ServiceName> serviceNames = new HashSet<ServiceName>();
+        serviceNames.add(getModuleSpecServiceName(identifier));
+        serviceNames.add(getModuleServiceName(identifier));
+        for (ServiceName serviceName : serviceNames) {
+            ServiceController<?> controller = serviceContainer.getService(serviceName);
+            if (controller != null) {
+                LOGGER.debugf("Remove from loader: %s", serviceName);
+                controller.setMode(Mode.REMOVE);
+            }
         }
     }
 
@@ -245,28 +245,17 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
     }
 
     @Override
-    public Module getModule(ModuleIdentifier identifier) {
-        Module module = null;
-        try {
-            module = ModuleLoader.preloadModule(identifier, injectedModuleLoader.getValue());
-        } catch (ModuleLoadException e) {
-            LOGGER.debugf("Cannot obtain module for: %s", identifier);
-        }
-        return module;
-    }
-
-    @Override
     public void setAndRelinkDependencies(Module module, List<DependencySpec> dependencies) throws ModuleLoadException {
         throw new UnsupportedOperationException();
-    }
-
-    private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
-        return ServiceModuleLoader.moduleSpecServiceName(identifier);
     }
 
     @Override
     public ServiceName getModuleServiceName(ModuleIdentifier identifier) {
         return ServiceModuleLoader.moduleServiceName(identifier);
+    }
+
+    private ServiceName getModuleSpecServiceName(ModuleIdentifier identifier) {
+        return ServiceModuleLoader.moduleSpecServiceName(identifier);
     }
 
     @Override
