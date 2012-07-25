@@ -34,7 +34,6 @@ public interface CommonAttributes {
                     .setXmlName(Attribute.TYPE.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-//                    .setValidator(new ProtocolTypeValidator(false))
                     .build();
 
     SimpleAttributeDefinition SHARED =
