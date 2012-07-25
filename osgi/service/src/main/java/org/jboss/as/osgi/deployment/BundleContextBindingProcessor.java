@@ -57,7 +57,7 @@ import org.osgi.framework.BundleContext;
  * @author Thomas.Diesler@jboss.com
  * @since 03-Aug-2011
  */
-public class BundleContextDependencyProcessor implements DeploymentUnitProcessor {
+public class BundleContextBindingProcessor implements DeploymentUnitProcessor {
 
     private static final ModuleIdentifier ORG_JBOSS_OSGI_RESOLVER = ModuleIdentifier.create("org.jboss.osgi.resolver");
     private static final ModuleIdentifier ORG_OSGI_CORE = ModuleIdentifier.create("org.osgi.core");

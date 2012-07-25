@@ -25,7 +25,7 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
+import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;

@@ -28,7 +28,6 @@ import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundle;
-import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.spi.BundleInfo;
@@ -55,9 +54,6 @@ public interface OSGiConstants {
 
     /** Attachment key for a bundle deployment. */
     AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
-
-    /** Attachment key for a registered {@link XBundleRevision}. */
-    AttachmentKey<XBundleRevision> REGISTERED_MODULE_KEY = AttachmentKey.create(XBundleRevision.class);
 
     /** Attachment key for {@link OSGiMetaData} */
     AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
