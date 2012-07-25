@@ -158,6 +158,8 @@ class DeploymentScannerAdd implements OperationStepHandler {
                     public void run() {
                         try {
                             bootTimeScanner.oneOffScan(deploymentOps);
+                        } catch (Throwable t){
+                            DeploymentScannerLogger.ROOT_LOGGER.initialScanFailed(t);
                         } finally {
                             scanDoneLatch.countDown();
                         }
