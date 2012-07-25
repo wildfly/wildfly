@@ -233,4 +233,8 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15015, value = "Failed checking whether %s was a complete XML")
     void failedCheckingXMLFile(@Cause Throwable cause, String fileName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15016, value = "Initial deployment scan failed")
+    void initialScanFailed(@Cause Throwable t);
 }

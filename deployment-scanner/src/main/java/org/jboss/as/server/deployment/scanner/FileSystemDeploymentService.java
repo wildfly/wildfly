@@ -266,7 +266,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         if (scanEnabled) {
             return;
         }
-        establishDeployedContentList(deploymentDir);
+        establishDeployedContentList(deploymentDir, deploymentOperations);
         this.scanEnabled = true;
         startScan();
         ROOT_LOGGER.started(getClass().getSimpleName(), deploymentDir.getAbsolutePath());
@@ -296,7 +296,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         this.maxNoProgress = max;
     }
 
-    private void establishDeployedContentList(File dir) {
+    private void establishDeployedContentList(File dir, final DeploymentOperations deploymentOperations) {
         final Set<String> deploymentNames = deploymentOperations.getDeploymentNames();
         final File[] children = dir.listFiles();
         if (children == null || children.length == 0) {
@@ -306,7 +306,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final String fileName = child.getName();
             if (child.isDirectory()) {
                 if (!isEEArchive(fileName)) {
-                    establishDeployedContentList(child);
+                    establishDeployedContentList(child, deploymentOperations);
                 }
             } else if (fileName.endsWith(DEPLOYED)) {
                 final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
@@ -330,7 +330,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
 
     void oneOffScan(final DeploymentOperations deploymentOperations) {
-        this.establishDeployedContentList(this.deploymentDir);
+        this.establishDeployedContentList(this.deploymentDir, deploymentOperations);
         scan(true, deploymentOperations);
     }
 
