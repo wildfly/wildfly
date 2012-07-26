@@ -70,8 +70,7 @@ public class ObjectMessageTest {
         // the Document and its implementatiosn that are used both by the servlet and the MDB
         // are put in a common lib jar
         JavaArchive commons = ShrinkWrap.create(JavaArchive.class, "objectmessage-commons.jar")
-                .addClass(Document.class)
-                .addClass(DocumentImpl.class)
+                .addClass(Payload.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         LOGGER.info(commons.toString(true));
 
@@ -126,7 +125,7 @@ public class ObjectMessageTest {
             assertNotNull("did not get reply for MDB, check server logs", m);
             ObjectMessage message = (ObjectMessage) m;
             Object payload = message.getObject();
-            assertTrue(payload instanceof Document);
+            assertTrue(payload instanceof Payload);
         } finally {
             if (connection != null) {
                 connection.close();
@@ -135,7 +134,7 @@ public class ObjectMessageTest {
     }
 
     private void invokeServlet() throws IOException, ExecutionException, TimeoutException {
-        String res = HttpRequest.get(servletUrl.toExternalForm() + "objectmessage", 4, SECONDS);
+        String res = HttpRequest.get(servletUrl.toExternalForm() + "objectmessage", 600, SECONDS);
         assertEquals("OK", res);
     }
 

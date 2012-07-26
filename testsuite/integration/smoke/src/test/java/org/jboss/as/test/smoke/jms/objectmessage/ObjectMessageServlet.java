@@ -38,6 +38,11 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
@@ -65,14 +70,17 @@ public class ObjectMessageServlet extends HttpServlet {
         try {
             connection = connectionFactory.createConnection();
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageProducer producer = session.createProducer(destination);
+            MessageProducer producer = session.createProducer(destination);           
+            Document document = createDocument("root", "some text");
             ObjectMessage message = session.createObjectMessage();
-            Document resource = new DocumentImpl("this is my text");
-            message.setObject(resource);
+            message.setObject(new Payload(document));
+            // try to deserialize the payload that has just been serialized
+            System.out.println(message.getObject());
+
             message.setJMSReplyTo(replyTo);
             producer.send(message);
             out.write("OK");
-        } catch (JMSException e) {
+        } catch (Exception e) {
             e.printStackTrace(out);
         } finally {
             if (connection != null) {
@@ -86,5 +94,15 @@ public class ObjectMessageServlet extends HttpServlet {
                 out.close();
             }
         }
+    }
+
+    private Document createDocument(String rootElement, String text) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.newDocument();
+        Element root = (Element)document.createElement(rootElement); 
+        document.appendChild(root);
+        root.appendChild(document.createTextNode(text));
+        return document;
     }
 }

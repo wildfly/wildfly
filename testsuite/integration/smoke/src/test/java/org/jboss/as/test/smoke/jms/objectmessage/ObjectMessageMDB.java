@@ -28,7 +28,6 @@ import javax.ejb.MessageDriven;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
@@ -53,7 +52,7 @@ public class ObjectMessageMDB implements MessageListener {
                 msg = (ObjectMessage) rcvMessage;
                 Object o = msg.getObject();
                 System.out.println("Received object: " + o);
-                Document res = (Document) msg.getObject();
+                Payload res = (Payload) msg.getObject();
                 System.out.println("Received my resource: " + res);
 
                 Destination replyTo = msg.getJMSReplyTo();
@@ -63,7 +62,7 @@ public class ObjectMessageMDB implements MessageListener {
                 producer.send(msg);
                 connection.close();
             }
-        } catch (JMSException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

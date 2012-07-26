@@ -5,7 +5,7 @@
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${basedir}/target/jbossas</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas  -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y </property>
             <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
             <property name="allowConnectingToRunningServer">true</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
