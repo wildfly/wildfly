@@ -54,6 +54,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,15 +68,13 @@ public class ObjectMessageTest {
 
     @Deployment(name = "ear")
     public static EnterpriseArchive createArchive() {
-        // the Document and its implementatiosn that are used both by the servlet and the MDB
-        // are put in a common lib jar
         JavaArchive commons = ShrinkWrap.create(JavaArchive.class, "objectmessage-commons.jar")
                 .addClass(Payload.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         LOGGER.info(commons.toString(true));
 
         WebArchive war = ShrinkWrap.create(WebArchive.class, "objectmessage.war")
-                .addClass(ObjectMessageServlet.class)
+                .addClasses(ObjectMessageServlet.class, DocumentServlet.class)
                 .addAsWebInfResource(ObjectMessageTest.class.getPackage(), "hornetq-jms.xml", "hornetq-jms.xml");
         LOGGER.info(war.toString(true));
 
@@ -100,10 +99,11 @@ public class ObjectMessageTest {
     /**
      * Validation test for https://issues.jboss.org/browse/AS7-1271
      */
+    @Ignore
     @Test
     @RunAsClient
     public void objectMessageWithCustomPayload() throws Exception {
-        invokeServlet();
+        invokeServlet("objectmessage");
         checkMDBHasReplied();
     }
 
@@ -133,9 +133,15 @@ public class ObjectMessageTest {
         }
     }
 
-    private void invokeServlet() throws IOException, ExecutionException, TimeoutException {
-        String res = HttpRequest.get(servletUrl.toExternalForm() + "objectmessage", 600, SECONDS);
+    private void invokeServlet(String target) throws IOException, ExecutionException, TimeoutException {
+        String res = HttpRequest.get(servletUrl.toExternalForm() + target, 4, SECONDS);
         assertEquals("OK", res);
+    }
+    
+    @Test
+    @RunAsClient
+    public void serverWithDocumentatioSerializationAndDeserialization() throws Exception {
+        invokeServlet("document");
     }
 
 }
