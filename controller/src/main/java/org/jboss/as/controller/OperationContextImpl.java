@@ -159,7 +159,6 @@ final class OperationContextImpl extends AbstractOperationContext {
             final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
             synchronized (map) {
                 while (!map.isEmpty() && !cancelled) {
-                    MGMT_OP_LOGGER.info(map);
                     map.wait();
                 }
             }
