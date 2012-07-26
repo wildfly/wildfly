@@ -22,11 +22,12 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.MODULE;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,6 +41,7 @@ import org.jboss.msc.value.Value;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Eduardo Martins
  */
 public final class FieldInjectionTarget extends InjectionTarget {
 
@@ -54,7 +56,16 @@ public final class FieldInjectionTarget extends InjectionTarget {
         super(className, name, fieldType);
     }
 
+    @Override
+    public boolean isStatic(DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        return Modifier.isStatic(getField(deploymentUnit).getModifiers());
+    }
+
     public InterceptorFactory createInjectionInterceptorFactory(final Object targetContextKey, final Object valueContextKey, final Value<ManagedReferenceFactory> factoryValue, final DeploymentUnit deploymentUnit, final boolean optional) throws DeploymentUnitProcessingException {
+        return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, getField(deploymentUnit), optional);
+    }
+
+    private Field getField(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         final String name = getName();
         final String className = getClassName();
         final Module module = deploymentUnit.getAttachment(MODULE);
@@ -70,6 +81,6 @@ public final class FieldInjectionTarget extends InjectionTarget {
         if (field == null) {
             throw MESSAGES.fieldNotFound(name);
         }
-        return new ManagedReferenceFieldInjectionInterceptorFactory(targetContextKey, valueContextKey, factoryValue, field, optional);
+        return field;
     }
 }
