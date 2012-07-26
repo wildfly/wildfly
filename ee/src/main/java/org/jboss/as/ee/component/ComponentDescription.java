@@ -22,6 +22,10 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
+
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -71,9 +75,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -960,6 +961,10 @@ public class ComponentDescription implements ResourceInjectionTarget {
             mergedInjections.putAll(description.getResourceInjections(clazz.getName()));
 
             for (final ResourceInjectionConfiguration injectionConfiguration : mergedInjections.values()) {
+                if(!moduleDescription.isAppClient() && injectionConfiguration.getTarget().isStatic(context.getDeploymentUnit())) {
+                    SERVER_DEPLOYMENT_LOGGER.ignoringStaticInjectionTarget(injectionConfiguration.getTarget());
+                    continue;
+                }
                 final Object valueContextKey = new Object();
                 final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
                 configuration.getStartDependencies().add(new InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));

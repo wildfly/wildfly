@@ -34,6 +34,12 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
  */
 public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
 
+    private final boolean appClient;
+
+    public EEModuleInitialProcessor(boolean appClient) {
+        this.appClient = appClient;
+    }
+
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final String deploymentUnitName = deploymentUnit.getName();
@@ -53,7 +59,7 @@ public final class EEModuleInitialProcessor implements DeploymentUnitProcessor {
             //an appname of null means use the module name
             appName = null;
         }
-        deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName));
+        deploymentUnit.putAttachment(Attachments.EE_MODULE_DESCRIPTION, new EEModuleDescription(appName, moduleName, earApplicationName, appClient));
     }
 
     public void undeploy(final DeploymentUnit context) {
