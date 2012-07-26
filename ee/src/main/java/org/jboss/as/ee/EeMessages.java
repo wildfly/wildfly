@@ -876,21 +876,4 @@ public interface EeMessages {
     @Message(id = 16700, value = "Failed to load jboss.properties")
     DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
 
-    /**
-     * A static field needs injection, but according to The Java EE6 spec, section EE.5.2.5, these are only acceptable for
-     * application clients.
-     * @param name the field's name
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 16701, value = "Static field injection target is only acceptable for application clients. Field: %s")
-    DeploymentUnitProcessingException staticFieldInjectionNotAcceptable(String name);
-
-    /**
-     * A static method needs injection, but according to The Java EE6 spec, section EE.5.2.5, these are only acceptable for
-     * application clients.
-     * @param method the static method
-     * @return a {@link DeploymentUnitProcessingException} for the error.
-     */
-    @Message(id = 16702, value = "Static method injection target is only acceptable for application clients. Method: %s")
-    DeploymentUnitProcessingException staticMethodInjectionNotAcceptable(Method method);
 }

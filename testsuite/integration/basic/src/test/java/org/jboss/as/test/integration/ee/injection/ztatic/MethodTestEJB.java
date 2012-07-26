@@ -27,12 +27,11 @@ import javax.ejb.Stateless;
 
 /**
  * An EJB that "asks" for the forbidden static method injection.
- * 
+ *
  * @author Eduardo Martins
- * 
+ *
  */
 @Stateless
-@SuppressWarnings("unused")
 public class MethodTestEJB {
 
     private static String simpleStringFromDeploymentDescriptor;
@@ -40,6 +39,10 @@ public class MethodTestEJB {
     @Resource(name = "simpleString")
     private static void setSimpleStringFromDeploymentDescriptor(String s) {
         simpleStringFromDeploymentDescriptor = s;
+    }
+
+    public boolean isStaticResourceInjected() {
+        return simpleStringFromDeploymentDescriptor != null;
     }
 
 }
