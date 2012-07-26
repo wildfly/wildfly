@@ -22,6 +22,8 @@
 
 package org.jboss.as.ee.component;
 
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,8 +33,6 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -172,6 +172,9 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         return componentsByName.containsKey(name);
     }
 
+    /**
+     * @return true if the process type is an app client
+     */
     public boolean isAppClient() {
         return appClient;
     }

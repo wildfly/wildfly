@@ -27,14 +27,17 @@ import javax.ejb.Stateless;
 
 /**
  * An EJB that "asks" for the forbidden static field injection.
- * 
+ *
  * @author Eduardo Martins
- * 
+ *
  */
-@SuppressWarnings("unused")
 @Stateless
 public class FieldTestEJB {
 
     @Resource(name = "simpleString")
     private static String simpleStringFromDeploymentDescriptor;
+
+    public boolean isStaticResourceInjected() {
+        return simpleStringFromDeploymentDescriptor != null;
+    }
 }
