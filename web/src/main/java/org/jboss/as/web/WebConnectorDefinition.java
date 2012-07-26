@@ -10,7 +10,6 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.ee.subsystem.EeWriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -98,7 +97,7 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.MAX_POST_SIZE, ModelType.INT)
                     .setXmlName(Constants.MAX_POST_SIZE)
                     .setAllowNull(true)
-                    .setValidator(new IntRangeValidator(1024, true))
+                    .setValidator(new IntRangeValidator(0, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(2097152))
                     .build();
