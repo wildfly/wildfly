@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.enterprise.inject.spi.Extension;
@@ -35,6 +36,7 @@ import javax.validation.ValidatorFactory;
 import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
@@ -223,8 +225,13 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             final PersistenceUnitMetadataHolder persistenceUnits = root.getAttachment(PersistenceUnitMetadataHolder.PERSISTENCE_UNITS);
             if (persistenceUnits != null && persistenceUnits.getPersistenceUnits() != null) {
                 for (final PersistenceUnitMetadata pu : persistenceUnits.getPersistenceUnits()) {
-                    final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
-                    jpaServices.add(serviceName);
+                    final Properties properties = pu.getProperties();
+                    final String jpaContainerManaged = properties.getProperty(Configuration.JPA_CONTAINER_MANAGED);
+                    final boolean deployPU = (jpaContainerManaged == null || Boolean.parseBoolean(jpaContainerManaged));
+                    if (deployPU) {
+                        final ServiceName serviceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+                        jpaServices.add(serviceName);
+                    }
                 }
             }
         }
