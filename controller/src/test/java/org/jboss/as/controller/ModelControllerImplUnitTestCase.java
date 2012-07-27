@@ -644,15 +644,15 @@ public class ModelControllerImplUnitTestCase {
                 System.out.println(sc.getName());
                 System.out.println("Mode = " + sc.getMode());
                 System.out.println("Substate = " + sc.getSubstate());
+            }
 
-                sc = container.getService(ServiceName.JBOSS.append("dependent-service"));
-                if (sc == null) {
-                    System.out.println("Null dependent service!");
-                } else {
-                    System.out.println(sc.getName());
-                    System.out.println("Mode = " + sc.getMode());
-                    System.out.println("Substate = " + sc.getSubstate());
-                }
+            sc = container.getService(ServiceName.JBOSS.append("dependent-service"));
+            if (sc == null) {
+                System.out.println("Null dependent service!");
+            } else {
+                System.out.println(sc.getName());
+                System.out.println("Mode = " + sc.getMode());
+                System.out.println("Substate = " + sc.getSubstate());
             }
         }
 
