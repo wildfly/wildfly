@@ -102,27 +102,26 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
                 }
                 break;
             }
+            case START_REQUESTED_to_PROBLEM: {
+                synchronized (this) {
+                    servicesWithMissingDeps.add(controller);
+                }
+                break;
+            }
+            case PROBLEM_to_START_REQUESTED: {
+                synchronized (this) {
+                    servicesWithMissingDeps.remove(controller);
+                }
+                break;
+            }
         }
         final ServiceController.Substate before = transition.getBefore();
         final ServiceController.Substate after = transition.getAfter();
+
         if (before.isRestState() && ! after.isRestState()) {
             untick();
         } else if (! before.isRestState() && after.isRestState()) {
             tick();
-        }
-    }
-
-    @Override
-    public void immediateDependencyAvailable(final ServiceController<?> controller) {
-        synchronized (this) {
-            servicesWithMissingDeps.remove(controller);
-        }
-    }
-
-    @Override
-    public void immediateDependencyUnavailable(final ServiceController<?> controller) {
-        synchronized (this) {
-            servicesWithMissingDeps.add(controller);
         }
     }
 
