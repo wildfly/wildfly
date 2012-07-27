@@ -619,7 +619,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-3697")
+    // @Ignore("AS7-3697")
     public void testRemoveDependentService() throws Exception {
         ModelNode result = controller.execute(getOperation("dependent-service", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -635,8 +635,29 @@ public class ModelControllerImplUnitTestCase {
         assertEquals(ServiceController.State.UP, sc.getState());
 
         result = controller.execute(getOperation("remove-dependent-service", "attr1", 6, "good"), null, null, null);
+        sc = container.getService(ServiceName.JBOSS.append("depended-service"));
+        boolean outcome = FAILED.equals(result.get(OUTCOME).asString());
+        if (!outcome) {
+            if (sc == null) {
+                System.out.println("Null depended service!");
+            } else {
+                System.out.println(sc.getName());
+                System.out.println("Mode = " + sc.getMode());
+                System.out.println("Substate = " + sc.getSubstate());
+
+                sc = container.getService(ServiceName.JBOSS.append("dependent-service"));
+                if (sc == null) {
+                    System.out.println("Null dependent service!");
+                } else {
+                    System.out.println(sc.getName());
+                    System.out.println("Mode = " + sc.getMode());
+                    System.out.println("Substate = " + sc.getSubstate());
+                }
+            }
+        }
+
         System.out.println(result);
-        assertEquals(FAILED, result.get(OUTCOME).asString());
+        assertTrue(outcome);
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
         sc = container.getService(ServiceName.JBOSS.append("depended-service"));
