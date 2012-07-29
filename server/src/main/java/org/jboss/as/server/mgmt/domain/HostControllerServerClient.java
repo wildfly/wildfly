@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -88,6 +92,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
     private final InjectedValue<RemoteFileRepository> remoteFileRepositoryValue = new InjectedValue<RemoteFileRepository>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
+    private final InjectedValue<ControlledProcessStateService> processStateInjectedValue = new InjectedValue<ControlledProcessStateService>();
 
     private final int port;
     private final String hostName;
@@ -97,6 +102,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     private final byte[] authKey;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
+    private final PropertyChangeListener processStateListener = new ControlledProcessStatePropertyChangeListener();
 
     private ManagementChannelAssociation handler;
     private HostControllerServerConnection connection;
@@ -114,6 +120,8 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     /** {@inheritDoc} */
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+
+        this.processStateInjectedValue.getValue().addPropertyChangeListener(processStateListener);
         final ModelController controller = this.controller.getValue();
         // Notify MSC asynchronously when the server gets registered
         context.asynchronous();
@@ -142,8 +150,6 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                     remoteFileRepositoryValue.getValue().setRemoteFileRepositoryExecutor(new RemoteFileRepositoryExecutorImpl());
                     // We finished the registration process
                     context.complete();
-                    // TODO base the started message on some useful notification
-                    started();
                 }
 
                 @Override
@@ -166,6 +172,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     @Override
     public synchronized void stop(StopContext context) {
         StreamUtils.safeClose(connection);
+        this.getProcessStateInjectedValue().getValue().removePropertyChangeListener(processStateListener);
     }
 
     /**
@@ -247,6 +254,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
 
     public InjectedValue<Endpoint> getEndpointInjector() {
         return endpointInjector;
+    }
+
+    public InjectedValue<ControlledProcessStateService> getProcessStateInjectedValue() {
+        return processStateInjectedValue;
     }
 
     public class ServerStartedRequest extends AbstractManagementRequest<Void, Void> {
@@ -345,6 +356,19 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                 } else {
                     throw new UnsupportedCallbackException(current);
                 }
+            }
+        }
+    }
+
+    private class ControlledProcessStatePropertyChangeListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ControlledProcessState.State.RUNNING.equals(evt.getNewValue())) {
+                // Inform the HC
+                started();
+            } else if (ControlledProcessState.State.RUNNING.equals(evt.getNewValue())) {
+                // TODO send a stopping message
             }
         }
     }
