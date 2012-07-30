@@ -25,23 +25,25 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.JTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Utilities;
+import org.jboss.as.cli.gui.component.CLIOutput;
 
 /**
+ * This MouseAdapter lets you double-click in the Output tab to select a previously-run command.  It then copies
+ * the command to the command line and the system clipboard.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class SelectPreviousOpMouseAdapter extends MouseAdapter implements ClipboardOwner {
     private CliGuiContext cliGuiCtx;
-    private JTextPane output;
+    private CLIOutput output;
     private DoOperationActionListener opListener;
     private Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-    public SelectPreviousOpMouseAdapter(CliGuiContext cliGuiCtx, JTextPane output, DoOperationActionListener opListener) {
+    public SelectPreviousOpMouseAdapter(CliGuiContext cliGuiCtx, DoOperationActionListener opListener) {
         this.cliGuiCtx = cliGuiCtx;
-        this.output = output;
+        this.output = cliGuiCtx.getOutput();
         this.opListener = opListener;
     }
 
