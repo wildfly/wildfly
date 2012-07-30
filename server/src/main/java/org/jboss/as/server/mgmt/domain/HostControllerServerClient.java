@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -89,6 +90,10 @@ public class HostControllerServerClient implements Service<HostControllerServerC
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
+    private static final int CONNECTION_TIMEOUT_DEFAULT = 30000;
+    private static final String CONNECTION_TIMEOUT_PROPERTY = "jboss.host.server.connection.timeout";
+    private static final int CONNECTION_TIMEOUT = getSystemProperty(CONNECTION_TIMEOUT_PROPERTY, CONNECTION_TIMEOUT_DEFAULT);
+
     private final InjectedValue<ModelController> controller = new InjectedValue<ModelController>();
     private final InjectedValue<RemoteFileRepository> remoteFileRepositoryValue = new InjectedValue<RemoteFileRepository>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
@@ -128,7 +133,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
         try {
             final ProtocolChannelClient.Configuration configuration = new ProtocolChannelClient.Configuration();
             configuration.setEndpoint(endpointInjector.getValue());
-            configuration.setConnectionTimeout(15000);
+            configuration.setConnectionTimeout(CONNECTION_TIMEOUT);
             configuration.setUri(new URI("remote://" + hostName + ":" + port));
 
             final OptionMap original = configuration.getOptionMap();
@@ -370,6 +375,20 @@ public class HostControllerServerClient implements Service<HostControllerServerC
             } else if (ControlledProcessState.State.RUNNING.equals(evt.getNewValue())) {
                 // TODO send a stopping message
             }
+        }
+    }
+
+    private static int getSystemProperty(final String name, final int defaultValue) {
+        final SecurityManager sm = System.getSecurityManager();
+        if(sm == null) {
+            return Integer.getInteger(name, defaultValue);
+        } else {
+            return AccessController.doPrivileged( new PrivilegedAction<Integer>() {
+                @Override
+                public Integer run() {
+                    return Integer.getInteger(name, defaultValue);
+                }
+            });
         }
     }
 
