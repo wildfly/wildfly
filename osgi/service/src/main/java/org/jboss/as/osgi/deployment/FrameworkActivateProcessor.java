@@ -23,7 +23,7 @@
 package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE;
+import static org.jboss.as.osgi.service.ModuleRegistrationTracker.MODULE_REGISTRATION_COMPLETE;
 import static org.jboss.osgi.framework.Services.FRAMEWORK_ACTIVE;
 
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.List;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.FrameworkActivationService;
-import org.jboss.as.osgi.service.PersistentBundlesIntegration.InitialDeploymentTracker;
+import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -44,6 +44,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.Services;
 
 /**
@@ -63,14 +64,11 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Always make the system context & the environment available
-        // [TODO] [AS7-5215] Deployments unecessarily trigger Framework create service
-        phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, OSGiConstants.SYSTEM_CONTEXT_KEY);
-        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
-
         // Check whether this is an OSGi deployment or whether it wants to have an OSGi type injected
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        if (!depUnit.hasAttachment(OSGiConstants.DEPLOYMENT_KEY) && !hasValidInjectionPoint(depUnit))
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        boolean hasInjectionPoint = hasValidInjectionPoint(depUnit);
+        if (deployment == null && hasInjectionPoint == false)
             return;
 
         // Install the {@link FrameworkActivationService} if not done so already
@@ -78,26 +76,29 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
         FrameworkActivationService.activateOnce(verificationHandler);
 
         // Setup a dependency on the the next phase. Persistent bundles have a dependency on the bootstrap bundles
-        ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : BOOTSTRAP_BUNDLES_COMPLETE;
+        ServiceName phaseDependency = deploymentTracker.isComplete() ? FRAMEWORK_ACTIVE : MODULE_REGISTRATION_COMPLETE;
         phaseContext.addDeploymentDependency(phaseDependency, AttachmentKey.create(Object.class));
 
         // Make these services available for a bundle deployment only
         phaseContext.addDeploymentDependency(Services.BUNDLE_MANAGER, OSGiConstants.BUNDLE_MANAGER_KEY);
         phaseContext.addDeploymentDependency(Services.RESOLVER, OSGiConstants.RESOLVER_KEY);
+        phaseContext.addDeploymentDependency(Services.SYSTEM_CONTEXT, OSGiConstants.SYSTEM_CONTEXT_KEY);
+        phaseContext.addDeploymentDependency(Services.ENVIRONMENT, OSGiConstants.ENVIRONMENT_KEY);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
     }
 
-    /*
-     *  Check for injection target fields of type org.osgi.framework.*
-     */
     private boolean hasValidInjectionPoint(DeploymentUnit depUnit) {
+        return hasInjectionPoint(depUnit, "javax.inject.Inject") || hasInjectionPoint(depUnit, "javax.annotation.Resource");
+    }
+
+    // Check for injection target fields of type org.osgi.framework.*
+    private boolean hasInjectionPoint(DeploymentUnit depUnit, String anName) {
         boolean result = false;
-        DotName dotName = DotName.createSimple("javax.inject.Inject");
         CompositeIndex compositeIndex = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        List<AnnotationInstance> annotationList = compositeIndex.getAnnotations(dotName);
+        List<AnnotationInstance> annotationList = compositeIndex.getAnnotations(DotName.createSimple(anName));
         for (AnnotationInstance instance : annotationList) {
             AnnotationTarget target = instance.target();
             if (target instanceof FieldInfo) {

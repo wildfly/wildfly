@@ -75,7 +75,7 @@ public interface OSGiMessages {
     //StartException startFailedToInstallDeployment(@Cause Throwable th, Deployment deployment);
 
     @Message(id = 11958, value = "Failed to register module: %s")
-    DeploymentUnitProcessingException deploymentFailedToRegisterModule(@Cause Throwable th, Module module);
+    IllegalStateException illegalStateFailedToRegisterModule(@Cause Throwable th, Module module);
 
     @Message(id = 11959, value = "StartLevel service not available")
     String startLevelServiceNotAvailable();
