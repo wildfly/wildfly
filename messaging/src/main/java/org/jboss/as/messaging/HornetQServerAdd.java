@@ -134,6 +134,7 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 class HornetQServerAdd implements OperationStepHandler {
 
@@ -382,9 +383,10 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setTransactionTimeout(TRANSACTION_TIMEOUT.resolveModelAttribute(context, model).asLong());
         configuration.setTransactionTimeoutScanPeriod(TRANSACTION_TIMEOUT_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());
         configuration.setWildcardRoutingEnabled(WILD_CARD_ROUTING_ENABLED.resolveModelAttribute(context, model).asBoolean());
-        // --
+
         processAddressSettings(context, configuration, model);
         processSecuritySettings(context, configuration, model);
+        processRemotingInterceptors(context, configuration, model);
 
         // Add in items from child resources
         GroupingHandlerAdd.addGroupingHandlerConfig(context,configuration, model);
@@ -420,6 +422,21 @@ class HornetQServerAdd implements OperationStepHandler {
                 final AddressSettings settings = AddressSettingAdd.createSettings(context, config);
                 configuration.getAddressesSettings().put(match, settings);
             }
+        }
+    }
+
+    /**
+     * Process the HornetQ server-side interceptors.
+     */
+    static void processRemotingInterceptors(final OperationContext context, final Configuration configuration, final ModelNode params) {
+        // TODO preemptively check that the interceptor classes can be loaded
+        ModelNode interceptors = params.get(CommonAttributes.REMOTING_INTERCEPTORS.getName());
+        if (interceptors.isDefined()) {
+            final List<String> interceptorClassNames = new ArrayList<String>();
+            for (ModelNode child : interceptors.asList()) {
+                interceptorClassNames.add(child.asString());
+            }
+            configuration.setInterceptorClassNames(interceptorClassNames);
         }
     }
 
