@@ -24,7 +24,6 @@ package org.jboss.as.server.operations;
 
 import java.util.Locale;
 import org.jboss.as.controller.OperationContext;
-import static org.jboss.as.controller.OperationContext.ResultAction.ROLLBACK;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -42,10 +41,14 @@ public class ServerRestartRequiredHandler implements OperationStepHandler, Descr
     public static final ServerRestartRequiredHandler INSTANCE = new ServerRestartRequiredHandler();
 
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        context.acquireControllerLock();
         context.restartRequired();
-        if (context.completeStep() == ROLLBACK) {
-            context.revertRestartRequired();
-        }
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                context.revertRestartRequired();
+            }
+        });
     }
 
     public ModelNode getModelDescription(final Locale locale) {
