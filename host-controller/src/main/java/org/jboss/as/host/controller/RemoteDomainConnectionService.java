@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -116,6 +117,10 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     public static final String DOMAIN_CONNECTION_ID = "domain-connection-id";
 
+    private static final int CONNECTION_TIMEOUT_DEFAULT = 30000;
+    private static final String CONNECTION_TIMEOUT_PROPERTY = "jboss.host.domain.connection.timeout";
+    private static final int CONNECTION_TIMEOUT = getSystemProperty(CONNECTION_TIMEOUT_PROPERTY, CONNECTION_TIMEOUT_DEFAULT);
+
     private static final ModelNode APPLY_EXTENSIONS = new ModelNode();
     private static final ModelNode APPLY_DOMAIN_MODEL = new ModelNode();
     static {
@@ -179,8 +184,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     public synchronized void register() throws IOException {
         boolean connected = false;
-        //This takes about 30 seconds should be enough to start up master if booted at the same time
-        final long timeout = 30000;
+        final long timeout = CONNECTION_TIMEOUT;
         final long endTime = System.currentTimeMillis() + timeout;
         int retries = 0;
         while (!connected) {
@@ -565,6 +569,20 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             info.get(PRODUCT_VERSION).set(productVersion);
         }
         return info;
+    }
+
+    private static int getSystemProperty(final String name, final int defaultValue) {
+        final SecurityManager sm = System.getSecurityManager();
+        if(sm == null) {
+            return Integer.getInteger(name, defaultValue);
+        } else {
+            return AccessController.doPrivileged( new PrivilegedAction<Integer>() {
+                @Override
+                public Integer run() {
+                    return Integer.getInteger(name, defaultValue);
+                }
+            });
+        }
     }
 
 }
