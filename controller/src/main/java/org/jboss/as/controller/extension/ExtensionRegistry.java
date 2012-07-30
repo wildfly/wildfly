@@ -98,7 +98,7 @@ public class ExtensionRegistry {
     private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<String, SubsystemInformation>();
     /*private ModelTransformer modelTransformer = new SimpleModelTransformer();
     private Map<String,SubsystemModelTransformer> subsystemTransformers = new HashMap<String, SubsystemModelTransformer>();*/
-    private final TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
+    private volatile TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
 
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
         this.processType = processType;
@@ -305,6 +305,7 @@ public class ExtensionRegistry {
         synchronized (extensions) {    // we synchronize just to guard unnamedMerged
             profileRegistration = null;
             deploymentsRegistration = null;
+            transformerRegistry = TransformerRegistry.Factory.create(this);
             extensions.clear();
             reverseMap.clear();
             unnamedMerged = false;
