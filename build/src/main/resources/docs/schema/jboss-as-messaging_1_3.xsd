@@ -310,6 +310,13 @@
     </xs:complexType>
 
     <xs:complexType name="remoting-interceptorsType">
+       <xs:annotation>
+          <xs:documentation>
+            <![CDATA[
+              Remoting interceptors must be placed into a JBoss module and added as a dependency to org.jboss.as.messaging:main module.
+            ]]>
+            </xs:documentation>
+       </xs:annotation>
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="1" name="class-name" type="xs:string" />
        </xs:sequence>
