@@ -111,6 +111,7 @@ public class HibernateEnvers3EmbeddedProviderTestCase {
             "  <dependencies>" +
             "   <module name=\"com.h2database.h2\" />" +
             "   <module name=\"org.slf4j\"/>" +
+            "   <module name=\"org.javassist\"/>" +
             "  </dependencies>" +
             " </deployment>" +
             "</jboss-deployment-structure>"),
