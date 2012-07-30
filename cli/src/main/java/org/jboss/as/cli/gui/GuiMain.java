@@ -39,15 +39,15 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.gui.component.CLIOutput;
+import org.jboss.as.cli.gui.component.ScriptMenu;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
-import org.jboss.as.cli.gui.metacommand.OpenScriptAction;
 import org.jboss.as.cli.gui.metacommand.UndeployAction;
 
 /**
@@ -84,15 +84,18 @@ public class GuiMain {
         CommandExecutor executor = new CommandExecutor(cliGuiCtx);
         cliGuiCtx.setExecutor(executor);
 
-        JTextPane output = new JTextPane();
+        CLIOutput output = new CLIOutput();
+        cliGuiCtx.setOutput(output);
+
         JPanel outputDisplay = makeOutputDisplay(output);
         JTabbedPane tabs = makeTabbedPane(cliGuiCtx, outputDisplay);
+        cliGuiCtx.setTabs(tabs);
 
-        DoOperationActionListener opListener = new DoOperationActionListener(cliGuiCtx, output, tabs);
+        DoOperationActionListener opListener = new DoOperationActionListener(cliGuiCtx);
         CommandLine cmdLine = new CommandLine(opListener);
         cliGuiCtx.setCommandLine(cmdLine);
 
-        output.addMouseListener(new SelectPreviousOpMouseAdapter(cliGuiCtx, output, opListener));
+        output.addMouseListener(new SelectPreviousOpMouseAdapter(cliGuiCtx, opListener));
 
         JPanel mainPanel = makeMainPanel(tabs, cmdLine);
         cliGuiCtx.setMainPanel(mainPanel);
@@ -138,27 +141,15 @@ public class GuiMain {
     public static JMenuBar makeMenuBar(CliGuiContext cliGuiCtx) {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(makeDeploymentsMenu(cliGuiCtx));
-        menuBar.add(makeScriptMenu(cliGuiCtx));
+        menuBar.add(new ScriptMenu(cliGuiCtx));
         JMenu lfMenu = makeLookAndFeelMenu(cliGuiCtx);
         if (lfMenu != null) menuBar.add(lfMenu);
         return menuBar;
     }
 
-    private static JMenu makeScriptMenu(CliGuiContext cliGuiCtx) {
-        JMenu scriptMenu = new JMenu("Scripts");
-        scriptMenu.setMnemonic(KeyEvent.VK_S);
-
-        JMenuItem openScript = new JMenuItem(new OpenScriptAction(cliGuiCtx));
-        openScript.setMnemonic(KeyEvent.VK_O);
-        scriptMenu.add(openScript);
-
-        return scriptMenu;
-    }
-
     private static JMenu makeLookAndFeelMenu(CliGuiContext cliGuiCtx) {
         final LookAndFeelInfo[] all = UIManager.getInstalledLookAndFeels();
         if (all == null) return null;
-
 
         final JMenu lfMenu = new JMenu("Look & Feel");
         lfMenu.setMnemonic(KeyEvent.VK_L);
@@ -217,11 +208,10 @@ public class GuiMain {
         return tabs;
     }
 
-    private static JPanel makeOutputDisplay(JTextPane output) {
+    private static JPanel makeOutputDisplay(CLIOutput output) {
         JPanel outputDisplay = new JPanel();
         outputDisplay.setSize(400, 5000);
         outputDisplay.setLayout(new BorderLayout(5,5));
-        output.setEditable(false);
         outputDisplay.add(new JScrollPane(output), BorderLayout.CENTER);
         return outputDisplay;
     }
