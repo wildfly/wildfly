@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.service.component.ServiceComponentInstantiator;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.Inject;
 import org.jboss.as.service.descriptor.JBossServiceAttributeConfig.ValueFactory;
@@ -64,6 +66,7 @@ import org.jboss.msc.value.Values;
  *
  * @author John E. Bailey
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Eduardo Martins
  */
 public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -95,20 +98,21 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final ClassLoader classLoader = module.getClassLoader();
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
         final ServiceTarget target = phaseContext.getServiceTarget();
+        final Map<String,ServiceComponentInstantiator> serviceComponents = deploymentUnit.getAttachment(ServiceAttachments.SERVICE_COMPONENT_INSTANTIATORS);
         for (final JBossServiceConfig serviceConfig : serviceConfigs) {
-            addServices(target, serviceConfig, classLoader, reflectionIndex);
+            addServices(target, serviceConfig, classLoader, reflectionIndex, serviceComponents != null ? serviceComponents.get(serviceConfig.getName()) : null);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index) throws DeploymentUnitProcessingException {
+    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
         final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target,componentInstantiator);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         if (dependencyConfigs != null) {
