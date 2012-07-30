@@ -20,8 +20,10 @@ package org.jboss.as.cli.gui;
 
 import java.awt.Window;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.gui.component.CLIOutput;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,12 +37,22 @@ public class CliGuiContext {
     private JPanel mainPanel;
     private CommandLine cmdLine;
     private boolean isStandalone;
+    private CLIOutput output;
+    private JTabbedPane tabs;
 
     CliGuiContext() {
     }
 
+    void setOutput(CLIOutput output) {
+        this.output = output;
+    }
+
     void setCommandContext(CommandContext cmdCtx) {
         this.cmdCtx = cmdCtx;
+    }
+
+    void setTabs(JTabbedPane tabs) {
+        this.tabs = tabs;
     }
 
     void setExecutor(CommandExecutor executor) {
@@ -71,11 +83,28 @@ public class CliGuiContext {
     }
 
     /**
+     * Get the output component.
+     *
+     * @return The Output component.
+     */
+    public CLIOutput getOutput() {
+        return this.output;
+    }
+
+    /**
      * Get the command context.
      * @return The command context.
      */
     public CommandContext getCommmandContext() {
         return this.cmdCtx;
+    }
+
+    /**
+     * Get the tabbed pane containing the Command Builder and Output tabs
+     * @return
+     */
+    public JTabbedPane getTabs() {
+        return this.tabs;
     }
 
     /**
