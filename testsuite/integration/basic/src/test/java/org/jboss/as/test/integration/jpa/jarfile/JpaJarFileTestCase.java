@@ -52,7 +52,8 @@ public class JpaJarFileTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME);
         JavaArchive ejbModule = ShrinkWrap.create(JavaArchive.class, "my-ejb-module.jar");
         ejbModule.addClasses(JpaJarFileTestCase.class,JpaTestSlsb.class);
-        ejbModule.addAsManifestResource(getPersistenceXml(), "persistence.xml");
+        ejbModule.addAsManifestResource(JpaJarFileTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
+
         ear.addAsModule(ejbModule);
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jarfile.jar");
         jar.addClass(JarFileEntity.class);
@@ -72,18 +73,5 @@ public class JpaJarFileTestCase {
         JpaTestSlsb slsb = (JpaTestSlsb) new InitialContext().lookup("java:module/" + JpaTestSlsb.class.getSimpleName());
         slsb.testJarFileEntity();
     }
-
-    private static StringAsset getPersistenceXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-                "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-                "  <persistence-unit name=\"mainPu\">" +
-                "  <jar-file>lib/jarfile.jar</jar-file>" +
-                "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-                "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                "</properties>" +
-                "  </persistence-unit>" +
-                "</persistence>");
-    }
-
 
 }
