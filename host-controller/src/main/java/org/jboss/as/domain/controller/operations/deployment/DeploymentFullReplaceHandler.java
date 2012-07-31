@@ -203,7 +203,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         removeContentAdditions(replaceNode.getModel().require(CONTENT));
 
         if (context.completeStep() == ResultAction.KEEP) {
-            if (originalHash != null) {
+            if (originalHash != null && contentRepository != null) {
                 if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
                     byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
                     if (!Arrays.equals(originalHash, newHash)) {
@@ -212,7 +212,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
                 }
             }
         } else {
-            if (operation.get(CONTENT).get(0).hasDefined(HASH)) {
+            if (contentRepository != null && operation.get(CONTENT).get(0).hasDefined(HASH)) {
                 byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
                 contentRepository.removeContent(newHash);
             }
