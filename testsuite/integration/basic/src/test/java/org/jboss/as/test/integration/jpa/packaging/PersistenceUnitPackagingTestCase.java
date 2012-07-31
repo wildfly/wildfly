@@ -53,12 +53,12 @@ public class PersistenceUnitPackagingTestCase {
 
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(Employee.class);
-        lib.addAsManifestResource(getPersistenceXml(), "persistence.xml");
+        lib.addAsManifestResource(PersistenceUnitPackagingTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsLibrary(lib);
 
         JavaArchive override = ShrinkWrap.create(JavaArchive.class, "override.jar");
         override.addClasses(Organisation.class, OrganisationBean.class, LibPersistenceUnitBean.class);
-        override.addAsManifestResource(getPersistenceXml(), "persistence.xml");
+        override.addAsManifestResource(PersistenceUnitPackagingTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         ear.addAsModule(override);
 
         JavaArchive noOverride = ShrinkWrap.create(JavaArchive.class, "noOverride.jar");
@@ -108,17 +108,5 @@ public class PersistenceUnitPackagingTestCase {
     }
 
 
-    private static StringAsset getPersistenceXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-                "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-                "  <persistence-unit name=\"mainPu\">" +
-                "    <description>Persistence Unit." +
-                "    </description>" +
-                "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-                "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                "</properties>" +
-                "  </persistence-unit>" +
-                "</persistence>");
-    }
 
 }
