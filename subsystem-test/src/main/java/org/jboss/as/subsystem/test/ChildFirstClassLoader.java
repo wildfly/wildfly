@@ -111,6 +111,16 @@ class ChildFirstClassLoader extends URLClassLoader {
         return c;
     }
 
+
+    @Override
+    public URL getResource(String name) {
+        URL url = findResource(name);
+        if (url != null) {
+            return url;
+        }
+        return super.getResource(name);
+    }
+
     private boolean loadFromParentOnly(String className) {
         boolean parent = false;
         for (Pattern pattern : parentFirst) {
