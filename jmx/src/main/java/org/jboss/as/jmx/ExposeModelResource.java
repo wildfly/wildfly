@@ -43,13 +43,13 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-abstract class ShowModelResource extends SimpleResourceDefinition {
+abstract class ExposeModelResource extends SimpleResourceDefinition {
 
     private final SimpleAttributeDefinition domainName;
 
-    ShowModelResource(String modelName, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
-        super(PathElement.pathElement(CommonAttributes.SHOW_MODEL, modelName),
-                JMXExtension.getResourceDescriptionResolver(CommonAttributes.SHOW_MODEL + "." + modelName),
+    ExposeModelResource(String modelName, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
+        super(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, modelName),
+                JMXExtension.getResourceDescriptionResolver(CommonAttributes.EXPOSE_MODEL + "." + modelName),
                 new ShowModelAdd(domainName, otherAttributes),
                 ShowModelRemove.INSTANCE);
         this.domainName = domainName;
@@ -57,9 +57,9 @@ abstract class ShowModelResource extends SimpleResourceDefinition {
 
     static SimpleAttributeDefinition getDomainNameAttribute(String childName) {
         if (CommonAttributes.RESOLVED.equals(childName)){
-            return ShowModelResourceResolved.DOMAIN_NAME;
+            return ExposeModelResourceResolved.DOMAIN_NAME;
         } else if (CommonAttributes.EXPRESSION.equals(childName)) {
-            return ShowModelResourceExpression.DOMAIN_NAME;
+            return ExposeModelResourceExpression.DOMAIN_NAME;
         }
 
         throw MESSAGES.unknownChild(childName);

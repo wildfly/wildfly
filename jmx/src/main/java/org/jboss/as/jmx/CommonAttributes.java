@@ -31,12 +31,13 @@ interface CommonAttributes {
     String DEFAULT_EXPRESSION_DOMAIN = "jboss.as.expr";
     String DEFAULT_RESOLVED_DOMAIN = "jboss.as";
     String DOMAIN_NAME = "domain-name";
+    String EXPOSE_EXPRESSION_MODEL = "expose-expression-model";
+    String EXPOSE_MODEL = "expose-model";
+    String EXPOSE_RESOLVED_MODEL = "expose-resolved-model";
     String EXPRESSION = "expression";
     String JMX = "jmx";
     String NAME = "name";
-    String SHOW_EXPRESSION_MODEL = "show-expression-model";
     String SHOW_MODEL = "show-model";
-    String SHOW_RESOLVED_MODEL = "show-resolved-model";
     String PROPER_PROPERTY_FORMAT = "proper-property-format";
     String REGISTRY_BINDING = "registry-binding";
     String REMOTING_CONNECTOR = "remoting-connector";

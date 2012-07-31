@@ -61,7 +61,7 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         String expressionsDomain = getDomainName(context, recursiveModel, CommonAttributes.EXPRESSION);
         boolean legacyWithProperPropertyFormat = false;
         if (model.hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT)) {
-            legacyWithProperPropertyFormat = ShowModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, recursiveModel).asBoolean();
+            legacyWithProperPropertyFormat = ExposeModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, recursiveModel).asBoolean();
         }
 
         ServiceController<?> controller = verificationHandler != null ?
@@ -73,14 +73,14 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
     }
 
     private String getDomainName(OperationContext context, ModelNode model, String child) throws OperationFailedException {
-        if (!model.hasDefined(CommonAttributes.SHOW_MODEL)) {
+        if (!model.hasDefined(CommonAttributes.EXPOSE_MODEL)) {
             return null;
         }
-        if (!model.get(CommonAttributes.SHOW_MODEL).hasDefined(child)) {
+        if (!model.get(CommonAttributes.EXPOSE_MODEL).hasDefined(child)) {
             return null;
         }
-        ModelNode childModel = model.get(CommonAttributes.SHOW_MODEL, child);
-        return ShowModelResource.getDomainNameAttribute(child).resolveModelAttribute(context, childModel).asString();
+        ModelNode childModel = model.get(CommonAttributes.EXPOSE_MODEL, child);
+        return ExposeModelResource.getDomainNameAttribute(child).resolveModelAttribute(context, childModel).asString();
     }
 
 }

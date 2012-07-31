@@ -23,39 +23,22 @@ package org.jboss.as.jmx;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * The resource for the legacy behaviour where all attributes are read as resolved and
- * attributes/operation parameters are typed and you can't use expressions
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ShowModelResourceResolved extends ShowModelResource {
-
+public class ExposeModelResourceExpression extends ExposeModelResource{
     static final SimpleAttributeDefinition DOMAIN_NAME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DOMAIN_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_RESOLVED_DOMAIN))
+            .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_EXPRESSION_DOMAIN))
             .build();
 
-    static final SimpleAttributeDefinition PROPER_PROPERTY_FORMAT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROPER_PROPERTY_FORMAT, ModelType.BOOLEAN, true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(true))
-            .build();
+    static final ExposeModelResourceExpression INSTANCE = new ExposeModelResourceExpression();
 
-    static final ShowModelResourceResolved INSTANCE = new ShowModelResourceResolved();
-
-    private ShowModelResourceResolved() {
-        super(CommonAttributes.RESOLVED, DOMAIN_NAME, PROPER_PROPERTY_FORMAT);
+    ExposeModelResourceExpression() {
+        super(CommonAttributes.EXPRESSION, DOMAIN_NAME);
     }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(PROPER_PROPERTY_FORMAT, null, new JMXWriteAttributeHandler(PROPER_PROPERTY_FORMAT));
-    }
-
-
 }

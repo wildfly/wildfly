@@ -50,6 +50,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
@@ -256,7 +257,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         String finishedXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "    <show-resolved-model proper-property-format=\"false\"/>" +
+                "    <expose-resolved-model proper-property-format=\"false\"/>" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
@@ -317,7 +318,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         String finishedXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "    <show-resolved-model proper-property-format=\"false\"/>" +
+                "    <expose-resolved-model proper-property-format=\"false\"/>" +
                 "    <remoting-connector/>" +
                 "</subsystem>";
 
@@ -345,8 +346,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.JMX_1_2.getUriString() + "\">" +
-                "   <show-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
-                "   <show-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
@@ -373,8 +374,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.JMX_1_2.getUriString() + "\">" +
-                "   <show-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
-                "   <show-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
@@ -382,8 +383,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         KernelServices servicesA = super.installInController(additionalInit, subsystemXml);
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
-        Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
-        Assert.assertFalse(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).asBoolean());
+        Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
+        Assert.assertFalse(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).asBoolean());
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
@@ -403,8 +404,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "   <show-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
-                "   <show-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "    <remoting-connector />" +
                 "</subsystem>";
         KernelServices servicesA = super.installInController(subsystemXml);
@@ -430,11 +431,42 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    public void testShowModelAlias() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\"/>";
+
+        KernelServices services = super.installInController(subsystemXml);
+
+        ModelNode model = services.readWholeModel();
+        Assert.assertFalse(model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined());
+
+        ModelNode read = createOperation(READ_ATTRIBUTE_OPERATION);
+        read.get(NAME).set(CommonAttributes.SHOW_MODEL);
+        Assert.assertFalse(services.executeForResult(read).asBoolean());
+
+        ModelNode write = createOperation(WRITE_ATTRIBUTE_OPERATION);
+        write.get(NAME).set(CommonAttributes.SHOW_MODEL);
+        write.get(VALUE).set(true);
+        services.executeForResult(write);
+
+        model = services.readWholeModel();
+        Assert.assertTrue(model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined());
+        Assert.assertTrue(services.executeForResult(read).asBoolean());
+
+        write.get(VALUE).set(false);
+        services.executeForResult(write);
+
+        model = services.readWholeModel();
+        Assert.assertFalse(model.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined());
+        Assert.assertFalse(services.executeForResult(read).asBoolean());
+    }
+
+    @Test
     public void testTransformation_1_0_0() throws Exception {
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
-                "   <show-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
-                "   <show-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "   <remoting-connector />" +
                 "</subsystem>";
 
@@ -453,40 +485,40 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME), true, true);
 
         //Test that show-model=>expression is ignored
-        ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.EXPRESSION);
+        ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION, CommonAttributes.EXPOSE_MODEL, CommonAttributes.EXPRESSION);
         op.get(NAME).set(CommonAttributes.DOMAIN_NAME);
         op.get(VALUE).set("discarded");
         TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
         Assert.assertNull(transformedOp.getTransformedOperation());
 
-        op = createOperation(READ_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.EXPRESSION);
+        op = createOperation(READ_ATTRIBUTE_OPERATION, CommonAttributes.EXPOSE_MODEL, CommonAttributes.EXPRESSION);
         op.get(NAME).set(CommonAttributes.DOMAIN_NAME);
         transformedOp = mainServices.transformOperation(oldVersion, op);
         Assert.assertNull(transformedOp.getTransformedOperation());
 
-        op = createOperation(ADD, CommonAttributes.SHOW_MODEL, CommonAttributes.EXPRESSION);
+        op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, CommonAttributes.EXPRESSION);
         transformedOp = mainServices.transformOperation(oldVersion, op);
         Assert.assertNull(transformedOp.getTransformedOperation());
 
-        op = createOperation(REMOVE, CommonAttributes.SHOW_MODEL, CommonAttributes.EXPRESSION);
+        op = createOperation(REMOVE, CommonAttributes.EXPOSE_MODEL, CommonAttributes.EXPRESSION);
         transformedOp = mainServices.transformOperation(oldVersion, op);
         Assert.assertNull(transformedOp.getTransformedOperation());
 
         //Test the show-model=>resolved is converted
-        op = createOperation(WRITE_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
+        op = createOperation(WRITE_ATTRIBUTE_OPERATION, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
         op.get(NAME).set(CommonAttributes.DOMAIN_NAME);
         op.get(VALUE).set("discarded");
         final TransformedOperation operation = mainServices.transformOperation(oldVersion, op);
         Assert.assertNotNull(operation);
         Assert.assertNull(operation.getTransformedOperation());
 
-        op = createOperation(READ_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
+        op = createOperation(READ_ATTRIBUTE_OPERATION, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
         op.get(NAME).set(CommonAttributes.DOMAIN_NAME);
         transformedOp = mainServices.transformOperation(oldVersion, op);
         Assert.assertNull(transformedOp.getTransformedOperation());
         Assert.assertEquals(CommonAttributes.DEFAULT_RESOLVED_DOMAIN, mainServices.executeOperation(oldVersion, transformedOp).get(RESULT).asString());
 
-        op = createOperation(REMOVE, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
+        op = createOperation(REMOVE, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
         transformedOp = mainServices.transformOperation(oldVersion, op);
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
@@ -494,7 +526,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, mainSubsystemName), true, false);
 
 
-        op = createOperation(ADD, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
+        op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
         transformedOp = mainServices.transformOperation(oldVersion, op);
         checkOutcome(mainServices.executeOperation(op));
         checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
@@ -531,13 +563,12 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private static ModelNode createOperation(String name, String...addressElements) {
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(name);
-        op.get(OP_ADDR).add(SUBSYSTEM, "jmx");
+        final ModelNode addr = new ModelNode();
+        addr.add(SUBSYSTEM, "jmx");
         for (int i = 0 ; i < addressElements.length ; i++) {
-            op.get(OP_ADDR).add(addressElements[i], addressElements[++i]);
+            addr.add(addressElements[i], addressElements[++i]);
         }
-        return op;
+        return Util.getEmptyOperation(name, addr);
     }
 
     private static class BaseAdditionalInitalization extends AdditionalInitialization {
