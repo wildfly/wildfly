@@ -36,7 +36,6 @@ import org.jboss.as.test.integration.osgi.xservice.module.EchoService;
 import org.jboss.as.test.integration.osgi.xservice.module.TargetModuleActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
@@ -153,7 +152,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.jboss.modules,org.jboss.logging");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework,org.jboss.modules,org.jboss.logging");
                 return builder.openStream();
             }
         });
