@@ -874,8 +874,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.web">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-web"/>
+     	<module-def name="org.jboss.as.osgi.integration">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-integration"/>
         </module-def>
 
         <module-def name="org.jboss.as.sar">

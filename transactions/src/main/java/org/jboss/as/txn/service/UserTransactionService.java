@@ -46,7 +46,6 @@ public class UserTransactionService extends AbstractService<UserTransaction> {
     public static ServiceController<UserTransaction> addService(final ServiceTarget target, final ServiceVerificationHandler verificationHandler) {
         UserTransactionService service = new UserTransactionService();
         ServiceBuilder<UserTransaction> serviceBuilder = target.addService(SERVICE_NAME, service);
-        serviceBuilder.addAliases(ServiceName.of("jbosgi", "xservice", UserTransaction.class.getName()));
         serviceBuilder.addDependency(ArjunaTransactionManagerService.SERVICE_NAME, com.arjuna.ats.jbossatx.jta.TransactionManagerService.class, service.injectedArjunaTM);
         serviceBuilder.addListener(verificationHandler);
         return serviceBuilder.install();

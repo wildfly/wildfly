@@ -967,7 +967,7 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-osgi-web</artifactId>
+                    <artifactId>jboss-as-osgi-integration</artifactId>
                 </dependency>
 
                 <dependency>
