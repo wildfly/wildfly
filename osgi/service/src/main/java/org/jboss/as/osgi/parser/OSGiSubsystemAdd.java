@@ -23,6 +23,7 @@ package org.jboss.as.osgi.parser;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -35,19 +36,18 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.osgi.OSGiSubsystemExtension;
+import org.jboss.as.osgi.SubsystemExtension;
 import org.jboss.as.osgi.deployment.BundleActivateProcessor;
-import org.jboss.as.osgi.deployment.BundleContextBindingProcessor;
 import org.jboss.as.osgi.deployment.BundleDeploymentProcessor;
 import org.jboss.as.osgi.deployment.BundleInstallProcessor;
 import org.jboss.as.osgi.deployment.BundleResolveProcessor;
 import org.jboss.as.osgi.deployment.BundleResolveSubProcessor;
 import org.jboss.as.osgi.deployment.BundleSubDeploymentMarkingProcessor;
+import org.jboss.as.osgi.deployment.FrameworkActivateProcessor;
 import org.jboss.as.osgi.deployment.ModuleRegisterProcessor;
 import org.jboss.as.osgi.deployment.OSGiBundleInfoParseProcessor;
 import org.jboss.as.osgi.deployment.OSGiManifestStructureProcessor;
 import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
-import org.jboss.as.osgi.deployment.FrameworkActivateProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
@@ -102,10 +102,17 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, verificationHandler);
         final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
 
+        // Collect the subsystem extensions
+        final List<SubsystemExtension> extensions = new ArrayList<SubsystemExtension>();
+        final Iterator<SubsystemExtension> services = ServiceLoader.load(SubsystemExtension.class, getClass().getClassLoader()).iterator();
+        while(services.hasNext()) {
+            extensions.add(services.next());
+        }
+
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, verificationHandler));
+                newControllers.add(FrameworkBootstrapService.addService(serviceTarget, resource, extensions, verificationHandler));
                 newControllers.add(registrationTracker.install(serviceTarget, verificationHandler));
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
@@ -120,7 +127,6 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_PROPERTIES, new OSGiXServiceParseProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_DEPLOYMENT, new BundleDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_OSGI_SUBSYSTEM_ACTIVATOR, new FrameworkActivateProcessor(deploymentTracker));
-                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_BUNDLE_CONTEXT, new BundleContextBindingProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.REGISTER, Phase.REGISTER_BUNDLE_INSTALL, new BundleInstallProcessor(deploymentTracker));
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_RESOLVE_BUNDLE, new BundleResolveProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_RESOLVE_SUB_BUNDLE, new BundleResolveSubProcessor());
@@ -130,10 +136,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }, OperationContext.Stage.RUNTIME);
 
         // Perform boottime on subsystem extensions
-        ClassLoader classLoader = OSGiSubsystemExtension.class.getClassLoader();
-        Iterator<OSGiSubsystemExtension> services = ServiceLoader.load(OSGiSubsystemExtension.class, classLoader).iterator();
-        while(services.hasNext()) {
-            OSGiSubsystemExtension extension = services.next();
+        for(SubsystemExtension extension : extensions) {
             extension.performBoottime(context, operation, model, verificationHandler, newControllers);
         }
 

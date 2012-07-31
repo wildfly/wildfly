@@ -26,13 +26,11 @@ import java.util.List;
 
 import javax.naming.CompositeName;
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.naming.InitialContextFactoryBuilder;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -118,12 +116,6 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 }
             }
         });
-
-        // Register InitialContext and InitialContextFactoryBuilder as OSGi services
-        newControllers.add(NamingSubsystemOSGiService.addService(target,
-                InitialContext.class, InitialContext.class, verificationHandler));
-        newControllers.add(NamingSubsystemOSGiService.addService(target,
-                javax.naming.spi.InitialContextFactoryBuilder.class, InitialContextFactoryBuilder.class, verificationHandler));
 
         newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
 

@@ -84,7 +84,7 @@ public class JNDITestCase {
     @Test
     public void testJNDIAccess() throws Exception {
         bundle.start();
-        InitialContext iniCtx = getInitialContext(bundle.getBundleContext());
+        InitialContext iniCtx = new InitialContext();
         Object lookup = iniCtx.lookup("java:jboss");
         assertNotNull("Lookup not null", lookup);
 
@@ -157,11 +157,6 @@ public class JNDITestCase {
             Thread.sleep(100);
         }
         assertTrue(gone);
-    }
-
-    private InitialContext getInitialContext(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(InitialContext.class.getName());
-        return (InitialContext) context.getService(sref);
     }
 
     public class TestObjectFactory implements ObjectFactory {
