@@ -60,7 +60,7 @@ public class EJBJarPackagingTestCase {
         ear.addAsLibrary(lib);          // add entity jar to ear/lib
 
         // add persistence.xml to ear/META-INF
-        ear.addAsManifestResource(getPersistenceXml(), "persistence.xml");
+        ear.addAsManifestResource(EJBJarPackagingTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
 
         return ear;
     }
@@ -76,21 +76,6 @@ public class EJBJarPackagingTestCase {
         EmployeeBean bean = (EmployeeBean) iniCtx.lookup("java:app/ejbjar/EmployeeBean");
         Class sessionClass = bean.getPersistenceProviderClass("org.hibernate.Session");
         assertNotNull("was able to load 'org.hibernate.Session' class from persistence provider",sessionClass);
-    }
-
-
-
-    private static StringAsset getPersistenceXml() {
-        return new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-                "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-                "  <persistence-unit name=\"mainPu\">" +
-                "    <description>Persistence Unit." +
-                "    </description>" +
-                "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-                "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-                "</properties>" +
-                "  </persistence-unit>" +
-                "</persistence>");
     }
 
     private static StringAsset emptyEjbJar() {

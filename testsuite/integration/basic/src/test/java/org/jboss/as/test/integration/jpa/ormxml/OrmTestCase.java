@@ -48,18 +48,6 @@ public class OrmTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_OrmTestCase";
 
-    private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"ORMpc\">" +
-            "    <description>OrmTestCase Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
-
     private static final String orm_xml =
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<entity-mappings xmlns=\"http://java.sun.com/xml/ns/persistence/orm\" version=\"2.0\">" +
@@ -76,7 +64,7 @@ public class OrmTestCase {
             SFSBCMT.class
         );
 
-        jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+        jar.addAsManifestResource(OrmTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
         jar.addAsResource(new StringAsset(orm_xml), "META-INF/orm.xml");
         return jar;
     }
