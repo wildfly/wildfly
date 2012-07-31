@@ -51,21 +51,6 @@ public class ClassFileTransformerTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_classTransformerTestWithMockProvider";
 
-    private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"mypc\">" +
-            "    <description>Persistence Unit." +
-            "    </description>" +
-            " <provider>org.jboss.as.test.integration.jpa.mockprovider.classtransformer.TestPersistenceProvider</provider>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "<property name=\"hibernate.show_sql\" value=\"true\"/>" +
-            "<property name=\"hibernate.ejb.use_class_enhancer\" value=\"true\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
-
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive persistenceProvider = ShrinkWrap.create(JavaArchive.class, "testpersistenceprovider.jar");
@@ -86,7 +71,7 @@ public class ClassFileTransformerTestCase {
         ejbjar.addClasses(ClassFileTransformerTestCase.class,
                 SFSB1.class
         );
-        ejbjar.addAsManifestResource(new StringAsset(persistence_xml), "persistence.xml");
+        ejbjar.addAsManifestResource(ClassFileTransformerTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
 
         ear.addAsModule(ejbjar);        // add ejbjar to root of ear
 

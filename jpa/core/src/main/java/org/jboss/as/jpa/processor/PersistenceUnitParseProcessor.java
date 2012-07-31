@@ -210,6 +210,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
             final DeploymentUnit deploymentUnit)
         throws DeploymentUnitProcessingException {
 
+        JPA_LOGGER.tracef("parse checking if %s exists, result = %b",persistence_xml.toString(), persistence_xml.exists());
         if (persistence_xml.exists() && persistence_xml.isFile()) {
             InputStream is = null;
             try {
