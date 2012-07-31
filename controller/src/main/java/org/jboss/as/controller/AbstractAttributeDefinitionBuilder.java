@@ -68,7 +68,11 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     }
 
     public AbstractAttributeDefinitionBuilder(final AttributeDefinition basis) {
-        this.name = basis.getName();
+        this(null, basis);
+    }
+
+    public AbstractAttributeDefinitionBuilder(final String attributeName, final AttributeDefinition basis) {
+        this.name = attributeName != null ? attributeName : basis.getName();
         this.type = basis.getType();
         this.xmlName = basis.getXmlName();
         this.allowNull = basis.isAllowNull();
