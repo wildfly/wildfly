@@ -95,6 +95,8 @@ public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        FactoryFinderCache.clearClassLoader(module.getClassLoader());
+        if(module != null) {
+            FactoryFinderCache.clearClassLoader(module.getClassLoader());
+        }
     }
 }
