@@ -252,7 +252,12 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             if (property == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
-            String value = reader.getElementText();
+
+            // get the property value and store as a ModelNode
+            ModelNode value = new ModelNode() ;
+            String valueText = reader.getElementText();
+            CommonAttributes.VALUE.parseAndSetParameter(valueText, value, reader);
+
             transport.get(ModelKeys.PROPERTIES).add(property, value);
         }
         operations.add(transport);
@@ -313,7 +318,11 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             if (property == null) {
                 throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
             }
-            String value = reader.getElementText();
+            // get the property value and store as a ModelNode
+            ModelNode value = new ModelNode() ;
+            String valueText = reader.getElementText();
+            CommonAttributes.VALUE.parseAndSetParameter(valueText, value, reader);
+
             protocol.get(ModelKeys.PROPERTIES).add(property, value);
         }
 
