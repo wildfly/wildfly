@@ -73,6 +73,7 @@
         <module>jboss-javaee-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-transactions</module>        
         <module>jboss-javaee-6.0-with-logging</module>
+        <module>jboss-javaee-6.0-with-hibernate3</module>
     </modules>
 
     <build>
