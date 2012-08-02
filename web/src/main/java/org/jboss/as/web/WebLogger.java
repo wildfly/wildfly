@@ -154,4 +154,8 @@ public interface WebLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 18224, value = "Unregister web context: %s")
     void unregisterWebapp(String webappPath);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18225, value = "Failed to purge EL cache")
+    void couldNotPurgeELCache(@Cause Exception exception);
 }
