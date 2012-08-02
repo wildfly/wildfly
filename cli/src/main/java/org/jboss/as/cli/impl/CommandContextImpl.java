@@ -140,6 +140,8 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jreadline.console.settings.Settings;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 
@@ -148,6 +150,8 @@ import org.jboss.sasl.util.HexConverter;
  * @author Alexey Loubyansky
  */
 class CommandContextImpl implements CommandContext {
+
+    private static final Logger log = Logger.getLogger(CommandContext.class);
 
     /** the cli configuration */
     private final CliConfig config;
@@ -610,6 +614,16 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void printLine(String message) {
+        final Level logLevel;
+        if(exitCode != 0) {
+            logLevel = Level.ERROR;
+        } else {
+            logLevel = Level.INFO;
+        }
+        if(log.isEnabled(logLevel)) {
+            log.log(logLevel, message);
+        }
+
         if (outputTarget != null) {
             try {
                 outputTarget.append(message);
@@ -659,6 +673,9 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void printColumns(Collection<String> col) {
+        if(log.isInfoEnabled()) {
+            log.info(col);
+        }
         if (outputTarget != null) {
             try {
                 for (String item : col) {
@@ -742,6 +759,9 @@ class CommandContextImpl implements CommandContext {
             try {
                 ModelControllerClient newClient = null;
                 CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+                if(log.isDebugEnabled()) {
+                    log.debug("connecting to " + host + ':' + port + " as " + username);
+                }
                 ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
                 retry = tryConnection(tempClient, host, port);
                 if(!retry) {
