@@ -24,9 +24,12 @@ package org.jboss.as.web.deployment;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 
+import javax.el.BeanELResolver;
 import javax.el.ExpressionFactory;
 
 import org.apache.el.ExpressionFactoryImpl;
@@ -36,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.ServicesAttachment;
+import org.jboss.as.web.WebLogger;
 import org.jboss.el.cache.FactoryFinderCache;
 import org.jboss.modules.Module;
 
@@ -49,6 +53,16 @@ import org.jboss.modules.Module;
 public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
 
     public static final String FACTORY_ID = ExpressionFactory.class.getName();
+    private static final Method purge;
+
+    static {
+        try {
+            purge = BeanELResolver.class.getDeclaredMethod("purgeBeanClasses", ClassLoader.class);
+            purce.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -97,6 +111,12 @@ public class ELExpressionFactoryProcessor implements DeploymentUnitProcessor {
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if(module != null) {
             FactoryFinderCache.clearClassLoader(module.getClassLoader());
+            try {
+                //TODO: this method should be static
+                purge.invoke(new BeanELResolver(), module.getClassLoader());
+            } catch (Exception e) {
+                WebLogger.ROOT_LOGGER.couldNotPurgeELCache(e);
+            }
         }
     }
 }

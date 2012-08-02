@@ -170,4 +170,11 @@ public interface WebLogger extends BasicLogger {
     @Message(id = 18223, value = "Snapshot mode set to 'interval' but snapshotInterval is < 1 or was not specified, using 'instant'")
     void invalidSnapshotInterval();;
 
+    @LogMessage(level = INFO)
+    @Message(id = 18224, value = "Unregister web context: %s")
+    void unregisterWebapp(String webappPath);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 18225, value = "Failed to purge EL cache")
+    void couldNotPurgeELCache(@Cause Exception exception);
 }
