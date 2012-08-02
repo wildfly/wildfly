@@ -144,7 +144,7 @@
         <version.org.hibernate3>3.6.6.Final</version.org.hibernate3>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.2.21.Final</version.org.hornetq>
-        <version.org.infinispan>5.1.7.Final</version.org.infinispan>
+        <version.org.infinispan>5.2.0.Beta1</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-0</version.org.jacorb>
         <version.org.javassist>3.15.0-GA</version.org.javassist>
         <version.org.jdom>1.1.2</version.org.jdom>
@@ -243,7 +243,7 @@
         <version.org.jboss.xnio>3.0.6.GA</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.1.0.Final</version.org.jgroups>
+        <version.org.jgroups>3.2.0.Alpha3</version.org.jgroups>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.1-1</version.org.opensaml.opensaml>

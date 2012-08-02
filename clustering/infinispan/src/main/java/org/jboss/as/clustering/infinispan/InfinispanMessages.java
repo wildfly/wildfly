@@ -70,10 +70,10 @@ public interface InfinispanMessages {
      * @param cause          the cause of the error.
      * @param cacheStoreName the name of the cache store.
      *
-     * @return an {@link IllegalArgumentException} for the error.
+     * @return an {@link OperationFailedException} for the error.
      */
     @Message(id = 10292, value = "%s is not a valid cache store")
-    IllegalArgumentException invalidCacheStore(@Cause Throwable cause, String cacheStoreName);
+    OperationFailedException invalidCacheStore(@Cause Throwable cause, String cacheStoreName);
 
     /**
      * Creates an exception indicating an invalid cache store.
@@ -84,7 +84,7 @@ public interface InfinispanMessages {
      * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 10293, value = "%s is not a valid default cache. The %s cache container does not contain a cache with that name")
-    IllegalArgumentException invalidCacheStore(String cacheStoreName, String cacheContainerName);
+    IllegalArgumentException invalidDefaultCache(String cacheName, String cacheContainerName);
 
     /**
      * Creates an exception indicating the an executor property is invalid.

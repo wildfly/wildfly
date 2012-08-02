@@ -34,8 +34,9 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.marshall.Ids;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
-import org.jboss.as.clustering.infinispan.ExecutorProvider;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
+import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
+import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
 import org.jboss.as.clustering.infinispan.io.SimpleExternalizer;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
@@ -157,29 +158,21 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
             Executor executor = transport.getExecutor();
             if (executor != null) {
-                // See ISPN-1675
-                // globalBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
-                ExecutorProvider.initTransportExecutor(builder, executor);
+                builder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
             }
         }
 
         Executor listenerExecutor = this.dependencies.getListenerExecutor();
         if (listenerExecutor != null) {
-            // See ISPN-1675
-            // globalBuilder.asyncListenerExecutor().factory(new ManagedExecutorFactory(listenerExecutor));
-            ExecutorProvider.initListenerExecutor(builder, listenerExecutor);
+            builder.asyncListenerExecutor().factory(new ManagedExecutorFactory(listenerExecutor));
         }
         ScheduledExecutorService evictionExecutor = this.dependencies.getEvictionExecutor();
         if (evictionExecutor != null) {
-            // See ISPN-1675
-            // globalBuilder.evictionScheduledExecutor().factory(new ManagedScheduledExecutorFactory(evictionExecutor));
-            ExecutorProvider.initEvictionExecutor(builder, evictionExecutor);
+            builder.evictionScheduledExecutor().factory(new ManagedScheduledExecutorFactory(evictionExecutor));
         }
         ScheduledExecutorService replicationQueueExecutor = this.dependencies.getReplicationQueueExecutor();
         if (replicationQueueExecutor != null) {
-            // See ISPN-1675
-            // globalBuilder.replicationQueueScheduledExecutor().factory(new ManagedScheduledExecutorFactory(replicationQueueExecutor));
-            ExecutorProvider.initReplicationQueueExecutor(builder, replicationQueueExecutor);
+            builder.replicationQueueScheduledExecutor().factory(new ManagedScheduledExecutorFactory(replicationQueueExecutor));
         }
 
         GlobalJmxStatisticsConfigurationBuilder jmxBuilder = builder.globalJmxStatistics().cacheManagerName(this.name);
