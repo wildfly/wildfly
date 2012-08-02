@@ -59,8 +59,10 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         final long lifespan = CommonAttributes.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
 
         // process the additional distributed attributes and elements
-        builder.clustering().hash().numOwners(owners);
-        builder.clustering().hash().numVirtualNodes(virtualNodes);
+        builder.clustering().hash()
+            .numOwners(owners)
+            .numSegments(virtualNodes)
+        ;
         if (lifespan > 0) {
             builder.clustering().l1().lifespan(lifespan);
         } else {

@@ -26,8 +26,10 @@ import org.jboss.as.clustering.SimpleMarshalledValue;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings({ "rawtypes", "serial" })
+@SuppressWarnings({ "rawtypes" })
 public class SimpleMarshalledValueExternalizer extends ExternalizableExternalizer<SimpleMarshalledValue> {
+    private static final long serialVersionUID = -6027536540791428501L;
+
     public SimpleMarshalledValueExternalizer() {
         super(SimpleMarshalledValue.class);
     }
