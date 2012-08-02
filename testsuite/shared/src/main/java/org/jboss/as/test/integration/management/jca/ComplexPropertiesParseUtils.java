@@ -184,7 +184,8 @@ public class ComplexPropertiesParseUtils {
         params.put("recovery-plugin-class-name", "someClass2");
         params.put("recovery-username", "sa");
         params.put("recovery-password", "sa-pass");
-        params.put("recovery-security-domain", "HsqlDbRealm");
+        //AS7-5300
+        //params.put("recovery-security-domain", "HsqlDbRealm");
 
         return params;
     }
