@@ -38,6 +38,8 @@
         <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>        
         <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
         <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
+        <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
+        <version.org.jboss.logging.processor>1.0.1.Final</version.org.jboss.logging.processor>
 
         <!-- Version of Hibernate projects -->
         <version.org.hibernate>4.1.1.Final</version.org.hibernate>
@@ -52,6 +54,9 @@
         <version.junit>4.10</version.junit>
         <version.org.mvel>2.1.Beta8</version.org.mvel>        
         <version.org.testng>5.14.6</version.org.testng>
+        <version.com.google.gwt>2.4.0</version.com.google.gwt>
+        <version.org.mvel>2.1.Beta8</version.org.mvel>
+        <version.log4j>1.2.16</version.log4j>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.org.apache.maven.surefire.plugin>2.10</version.org.apache.maven.surefire.plugin>
@@ -64,8 +69,10 @@
         <module>jboss-javaee-6.0-with-errai</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
         <module>jboss-javaee-6.0-with-security</module>        
+        <module>jboss-javaee-6.0-with-hibernate3</module>
         <module>jboss-javaee-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-transactions</module>        
+        <module>jboss-javaee-6.0-with-logging</module>
     </modules>
 
     <build>
