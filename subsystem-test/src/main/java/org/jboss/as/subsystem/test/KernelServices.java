@@ -257,30 +257,6 @@ public class KernelServices {
     }
 
     /**
-     * Create an operation
-     *
-     * @param operationName the name of the operation
-     * @param address the address
-     * @throws IllegalArgumentException if the address is bad
-     */
-    public ModelNode createOperation(String operationName, String...address) {
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(operationName);
-        if (address.length > 0) {
-            if (address.length % 2 != 0) {
-                throw new IllegalArgumentException("Address must be in pairs");
-            }
-            for (String addr : address) {
-                operation.get(OP_ADDR).add(addr);
-            }
-        } else {
-            operation.get(OP_ADDR).setEmptyList();
-        }
-
-        return operation;
-    }
-
-    /**
      * Reads the persisted subsystem xml
      *
      * @return the xml

@@ -22,6 +22,8 @@
 package org.jboss.as.web.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -230,14 +232,14 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void writeAttribute(KernelServices services, String name, String value, String...address) throws Exception {
-        ModelNode op = services.createOperation(WRITE_ATTRIBUTE_OPERATION, address);
+        ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
         op.get(VALUE).set(value);
         services.executeForResult(op);
     }
 
     private String readAttribute(KernelServices services, String name, String...address) throws Exception {
-        ModelNode op = services.createOperation(READ_ATTRIBUTE_OPERATION, address);
+        ModelNode op = createOperation(READ_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
         ModelNode result =  services.executeForResult(op);
         if (result.isDefined()) {
@@ -245,6 +247,25 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
         return null;
     }
+
+
+    private ModelNode createOperation(String operationName, String...address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.length > 0) {
+            if (address.length % 2 != 0) {
+                throw new IllegalArgumentException("Address must be in pairs");
+            }
+            for (String addr : address) {
+                operation.get(OP_ADDR).add(addr);
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
+
 
     private String[] getAddress(String...addr) {
         return addr;
