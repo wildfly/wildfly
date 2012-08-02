@@ -36,6 +36,7 @@
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.errai>2.0.0.Final</version.org.jboss.errai>
         <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>        
+        <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
         <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
 
         <!-- Version of Hibernate projects -->
@@ -62,6 +63,7 @@
     <modules>
         <module>jboss-javaee-6.0-with-errai</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
+        <module>jboss-javaee-6.0-with-security</module>        
         <module>jboss-javaee-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-transactions</module>        
     </modules>
