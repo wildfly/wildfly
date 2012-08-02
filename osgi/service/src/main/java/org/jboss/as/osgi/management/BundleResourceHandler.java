@@ -196,7 +196,7 @@ public class BundleResourceHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private BundleContext getSystemContext(OperationContext context) {
-        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.SYSTEM_CONTEXT);
+        ServiceController<?> controller = context.getServiceRegistry(false).getService(Services.FRAMEWORK_CREATE);
         return controller != null ? (BundleContext)controller.getValue() : null;
     }
 

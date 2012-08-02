@@ -60,7 +60,7 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.ModuleLoaderPlugin;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
@@ -69,28 +69,27 @@ import org.jboss.osgi.resolver.XIdentityCapability;
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
  * are registered with the {@link BundleManager}.
- * <p/>
- * Plain AS7 modules can create dependencies on OSGi deployments, because OSGi modules can also be loaded from the
- * {@link ServiceModuleLoader}
  *
  * @author thomas.diesler@jboss.com
  * @since 20-Apr-2011
  */
-final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoaderPlugin {
+final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoaderPlugin, IntegrationService<ModuleLoaderPlugin> {
 
     private final InjectedValue<ServiceModuleLoader> injectedModuleLoader = new InjectedValue<ServiceModuleLoader>();
     private ServiceContainer serviceContainer;
     private ServiceTarget serviceTarget;
 
-    static ServiceController<?> addService(final ServiceTarget target) {
-        ModuleLoaderIntegration service = new ModuleLoaderIntegration();
-        ServiceBuilder<?> builder = target.addService(IntegrationServices.MODULE_LOADER_PLUGIN, service);
-        builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.injectedModuleLoader);
-        builder.setInitialMode(Mode.ON_DEMAND);
-        return builder.install();
+    @Override
+    public ServiceName getServiceName() {
+        return MODULE_LOADER_PLUGIN;
     }
 
-    private ModuleLoaderIntegration() {
+    @Override
+    public ServiceController<ModuleLoaderPlugin> install(ServiceTarget serviceTarget) {
+        ServiceBuilder<ModuleLoaderPlugin> builder = serviceTarget.addService(getServiceName(), this);
+        builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, injectedModuleLoader);
+        builder.setInitialMode(Mode.ON_DEMAND);
+        return builder.install();
     }
 
     @Override

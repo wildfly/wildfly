@@ -41,7 +41,7 @@ public class WabServletContextFactoryProcessor implements DeploymentUnitProcesso
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
 
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (bundle != null) {
             WabServletContextFactory wscf = new WabServletContextFactory();
             depUnit.putAttachment(WebContextFactory.ATTACHMENT, wscf);
@@ -53,7 +53,7 @@ public class WabServletContextFactoryProcessor implements DeploymentUnitProcesso
     public void undeploy(DeploymentUnit context) {
         context.removeAttachment(WebContextFactory.ATTACHMENT);
 
-        XBundle bundle = context.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = context.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (bundle != null) {
             bundle.getBundleRevision().removeAttachment(WabServletContextFactory.class);
         }

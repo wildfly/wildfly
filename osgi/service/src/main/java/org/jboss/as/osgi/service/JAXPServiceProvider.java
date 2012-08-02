@@ -58,8 +58,7 @@ final class JAXPServiceProvider extends AbstractService<Void> {
     static ServiceController<?> addService(final ServiceTarget target) {
         JAXPServiceProvider service = new JAXPServiceProvider();
         ServiceBuilder<?> builder = target.addService(SERVICE_NAME, service);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
-        builder.addDependency(Services.FRAMEWORK_CREATE);
+        builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedSystemContext);
         builder.setInitialMode(Mode.PASSIVE);
         return builder.install();
     }
