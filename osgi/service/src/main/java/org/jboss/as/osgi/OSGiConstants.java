@@ -43,27 +43,27 @@ public interface OSGiConstants {
     /** Service base name for all OSGi subsystem services. */
     ServiceName SERVICE_BASE_NAME = ServiceName.JBOSS.append("osgi", "as");
 
+    /** Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected. */
+    AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+
+    /** Attachment key for the installed {@link XBundle}. */
+    AttachmentKey<XBundle> BUNDLE_KEY = AttachmentKey.create(XBundle.class);
+
     /** Attachment key for the {@link BundleManager}. */
     AttachmentKey<BundleManager> BUNDLE_MANAGER_KEY = AttachmentKey.create(BundleManager.class);
-
-    /** Attachment key for the {@link XEnvironment}. */
-    AttachmentKey<XEnvironment> ENVIRONMENT_KEY = AttachmentKey.create(XEnvironment.class);
-
-    /** Attachment key for the {@link XResolver}. */
-    AttachmentKey<XResolver> RESOLVER_KEY = AttachmentKey.create(XResolver.class);
 
     /** Attachment key for a bundle deployment. */
     AttachmentKey<Deployment> DEPLOYMENT_KEY = AttachmentKey.create(Deployment.class);
 
+    /** Attachment key for the {@link XEnvironment}. */
+    AttachmentKey<XEnvironment> ENVIRONMENT_KEY = AttachmentKey.create(XEnvironment.class);
+
     /** Attachment key for {@link OSGiMetaData} */
     AttachmentKey<OSGiMetaData> OSGI_METADATA_KEY = AttachmentKey.create(OSGiMetaData.class);
 
-    /** Attachment key for the {@link BundleInfo} when an OSGi bundle deployment is detected. */
-    AttachmentKey<BundleInfo> BUNDLE_INFO_KEY = AttachmentKey.create(BundleInfo.class);
+    /** Attachment key for the {@link XResolver}. */
+    AttachmentKey<XResolver> RESOLVER_KEY = AttachmentKey.create(XResolver.class);
 
     /** Attachment key for the OSGi system context. */
     AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
-
-    /** Attachment key for the installed {@link XBundle}. */
-    AttachmentKey<XBundle> INSTALLED_BUNDLE_KEY = AttachmentKey.create(XBundle.class);
 }

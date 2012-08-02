@@ -53,7 +53,7 @@ public class EchoService implements Echo, Service<Echo> {
     public static void addService(ServiceTarget serviceTarget) {
         EchoService service = new EchoService();
         ServiceBuilder<Echo> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);
-        serviceBuilder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedBundleContext);
+        serviceBuilder.addDependency(Services.FRAMEWORK_ACTIVE, BundleContext.class, service.injectedBundleContext);
         serviceBuilder.setInitialMode(Mode.ACTIVE);
         serviceBuilder.install();
         log.infof("Service added: %s", SERVICE_NAME);

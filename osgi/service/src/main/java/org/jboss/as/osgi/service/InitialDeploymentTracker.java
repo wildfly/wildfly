@@ -45,7 +45,8 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.osgi.framework.IntegrationServices.BootstrapPhase;
+import org.jboss.osgi.framework.IntegrationService;
+import org.jboss.osgi.framework.IntegrationService.BootstrapPhase;
 import org.jboss.osgi.framework.util.ServiceTracker;
 
 /**
@@ -57,7 +58,7 @@ import org.jboss.osgi.framework.util.ServiceTracker;
 public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
     static final ServiceName INITIAL_DEPLOYMENTS = SERVICE_BASE_NAME.append("initial", "deployments");
-    static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
+    static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = IntegrationService.BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, IntegrationService.BootstrapPhase.COMPLETE);
 
     private final AtomicBoolean deploymentInstallComplete = new AtomicBoolean(false);
     private final Set<ServiceName> deploymentPhaseServices = new HashSet<ServiceName>();

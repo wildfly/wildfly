@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentMana
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -45,17 +46,17 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleInstallPlugin;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleException;
 
 /**
- * A {@link BundleInstallProvider} that delegates to the {@link ServerDeploymentManager}.
+ * An {@link IntegrationService} that can install bundle deployments through to the {@link ServerDeploymentManager}.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public class BundleInstallIntegration implements BundleInstallPlugin {
+public final class BundleInstallIntegration implements BundleInstallPlugin, IntegrationService<BundleInstallPlugin> {
 
     private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
@@ -63,17 +64,19 @@ public class BundleInstallIntegration implements BundleInstallPlugin {
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private ServerDeploymentManager deploymentManager;
 
-    public static ServiceController<?> addService(final ServiceTarget target) {
-        BundleInstallIntegration service = new BundleInstallIntegration();
-        ServiceBuilder<BundleInstallPlugin> builder = target.addService(IntegrationServices.BUNDLE_INSTALL_PLUGIN, service);
-        builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, service.injectedController);
-        builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, service.injectedBundleManager);
+    @Override
+    public ServiceName getServiceName() {
+        return BUNDLE_INSTALL_PLUGIN;
+    }
+
+    @Override
+    public ServiceController<BundleInstallPlugin> install(ServiceTarget serviceTarget) {
+        ServiceBuilder<BundleInstallPlugin> builder = serviceTarget.addService(getServiceName(), this);
+        builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
+        builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
-    }
-
-    private BundleInstallIntegration() {
     }
 
     @Override
