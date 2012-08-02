@@ -37,8 +37,8 @@ import org.jboss.ejb.client.UnknownSessionID;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
 public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID> {
+    private static final long serialVersionUID = -760242454303210714L;
 
     public SessionIDExternalizer() {
         super(SessionID.class);

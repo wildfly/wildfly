@@ -32,8 +32,8 @@ import org.jboss.as.network.ClientMapping;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
 public class ClientMappingExternalizer extends AbstractSimpleExternalizer<ClientMapping> {
+    private static final long serialVersionUID = -826335918075494339L;
 
     public ClientMappingExternalizer() {
         super(ClientMapping.class);
