@@ -77,11 +77,12 @@
     <modules>
         <module>jboss-javaee-6.0-with-errai</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
-        <module>jboss-javaee-6.0-with-security</module>        
         <module>jboss-javaee-6.0-with-hibernate3</module>
+        <module>jboss-javaee-6.0-with-infinispan</module>        
         <module>jboss-javaee-6.0-with-logging</module>
         <module>jboss-javaee-6.0-with-osgi</module>
         <module>jboss-javaee-6.0-with-richfaces</module>
+        <module>jboss-javaee-6.0-with-security</module>        
         <module>jboss-javaee-6.0-with-tools</module>
         <module>jboss-javaee-6.0-with-transactions</module>        
     </modules>
