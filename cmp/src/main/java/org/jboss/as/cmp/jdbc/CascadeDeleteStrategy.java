@@ -159,7 +159,7 @@ public abstract class CascadeDeleteStrategy {
             }
 
             if (didDelete) {
-                executeDeleteSQL(batchCascadeDeleteSql, ctx.getPrimaryKey());
+                executeDeleteSQL(batchCascadeDeleteSql, ctx.getPrimaryKeyUnchecked());
             }
         }
     }

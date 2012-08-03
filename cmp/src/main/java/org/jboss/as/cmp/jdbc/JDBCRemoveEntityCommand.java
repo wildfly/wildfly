@@ -25,13 +25,15 @@ import java.rmi.RemoteException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Map;
+
 import javax.ejb.RemoveException;
 
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
-import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.logging.Logger;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 
 /**
@@ -86,7 +88,7 @@ public final class JDBCRemoveEntityCommand {
 
     public void execute(CmpEntityBeanContext ctx) throws RemoveException, RemoteException {
         if (entity.isRemoved(ctx)) {
-            throw MESSAGES.instanceAlreadyRemoved(ctx.getPrimaryKey());
+            throw MESSAGES.instanceAlreadyRemoved(ctx.getPrimaryKeyUnchecked());
         }
 
         entity.setIsBeingRemoved(ctx);
@@ -105,7 +107,7 @@ public final class JDBCRemoveEntityCommand {
                 executeDeleteSQL(ctx);
             } else {
                 if (log.isTraceEnabled())
-                    log.trace("Instance is scheduled for cascade delete. id=" + ctx.getPrimaryKey());
+                    log.trace("Instance is scheduled for cascade delete. id=" + ctx.getPrimaryKeyUnchecked());
             }
         }
         // cascade-delete to old relations, if relation uses cascade.
@@ -119,16 +121,16 @@ public final class JDBCRemoveEntityCommand {
                 executeDeleteSQL(ctx);
             } else {
                 if (log.isTraceEnabled())
-                    log.debug("Instance is scheduled for cascade delete. id=" + ctx.getPrimaryKey());
+                    log.debug("Instance is scheduled for cascade delete. id=" + ctx.getPrimaryKeyUnchecked());
             }
         }
 
-        manager.getReadAheadCache().removeCachedData(ctx.getPrimaryKey());
+        manager.getReadAheadCache().removeCachedData(ctx.getPrimaryKeyUnchecked());
         entity.setRemoved(ctx);
     }
 
     private void executeDeleteSQL(CmpEntityBeanContext ctx) throws RemoveException {
-        Object key = ctx.getPrimaryKey();
+        Object key = ctx.getPrimaryKeyUnchecked();
         Connection con = null;
         PreparedStatement ps = null;
         int rowsAffected = 0;

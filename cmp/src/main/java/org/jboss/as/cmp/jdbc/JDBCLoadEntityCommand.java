@@ -25,14 +25,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
+
 import javax.ejb.EJBException;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
+import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc.bridge.JDBCCMPFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCFieldBridge;
 import org.jboss.as.cmp.jdbc.metadata.JDBCFunctionMappingMetaData;
-import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.logging.Logger;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * JDBCLoadEntityCommand loads the data for an instance from the table.
@@ -111,7 +114,7 @@ public final class JDBCLoadEntityCommand {
                             CmpEntityBeanContext ctx,
                             boolean failIfNotFound) {
         // load the instance primary key fields into the context
-        Object id = ctx.getPrimaryKey();
+        Object id = ctx.getPrimaryKeyUnchecked();
         entity.injectPrimaryKeyIntoInstance(ctx, id);
 
         // get the read ahead cache
@@ -213,7 +216,7 @@ public final class JDBCLoadEntityCommand {
             // did we load the main results
             if (!mainEntityLoaded) {
                 if (failIfNotFound)
-                    throw MESSAGES.entityNotFound(ctx.getPrimaryKey());
+                    throw MESSAGES.entityNotFound(ctx.getPrimaryKeyUnchecked());
                 else
                     return false;
             } else

@@ -743,7 +743,7 @@ public class JDBCEntityBridge implements JDBCAbstractEntityBridge {
     public void scheduleForCascadeDelete(CmpEntityBeanContext ctx) {
         getEntityState(ctx).scheduleForCascadeDelete();
         if (log.isTraceEnabled())
-            log.trace("Scheduled for cascade-delete: " + ctx.getPrimaryKey());
+            log.trace("Scheduled for cascade-delete: " + ctx.getPrimaryKeyUnchecked());
     }
 
     /**
@@ -762,7 +762,7 @@ public class JDBCEntityBridge implements JDBCAbstractEntityBridge {
     public void scheduleForBatchCascadeDelete(CmpEntityBeanContext ctx) {
         getEntityState(ctx).scheduleForBatchCascadeDelete();
         if (log.isTraceEnabled())
-            log.trace("Scheduled for batch-cascade-delete: " + ctx.getPrimaryKey());
+            log.trace("Scheduled for batch-cascade-delete: " + ctx.getPrimaryKeyUnchecked());
     }
 
     /**

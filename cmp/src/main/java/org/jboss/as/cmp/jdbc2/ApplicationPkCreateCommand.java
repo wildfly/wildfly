@@ -23,10 +23,13 @@ package org.jboss.as.cmp.jdbc2;
 
 import java.lang.reflect.Method;
 import java.sql.SQLException;
+
 import javax.ejb.CreateException;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import org.jboss.as.cmp.context.CmpEntityBeanContext;
 import org.jboss.as.cmp.jdbc2.bridge.JDBCEntityBridge2;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:alex@jboss.org">Alexey Loubyansky</a>
@@ -42,7 +45,7 @@ public class ApplicationPkCreateCommand implements CreateCommand {
     public Object execute(Method m, Object[] args, CmpEntityBeanContext ctx) throws CreateException {
         Object pk;
         PersistentContext pctx = (PersistentContext) ctx.getPersistenceContext();
-        if (ctx.getPrimaryKey() == null) {
+        if (ctx.getPrimaryKeyUnchecked() == null) {
             pk = entityBridge.extractPrimaryKeyFromInstance(ctx);
 
             if (pk == null) {
@@ -56,12 +59,12 @@ public class ApplicationPkCreateCommand implements CreateCommand {
                 pctx.flush();
             } catch (SQLException e) {
                 if ("23000".equals(e.getSQLState())) {
-                    throw MESSAGES.uniqueKeyViolation(ctx.getPrimaryKey());
+                    throw MESSAGES.uniqueKeyViolation(ctx.getPrimaryKeyUnchecked());
                 } else {
-                    throw MESSAGES.failedToCreateInstance(ctx.getPrimaryKey(), e);
+                    throw MESSAGES.failedToCreateInstance(ctx.getPrimaryKeyUnchecked(), e);
                 }
             }
-            pk = ctx.getPrimaryKey();
+            pk = ctx.getPrimaryKeyUnchecked();
         }
         return pk;
     }

@@ -119,7 +119,7 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
 
                 final CmpEntityBeanContext context = getEjbContext();
                 final JDBCEntityPersistenceStore store = getComponent().getStoreManager();
-                if (context.getPrimaryKey() != null && store.isStoreRequired(context)) {
+                if (context.getPrimaryKeyUnchecked() != null && store.isStoreRequired(context)) {
                     store.storeEntity(context);
                 }
             }
