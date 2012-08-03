@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -486,5 +487,16 @@ public interface MessagingMessages {
      */
     @Message(id = 11671, value = "Failed to recover %s")
     OperationFailedException failedToRecover(@Cause Throwable cause, String name);
+
+    /**
+     * Create an exception indicating that an attribute is not supported by a given model version.
+     *
+     * @param name the name of the attribute
+     * @param version the model version that does not support the attribute
+     *
+     * @return the message.
+     */
+    @Message(id = 11672, value = "%s attribute is not supported by messaging management model %s")
+    OperationFailedException unsupportedAttributeInVersion(String name, ModelVersion version);
 
 }
