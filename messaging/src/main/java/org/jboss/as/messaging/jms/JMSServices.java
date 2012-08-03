@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging.jms;
 
-
 import org.jboss.msc.service.ServiceName;
 
 /**
