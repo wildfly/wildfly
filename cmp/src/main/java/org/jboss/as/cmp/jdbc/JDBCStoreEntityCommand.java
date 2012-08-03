@@ -68,7 +68,7 @@ public final class JDBCStoreEntityCommand {
         if (!dirtyIterator.hasNext() || entity.isBeingRemoved(ctx) || entity.isScheduledForBatchCascadeDelete(ctx)) {
             if (log.isTraceEnabled()) {
                 log.trace("Store command NOT executed. Entity is not dirty "
-                        + ", is being removed or scheduled for *batch* cascade delete: pk=" + ctx.getPrimaryKey());
+                        + ", is being removed or scheduled for *batch* cascade delete: pk=" + ctx.getPrimaryKeyUnchecked());
             }
             return;
         }
@@ -119,7 +119,7 @@ public final class JDBCStoreEntityCommand {
             }
 
             // WHERE: set primary key fields
-            index = entity.setPrimaryKeyParameters(ps, index, ctx.getPrimaryKey());
+            index = entity.setPrimaryKeyParameters(ps, index, ctx.getPrimaryKeyUnchecked());
 
             // WHERE: set optimistically locked field values
             if (hasLockedFields) {
@@ -144,7 +144,7 @@ public final class JDBCStoreEntityCommand {
 
         // check results
         if (rowsAffected != 1) {
-            throw CmpMessages.MESSAGES.updateFailedTooManyRowsAffected(rowsAffected, ctx.getPrimaryKey());
+            throw CmpMessages.MESSAGES.updateFailedTooManyRowsAffected(rowsAffected, ctx.getPrimaryKeyUnchecked());
         }
 
         // Mark the updated fields as clean.

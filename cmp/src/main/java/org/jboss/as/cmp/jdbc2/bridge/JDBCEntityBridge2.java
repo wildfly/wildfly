@@ -177,7 +177,7 @@ public class JDBCEntityBridge2 implements JDBCAbstractEntityBridge {
     }
 
     public void initInstance(CmpEntityBeanContext ctx) {
-        ctx.setPersistenceContext(new PersistentContext(this, table.getRow(ctx.getPrimaryKey())));
+        ctx.setPersistenceContext(new PersistentContext(this, table.getRow(ctx.getPrimaryKeyUnchecked())));
         for (int i = 0; i < tableFields.length; ++i) {
             tableFields[i].initInstance(ctx);
         }
