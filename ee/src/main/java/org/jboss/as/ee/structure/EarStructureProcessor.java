@@ -102,6 +102,9 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         if (earMetaData != null) {
             final String xmlLibDirName = earMetaData.getLibraryDirectory();
             if (xmlLibDirName != null) {
+                if (xmlLibDirName.length() == 1 && xmlLibDirName.charAt(0) == '/') {
+                    throw MESSAGES.rootAsLibraryDirectory();
+                }
                 libDirName = xmlLibDirName;
             }
         }
@@ -172,6 +175,14 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                         throw MESSAGES.cannotProcessEarModule(virtualFile, module.getFileName());
                     }
 
+                    if (libDir != null) {
+                        VirtualFile moduleParentFile = moduleFile.getParent();
+                        if (moduleParentFile != null) {
+                            if (libDir.equals(moduleParentFile)) {
+                                throw MESSAGES.earModuleChildOfLibraryDirectory(libDirName, module.getFileName());
+                            }
+                        }
+                    }
 
                     // maintain this in a collection of subdeployment virtual files, to be used later
                     subDeploymentFiles.add(moduleFile);
