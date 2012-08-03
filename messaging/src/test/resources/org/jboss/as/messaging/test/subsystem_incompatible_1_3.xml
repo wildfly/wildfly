@@ -18,10 +18,10 @@
             <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
             <page-max-concurrent-io>10</page-max-concurrent-io>
-            <paging-directory path="test" relative-to="test" />
-            <bindings-directory path="test" relative-to="test" />
-            <journal-directory path="test" relative-to="test" />
-            <large-messages-directory path="test" relative-to="test" />
+            <paging-directory path="${my.paging.dir:test}" relative-to="test" />
+            <bindings-directory path="${my.bindings.dir:test}" relative-to="test" />
+            <journal-directory path="${my.journal.dir:test}" relative-to="test" />
+            <large-messages-directory path="${my.largemessages.dir:test}" relative-to="test" />
             <connectors>
                <connector name="myconnector">
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
@@ -40,9 +40,7 @@
                   <param key="batch-delay" value="50"/>
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
-               <in-vm-acceptor name="in-vm" server-id="0">
-                  <param key="direct-deliver" value="true"/>
-               </in-vm-acceptor>
+               <in-vm-acceptor name="in-vm" server-id="0" />
             </acceptors>
             <broadcast-groups>
                 <broadcast-group name="groupA">
@@ -134,9 +132,8 @@
                 <cluster-connection name="cc1">
                     <address>cc1-address</address>
                     <connector-ref>netty</connector-ref>
+                    <min-large-message-size>10245</min-large-message-size>
                     <connection-ttl>1234</connection-ttl>
-                    <forward-when-no-consumers>true</forward-when-no-consumers>
-                    <max-hops>7</max-hops>
                     <retry-interval>987</retry-interval>
                     <retry-interval-multiplier>3.0</retry-interval-multiplier>
                     <max-retry-interval>3600</max-retry-interval>
@@ -144,7 +141,8 @@
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <check-period>2345</check-period>
                     <call-timeout>3456</call-timeout>
-                    <min-large-message-size>10245</min-large-message-size>
+                    <forward-when-no-consumers>true</forward-when-no-consumers>
+                    <max-hops>7</max-hops>
                     <confirmation-window-size>459</confirmation-window-size>
                     <static-connectors>
                         <connector-ref>in-vm</connector-ref>
@@ -245,7 +243,6 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
-                 <compress-large-messages>true</compress-large-messages>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
@@ -289,7 +286,6 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
-                 <compress-large-messages>false</compress-large-messages>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
@@ -354,4 +350,20 @@
         </hornetq-server>
 
         <hornetq-server name="empty"/>
+
+        <jms-bridge>
+            <source>
+                <connection-factory name="/cf/sourceCF" />
+                <destination name="/topic/anotherSourceTopic" />
+            </source>
+            <target>
+                <connection-factory name="/cf/targetCF" />
+                <destination name="anotherMQ/jms/queue/anotherTargetQueue" />
+            </target>
+            <quality-of-service>AT_MOST_ONCE</quality-of-service>
+            <failure-retry-interval>45678</failure-retry-interval>
+            <max-retries>7890</max-retries>
+            <max-batch-size>12345</max-batch-size>
+            <max-batch-time>10000</max-batch-time>
+        </jms-bridge>
     </subsystem>
