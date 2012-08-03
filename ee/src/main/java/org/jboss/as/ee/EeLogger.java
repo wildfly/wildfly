@@ -196,4 +196,14 @@ public interface EeLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 11012, value = "Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s")
     void ignoringStaticInjectionTarget(InjectionTarget injectionTarget);
+
+    /**
+     * Logs a warning message indicating that the deployment of an ear's module was ignored, because its type is not supported.
+     *
+     * @param moduleFileName the file name of the ignored module.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11013, value = "Ignoring unsupported ear module type: %s")
+    void ignoringUnsupportedModuleType(String moduleFileName);
+
 }
