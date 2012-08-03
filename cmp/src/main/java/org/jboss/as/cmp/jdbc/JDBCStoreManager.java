@@ -442,7 +442,7 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
         // is any on the data already in the entity valid
         if (!ctx.isValid()) {
             if (log.isTraceEnabled()) {
-                log.trace("RESET PERSISTENCE CONTEXT: id=" + ctx.getPrimaryKey());
+                log.trace("RESET PERSISTENCE CONTEXT: id=" + ctx.getPrimaryKeyUnchecked());
             }
             entityBridge.resetPersistenceContext(ctx);
         }

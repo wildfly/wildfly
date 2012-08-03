@@ -67,7 +67,7 @@ public abstract class AbstractCreateCommand
     public Object execute(Method m, Object[] args, CmpEntityBeanContext ctx) throws CreateException {
         Object pk;
         PersistentContext pctx = (PersistentContext) ctx.getPersistenceContext();
-        if (ctx.getPrimaryKey() == null) {
+        if (ctx.getPrimaryKeyUnchecked() == null) {
             Connection con = null;
             PreparedStatement ps = null;
             ResultSet rs = null;
@@ -106,12 +106,12 @@ public abstract class AbstractCreateCommand
                 pctx.flush();
             } catch (SQLException e) {
                 if ("23000".equals(e.getSQLState())) {
-                    throw CmpMessages.MESSAGES.uniqueKeyViolation(ctx.getPrimaryKey());
+                    throw CmpMessages.MESSAGES.uniqueKeyViolation(ctx.getPrimaryKeyUnchecked());
                 } else {
-                    throw CmpMessages.MESSAGES.failedToCreateInstance(ctx.getPrimaryKey(), e);
+                    throw CmpMessages.MESSAGES.failedToCreateInstance(ctx.getPrimaryKeyUnchecked(), e);
                 }
             }
-            pk = ctx.getPrimaryKey();
+            pk = ctx.getPrimaryKeyUnchecked();
         }
         return pk;
     }
