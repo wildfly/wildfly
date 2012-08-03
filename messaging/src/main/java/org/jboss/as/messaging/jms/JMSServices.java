@@ -34,6 +34,7 @@ import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.CommonAttributes.CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_RECONNECT_ATTEMPTS;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_TTL;
@@ -70,6 +71,7 @@ import static org.jboss.as.messaging.CommonAttributes.USE_LOCAL_TX;
 import static org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute.create;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -135,7 +137,6 @@ public class JMSServices {
         FAILOVER_ON_INITIAL_CONNECTION,
         FAILOVER_ON_SERVER_SHUTDOWN, // TODO not used in ConnectionFactoryConfiguration
         GROUP_ID,
-        HA,
         LOAD_BALANCING_CLASS_NAME,
         MAX_RETRY_INTERVAL,
         MIN_LARGE_MESSAGE_SIZE,

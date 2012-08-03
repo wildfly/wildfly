@@ -24,18 +24,31 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.transform.OperationResultTransformer.ORIGINAL_RESULT;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
+import static org.jboss.as.messaging.CommonAttributes.HA;
+import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.USE_AUTO_RECOVERY;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -48,6 +61,16 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
+import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.messaging.jms.ConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.ConnectionFactoryAddJndiHandler;
 import org.jboss.as.messaging.jms.ConnectionFactoryReadAttributeHandler;
@@ -71,9 +94,28 @@ import org.jboss.as.messaging.jms.PooledConnectionFactoryAdd;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryRemove;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryWriteAttributeHandler;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Domain extension that integrates HornetQ.
+ *
+ * <dl>
+ *   <dt>AS 7.2.0</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:1.3
+ *       <li>Management model: 1.2.0
+ *     </ul>
+ *   </dd>
+ *   <dt>AS 7.1.2<dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:1.2
+ *       <li>Management model: 1.1.0
+ *     </ul>
+ *   </dd>
+ * </dl>
  *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
@@ -332,6 +374,8 @@ public class MessagingExtension implements Extension {
 
         // JMS Bridges
         rootRegistration.registerSubModel(new JMSBridgeDefinition());
+
+        registerTransformers_1_1_0(subsystem);
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
@@ -348,4 +392,58 @@ public class MessagingExtension implements Extension {
         registration.registerReadWriteAttribute("value", null, TransportConfigOperationHandlers.PARAM_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
     }
 
+    private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
+        final ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        final TransformersSubRegistration transformers = subsystem.registerModelTransformers(version_1_1_0, new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+            @Override
+            public ModelNode transformModel(final TransformationContext context, final ModelNode model) {
+                ModelNode oldModel = model.clone();
+                if (oldModel.hasDefined(HORNETQ_SERVER)) {
+                    for (Property server : oldModel.get(HORNETQ_SERVER).asPropertyList()) {
+                        if (server.getValue().hasDefined(POOLED_CONNECTION_FACTORY)) {
+                            for (Property pooledConnectionFactory : server.getValue().get(POOLED_CONNECTION_FACTORY).asPropertyList()) {
+                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(USE_AUTO_RECOVERY.getName());
+                            }
+                        }
+                        if (server.getValue().hasDefined(CONNECTION_FACTORY)) {
+                            for (Property connectionFactory : server.getValue().get(CONNECTION_FACTORY).asPropertyList()) {
+                                if (!connectionFactory.getValue().hasDefined(HA.getName())) {
+                                    oldModel.get(HORNETQ_SERVER, server.getName(), CONNECTION_FACTORY, connectionFactory.getName()).get(HA.getName()).set(HA.getDefaultValue());
+                                }
+                            }
+                        }
+                    }
+                }
+                return oldModel;
+            }
+        });
+
+        TransformersSubRegistration server = transformers.registerSubResource(PathElement.pathElement(CommonAttributes.HORNETQ_SERVER));
+        RejectExpressionValuesTransformer rejectExpressionTransformer = new RejectExpressionValuesTransformer(PATH);
+        for (final String path : CommonAttributes.PATHS) {
+            TransformersSubRegistration pathRegistration = server.registerSubResource(PathElement.pathElement(PATH, path), rejectExpressionTransformer, rejectExpressionTransformer);
+            pathRegistration.registerOperationTransformer(ADD, rejectExpressionTransformer);
+            pathRegistration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpressionTransformer.getWriteAttributeTransformer());
+        }
+        TransformersSubRegistration pooledConnectionFactory = server.registerSubResource(RA_PATH);
+        pooledConnectionFactory.registerOperationTransformer(ADD, new OperationTransformer() {
+            @Override
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
+                final ModelNode transformedOperation = operation.clone();
+                transformedOperation.remove(USE_AUTO_RECOVERY.getName());
+                return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
+            }
+        });
+        pooledConnectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformer() {
+            @Override
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
+                if (operation.require(NAME).asString().equals(USE_AUTO_RECOVERY.getName())) {
+                    throw MessagingMessages.MESSAGES.unsupportedAttributeInVersion(USE_AUTO_RECOVERY.getName(), version_1_1_0);
+                }
+                return new TransformedOperation(operation, ORIGINAL_RESULT);
+            }
+        });
+    }
 }
