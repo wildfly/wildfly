@@ -1,0 +1,6 @@
+<jboss-app>
+	<module>
+		<service>test-service.xml</service>
+	</module>
+</jboss-app>
+
