@@ -27,11 +27,13 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.jboss.as.ee.EeLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -58,6 +60,8 @@ import org.jboss.vfs.util.SuffixMatchFilter;
  * @author Stuart Douglas
  */
 public class EarStructureProcessor implements DeploymentUnitProcessor {
+
+    private static final EnumSet<ModuleType> SUPPORTED_MODULE_TYPES = EnumSet.of(ModuleType.Client, ModuleType.Connector, ModuleType.Ejb, ModuleType.Web);
 
     private static final String JAR_EXTENSION = ".jar";
     private static final String WAR_EXTENSION = ".war";
@@ -162,6 +166,11 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 final Set<VirtualFile> subDeploymentFiles = new HashSet<VirtualFile>();
                 // otherwise read from application.xml
                 for (final ModuleMetaData module : earMetaData.getModules()) {
+
+                    if(!SUPPORTED_MODULE_TYPES.contains(module.getType())) {
+                        EeLogger.ROOT_LOGGER.ignoringUnsupportedModuleType(module.getFileName());
+                        continue;
+                    }
 
                     final VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
                     if (!moduleFile.exists()) {
