@@ -38,6 +38,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.structure.SpecDescriptorPropertyReplacement;
+import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
@@ -238,16 +239,21 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit ) {
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
+            boolean convertVFS = false; // convert VFS url to FILE based url if JPA_ENABLE_VFS_URLS == false
+            String enableVFS = pu.getProperties().getProperty(Configuration.JPA_ENABLE_VFS_URLS);
+            if (enableVFS != null && Boolean.parseBoolean(enableVFS) == false) {
+                convertVFS = true;
+            }
 
             // set URLs
             List<URL> jarfilesUrls = new ArrayList<URL>();
             if (pu.getJarFiles() != null) {
                 for (String jar : pu.getJarFiles()) {
-                    jarfilesUrls.add(getRelativeURL(persistence_xml, jar));
+                    jarfilesUrls.add(getRelativeURL(persistence_xml, jar, convertVFS));
                 }
             }
             pu.setJarFileUrls(jarfilesUrls);
-            URL url = getPersistenceUnitURL(persistence_xml);
+            URL url = getPersistenceUnitURL(persistence_xml, convertVFS);
             pu.setPersistenceUnitRootUrl(url);
             pu.setScopedPersistenceUnitName(createBeanName(deploymentUnit, pu.getPersistenceUnitName()));
             final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
@@ -255,7 +261,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private static URL getRelativeURL(VirtualFile persistence_xml, String jar) {
+    private static URL getRelativeURL(VirtualFile persistence_xml, String jar, boolean convertVFS) {
         try {
             return new URL(jar);
         } catch (MalformedURLException e) {
@@ -267,17 +273,22 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
                 VirtualFile jarFile = baseDir.getChild(jar);
                 if (jarFile == null)
                     throw MESSAGES.childNotFound(jar, baseDir);
-                return jarFile.toURL();
+                return convertVFS ?
+                        jarFile.getPhysicalFile().toURI().toURL() :
+                        jarFile.toURL();
             } catch (Exception e1) {
                 throw MESSAGES.relativePathNotFound(e1, jar);
             }
         }
     }
 
-    private URL getPersistenceUnitURL(VirtualFile persistence_xml) {
+    private URL getPersistenceUnitURL(VirtualFile persistence_xml, boolean convertVFS) {
         try {
             VirtualFile metaData = persistence_xml;// di.getMetaDataFile("persistence.xml");
-            return metaData.getParent().getParent().toURL();
+            return convertVFS ?
+                    metaData.getParent().getParent().getPhysicalFile().toURI().toURL() :
+                    metaData.getParent().getParent().toURL();
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
