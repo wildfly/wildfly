@@ -129,11 +129,15 @@
         <!-- Database properties. -->
         <ds.db></ds.db>
         <ds.jdbc.driver></ds.jdbc.driver>
+        <ds.jdbc.driver-xa></ds.jdbc.driver-xa>
         <ds.jdbc.driver.version></ds.jdbc.driver.version>
         <ds.jdbc.url></ds.jdbc.url>
         <ds.jdbc.user>test</ds.jdbc.user>
         <ds.jdbc.pass>test</ds.jdbc.pass>
         <ds.jdbc.driver.jar>${ds.db}-jdbc-driver.jar</ds.jdbc.driver.jar>
+        <ds.module.path></ds.module.path>
+        <ds.isModule>false</ds.isModule>
+        <ds.jdbc.driver.target.path>${basedir}/target/jbossas/standalone/deployments</ds.jdbc.driver.target.path>
 
         <!-- Common surefire properties. -->
         <surefire.memory.args>-Xmx512m -XX:MaxPermSize=256m</surefire.memory.args>
@@ -414,7 +418,7 @@
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.dist>${jboss.dist}</jboss.dist>
                         <jboss.home>${basedir}/target/jbossas</jboss.home>
-                        <module.path>${jboss.dist}/modules</module.path>
+                        <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
                         <bundle.path>${jboss.dist}/bundles</bundle.path>
                     </systemPropertyVariables>
                     <!-- Arquillian's config files. -->
@@ -714,6 +718,76 @@
         -->
 
         <profile>
+            <id>ds.createModule.profile</id>
+            <activation><property><name>ds.createModule</name></property></activation>
+            <properties>
+                <ds.jdbc.driver.target.path>${basedir}/target/modules/${ds.module.path}/main</ds.jdbc.driver.target.path>
+                <ds.isModule>true</ds.isModule>
+            </properties>
+            <build>
+                <plugins>
+                     <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Edit template module.xml -->
+                            <execution>
+                                <id>ts.config-as.db.change-datasource-module</id>
+                                <phase>process-test-sources</phase>
+                                <goals><goal>transform</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <transformationSets>
+                                        <transformationSet>
+                                            <dir      >${basedir}/target/jdbcDrivers</dir>
+                                            <outputDir>${basedir}/target/jdbcDrivers</outputDir>
+                                            <stylesheet>${xslt.scripts.dir}/changeModule.xsl</stylesheet>
+                                            <includes>
+                                                <include>module.xml</include>
+                                            </includes>
+                                            <parameters>
+                                                <parameter><name>ds.jdbc.driver.resource</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver.module.path</name><value>${ds.module.path}</value></parameter>
+                                            </parameters>
+                                        </transformationSet>
+                                    </transformationSets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                         <executions combine.children="append">
+                            <!-- Copy template module.xml to working directory -->
+                            <execution>
+                               <id>ts.config-as.db.copy-jdbc-module-template</id>
+                               <phase>generate-test-sources</phase>
+                               <goals><goal>copy-resources</goal></goals>
+                               <inherited>true</inherited>
+                               <configuration>
+                                  <outputDirectory>${basedir}/target/jdbcDrivers</outputDirectory>
+                                     <resources>
+                                        <resource>
+                                           <directory>${xslt.scripts.dir}</directory>
+                                           <filtering>true</filtering>
+                                           <includes>
+                                              <include>module.xml</include>
+                                           </includes>
+                                        </resource>
+                                     </resources>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+	    </build>
+        </profile>
+
+
+        <profile>
             <!--
                 Profile used to perform database related changes.
             -->
@@ -734,15 +808,15 @@
             </repositories>
             <build>
                 <plugins>
-                    <!-- Copy the JDBC driver to target/jdbcDrivers. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
                         <executions combine.children="append">
+                          <!-- Copy the JDBC driver to target/jdbcDrivers. -->
                             <execution>
                                 <id>ts.config-as.db.copy-jdbc-jars</id>
                                 <goals><goal>copy</goal></goals>
-                                <phase>process-sources</phase>
+                                <phase>generate-test-resources</phase>
                                 <inherited>true</inherited>
                                 <configuration>
                                     <artifactItems>
@@ -759,6 +833,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>xml-maven-plugin</artifactId>
@@ -779,10 +854,13 @@
                                                 <include>standalone*.xml</include>
                                             </includes>
                                             <parameters>
-                                                <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
                                                 <parameter><name>ds.jdbc.url</name><value>${ds.jdbc.url}</value></parameter>
                                                 <parameter><name>ds.jdbc.user</name><value>${ds.jdbc.user}</value></parameter>
                                                 <parameter><name>ds.jdbc.pass</name><value>${ds.jdbc.pass}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver</name><value>${ds.jdbc.driver-xa}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver.jar</name><value>${ds.jdbc.driver.jar}</value></parameter>
+                                                <parameter><name>ds.jdbc.driver.module</name><value>${ds.module.path}</value></parameter>
+                                                <parameter><name>ds.jdbc.isModule</name><value>${ds.isModule}</value></parameter>
                                             </parameters>
                                         </transformationSet>
                                     </transformationSets>
@@ -791,26 +869,25 @@
                         </executions>
                     </plugin>
 
-                    <!--
-                        Deploy the JDBC driver by copying to the deployments directory.
-                    -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
-                        <executions combine.children="append">
+                         <executions combine.children="append">
+                            <!-- Copy JDBC driver and module.xml (if ds.createModule) to deploy folder in targed/jbossas/ (or to module folder target/modules/) -->
                             <execution>
                                 <id>deploy-database-driver.server</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>process-test-resources</phase>
                                 <goals><goal>copy-resources</goal></goals>
                                 <inherited>true</inherited>
                                 <configuration>
-                                    <outputDirectory>${basedir}/target/jbossas/standalone/deployments</outputDirectory>
+                                    <outputDirectory>${ds.jdbc.driver.target.path}</outputDirectory>
                                     <overwrite>true</overwrite>
                                     <resources>
                                         <resource>
                                             <directory>${basedir}/target/jdbcDrivers</directory>
                                             <includes>
                                                 <include>${ds.db}-jdbc-driver.jar</include>
+                                                <include>module.xml</include>
                                             </includes>
                                         </resource>
                                     </resources>
@@ -820,7 +897,7 @@
                     </plugin>
 
                 </plugins>
-            </build>
+	    </build>
         </profile>
 
         <!-- Database properties profiles. -->
@@ -859,6 +936,7 @@
                 <ds.jdbc.driver-xa>com.mysql.jdbc.jdbc2.optional.MysqlXADataSource</ds.jdbc.driver-xa>
                 <ds.jdbc.url>jdbc:mysql://localhost:3306/test</ds.jdbc.url>
                 <ds.jdbc.driver.version>5.1.17</ds.jdbc.driver.version>
+                <ds.module.path>com/mysql</ds.module.path>
             </properties>
         </profile>
 
