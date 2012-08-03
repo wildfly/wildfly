@@ -306,6 +306,7 @@ public class ModelDescriptionConstants {
     public static final String VAULT_OPTIONS = "vault-options";
     public static final String WILDCARD = "wildcard";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
+    public static final String XML_NAMESPACES = "xml-namespaces";
 
     private ModelDescriptionConstants() {
     }
