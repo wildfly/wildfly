@@ -39,6 +39,16 @@ import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
  */
 public class TestPersistenceProvider implements PersistenceProvider {
 
+    private static volatile PersistenceUnitInfo lastPersistenceUnitInfo = null;
+
+    public static PersistenceUnitInfo getLastPersistenceUnitInfo() {
+        return lastPersistenceUnitInfo;
+    }
+
+    public static void clearLastPersistenceUnitInfo() {
+        lastPersistenceUnitInfo = null;
+    }
+
     @Override
     public EntityManagerFactory createEntityManagerFactory(String emName, Map map) {
         return null;
@@ -46,7 +56,7 @@ public class TestPersistenceProvider implements PersistenceProvider {
 
     @Override
     public EntityManagerFactory createContainerEntityManagerFactory(PersistenceUnitInfo info, Map map) {
-
+        lastPersistenceUnitInfo = info;
         TestClassTransformer testClassTransformer = new TestClassTransformer();
         info.addTransformer(testClassTransformer);
 

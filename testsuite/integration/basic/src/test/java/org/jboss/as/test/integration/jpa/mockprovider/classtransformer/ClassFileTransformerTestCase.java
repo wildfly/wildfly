@@ -44,6 +44,8 @@ import org.junit.runner.RunWith;
  * Hibernate "hibernate.ejb.use_class_enhancer" test that causes hibernate to add a
  * javax.persistence.spi.ClassTransformer to the pu.
  *
+ * TODO: rename to org.jboss.as.test.integration.jpa.mockprovider.MockProviderTestCase so this can include other unit tests.
+ *
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
@@ -105,5 +107,15 @@ public class ClassFileTransformerTestCase {
         }
     }
 
+    @Test
+    public void test_persistenceUnitInfoURLS() throws Exception {
+        try {
+            assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is file based, failed because getPersistenceUnitRootUrl is " +
+                    TestPersistenceProvider.getLastPersistenceUnitInfo().getPersistenceUnitRootUrl().getProtocol(),
+                    "file".equals(TestPersistenceProvider.getLastPersistenceUnitInfo().getPersistenceUnitRootUrl().getProtocol()));
+        } finally {
+            TestPersistenceProvider.clearLastPersistenceUnitInfo();
+        }
+    }
 
 }
