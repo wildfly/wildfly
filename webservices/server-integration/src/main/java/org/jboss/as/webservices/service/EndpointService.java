@@ -84,15 +84,13 @@ public final class EndpointService implements Service<Endpoint> {
         }
     }
 
-    public static void install(final ServiceTarget serviceTarget, final EndpointBootstrap bootstrap, final ServiceName serviceName, final ServiceName secDomainCtxServiceName) {
+    public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint, final ServiceName serviceName, final ServiceName secDomainCtxServiceName) {
         final InjectedValue<EndpointRegistry> endpointRegistryInjector = new InjectedValue<EndpointRegistry>();
-        bootstrap.setEndpointRegistryValue(endpointRegistryInjector);
         final InjectedValue<MBeanServer> mBeanServerInjector = new InjectedValue<MBeanServer>();
-        bootstrap.setmBeanServerValue(mBeanServerInjector);
         final InjectedValue<WebAppController> pclWebAppControllerInjector = new InjectedValue<WebAppController>();
-        bootstrap.setPclWebAppControllerValue(pclWebAppControllerInjector);
         final InjectedValue<SecurityDomainContext> securityDomainContextInjector = new InjectedValue<SecurityDomainContext>();
-        bootstrap.setSecurityDomainContextValue(securityDomainContextInjector);
+        final EndpointBootstrap bootstrap = new EndpointBootstrap(endpoint, securityDomainContextInjector,
+                pclWebAppControllerInjector, endpointRegistryInjector, mBeanServerInjector);
 
         final EndpointService service = new EndpointService(bootstrap, serviceName);
 

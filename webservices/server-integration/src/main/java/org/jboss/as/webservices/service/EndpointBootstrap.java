@@ -47,14 +47,20 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
  */
 public class EndpointBootstrap {
 
-    private Value<SecurityDomainContext> securityDomainContextValue;
-    private Value<WebAppController> pclWebAppControllerValue;
-    private Value<EndpointRegistry> endpointRegistryValue;
-    private Value<MBeanServer> mBeanServerValue;
-    private Endpoint endpoint;
+    private final Value<SecurityDomainContext> securityDomainContextValue;
+    private final Value<WebAppController> pclWebAppControllerValue;
+    private final Value<EndpointRegistry> endpointRegistryValue;
+    private final Value<MBeanServer> mBeanServerValue;
+    private final Endpoint endpoint;
 
-    public EndpointBootstrap(final Endpoint endpoint) {
+    public EndpointBootstrap(final Endpoint endpoint, final Value<SecurityDomainContext> securityDomainContextValue,
+            final Value<WebAppController> pclWebAppControllerValue, final Value<EndpointRegistry> endpointRegistryValue,
+            final Value<MBeanServer> mBeanServerValue) {
         this.endpoint = endpoint;
+        this.securityDomainContextValue = securityDomainContextValue;
+        this.pclWebAppControllerValue = pclWebAppControllerValue;
+        this.endpointRegistryValue = endpointRegistryValue;
+        this.mBeanServerValue = mBeanServerValue;
     }
 
     public Endpoint getEndpoint() {
@@ -135,21 +141,5 @@ public class EndpointBootstrap {
     private boolean hasWebservicesMD(final Endpoint endpoint) {
         final Deployment dep = endpoint.getService().getDeployment();
         return dep.getAttachment(WebservicesMetaData.class) != null;
-    }
-
-    public void setSecurityDomainContextValue(Value<SecurityDomainContext> securityDomainContextValue) {
-        this.securityDomainContextValue = securityDomainContextValue;
-    }
-
-    public void setPclWebAppControllerValue(Value<WebAppController> pclWebAppControllerValue) {
-        this.pclWebAppControllerValue = pclWebAppControllerValue;
-    }
-
-    public void setEndpointRegistryValue(Value<EndpointRegistry> endpointRegistryValue) {
-        this.endpointRegistryValue = endpointRegistryValue;
-    }
-
-    public void setmBeanServerValue(Value<MBeanServer> mBeanServerValue) {
-        this.mBeanServerValue = mBeanServerValue;
     }
 }

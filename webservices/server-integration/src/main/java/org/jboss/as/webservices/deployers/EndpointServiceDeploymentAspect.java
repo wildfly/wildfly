@@ -64,7 +64,7 @@ public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDepl
             final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
             for (final Endpoint ep : dep.getService().getEndpoints()) {
                 final ServiceName serviceName = EndpointService.getServiceNameDeploymentPrefix(unit).append(ep.getShortName());
-                EndpointService.install(target, new EndpointBootstrap(ep), serviceName, securityDomainServiceName);
+                EndpointService.install(target, ep, serviceName, securityDomainServiceName);
                 getLifecycleHandler(ep, true).start(ep);
             }
         } else {
@@ -80,10 +80,8 @@ public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDepl
             final Value<SecurityDomainContext> securityDomainContextValue = getMSCService(securityDomainServiceName, SecurityDomainContext.class);
 
             for (final Endpoint ep : dep.getService().getEndpoints()) {
-                EndpointBootstrap bootstrap = new EndpointBootstrap(ep);
-                bootstrap.setEndpointRegistryValue(new ImmediateValue<EndpointRegistry>(epRegistry));
-                bootstrap.setmBeanServerValue(mBeanServerValue);
-                bootstrap.setSecurityDomainContextValue(securityDomainContextValue);
+                EndpointBootstrap bootstrap = new EndpointBootstrap(ep, securityDomainContextValue, null,
+                        new ImmediateValue<EndpointRegistry>(epRegistry), mBeanServerValue);
                 bootstrap.start();
                 ep.addAttachment(EndpointBootstrap.class, bootstrap);
                 getLifecycleHandler(ep, true).start(ep);
