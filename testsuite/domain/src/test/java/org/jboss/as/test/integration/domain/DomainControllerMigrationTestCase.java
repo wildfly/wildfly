@@ -21,19 +21,25 @@
  */
 package org.jboss.as.test.integration.domain;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
+
 import junit.framework.Assert;
+
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.integration.management.util.WebUtil;
@@ -47,6 +53,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -54,7 +61,7 @@ import org.junit.Test;
  *
  * @author <a href="dpospisi@redhat.com">Dominik Pospisil</a>
  */
-
+@Ignore
 public class DomainControllerMigrationTestCase {
 
     private static final Logger log = Logger.getLogger(DomainControllerMigrationTestCase.class);
