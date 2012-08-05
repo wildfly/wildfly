@@ -95,9 +95,10 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         this.attributeStorage = attributeStorage;
         this.batchingManager = batchingManager;
         this.invoker = new ForceSynchronousCacheInvoker(invoker);
-        this.lockTimeout = this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
 
         Configuration configuration = this.cache.getCacheConfiguration();
+
+        this.lockTimeout = configuration.locking().lockAcquisitionTimeout();
         this.passivationEnabled = configuration.loaders().passivation() && !configuration.loaders().shared() && !configuration.loaders().cacheLoaders().isEmpty();
         this.registry = registry;
         this.affinity = affinityFactory.createService(cache, this);
