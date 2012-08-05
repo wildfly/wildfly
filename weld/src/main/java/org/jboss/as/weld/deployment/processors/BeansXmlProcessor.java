@@ -93,7 +93,7 @@ public class BeansXmlProcessor implements DeploymentUnitProcessor {
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
             // look for WEB-INF/beans.xml
             final VirtualFile rootBeansXml = deploymentRoot.getRoot().getChild(WEB_INF_BEANS_XML);
-            if (rootBeansXml.exists() && rootBeansXml.isFile()) {
+            if (rootBeansXml.exists() && rootBeansXml.isFile() && classesRoot != null) {
                 WeldLogger.DEPLOYMENT_LOGGER.debugf("Found beans.xml: %s", rootBeansXml);
                 beanArchiveMetadata.add(new BeanArchiveMetadata(rootBeansXml, classesRoot, parseBeansXml(rootBeansXml, parser, deploymentUnit), true));
             } else if (classesRoot != null) {
