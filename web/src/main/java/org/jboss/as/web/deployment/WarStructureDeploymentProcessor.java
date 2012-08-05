@@ -22,6 +22,7 @@
 
 package org.jboss.as.web.deployment;
 
+
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import org.jboss.as.ee.structure.DeploymentType;
@@ -46,10 +47,12 @@ import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
 
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Create and mount classpath entries in the .war deployment.
@@ -167,7 +170,12 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             final List<VirtualFile> archives = webinfLib.getChildren(DEFAULT_WEB_INF_LIB_FILTER);
             for (final VirtualFile archive : archives) {
                 try {
-                    final Closeable closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+                    final Closeable closable;
+                    if(archive.isFile()) {
+                       closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+                    } else {
+                        closable = null;
+                    }
                     final ResourceRoot webInfArchiveRoot = new ResourceRoot(archive.getName(), archive, new MountHandle(closable));
                     ModuleRootMarker.mark(webInfArchiveRoot);
                     entries.add(webInfArchiveRoot);
