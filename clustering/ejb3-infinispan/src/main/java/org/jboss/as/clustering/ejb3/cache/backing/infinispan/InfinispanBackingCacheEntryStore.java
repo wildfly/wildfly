@@ -33,6 +33,7 @@ import java.util.Set;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
@@ -85,6 +86,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     private final Registry<String, ?> registry;
     private final IdentifierFactory<K> identifierFactory;
     private final KeyAffinityService<K> affinity;
+    private final long lockTimeout;
 
     public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, IdentifierFactory<K> identifierFactory, KeyAffinityServiceFactory affinityFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, SharedLocalYieldingClusterLockManager lockManager, LockKeyFactory<K> lockKeyFactory, Registry<String, ?> registry) {
         super(timeout, config);
@@ -93,7 +95,9 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.identifierFactory = identifierFactory;
         this.passivationManager = passivationManager;
         this.controlCacheLifecycle = controlCacheLifecycle;
-        this.clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
+        Configuration configuration = cache.getCacheConfiguration();
+        this.clustered = configuration.clustering().cacheMode().isClustered();
+        this.lockTimeout = configuration.locking().lockAcquisitionTimeout();
         this.valueFactory = valueFactory;
         this.context = context;
         this.lockManager = this.clustered ? lockManager : null;
@@ -271,13 +275,12 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
         this.trace("Acquiring %slock on %s", newLock ? "new " : "", lockKey);
 
-        long timeout = this.cache.getCacheConfiguration().locking().lockAcquisitionTimeout();
         try {
-            LockResult result = this.lockManager.lock(lockKey, timeout, newLock);
+            LockResult result = this.lockManager.lock(lockKey, this.lockTimeout, newLock);
             this.trace("Lock acquired (%s) on %s", result, lockKey);
             return result;
         } catch (TimeoutException e) {
-            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(lockKey, timeout);
+            throw InfinispanEjbMessages.MESSAGES.lockAcquisitionTimeout(lockKey, this.lockTimeout);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw InfinispanEjbMessages.MESSAGES.lockAcquisitionInterruption(e, lockKey);
