@@ -33,6 +33,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtens
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -106,9 +107,11 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
 
                                     }
 
-                                ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
-                                if (subRegistration == null) {
-                                       subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem"));
+                                ManagementResourceRegistration subRegistration;
+                                try {
+                                    subRegistration = overrideRegistration.registerSubModel(new SimpleResourceDefinition(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem")));
+                                } catch (IllegalArgumentException iae) {
+                                    subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
                                 }
                                 Resource subsystemResource;
 
@@ -119,10 +122,12 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     subsystemResource = deploymentResource.getChild(pe);
                                 }
 
-                                ManagementResourceRegistration statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
-                                if (statsRegistration == null) {
-                                    statsRegistration = subRegistration.registerSubModel(peStats, new StatisticsElementDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics"));
-                                }
+                                ManagementResourceRegistration statsRegistration;
+                                    try {
+                                        statsRegistration = subRegistration.registerSubModel(new SimpleResourceDefinition(peStats, new StatisticsElementDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics")));
+                                    } catch (IllegalArgumentException iae) {
+                                        statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
+                                    }
                                 Resource statisticsResource;
 
                                 if (!subsystemResource.hasChild(peStats)) {
