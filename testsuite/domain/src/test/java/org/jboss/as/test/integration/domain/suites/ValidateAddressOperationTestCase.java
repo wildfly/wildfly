@@ -25,11 +25,13 @@ import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
+import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -86,4 +88,23 @@ public class ValidateAddressOperationTestCase extends ContainerResourceMgmtTestB
         final ModelNode problem = result.get(PROBLEM);
         assertTrue(problem.asString().contains("JBAS014808: Child resource '\"wrong\" => \"illegal\"' not found"));
     }
+
+    @Test
+    public void testRemote() throws Exception {
+        ModelNode op = ModelUtil.createOpNode(null, ValidateAddressOperationHandler.OPERATION_NAME);
+        final ModelNode addr = op.get(VALUE);
+        addr.add("host", "slave");
+        assertTrue(executeOperation(op).get(RESULT, VALID).asBoolean());
+
+        addr.add("server", "main-three");
+        assertTrue(executeOperation(op).get(RESULT, VALID).asBoolean());
+
+        addr.add("core-service", "platform-mbean");
+        addr.add("type", "garbage-collector");
+        assertTrue(executeOperation(op).get(RESULT, VALID).asBoolean());
+
+        addr.add("non-existent", "resource");
+        assertFalse(executeOperation(op).get(RESULT, VALID).asBoolean());
+    }
+
 }
