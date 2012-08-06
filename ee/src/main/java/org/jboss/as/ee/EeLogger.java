@@ -186,12 +186,4 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 11011, value = "Transactional datasource %s will not be enlisted in the transaction as the transaction subsystem is not available")
     void transactionSubsystemNotAvailable(String className);
 
-    /**
-     * Logs a warning message indicating that the deployment of an ear's module was ignored, because its type is not supported.
-     *
-     * @param moduleFileName the file name of the ignored module.
-     */
-    @LogMessage(level = WARN)
-    @Message(id = 11012, value = "Ignoring unsupported ear module type: %s")
-    void ignoringUnsupportedModuleType(String moduleFileName);
 }
