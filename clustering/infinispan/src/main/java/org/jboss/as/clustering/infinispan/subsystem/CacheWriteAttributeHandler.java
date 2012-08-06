@@ -8,7 +8,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -107,8 +105,6 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
      }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : attributeDefinitions.values()) {
            registry.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, this);
         }
@@ -117,6 +113,7 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
     /*
      * The operation address is of the form /subsystem=infinispan/cache-container=X/cache-type=Y:write-attribute()
      */
+    @Deprecated //it looks like it is not used anymore
     public static CacheMode getCacheMode(ModelNode operation) {
 
         PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
