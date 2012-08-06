@@ -6,20 +6,16 @@ import org.jboss.as.controller.registry.Resource;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * @deprecated not in use yet
  */
+@Deprecated
 class DefaultSubsystemTransformer implements ResourceTransformer {
-   /* private ManagementResourceRegistration getSubsystemRegistration(final String subsystemName, int majorVersion, int minorVersion) {
-
-        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(subsystemName, majorVersion, minorVersion, 0);
-        return ManagementResourceRegistration.Factory.create(rd);
-    }
-
+    /*
     private List<TransformRule> getMappingRules(final ImmutableManagementResourceRegistration currentDefinition, final String subsystemName, int targetMajorVersion, int targetMinorVersion) {
         ManagementResourceRegistration targetDefinition = getSubsystemRegistration(subsystemName, targetMajorVersion, targetMinorVersion);
         if (targetDefinition == null) {
             return null;
         }
-
         return ModelMatcher.getRules(currentDefinition, targetDefinition);
     }*/
 

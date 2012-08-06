@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -321,7 +320,7 @@ public abstract class AbstractSubsystemTest {
      */
     protected static ModelNode checkResultAndGetContents(ModelNode result) {
         boolean success = SUCCESS.equals(result.get(OUTCOME).asString());
-        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString(),success);
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString(), success);
         Assert.assertTrue(result.hasDefined(RESULT));
         return result.get(RESULT);
     }
@@ -451,7 +450,7 @@ public abstract class AbstractSubsystemTest {
         }
     }
 
-    /*
+    /**
      * Checks that the subsystem can be transformed into the expected target DMR
      *
      * @param kernelServices the kernel services for the started controller

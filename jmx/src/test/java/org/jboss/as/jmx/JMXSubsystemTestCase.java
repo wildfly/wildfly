@@ -41,9 +41,13 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
@@ -543,7 +547,13 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                                         ManagementResourceRegistration rootRegistration) {
-            //rootResource.getModel().get(LAUNCH_TYPE).set(TYPE_STANDALONE);
+            rootRegistration.registerReadOnlyAttribute(LAUNCH_TYPE, new OperationStepHandler() {
+
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    context.getResult().set(TYPE_STANDALONE);
+                }
+            }, AttributeAccess.Storage.RUNTIME);
         }
 
         @Override
