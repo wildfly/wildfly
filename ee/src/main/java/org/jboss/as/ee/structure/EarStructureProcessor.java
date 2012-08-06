@@ -163,6 +163,10 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 // otherwise read from application.xml
                 for (final ModuleMetaData module : earMetaData.getModules()) {
 
+                    if(module.getFileName().endsWith(".xml")) {
+                        throw MESSAGES.unsupportedModuleType(module.getFileName());
+                    }
+
                     final VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
                     if (!moduleFile.exists()) {
                         throw MESSAGES.cannotProcessEarModule(virtualFile, module.getFileName());
@@ -199,6 +203,9 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                             case Web:
                                 childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
                                 break;
+                            case Service:
+                                throw MESSAGES.unsupportedModuleType(module.getFileName());
+
                         }
                     }
                 }
