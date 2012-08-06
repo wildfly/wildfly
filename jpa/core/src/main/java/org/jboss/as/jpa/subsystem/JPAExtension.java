@@ -22,13 +22,11 @@
 package org.jboss.as.jpa.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
 
 import java.util.Collections;
@@ -39,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -47,6 +46,8 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
 import org.jboss.as.jpa.processor.PersistenceProviderAdaptorLoader;
@@ -99,6 +100,8 @@ public class JPAExtension implements Extension {
         nodeRegistration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
         registration.registerXMLElementWriter(parser);
 
+        initializeTransformers_1_1_0(registration);
+
         try {
             PersistenceProviderLoader.loadDefaultProvider();
         } catch (ModuleLoadException e) {
@@ -122,6 +125,14 @@ public class JPAExtension implements Extension {
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
+    }
+
+    private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
+        ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
+        RejectExpressionValuesTransformer rejectDefaultDataSourceExpressions = new RejectExpressionValuesTransformer(JPADefinition.DEFAULT_DATASOURCE);
+        TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(oldVersion, rejectDefaultDataSourceExpressions);
+        reg.registerOperationTransformer(ADD, rejectDefaultDataSourceExpressions);
+        reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectDefaultDataSourceExpressions.getWriteAttributeTransformer());
     }
 
     static class JPASubsystemElementParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
