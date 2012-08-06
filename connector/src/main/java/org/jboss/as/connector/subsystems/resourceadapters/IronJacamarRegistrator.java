@@ -56,8 +56,11 @@ public class IronJacamarRegistrator {
         } catch (IllegalArgumentException iae) {
             configChild = raChild.getSubModel(PathAddress.pathAddress(configPath));
         }
-        configChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
-
+        try {
+            configChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+        } catch (IllegalArgumentException iae) {
+            //ignore
+        }
 
         PathElement connDefPath = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
         ManagementResourceRegistration connChild;
@@ -66,13 +69,28 @@ public class IronJacamarRegistrator {
         } catch (IllegalArgumentException iae) {
             connChild = raChild.getSubModel(PathAddress.pathAddress(connDefPath));
         }
-        connChild.registerOperationHandler("flush-idle-connection-in-pool",
-                PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        connChild.registerOperationHandler("flush-all-connection-in-pool",
-                PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        connChild.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
-                TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
 
+
+        try {
+            connChild.registerOperationHandler("flush-idle-connection-in-pool",
+                    PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+        } catch (IllegalArgumentException iae) {
+            //ignore
+        }
+
+        try {
+            connChild.registerOperationHandler("flush-all-connection-in-pool",
+                    PoolOperations.FlushAllConnectionInPool.RA_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+        } catch (IllegalArgumentException iae) {
+            //ignore
+        }
+
+        try {
+            connChild.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.RA_INSTANCE,
+                    TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
+        } catch (IllegalArgumentException iae) {
+            //ignore
+        }
 
         PathElement connDefConfigPath = PathElement.pathElement(CONFIG_PROPERTIES.getName());
         ManagementResourceRegistration connDefConfigChild;
@@ -81,7 +99,11 @@ public class IronJacamarRegistrator {
         } catch (IllegalArgumentException iae) {
             connDefConfigChild = connChild.getSubModel(PathAddress.pathAddress(connDefConfigPath));
         }
-        connDefConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+        try {
+            connDefConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+        } catch (IllegalArgumentException iae) {
+            //ignore
+        }
 
 
         PathElement adminObjectPath = PathElement.pathElement(ADMIN_OBJECTS_NAME);
@@ -99,9 +121,11 @@ public class IronJacamarRegistrator {
         } catch (IllegalArgumentException iae) {
             adminObjectConfigChild = adminObjectChild.getSubModel(PathAddress.pathAddress(adminObjectConfigPath));
         }
-        adminObjectConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
-
-
+        try {
+            adminObjectConfigChild.registerReadOnlyAttribute(Constants.CONFIG_PROPERTY_VALUE, null);
+        } catch (IllegalArgumentException iae) {
+            //ignore
+        }
 
     }
 }
