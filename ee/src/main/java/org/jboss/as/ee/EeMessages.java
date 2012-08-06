@@ -876,4 +876,10 @@ public interface EeMessages {
     @Message(id = 16700, value = "Failed to load jboss.properties")
     DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
 
+<<<<<<< HEAD
+=======
+    @Message(id = 16701, value = "Unsupported ear module type: %s")
+    DeploymentUnitProcessingException unsupportedModuleType(String moduleFileName);
+
+>>>>>>> reverting deployer behavior to throw error on unsupported xml module
 }
