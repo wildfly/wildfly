@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.Resource;
@@ -76,23 +77,26 @@ class PathWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOpe
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final PathEntry backup = new PathEntry(pathEntry);
 
+                    final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final PathEventContextImpl pathEventContext = pathManager.checkRestartRequired(context, pathName, Event.UPDATED);
                     if (pathEventContext.isInstallServices()) {
                         if (attributeName.equals(PATH)) {
                             pathManager.changePath(pathName, newValue.asString());
-                            pathManager.changePathServices(context, pathName, newValue.asString());
+                            pathManager.changePathServices(context, pathName, newValue.asString(), verificationHandler);
                         } else if (attributeName.equals(RELATIVE_TO)) {
                             pathManager.changeRelativePath( pathName, newValue.isDefined() ?  newValue.asString() : null, true);
-                            pathManager.changeRelativePathServices(context, pathName, newValue.isDefined() ?  newValue.asString() : null);
+                            pathManager.changeRelativePathServices(context, pathName, newValue.isDefined() ?  newValue.asString() : null, verificationHandler);
                         }
                     }
+
+                    context.addStep(verificationHandler, Stage.VERIFY);
 
                     context.completeStep(new OperationContext.RollbackHandler() {
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             if (pathEventContext.isInstallServices()) {
                                 if (attributeName.equals(PATH)) {
                                     pathManager.changePath(pathName, backup.getPath());
-                                    pathManager.changePathServices(context, pathName, currentValue.asString());
+                                    pathManager.changePathServices(context, pathName, currentValue.asString(), null);
                                 } else if (attributeName.equals(RELATIVE_TO)) {
                                     try {
                                         pathManager.changeRelativePath(pathName, backup.getRelativeTo(), false);
@@ -100,7 +104,7 @@ class PathWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOpe
                                         //Should not happen since false passed in for the 'check' parameter
                                         throw new RuntimeException(e);
                                     }
-                                    pathManager.changeRelativePathServices(context, pathName, currentValue.isDefined() ?  currentValue.asString() : null);
+                                    pathManager.changeRelativePathServices(context, pathName, currentValue.isDefined() ?  currentValue.asString() : null, null);
                                 }
                             } else {
                                 pathEventContext.revert();
