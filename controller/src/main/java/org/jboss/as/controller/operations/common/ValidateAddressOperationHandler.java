@@ -21,10 +21,14 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.PathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -34,8 +38,11 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleLoadError;
 
 /**
  *
@@ -51,13 +58,48 @@ public class ValidateAddressOperationHandler implements OperationStepHandler, De
         final ModelNode address = operation.require(VALUE);
         final PathAddress pathAddr = PathAddress.pathAddress(address);
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        try {
-            resource.navigate(pathAddr);
-            context.getResult().get(VALID).set(true);
-        } catch(NoSuchElementException e) {
-            context.getResult().get(VALID).set(false);
-            context.getResult().get(PROBLEM).set(e.getMessage());
+        Resource model = resource;
+        final Iterator<PathElement> iterator = pathAddr.iterator();
+        int index = 0;
+        out: while(iterator.hasNext()) {
+            final PathElement next = iterator.next();
+            index++;
+            if(model.hasChild(next)) {
+                model = model.getChild(next);
+            } else {
+                final PathAddress subAddress = pathAddr.subAddress(0, index);
+                final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(subAddress);
+
+                if(registration != null) {
+                    // If the target is a registered proxy return immediately
+                    boolean remote = registration.isRemote();
+                    if(remote && ! iterator.hasNext()) {
+                        break out;
+                    }
+                    // Create the proxy op
+                    final PathAddress newAddress = pathAddr.subAddress(index);
+                    final ModelNode newOperation = operation.clone();
+                    newOperation.get(OP_ADDR).set(subAddress.toModelNode());
+                    newOperation.get(VALUE).set(newAddress.toModelNode());
+
+                    // On the DC the host=master is not a proxy but the validate-address is registered at the root
+                    // Otherwise delegate to the proxy handler
+                    final OperationStepHandler proxyHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, OPERATION_NAME);
+                    if(proxyHandler != null) {
+                        context.addStep(newOperation, proxyHandler, OperationContext.Stage.IMMEDIATE);
+                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                        return;
+                    }
+                }
+
+                // Invalid
+                context.getResult().get(VALID).set(false);
+                context.getResult().get(PROBLEM).set(ControllerMessages.MESSAGES.childResourceNotFound(next));
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                return;
+            }
         }
+        context.getResult().get(VALID).set(true);
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
