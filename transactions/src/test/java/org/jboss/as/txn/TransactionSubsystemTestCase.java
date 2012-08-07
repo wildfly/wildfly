@@ -21,6 +21,8 @@
 */
 package org.jboss.as.txn;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -32,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.io.IOException;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -91,8 +94,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation);
         ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
-        System.out.println(result);
-        System.out.println(legacyServices.readWholeModel());
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains(ControllerMessages.MESSAGES.expressionNotAllowed("status-socket-binding", modelVersion)));
     }
 
 }
