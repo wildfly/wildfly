@@ -74,7 +74,7 @@ public class JPASubsystemTestCase extends AbstractSubsystemBaseTest {
             KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
             Assert.assertNotNull(legacyServices);
 
-            checkSubsystemTransformer(mainServices, oldVersion);
+            checkSubsystemModelTransformation(mainServices, oldVersion);
 
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);

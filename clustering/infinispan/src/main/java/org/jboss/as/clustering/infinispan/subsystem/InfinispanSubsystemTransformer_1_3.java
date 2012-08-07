@@ -17,15 +17,18 @@ public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransfo
     @Override
     public ModelNode transformModel(TransformationContext context, ModelNode model) {
         for (Property p : model.get(ModelKeys.CACHE_CONTAINER).asPropertyList()) {
+            transformCache(model, p.getName(), ModelKeys.LOCAL_CACHE);
             transformCache(model, p.getName(), ModelKeys.DISTRIBUTED_CACHE);
             transformCache(model, p.getName(), ModelKeys.REPLICATED_CACHE);
             transformCache(model, p.getName(), ModelKeys.INVALIDATION_CACHE);
-            transformCache(model, p.getName(), ModelKeys.LOCAL_CACHE);
         }
         return model;
     }
 
     private void transformCache(final ModelNode model, final String containerName, final String cacheType) {
+        if (!(model.get(ModelKeys.CACHE_CONTAINER).has(containerName) && model.get(ModelKeys.CACHE_CONTAINER, containerName).has(cacheType))) {
+            return;
+        }
         ModelNode cacheHolder = model.get(ModelKeys.CACHE_CONTAINER, containerName, cacheType);
         if (!cacheHolder.isDefined()) { return; }
         for (Property c : cacheHolder.asPropertyList()) {

@@ -6,7 +6,7 @@
                 "type" => STRING,
                 "description" => "The name of the socket binding configuration to use if the transaction manager should use a socket-based process id. Will be 'undefined' if 'process-id-uuid' is 'true'; otherwise must be set.",
                 "expressions-allowed" => false,
-                "nillable" => false,
+                "nillable" => true,
                 "alternatives" => ["process-id-uuid"],
                 "min-length" => 1L,
                 "max-length" => 2147483647L

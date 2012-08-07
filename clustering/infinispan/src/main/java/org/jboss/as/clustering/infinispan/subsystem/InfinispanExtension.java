@@ -21,7 +21,6 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.ModelVersion;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -31,6 +30,8 @@ import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -38,6 +39,9 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.as.controller.transform.AbstractOperationTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -136,7 +140,23 @@ public class InfinispanExtension implements Extension {
         CacheWriteAttributeHandler.DISTRIBUTED_CACHE_ATTR.registerAttributes(distributed);
 
         // Register the model transformers
-        subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
+        TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
+        TransformersSubRegistration containerReg = reg.registerSubResource(containerPath);
+        InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
+        containerReg.registerSubResource(localCachePath).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(invalidationCachePath).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(replicatedCachePath).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(distributedCachePath).registerOperationTransformer(ADD, ot);
+    }
+
+    private static class InfinispanOperationTransformer_1_3 extends AbstractOperationTransformer {
+        @Override
+        protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
+            if (operation.has(ModelKeys.INDEXING_PROPERTIES)){
+                operation.remove(ModelKeys.INDEXING_PROPERTIES);
+            }
+            return operation;
+        }
     }
 
     /**

@@ -34,12 +34,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.List;
+
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -446,11 +448,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
 
-        ModelNode legacyModel = legacyServices.readWholeModel();
-        ModelNode legacySubsystem = legacyModel.get(SUBSYSTEM, mainSubsystemName);
-        check_1_0_0_Model(legacySubsystem, true, true);
 
-        checkSubsystemTransformer(mainServices, legacySubsystem, oldVersion);
+        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME), true, true);
 
         //Test that show-model=>expression is ignored
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION, CommonAttributes.SHOW_MODEL, CommonAttributes.EXPRESSION);
@@ -488,21 +488,19 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
         op = createOperation(REMOVE, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
         transformedOp = mainServices.transformOperation(oldVersion, op);
-        mainServices.executeOperation(oldVersion, transformedOp).get(RESULT).asString();
-        legacyModel = legacyServices.readWholeModel();
-        legacySubsystem = legacyModel.get(SUBSYSTEM, mainSubsystemName);
-        check_1_0_0_Model(legacySubsystem, true, false);
-        mainServices.executeOperation(op);
-        checkSubsystemTransformer(mainServices, legacySubsystem, oldVersion);
+        checkOutcome(mainServices.executeOperation(op));
+        checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, mainSubsystemName), true, false);
+
 
         op = createOperation(ADD, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
         transformedOp = mainServices.transformOperation(oldVersion, op);
-        mainServices.executeOperation(oldVersion, transformedOp).get(RESULT).asString();
-        legacyModel = legacyServices.readWholeModel();
-        legacySubsystem = legacyModel.get(SUBSYSTEM, mainSubsystemName);
-        check_1_0_0_Model(legacySubsystem, true, true);
-        mainServices.executeOperation(op);
-        checkSubsystemTransformer(mainServices, legacySubsystem, oldVersion);
+        checkOutcome(mainServices.executeOperation(op));
+        checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion);
+        check_1_0_0_Model(legacyModel.get(SUBSYSTEM, mainSubsystemName), true, true);
+
     }
 
     private void check_1_0_0_Model(ModelNode legacySubsystem, boolean remotingConnector, boolean showModel) {

@@ -138,7 +138,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
 
-        checkSubsystemTransformer(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
 
         ModelNode mainModel = mainServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
         ModelNode legacyModel = legacyServices.readWholeModel().get(SUBSYSTEM, SUBSYSTEM_NAME);
