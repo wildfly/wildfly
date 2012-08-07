@@ -148,4 +148,9 @@ public class DataSourceCfgMetricUnitTestCase  extends DsMgmtTestBase{
     public void testWrongMaxLessMinPoolSizeProperty()throws Exception {
     	setBadModel("wrong-max-less-min-pool-size-property.xml");
     }
+
+    @Test
+    public void testStatistics() throws Exception {
+        super.testStatistics("basic-attributes.xml");
+    }
 }
