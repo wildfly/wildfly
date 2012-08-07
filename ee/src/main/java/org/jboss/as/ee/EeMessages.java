@@ -876,10 +876,13 @@ public interface EeMessages {
     @Message(id = 16700, value = "Failed to load jboss.properties")
     DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
 
-<<<<<<< HEAD
-=======
     @Message(id = 16701, value = "Unsupported ear module type: %s")
     DeploymentUnitProcessingException unsupportedModuleType(String moduleFileName);
 
->>>>>>> reverting deployer behavior to throw error on unsupported xml module
+    @Message(id = 16702, value = "library-directory of value / is not supported")
+    DeploymentUnitProcessingException rootAsLibraryDirectory();
+
+    @Message(id = 16703, value = "Module may not be a child of the EAR's library directory. Library directory: %s, module file name: %s")
+    DeploymentUnitProcessingException earModuleChildOfLibraryDirectory(String libraryDirectory, String moduleFileName);
+
 }
