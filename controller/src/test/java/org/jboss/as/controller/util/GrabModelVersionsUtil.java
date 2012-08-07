@@ -21,110 +21,59 @@
 */
 package org.jboss.as.controller.util;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.XML_NAMESPACES;
 
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.io.File;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-import org.xnio.IoUtils;
+import org.jboss.dmr.Property;
 
 /**
+ * Grabs the model versions for the currently running standalone version for use in the
+ * <a href="https://community.jboss.org/wiki/AS7ManagementVersions">AS7 Management Versions wiki</a>.
+ * It also saves the model versions in dmr format to {@code target/standalone-model-versions-running.dmr}
+ * If this is for a released version so that it can be used for comparisons in the future, this file should be copied to
+ * {@code src/test/resources/legacy-models} and {@code running} replaced with the real version of the running server, e.g.
+ * {@code src/test/resources/legacy-models/standalone-model-versions-7.1.2.Final}. *
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class GrabModelVersionsUtil {
 
     public static void main(String[] args) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
-        try {
-            ModelNode op = new ModelNode();
-            op.get(OP).set(READ_RESOURCE_OPERATION);
-            op.get(OP_ADDR).setEmptyList();
-            ModelNode result = getAndCheckResult(client.execute(op));
-            ModelVersion coreModelVersion = createModelVersion(result);
+        ModelNode versions = Tools.getCurrentModelVersions();
+        System.out.println("<table border=\"1\">");
+        System.out.println("<tr><th>Subsystem</th><th>Management Version</th><th>Schemas</th></tr>");
+        System.out.print("<tr valign=\"top\" align=\"left\"><td><b>Standalone core</b></td><td>");
+        System.out.print(Tools.createModelVersion(versions.get(Tools.CORE, Tools.STANDALONE)));
+        System.out.println("</td><td>&nbsp;</td></tr>");
 
-            System.out.println("<table border=\"1\">");
-            System.out.println("<tr><th>Subsystem</th><th>Management Version</th><th>Schemas</th></tr>");
-            System.out.print("<tr valign=\"top\" align=\"left\"><td><b>Standalone core</b></td><td>");
-            System.out.print(coreModelVersion);
-            System.out.println("</td><td>&nbsp;</td></tr>");
+        for (Property entry : versions.get(SUBSYSTEM).asPropertyList()) {
+            System.out.print("<tr valign=\"top\" align=\"left\"><td><b>");
+            System.out.print(entry.getName());
+            System.out.print("</b></td><td>");
+            System.out.print(Tools.createModelVersion(entry.getValue()));
+            System.out.print("<td>");
 
-            op.get(OP_ADDR).add(EXTENSION, "*").add(SUBSYSTEM, "*");
-            result = getAndCheckResult(client.execute(op));
-
-            TreeMap<String, ModelNode> map = new TreeMap<String, ModelNode>();
-
-            List<ModelNode> subsystemResults = result.asList();
-            for (ModelNode subsystemResult : subsystemResults) {
-                String subsystemName = PathAddress.pathAddress(subsystemResult.get(OP_ADDR)).getLastElement().getValue();
-                map.put(subsystemName, getAndCheckResult(subsystemResult));
-            }
-
-            for (Map.Entry<String, ModelNode> entry : map.entrySet()) {
-                System.out.print("<tr valign=\"top\" align=\"left\"><td><b>");
-                System.out.print(entry.getKey());
-                System.out.print("</b></td><td>");
-                System.out.print(createModelVersion(entry.getValue()));
-                System.out.print("<td>");
-
-                boolean first = true;
-                for (ModelNode ns : entry.getValue().get(XML_NAMESPACES).asList()) {
-                    if (first) {
-                        first = false;
-                    } else {
-                        System.out.println("<br/>");
-                    }
-                    System.out.print(ns.asString());
+            boolean first = true;
+            for (ModelNode ns : entry.getValue().get(XML_NAMESPACES).asList()) {
+                if (first) {
+                    first = false;
+                } else {
+                    System.out.println("<br/>");
                 }
-
-
-                System.out.print("</td>");
-                System.out.println("</td></tr>");
+                System.out.print(ns.asString());
             }
 
 
-            System.out.println("</table>");
-
-        } finally {
-            IoUtils.safeClose(client);
+            System.out.print("</td>");
+            System.out.println("</td></tr>");
         }
-    }
 
-    private static ModelNode getAndCheckResult(ModelNode result) {
-        if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
-        }
-        return result.get(RESULT);
-    }
+        System.out.println("</table>");
 
-    private static ModelVersion createModelVersion(ModelNode node) {
-        return ModelVersion.create(
-                readVersion(node, MANAGEMENT_MAJOR_VERSION),
-                readVersion(node, MANAGEMENT_MINOR_VERSION),
-                readVersion(node, MANAGEMENT_MICRO_VERSION));
-    }
-
-    private static int readVersion(ModelNode node, String name) {
-        if (!node.hasDefined(name)) {
-            return 0;
-        }
-        return node.get(name).asInt();
+        System.out.println("----------------");
+        Tools.serializeModeNodeToFile(versions, new File("target/standalone-model-versions-running.dmr"));
     }
 }
