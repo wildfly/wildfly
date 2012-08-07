@@ -72,6 +72,7 @@ class TestModelControllerService extends AbstractControllerService {
     private final Extension mainExtension;
     private final boolean validateOps;
     private volatile ManagementResourceRegistration rootRegistration;
+    private volatile Resource resource;
     private volatile Exception error;
 
     TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
@@ -160,5 +161,9 @@ class TestModelControllerService extends AbstractControllerService {
 
     public ManagementResourceRegistration getRootRegistration() {
         return rootRegistration;
+    }
+
+    public Resource getRootResource() {
+        return resource;
     }
 }

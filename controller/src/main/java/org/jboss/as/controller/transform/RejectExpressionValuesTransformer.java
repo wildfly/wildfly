@@ -22,6 +22,17 @@
 
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,12 +42,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * A transformer rejecting values containing an expression.
@@ -72,36 +77,65 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
 
     @Override
     public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
-        // Check the model
-        checkModel(operation);
         // Return untransformed
-        return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        return new TransformedOperation(operation, new OperationResultTransformer() {
+            @Override
+            public ModelNode transformResult(ModelNode result) {
+                return checkOperationResult(context, address, operation, result);
+            }
+        });
     }
+
+    protected ModelNode checkOperationResult(final TransformationContext context, final PathAddress address, final ModelNode operation, final ModelNode result) {
+        List<String> badAttributes = new ArrayList<String>();
+        for (final String attribute : attributeNames) {
+            if (operation.hasDefined(attribute) && checkForExpression(operation.get(attribute))) {
+                badAttributes.add(attribute);
+            }
+        }
+        if (badAttributes.size() > 0) {
+            appendToFailureDescription(result, ControllerMessages.MESSAGES.expressionNotAllowedForRequestProperties(badAttributes, context.getTarget().getVersion()));
+        }
+        return result;
+    }
+
+    protected ModelNode checkWriteAttributeResult(final TransformationContext context, final PathAddress address, final ModelNode operation, final ModelNode result) {
+        if (result.get(OUTCOME).asString().equals(FAILED)) {
+            final String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
+            if(attributeNames.contains(attribute)) {
+                if(operation.hasDefined(ModelDescriptionConstants.VALUE) && checkForExpression(operation.get(ModelDescriptionConstants.VALUE))) {
+                    appendToFailureDescription(result, ControllerMessages.MESSAGES.expressionNotAllowed(attribute, context.getTarget().getVersion()));
+                }
+            }
+        }
+        return result;
+    }
+
 
     @Override
     public void transformResource(final ResourceTransformationContext context, final PathAddress address,
                                   final Resource resource) throws OperationFailedException {
         // Check the model
-        checkModel(resource.getModel());
+        //checkModel(resource.getModel()); There is no way to check the result of the initial transfer of the model
         // Just delegate to the default transformer
         ResourceTransformer.DEFAULT.transformResource(context, address, resource);
     }
 
-    /**
-     * Check the model for expression values.
-     *
-     * @param model the model
-     * @throws OperationFailedException
-     */
-    protected void checkModel(final ModelNode model) throws OperationFailedException {
-        for(final String attribute : attributeNames) {
-            if(model.hasDefined(attribute)) {
-                if(checkForExpression(model.get(attribute))) {
-                    throw ControllerMessages.MESSAGES.expressionNotAllowed(attribute);
-                }
-            }
-        }
-    }
+//    /**
+//     * Check the model for expression values.
+//     *
+//     * @param model the model
+//     * @throws OperationFailedException
+//     */
+//    protected void checkModel(final ModelNode model) throws OperationFailedException {
+//        for(final String attribute : attributeNames) {
+//            if(model.hasDefined(attribute)) {
+//                if(checkForExpression(model.get(attribute))) {
+//                    throw ControllerMessages.MESSAGES.expressionNotAllowed(attribute);
+//                }
+//            }
+//        }
+//    }
 
     /**
      * Check an attribute for expressions.
@@ -138,21 +172,29 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
     class WriteAttributeTransformer implements OperationTransformer {
 
         @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-            final String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
-            if(attributeNames.contains(attribute)) {
-                if(operation.hasDefined(ModelDescriptionConstants.VALUE)) {
-                    if(checkForExpression(operation.get(ModelDescriptionConstants.VALUE))) {
-                        throw ControllerMessages.MESSAGES.expressionNotAllowed(attribute);
-                    }
-                }
-            }
+        public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
             // Return untransformed
-            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+            return new TransformedOperation(operation, new OperationResultTransformer() {
+                @Override
+                public ModelNode transformResult(ModelNode result) {
+                    return checkWriteAttributeResult(context, address, operation, result);
+                }
+            });
         }
     }
 
     private static final Pattern pattern = Pattern.compile(".*\\$\\{.*\\}.*");
+
+    private void appendToFailureDescription(ModelNode result, String message) {
+        ModelNode failure = result.get(FAILURE_DESCRIPTION);
+        StringBuilder desc = new StringBuilder();
+        if (failure.isDefined()) {
+            desc.append(failure.asString());
+            desc.append("; ");
+        }
+        desc.append(message);
+        failure.set(desc.toString());
+    }
 
     protected boolean checkForExpression(final String value) {
         return pattern.matcher(value).matches();

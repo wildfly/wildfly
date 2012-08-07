@@ -463,9 +463,7 @@ public abstract class AbstractSubsystemTest {
         legacyModel = legacyModel.require(SUBSYSTEM);
         legacyModel = legacyModel.require(mainSubsystemName);
 
-
-        ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
-        compare(legacyModel, transformed, true);
+        checkSubsystemTransformer(kernelServices, legacyModel, modelVersion);
     }
 
     /**

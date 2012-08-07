@@ -21,8 +21,8 @@
 */
 package org.jboss.as.txn;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -31,6 +31,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import java.io.IOException;
+
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -38,8 +44,6 @@ import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  *
@@ -83,19 +87,15 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
         operation.get(NAME).set("status-socket-binding");
-        operation.get(VALUE).set("${org.jboss.test:default-socket-binding}");
+        operation.get(VALUE).setExpression("${org.jboss.test:default-socket-binding}");
 
         final ModelNode mainResult = mainServices.executeOperation(operation);
         Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
 
-        try {
-            mainServices.transformOperation(modelVersion, operation);
-            // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
-            // so we need to reject the expression on the DC already
-            Assert.fail("should reject the expression");
-        } catch (OperationFailedException e) {
-            // OK
-        }
+        TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation);
+        ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains(ControllerMessages.MESSAGES.expressionNotAllowed("status-socket-binding", modelVersion)));
     }
 
 }
