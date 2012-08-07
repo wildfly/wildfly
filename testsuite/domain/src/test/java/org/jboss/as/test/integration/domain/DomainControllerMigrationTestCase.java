@@ -61,7 +61,7 @@ import org.junit.Test;
  *
  * @author <a href="dpospisi@redhat.com">Dominik Pospisil</a>
  */
-@Ignore
+@Ignore("AS7-5306")
 public class DomainControllerMigrationTestCase {
 
     private static final Logger log = Logger.getLogger(DomainControllerMigrationTestCase.class);

@@ -22,7 +22,16 @@
 
 package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
+import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
+
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -39,15 +48,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import java.util.Properties;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 
 /**
  * Tests that if a local EJB receiver handled an invocation on a clustered EJB app and if that app is
@@ -58,6 +61,7 @@ import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
  * @see https://issues.jboss.org/browse/AS7-3492
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-5318")
 public class LocalEJBClientFailoverTestCase {
 
     private static final Logger logger = Logger.getLogger(LocalEJBClientFailoverTestCase.class);
