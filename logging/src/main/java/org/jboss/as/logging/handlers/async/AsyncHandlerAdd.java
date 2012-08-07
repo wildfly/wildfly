@@ -25,6 +25,7 @@ package org.jboss.as.logging.handlers.async;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import java.util.logging.Handler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.logging.handlers.HandlerAddProperties;
+import org.jboss.as.logging.loggers.AbstractLogHandlerAssignmentHandler;
 import org.jboss.as.logging.util.LogServices;
 import org.jboss.as.logging.util.ModelParser;
 import org.jboss.dmr.ModelNode;
@@ -59,6 +61,9 @@ public class AsyncHandlerAdd extends HandlerAddProperties<AsyncHandlerService> {
         final ModelNode subhandlers = SUBHANDLERS.resolveModelAttribute(context, model);
         if (subhandlers.isDefined()) {
             for (final ModelNode handlerName : subhandlers.asList()) {
+                if (name.equals(handlerName.asString())) {
+                    throw new OperationFailedException(MESSAGES.cannotAddHandlerToSelf(name));
+                }
                 final InjectedValue<Handler> injectedValue = new InjectedValue<Handler>();
                 serviceBuilder.addDependency(LogServices.handlerName(handlerName.asString()), Handler.class, injectedValue);
                 list.add(injectedValue);

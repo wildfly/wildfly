@@ -349,11 +349,21 @@ public interface LoggingMessages {
     /**
      * A message indicating the handler is attached to the loggers.
      *
-     * @param handlerName the name of tha attached handler.
+     * @param handlerName the name of the attached handler.
      * @param loggers     a collection of the logger names.
      *
      * @return the message.
      */
     @Message(id = 11558, value = "Handler %s is attached to the following loggers and cannot be removed; %s")
     String handlerAttachedToLoggers(String handlerName, Collection<String> loggers);
+
+    /**
+     * A message indicating the handler cannot be attached to itself.
+     *
+     * @param handlerName the name of the handler
+     *
+     * @return the message
+     */
+    @Message(id = 11559, value = "Cannot add handler (%s) to itself")
+    String cannotAddHandlerToSelf(String handlerName);
 }
