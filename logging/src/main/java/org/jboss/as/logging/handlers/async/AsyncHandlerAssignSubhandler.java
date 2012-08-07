@@ -99,6 +99,9 @@ public class AsyncHandlerAssignSubhandler extends AbstractLogHandlerAssignmentHa
      * @throws OperationFailedException if an error occurs.
      */
     public static void addHandler(final OperationContext context, final String asyncHandlerName, final String handlerNameToAdd) throws OperationFailedException {
+        if (asyncHandlerName.equals(handlerNameToAdd)) {
+            throw createFailureMessage(MESSAGES.cannotAddHandlerToSelf(asyncHandlerName));
+        }
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
         @SuppressWarnings("unchecked")
         final ServiceController<Handler> asyncHandlerController = (ServiceController<Handler>) serviceRegistry.getService(LogServices.handlerName(asyncHandlerName));
