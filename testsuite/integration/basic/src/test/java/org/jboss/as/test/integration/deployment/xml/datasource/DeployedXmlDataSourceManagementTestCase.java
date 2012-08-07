@@ -45,6 +45,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -107,11 +108,11 @@ public class DeployedXmlDataSourceManagementTestCase {
         address.protect();
 
         final ModelNode operation = new ModelNode();
-        operation.get(OP).set("read-attribute");
+        operation.get(OP).set("read-resource");
         operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("connection-url");
-        ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", result.get(RESULT).asString());
+        operation.get(INCLUDE_RUNTIME).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertEquals("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", result.get("connection-url").asString());
     }
 
     @Test
@@ -123,11 +124,11 @@ public class DeployedXmlDataSourceManagementTestCase {
         address.protect();
 
         final ModelNode operation = new ModelNode();
-        operation.get(OP).set("read-attribute");
+        operation.get(OP).set("read-resource");
         operation.get(OP_ADDR).set(address);
-        operation.get(NAME).set("driver-name");
-        ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals("h2", result.get(RESULT).asString());
+        operation.get(INCLUDE_RUNTIME).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertEquals("h2", result.get("driver-name").asString());
     }
 
     @Test
@@ -145,5 +146,57 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(NAME).set(VALUE);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals("jdbc:h2:mem:test", result.get(RESULT).asString());
+    }
+
+    @Test
+    public void testDeployedDatasourceStatisticsInManagementModel() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("deployment", TEST_DS_XML);
+        address.add("subsystem", "datasources");
+        address.add("data-source", "java:jboss/datasources/DeployedDS");
+        address.protect();
+
+        final ModelNode poolAddress = new ModelNode().set(address);
+        poolAddress.add("statistics", "pool");
+
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-resource");
+        operation.get(OP_ADDR).set(poolAddress);
+        operation.get(INCLUDE_RUNTIME).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertTrue("ActiveCount", result.hasDefined("ActiveCount"));
+
+        final ModelNode jdbcAddress = new ModelNode().set(address);
+        jdbcAddress.add("statistics", "jdbc");
+
+        operation.get(OP_ADDR).set(jdbcAddress);
+        result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
+    }
+
+    @Test
+    public void testDeployedXaDatasourceStatisticsInManagementModel() throws IOException {
+        final ModelNode address = new ModelNode();
+        address.add("deployment", TEST_DS_XML);
+        address.add("subsystem", "datasources");
+        address.add("xa-data-source", "java:/H2XADS");
+        address.protect();
+
+        final ModelNode poolAddress = new ModelNode().set(address);
+        poolAddress.add("statistics", "pool");
+
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-resource");
+        operation.get(OP_ADDR).set(poolAddress);
+        operation.get(INCLUDE_RUNTIME).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertTrue("ActiveCount", result.hasDefined("ActiveCount"));
+
+        final ModelNode jdbcAddress = new ModelNode().set(address);
+        jdbcAddress.add("statistics", "jdbc");
+
+        operation.get(OP_ADDR).set(jdbcAddress);
+        result = managementClient.getControllerClient().execute(operation).get(RESULT);
+        Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
     }
 }
