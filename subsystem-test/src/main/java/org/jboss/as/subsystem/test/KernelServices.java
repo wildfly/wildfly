@@ -13,6 +13,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,16 +31,23 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.OperationValidator;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationTransformerRegistry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTarget.TransformationTargetType;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
@@ -57,10 +65,12 @@ public class KernelServices {
 
     private volatile ServiceContainer container;
     private final ModelController controller;
+    private final AdditionalInitialization additionalInit;
     private final StringConfigurationPersister persister;
     private final OperationValidator operationValidator;
     private final String mainSubsystemName;
     private final ManagementResourceRegistration rootRegistration;
+    private final Resource rootResource;
     private final Map<ModelVersion, KernelServices> legacyServices;
     private final ExtensionRegistry extensionRegistry;
     private final ModelVersion legacyModelVersion;
@@ -68,14 +78,17 @@ public class KernelServices {
     private static final AtomicInteger counter = new AtomicInteger();
 
 
-    private KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
+    private KernelServices(ServiceContainer container, ModelController controller, AdditionalInitialization additionalInit, StringConfigurationPersister persister,
+            ManagementResourceRegistration rootRegistration, Resource rootResource,
             OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion) {
         this.container = container;
         this.controller = controller;
+        this.additionalInit = additionalInit;
         this.persister = persister;
         this.operationValidator = operationValidator;
         this.mainSubsystemName = mainSubsystemName;
         this.rootRegistration = rootRegistration;
+        this.rootResource = rootResource;
         this.legacyServices = legacyModelVersion != null ? null : new HashMap<ModelVersion, KernelServices>();
         this.extensionRegistry = extensionRegistry;
         this.legacyModelVersion = legacyModelVersion;
@@ -118,7 +131,7 @@ public class KernelServices {
         ModelController controller = svc.getValue();
         processState.setRunning();
 
-        KernelServices kernelServices = new KernelServices(container, controller, persister, svc.getRootRegistration(),
+        KernelServices kernelServices = new KernelServices(container, controller, additionalInit, persister, svc.getRootRegistration(), svc.getRootResource(),
                 new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion);
 
         return kernelServices;
@@ -214,7 +227,7 @@ public class KernelServices {
             OperationTransformerRegistry registry = transformerRegistry.resolveServer(modelVersion, createSubsystemVersionRegistry(modelVersion));
 
             //TODO Initialise this
-            TransformationContext transformationContext = null;
+            TransformationContext transformationContext = createTransformationContext(modelVersion, PathAddress.pathAddress(operation.require(OP_ADDR)));
 
             OperationTransformer operationTransformer = registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer();
             if (operationTransformer != null) {
@@ -365,5 +378,65 @@ public class KernelServices {
         ModelNode subsystems = new ModelNode();
         subsystems.get(mainSubsystemName).set(modelVersion.toString());
         return subsystems;
+    }
+
+    private TransformationContext createTransformationContext(final ModelVersion version, final PathAddress operationAddress) {
+        final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), version, Collections.<PathAddress, ModelVersion>emptyMap(), TransformationTargetType.DOMAIN);
+        return new TransformationContext() {
+
+            @Override
+            public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+                //TODO would be good to plug in vault
+                return node.resolve();
+            }
+
+            @Override
+            public Resource readResourceFromRoot(PathAddress address) {
+                return getResource(rootResource, address);
+            }
+
+            @Override
+            public Resource readResource(PathAddress address) {
+                Resource current = getResource(rootResource, operationAddress);
+                return getResource(current, address);
+            }
+
+            private Resource getResource(Resource rootResource, PathAddress address) {
+                Resource current = rootResource;
+                for (PathElement element : address) {
+                    current = rootResource.getChild(element);
+                    if (current == null) {
+                        throw new IllegalStateException("No resource at " + element);
+                    }
+                }
+                return current;
+            }
+
+            @Override
+            public TransformationTarget getTarget() {
+                return target;
+            }
+
+            @Override
+            public RunningMode getRunningMode() {
+                return additionalInit.getRunningMode();
+            }
+
+            @Override
+            public ImmutableManagementResourceRegistration getResourceRegistrationFromRoot(PathAddress address) {
+                return rootRegistration.getSubModel(address);
+            }
+
+            @Override
+            public ImmutableManagementResourceRegistration getResourceRegistration(PathAddress address) {
+                ManagementResourceRegistration current = rootRegistration.getSubModel(operationAddress);
+                return current.getSubModel(address);
+            }
+
+            @Override
+            public ProcessType getProcessType() {
+                return additionalInit.getProcessType();
+            }
+        };
     }
 }
