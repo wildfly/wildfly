@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.osgi.jaxrs;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -46,12 +48,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * [AS7-1974] Unable to access OSGI service from RESTEasy WebApp
@@ -60,6 +61,7 @@ import static org.junit.Assert.assertEquals;
  * @since 08-Oct-2011
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-5320")
 public class RestEasyIntegrationTestCase {
 
     static final String DEPLOYMENT_NAME = "resteasy-osgi-client.war";
