@@ -64,6 +64,8 @@ public class Util {
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_NAME = "deployment-name";
+    public static final String DEPLOYMENT_OVERLAY = "deployment-overlay";
+    public static final String DEPLOYMENT_OVERLAY_LINK = "deployment-overlay-link";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_RESULTS = "domain-results";
@@ -141,6 +143,7 @@ public class Util {
     public static final String TYPE = "type";
     public static final String UNDEFINE_ATTRIBUTE = "undefine-attribute";
     public static final String UNDEPLOY = "undeploy";
+    public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
     public static final String VALID = "valid";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
@@ -529,8 +532,8 @@ public class Util {
         final ModelNode request;
         DefaultOperationRequestBuilder builder = address == null ? new DefaultOperationRequestBuilder() : new DefaultOperationRequestBuilder(address);
         try {
-            builder.setOperationName("read-children-names");
-            builder.addProperty("child-type", type);
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addProperty(Util.CHILD_TYPE, type);
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
@@ -586,9 +589,9 @@ public class Util {
             if(profile != null) {
                 builder.addNode("profile", profile);
             }
-            builder.addNode("subsystem", "datasources");
-            builder.setOperationName("read-children-names");
-            builder.addProperty("child-type", dsType);
+            builder.addNode(Util.SUBSYSTEM, Util.DATASOURCES);
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addProperty(Util.CHILD_TYPE, dsType);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
             throw new IllegalStateException("Failed to build operation", e);
@@ -624,7 +627,7 @@ public class Util {
         ModelNode op = new ModelNode();
         op.get(OPERATION).set(operationName);
         if (serverGroup != null) {
-            op.get(ADDRESS).add("server-group", serverGroup);
+            op.get(ADDRESS).add(Util.SERVER_GROUP, serverGroup);
         }
         op.get(ADDRESS).add(DEPLOYMENT, uniqueName);
         return op;

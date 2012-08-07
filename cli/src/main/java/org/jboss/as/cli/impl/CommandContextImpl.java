@@ -87,6 +87,7 @@ import org.jboss.as.cli.handlers.CommandCommandHandler;
 import org.jboss.as.cli.handlers.ConnectHandler;
 import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.DeploymentInfoHandler;
+import org.jboss.as.cli.handlers.DeploymentOverlayHandler;
 import org.jboss.as.cli.handlers.EchoDMRHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
@@ -345,6 +346,7 @@ class CommandContextImpl implements CommandContext {
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
         cmdRegistry.registerHandler(new UndeployHandler(this), "undeploy");
         cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
+        cmdRegistry.registerHandler(new DeploymentOverlayHandler(this), "deployment-overlay");
 
         // batch commands
         cmdRegistry.registerHandler(new BatchHandler(this), "batch");
