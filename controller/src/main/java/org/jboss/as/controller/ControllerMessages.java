@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -2428,7 +2429,7 @@ public interface ControllerMessages {
     @Message(id = 14854, value="Path '%s' is read-only; it cannot be modified")
     OperationFailedException cannotModifyReadOnlyPath(String pathName);
     /**
-     * An exception indicating the {@code name} may not be {@link ModelType#EXPRESSION}.
+     * An operation failure-description indicating the {@code name} may not be {@link ModelType#EXPRESSION}.
      *
      * @param name the name of the attribute or parameter value that cannot be an expression
      *
@@ -2512,4 +2513,11 @@ public interface ControllerMessages {
 
     @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
     RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
+
+    @Message(id = 14874, value = "The operation request properties %s may not be ModelType.EXPRESSION in model version: %s")
+    String expressionNotAllowedForRequestProperties(List<String> attributeNames, ModelVersion modelVersion);
+
+    @Message(id = 14875, value = "%s may not be ModelType.EXPRESSION in model version: %s")
+    String expressionNotAllowed(String name, ModelVersion modelVersion);
+
 }
