@@ -100,15 +100,16 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         }
         // Find the SCIs from shared modules
         for (ModuleDependency dependency : moduleSpecification.getSystemDependencies()) {
-            ServiceLoader<ServletContainerInitializer> serviceLoader;
             try {
                 Module depModule = loader.loadModule(dependency.getIdentifier());
-                serviceLoader = depModule.loadService(ServletContainerInitializer.class);
+                ServiceLoader<ServletContainerInitializer> serviceLoader = depModule.loadService(ServletContainerInitializer.class);
                 for (ServletContainerInitializer service : serviceLoader) {
                     scis.add(service);
                 }
             } catch (ModuleLoadException e) {
-                throw new DeploymentUnitProcessingException("Error loading SCI from module: " + dependency.getIdentifier(), e);
+                if (dependency.isOptional() == false) {
+                    throw new DeploymentUnitProcessingException("Error loading SCI from module: " + dependency.getIdentifier(), e);
+                }
             }
         }
         // Find local ServletContainerInitializer services
@@ -147,7 +148,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         Class<?>[] typesArray = typesMap.keySet().toArray(new Class<?>[0]);
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if(index == null) {
+        if (index == null) {
             throw new DeploymentUnitProcessingException("Unable to resolve annotation index for deployment unit " + deploymentUnit);
         }
 
