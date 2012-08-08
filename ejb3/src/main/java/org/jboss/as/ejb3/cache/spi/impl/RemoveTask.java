@@ -30,7 +30,7 @@ import org.jboss.logging.Logger;
  *
  */
 public class RemoveTask<K> implements Runnable {
-    private static final Logger log = Logger.getLogger(PassivateTask.class);
+    private static final Logger log = Logger.getLogger(RemoveTask.class);
 
     private final Removable<K> cache;
     private final K id;
