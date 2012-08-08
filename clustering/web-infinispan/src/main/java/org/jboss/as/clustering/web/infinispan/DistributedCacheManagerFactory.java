@@ -146,7 +146,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         ;
         builder.addDependency(cacheServiceName, Cache.class, this.cache);
         builder.addDependency(JVM_ROUTE_REGISTRY_SERVICE_NAME, Registry.class, this.registry);
-        builder.addDependency(SharedLocalYieldingClusterLockManagerService.getServiceName(containerName), SharedLocalYieldingClusterLockManager.class, this.lockManager);
+        builder.addDependency(DependencyType.OPTIONAL, SharedLocalYieldingClusterLockManagerService.getServiceName(containerName), SharedLocalYieldingClusterLockManager.class, this.lockManager);
         builder.addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, this.affinityFactory);
         return true;
     }
