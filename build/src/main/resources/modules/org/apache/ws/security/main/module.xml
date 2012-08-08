@@ -33,5 +33,6 @@
       <module name="org.apache.commons.logging" />
       <module name="org.apache.santuario.xmlsec" />
       <module name="org.apache.xalan" />
+      <module name="org.joda.time" />
     </dependencies>
 </module>
