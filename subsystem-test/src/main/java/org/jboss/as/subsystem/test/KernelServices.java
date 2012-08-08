@@ -295,8 +295,10 @@ public class KernelServices {
             }
             container = null;
 
-            for (KernelServices legacyService: legacyServices.values()) {
-                legacyService.shutdown();
+            if (legacyServices != null) {
+                for (KernelServices legacyService: legacyServices.values()) {
+                    legacyService.shutdown();
+                }
             }
         }
     }
