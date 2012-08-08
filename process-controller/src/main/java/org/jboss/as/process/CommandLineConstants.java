@@ -41,6 +41,10 @@ public class CommandLineConstants {
     public static final String SHORT_VERSION = "-v";
     public static final String OLD_SHORT_VERSION = "-V";
 
+    /** Debug flag */
+    public static final String DEBUG = "--debug";
+    public static final String SHORT_DEBUG = "-d";
+
     /** Configure the file to be used to read properties */
     public static final String OLD_PROPERTIES = "-properties";
     public static final String PROPERTIES = "--properties";

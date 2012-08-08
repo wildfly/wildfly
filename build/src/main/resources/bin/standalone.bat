@@ -10,21 +10,39 @@ rem         standalone.bat --debug 9797
 rem By default debug mode is disable.
 set DEBUG_MODE=false
 set DEBUG_PORT=8787
+set SERVER_OPTS=
+
+rem Get the program name before using shift as the command modify the variable ~nx0
+if "%OS%" == "Windows_NT" (
+  set "PROGNAME=%~nx0%"
+) else (
+  set "PROGNAME=standalone.bat"
+)
 
 rem Read command-line args.
 :READ-ARGS
 if "%1" == "" ( 
    goto MAIN 
-) else if "%1" == "--debug" or "%1" == "-d" (
-   set "DEBUG_MODE=true"
-   shift
+) else if "%1" == "-d" (
    goto READ-DEBUG-PORT
+) else if "%1" == "--debug" (
+   goto READ-DEBUG-PORT
+) else (
+   set SERVER_OPTS=%SERVER_OPTS% %1
+   shift
+   goto READ-ARGS
 )
 
 :READ-DEBUG-PORT
-if not "x%1" == "x" (
-   set "DEBUG_PORT=%1"
-   goto MAIN
+set "DEBUG_MODE=true"
+set DEBUG_ARG="%2"
+if not "x%DEBUG_ARG" == "x" (
+   if x%DEBUG_ARG:-=%==x%DEBUG_ARG% (
+      shift
+      set DEBUG_PORT=%DEBUG_ARG%
+   )
+   shift
+   goto READ-ARGS
 )
 
 :MAIN
@@ -77,12 +95,6 @@ if exist "%STANDALONE_CONF%" (
 )
 
 set DIRNAME=
-
-if "%OS%" == "Windows_NT" (
-  set "PROGNAME=%~nx0%"
-) else (
-  set "PROGNAME=standalone.bat"
-)
 
 rem Setup JBoss specific properties
 set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
@@ -182,7 +194,7 @@ echo.
     -jaxpmodule "javax.xml.jaxp-provider" ^
      org.jboss.as.standalone ^
     -Djboss.home.dir="%JBOSS_HOME%" ^
-     %*
+     %SERVER_OPTS%
 
 if ERRORLEVEL 10 goto RESTART
 

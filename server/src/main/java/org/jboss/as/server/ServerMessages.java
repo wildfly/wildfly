@@ -187,6 +187,14 @@ public interface ServerMessages {
     String argAdminOnly();
 
     /**
+     * Instructions for the {@link org.jboss.as.server.CommandLineArgument#DEBUG} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Activate debug mode with an optional argument to specify the port. Only works if the launch script supports it.")
+    String argDebugPort();
+
+    /**
      * Creates an error message indicating a value was expected for the given command line option.
      *
      * @param option the name of the command line option
