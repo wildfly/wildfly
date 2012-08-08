@@ -543,6 +543,9 @@
 
         <module-def name="org.apache.cxf">
             <maven-resource group="org.apache.cxf" artifact="cxf-api"/>
+        </module-def>
+
+        <module-def name="org.apache.cxf.impl">
             <maven-resource group="org.apache.cxf" artifact="cxf-common-utilities"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-coloc"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-bindings-http"/>
