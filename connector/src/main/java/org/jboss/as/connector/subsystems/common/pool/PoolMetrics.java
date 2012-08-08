@@ -66,12 +66,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                             throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                         }
                     }
-                   context.completeStep();
+                   context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     protected abstract List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository);
@@ -103,12 +103,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                             }
                         }
-                        context.completeStep();
+                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
 
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
 
         }
 

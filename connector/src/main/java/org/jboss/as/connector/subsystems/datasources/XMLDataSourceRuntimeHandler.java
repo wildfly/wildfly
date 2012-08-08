@@ -7,7 +7,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
 
 /**
  * Runtime attribute handler for XML datasources
@@ -270,6 +272,12 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             setBooleanIfNotNull(context, dataSource.isSpy());
         } else if (attributeName.equals(Constants.USE_CCM.getName())) {
             setBooleanIfNotNull(context, dataSource.isUseCcm());
+        } else if (attributeName.equals(Constants.ALLOW_MULTIPLE_USERS.getName())) {
+            CommonPool pool = dataSource.getPool();
+            if (!(pool instanceof DsPool)) {
+                return;
+            }
+            setBooleanIfNotNull(context, ((DsPool) pool).isAllowMultipleUsers());
         } else {
             throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
         }
