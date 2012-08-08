@@ -21,8 +21,6 @@
 */
 package org.jboss.as.txn;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -31,6 +29,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+import java.io.IOException;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -38,8 +41,6 @@ import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  *
@@ -77,7 +78,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
 
-        checkSubsystemTransformer(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
 
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);

@@ -33,6 +33,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;
 import org.jboss.as.controller.registry.Resource;
@@ -93,6 +94,12 @@ class TransformationUtils {
         ModelNode value = new ModelNode();
         Set<String> allFields = new HashSet<String>(model.keys());
         for (String name : reg.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+            AttributeAccess aa = reg.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
+            if (aa.getStorageType() == AttributeAccess.Storage.RUNTIME){
+                allFields.remove(name);
+                continue;
+            }
+
             if (includeUndefined) {
                 value.get(name).set(model.get(name));
             } else {

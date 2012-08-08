@@ -201,8 +201,8 @@ public abstract class AbstractSubsystemTest {
      * Parse the subsystem xml and create the operations that will be passed into the controller
      *
      * @param additionalParsers additional initialization that should be done to the parsers before initializing our extension. These parsers
-     * will only be initialized the first time this method is called from within a test
-     * @param subsystemXml the subsystem xml to be parsed
+     *                          will only be initialized the first time this method is called from within a test
+     * @param subsystemXml      the subsystem xml to be parsed
      * @return the created operations
      * @throws XMLStreamException if there is a parsing problem
      */
@@ -246,7 +246,7 @@ public abstract class AbstractSubsystemTest {
      *
      * @param subsystemXml the subsystem xml to be parsed
      * @return the kernel services allowing access to the controller and service container
-     * @deprecated Use {@link #createKernelServicesBuilder()} instead
+     * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
     protected KernelServices installInController(String subsystemXml) throws Exception {
@@ -259,8 +259,8 @@ public abstract class AbstractSubsystemTest {
      * Initializes the controller and populates the subsystem model from the passed in xml.
      *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
-     * @param subsystemXml the subsystem xml to be parsed
-     * @deprecated Use {@link #createKernelServicesBuilder()} instead
+     * @param subsystemXml   the subsystem xml to be parsed
+     * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
     protected KernelServices installInController(AdditionalInitialization additionalInit, String subsystemXml) throws Exception {
@@ -273,7 +273,7 @@ public abstract class AbstractSubsystemTest {
      * Create a new controller with the passed in operations.
      *
      * @param bootOperations the operations
-     * @deprecated Use {@link #createKernelServicesBuilder()} instead
+     * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
     protected KernelServices installInController(List<ModelNode> bootOperations) throws Exception {
@@ -287,7 +287,7 @@ public abstract class AbstractSubsystemTest {
      *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param bootOperations the operations
-     * @deprecated Use {@link #createKernelServicesBuilder()} instead
+     * @deprecated Use {@link #createKernelServicesBuilder(AdditionalInitialization)} instead
      */
     @Deprecated
     protected KernelServices installInController(AdditionalInitialization additionalInit, List<ModelNode> bootOperations) throws Exception {
@@ -296,32 +296,48 @@ public abstract class AbstractSubsystemTest {
                 .build();
     }
 
-   /**
-    * Creates a new kernel services builder used to create a new controller containing the subsystem being tested
-    *
-    * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
-    */
+    /**
+     * Creates a new kernel services builder used to create a new controller containing the subsystem being tested
+     *
+     * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
+     */
     protected KernelServicesBuilder createKernelServicesBuilder(AdditionalInitialization additionalInit) {
         return new KernelServicesBuilderImpl(additionalInit);
     }
 
     /**
-     * Gets the ProcessType to use. Defaults to {@link ProcessType#EMBEDDED_SERVER}
+     * Gets the ProcessType to use when initializing the parsers. Defaults to {@link ProcessType#EMBEDDED_SERVER}
+     * To tweak the process type when installing a controller, override {@link AdditionalInitialization} and pass in to
+     * {@link #createKernelServicesBuilder(AdditionalInitialization)} instead.
+     *
      * @return the process type
      */
-    protected ProcessType getProcessType() {
+    protected final ProcessType getProcessType() {
         return ProcessType.EMBEDDED_SERVER;
     }
 
     /**
      * Checks that the result was successful and gets the real result contents
+     *
      * @param result the result to check
      * @return the result contents
      */
     protected static ModelNode checkResultAndGetContents(ModelNode result) {
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        checkOutcome(result);
         Assert.assertTrue(result.hasDefined(RESULT));
         return result.get(RESULT);
+    }
+
+    /**
+     * Checks that the result was successful
+     *
+     * @param result the result to check
+     * @return the result contents
+     */
+    protected static ModelNode checkOutcome(ModelNode result) {
+        boolean success = SUCCESS.equals(result.get(OUTCOME).asString());
+        Assert.assertTrue(result.get(FAILURE_DESCRIPTION).asString(), success);
+        return result;
     }
 
     /**
@@ -338,9 +354,9 @@ public abstract class AbstractSubsystemTest {
      * Checks that the subystem resources can be removed, i.e. that people have registered
      * working 'remove' operations for every 'add' level.
      *
-     * @param kernelServices the kernel services used to access the controller
+     * @param kernelServices        the kernel services used to access the controller
      * @param ignoredChildAddresses child addresses that should not be removed, they are managed by one of the parent resources.
-     * This set cannot contain the subsystem resource itself
+     *                              This set cannot contain the subsystem resource itself
      */
     protected void assertRemoveSubsystemResources(KernelServices kernelServices, Set<PathAddress> ignoredChildAddresses) {
 
@@ -367,7 +383,7 @@ public abstract class AbstractSubsystemTest {
         composite.get("rollback-on-runtime-failure").set(true);
 
 
-        for (ListIterator<PathAddress> iterator = addresses.listIterator(addresses.size()) ; iterator.hasPrevious() ; ) {
+        for (ListIterator<PathAddress> iterator = addresses.listIterator(addresses.size()); iterator.hasPrevious(); ) {
             PathAddress cur = iterator.previous();
             if (!ignoredChildAddresses.contains(cur)) {
                 ModelNode remove = new ModelNode();
@@ -423,7 +439,7 @@ public abstract class AbstractSubsystemTest {
      * Dumps the target subsystem resource description to DMR format, needed by TransformerRegistry for non-standard subsystems
      *
      * @param kernelServices the kernel services for the started controller
-     * @param modelVersion the target subsystem model version
+     * @param modelVersion   the target subsystem model version
      * @deprecated this might no longer be needed following refactoring of TransformerRegistry
      */
     @Deprecated
@@ -450,38 +466,93 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
-     * Checks that the subsystem can be transformed into the expected target DMR
+     * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
+     * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
      *
-     * @param kernelServices the kernel services for the started controller
-     * @param modelVersion the target subsystem model version
-     * @throws IOException if
+     * @param kernelServices the main kernel services
+     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @return the whole model of the legacy controller
      */
-    protected void checkSubsystemTransformer(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
         ModelNode legacyModel = legacy.readWholeModel();
-        legacyModel = legacyModel.require(SUBSYSTEM);
-        legacyModel = legacyModel.require(mainSubsystemName);
+        ModelNode legacySubsystem = legacyModel.require(SUBSYSTEM);
+        legacySubsystem = legacySubsystem.require(mainSubsystemName);
 
-
+        //1) Check that the transformed model is the same as the whole model read from the legacy controller.
+        //The transformed model is done via the resource transformers
+        //The model in the legacy controller is built up via transformed operations
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
-        compare(legacyModel, transformed, true);
+        compare(legacySubsystem, transformed, true);
+
+        //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
+        ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(mainSubsystemName, modelVersion);
+        ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
+        checkModelAgainstDefinition(transformed, rr);
+        return legacyModel;
     }
 
-    /**
-     * Checks that the subsystem can be transformed into the expected target DMR
-     *
-     * @param kernelServices the kernel services for the started controller
-     * @param legacyModel the dmr model for the target subsystem version
-     * @param modelVersion the model version
-     */
-    protected void checkSubsystemTransformer(KernelServices kernelServices, final ModelNode legacyModel, ModelVersion modelVersion) {
-        final ModelNode result = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
-        compare(legacyModel, result, true);
+    private void checkModelAgainstDefinition(final ModelNode model, ManagementResourceRegistration rr) {
+        final Set<String> children = rr.getChildNames(PathAddress.EMPTY_ADDRESS);
+        final Set<String> attributeNames = rr.getAttributeNames(PathAddress.EMPTY_ADDRESS);
+        for (ModelNode el : model.asList()) {
+            String name = el.asProperty().getName();
+            ModelNode value = el.asProperty().getValue();
+            if (attributeNames.contains(name)) {
+                AttributeAccess aa = rr.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
+                Assert.assertNotNull("Attribute " + name + " is not known", aa);
+                AttributeDefinition ad = aa.getAttributeDefinition();
+                if (!value.isDefined()) {
+                    Assert.assertTrue("Attribute " + name + " is not allow null", ad.isAllowNull());
+                } else {
+                   // Assert.assertEquals("Attribute '" + name + "' type mismatch", value.getType(), ad.getType()); //todo re-enable this check
+                }
+                try {
+                    if (!ad.isAllowNull()&&value.isDefined()){
+                        ad.getValidator().validateParameter(name, value);
+                    }
+                } catch (OperationFailedException e) {
+                    Assert.fail("validation for attribute '" + name + "' failed, " + e.getFailureDescription().asString());
+                }
+
+            } else if (!children.contains(name)) {
+                Assert.fail("Element '" + name + "' is not known in target definition");
+            }
+        }
+
+        for (PathElement pe : rr.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+            if (pe.isWildcard()) {
+                if (children.contains(pe.getKey()) && model.hasDefined(pe.getKey())) {
+                    for (ModelNode v : model.get(pe.getKey()).asList()) {
+                        String name = v.asProperty().getName();
+                        ModelNode value = v.asProperty().getValue();
+                        ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
+                        Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                        if (value.isDefined()) {
+                            checkModelAgainstDefinition(value, sub);
+                        }
+                    }
+                }
+            } else {
+                if (children.contains(pe.getKeyValuePair())) {
+                    String name = pe.getValue();
+                    ModelNode value = model.get(pe.getKeyValuePair());
+                    ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
+                    Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                    if (value.isDefined()) {
+                        checkModelAgainstDefinition(value, sub);
+                    }
+                }
+            }
+        }
+
+
     }
 
 
     /**
      * Compares two models to make sure that they are the same
+     *
      * @param node1 the first model
      * @param node2 the second model
      * @throws AssertionFailedError if the models were not the same
@@ -489,10 +560,12 @@ public abstract class AbstractSubsystemTest {
     protected void compare(ModelNode node1, ModelNode node2) {
         compare(node1, node2, false);
     }
+
     /**
      * Compares two models to make sure that they are the same
-     * @param node1 the first model
-     * @param node2 the second model
+     *
+     * @param node1           the first model
+     * @param node2           the second model
      * @param ignoreUndefined {@code true} if keys containing undefined nodes should be ignored
      * @throws AssertionFailedError if the models were not the same
      */
@@ -514,12 +587,12 @@ public abstract class AbstractSubsystemTest {
 
                 if (child1.isDefined()) {
                     if (!ignoreUndefined) {
-                        Assert.assertTrue("key="+ key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
+                        Assert.assertTrue("key=" + key + "\n with child1 \n" + child1.toString() + "\n has child2 not defined\n node2 is:\n" + node2.toString(), child2.isDefined());
                     }
                     stack.get().push(key + "/");
                     compare(child1, child2, ignoreUndefined);
                     stack.get().pop();
-                } else if (!ignoreUndefined){
+                } else if (!ignoreUndefined) {
                     Assert.assertFalse(child2.asString(), child2.isDefined());
                 }
             }
@@ -557,10 +630,35 @@ public abstract class AbstractSubsystemTest {
         for (String key : new HashSet<String>(copy.keys())) {
             if (!copy.hasDefined(key)) {
                 copy.remove(key);
+            } else if (copy.get(key).getType() == ModelType.OBJECT) {
+                boolean undefined = true;
+                for (ModelNode mn : model.get(key).asList()) {
+                    Property p = mn.asProperty();
+                    if (p.getValue().getType() != ModelType.OBJECT) { continue; }
+                    for (String subKey : new HashSet<String>(p.getValue().keys())) {
+                        if (copy.get(key, p.getName()).hasDefined(subKey)) {
+                            undefined = false;
+                            break;
+                        } else {
+                            copy.get(key, p.getName()).remove(subKey);
+                        }
+                    }
+                    if (undefined) {
+                        copy.get(key).remove(p.getName());
+                        if (!copy.hasDefined(key)) {
+                            copy.remove(key);
+                        } else if (copy.get(key).getType() == ModelType.OBJECT) {     //this is stupid workaround
+                            if (copy.get(key).keys().size() == 0) {
+                                copy.remove(key);
+                            }
+                        }
+                    }
+                }
             }
         }
         return copy;
     }
+
 
     /**
      * Normalize and pretty-print XML so that it can be compared using string
@@ -568,10 +666,10 @@ public abstract class AbstractSubsystemTest {
      * Makes sure attributes are ordered consistently - Trims every element -
      * Pretty print the document
      *
-     * @param xml
-     *            The XML to be normalized
+     * @param xml The XML to be normalized
      * @return The equivalent XML, but now normalized
      */
+
     protected String normalizeXML(String xml) throws Exception {
         // Remove all white space adjoining tags ("trim all elements")
         xml = xml.replaceAll("\\s*<", "<");
@@ -592,10 +690,10 @@ public abstract class AbstractSubsystemTest {
     }
 
     private static String getCompareStackAsString() {
-         String result = "";
-         for (String element : stack.get()) {
+        String result = "";
+        for (String element : stack.get()) {
             result += element;
-         }
+        }
         return result;
     }
 
@@ -606,8 +704,8 @@ public abstract class AbstractSubsystemTest {
         }
     }
 
-    private ExtensionRegistry cloneExtensionRegistry() {
-        final ExtensionRegistry clone = new ExtensionRegistry(extensionParsingRegistry.getProcessType(), new RunningModeControl(RunningMode.NORMAL));
+    private ExtensionRegistry cloneExtensionRegistry(AdditionalInitialization additionalInit) {
+        final ExtensionRegistry clone = new ExtensionRegistry(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getExtensionRegistryRunningMode()));
         for (String extension : extensionParsingRegistry.getExtensionModuleNames()) {
             ExtensionParsingContext epc = clone.getExtensionParsingContext(extension, null);
             for (Map.Entry<String, SubsystemInformation> entry : extensionParsingRegistry.getAvailableSubsystems(extension).entrySet()) {
@@ -687,7 +785,7 @@ public abstract class AbstractSubsystemTest {
         List<ValidationFailure> validationMessages = validator.validateResource();
         if (validationMessages.size() > 0) {
             final StringBuilder builder = new StringBuilder("VALIDATION ERRORS IN MODEL:");
-            for (ValidationFailure failure :validationMessages) {
+            for (ValidationFailure failure : validationMessages) {
                 builder.append(failure);
                 builder.append("\n");
 
@@ -700,10 +798,10 @@ public abstract class AbstractSubsystemTest {
 
     /**
      * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
-     * @param configId the id of the xml configuration
-     * @param original the original subsystem xml
-     * @param marshalled the marshalled subsystem xml
      *
+     * @param configId   the id of the xml configuration
+     * @param original   the original subsystem xml
+     * @param marshalled the marshalled subsystem xml
      * @throws Exception
      */
     protected void compareXml(String configId, final String original, final String marshalled) throws Exception {
@@ -712,11 +810,11 @@ public abstract class AbstractSubsystemTest {
 
     /**
      * Validate the marshalled xml without adjusting the namespaces for the original and marshalled xml.
-     * @param configId TODO
-     * @param original the original subsystem xml
-     * @param marshalled the marshalled subsystem xml
-     * @param ignoreNamespace if {@code true} the subsystem's namespace is ignored, otherwise it is taken into account when comparing the normalized xml.
      *
+     * @param configId        TODO
+     * @param original        the original subsystem xml
+     * @param marshalled      the marshalled subsystem xml
+     * @param ignoreNamespace if {@code true} the subsystem's namespace is ignored, otherwise it is taken into account when comparing the normalized xml.
      * @throws Exception
      */
     protected void compareXml(String configId, final String original, final String marshalled, final boolean ignoreNamespace) throws Exception {
@@ -804,11 +902,11 @@ public abstract class AbstractSubsystemTest {
         public KernelServices build() throws Exception {
             validateNotAlreadyBuilt();
             built = true;
-            KernelServices kernelServices = KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(), bootOperations, testParser, mainExtension, null);
+            KernelServices kernelServices = KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, mainExtension, null);
             AbstractSubsystemTest.this.kernelServices.add(kernelServices);
 
             validateDescriptionProviders(additionalInit, kernelServices);
-            ManagementResourceRegistration subsystemReg =  kernelServices.getRootRegistration().getSubModel(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM,mainSubsystemName)));
+            ManagementResourceRegistration subsystemReg = kernelServices.getRootRegistration().getSubModel(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName)));
             validateModelDescriptions(PathAddress.EMPTY_ADDRESS, subsystemReg);
 
             for (Map.Entry<ModelVersion, LegacyKernelServiceInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
@@ -920,17 +1018,17 @@ public abstract class AbstractSubsystemTest {
             Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
             Assert.assertEquals(legacyCl, clazz.getClassLoader());
             Assert.assertTrue(Extension.class.isAssignableFrom(clazz));
-            Extension extension = (Extension)clazz.newInstance();
+            Extension extension = (Extension) clazz.newInstance();
 
             //Initialize the parsers for the legacy subsystem (copied from the @Before method)
             XMLMapper xmlMapper = XMLMapper.Factory.create();
             TestParser testParser = new TestParser(mainSubsystemName);
-            ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(getProcessType(), new RunningModeControl(RunningMode.NORMAL));
+            ExtensionRegistry extensionParsingRegistry = new ExtensionRegistry(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getExtensionRegistryRunningMode()));
             xmlMapper.registerRootElement(new QName(TEST_NAMESPACE, "test"), testParser);
             extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
 
             //TODO extra parsers from additionalInit
-            return KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(), bootOperations, testParser, extension, modelVersion);
+            return KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion);
         }
     }
 
@@ -1050,33 +1148,33 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                DescriptionProvider descriptionProvider) {
+                                             DescriptionProvider descriptionProvider) {
         }
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                DescriptionProvider descriptionProvider, EnumSet<Flag> flags) {
+                                             DescriptionProvider descriptionProvider, EnumSet<Flag> flags) {
         }
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                DescriptionProvider descriptionProvider, boolean inherited) {
+                                             DescriptionProvider descriptionProvider, boolean inherited) {
         }
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType) {
+                                             DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType) {
         }
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                DescriptionProvider descriptionProvider, boolean inherited, EnumSet<Flag> flags) {
+                                             DescriptionProvider descriptionProvider, boolean inherited, EnumSet<Flag> flags) {
         }
 
 
         @Override
         public void registerOperationHandler(String operationName, OperationStepHandler handler,
-                DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<Flag> flags) {
+                                             DescriptionProvider descriptionProvider, boolean inherited, EntryType entryType, EnumSet<Flag> flags) {
         }
 
         @Override
@@ -1086,7 +1184,7 @@ public abstract class AbstractSubsystemTest {
 
         @Override
         public void registerReadWriteAttribute(String attributeName, OperationStepHandler readHandler,
-                OperationStepHandler writeHandler, Storage storage) {
+                                               OperationStepHandler writeHandler, Storage storage) {
         }
 
         @Override
@@ -1139,12 +1237,14 @@ public abstract class AbstractSubsystemTest {
         static String NAME = "grab-root-resource";
         static RootResourceGrabber INSTANCE = new RootResourceGrabber();
         volatile Resource resource;
+
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             resource = context.getRootResource();
             context.getResult().setEmptyObject();
             context.completeStep();
         }
+
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode node = new ModelNode();
