@@ -92,18 +92,53 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         content = new ArgumentWithValue(this, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-                // TODO add support for quoted paths
-                int i = buffer.lastIndexOf(',');
-                i = buffer.indexOf('=', i + 1);
-                if(i < 0) {
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                if ("add".equals(actionStr)) {
+                    // TODO add support for quoted paths
+                    int i = buffer.lastIndexOf(',');
+                    i = buffer.indexOf('=', i + 1);
+                    if (i < 0) {
+                        return -1;
+                    }
+                    final String path = buffer.substring(i + 1);
+                    int pathResult = pathCompleter.complete(ctx, path, 0, candidates);
+                    if (pathResult < 0) {
+                        return -1;
+                    }
+                    return i + 1 + pathResult;
+                } else if("remove".equals(actionStr)) {
+                    final String nameStr = name.getValue(ctx.getParsedCommandLine());
+                    if(nameStr == null) {
+                        return -1;
+                    }
+                    final List<String> existing;
+                    try {
+                        existing = loadContentFor(ctx.getModelControllerClient(), nameStr);
+                    } catch (CommandLineException e) {
+                        return -1;
+                    }
+                    if(existing.isEmpty()) {
+                        return buffer.length();
+                    }
+                    candidates.addAll(existing);
+                    if(buffer.isEmpty()) {
+                        return 0;
+                    }
+                    final String[] specified = buffer.split(",+");
+                    candidates.removeAll(Arrays.asList(specified));
+                    if(buffer.charAt(buffer.length() - 1) == ',') {
+                        return buffer.length();
+                    }
+                    final String chunk = specified[specified.length - 1];
+                    for(int i = 0; i < candidates.size(); ++i) {
+                        if(!candidates.get(i).startsWith(chunk)) {
+                            candidates.remove(i);
+                        }
+                    }
+                    return buffer.length() - chunk.length();
+                } else {
                     return -1;
                 }
-                final String path = buffer.substring(i + 1);
-                int pathResult = pathCompleter.complete(ctx, path, 0, candidates);
-                if(pathResult < 0) {
-                    return -1;
-                }
-                return i + 1 + pathResult;
             }}, "--content");
         content.addRequiredPreceding(name);
 
@@ -114,7 +149,29 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(client == null) {
                     return -1;
                 }
-                final List<String> existing = Util.getDeployments(client);
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                final List<String> existing;
+                if("add".equals(actionStr)) {
+                    existing = Util.getDeployments(client);
+                } else if("remove".equals(actionStr)) {
+                    try {
+                        final String nameStr = name.getValue(ctx.getParsedCommandLine());
+                        if(nameStr == null) {
+                            return -1;
+                        }
+                        existing = loadLinks(client);
+                        for(int i = 0; i < existing.size(); ++i) {
+                            if(existing.get(i).startsWith(nameStr + '-')) {
+                                existing.set(i, existing.get(i).substring(nameStr.length() + 1));
+                            }
+                        }
+                    } catch (CommandLineException e) {
+                        return -1;
+                    }
+                } else {
+                    return -1;
+                }
+
                 if(existing.isEmpty()) {
                     return buffer.length();
                 }
@@ -154,25 +211,123 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
     protected void remove(CommandContext ctx) throws CommandLineException {
 
-/*        ModelNode op = new ModelNode();
-      ModelNode address = op.get(Util.ADDRESS);
-      address.add(Util.DEPLOYMENT_OVERLAY, name);
-      op.get(Util.OPERATION).set(Util.REMOVE);
+        final ModelControllerClient client = ctx.getModelControllerClient();
+
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
+        final String name = this.name.getValue(args, true);
+        final String contentStr = content.getValue(args);
+        final String deploymentStr = deployment.getValue(args);
 
         final ModelNode composite = new ModelNode();
-        final OperationBuilder opBuilder = new OperationBuilder(composite);
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
 
-        ModelNode op = new ModelNode();
-      ModelNode address = op.get(Util.ADDRESS);
-      address.add(Util.DEPLOYMENT_OVERLAY, name);
-      op.get(Util.OPERATION).set(Util.REMOVE);
-      ctx.getModelControllerClient().execute(op);
-*/
-        throw new CommandLineException("remove is not yet implemented");
+        if(deploymentStr != null || contentStr == null) {
+            // remove the overlay links
+
+            final List<String> overlays;
+            if(deploymentStr == null) {
+                overlays = loadLinks(client);
+            } else {
+                overlays = new ArrayList<String>();
+                final String[] deployments = deploymentStr.split(",+");
+                for(String deploymentName : deployments) {
+                    overlays.add(name + '-' + deploymentName);
+                }
+            }
+
+            for(String overlay : overlays) {
+                final ModelNode op = new ModelNode();
+                op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY_LINK, overlay);
+                op.get(Util.OPERATION).set(Util.REMOVE);
+                steps.add(op);
+            }
         }
+
+        if(contentStr != null || deploymentStr == null) {
+            // determine the content to be removed
+
+            final List<String> contentList;
+            if(contentStr == null) {
+                contentList = loadContentFor(client, name);
+            } else {
+                contentList = java.util.Arrays.asList(contentStr.split(",+"));
+            }
+
+            for(String content : contentList) {
+                final ModelNode op = new ModelNode();
+                ModelNode addr = op.get(Util.ADDRESS);
+                addr.add(Util.DEPLOYMENT_OVERLAY, name);
+                addr.add(Util.CONTENT, content);
+                op.get(Util.OPERATION).set(Util.REMOVE);
+                steps.add(op);
+            }
+        }
+
+        if(contentStr == null && deploymentStr == null) {
+            final ModelNode op = new ModelNode();
+            op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, name);
+            op.get(Util.OPERATION).set(Util.REMOVE);
+            steps.add(op);
+        }
+
+        try {
+            final ModelNode result = client.execute(composite);
+            if (!Util.isSuccess(result)) {
+                throw new CommandFormatException(Util.getFailureDescription(result));
+            }
+        } catch (IOException e) {
+            throw new CommandFormatException("Failed to remove overlay", e);
+        }
+    }
+
+    protected List<String> loadContentFor(final ModelControllerClient client, final String name) throws CommandLineException {
+        final List<String> contentList;
+        final ModelNode op = new ModelNode();
+        op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, name);
+        op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
+        op.get(Util.CHILD_TYPE).set(Util.CONTENT);
+        final ModelNode response;
+        try {
+            response = client.execute(op);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name, e);
+        }
+
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name + ": " + response);
+        }
+        contentList = new ArrayList<String>();
+        for(ModelNode node : result.asList()) {
+            contentList.add(node.asString());
+        }
+        return contentList;
+    }
+
+    protected List<String> loadLinks(final ModelControllerClient client) throws CommandLineException {
+        final ModelNode op = new ModelNode();
+        op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
+        op.get(Util.ADDRESS).setEmptyList();
+        op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT_OVERLAY_LINK);
+        final ModelNode response;
+        try {
+            response = client.execute(op);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to load the list of existing overlay links", e);
+        }
+
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            throw new CommandLineException("Failed to load the list of existing overlay links: " + response);
+        }
+        final List<String> overlays = new ArrayList<String>();
+        for(ModelNode node : result.asList()) {
+            overlays.add(node.asString());
+        }
+        return overlays;
+    }
 
     protected void add(CommandContext ctx) throws CommandLineException {
 
@@ -294,14 +449,14 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 steps.add(op);
             }
 
-            final ModelNode response;
             try {
-                response = client.execute(composite);
+                final ModelNode result = client.execute(composite);
+                if (!Util.isSuccess(result)) {
+                    throw new CommandFormatException(Util.getFailureDescription(result));
+                }
             } catch (IOException e) {
-                // TODO rollback content upload?
-                throw new CommandLineException("Failed to setup overlays", e);
+                throw new CommandFormatException("Failed to add overlay", e);
             }
-            ctx.printLine(response.toString());
         }
     }
 }

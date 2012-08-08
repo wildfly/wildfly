@@ -405,7 +405,7 @@ public class DeployHandler extends DeploymentHandler {
                 throw new CommandFormatException(Util.getFailureDescription(result));
             }
         } catch (IOException e) {
-            throw new CommandFormatException("Failed to deploy: " + e.getLocalizedMessage(), e);
+            throw new CommandFormatException("Failed to deploy", e);
         }
     }
 
