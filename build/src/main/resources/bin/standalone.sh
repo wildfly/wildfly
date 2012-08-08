@@ -7,21 +7,25 @@
 # By default debug mode is disable.
 DEBUG_MODE=false
 DEBUG_PORT="8787"
+SERVER_OPTS=""
 while [ "$#" -gt 0 ]
 do
     case "$1" in
       -d|--debug)
           DEBUG_MODE=true
           shift
-          if [ -n "$1" ]; then
+          if [ -n "$1" ] && [ "${1#*-}" = "$1" ]; then
               DEBUG_PORT=$1
+          else
+              SERVER_OPTS="$SERVER_OPTS $1"
           fi
           ;;
       --)
           shift 
           break;;
       *)
-          break;;
+          SERVER_OPTS="$SERVER_OPTS $1"
+          ;;
     esac
     shift
 done
@@ -148,9 +152,9 @@ fi
 
 if $linux; then
     # consolidate the server and command line opts
-    SERVER_OPTS="$JAVA_OPTS $@"
+    CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
     # process the standalone options
-    for var in $SERVER_OPTS
+    for var in $CONSOLIDATED_OPTS
     do
        case $var in
          -Djboss.server.base.dir=*)
@@ -214,7 +218,7 @@ while true; do
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          -Djboss.server.base.dir=\"$JBOSS_BASE_DIR\" \
-         "$@"
+         "$SERVER_OPTS"
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
@@ -227,7 +231,7 @@ while true; do
          org.jboss.as.standalone \
          -Djboss.home.dir=\"$JBOSS_HOME\" \
          -Djboss.server.base.dir=\"$JBOSS_BASE_DIR\" \
-         "$@" "&"
+         "$SERVER_OPTS" "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process
       trap "kill -HUP  $JBOSS_PID" HUP
