@@ -1,0 +1,11 @@
+<ironjacamar xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="../../../../../../common/src/main/resources/schema/ironjacamar_1_0.xsd">
+    <connection-definitions>
+        <connection-definition class-name="org.jboss.as.test.smoke.deployment.rar.MultipleManagedConnectionFactory2"
+                               jndi-name="java:jboss/name2" pool-name="Pool2"></connection-definition>
+    </connection-definitions>
+    <admin-objects>
+        <admin-object class-name="org.jboss.as.test.smoke.deployment.rar.MultipleAdminObject2Impl"
+                      jndi-name="java:jboss/Name4" pool-name="Pool4"></admin-object>
+    </admin-objects>
+</ironjacamar>
