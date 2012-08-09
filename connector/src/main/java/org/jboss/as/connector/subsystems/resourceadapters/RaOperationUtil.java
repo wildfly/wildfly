@@ -308,13 +308,7 @@ public class RaOperationUtil {
 
         ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
         AbstractResourceAdapterDeploymentService service = ((AbstractResourceAdapterDeploymentService) context.getServiceRegistry(false).getService(deploymentServiceName));
-        if (service != null) {
-            List<ServiceName> jndiServices = service.getJndiServices();
 
-            for (ServiceName name : jndiServices) {
-                context.removeService(name);
-            }
-        }
 
 
     }

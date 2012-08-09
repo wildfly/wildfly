@@ -284,8 +284,9 @@ public class IronJacamarResourceCreator {
 
         ironJacamarResource.update(storeModel);
         PathElement ijPe = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
-
-        parentResource.registerChild(ijPe, ironJacamarResource);
+        if (parentResource.getChild(ijPe) == null) {
+            parentResource.registerChild(ijPe, ironJacamarResource);
+        }
     }
 
 }

@@ -86,25 +86,29 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                 //when you are in deploy you have a registration pointing to deployment=*
                                 //when you are in re-deploy it points to specific deploymentUnit
                                 synchronized (this) {
-                                    if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
-                                        overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
-                                            @Override
-                                            public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
+                                    if (registration.isAllowsOverride()) {
 
-                                            @Override
-                                            public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
-                                                return Collections.emptyMap();
-                                            }
-                                        });
-                                    } else {
-                                        overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                                        if (registration.getOverrideModel(deploymentUnitName) != null) {
+                                            overrideRegistration = registration.getOverrideModel(deploymentUnitName);
+                                        } else {
+                                            overrideRegistration = registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
+                                                @Override
+                                                public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                                                    return Collections.emptyMap();
+                                                }
+
+                                                @Override
+                                                public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                                                    return Collections.emptyMap();
+                                                }
+                                            });
+                                        }
+
                                     }
 
                                 ManagementResourceRegistration subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
                                 if (subRegistration == null) {
-                                    subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem"));
+                                       subRegistration = overrideRegistration.registerSubModel(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem"));
                                 }
                                 Resource subsystemResource;
 
