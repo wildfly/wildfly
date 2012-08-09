@@ -320,12 +320,25 @@
             <maven-resource group="ch.qos.cal10n" artifact="cal10n-api"/>
         </module-def>
 
+        <module-def name="com.github.relaxng">
+            <maven-resource group="com.github.relaxng" artifact="relaxngDatatype" />
+        </module-def>
+
         <module-def name="com.google.guava">
             <maven-resource group="com.google.guava" artifact="guava" />
         </module-def>
 
         <module-def name="com.h2database.h2">
             <maven-resource group="com.h2database" artifact="h2"/>
+        </module-def>
+
+        <module-def name="com.sun.codemodel">
+            <maven-resource group="com.sun.codemodel" artifact="codemodel"/>
+        </module-def>
+
+        <module-def name="com.sun.istack">
+            <maven-resource group="com.sun.istack" artifact="istack-commons-runtime"/>
+            <maven-resource group="com.sun.istack" artifact="istack-commons-tools"/>
         </module-def>
 
         <module-def name="com.sun.jsf-impl">
@@ -343,6 +356,14 @@
 
         <module-def name="com.sun.xml.messaging.saaj">
             <maven-resource group="com.sun.xml.messaging.saaj" artifact="saaj-impl"/>
+        </module-def>
+
+        <module-def name="com.sun.xml.txw2">
+            <maven-resource group="com.sun.xml.txw2" artifact="txw2"/>
+        </module-def>
+
+        <module-def name="com.sun.xsom">
+            <maven-resource group="com.sun.xsom" artifact="xsom"/>
         </module-def>
 
         <module-def name="org.dom4j">
@@ -1171,6 +1192,10 @@
 
         <module-def name="org.joda.time">
             <maven-resource group="joda-time" artifact="joda-time"/>
+        </module-def>
+
+        <module-def name="org.kohsuke.rngom">
+            <maven-resource group="org.kohsuke.rngom" artifact="rngom"/>
         </module-def>
 
         <module-def name="org.omg.api" />
