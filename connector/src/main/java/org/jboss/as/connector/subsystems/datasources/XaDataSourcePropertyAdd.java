@@ -94,8 +94,11 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler implements D
             final ServiceTarget serviceTarget = context.getServiceTarget();
 
             final XaDataSourcePropertiesService service = new XaDataSourcePropertiesService(configPropertyName, configPropertyValue);
-            serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)
+            ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.NEVER)
                     .addListener(verificationHandler).install();
+            if (serviceControllers != null) {
+                serviceControllers.add(controller);
+            }
 
             context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
         } else {
