@@ -115,4 +115,16 @@ public class XaDataSourceCfgMetricUnitTestCase extends DsMgmtTestBase {
         super.testStatistics("xa-basic-attributes.xml");
     }
 
+    // AS7-5333
+    @Test
+    public void testRollbackCleanup() throws Exception {
+        try {
+            setBadModel("wrong-xa-bogus-driver.xml");
+            Assert.fail("bad model did not produce an exception");
+        } catch (Exception e) {
+            // Confirm a correct model adding the same resources can be added
+            testDefaultXaDsAttributes();
+        }
+    }
+
 }
