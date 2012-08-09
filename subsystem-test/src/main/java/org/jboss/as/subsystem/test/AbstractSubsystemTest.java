@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -476,9 +477,6 @@ public abstract class AbstractSubsystemTest {
      * @return the whole model of the legacy controller
      */
     protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
-        System.out.println(kernelServices.readWholeModel());
-
-
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
         ModelNode legacyModel = legacy.readWholeModel();
         ModelNode legacySubsystem = legacyModel.require(SUBSYSTEM);
@@ -579,10 +577,11 @@ public abstract class AbstractSubsystemTest {
         if (node1.getType() == ModelType.OBJECT) {
             ModelNode model1 = ignoreUndefined ? trimUndefinedChildren(node1) : node1;
             ModelNode model2 = ignoreUndefined ? trimUndefinedChildren(node2) : node2;
-            final Set<String> keys1 = model1.keys();
-            final Set<String> keys2 = model2.keys();
+            final Set<String> keys1 = new TreeSet<String>(model1.keys());
+            final Set<String> keys2 = new TreeSet<String>(model2.keys());
 
-            Assert.assertEquals(node1 + "\n" + node2, keys1.size(), keys2.size());
+            // use string representations of the sorted set to get better message in case of difference
+            Assert.assertEquals(node1 + "\n" + node2, keys1.toString(), keys2.toString());
             Assert.assertTrue(keys1.containsAll(keys2));
 
             for (String key : keys1) {

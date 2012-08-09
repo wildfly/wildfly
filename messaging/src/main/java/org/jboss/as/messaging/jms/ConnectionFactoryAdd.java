@@ -112,6 +112,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
             attribute.validateAndSet(operation, model);
         }
         CommonAttributes.CONNECTION_FACTORY_TYPE.validateAndSet(operation, model);
+        CommonAttributes.HA.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -211,5 +212,4 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         }
         return JMSFactoryType.CF;
     }
-
 }

@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hornetq.api.core.management.ResourceNames;
+import org.hornetq.api.jms.JMSFactoryType;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
@@ -44,6 +45,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -62,8 +64,6 @@ import org.jboss.msc.service.ServiceName;
 public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
     public static final ConnectionFactoryReadAttributeHandler INSTANCE = new ConnectionFactoryReadAttributeHandler();
-
-    public static final List<String> READ_ATTRIBUTES = Arrays.asList( CONNECTION_FACTORY_TYPE.getName(), INITIAL_MESSAGE_PACKET_SIZE );
 
     private ParametersValidator validator = new ParametersValidator();
 
@@ -89,22 +89,15 @@ public class ConnectionFactoryReadAttributeHandler extends AbstractRuntimeOnlyHa
             return;
         }
 
-        if (HA.getName().equals(attributeName)) {
-            context.getResult().set(control.isHA());
-        } else if (CONNECTION_FACTORY_TYPE.getName().equals(attributeName)) {
-            context.getResult().set(control.getFactoryType());
-        } else if (INITIAL_MESSAGE_PACKET_SIZE.equals(attributeName)) {
+        if (INITIAL_MESSAGE_PACKET_SIZE.equals(attributeName)) {
             context.getResult().set(control.getInitialMessagePacketSize());
-        } else if (READ_ATTRIBUTES.contains(attributeName)) {
-            // Bug
+        } else {
             throw MESSAGES.unsupportedAttribute(attributeName);
         }
         context.completeStep();
     }
 
     public void registerAttributes(final ManagementResourceRegistration registration) {
-        for (String attr : READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attr, this, AttributeAccess.Storage.RUNTIME);
-        }
+        registration.registerReadOnlyAttribute(INITIAL_MESSAGE_PACKET_SIZE, this, AttributeAccess.Storage.RUNTIME);
     }
 }

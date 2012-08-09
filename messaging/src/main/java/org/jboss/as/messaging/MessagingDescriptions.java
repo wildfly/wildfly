@@ -781,6 +781,7 @@ public class MessagingDescriptions {
         node.get(DESCRIPTION).set(bundle.getString(CONNECTION_FACTORY + ".add"));
         addConnectionFactoryProperties(bundle, node, false);
         CONNECTION_FACTORY_TYPE.addOperationParameterDescription(bundle, CONNECTION_FACTORY, node);
+        HA.addOperationParameterDescription(bundle, CONNECTION_FACTORY, node);
 
         node.get(REPLY_PROPERTIES).setEmptyObject();
 

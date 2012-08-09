@@ -72,6 +72,8 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
             EnumSet<AttributeAccess.Flag> flags = runtimeAttributes.containsKey(attrName) ? RESTART_NONE : RESTART_ALL;
             registry.registerReadWriteAttribute(attrName, null, this, flags);
         }
+        registry.registerReadOnlyAttribute(CommonAttributes.HA.getName(), null, AttributeAccess.Storage.CONFIGURATION);
+        registry.registerReadOnlyAttribute(CommonAttributes.CONNECTION_FACTORY_TYPE.getName(), null, AttributeAccess.Storage.CONFIGURATION);
     }
 
     @Override
