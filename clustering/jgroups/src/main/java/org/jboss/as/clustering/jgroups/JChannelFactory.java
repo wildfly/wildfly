@@ -21,6 +21,8 @@
  */
 package org.jboss.as.clustering.jgroups;
 
+import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,8 +49,6 @@ import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.TP;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.SocketFactory;
-
-import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
 
 /**
  * @author Paul Ferraro
@@ -201,28 +201,47 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             if (!supportsMulticast) {
                 this.setProperty(protocol, config, "use_mcast_xmit", String.valueOf(false));
             }
-
             configs.add(config);
         }
         return configs;
     }
 
     private void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        this.setProperty(protocol, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
+        this.setPropertyNoOverride(protocol, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
     }
 
     private void configureServerSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
-        this.setProperty(protocol, config, property, String.valueOf(binding.getSocketAddress().getPort()));
+        this.setPropertyNoOverride(protocol, config, property, String.valueOf(binding.getSocketAddress().getPort()));
     }
 
     private void configureMulticastSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
         try {
             InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            this.setProperty(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            this.setProperty(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
+            this.setPropertyNoOverride(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            this.setPropertyNoOverride(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
             ROOT_LOGGER.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }
+    }
+
+    private void setPropertyNoOverride(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
+        boolean overridden = false ;
+        String propertyValue = null ;
+        // check if the property has been overridden by the user and log a message
+        try {
+            if (overridden = config.getOriginalProperties().containsKey(name))
+               propertyValue = config.getOriginalProperties().get(name);
+        }
+        catch(Exception e) {
+            ROOT_LOGGER.errorf(e, "Error accessing original value for property %s of protocol %s : ", name, protocol.getName());
+        }
+
+        // log a warning if property tries to override
+        if (overridden) {
+            ROOT_LOGGER.warnf("property %s for protocol %s attempting to override socket binding value %s : property value %s will be ignored",
+                    name, protocol.getName(), value, propertyValue);
+        }
+        setProperty(protocol, config, name, value);
     }
 
     private void setProperty(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
