@@ -26,21 +26,36 @@ import junit.framework.Assert;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
 import org.jboss.as.test.integration.domain.extension.VersionedExtensionCommon;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.*;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.createOperation;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForFailure;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.exists;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getRunningServerAddress;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -116,9 +131,63 @@ public class OperationTransformationTestCase {
         elementRenamedOnSlave.add("element", "renamed");
         Assert.assertTrue(exists(elementRenamedOnSlave, client));
 
-        // Update
-        executeForResult(create("update", address), client);
+//        final ModelNode op = create(READ_RESOURCE_OPERATION, PathAddress.pathAddress(PathElement.pathElement("profile", "ignored")));
+//        System.out.println(executeForResult(op, slave.getDomainClient()));
 
+        final ModelNode update = new ModelNode();
+        update.get(OP).set("update");
+        update.get(OP_ADDR).set(address.toModelNode());
+
+        System.out.println(client.execute(update));
+
+        //
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+
+        final ModelNode steps = composite.get(STEPS);
+        steps.add();
+
+        // Test expression replacement
+        testPropertiesModel();
+    }
+
+    protected void testPropertiesModel() throws Exception {
+        final DomainClient client = master.getDomainClient();
+        final DomainClient slaveClient = slave.getDomainClient();
+
+        final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "default"));
+
+        // Test the properties model
+        final PathAddress properties = address.append(PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME));
+
+        final ModelNode writePropertiesInt = writeAttribute(properties, "int", "${org.jboss.domain.tests.int:1}");
+        executeForFailure(writePropertiesInt, client);
+        // Check both master and slave
+        Assert.assertFalse(executeForResult(readAttribute(properties, "int"), client).isDefined());
+        Assert.assertFalse(executeForResult(readAttribute(properties, "int"), slaveClient).isDefined());
+
+        final ModelNode writePropertiesString = writeAttribute(properties, "string", "${org.jboss.domain.tests.string:abc}");
+        executeForFailure(writePropertiesString, client);
+        // Check both master and slave
+        Assert.assertFalse(executeForResult(readAttribute(properties, "string"), client).isDefined());
+        Assert.assertFalse(executeForResult(readAttribute(properties, "string"), slaveClient).isDefined());
+
+        // Test the ignored model
+        final PathAddress ignored = PathAddress.pathAddress(PathElement.pathElement(PROFILE, "ignored"), PathElement.pathElement(SUBSYSTEM, VersionedExtensionCommon.SUBSYSTEM_NAME));
+        final ModelNode newIgnored = createAdd(ignored);
+        executeForResult(newIgnored, client);
+        Assert.assertTrue(exists(ignored, client));
+
+        final ModelNode writeIgnoredString = writeAttribute(ignored, "string", "${org.jboss.domain.tests.string:abc}");
+        executeForResult(writeIgnoredString, client);
+        Assert.assertTrue(executeForResult(readAttribute(ignored, "string"), client).isDefined());
+        Assert.assertFalse(executeForResult(readAttribute(ignored, "string"), slaveClient).isDefined());
+
+        final ModelNode writeIgnoredInt = writeAttribute(ignored, "int", "${org.jboss.domain.tests.int:1}");
+        executeForResult(writeIgnoredInt, client);
+        Assert.assertTrue(executeForResult(readAttribute(ignored, "int"), client).isDefined());
+        Assert.assertFalse(executeForResult(readAttribute(ignored, "int"), slaveClient).isDefined());
     }
 
     static ModelNode createAdd(PathAddress address) {
@@ -131,6 +200,30 @@ public class OperationTransformationTestCase {
 
     static ModelNode create(String op, PathAddress address) {
         return createOperation(op, address);
+    }
+
+    static ModelNode writeAttribute(PathAddress address, String name, int value) {
+        final ModelNode operation = writeAttribute(address, name);
+        operation.get(VALUE).set(value);
+        return operation;
+    }
+
+    static ModelNode writeAttribute(PathAddress address, String name, String value) {
+        final ModelNode operation = writeAttribute(address, name);
+        operation.get(VALUE).set(value);
+        return operation;
+    }
+
+    static ModelNode readAttribute(PathAddress address, String name) {
+        final ModelNode operation = createOperation(READ_ATTRIBUTE_OPERATION, address);
+        operation.get(NAME).set(name);
+        return operation;
+    }
+
+    static ModelNode writeAttribute(PathAddress address, String name) {
+        final ModelNode operation =  createOperation(WRITE_ATTRIBUTE_OPERATION, address);
+        operation.get(NAME).set(name);
+        return operation;
     }
 
     static void assertVersion(final ModelNode v, ModelVersion version) {

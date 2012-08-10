@@ -33,7 +33,6 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -73,16 +72,39 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
     @Override
     public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation) throws OperationFailedException {
         // Check the model
-        checkModel(operation);
+        final Set<String> attributes = checkModel(operation);
+        final boolean reject = attributes.size() > 0;
+        final OperationRejectionPolicy rejectPolicy;
+        if(reject) {
+            rejectPolicy = new OperationRejectionPolicy() {
+                @Override
+                public boolean rejectOperation(ModelNode preparedResult) {
+                    // Reject successful operations
+                    return true;
+                }
+
+                @Override
+                public String getFailureDescription() {
+                    // TODO OFE.getMessage
+                    return ControllerMessages.MESSAGES.expressionNotAllowed(attributes.toString()).getMessage();
+                }
+            };
+        } else {
+            rejectPolicy = OperationTransformer.DEFAULT_REJECTION_POLICY;
+        }
         // Return untransformed
-        return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
     }
 
     @Override
     public void transformResource(final ResourceTransformationContext context, final PathAddress address,
                                   final Resource resource) throws OperationFailedException {
         // Check the model
-        checkModel(resource.getModel());
+        final ModelNode model = resource.getModel();
+        final Set<String> attributes = checkModel(model);
+        if (attributes.size() > 0) {
+            throw ControllerMessages.MESSAGES.expressionNotAllowed(attributes.toString());
+        }
         // Just delegate to the default transformer
         ResourceTransformer.DEFAULT.transformResource(context, address, resource);
     }
@@ -91,16 +113,18 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
      * Check the model for expression values.
      *
      * @param model the model
-     * @throws OperationFailedException
+     * @return the attribute containing an expression
      */
-    protected void checkModel(final ModelNode model) throws OperationFailedException {
+    protected Set<String> checkModel(final ModelNode model) throws OperationFailedException {
+        final Set<String> attributes = new HashSet<String>();
         for(final String attribute : attributeNames) {
             if(model.hasDefined(attribute)) {
                 if(checkForExpression(model.get(attribute))) {
-                    throw ControllerMessages.MESSAGES.expressionNotAllowed(attribute);
+                    attributes.add(attribute);
                 }
             }
         }
+        return attributes;
     }
 
     /**
@@ -140,14 +164,31 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
         @Override
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
             final String attribute = operation.require(ModelDescriptionConstants.NAME).asString();
+            boolean containsExpression = false;
             if(attributeNames.contains(attribute)) {
                 if(operation.hasDefined(ModelDescriptionConstants.VALUE)) {
-                    if(checkForExpression(operation.get(ModelDescriptionConstants.VALUE))) {
-                        throw ControllerMessages.MESSAGES.expressionNotAllowed(attribute);
-                    }
+                    containsExpression = checkForExpression(operation.get(ModelDescriptionConstants.VALUE));
                 }
             }
-            // Return untransformed
+            final boolean rejectResult = containsExpression;
+            if(rejectResult) {
+                // Create the rejection policy
+                final OperationRejectionPolicy rejectPolicy = new OperationRejectionPolicy() {
+                    @Override
+                    public boolean rejectOperation(ModelNode preparedResult) {
+                        // Reject successful operations
+                        return true;
+                    }
+
+                    @Override
+                    public String getFailureDescription() {
+                        // TODO OFE.getMessage
+                        return ControllerMessages.MESSAGES.expressionNotAllowed(attribute).getMessage();
+                    }
+                };
+                return new TransformedOperation(operation, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+            // In case it's not an expressions just forward unmodified
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
     }

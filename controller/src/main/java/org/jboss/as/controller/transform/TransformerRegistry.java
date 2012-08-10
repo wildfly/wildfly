@@ -1,5 +1,7 @@
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Collections;
@@ -27,6 +29,13 @@ import org.jboss.dmr.Property;
  * @author Emanuel Muckenhuber
  */
 public final class TransformerRegistry {
+
+    public static final ModelNode DISCARD_OPERATION = new ModelNode();
+    static {
+        DISCARD_OPERATION.get(OP).set("discard");
+        DISCARD_OPERATION.get(OP_ADDR).setEmptyList();
+        DISCARD_OPERATION.protect();
+    }
 
     private final ExtensionRegistry extensionRegistry;
 
