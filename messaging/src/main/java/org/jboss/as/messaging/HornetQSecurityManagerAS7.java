@@ -53,7 +53,7 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
         boolean authenticated = securityDomainContext.getAuthenticationManager().isValid(new SimplePrincipal(username), password, subject);
 
         if (authenticated) {
-            pushSecurityContext(subject, new SimplePrincipal(username), password);
+            SecurityContext securityContext = pushSecurityContext(subject, new SimplePrincipal(username), password);
             Set<Principal> principals = new HashSet<Principal>();
             for (Role role : roles) {
                 if (checkType.hasRole(role)) {
@@ -63,24 +63,27 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
 
             authenticated = securityDomainContext.getAuthorizationManager().doesUserHaveRole(new SimplePrincipal(username), principals);
 
-            popSecurityContext();
+            // restore the previous security context if any
+            setSecurityContextOnAssociation(securityContext);
         }
 
         return authenticated;
     }
 
-    public void pushSecurityContext(final Subject subject, final Principal principal, final Object credential) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+    private SecurityContext pushSecurityContext(final Subject subject, final Principal principal, final Object credential) {
+        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
 
-            public Void run() {
-                SecurityContext securityContext = SecurityContextAssociation.getSecurityContext();
-                if (securityContext == null) {
+            public SecurityContext run() {
+                final SecurityContext currentSecurityContext = SecurityContextAssociation.getSecurityContext();
+                final SecurityContext securityContext;
+                if (currentSecurityContext == null) {
                     securityContext = createSecurityContext(subject, principal, credential, securityDomainContext.getAuthenticationManager().getSecurityDomain());
                 } else {
+                    securityContext = currentSecurityContext;
                     securityContext.getUtil().createSubjectInfo(principal, credential, subject);
                 }
                 setSecurityContextOnAssociation(securityContext);
-                return null;
+                return currentSecurityContext;
             }
         });
     }
@@ -91,17 +94,6 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
             @Override
             public Void run() {
                 SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
-        });
-    }
-
-    private static void popSecurityContext() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
                 return null;
             }
         });
