@@ -158,9 +158,10 @@
             </xs:element>
             <xs:element name="outbound-connections" minOccurs="0">
                 <xs:complexType>
-                    <xs:sequence>
-                      <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
-                    </xs:sequence>
+                    <xs:choice minOccurs="0">
+                      <xs:element name="ldap" type="ldapType" minOccurs="0" />
+                      <xs:element name="database" type="databaseType" minOccurs="0" />
+                    </xs:choice>
                 </xs:complexType>
             </xs:element>
         </xs:sequence>
@@ -196,6 +197,107 @@
         </xs:complexContent>
     </xs:complexType>
 
+	<xs:complexType name="databaseType">
+        <xs:annotation>
+            <xs:documentation>
+                The Database connection definition.
+            </xs:documentation>
+        </xs:annotation>
+         <xs:sequence>
+            <xs:element name="database-datasource" type="databaseDatasourceType" minOccurs="0" />
+            <xs:element name="connection" type="databaseConnectionType" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="databaseDatasourceType">
+        <xs:annotation>
+            <xs:documentation>
+                The data source definition. 
+            </xs:documentation>
+        </xs:annotation>
+    
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of this connection.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+         <xs:attribute name="data-source" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify the data-source that should be used as connection provider
+                    as database authentication
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="databaseConnectionType">
+        <xs:annotation>
+            <xs:documentation>
+                The database connection definition. 
+            </xs:documentation>
+        </xs:annotation>
+    
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of this connection.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="module" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify jdbc database driver
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="driver" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify jdbc database driver
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="url" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify connection URL for the database
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify the username that should be to connect to the database
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="password" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify the password for the database user
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="min-pool-size" type="xs:int" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify minimum connection pool size
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-pool-size" type="xs:int" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Specify maximum connection pool size
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
     <xs:complexType name="ldapType">
         <xs:annotation>
             <xs:documentation>
@@ -331,8 +433,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:choice>
-            <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
+            <xs:element name="properties" type="propertiesFileType" minOccurs="0" />  
             <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+            <xs:element name="database" type="databaseAuthorizationType" minOccurs="0" />
         </xs:choice>
     </xs:complexType>
 
@@ -507,6 +610,7 @@
                 <xs:element name="properties" type="propertiesAuthenticationType" minOccurs="0" />
                 <xs:element name="users" type="usersAuthenticationType" minOccurs="0" />
                 <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+                <xs:element name="database" type="databaseAuthenticationType" minOccurs="0" />
             </xs:choice>
         </xs:sequence>
     </xs:complexType>
@@ -668,6 +772,159 @@
             </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="databaseAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="databaseDataSourceType">
+                <xs:sequence>
+                    <xs:element name="sql-select-users" type="sql-select-users-type" minOccurs="0" />
+                    <xs:element name="simple-select-users" type="simple-select-users-type" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="databaseAuthorizationType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of users roles stored within a database.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="databaseDataSourceType">
+                <xs:sequence>
+                    <xs:element name="sql-select-roles" type="sql-select-roles-type" minOccurs="0" />
+                    <xs:element name="simple-select-roles" type="simple-select-roles-type" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="databaseDataSourceType">
+
+       <xs:attribute name="connection" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the connection to use to connect to the database.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="plain-text" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Are the credentials within the database stored in plain text, if not
+                    the {credential} is expected to be the hex encoded Digest hash
+                    of 'username : realm : password'.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="simple-select-users-type">
+        <xs:annotation>
+            <xs:documentation>
+               specify the table name and it's database field that contains the users, and
+               the key field name it should match on when it's searching and the password field to match on
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="table" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    the name of the SQL table that it should lookup users in
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the database field that contains
+                    the username. It's recommended index this field
+                    to speedup lookup
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="password-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the database field that contains
+                    the password.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+    </xs:complexType>
+    
+    <xs:complexType name="sql-select-users-type">
+        <xs:annotation>
+            <xs:documentation>
+                Specify the customized SQL statement for looking up users.
+                the result column order by username and password
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="sql" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    the sql user lookup statement.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="simple-select-roles-type">
+        <xs:annotation>
+            <xs:documentation>
+                Specify the table name and it's database field that contains the users roles, and
+                the key field name it should match on when it's searching and the field containing
+                the roles
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="table" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    the name of the SQL table that it should lookup the user in
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="username-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the database field that contains
+                    the username. It's recommended index this field
+                    to speedup lookup
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="roles-field" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the database field that contains
+                    the user roles
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+
+    </xs:complexType>
+
+    <xs:complexType name="sql-select-roles-type">
+        <xs:annotation>
+            <xs:documentation>
+                Specify the customised SQL statement for looking up users roles.
+                the result column order by username and roles
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="sql" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    the sql user role lookup statement.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="host-management-interfacesType">

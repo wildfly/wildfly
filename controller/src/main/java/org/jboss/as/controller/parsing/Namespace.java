@@ -22,11 +22,10 @@
 
 package org.jboss.as.controller.parsing;
 
+import javax.xml.XMLConstants;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.XMLConstants;
 
 /**
  * An enumeration of the supported domain model namespaces.
