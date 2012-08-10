@@ -8,11 +8,13 @@ import static org.jboss.as.clustering.jgroups.subsystem.CommonAttributes.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.UUID;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.JChannelFactory;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -30,8 +32,9 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jgroups.conf.ProtocolConfiguration;
-import org.jgroups.conf.XmlConfigurator;
+import org.jgroups.Channel;
+import org.jgroups.stack.Protocol;
+import org.jgroups.stack.ProtocolStack;
 
 /**
  * Common code for handling the following stack configuration elements
@@ -207,10 +210,7 @@ public class StackConfigOperationHandlers {
     /**
      * Helper class to process removing nested stack protocol configuration elements to the stack parent resource.
      */
-    private static class ProtocolConfigRemove implements OperationStepHandler {
-
-        ProtocolConfigRemove() {
-        }
+    static class ProtocolConfigRemove implements OperationStepHandler {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -256,61 +256,35 @@ public class StackConfigOperationHandlers {
     /**
      * Operation implementation to export a native JGroups configuration.
      */
-    private static class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
-
-        ExportNativeConfiguration() {
-        }
+    static class ExportNativeConfiguration extends AbstractRuntimeOnlyHandler {
 
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-            ChannelFactory factory = getChannelFactory(context, operation);
-            // need to check for null
-            if (factory == null) {
-                context.getFailureDescription().set("required service ChannelFactoryService is not started");
-                context.completeStep();
-                return;
-            }
-            // get and return the JGroups configuration as a String
-            String config = getNativeJGroupsConfiguration(factory);
-
-            context.getResult().set(config);
-            context.completeStep();
-        }
-
-        public ChannelFactory getChannelFactory(OperationContext context, ModelNode operation) {
-
             PathAddress stackAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
             String stackName = stackAddress.getLastElement().getValue();
-            ServiceName factoryServiceName = ChannelFactoryService.getServiceName(stackName);
 
-            // lookup the corresponding ChannelFactoryService
-            ServiceController<?> channelFactoryServiceController = context.getServiceRegistry(false).getService(factoryServiceName);
-
-            if (channelFactoryServiceController.getState() != ServiceController.State.UP) {
-                // need to start the controller and wait for it to start
-                return null ;
+            ServiceName serviceName = ChannelFactoryService.getServiceName(stackName);
+            Channel channel = null;
+            try {
+                ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(serviceName);
+                ChannelFactory factory = ServiceContainerHelper.getValue(controller, ChannelFactory.class);
+                // Create a temporary channel, but don't connect it
+                channel = factory.createChannel(UUID.randomUUID().toString());
+                // ProtocolStack.printProtocolSpecAsXML() is very hacky and only works on an uninitialized stack
+                List<Protocol> protocols = channel.getProtocolStack().getProtocols();
+                Collections.reverse(protocols);
+                ProtocolStack stack = new ProtocolStack();
+                stack.addProtocols(protocols);
+                context.getResult().set(stack.printProtocolSpecAsXML());
+                context.completeStep();
+            } catch (Exception e) {
+                throw new OperationFailedException(e.getLocalizedMessage(), e);
+            } finally {
+                if (channel != null) {
+                    channel.close();
+                }
             }
-            ChannelFactory factory = ChannelFactory.class.cast(channelFactoryServiceController.getValue());
-
-            return factory ;
-        }
-
-        private  String getNativeJGroupsConfiguration(ChannelFactory factory) {
-
-            // get the list of protocols from ChannelFactoryService
-            List<ProtocolConfiguration> protocols = ((JChannelFactory) factory).getProtocolStack();
-
-            // use a configurator to transform to XML
-            JGroupsXmlConfigurator configurator = new JGroupsXmlConfigurator(protocols);
-            return configurator.getProtocolStackString(true);
-        }
-    }
-
-    private static class JGroupsXmlConfigurator extends XmlConfigurator {
-
-        protected JGroupsXmlConfigurator(List<ProtocolConfiguration> protocols) {
-            super(protocols);
         }
     }
 
@@ -377,5 +351,4 @@ public class StackConfigOperationHandlers {
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 }
