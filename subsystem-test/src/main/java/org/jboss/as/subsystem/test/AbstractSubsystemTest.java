@@ -476,9 +476,6 @@ public abstract class AbstractSubsystemTest {
      * @return the whole model of the legacy controller
      */
     protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
-        System.out.println(kernelServices.readWholeModel());
-
-
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
         ModelNode legacyModel = legacy.readWholeModel();
         ModelNode legacySubsystem = legacyModel.require(SUBSYSTEM);

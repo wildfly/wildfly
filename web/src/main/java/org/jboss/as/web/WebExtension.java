@@ -24,7 +24,12 @@ package org.jboss.as.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +50,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.AliasOperationTransformer.AddressTransformer;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -201,14 +207,49 @@ public class WebExtension implements Extension {
         TransformersSubRegistration connectors = transformers.registerSubResource(CONNECTOR_PATH);
         connectors.registerOperationTransformer(ADD, new OperationTransformer() {
             @Override
-            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                     throws OperationFailedException {
-                if (operation.hasDefined(Constants.VIRTUAL_SERVER)) {
-                    throw WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314();
-                }
-                return new TransformedOperation(operation, TransformedOperation.ORIGINAL_RESULT);
+
+                //Don't error on the way out, it might be ignored on the slave
+                final boolean hasDefinedVirtualServer = operation.hasDefined(Constants.VIRTUAL_SERVER);
+                return new TransformedOperation(operation, new OperationResultTransformer() {
+
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        if (!hasDefinedVirtualServer) {
+                            return result;
+                        }
+                        if (result.get(OUTCOME).asString().equals(FAILED)) {
+                            result.get(FAILURE_DESCRIPTION).set(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314());
+                        }
+                        return result;
+                    }
+                });
             }
         });
+        connectors.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformer() {
+
+            @Override
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
+
+                //Don't error on the way out, it might be ignored on the slave
+                final boolean isVirtualServer = operation.get(NAME).asString().equals(Constants.VIRTUAL_SERVER);
+                return new TransformedOperation(operation, new OperationResultTransformer() {
+
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        if (!isVirtualServer) {
+                            return result;
+                        }
+                        if (result.get(OUTCOME).asString().equals(FAILED)) {
+                            result.get(FAILURE_DESCRIPTION).set(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314());
+                        }
+                        return result;
+                    }
+                });
+                }
+            });
 
 
         TransformersSubRegistration ssl = connectors.registerSubResource(SSL_PATH, AliasOperationTransformer.replaceLastElement(SSL_ALIAS));

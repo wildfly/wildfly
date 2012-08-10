@@ -73,6 +73,7 @@ class TestModelControllerService extends AbstractControllerService {
     private final boolean validateOps;
     private volatile ManagementResourceRegistration rootRegistration;
     private volatile Exception error;
+    private volatile boolean bootSuccess;
 
     TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
                            final AdditionalInitialization additionalPreStep, final ExtensionRegistry extensionRegistry,
@@ -123,7 +124,8 @@ class TestModelControllerService extends AbstractControllerService {
             if (validateOps) {
                 new OperationValidator(rootRegistration).validateOperations(bootOperations);
             }
-            return super.boot(persister.getBootOperations(), rollbackOnRuntimeFailure);
+            bootSuccess = super.boot(persister.getBootOperations(), rollbackOnRuntimeFailure);
+            return bootSuccess;
         } catch (Exception e) {
             error = e;
         } catch (Throwable t) {
@@ -133,6 +135,14 @@ class TestModelControllerService extends AbstractControllerService {
             latch.countDown();
         }
         return false;
+    }
+
+    protected boolean isSuccessfulBoot() {
+        return bootSuccess;
+    }
+
+    public Throwable getBootError() {
+        return error;
     }
 
     @Override

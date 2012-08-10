@@ -21,10 +21,15 @@
 */
 package org.jboss.as.web.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -43,7 +48,7 @@ import java.io.IOException;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -111,19 +116,16 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             .addParentFirstClassPattern("org.jboss.as.controller.*")
             .addChildFirstClassPattern("org.jboss.as.controller.alias.*");
 
-        try {
-            builder.build();
-            Assert.fail("Expected failure since we have a virtual-servers referenced by connectors");
-        } catch (OperationFailedException expected) {
-            Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314().getMessage(), expected.getMessage());
-        }
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertFalse(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
     }
 
     @Test
     public void testTransformation_1_1_0() throws Exception {
         String subsystemXml = readResource("subsystem-1.1.0.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
@@ -136,7 +138,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
 
@@ -166,6 +169,32 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyDir.isDefined());
         compare(mainDir, legacyDir);
         compare(mainAccessLog, legacyAccessLog, true);
+
+        //Test that virtual server gets rejected in the legacy controller
+        ModelNode connectorWriteVirtualServer = createOperation(WRITE_ATTRIBUTE_OPERATION, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "http");
+        connectorWriteVirtualServer.get(NAME).set(VIRTUAL_SERVER);
+        connectorWriteVirtualServer.get(VALUE).add("vs1");
+        mainServices.executeForResult(connectorWriteVirtualServer);
+        ModelNode result = mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, connectorWriteVirtualServer));
+        Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314(), result.get(FAILURE_DESCRIPTION).asString());
+
+        //Grab the current connector values and remove the connector
+        ModelNode connectorValues = mainServices.readWholeModel().get(SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "http");
+        Assert.assertTrue(connectorValues.hasDefined(VIRTUAL_SERVER));
+        ModelNode connectorRemove = createOperation(REMOVE, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "http");
+        mainServices.executeForResult(connectorRemove);
+        checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, connectorRemove)));
+
+        //Now test that adding the connector with virtual server fails in the legacy controller
+        ModelNode connectorAdd = createOperation(ADD, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "test");
+        for (String key: connectorValues.keys()) {
+            connectorAdd.get(key).set(connectorValues.get(key));
+        }
+        checkOutcome(mainServices.executeOperation(connectorAdd));
+        TransformedOperation transOp = mainServices.transformOperation(modelVersion, connectorAdd);
+        result = mainServices.executeOperation(modelVersion, transOp);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+        Assert.assertEquals(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314(), result.get(FAILURE_DESCRIPTION).asString());
     }
 
 
@@ -248,7 +277,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         return null;
     }
 
-
     private ModelNode createOperation(String operationName, String...address) {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(operationName);
@@ -256,8 +284,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
             if (address.length % 2 != 0) {
                 throw new IllegalArgumentException("Address must be in pairs");
             }
-            for (String addr : address) {
-                operation.get(OP_ADDR).add(addr);
+            for (int i = 0 ; i < address.length ; i+=2) {
+                operation.get(OP_ADDR).add(address[i], address[i + 1]);
             }
         } else {
             operation.get(OP_ADDR).setEmptyList();
