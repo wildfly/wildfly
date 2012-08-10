@@ -38,7 +38,6 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
 import org.jboss.as.web.deployment.WebCtxLoader;
-import org.jboss.msc.service.StartException;
 
 /**
  * WebAppController allows for automatically starting/stopping a webapp (servlet) depending on the actual need. This is useful
@@ -68,12 +67,12 @@ public class WebAppController {
         this.servletClass = servletClass;
     }
 
-    public synchronized int incrementUsers() throws StartException {
+    public synchronized int incrementUsers() {
         if (count == 0) {
             try {
                 ctx = startWebApp(host);
             } catch (Exception e) {
-                throw new StartException(e);
+                throw new RuntimeException(e);
             }
         }
         return count++;

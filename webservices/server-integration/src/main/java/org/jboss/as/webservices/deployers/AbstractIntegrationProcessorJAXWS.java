@@ -132,7 +132,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
             componentDescription = new WSComponentDescription(componentName, componentClassName, moduleDescription, unit.getServiceName());
             moduleDescription.addComponent(componentDescription);
             // register WS dependency
-            final ServiceName endpointServiceName = EndpointService.getServiceName(unit, dependsOnEndpointClassName);
+            final ServiceName endpointServiceName = EndpointService.getServiceNameDeploymentPrefix(unit).append(dependsOnEndpointClassName);
             componentDescription.addDependency(endpointServiceName, ServiceBuilder.DependencyType.REQUIRED);
         }
 

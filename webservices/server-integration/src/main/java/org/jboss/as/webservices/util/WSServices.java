@@ -42,6 +42,8 @@ public final class WSServices {
     public static final ServiceName ENDPOINT_PUBLISH_SERVICE = WS_SERVICE.append("endpoint-publish");
     public static final ServiceName PORT_COMPONENT_LINK_SERVICE = WS_SERVICE.append("port-component-link");
 
+    public static final ServiceName MBEAN_SERVICE = ServiceName.JBOSS.append("mbean", "server");
+
     private static ServiceRegistry registry;
 
     public static void saveContainerRegistry(ServiceRegistry containerRegistry) {
