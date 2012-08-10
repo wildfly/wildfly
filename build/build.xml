@@ -1128,10 +1128,6 @@
             <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-core"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.native.jbossws-native-factories">
-            <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-factories"/>
-        </module-def>
-
         <module-def name="org.jboss.ws.native.jbossws-native-services">
             <maven-resource group="org.jboss.ws.native" artifact="jbossws-native-services"/>
         </module-def>
