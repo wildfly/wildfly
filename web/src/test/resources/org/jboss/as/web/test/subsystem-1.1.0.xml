@@ -1,0 +1,46 @@
+<!-- 
+   This file should be kept in sync with subsystem.xml. The only known difference is the commented out stuff below - see https://issues.jboss.org/browse/JBPAPP-9314
+  -->
+        <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="true">
+            <configuration>
+                <static-resources max-depth="5"/>
+                <jsp-configuration development="true" />
+               <mime-mapping name="ogx" value="application/ogg" />
+               <mime-mapping name="ogg" value="audio/ogg" />
+               <welcome-file>toto</welcome-file>
+               <welcome-file>titi</welcome-file>
+            </configuration>
+            <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
+            <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
+               <ssl password="changeit" key-alias="tomcat"
+                    certificate-key-file="${jboss.server.config.dir}/keystore.p12"
+                    verify-client="true"
+                    ca-certificate-file="${jboss.server.config.dir}/truststore.jks"
+                    ca-certificate-password="changeit"
+                    keystore-type="PKCS12" truststore-type="JKS" />
+            </connector>
+            <!--
+              Version 1.1.0 does not support referencing virtual-server from connector 
+            -->
+            <!-- 
+            <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
+                <virtual-server name="vs1" />
+                <virtual-server name="vs2" />
+            </connector>
+             -->
+            <virtual-server name="default-host" enable-welcome-root="true">
+               <alias name="localhost" />
+               <alias name="example.com" />
+               <access-log resolve-hosts="true">
+                 <directory relative-to="jboss.server.base.dir" path="toto" />
+               </access-log>
+               <rewrite pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
+               <rewrite pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
+                  <condition test="%{HTTPS}" pattern="off" flags="NC"/>
+                  <condition test="%{USER}" pattern="toto" flags="NC"/>
+               </rewrite>
+               <sso domain="mydomain" reauthenticate="true" />
+            </virtual-server>
+            <virtual-server name="vs1" />
+            <virtual-server name="vs2" />
+        </subsystem>

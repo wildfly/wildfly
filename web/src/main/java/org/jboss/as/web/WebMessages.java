@@ -362,4 +362,8 @@ public interface WebMessages {
     @Message(id = 18099, value = "processExpirationPassivation(): failed with exception: %s")
     String processExpirationPassivationException(String message);
 
+    //This is the id in master
+    @Message(id = 18101, value = "Version 1.1.0 of the web subsystem had a bug meaning referencing virtual-server from connector is not supported. See https://issues.jboss.org/browse/JBPAPP-9314")
+    String transformationVersion_1_1_0_JBPAPP_9314();
+
 }
