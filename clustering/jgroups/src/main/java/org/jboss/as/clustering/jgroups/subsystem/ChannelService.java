@@ -1,5 +1,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
+
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.msc.service.Service;
@@ -50,6 +52,12 @@ public class ChannelService implements Service<Channel> {
         } catch (Exception e) {
             throw new StartException(e);
         }
+
+        if  (ROOT_LOGGER.isTraceEnabled())  {
+            String output = this.channel.getProtocolStack().printProtocolSpec(true);
+            ROOT_LOGGER.tracef("JGroups channel named %s created with configuration:\n %s", this.id, output);
+        }
+
         // Validate view
         String localName = this.channel.getName();
         Address localAddress = this.channel.getAddress();
