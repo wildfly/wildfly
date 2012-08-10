@@ -104,7 +104,7 @@ public class JGroupsExtension implements Extension {
         stacks.registerOperationHandler(ModelKeys.REMOVE_PROTOCOL, StackConfigOperationHandlers.PROTOCOL_REMOVE, JGroupsSubsystemProviders.PROTOCOL_REMOVE);
         // register the export operation
         if (context.isRuntimeOnlyRegistrationValid()) {
-            final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+            final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
             stacks.registerOperationHandler(ModelKeys.EXPORT_NATIVE_CONFIGURATION, StackConfigOperationHandlers.EXPORT_NATIVE_CONFIGURATION, JGroupsSubsystemProviders.EXPORT_NATIVE_CONFIGURATION, readOnly);
         }
 
