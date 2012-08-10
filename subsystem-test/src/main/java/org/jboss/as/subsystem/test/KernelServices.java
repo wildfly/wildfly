@@ -37,6 +37,7 @@ import org.jboss.as.controller.registry.OperationTransformerRegistry;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.server.Services;
@@ -62,12 +63,15 @@ public class KernelServices {
     private final Map<ModelVersion, KernelServices> legacyServices;
     private final ExtensionRegistry extensionRegistry;
     private final ModelVersion legacyModelVersion;
+    private final boolean successfulBoot;
+    private final Throwable bootError;
+
 
     private static final AtomicInteger counter = new AtomicInteger();
 
 
     private KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
-            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion) {
+            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError) {
         this.container = container;
         this.controller = controller;
         this.persister = persister;
@@ -77,6 +81,8 @@ public class KernelServices {
         this.legacyServices = legacyModelVersion != null ? null : new HashMap<ModelVersion, KernelServices>();
         this.extensionRegistry = extensionRegistry;
         this.legacyModelVersion = legacyModelVersion;
+        this.successfulBoot = successfulBoot;
+        this.bootError = bootError;
     }
 
     static KernelServices create(String mainSubsystemName, AdditionalInitialization additionalInit,
@@ -117,9 +123,26 @@ public class KernelServices {
         processState.setRunning();
 
         KernelServices kernelServices = new KernelServices(container, controller, persister, svc.getRootRegistration(),
-                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion);
+                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError());
 
         return kernelServices;
+    }
+
+
+    /**
+     * Get whether the controller booted successfully
+     * @return true if the controller booted successfully
+     */
+    public boolean isSuccessfulBoot() {
+        return successfulBoot;
+    }
+
+    /**
+     * Get any errors thrown on boot
+     * @return the boot error
+     */
+    public Throwable getBootError() {
+        return bootError;
     }
 
     /**
@@ -159,6 +182,36 @@ public class KernelServices {
         return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
     }
 
+
+    /**
+     * Execute an operation in the  controller containg the passed in version of the subsystem.
+     * The operation and results will be translated from the format for the main controller to the
+     * legacy controller's format.
+     *
+     * @param modelVersion the subsystem model version of the legacy subsystem model controller
+     * @param operation the operation for the main controller
+     * @throws IllegalStateException if this is not the test's main model controller
+     * @throws IllegalStateException if there is no legacy controller containing the version of the subsystem
+     */
+    public ModelNode executeOperation(ModelVersion modelVersion, TransformedOperation op) {
+        if (legacyServices == null) {
+            throw new IllegalStateException("Can only be called for the main controller");
+        }
+        KernelServices legacy = legacyServices.get(modelVersion);
+        if (legacy == null) {
+            throw new IllegalStateException("No legacy subsystem controller was found for model version " + modelVersion);
+        }
+
+        ModelNode result = new ModelNode();
+        if (op.getTransformedOperation() != null) {
+            result = legacy.executeOperation(op.getTransformedOperation());
+        }
+        OperationResultTransformer resultTransformer = op.getResultTransformer();
+        if (resultTransformer != null) {
+            result = resultTransformer.transformResult(result);
+        }
+        return result;
+    }
 
     /**
      * Transforms an operation in the main controller to the format expected by the model controller containing

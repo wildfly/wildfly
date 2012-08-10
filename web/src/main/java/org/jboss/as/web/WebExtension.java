@@ -22,18 +22,32 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.alias.ResourceAliasDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
  * The web extension.
@@ -117,7 +131,62 @@ public class WebExtension implements Extension {
         //deployment
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebDeploymentDefinition.INSTANCE);
         deployments.registerSubModel(WebDeploymentServletDefinition.INSTANCE);
+
+        registerTransformers_1_1_0(subsystem);
     }
+
+    private void registerTransformers_1_1_0(SubsystemRegistration registration) {
+
+        final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 1, 0), ResourceTransformer.DEFAULT);
+
+        TransformersSubRegistration connectors = transformers.registerSubResource(CONNECTOR_PATH);
+        connectors.registerOperationTransformer(ADD, new OperationTransformer() {
+            @Override
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
+
+                //Don't error on the way out, it might be ignored on the slave
+                final boolean hasDefinedVirtualServer = operation.hasDefined(Constants.VIRTUAL_SERVER);
+                return new TransformedOperation(operation, new OperationResultTransformer() {
+
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        if (!hasDefinedVirtualServer) {
+                            return result;
+                        }
+                        if (result.get(OUTCOME).asString().equals(FAILED)) {
+                            result.get(FAILURE_DESCRIPTION).set(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314());
+                        }
+                        return result;
+                    }
+                });
+            }
+        });
+        connectors.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformer() {
+
+            @Override
+            public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
+                    throws OperationFailedException {
+
+                //Don't error on the way out, it might be ignored on the slave
+                final boolean isVirtualServer = operation.get(NAME).asString().equals(Constants.VIRTUAL_SERVER);
+                return new TransformedOperation(operation, new OperationResultTransformer() {
+
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        if (!isVirtualServer) {
+                            return result;
+                        }
+                        if (result.get(OUTCOME).asString().equals(FAILED)) {
+                            result.get(FAILURE_DESCRIPTION).set(WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314());
+                        }
+                        return result;
+                    }
+                });
+                }
+            });
+    }
+
 
     /**
      * {@inheritDoc}
