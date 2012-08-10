@@ -105,6 +105,10 @@ public class OperationSlaveStepHandler {
         }
     }
 
+    boolean isResourceExcluded(final PathAddress address) {
+        return ignoredDomainResourceRegistry.isResourceExcluded(address);
+    }
+
     /** Lazily provides a copy of the domain model */
     private static class LazyDomainModelProvider implements HostControllerExecutionSupport.DomainModelProvider {
         private final OperationContext context;

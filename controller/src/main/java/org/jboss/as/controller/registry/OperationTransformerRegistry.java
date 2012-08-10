@@ -339,23 +339,7 @@ public class OperationTransformerRegistry {
         }
     };
 
-    static OperationTransformer DISCARD_TRANSFORMER = new OperationTransformer() {
-
-        @Override
-        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) {
-            // hmm...
-            return new TransformedOperation(null, new OperationResultTransformer() {
-                            @Override
-                            public ModelNode transformResult(ModelNode ignore) {
-                                final ModelNode result = new ModelNode();
-                                result.get(OUTCOME).set(SUCCESS);
-                                result.get(RESULT);
-                                // perhaps some other param indicating that the operation was ignored
-                                return result;
-                            }
-            });
-        }
-    };
+    static OperationTransformer DISCARD_TRANSFORMER = OperationTransformer.DISCARD;
 
     public static OperationTransformerEntry DISCARD = new OperationTransformerEntry(DISCARD_TRANSFORMER, TransformationPolicy.DISCARD);
     public static OperationTransformerEntry FORWARD = new OperationTransformerEntry(FORWARD_TRANSFORMER, TransformationPolicy.FORWARD);

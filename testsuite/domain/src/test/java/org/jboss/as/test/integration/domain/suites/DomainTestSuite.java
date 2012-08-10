@@ -46,7 +46,8 @@ import org.junit.runners.Suite;
         ManagementClientContentTestCase.class,
         ValidateOperationOperationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
-        ExtensionManagementTestCase.class
+        ExtensionManagementTestCase.class,
+        OperationTransformationTestCase.class
 })
 public class DomainTestSuite {
 

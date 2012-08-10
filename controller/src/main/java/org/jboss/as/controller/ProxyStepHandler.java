@@ -22,9 +22,11 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
@@ -38,6 +40,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
@@ -102,8 +105,17 @@ public class ProxyStepHandler implements OperationStepHandler {
 
                     @Override
                     public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode response) {
-                        // final ModelNode result = resultTransformer.transformResult(response);
-                        proxyControl.operationPrepared(transaction, response);
+                        final ModelNode transformed;
+                        // Check if we have to reject the operation
+                        if(result.rejectOperation(response)) {
+                            final ModelNode newResponse = new ModelNode();
+                            newResponse.get(OUTCOME).set(FAILED);
+                            newResponse.get(FAILURE_DESCRIPTION).set(result.getFailureDescription());
+                            transformed = newResponse;
+                        } else {
+                            transformed = response;
+                        }
+                        proxyControl.operationPrepared(transaction, transformed);
                     }
                 };
                 proxyController.execute(transformedOperation, messageHandler, transformingProxyControl, new DelegatingOperationAttachments(context));
