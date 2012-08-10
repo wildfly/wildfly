@@ -24,7 +24,6 @@ package org.jboss.as.web;
 
 import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Cause;
@@ -352,5 +351,5 @@ public interface WebMessages {
     TimeoutException timeoutContextActivation(ServiceName service);
 
     @Message(id = 18101, value = "Version 1.1.0 of the web subsystem had a bug meaning referencing virtual-server from connector is not supported. See https://issues.jboss.org/browse/JBPAPP-9314")
-    OperationFailedException transformationVersion_1_1_0_JBPAPP_9314();
+    String transformationVersion_1_1_0_JBPAPP_9314();
 }

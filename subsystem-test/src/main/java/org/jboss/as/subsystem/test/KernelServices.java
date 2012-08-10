@@ -64,12 +64,15 @@ public class KernelServices {
     private final Map<ModelVersion, KernelServices> legacyServices;
     private final ExtensionRegistry extensionRegistry;
     private final ModelVersion legacyModelVersion;
+    private final boolean successfulBoot;
+    private final Throwable bootError;
+
 
     private static final AtomicInteger counter = new AtomicInteger();
 
 
     private KernelServices(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
-            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion) {
+            OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError) {
         this.container = container;
         this.controller = controller;
         this.persister = persister;
@@ -79,6 +82,8 @@ public class KernelServices {
         this.legacyServices = legacyModelVersion != null ? null : new HashMap<ModelVersion, KernelServices>();
         this.extensionRegistry = extensionRegistry;
         this.legacyModelVersion = legacyModelVersion;
+        this.successfulBoot = successfulBoot;
+        this.bootError = bootError;
     }
 
     static KernelServices create(String mainSubsystemName, AdditionalInitialization additionalInit,
@@ -119,9 +124,26 @@ public class KernelServices {
         processState.setRunning();
 
         KernelServices kernelServices = new KernelServices(container, controller, persister, svc.getRootRegistration(),
-                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion);
+                new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError());
 
         return kernelServices;
+    }
+
+
+    /**
+     * Get whether the controller booted successfully
+     * @return true if the controller booted successfully
+     */
+    public boolean isSuccessfulBoot() {
+        return successfulBoot;
+    }
+
+    /**
+     * Get any errors thrown on boot
+     * @return the boot error
+     */
+    public Throwable getBootError() {
+        return bootError;
     }
 
     /**
