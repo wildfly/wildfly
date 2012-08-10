@@ -193,13 +193,16 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
      */
     private EntityManagerFactory createContainerEntityManagerFactory() {
         persistenceProviderAdaptor.beforeCreateContainerEntityManagerFactory(pu);
+        ClassLoader currentTCCL = SecurityActions.getContextClassLoader();
         try {
+            SecurityActions.setContextClassLoader(pu.getClassLoader()); // set current thread context classloader to app deployment
             return persistenceProvider.createContainerEntityManagerFactory(pu, properties.getValue());
         } finally {
             try {
                 persistenceProviderAdaptor.afterCreateContainerEntityManagerFactory(pu);
             } finally {
                 pu.setAnnotationIndex(null);    // close reference to Annotation Index (only needed during call to createContainerEntityManagerFactory)
+                SecurityActions.setContextClassLoader(currentTCCL);
                 //This is needed if the datasource is restarted
                 //pu.setTempClassLoaderFactory(null);    // close reference to temp classloader factory (only needed during call to createEntityManagerFactory)
             }
