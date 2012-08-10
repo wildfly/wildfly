@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
- *  * Handler for adding ldap management connections.
+ * Handler for adding database management connections.
  *
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */

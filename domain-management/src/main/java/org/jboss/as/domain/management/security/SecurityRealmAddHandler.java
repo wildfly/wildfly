@@ -230,7 +230,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addPlugInLoaderService(ServiceName realmServiceName, ModelNode plugInModel,
-                                               ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) {
         ServiceName plugInLoaderName = realmServiceName.append(PlugInLoaderService.SERVICE_SUFFIX);
 
         List<Property> plugIns = plugInModel.asPropertyList();
@@ -246,7 +246,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addClientCertService(ServiceName realmServiceName, ServiceTarget serviceTarget,
-                                             List<ServiceController<?>> newControllers) {
+            List<ServiceController<?>> newControllers) {
         ServiceName clientCertServiceName = realmServiceName.append(ClientCertCallbackHandler.SERVICE_SUFFIX);
         ClientCertCallbackHandler clientCertCallbackHandler = new ClientCertCallbackHandler();
 
@@ -258,7 +258,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addJaasService(OperationContext context, ModelNode jaas, ServiceName realmServiceName, ServiceTarget serviceTarget,
-                                       List<ServiceController<?>> newControllers, boolean injectServerManager) throws OperationFailedException {
+            List<ServiceController<?>> newControllers, boolean injectServerManager) throws OperationFailedException {
         ServiceName jaasServiceName = realmServiceName.append(JaasCallbackHandler.SERVICE_SUFFIX);
         String name = JaasAuthenticationResourceDefinition.NAME.resolveModelAttribute(context, jaas).asString();
         JaasCallbackHandler jaasCallbackHandler = new JaasCallbackHandler(name);
@@ -290,7 +290,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         String connectionManager = LdapAuthenticationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
         ldapBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, ldapCallbackHandler.getConnectionManagerInjector());
 
-        final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND).install();
+        final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
+                .install();
         if(newControllers != null) {
             newControllers.add(serviceController);
         }
@@ -299,12 +300,13 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addLocalService(OperationContext context, ModelNode local, ServiceName realmServiceName, ServiceTarget serviceTarget,
-                                        List<ServiceController<?>> newControllers) throws OperationFailedException {
+            List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName localServiceName = realmServiceName.append(LocalCallbackHandlerService.SERVICE_SUFFIX);
 
         ModelNode node = LocalAuthenticationResourceDefinition.DEFAULT_USER.resolveModelAttribute(context, local);
         String defaultUser = node.isDefined() ? node.asString() : null;
-        String allowedUsers = local.hasDefined(ALLOWED_USERS) ? local.get(ALLOWED_USERS).asString() : null;
+        node = LocalAuthenticationResourceDefinition.ALLOWED_USERS.resolveModelAttribute(context, local);
+        String allowedUsers = node.isDefined() ? node.asString() : null;
         LocalCallbackHandlerService localCallbackHandler = new LocalCallbackHandlerService(defaultUser, allowedUsers);
 
         ServiceBuilder<?> jaasBuilder = serviceTarget.addService(localServiceName, localCallbackHandler);
@@ -315,8 +317,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addPlugInAuthenticationService(OperationContext context, ModelNode model, ServiceName realmServiceName,
-                                                       ServiceName plugInLoaderName, SecurityRealmService registry, ServiceTarget serviceTarget,
-                                                       List<ServiceController<?>> newControllers) throws OperationFailedException {
+            ServiceName plugInLoaderName, SecurityRealmService registry, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName plugInServiceName = realmServiceName.append(PlugInAuthenticationCallbackHandler.SERVICE_SUFFIX);
 
         final String pluginName = PlugInAuthorizationResourceDefinition.NAME.resolveModelAttribute(context, model).asString();
@@ -335,7 +337,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addPropertiesAuthenticationService(OperationContext context, ModelNode properties, ServiceName realmServiceName,
-                                                           String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ServiceName propsServiceName = realmServiceName.append(PropertiesCallbackHandler.SERVICE_SUFFIX);
 
@@ -362,7 +364,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addPropertiesAuthorizationService(OperationContext context, ModelNode properties, ServiceName realmServiceName,
-                                                          ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName propsServiceName = realmServiceName.append(PropertiesSubjectSupplemental.SERVICE_SUFFIX);
 
         final String path = PropertiesAuthorizationResourceDefinition.PATH.resolveModelAttribute(context, properties).asString();
@@ -384,8 +386,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addPlugInAuthorizationService(OperationContext context, ModelNode model, ServiceName realmServiceName,
-                                                      ServiceName plugInLoaderName, String realmName, ServiceTarget serviceTarget,
-                                                      List<ServiceController<?>> newControllers) throws OperationFailedException {
+            ServiceName plugInLoaderName, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ServiceName plugInServiceName = realmServiceName.append(PlugInSubjectSupplemental.SERVICE_SUFFIX);
         final String pluginName = PlugInAuthorizationResourceDefinition.NAME.resolveModelAttribute(context, model).asString();
@@ -405,7 +407,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, ServiceName realmServiceName,
-                                      ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         // Use undefined structures for null ssl model
         ssl = (ssl == null) ? new ModelNode() : ssl;
@@ -451,7 +453,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private KeyPair addFileKeystoreService(OperationContext context, ModelNode ssl, ServiceName serviceName,
-                                           ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         char[] keystorePassword = KeystoreAttributes.KEYSTORE_PASSWORD.resolveModelAttribute(context, ssl).asString().toCharArray();
         char[] keyPassword = null;
         ModelNode pwordNode = KeystoreAttributes.KEY_PASSWORD.resolveModelAttribute(context, ssl);

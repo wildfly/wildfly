@@ -147,14 +147,22 @@ public class ManagementXml {
                         throw unexpectedElement(reader);
                     }
                     parseSecurityRealms(reader, managementAddress, expectedNs, list);
-
                     break;
                 }
                 case OUTBOUND_CONNECTIONS: {
                     if (++connectionsCount > 1) {
                         throw unexpectedElement(reader);
                     }
-                    parseConnections(reader, managementAddress, expectedNs, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_3:
+                            parseConnections_1_0(reader, managementAddress, expectedNs, list);
+                            break;
+                        default:
+                            parseConnections_1_4(reader, managementAddress, expectedNs, list);
+                            break;
+                    }
                     break;
                 }
                 case MANAGEMENT_INTERFACES: {
@@ -181,8 +189,25 @@ public class ManagementXml {
         }
     }
 
-    private void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
-            throws XMLStreamException {
+    private void parseConnections_1_0(final XMLExtendedStreamReader reader, final ModelNode address,
+            final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case LDAP: {
+                    parseLdapConnection(reader, address, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseConnections_1_4(final XMLExtendedStreamReader reader, final ModelNode address,
+            final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -391,10 +416,6 @@ public class ManagementXml {
                         case DOMAIN_1_2:
                             parseSecurityRealm_1_1(reader, address, expectedNs, list);
                             break;
-                        case DOMAIN_1_3:
-                        case DOMAIN_1_4:
-                            parseSecurityRealm_1_3(reader, address, expectedNs, list);
-                            break;
                         default:
                             parseSecurityRealm_1_3(reader, address, expectedNs, list);
                             break;
@@ -479,11 +500,27 @@ public class ManagementXml {
                     parseServerIdentities(reader, expectedNs, realmAddress, list);
                     break;
                 case AUTHENTICATION: {
-                    parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                    // Note: We do not list schemas before 1.3 as this method is only called for 1.3 and later.
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                            parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseAuthentication_1_4(reader, expectedNs, realmAddress, list);
+                            break;
+                    }
                     break;
                 }
                 case AUTHORIZATION:
-                    parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
+                    // Note: We do not list schemas before 1.3 as this method is only called for 1.3 and later.
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                            parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseAuthorization_1_4(reader, expectedNs, realmAddress, list);
+                            break;
+                    }
                     break;
                 default: {
                     throw unexpectedElement(reader);
@@ -492,9 +529,8 @@ public class ManagementXml {
         }
     }
 
-
     private void parseDatabaseAuthentication(XMLExtendedStreamReader reader, Namespace expectedNs, ModelNode realmAddress, List<ModelNode> list) throws XMLStreamException {
-        ModelNode databaseAuthentication = parseDatabase(reader, realmAddress, list,AUTHENTICATION);
+        ModelNode databaseAuthentication = parseDatabase(reader, realmAddress, list, AUTHENTICATION);
 
         boolean choiceFound = false;
 
@@ -927,6 +963,85 @@ public class ManagementXml {
     }
 
     private void parseAuthentication_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        // Only one truststore can be defined.
+        boolean trustStoreFound = false;
+        // Only one local can be defined.
+        boolean localFound = false;
+        // Only one of ldap, properties, or users can be defined.
+        boolean usernamePasswordFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+
+            switch (element) {
+                case JAAS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseJaasAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case LDAP: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseLdapAuthentication_1_1(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case PROPERTIES: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parsePropertiesAuthentication_1_1(reader, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case TRUSTSTORE: {
+                    if (trustStoreFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseTruststore(reader, expectedNs, realmAddress, list);
+                    trustStoreFound = true;
+                    break;
+                }
+                case USERS: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseUsersAuthentication(reader, expectedNs, realmAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case PLUG_IN: {
+                    if (usernamePasswordFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    ModelNode parentAddress = realmAddress.clone().add(AUTHENTICATION);
+                    parsePlugIn_Authentication(reader, expectedNs, parentAddress, list);
+                    usernamePasswordFound = true;
+                    break;
+                }
+                case LOCAL: {
+                    if (localFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseLocalAuthentication(reader, expectedNs, realmAddress, list);
+                    localFound = true;
+                    break;
+                }
+
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseAuthentication_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         // Only one truststore can be defined.
@@ -1404,6 +1519,36 @@ public class ManagementXml {
     }
 
     private void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        boolean authzFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            // Only a single element within the authorization element is currently supported.
+            if (authzFound) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PROPERTIES: {
+                    parsePropertiesAuthorization(reader, realmAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                case PLUG_IN: {
+                    ModelNode parentAddress = realmAddress.clone().add(AUTHORIZATION);
+                    parsePlugIn_Authorization(reader, expectedNs, parentAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+
+        }
+    }
+
+    private void parseAuthorization_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
