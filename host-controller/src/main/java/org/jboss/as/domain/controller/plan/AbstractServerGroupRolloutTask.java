@@ -72,9 +72,12 @@ abstract class AbstractServerGroupRolloutTask implements Runnable {
      * @param prepared the prepared operation
      */
     protected void recordPreparedOperation(final ServerIdentity identity, final TransactionalProtocolClient.PreparedOperation<ServerTaskExecutor.ServerOperation> prepared) {
-        updatePolicy.recordServerResult(identity, prepared.getPreparedResult());
+        final ModelNode preparedResult = prepared.getPreparedResult();
+        // Hmm do the server results need to get translated as well as the host one?
+        // final ModelNode transformedResult = prepared.getOperation().transformResult(preparedResult);
+        updatePolicy.recordServerResult(identity, preparedResult);
         executor.recordPreparedOperation(prepared);
-        resultHandler.handleServerUpdateResult(identity, prepared.getPreparedResult());
+        resultHandler.handleServerUpdateResult(identity, preparedResult);
     }
 
     protected void sendCancelledResponse(ServerIdentity serverId) {

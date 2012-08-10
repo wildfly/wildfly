@@ -27,6 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -140,7 +141,7 @@ public class DomainTestUtils {
     }
 
     /**
-     * Execute for result.
+     * Execute for a successful result.
      *
      * @param op the operation to execute
      * @param modelControllerClient the controller client
@@ -156,7 +157,26 @@ public class DomainTestUtils {
            throw new MgmtOperationException("Management operation failed.", op, ret);
        }
        return ret.get(RESULT);
-   }
+    }
+
+    /**
+     * Execute for a failed outcome.
+     *
+     * @param op the operation to execute
+     * @param modelControllerClient the controller client
+     * @return the failure description
+     * @throws IOException
+     * @throws MgmtOperationException
+     */
+    public static ModelNode executeForFailure(final ModelNode op, final ModelControllerClient modelControllerClient) throws IOException, MgmtOperationException {
+        final ModelNode ret = modelControllerClient.execute(op);
+
+        if (! FAILED.equals(ret.get(OUTCOME).asString())) {
+            System.out.println(ret);
+            throw new MgmtOperationException("Management operation succeeded.", op, ret);
+        }
+        return ret.get(FAILURE_DESCRIPTION);
+    }
 
     /**
      * Wait until a server reached a given state or fail if the timeout was reached.

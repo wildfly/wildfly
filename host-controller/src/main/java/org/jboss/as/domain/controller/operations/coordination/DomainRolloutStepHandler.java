@@ -248,10 +248,11 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                             return false;
                         }
                     }
+                    // Transform the server-results
                     final TransformingProxyController remoteProxyController = (TransformingProxyController) proxy;
-                    final OperationTransformer.TransformedOperation result = remoteProxyController.transformOperation(context, original);
-                    final ModelNode transformedOperation = result.getTransformedOperation();
-                    final OperationResultTransformer resultTransformer = result.getResultTransformer();
+                    final OperationTransformer.TransformedOperation transformed = remoteProxyController.transformOperation(context, original);
+                    final ModelNode transformedOperation = transformed.getTransformedOperation();
+                    final OperationResultTransformer resultTransformer = transformed.getResultTransformer();
                     final TransactionalProtocolClient client = remoteProxyController.getProtocolClient();
                     return executeOperation(listener, client, server, transformedOperation, resultTransformer);
                 }

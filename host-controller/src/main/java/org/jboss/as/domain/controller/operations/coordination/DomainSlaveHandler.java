@@ -109,8 +109,26 @@ public class DomainSlaveHandler implements OperationStepHandler {
                     if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
                         HOST_CONTROLLER_LOGGER.tracef("Preliminary result for remote host %s is %s", hostName, preparedResult);
                     }
-                    domainOperationContext.addHostControllerResult(hostName, preparedResult);
-                    results.add(prepared);
+                    // See if we have to reject the result
+                    final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
+                    boolean reject = prepared.isFailed() ? false : request.rejectOperation(preparedResult);
+                    if(reject) {
+                        if (HOST_CONTROLLER_LOGGER.isDebugEnabled()) {
+                            HOST_CONTROLLER_LOGGER.debugf("Rejecting result for remote host %s is %s", hostName, preparedResult);
+                        }
+                        final ModelNode failedResult = new ModelNode();
+                        failedResult.get(OUTCOME).set(FAILED);
+                        failedResult.get(FAILURE_DESCRIPTION).set(request.getFailureDescription());
+
+                        // Record the failed result
+                        domainOperationContext.addHostControllerResult(hostName, failedResult);
+                        results.add(prepared);
+
+                    } else {
+                        // Record the prepared result
+                        domainOperationContext.addHostControllerResult(hostName, preparedResult);
+                        results.add(prepared);
+                    }
                 }
             } catch (InterruptedException ie) {
                 interrupted = true;
