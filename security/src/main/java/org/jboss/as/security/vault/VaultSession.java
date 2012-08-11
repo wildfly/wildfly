@@ -23,6 +23,7 @@
 package org.jboss.as.security.vault;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +47,8 @@ import org.picketbox.plugins.vault.PicketBoxSecurityVault;
 public final class VaultSession {
 
     public static final String VAULT_ENC_ALGORITHM = "PBEwithMD5andDES";
+
+    static final Charset CHARSET = Charset.forName("UTF-8");
 
     private String keystoreURL;
     private String keystorePassword;
@@ -245,14 +248,15 @@ public final class VaultSession {
      * @param attributeName
      */
     private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
+        String keyAsString = new String(handshakeKey, CHARSET);
         System.out.println("Secured attribute value has been stored in vault. ");
         System.out.println("Please make note of the following:");
         System.out.println("********************************************");
         System.out.println("Vault Block:" + vaultBlock);
         System.out.println("Attribute Name:" + attributeName);
-        System.out.println("Shared Key:" + handshakeKey.toString());
+        System.out.println("Shared Key:" + keyAsString);
         System.out.println("Configuration should be done as follows:");
-        System.out.println("VAULT::" + vaultBlock + "::" + attributeName + "::" + handshakeKey.toString());
+        System.out.println("VAULT::" + vaultBlock + "::" + attributeName + "::" + keyAsString);
         System.out.println("********************************************");
     }
 
