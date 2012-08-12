@@ -22,9 +22,11 @@
 package org.jboss.as.jmx.model;
 
 import static javax.management.JMX.DEFAULT_VALUE_FIELD;
+import static javax.management.JMX.LEGAL_VALUES_FIELD;
 import static javax.management.JMX.MAX_VALUE_FIELD;
 import static javax.management.JMX.MIN_VALUE_FIELD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -47,8 +49,10 @@ import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.Descriptor;
 import javax.management.ImmutableDescriptor;
@@ -260,9 +264,19 @@ public class MBeanInfoFactory {
             if (!expressionsAllowed) {
                 Object defaultValue = getIfExists(value, DEFAULT);
                 descriptions.put(DEFAULT_VALUE_FIELD, defaultValue);
-                descriptions.put(MIN_VALUE_FIELD, getIfExistsAsComparable(value, MIN));
-                descriptions.put(MAX_VALUE_FIELD, getIfExistsAsComparable(value, MAX));
+                if (value.has(ALLOWED)) {
+                    List<ModelNode> allowed = value.get(ALLOWED).asList();
+                    descriptions.put(LEGAL_VALUES_FIELD,fromModelNodes(value, allowed));
+                } else {
+                    if (value.has(MIN)) {
+                        descriptions.put(MIN_VALUE_FIELD, getIfExistsAsComparable(value, MIN));
+                    }
+                    if (value.has(MAX)) {
+                        descriptions.put(MAX_VALUE_FIELD, getIfExistsAsComparable(value, MAX));
+                    }
+                }
             }
+
 
             params.add(
                     new OpenMBeanParameterInfoSupport(
@@ -275,9 +289,17 @@ public class MBeanInfoFactory {
         return params.toArray(new OpenMBeanParameterInfo[params.size()]);
     }
 
+    private Set<?> fromModelNodes(final ModelNode parentNode, final List<ModelNode> nodes) {
+        Set<Object> values = new HashSet<Object>(nodes.size());
+        for (ModelNode node : nodes) {
+            values.add(converters.fromModelNode(parentNode, node));
+        }
+        return values;
+    }
+
     private Object getIfExists(final ModelNode parentNode, final String name) {
-        if (parentNode.has(DEFAULT)) {
-            ModelNode defaultNode = parentNode.get(DEFAULT);
+        if (parentNode.has(name)) {
+            ModelNode defaultNode = parentNode.get(name);
             return converters.fromModelNode(parentNode, defaultNode);
         } else {
             return null;
