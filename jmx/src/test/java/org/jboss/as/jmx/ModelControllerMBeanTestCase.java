@@ -42,9 +42,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -232,7 +234,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // bundles
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=jmx"));
         Assert.assertNotNull(info);
-//        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
+        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
 
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=test"));
         Assert.assertNotNull(info);
@@ -281,6 +283,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(Integer.class.getName(), op.getSignature()[4].getType());
         parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[4]);
         Assert.assertNull(parameterInfo.getDefaultValue());
+        Assert.assertNull(parameterInfo.getDefaultValue());
+        Assert.assertEquals(new HashSet<Object>(Arrays.asList(3, 5, 7)), parameterInfo.getLegalValues());
 
         op = findOperation(operations, ComplexOperation.OPERATION_NAME);
         Assert.assertEquals(ComplexOperation.OPERATION_NAME, op.getName());
@@ -312,7 +316,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // bundles
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=jmx"));
         Assert.assertNotNull(info);
-//        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
+        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
 
         info = connection.getMBeanInfo(createObjectName(LEGACY_DOMAIN + ":subsystem=test"));
         Assert.assertNotNull(info);
@@ -354,7 +358,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         // bundles
         info = connection.getMBeanInfo(createObjectName(EXPR_DOMAIN + ":subsystem=jmx"));
         Assert.assertNotNull(info);
-//        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
+        Assert.assertEquals("The configuration of the JMX subsystem.", info.getDescription());
 
         info = connection.getMBeanInfo(createObjectName(EXPR_DOMAIN + ":subsystem=test"));
         Assert.assertNotNull(info);
@@ -402,6 +406,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals("Param5", op.getSignature()[4].getDescription());
         Assert.assertEquals(String.class.getName(), op.getSignature()[4].getType());
         parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[4]);
+        Assert.assertNull(parameterInfo.getDefaultValue());
+        Assert.assertNull(parameterInfo.getLegalValues());
         Assert.assertNull(parameterInfo.getDefaultValue());
         Assert.assertNull(parameterInfo.getLegalValues());
 
