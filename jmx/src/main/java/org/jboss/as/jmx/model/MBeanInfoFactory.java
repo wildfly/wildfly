@@ -22,11 +22,9 @@
 package org.jboss.as.jmx.model;
 
 import static javax.management.JMX.DEFAULT_VALUE_FIELD;
-import static javax.management.JMX.LEGAL_VALUES_FIELD;
 import static javax.management.JMX.MAX_VALUE_FIELD;
 import static javax.management.JMX.MIN_VALUE_FIELD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -49,7 +47,6 @@ import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -250,6 +247,7 @@ public class MBeanInfoFactory {
         }
         List<Property> propertyList = opNode.get(REQUEST_PROPERTIES).asPropertyList();
         List<OpenMBeanParameterInfo> params = new ArrayList<OpenMBeanParameterInfo>(propertyList.size());
+
         for (Property prop : propertyList) {
             ModelNode value = prop.getValue();
             String paramName = NameConverter.convertToCamelCase(prop.getName());
@@ -262,13 +260,8 @@ public class MBeanInfoFactory {
             if (!expressionsAllowed) {
                 Object defaultValue = getIfExists(value, DEFAULT);
                 descriptions.put(DEFAULT_VALUE_FIELD, defaultValue);
-                if (value.has(ALLOWED)) {
-                    List<ModelNode> allowed = value.get(ALLOWED).asList();
-                    descriptions.put(LEGAL_VALUES_FIELD, new HashSet<ModelNode>(allowed));
-                } else {
-                    descriptions.put(MIN_VALUE_FIELD, getIfExistsAsComparable(value, MIN));
-                    descriptions.put(MAX_VALUE_FIELD, getIfExistsAsComparable(value, MAX));
-                }
+                descriptions.put(MIN_VALUE_FIELD, getIfExistsAsComparable(value, MIN));
+                descriptions.put(MAX_VALUE_FIELD, getIfExistsAsComparable(value, MAX));
             }
 
             params.add(
@@ -291,12 +284,12 @@ public class MBeanInfoFactory {
         }
     }
 
-    private Comparable getIfExistsAsComparable(final ModelNode parentNode, final String name) {
+    private Comparable<?> getIfExistsAsComparable(final ModelNode parentNode, final String name) {
         if (parentNode.has(name)) {
             ModelNode defaultNode = parentNode.get(name);
             Object value = converters.fromModelNode(parentNode, defaultNode);
             if (value instanceof Comparable) {
-                return (Comparable) value;
+                return (Comparable<?>) value;
             }
         }
         return null;

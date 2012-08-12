@@ -42,11 +42,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -283,7 +281,6 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(Integer.class.getName(), op.getSignature()[4].getType());
         parameterInfo = assertCast(OpenMBeanParameterInfo.class, op.getSignature()[4]);
         Assert.assertNull(parameterInfo.getDefaultValue());
-        Assert.assertEquals(new HashSet<Object>(Arrays.asList(3, 5, 7)), parameterInfo.getLegalValues());
 
         op = findOperation(operations, ComplexOperation.OPERATION_NAME);
         Assert.assertEquals(ComplexOperation.OPERATION_NAME, op.getName());
