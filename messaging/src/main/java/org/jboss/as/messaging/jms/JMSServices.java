@@ -192,7 +192,7 @@ public class JMSServices {
         create(BLOCK_ON_ACK, "blockOnAcknowledge", true),
         create(BLOCK_ON_DURABLE_SEND, "blockOnDurableSend", true),
         create(BLOCK_ON_NON_DURABLE_SEND, "blockOnNonDurableSend", true),
-        create(CACHE_LARGE_MESSAGE_CLIENT, "cacheLargeMessageClient", false), // FIXME HORNETQ-948
+        create(CACHE_LARGE_MESSAGE_CLIENT, "cacheLargeMessagesClient", true),
         create(CALL_TIMEOUT, "callTimeout", true),
         create(CLIENT_FAILURE_CHECK_PERIOD, "clientFailureCheckPeriod", true),
         create(CLIENT_ID, "clientID", true),
@@ -203,17 +203,17 @@ public class JMSServices {
         create(DISCOVERY_GROUP_NAME, null, false),
         create(DISCOVERY_INITIAL_WAIT_TIMEOUT, null, false), // Not used since messaging 1.2, we keep it for compatibility sake
         create(DUPS_OK_BATCH_SIZE, "dupsOKBatchSize", true),
-        create(FAILOVER_ON_INITIAL_CONNECTION, "failoverOnInitialConnection", false), // FIXME HORNETQ-948
+        create(FAILOVER_ON_INITIAL_CONNECTION, "failoverOnInitialConnection", true),
         create(FAILOVER_ON_SERVER_SHUTDOWN, "failoverOnServerShutdown", false), // TODO HornetQResourceAdapter does not have this method
-        create(GROUP_ID, "groupID", false), // FIXME HORNETQ-948
+        create(GROUP_ID, "groupID", true),
         create(HA, "HA", true),
         create(LOAD_BALANCING_CLASS_NAME, "connectionLoadBalancingPolicyClassName", true),
-        create(MAX_RETRY_INTERVAL, "maxRetryInterval", false), // FIXME HORNETQ-948
+        create(MAX_RETRY_INTERVAL, "maxRetryInterval", true),
         create(MIN_LARGE_MESSAGE_SIZE, "minLargeMessageSize", true),
         create(PCF_PASSWORD, "password", true),
         create(PRE_ACK, "preAcknowledge", true),
         create(PRODUCER_MAX_RATE, "producerMaxRate", true),
-        create(PRODUCER_WINDOW_SIZE, "producerWindowSize", false),  // FIXME HORNETQ-948
+        create(PRODUCER_WINDOW_SIZE, "producerWindowSize", true),
         create(CONNECTION_FACTORY_RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_PROP_NAME, true),
         create(RETRY_INTERVAL, "retryInterval", true),
         create(RETRY_INTERVAL_MULTIPLIER, "retryIntervalMultiplier", true),
