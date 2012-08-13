@@ -110,7 +110,7 @@
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
-        <version.org.apache.cxf>2.4.8</version.org.apache.cxf>
+        <version.org.apache.cxf>2.4.8-patch-01</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.4.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
@@ -232,7 +232,7 @@
         <version.org.jboss.ws.api>1.0.0.GA</version.org.jboss.ws.api>
         <version.org.jboss.ws.common>2.0.4.GA</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.0.1.GA</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>4.0.2.GA</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>4.0.5.GA</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jbossws-native>4.0.5.GA</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.spi>2.0.4.GA</version.org.jboss.ws.spi>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
@@ -5453,7 +5453,7 @@
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
                 <artifactId>jbossws-cxf-resources</artifactId>
-                <classifier>jboss711</classifier>
+                <classifier>jboss712</classifier>
                 <version>${version.org.jboss.ws.cxf}</version>
             </dependency>
 
