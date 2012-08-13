@@ -98,7 +98,7 @@ public class GroupingHandlerAdd implements OperationStepHandler, DescriptionProv
 
     static void addGroupingHandlerConfig(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
-            Property prop = model.get(CommonAttributes.BROADCAST_GROUP).asProperty();
+            Property prop = model.get(CommonAttributes.GROUPING_HANDLER).asProperty();
             configuration.setGroupingHandlerConfiguration(createGroupingHandlerConfiguration(context, prop.getName(), prop.getValue()));
         }
     }
