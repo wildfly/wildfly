@@ -43,7 +43,6 @@ public class CommandLineConstants {
 
     /** Debug flag */
     public static final String DEBUG = "--debug";
-    public static final String SHORT_DEBUG = "-d";
 
     /** Configure the file to be used to read properties */
     public static final String OLD_PROPERTIES = "-properties";
