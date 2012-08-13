@@ -133,6 +133,38 @@ enum CommandLineArgument {
             return MESSAGES.argServerConfig();
         }
     },
+    DEBUG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.DEBUG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s [<port>]", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argDebugPort();
+        }
+    },
+    SHORT_DEBUG {
+        @Override
+        public String argument() {
+            return CommandLineConstants.SHORT_DEBUG;
+        }
+
+        @Override
+        public String argumentExample() {
+            return String.format("%s [<port>]", argument());
+        }
+
+        @Override
+        public String instructions() {
+            return MESSAGES.argDebugPort();
+        }
+    },
     SYSTEM_PROPERTY {
         @Override
         public String argument() {
