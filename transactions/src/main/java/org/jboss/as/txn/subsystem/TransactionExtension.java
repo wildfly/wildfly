@@ -22,31 +22,26 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+
+import javax.management.MBeanServer;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.txn.TransactionMessages;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
-
-import javax.management.MBeanServer;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 /**
  * The transaction management extension.
@@ -110,9 +105,6 @@ public class TransactionExtension implements Extension {
         }
 
         subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
-
-        // Register the model transformers
-        registerTransformers(subsystem);
     }
 
     /**
@@ -123,25 +115,4 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_2.getUriString(), TransactionSubsystem12Parser.INSTANCE);
     }
-
-    // Transformation
-
-    private static final ModelVersion version = ModelVersion.create(1, 1, 0);
-    private static final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
-
-    /**
-     * Register the transformers for older model versions.
-     *
-     * @param subsystem the subsystems registration
-     */
-    private static void registerTransformers(final SubsystemRegistration subsystem) {
-
-        // Check the resource and operations for expressions
-        // For now we need to reject all expressions, since they can't be resolved on the client
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, TRANSFORMER);
-        registration.registerOperationTransformer(ADD, TRANSFORMER);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
-
-    }
-
 }
