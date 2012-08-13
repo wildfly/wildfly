@@ -36,9 +36,19 @@ public class PooledConnectionFactoryAttributesTestCase {
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.TRANSACTION_MANAGER_LOCATOR_METHOD);
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("managedConnectionFactory");
         // not supported in 7.1 branch
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("useAutoRecovery");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("cacheLargeMessagesClient");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("clientFailureCheckPeriod");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("compressLargeMessage");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("connectionLoadBalancingPolicyClassName");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("failoverOnInitialConnection");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("groupID");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("initialConnectAttempts");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("initialMessagePacketSize");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("maxRetryInterval");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("passwordCodec");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("producerWindowSize");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("useAutoRecovery");
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("useMaskedPassword");
 
         KNOWN_ATTRIBUTES = new TreeSet<String>();
         // these are supported but it is not found by JavaBeans introspector because of the type
