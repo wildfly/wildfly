@@ -225,6 +225,19 @@ public final class Main {
                     //Drop the first 2 characters
                     String token = arg.substring(2);
                     processSecurityProperties(token,systemProperties);
+                } else if (arg.equals(CommandLineConstants.DEBUG)) { // Need to process the debug options as they cannot be filtered out in Windows
+                    // The next option may or may not be a port. Assume if it's a number and doesn't start with a - it's the port
+                    final int next = i + 1;
+                    if (next < argsLength) {
+                        final String nextArg = args[next];
+                        if (!nextArg.startsWith("-")) {
+                            try {
+                                Integer.parseInt(nextArg);
+                                i++;
+                            } catch (NumberFormatException ignore) {
+                            }
+                        }
+                    }
                 } else {
                     System.err.printf(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     usage();

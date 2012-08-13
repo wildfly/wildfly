@@ -3,14 +3,15 @@ rem -------------------------------------------------------------------------
 rem JBoss Bootstrap Script for Windows
 rem -------------------------------------------------------------------------
 
-rem Use --debug or -d to activate debug mode with an optional argument to specify the port
-rem Usage : standalone.bat -d
+rem Use --debug to activate debug mode with an optional argument to specify the port
+rem Usage : standalone.bat --debug
 rem         standalone.bat --debug 9797
 
 rem By default debug mode is disable.
 set DEBUG_MODE=false
 set DEBUG_PORT=8787
-set SERVER_OPTS=
+rem Set to all parameters by default
+set SERVER_OPTS=%*
 
 rem Get the program name before using shift as the command modify the variable ~nx0
 if "%OS%" == "Windows_NT" (
@@ -19,16 +20,24 @@ if "%OS%" == "Windows_NT" (
   set "PROGNAME=standalone.bat"
 )
 
+@if not "%ECHO%" == ""  echo %ECHO%
+@if "%OS%" == "Windows_NT" setlocal
+
+if "%OS%" == "Windows_NT" (
+  set "DIRNAME=%~dp0%"
+) else (
+  set DIRNAME=.\
+)
+
 rem Read command-line args.
 :READ-ARGS
 if "%1" == "" ( 
-   goto MAIN 
-) else if "%1" == "-d" (
-   goto READ-DEBUG-PORT
+   goto MAIN
 ) else if "%1" == "--debug" (
    goto READ-DEBUG-PORT
 ) else (
-   set SERVER_OPTS=%SERVER_OPTS% %1
+   rem This doesn't work as Windows splits on = and spaces by default
+   rem set SERVER_OPTS=%SERVER_OPTS% %1
    shift
    goto READ-ARGS
 )
@@ -47,14 +56,6 @@ if not "x%DEBUG_ARG" == "x" (
 
 :MAIN
 rem $Id$
-
-@if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
-
-if "%OS%" == "Windows_NT" (
-  set "DIRNAME=%~dp0%"
-) else (
-  set DIRNAME=.\
 )
 
 if "%DEBUG_MODE%" == "true" (

@@ -187,7 +187,7 @@ public interface ServerMessages {
     String argAdminOnly();
 
     /**
-     * Instructions for the {@link org.jboss.as.server.CommandLineArgument#DEBUG} command line argument.
+     * Instructions for the {@link CommandLineConstants#DEBUG} command line argument.
      *
      * @return the message.
      */

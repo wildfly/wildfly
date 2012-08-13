@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Use --debug or -d to activate debug mode with an optional argument to specify the port.
-# Usage : standalone.bat -d
+# Use --debug to activate debug mode with an optional argument to specify the port.
+# Usage : standalone.bat --debug
 #         standalone.bat --debug 9797
 
 # By default debug mode is disable.
@@ -11,7 +11,7 @@ SERVER_OPTS=""
 while [ "$#" -gt 0 ]
 do
     case "$1" in
-      -d|--debug)
+      --debug)
           DEBUG_MODE=true
           shift
           if [ -n "$1" ] && [ "${1#*-}" = "$1" ]; then
