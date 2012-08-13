@@ -220,7 +220,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             this.setPropertyNoOverride(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
             this.setPropertyNoOverride(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
-            ROOT_LOGGER.tracef(e, "Could not set %s.%s and %s.%s, %s socket binding does not specify a multicast socket", config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
+            ROOT_LOGGER.couldNotSetAddressAndPortNoMulticastSocket(e, config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }
     }
 
@@ -233,13 +233,12 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
                propertyValue = config.getOriginalProperties().get(name);
         }
         catch(Exception e) {
-            ROOT_LOGGER.errorf(e, "Error accessing original value for property %s of protocol %s : ", name, protocol.getName());
+            ROOT_LOGGER.unableToAccessProtocolPropertyValue(e, name, protocol.getName());
         }
 
         // log a warning if property tries to override
         if (overridden) {
-            ROOT_LOGGER.warnf("property %s for protocol %s attempting to override socket binding value %s : property value %s will be ignored",
-                    name, protocol.getName(), value, propertyValue);
+            ROOT_LOGGER.unableToOverrideSocketBindingValue(name, protocol.getName(), value, propertyValue);
         }
         setProperty(protocol, config, name, value);
     }
@@ -263,11 +262,11 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     }
 
     private void setValue(Protocol protocol, String property, Object value) {
-        ROOT_LOGGER.tracef("Setting %s.%s=%d", protocol.getName(), property, value);
+        ROOT_LOGGER.setProtocolPropertyValue(protocol.getName(), property, value);
         try {
             protocol.setValue(property, value);
         } catch (IllegalArgumentException e) {
-            ROOT_LOGGER.tracef(e, "Failed to set non-existent %s.%s=%d", protocol.getName(), property, value);
+            ROOT_LOGGER.nonExistentProtocolPropertyValue(e, protocol.getName(), property, value);
         }
     }
 
