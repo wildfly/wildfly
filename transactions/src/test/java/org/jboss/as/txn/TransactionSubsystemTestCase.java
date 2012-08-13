@@ -32,8 +32,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.io.IOException;
 
+import junit.framework.AssertionFailedError;
+
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -84,19 +86,30 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         operation.get(OP_ADDR).add(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME);
         operation.get(NAME).set("status-socket-binding");
-        operation.get(VALUE).set("${org.jboss.test:default-socket-binding}");
+        operation.get(VALUE).setExpression("${org.jboss.test:default-socket-binding}");
 
         final ModelNode mainResult = mainServices.executeOperation(operation);
         Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
 
+        //We have disabled the transformers for now, instead relying on the slave to fail if it does not
+        //like the values.
+//        try {
+//            mainServices.transformOperation(modelVersion, operation);
+//            // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
+//            // so we need to reject the expression on the DC already
+//            Assert.fail("should reject the expression");
+//        } catch (OperationFailedException e) {
+//            // OK
+//        }
+        TransformedOperation transformedOperation = mainServices.transformOperation(modelVersion, operation);
+        ModelNode result = mainServices.executeOperation(modelVersion, transformedOperation);
+        boolean valid = false;
         try {
-            mainServices.transformOperation(modelVersion, operation);
-            // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
-            // so we need to reject the expression on the DC already
-            Assert.fail("should reject the expression");
-        } catch (OperationFailedException e) {
-            // OK
+            checkOutcome(result);
+            valid = true;
+        } catch (AssertionFailedError expected) {
         }
+        Assert.assertFalse(valid);
     }
 
 }
