@@ -123,6 +123,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
 
     public void parseOperation(OperationRequestAddress prefix, String argsStr) throws CommandFormatException {
         reset();
+        this.setFormat(OperationFormat.INSTANCE);
         if(prefix != null) {
             address = new DefaultOperationRequestAddress(prefix);
         }
