@@ -101,7 +101,7 @@ public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
     // transformers will be written to when the JPA persistence provider adds their transformer.
     // there should be very few calls to add transformers but potentially many calls to get the
     // transformer list (once per application class loaded).
-    private volatile List<ClassTransformer> transformers = new CopyOnWriteArrayList<ClassTransformer>();
+    private final List<ClassTransformer> transformers = new CopyOnWriteArrayList<ClassTransformer>();
 
     private volatile SharedCacheMode sharedCacheMode;
 
