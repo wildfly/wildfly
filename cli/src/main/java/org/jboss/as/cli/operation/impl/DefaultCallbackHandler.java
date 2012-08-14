@@ -43,6 +43,7 @@ import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.OperationRequestAddress.Node;
 import org.jboss.as.cli.parsing.ParserUtil;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
+import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.cli.parsing.operation.header.RolloutPlanHeaderCallbackHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -125,6 +126,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         if(prefix != null) {
             address = new DefaultOperationRequestAddress(prefix);
         }
+        this.setFormat(OperationFormat.INSTANCE);
         this.originalLine = argsStr;
         ParserUtil.parseOperationRequest(argsStr, this);
     }
