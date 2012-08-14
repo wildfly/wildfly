@@ -1,4 +1,4 @@
-        <subsystem xmlns="urn:jboss:domain:web:1.1" default-virtual-server="default-host" native="true">
+        <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="true">
             <configuration>
                 <static-resources max-depth="5"/>
                 <jsp-configuration development="true" />
