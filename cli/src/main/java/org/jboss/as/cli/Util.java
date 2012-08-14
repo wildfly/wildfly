@@ -633,6 +633,37 @@ public class Util {
         return op;
     }
 
+    public static boolean isValidPath(ModelControllerClient client, String... node) throws CommandLineException {
+        if(node == null) {
+            return false;
+        }
+        if(node.length % 2 != 0) {
+            return false;
+        }
+        final ModelNode op = new ModelNode();
+        op.get(ADDRESS).setEmptyList();
+        op.get(OPERATION).set(VALIDATE_ADDRESS);
+        final ModelNode addressValue = op.get(VALUE);
+        for(int i = 0; i < node.length; i += 2) {
+            addressValue.add(node[i], node[i+1]);
+        }
+        final ModelNode response;
+        try {
+            response = client.execute(op);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to execute " + VALIDATE_ADDRESS, e);
+        }
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            return false;
+        }
+        final ModelNode valid = result.get(Util.VALID);
+        if(!valid.isDefined()) {
+            return false;
+        }
+        return valid.asBoolean();
+    }
+
     public static String getCommonStart(List<String> list) {
         final int size = list.size();
         if(size == 0) {
