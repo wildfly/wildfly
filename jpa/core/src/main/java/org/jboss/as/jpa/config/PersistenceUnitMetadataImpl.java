@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
@@ -47,65 +48,68 @@ import org.jboss.jandex.Index;
 public class PersistenceUnitMetadataImpl implements PersistenceUnitMetadata {
 
     // required: name of the persistent unit
-    private String name;
+    private volatile String name;
 
     // required: name of the persistent unit scoped to deployment file
-    private String scopedName;
+    private volatile String scopedName;
 
     // optional: jndi name of non-jta datasource
-    private String nonJtaDataSourceName;
+    private volatile String nonJtaDataSourceName;
 
     // optional: jndi name of jta datasource
-    private String jtaDataSourceName;
+    private volatile String jtaDataSourceName;
 
 
-    private DataSource jtaDatasource;
+    private volatile DataSource jtaDatasource;
 
-    private DataSource nonJtaDataSource;
+    private volatile DataSource nonJtaDataSource;
 
     // optional: provider classname (must implement javax.persistence.spi.PersistenceProvider)
-    private String provider;
+    private volatile String provider;
 
     // optional: specifies if EntityManagers will be JTA (default) or RESOURCE_LOCAL
-    private PersistenceUnitTransactionType transactionType;
+    private volatile PersistenceUnitTransactionType transactionType;
 
     // optional: collection of individually named managed entity classes
-    private List<String> classes = new ArrayList<String>(1);
+    private volatile List<String> classes = new ArrayList<String>(1);
 
     // optional:
-    private List<String> packages = new ArrayList<String>(1);
+    private final List<String> packages = new ArrayList<String>(1);
 
     // optional:  collection of jar file names that contain entity classes
-    private List<String> jarFiles = new ArrayList<String>(1);
+    private volatile List<String> jarFiles = new ArrayList<String>(1);
 
-    private List<URL> jarFilesUrls = new ArrayList<URL>();
+    private volatile List<URL> jarFilesUrls = new ArrayList<URL>();
 
-    private URL persistenceUnitRootUrl;
+    private volatile URL persistenceUnitRootUrl;
 
     // optional: collection of orm.xml style entity mapping files
-    private List<String> mappingFiles = new ArrayList<String>(1);
+    private volatile List<String> mappingFiles = new ArrayList<String>(1);
 
     // collection of properties for the persistence provider
-    private Properties props = new Properties();
+    private volatile Properties props = new Properties();
 
     // optional: specifies whether to include entity classes in the root folder containing the persistence unit.
-    private boolean excludeUnlistedClasses;
+    private volatile boolean excludeUnlistedClasses;
 
     // optional:  validation mode can be "auto", "callback", "none".
-    private ValidationMode validationMode;
+    private volatile ValidationMode validationMode;
 
     // optional: version of the JPA specification
-    private String version;
+    private volatile String version;
 
-    private List<ClassTransformer> transformers = new ArrayList<ClassTransformer>(1);
+    // transformers will be written to when the JPA persistence provider adds their transformer.
+    // there should be very few calls to add transformers but potentially many calls to get the
+    // transformer list (once per application class loaded).
+    private volatile List<ClassTransformer> transformers = new CopyOnWriteArrayList<ClassTransformer>();
 
-    private SharedCacheMode sharedCacheMode;
+    private volatile SharedCacheMode sharedCacheMode;
 
-    private ClassLoader classloader;
+    private volatile ClassLoader classloader;
 
-    private TempClassLoaderFactory tempClassLoaderFactory;
+    private volatile TempClassLoaderFactory tempClassLoaderFactory;
 
-    private Map<URL, Index> annotationIndex;
+    private volatile Map<URL, Index> annotationIndex;
 
     @Override
     public void setPersistenceUnitName(String name) {
