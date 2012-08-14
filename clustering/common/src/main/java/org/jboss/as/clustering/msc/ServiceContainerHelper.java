@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -40,6 +41,8 @@ import org.jboss.msc.service.StartException;
  * @author Paul Ferraro
  */
 public class ServiceContainerHelper {
+    private static Logger log = Logger.getLogger(ServiceContainerHelper.class);
+
     /**
      * Returns the current service container.
      * @return a service container
@@ -138,12 +141,16 @@ public class ServiceContainerHelper {
 
     private static <T> boolean wait(ServiceController<T> controller, Collection<ServiceController.State> expectedStates, ServiceController.State targetState) {
         if (controller.getState() == targetState) return true;
-        ServiceListener<T> listener = new NotifyingServiceListener<T>();
+        ServiceListener<T> listener = new NotifyingServiceListener<T>(controller);
         controller.addListener(listener);
         try {
             synchronized (controller) {
-                while (expectedStates.contains(controller.getState())) {
+                ServiceController.State state = controller.getState();
+                while (expectedStates.contains(state)) {
+                    log.tracef("Waiting for %s transition from %s to %s, unavailable dependencies: %s", controller.getName(), state, targetState, controller.getImmediateUnavailableDependencies());
                     controller.wait();
+                    state = controller.getState();
+                    log.tracef("%s state is now %s", controller.getName(), state);
                 }
             }
         } catch (InterruptedException e) {
@@ -154,10 +161,17 @@ public class ServiceContainerHelper {
     }
 
     private static class NotifyingServiceListener<T> extends AbstractServiceListener<T> {
+        private final ServiceController<T> controller;
+
+        NotifyingServiceListener(final ServiceController<T> controller) {
+            this.controller = controller;
+        }
+
         @Override
         public void transition(ServiceController<? extends T> controller, Transition transition) {
-            synchronized (controller) {
-                controller.notify();
+            log.tracef("%s transitioned from %s", controller.getName(), transition);
+            synchronized (this.controller) {
+                this.controller.notify();
             }
         }
     }
