@@ -22,23 +22,6 @@
 
 package org.jboss.as.web;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -77,6 +60,22 @@ import static org.jboss.as.web.WebExtension.ACCESS_LOG_PATH;
 import static org.jboss.as.web.WebExtension.DIRECTORY_PATH;
 import static org.jboss.as.web.WebExtension.SSL_PATH;
 import static org.jboss.as.web.WebExtension.SSO_PATH;
+
+import java.util.Collections;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The web subsystem parser.
@@ -944,6 +943,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     throw unexpectedAttribute(reader, i);
             }
         }
+        Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
+        if (namespace == Namespace.WEB_1_1 || namespace == Namespace.WEB_1_0) { // workaround to set default for old schema
+            if (!ssl.hasDefined(WebSSLDefinition.KEY_ALIAS.getName())) {
+                ssl.get(WebSSLDefinition.KEY_ALIAS.getName()).set("jboss");
+            }
+        }
+
         requireNoContent(reader);
         list.add(ssl);
     }
