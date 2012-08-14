@@ -32,6 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.Channel;
 import org.jgroups.stack.Protocol;
 import org.jgroups.stack.ProtocolStack;
@@ -264,26 +265,31 @@ public class StackConfigOperationHandlers {
             PathAddress stackAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
             String stackName = stackAddress.getLastElement().getValue();
 
+            ServiceRegistry registry = context.getServiceRegistry(false);
             ServiceName serviceName = ChannelFactoryService.getServiceName(stackName);
-            Channel channel = null;
             try {
-                ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(serviceName);
-                ChannelFactory factory = ServiceContainerHelper.getValue(controller, ChannelFactory.class);
-                // Create a temporary channel, but don't connect it
-                channel = factory.createChannel(UUID.randomUUID().toString());
-                // ProtocolStack.printProtocolSpecAsXML() is very hacky and only works on an uninitialized stack
-                List<Protocol> protocols = channel.getProtocolStack().getProtocols();
-                Collections.reverse(protocols);
-                ProtocolStack stack = new ProtocolStack();
-                stack.addProtocols(protocols);
-                context.getResult().set(stack.printProtocolSpecAsXML());
-                context.completeStep();
+                ServiceController<?> controller = registry.getRequiredService(serviceName);
+                controller.setMode(ServiceController.Mode.ACTIVE);
+                try {
+                    ChannelFactory factory = ServiceContainerHelper.getValue(controller, ChannelFactory.class);
+                    // Create a temporary channel, but don't connect it
+                    Channel channel = factory.createChannel(UUID.randomUUID().toString());
+                    try {
+                        // ProtocolStack.printProtocolSpecAsXML() is very hacky and only works on an uninitialized stack
+                        List<Protocol> protocols = channel.getProtocolStack().getProtocols();
+                        Collections.reverse(protocols);
+                        ProtocolStack stack = new ProtocolStack();
+                        stack.addProtocols(protocols);
+                        context.getResult().set(stack.printProtocolSpecAsXML());
+                        context.completeStep();
+                    } finally {
+                        channel.close();
+                    }
+                } finally {
+                    controller.setMode(ServiceController.Mode.ON_DEMAND);
+                }
             } catch (Exception e) {
                 throw new OperationFailedException(e.getLocalizedMessage(), e);
-            } finally {
-                if (channel != null) {
-                    channel.close();
-                }
             }
         }
     }
