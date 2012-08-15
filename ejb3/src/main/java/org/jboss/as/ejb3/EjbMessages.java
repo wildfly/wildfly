@@ -2072,6 +2072,12 @@ public interface EjbMessages {
     @Message(id = 14579, value = "EJB business method %s must be public")
     DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
+    @Message(id = 14580, value = "Unexpected Error")
+    EJBException unexpectedError();
+
+    @Message(id = 14581, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
+    String transactionNotComplete(String componentName);
+
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
@@ -2081,7 +2087,7 @@ public interface EjbMessages {
     @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
     DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
 
-    // Don't add exception messages greater that 14299!!! If you need more go to
+    // Don't add exception messages greater that 14240!!! If you need more go to
     // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
 
     @Message(id = 14226, value = "Could not lookup service %s")
