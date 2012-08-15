@@ -44,7 +44,7 @@ public final class InstallReflectionIndexProcessor implements DeploymentUnitProc
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         BundleState bundleState = deploymentUnit.getAttachment(Attachments.BUNDLE_STATE_KEY);
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if (bundleState == BundleState.INSTALLED) {
+        if (module == null && bundleState == BundleState.INSTALLED) {
             DEPLOYMENT_LOGGER.warnCannotInstallReflectionIndexForUnresolvedBundle(deploymentUnit.getName());
             return;
         }

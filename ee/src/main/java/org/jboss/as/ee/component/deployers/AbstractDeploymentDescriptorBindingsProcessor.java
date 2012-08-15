@@ -87,7 +87,7 @@ public abstract class AbstractDeploymentDescriptorBindingsProcessor implements D
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEModuleDescription description = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        if (description == null) {
+        if (module == null || description == null) {
             return;
         }
 
