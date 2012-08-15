@@ -80,11 +80,6 @@ import org.jboss.vfs.VirtualFile;
 public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     /**
-     * Logger
-     */
-    private static final Logger logger = Logger.getLogger(EjbJarParsingDeploymentUnitProcessor.class);
-
-    /**
      * .war file extension
      */
     private static final String WAR_FILE_EXTENSION = ".war";
@@ -253,7 +248,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             try {
                 stream.close();
             } catch (IOException ioe) {
-                logger.warn("Ignoring exception while closing the InputStream ", ioe);
+                EjbLogger.ROOT_LOGGER.failToCloseFile(ioe);
             }
         }
     }
@@ -285,7 +280,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             try {
                 stream.close();
             } catch (IOException ioe) {
-                logger.warn("Ignoring exception while closing the InputStream ", ioe);
+                EjbLogger.ROOT_LOGGER.failToCloseFile(ioe);
             }
         }
     }

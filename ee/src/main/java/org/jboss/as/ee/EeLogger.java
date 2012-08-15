@@ -197,4 +197,8 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 11012, value = "Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s")
     void ignoringStaticInjectionTarget(InjectionTarget injectionTarget);
 
+    @LogMessage(level = WARN)
+    @Message(id = 11013, value = "%s in subdeployment ignored. jboss-ejb-client.xml is only parsed for top level deployments.")
+    void subdeploymentIgnored(String pathName);
+
 }

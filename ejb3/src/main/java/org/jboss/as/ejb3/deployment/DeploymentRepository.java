@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -22,8 +23,6 @@ import org.jboss.msc.service.StopContext;
 public class DeploymentRepository implements Service<DeploymentRepository> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ee", "deploymentRepository");
-
-    private static final Logger logger = Logger.getLogger(DeploymentRepository.class);
 
     /**
      * All deployed modules. This is a copy on write map that is updated infrequently and read often.
@@ -56,7 +55,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             try {
                 listener.deploymentAvailable(identifier, deployment);
             } catch (Throwable t) {
-                logger.error("Exception calling deployment added listener", t);
+                EjbLogger.ROOT_LOGGER.deploymentAddListenerException(t);
             }
         }
     }
@@ -78,7 +77,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             try {
                 listener.deploymentRemoved(identifier);
             } catch (Throwable t) {
-                logger.error("Exception calling deployment removal listener", t);
+                EjbLogger.ROOT_LOGGER.deploymentRemoveListenerException(t);
             }
         }
     }

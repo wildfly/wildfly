@@ -54,8 +54,6 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
  */
 public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger log = Logger.getLogger(EjbManagementDeploymentUnitProcessor.class);
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -95,7 +93,7 @@ public class EjbManagementDeploymentUnitProcessor implements DeploymentUnitProce
             try {
                 uninstallManagementResource(configuration);
             } catch (RuntimeException e) {
-                log.error(String.format("Failed to remove management resources for %s -- %s", configuration, e));
+                EjbLogger.ROOT_LOGGER.failedToRemoveManagementResources(configuration, e.getLocalizedMessage());
             }
         }
     }

@@ -43,7 +43,6 @@ import org.jboss.ejb.client.EntityEJBLocator;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 import org.jboss.marshalling.AbstractClassResolver;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.MarshallerFactory;
@@ -68,8 +67,6 @@ import java.util.concurrent.Future;
  * @author Jaikiran Pai
  */
 class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
-
-    private static final Logger logger = Logger.getLogger(MethodInvocationMessageHandler.class);
 
     private static final char METHOD_PARAM_TYPE_SEPARATOR = ',';
 
@@ -210,11 +207,9 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         } catch (IOException ioe) {
                             // we couldn't write out a method invocation failure message. So let's at least log the
                             // actual method invocation exception, for debugging/reference
-                            logger.error("Error invoking method " + invokedMethod + " on bean named " + beanName
-                                    + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName, throwable);
+                            EjbLogger.ROOT_LOGGER.errorInvokingMethod(throwable, invokedMethod, beanName, appName, moduleName, distinctName);
                             // now log why we couldn't send back the method invocation failure message
-                            logger.error("Could not write method invocation failure for method " + invokedMethod + " on bean named " + beanName
-                                    + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
+                            EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                             // close the channel unless this is a NotSerializableException
                             //as this does not represent a problem with the channel there is no
                             //need to close it (see AS7-3402)
@@ -242,8 +237,7 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
                         }
                         writeMethodInvocationResponse(channelAssociation, invocationId, result, attachments);
                     } catch (IOException ioe) {
-                        logger.error("Could not write method invocation result for method " + invokedMethod + " on bean named " + beanName
-                                + " for appname " + appName + " modulename " + moduleName + " distinctname " + distinctName + " due to ", ioe);
+                        EjbLogger.ROOT_LOGGER.couldNotWriteMethodInvocation(ioe, invokedMethod, beanName, appName, moduleName, distinctName);
                         // close the channel unless this is a NotSerializableException
                         //as this does not represent a problem with the channel there is no
                         //need to close it (see AS7-3402)
