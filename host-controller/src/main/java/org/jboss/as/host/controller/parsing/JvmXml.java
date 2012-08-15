@@ -193,6 +193,10 @@ public class JvmXml {
                     hasJvmOptions = true;
                     break;
                 }
+                case LAUNCH_COMMAND: {
+                    parseLaunchCommand(reader, addOp);
+                    break;
+                }
                 default:
                     throw unexpectedElement(reader);
             }
@@ -383,6 +387,38 @@ public class JvmXml {
         requireNoContent(reader);
     }
 
+    private static void parseLaunchCommand(final XMLExtendedStreamReader reader, ModelNode addOp)
+            throws XMLStreamException {
+
+        // Handle attributes
+        boolean valueSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw ParseUtils.unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PREFIX: {
+                        if (checkParseAndSetParameter(JvmAttributes.LAUNCH_COMMAND, value, addOp, reader)) {
+                            throw ParseUtils.duplicateNamedElement(reader, reader.getLocalName());
+                        }
+                        valueSet = true;
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (!valueSet) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PREFIX));
+        }
+        // Handle elements
+        requireNoContent(reader);
+    }
+
     private static void parseJavaagent(final XMLExtendedStreamReader reader, ModelNode addOp)
             throws XMLStreamException {
 
@@ -508,6 +544,10 @@ public class JvmXml {
         }
         if (JvmAttributes.ENVIRONMENT_VARIABLES.isMarshallable(jvmElement)) {
             JvmAttributes.ENVIRONMENT_VARIABLES.marshallAsElement(jvmElement, writer);
+        }
+        if (JvmAttributes.LAUNCH_COMMAND.isMarshallable(jvmElement)) {
+            writer.writeEmptyElement(Element.LAUNCH_COMMAND.getLocalName());
+            JvmAttributes.PREFIX.marshallAsAttribute(jvmElement, writer);
         }
 
         writer.writeEndElement();

@@ -60,6 +60,7 @@ public class JvmElement {
     private String agentLib;
     private String javaagent;
     private String stack;
+    private String launchCommand;
     private final JvmOptionsElement jvmOptionsElement = new JvmOptionsElement();
     private Map<String, String> environmentVariables = new HashMap<String, String>();
 
@@ -99,6 +100,9 @@ public class JvmElement {
                 for(Property property : node.get(JvmAttributes.JVM_ENV_VARIABLES).asPropertyList()) {
                     environmentVariables.put(property.getName(), property.getValue().asString());
                 }
+            }
+            if(node.hasDefined(JvmAttributes.JVM_LAUNCH_COMMAND)) {
+                launchCommand = node.get(JvmAttributes.JVM_LAUNCH_COMMAND).asString();
             }
             if(node.hasDefined(JvmAttributes.JVM_HEAP)) {
                 heapSize = node.get(JvmAttributes.JVM_HEAP).asString();
@@ -242,6 +246,14 @@ public class JvmElement {
             throw MESSAGES.attemptingToSet("agent-lib", "agent-path");
         }
         this.agentLib = agentLib;
+    }
+
+    public String getLaunchCommand() {
+        return launchCommand;
+    }
+
+    void setLaunchCommand(String launchCommand) {
+        this.launchCommand = launchCommand;
     }
 
     public String getJavaagent() {

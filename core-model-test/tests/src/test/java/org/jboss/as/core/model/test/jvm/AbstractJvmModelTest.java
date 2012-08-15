@@ -401,6 +401,8 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
         Assert.assertEquals("value1", environment.get(0).asProperty().getValue().asString());
         Assert.assertEquals("name2", environment.get(1).asProperty().getName());
         Assert.assertEquals("value2", environment.get(1).asProperty().getValue().asString());
+
+        Assert.assertEquals("command-prefix", full.get("launch-command").asString());
     }
 
     protected void checkEmptyJvm(ModelNode empty) {

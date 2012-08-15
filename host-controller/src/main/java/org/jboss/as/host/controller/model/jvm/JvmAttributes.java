@@ -55,9 +55,11 @@ public class JvmAttributes {
     public static final String JVM_MAX_HEAP = "max-heap-size";
     public static final String JVM_JAVA_AGENT = "java-agent";
     public static final String JVM_JAVA_HOME = "java-home";
+    public static final String JVM_LAUNCH_COMMAND = "launch-command";
     public static final String JVM_OPTIONS = "jvm-options";
     public static final String JVM_OPTION = "jvm-option";
     public static final String JVM_PERMGEN = "permgen-size";
+    public static final String LAUNUCH_PREFIX = "prefix";
     public static final String JVM_MAX_PERMGEN = "max-permgen-size";
     public static final String JVM_STACK = "stack-size";
     public static final String JVM_TYPE = "type";
@@ -106,6 +108,12 @@ public class JvmAttributes {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
+    public static final SimpleAttributeDefinition LAUNCH_COMMAND =
+            SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_LAUNCH_COMMAND, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setXmlName(JvmAttributes.JVM_LAUNCH_COMMAND)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
+                    .build();
     /**
      * JVM options are resolved in ManagedServerBootCmdFactory before the JVM is launched.
      */
@@ -181,13 +189,19 @@ public class JvmAttributes {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.JVM)
             .build();
 
+    public static final SimpleAttributeDefinition PREFIX =
+            SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_LAUNCH_COMMAND, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setXmlName(JvmAttributes.LAUNUCH_PREFIX)
+                    .build();
+
     private static final AttributeDefinition[] GLOBAL_ATTRIBUTES = new AttributeDefinition[] {
         AGENT_LIB, AGENT_PATH, ENV_CLASSPATH_IGNORED, ENVIRONMENT_VARIABLES, JAVA_AGENT, JAVA_HOME,
-        OPTIONS, STACK_SIZE, TYPE, HEAP_SIZE, MAX_HEAP_SIZE, PERMGEN_SIZE, MAX_PERMGEN_SIZE};
+        LAUNCH_COMMAND, OPTIONS, STACK_SIZE, TYPE, HEAP_SIZE, MAX_HEAP_SIZE, PERMGEN_SIZE, MAX_PERMGEN_SIZE};
 
     private static final AttributeDefinition[] SERVER_ATTRIBUTES = new AttributeDefinition[] {
         AGENT_LIB, AGENT_PATH, ENV_CLASSPATH_IGNORED, ENVIRONMENT_VARIABLES, JAVA_AGENT, JAVA_HOME,
-        OPTIONS, STACK_SIZE, TYPE, HEAP_SIZE, MAX_HEAP_SIZE, PERMGEN_SIZE, MAX_PERMGEN_SIZE,
+        LAUNCH_COMMAND, OPTIONS, STACK_SIZE, TYPE, HEAP_SIZE, MAX_HEAP_SIZE, PERMGEN_SIZE, MAX_PERMGEN_SIZE,
         DEBUG_ENABLED, DEBUG_OPTIONS};
 
     static AttributeDefinition[] getAttributes(boolean server) {
