@@ -60,9 +60,19 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     public DeploymentOverlayHandler(CommandContext ctx) {
         super("deployment-overlay", true);
 
-        l = new ArgumentWithoutValue(this, "-l");
+        l = new ArgumentWithoutValue(this, "-l") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                if(actionStr == null || "list-content".equals(actionStr) || "list-deployments".equals(actionStr)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
 
-        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{"add", "link", "list-content", "list-deployments", "remove", "upload"}), 0, "--action");
+        action = new ArgumentWithValue(this, new SimpleTabCompleter(
+                new String[]{"add", "link", "list-content", "list-deployments", "remove", "upload"}), 0, "--action");
 
         name = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -144,7 +154,19 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 } else {
                     return -1;
                 }
-            }}, "--content");
+            }}, "--content") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                if(actionStr == null) {
+                    return false;
+                }
+                if("add".equals(actionStr) || "upload".equals(actionStr) || "remove".equals(actionStr)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
         content.addRequiredPreceding(name);
         content.addCantAppearAfter(l);
 
@@ -195,7 +217,20 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                     }
                 }
                 return buffer.length() - chunk.length();
-            }}, "--deployment");
+            }
+        }, "--deployment") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                if(actionStr == null) {
+                    return false;
+                }
+                if("add".equals(actionStr) || "link".equals(actionStr) || "remove".equals(actionStr)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
         deployment.addRequiredPreceding(name);
         deployment.addCantAppearAfter(l);
     }
@@ -249,6 +284,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             listContent(ctx);
         } else if("list-deployments".equals(action)) {
             listDeployments(ctx);
+        } else if("link".equals(action)) {
+            link(ctx);
         } else {
             throw new CommandFormatException("Unrecognized action: '" + action + "'");
         }
@@ -259,6 +296,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ModelControllerClient client = ctx.getModelControllerClient();
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args, true);
+        if(name == null) {
+            throw new CommandFormatException(this.name + " is missing value.");
+        }
         final List<String> content = loadLinks(client, name);
         if(l.isPresent(args)) {
             for(String contentPath : content) {
@@ -274,6 +314,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ModelControllerClient client = ctx.getModelControllerClient();
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args, true);
+        if(name == null) {
+            throw new CommandFormatException(this.name.getFullName() + " is missing value.");
+        }
         final List<String> content = loadContentFor(client, name);
         if(l.isPresent(args)) {
             for(String contentPath : content) {
@@ -290,6 +333,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args, true);
+        if(name == null) {
+            throw new CommandFormatException(this.name + " is missing value.");
+        }
         final String contentStr = content.getValue(args);
         final String deploymentStr = deployment.getValue(args);
 
@@ -440,7 +486,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             contentPaths[i] = f;
         }
 
-        final String deploymentsStr = deployment.getValue(args, true);
+        final String deploymentsStr = deployment.getValue(args);
         final String[] deployments;
         if(deploymentsStr == null) {
             deployments = null;
@@ -540,6 +586,43 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             } catch (IOException e) {
                 throw new CommandFormatException("Failed to add overlay", e);
             }
+        }
+    }
+
+    protected void link(CommandContext ctx) throws CommandLineException {
+
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
+        final String name = this.name.getValue(args, true);
+        final String deploymentsStr = deployment.getValue(args, true);
+        final String[] deployments = deploymentsStr.split(",+");
+
+        if(deployments.length == 0) {
+            throw new CommandFormatException("Missing value for " + deployment.getFullName() + ": '" + deploymentsStr + "'");
+        }
+
+        final ModelNode composite = new ModelNode();
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        final ModelNode steps = composite.get(Util.STEPS);
+
+        // link the deployments
+        for(String deployment : deployments) {
+            final ModelNode op = new ModelNode();
+            final ModelNode address = op.get(Util.ADDRESS);
+            address.add(Util.DEPLOYMENT_OVERLAY_LINK, name + "-" + deployment);
+            op.get(Util.OPERATION).set(Util.ADD);
+            op.get(Util.DEPLOYMENT).set(deployment);
+            op.get(Util.DEPLOYMENT_OVERLAY).set(name);
+            steps.add(op);
+        }
+
+        try {
+            final ModelNode result = ctx.getModelControllerClient().execute(composite);
+            if (!Util.isSuccess(result)) {
+                throw new CommandFormatException(Util.getFailureDescription(result));
+            }
+        } catch (IOException e) {
+            throw new CommandFormatException("Failed to link overlay", e);
         }
     }
 
