@@ -27,7 +27,26 @@
   attributeFormDefault="unqualified" 
   version="1.0">
 
-  <!-- jboss-jpa.xml deployment descriptor -->  
+  <!-- jboss-jpa may be in a jboss-all.xml deployment descriptor to choose between 
+       deep/shallow extended persistence inheritance.
+  -->  
+  
+  <!-- example of using shallow inheritance 
+      <jboss>
+       <jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee">
+       <extended-persistence inheritance="SHALLOW"/>
+       </jboss-jpa>
+      </jboss>
+  -->
+  
+  <!-- example of using deep inheritance 
+      <jboss>
+       <jboss-jpa xmlns="http://www.jboss.com/xml/ns/javaee">
+       <extended-persistence inheritance="DEEP"/>
+       </jboss-jpa>
+      </jboss>
+  -->
+  
   <!-- Root element -->  
   
   <xs:element name="jboss-jpa" type="jboss-jpa-type"/>
