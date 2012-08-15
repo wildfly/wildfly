@@ -26,9 +26,9 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.logging.Logger;
 
 import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
 
@@ -46,7 +46,6 @@ import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulBMTInterceptor extends BMTInterceptor {
-    private static final Logger log = Logger.getLogger(StatefulBMTInterceptor.class);
 
     /**
      * The transaction associated with the current instance.
@@ -63,7 +62,7 @@ public class StatefulBMTInterceptor extends BMTInterceptor {
         try {
             status = tm.getStatus();
         } catch (SystemException ex) {
-            log.error("Failed to get status", ex);
+            EjbLogger.ROOT_LOGGER.failedToGetStatus(ex);
         }
 
         switch (status) {
@@ -74,11 +73,9 @@ public class StatefulBMTInterceptor extends BMTInterceptor {
                 try {
                     tm.rollback();
                 } catch (Exception ex) {
-                    log.error("Failed to rollback", ex);
+                    EjbLogger.ROOT_LOGGER.failedToRollback(ex);
                 }
-                String msg = "BMT stateful bean '" + getComponent().getComponentName()
-                        + "' did not complete user transaction properly status=" + statusAsString(status);
-                log.error(msg);
+                EjbLogger.ROOT_LOGGER.transactionNotComplete(getComponent().getComponentName(), statusAsString(status));
         }
     }
 
