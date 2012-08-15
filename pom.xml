@@ -451,6 +451,7 @@
                                             <exclude>org.slf4j:slf4j-log4j12</exclude>
                                             <exclude>org.slf4j:slf4j-log4j13</exclude>
                                             <exclude>oro:oro</exclude>
+                                            <exclude>relaxngDatatype:relaxngDatatype</exclude>
                                             <exclude>stax:stax-api</exclude>
                                             <exclude>sun-jaxb:jaxb-api</exclude>
                                             <exclude>trove:trove</exclude>
@@ -1262,6 +1263,10 @@
                 <version>${version.com.sun.istack}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>com.sun</groupId>
+                        <artifactId>tools</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.ant</groupId>
                         <artifactId>ant</artifactId>
                     </exclusion>
@@ -1321,6 +1326,10 @@
                         <groupId>javax.xml.stream</groupId>
                         <artifactId>stax-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -1328,6 +1337,12 @@
                 <groupId>com.sun.xsom</groupId>
                 <artifactId>xsom</artifactId>
                 <version>${version.com.sun.xsom}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5845,6 +5860,10 @@
                     <exclusion>
                         <groupId>javax.xml.stream</groupId>
                         <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>relaxngDatatype</groupId>
+                        <artifactId>relaxngDatatype</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
