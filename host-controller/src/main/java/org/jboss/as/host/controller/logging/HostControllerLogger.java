@@ -1189,4 +1189,14 @@ public interface HostControllerLogger extends BasicLogger {
             "start without a domain controller connection and then use the management tools to configure one.")
     void noDomainControllerConfigurationProvidedForAdminOnly(String policyAttribute, AdminOnlyDomainConfigPolicy policy,
                                                              String cachedDcCmdLineArg, RunningMode desiredRunningMode);
+
+    /**
+     * Logs an informational stating the server launch command prefix.
+     *
+     * @param serverName the name of the server that will be started with launch command prefix.
+     * @param launchCommandPrefix the prefixed launch command.
+     */
+    @LogMessage(level = Level.INFO)
+    @Message(id = 152, value = "Server %s will be started with JVM launch command prefix '%s'")
+    void serverLaunchCommandPrefix(String serverName, String launchCommandPrefix);
 }
