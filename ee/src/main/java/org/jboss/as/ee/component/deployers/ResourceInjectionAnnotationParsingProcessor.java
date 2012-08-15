@@ -120,8 +120,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         resourceRefEntries.add("java.net.URL");
 
         RESOURCE_REF_ENTRIES = Collections.unmodifiableSet(resourceRefEntries);
-
-
     }
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -130,6 +128,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        if (module == null) {
+            return;
+        }
         final List<AnnotationInstance> resourceAnnotations = index.getAnnotations(RESOURCE_ANNOTATION_NAME);
         for (AnnotationInstance annotation : resourceAnnotations) {
             final AnnotationTarget annotationTarget = annotation.target();

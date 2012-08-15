@@ -114,6 +114,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final String componentName = configuration.getComponentName();
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
+        final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
+        if (module == null || moduleConfiguration == null) {
+            return;
+        }
 
         //create additional injectors
 
@@ -126,13 +130,13 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         final ComponentStartService startService = new ComponentStartService();
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
-        final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
 
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES, startServiceName);
 
-        if (moduleConfiguration == null) {
+        if (module == null || moduleConfiguration == null) {
             return;
         }
+
         // Add all service dependencies
         for (DependencyConfigurator configurator : configuration.getCreateDependencies()) {
             configurator.configureDependency(createBuilder, createService);

@@ -263,9 +263,10 @@ public class JBossContextConfig extends ContextConfig {
         }
 
         // Distributable
-        if (metaData.getDistributable() != null) {
+        // [TODO] Distributable for unresolved WABs
+        Module module = this.deploymentUnitContext.getAttachment(Attachments.MODULE);
+        if (module != null && metaData.getDistributable() != null) {
             try {
-                Module module = this.deploymentUnitContext.getAttachment(Attachments.MODULE);
                 ClassResolver resolver = ModularClassResolver.getInstance(module.getModuleLoader());
                 context.setManager(new DistributableSessionManager<OutgoingDistributableSessionData>(this.factory.getValue(), metaData, new ClassLoaderAwareClassResolver(resolver, module.getClassLoader())));
                 context.setDistributable(true);
