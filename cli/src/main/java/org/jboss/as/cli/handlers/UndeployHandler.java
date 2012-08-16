@@ -33,14 +33,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -49,15 +47,13 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
-import org.jboss.vfs.TempFileProvider;
-import org.jboss.vfs.VFS;
 import org.jboss.vfs.spi.MountHandle;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class UndeployHandler extends BatchModeCommandHandler {
+public class UndeployHandler extends DeploymentHandler {
 
     private final ArgumentWithoutValue l;
     private final ArgumentWithoutValue path;
@@ -66,8 +62,6 @@ public class UndeployHandler extends BatchModeCommandHandler {
     private final ArgumentWithoutValue allRelevantServerGroups;
     private final ArgumentWithoutValue keepContent;
     private final ArgumentWithValue script;
-
-    private static final String CLI_ARCHIVE_SUFFIX = ".cli";
 
     public UndeployHandler(CommandContext ctx) {
         super(ctx, "undeploy", true);
@@ -228,7 +222,7 @@ public class UndeployHandler extends BatchModeCommandHandler {
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final boolean l = this.l.isPresent(args);
         if(!args.hasProperties() || l) {
-            printList(ctx, Util.getDeployments(client), l);
+            this.listDeployments(ctx, l);
             return;
         }
 
@@ -427,37 +421,5 @@ public class UndeployHandler extends BatchModeCommandHandler {
             steps.add(builder.buildRequest());
         }
         return composite;
-    }
-
-    private MountHandle extractArchive(File archive) throws IOException {
-        return ((MountHandle)VFS.mountZipExpanded(archive, VFS.getChild("cli"),
-                TempFileProvider.create("cli", Executors.newSingleThreadScheduledExecutor())));
-    }
-
-    private String activateNewBatch(CommandContext ctx) {
-        String currentBatch = null;
-        BatchManager batchManager = ctx.getBatchManager();
-        if (batchManager.isBatchActive()) {
-            currentBatch = "batch" + System.currentTimeMillis();
-            batchManager.holdbackActiveBatch(currentBatch);
-        }
-        batchManager.activateNewBatch();
-        return currentBatch;
-    }
-
-    private void discardBatch(CommandContext ctx, String holdbackBatch) {
-        BatchManager batchManager = ctx.getBatchManager();
-        batchManager.discardActiveBatch();
-        if (holdbackBatch != null) {
-            batchManager.activateHeldbackBatch(holdbackBatch);
-        }
-    }
-
-    private boolean isCliArchive(File f) {
-        if (f == null || f.isDirectory() || !f.getName().endsWith(CLI_ARCHIVE_SUFFIX)) {
-            return false;
-        } else {
-            return true;
-        }
     }
 }
