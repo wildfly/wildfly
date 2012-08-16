@@ -493,7 +493,16 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
 
     @Override
     public void access() {
-        this.acquireSessionOwnership();
+        try {
+            this.acquireSessionOwnership();
+        } catch (TimeoutException e) {
+            // May be contending with the session expiration thread of another node, so retry once.
+            try {
+                this.acquireSessionOwnership();
+            } catch (TimeoutException te) {
+                throw MESSAGES.failAcquiringOwnership(realId, te);
+            }
+        }
 
         this.lastAccessedTime = this.thisAccessedTime;
         this.thisAccessedTime = System.currentTimeMillis();
@@ -509,7 +518,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         }
     }
 
-    private void acquireSessionOwnership() {
+    private void acquireSessionOwnership() throws TimeoutException {
         SessionOwnershipSupport support = this.distributedCacheManager.getSessionOwnershipSupport();
 
         if (support != null) {
@@ -524,8 +533,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                             update(data);
                         }
                     }
-                } catch (TimeoutException e) {
-                    throw MESSAGES.failAcquiringOwnership(realId, e);
                 } finally {
                     this.ownershipLock.unlock();
                 }
@@ -1256,7 +1263,12 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             RuntimeException listenerException = null;
 
             if (localCall) {
-                this.acquireSessionOwnership();
+                try {
+                    this.acquireSessionOwnership();
+                } catch (TimeoutException e) {
+                    this.expiring = false;
+                    throw MESSAGES.failAcquiringOwnership(realId, e);
+                }
             }
 
             try {
