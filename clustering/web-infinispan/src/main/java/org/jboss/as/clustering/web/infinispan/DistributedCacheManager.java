@@ -42,6 +42,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.registry.Registry;
@@ -492,7 +493,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     }
 
     private <R> R invoke(CacheInvoker.Operation<String, Map<Object, Object>, R> operation) {
-        return this.invoker.invoke(this.cache, operation);
+        return this.invoker.invoke(this.cache, new BatchOperation<String, Map<Object, Object>, R>(operation));
     }
 
     // Simplified CacheInvoker.Operation using assigned key/value types
