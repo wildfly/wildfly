@@ -388,13 +388,14 @@ public class DistributedCacheManagerTest {
         String sessionId = "abc";
 
         @SuppressWarnings("rawtypes")
-        ArgumentCaptor<DistributedCacheManager.Operation> capturedOperation = ArgumentCaptor.forClass(DistributedCacheManager.Operation.class);
+        ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
         when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
+        when(this.cache.startBatch()).thenReturn(false);
 
         this.manager.evictSession(sessionId);
 
-        DistributedCacheManager<OutgoingDistributableSessionData>.Operation<Void> operation = capturedOperation.getValue();
+        CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
 
         Void result = operation.invoke(this.cache);
 
@@ -409,13 +410,14 @@ public class DistributedCacheManagerTest {
         String sessionId = "abc";
 
         @SuppressWarnings("rawtypes")
-        ArgumentCaptor<DistributedCacheManager.Operation> capturedOperation = ArgumentCaptor.forClass(DistributedCacheManager.Operation.class);
+        ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
         when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
+        when(this.cache.startBatch()).thenReturn(false);
 
         this.manager.evictSession(sessionId, null);
 
-        DistributedCacheManager<OutgoingDistributableSessionData>.Operation<Void> operation = capturedOperation.getValue();
+        CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
 
         Void result = operation.invoke(this.cache);
 
