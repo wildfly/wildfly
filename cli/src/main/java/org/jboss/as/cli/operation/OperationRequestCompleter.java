@@ -348,6 +348,7 @@ public class OperationRequestCompleter implements CommandLineCompleter {
                 if(chunk != null && chunk.equals(candidates.get(0))) {
                     candidates.set(0, parsedCmd.getFormat().getAddressOperationSeparator());
                     candidates.add(parsedCmd.getFormat().getNodeSeparator());
+                    return buffer.length();
                 } else {
                     candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
                 }
@@ -357,7 +358,6 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         } else {
             Util.sortAndEscape(candidates, ESCAPE_SELECTOR);
         }
-
         return parsedCmd.endsOnSeparator() ? parsedCmd.getLastSeparatorIndex() + 1 : parsedCmd.getLastChunkIndex();
     }
 
