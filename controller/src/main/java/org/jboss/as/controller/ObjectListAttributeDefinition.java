@@ -22,21 +22,20 @@
 
   package org.jboss.as.controller;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+  import java.util.List;
+  import java.util.Locale;
+  import java.util.ResourceBundle;
+  import javax.xml.stream.XMLStreamException;
+  import javax.xml.stream.XMLStreamWriter;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
-import org.jboss.as.controller.operations.validation.MinMaxValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.dmr.ModelNode;
+  import org.jboss.as.controller.client.helpers.MeasurementUnit;
+  import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+  import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+  import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
+  import org.jboss.as.controller.operations.validation.MinMaxValidator;
+  import org.jboss.as.controller.operations.validation.ParameterValidator;
+  import org.jboss.as.controller.registry.AttributeAccess;
+  import org.jboss.dmr.ModelNode;
 
   /**
    * AttributeDefinition suitable for managing LISTs of OBJECTs, which takes into account
@@ -57,48 +56,36 @@ import org.jboss.dmr.ModelNode;
 
       @Override
       public ModelNode addResourceAttributeDescription(ResourceBundle bundle, String prefix, ModelNode resourceDescription) {
-          final ModelNode result = super.addResourceAttributeDescription(bundle, prefix, resourceDescription);
-          addValueTypeDescription(result, prefix, bundle);
+          final ModelNode attr = getNoTextDescription(false);
+          attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
+          final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+          addValueTypeDescription(result, prefix, bundle, false);
           return result;
       }
 
       @Override
       public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
-          final ModelNode result = super.addOperationParameterDescription(bundle, prefix, operationDescription);
-          addValueTypeDescription(result, prefix, bundle);
+          final ModelNode param = getNoTextDescription(true);
+          param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
+          final ModelNode result = operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+          addValueTypeDescription(result, prefix, bundle, true);
           return result;
       }
 
 
       @Override
       protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
-          node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(getValueTypeDescription(false));
-      }
-
-
-      protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle) {
-          final ModelNode valueTypeDesc = getValueTypeDescription(false);
-          valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(valueType.getAttributeTextDescription(bundle, prefix));
-          // node.get(VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-          ModelNode childType = node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
-          // recursively process any child OBJECT attributes
-          if (valueType instanceof ObjectTypeAttributeDefinition) {
-              ObjectTypeAttributeDefinition.class.cast(valueType).addValueTypeDescription(childType, prefix, bundle);
-          }
+          addValueTypeDescription(node, valueType.getName(), bundle, false);
       }
 
       @Override
       protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-          final ModelNode valueTypeDesc = getValueTypeDescription(false);
-          valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, valueType.getName()));
-          node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+          addValueTypeDescription(node, getName(), bundle, false);
       }
 
       @Override
       protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-          final ModelNode valueTypeDesc = getValueTypeDescription(true);
-          valueTypeDesc.get(ModelDescriptionConstants.DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, valueType.getName()));
-          node.get(ModelDescriptionConstants.VALUE_TYPE, valueType.getName()).set(valueTypeDesc);
+          addValueTypeDescription(node, getName(), bundle, true);
       }
 
       @Override
@@ -112,33 +99,32 @@ import org.jboss.dmr.ModelNode;
           }
       }
 
-      private ModelNode getValueTypeDescription(boolean forOperation) {
-          final ModelNode result = new ModelNode();
-          result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
-          result.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
-          result.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(valueType.isAllowExpression());
+      protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle, boolean forOperation) {
+          node.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
+          node.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
+          node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(valueType.isAllowExpression());
           if (forOperation) {
-              result.get(ModelDescriptionConstants.REQUIRED).set(!valueType.isAllowNull());
+              node.get(ModelDescriptionConstants.REQUIRED).set(!valueType.isAllowNull());
           }
-          result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
+          node.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
           final ModelNode defaultValue = valueType.getDefaultValue();
           if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
-              result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
+              node.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
           }
           MeasurementUnit measurementUnit = valueType.getMeasurementUnit();
           if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {
-              result.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
+              node.get(ModelDescriptionConstants.UNIT).set(measurementUnit.getName());
           }
           final String[] alternatives = valueType.getAlternatives();
           if (alternatives != null) {
               for (final String alternative : alternatives) {
-                  result.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
+                  node.get(ModelDescriptionConstants.ALTERNATIVES).add(alternative);
               }
           }
           final String[] requires = valueType.getRequires();
           if (requires != null) {
               for (final String required : requires) {
-                  result.get(ModelDescriptionConstants.REQUIRES).add(required);
+                  node.get(ModelDescriptionConstants.REQUIRES).add(required);
               }
           }
           final ParameterValidator validator = valueType.getValidator();
@@ -150,10 +136,10 @@ import org.jboss.dmr.ModelNode;
                       case STRING:
                       case LIST:
                       case OBJECT:
-                          result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
+                          node.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
                           break;
                       default:
-                          result.get(ModelDescriptionConstants.MIN).set(min);
+                          node.get(ModelDescriptionConstants.MIN).set(min);
                   }
               }
               Long max = minMax.getMax();
@@ -162,10 +148,10 @@ import org.jboss.dmr.ModelNode;
                       case STRING:
                       case LIST:
                       case OBJECT:
-                          result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
+                          node.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
                           break;
                       default:
-                          result.get(ModelDescriptionConstants.MAX).set(max);
+                          node.get(ModelDescriptionConstants.MAX).set(max);
                   }
               }
           }
@@ -174,12 +160,15 @@ import org.jboss.dmr.ModelNode;
               List<ModelNode> allowed = avv.getAllowedValues();
               if (allowed != null) {
                   for (ModelNode ok : allowed) {
-                      result.get(ModelDescriptionConstants.ALLOWED).add(ok);
+                      node.get(ModelDescriptionConstants.ALLOWED).add(ok);
                   }
               }
           }
-          return result;
+
+
+          valueType.addValueTypeDescription(node, prefix, bundle);
       }
+
 
       public static class Builder {
           private final String name;
