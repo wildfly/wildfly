@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -649,11 +650,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseSocketBindingGroupRef(final XMLExtendedStreamReader reader, final ModelNode address,
-                                              final List<ModelNode> updates) throws XMLStreamException {
+    protected void parseSocketBindingGroupRef(final XMLExtendedStreamReader reader, final ModelNode addOperation,
+                                              final SimpleAttributeDefinition socketBindingGroup,
+                                              final SimpleAttributeDefinition portOffset) throws XMLStreamException {
         // Handle attributes
-        String name = null;
-        int offset = -1;
+        boolean gotRef = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -663,22 +664,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case REF: {
-                        if (name != null)
-                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                        name = value;
+                        socketBindingGroup.parseAndSetParameter(value, addOperation, reader);
+                        gotRef = true;
                         break;
                     }
                     case PORT_OFFSET: {
-                        try {
-                            if (offset != -1)
-                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                            offset = Integer.parseInt(value);
-                            if (offset < 0) {
-                                throw MESSAGES.invalidValueGreaterThan(attribute.getLocalName(), offset, 0, reader.getLocation());
-                            }
-                        } catch (final NumberFormatException e) {
-                            throw MESSAGES.invalid(e, offset, attribute.getLocalName(), reader.getLocation());
-                        }
+                        portOffset.parseAndSetParameter(value, addOperation, reader);
                         break;
                     }
                     default:
@@ -686,24 +677,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
         }
-        if (name == null) {
+        if (!gotRef) {
             throw missingRequired(reader, Collections.singleton(Attribute.REF));
         }
 
         // Handle elements
         requireNoContent(reader);
-
-        ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_GROUP, name);
-
-        updates.add(update);
-
-        if (offset < 0) {
-            offset = 0;
-        }
-        if (offset > 0) {
-            update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset);
-        }
-        updates.add(update);
     }
 
     protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
