@@ -43,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
  */
-public class ServerRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ServerRemoveHandler extends AbstractRemoveStepHandler {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -81,10 +81,5 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler implements De
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return HostServerDescription.getServerRemoveOperation(locale);
     }
 }

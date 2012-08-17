@@ -127,6 +127,7 @@ import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -806,31 +807,32 @@ public class ParseAndMarshalModelsTestCase {
                 interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
                 InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
 
-                //server
-                ManagementResourceRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
-                servers.registerOperationHandler(ServerAddHandler.OPERATION_NAME, ServerAddHandler.INSTANCE, ServerAddHandler.INSTANCE, false);
-                servers.registerReadWriteAttribute(AUTO_START, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
-                servers.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-                servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), AttributeAccess.Storage.CONFIGURATION);
-                servers.registerReadWriteAttribute(PRIORITY, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), AttributeAccess.Storage.CONFIGURATION);
-                servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
-
-
-                //server paths
-                ManagementResourceRegistration serverPaths = servers.registerSubModel(PathResourceDefinition.createSpecifiedNoServices(MOCK_PATH_MANAGER));
-                //server interfaces
-                ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-                serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
-                InterfaceCriteriaWriteHandler.CONFIG_ONLY.register(serverInterfaces);
-
-                // Server system Properties
-                ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
-                serverSysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
-                serverSysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-                serverSysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
-
-                // Server jvm
-                final ManagementResourceRegistration serverVMs = servers.registerSubModel(JvmResourceDefinition.SERVER);
+                //server configurations
+                hostRegistration.registerSubModel(new ServerConfigResourceDefinition(null, MOCK_PATH_MANAGER));
+//                ManagementResourceRegistration servers = hostRegistration.registerSubModel(PathElement.pathElement(SERVER_CONFIG), HostDescriptionProviders.SERVER_PROVIDER);
+//                servers.registerOperationHandler(ServerAddHandler.OPERATION_NAME, ServerAddHandler.INSTANCE, ServerAddHandler.INSTANCE, false);
+//                servers.registerReadWriteAttribute(AUTO_START, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
+//                servers.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+//                servers.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), AttributeAccess.Storage.CONFIGURATION);
+//                servers.registerReadWriteAttribute(PRIORITY, null, new WriteAttributeHandlers.IntRangeValidatingHandler(0), AttributeAccess.Storage.CONFIGURATION);
+//                servers.registerReadWriteAttribute(CPU_AFFINITY, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
+//
+//
+//                //server paths
+//                ManagementResourceRegistration serverPaths = servers.registerSubModel(PathResourceDefinition.createSpecifiedNoServices(MOCK_PATH_MANAGER));
+//                //server interfaces
+//                ManagementResourceRegistration serverInterfaces = servers.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
+//                serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
+//                InterfaceCriteriaWriteHandler.CONFIG_ONLY.register(serverInterfaces);
+//
+//                // Server system Properties
+//                ManagementResourceRegistration serverSysProps = servers.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
+//                serverSysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
+//                serverSysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+//                serverSysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
+//
+//                // Server jvm
+//                final ManagementResourceRegistration serverVMs = servers.registerSubModel(JvmResourceDefinition.SERVER);
             }
         });
 

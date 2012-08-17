@@ -49,16 +49,6 @@ public final class HostDescriptionProviders {
         }
     };
 
-    /**
-     * Provider for server=>*
-     */
-    public static final DescriptionProvider SERVER_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return HostServerDescription.getDescription(locale);
-        }
-    };
-
     public static final DescriptionProvider SYSTEM_PROPERTIES_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {

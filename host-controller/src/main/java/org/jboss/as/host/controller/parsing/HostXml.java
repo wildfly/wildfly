@@ -44,6 +44,7 @@ import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -1089,15 +1090,15 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         // Handle elements
         switch (expectedNs) {
             case DOMAIN_1_0:
-                parseServerContent1_0(reader, address, expectedNs, list);
+                parseServerContent1_0(reader, addUpdate, address, expectedNs, list);
                 break;
             default:
-                parseServerContent1_1(reader, address, expectedNs, list);
+                parseServerContent1_1(reader, addUpdate, address, expectedNs, list);
         }
 
     }
 
-    private void parseServerContent1_0(final XMLExtendedStreamReader reader, final ModelNode serverAddress,
+    private void parseServerContent1_0(final XMLExtendedStreamReader reader, final ModelNode serverAddOperation, final ModelNode serverAddress,
                                        final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         boolean sawJvm = false;
         boolean sawSystemProperties = false;
@@ -1128,7 +1129,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     if (sawSocketBinding) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    parseSocketBindingGroupRef(reader, serverAddress, list);
+                    parseSocketBindingGroupRef(reader, serverAddOperation, ServerConfigResourceDefinition.SOCKET_BINDING_GROUP,
+                            ServerConfigResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
                     sawSocketBinding = true;
                     break;
                 }
@@ -1147,7 +1149,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
     }
 
-    private void parseServerContent1_1(final XMLExtendedStreamReader reader, final ModelNode serverAddress,
+    private void parseServerContent1_1(final XMLExtendedStreamReader reader, final ModelNode serverAddOperation,
+                                       final ModelNode serverAddress,
                                        final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         boolean sawJvm = false;
         boolean sawSystemProperties = false;
@@ -1178,7 +1181,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                     if (sawSocketBinding) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
-                    parseServerSocketBindings(reader, serverAddress, list);
+                    parseServerSocketBindings(reader, serverAddOperation, list);
                     sawSocketBinding = true;
                     break;
                 }
@@ -1199,10 +1202,11 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
     private ModelNode parseServerAttributes(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
             final Set<String> serverNames) throws XMLStreamException {
-        // Handle attributes
-        String name = null;
-        String group = null;
-        Boolean start = null;
+
+        final ModelNode addUpdate = new ModelNode();
+        addUpdate.get(OP).set(ADD);
+
+        final Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.GROUP);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -1210,20 +1214,22 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 throw unexpectedAttribute(reader, i);
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
                 switch (attribute) {
                     case NAME: {
                         if (!serverNames.add(value)) {
                             throw MESSAGES.duplicateDeclaration("server", value, reader.getLocation());
                         }
-                        name = value;
+                        final ModelNode address = parentAddress.clone().add(SERVER_CONFIG, value);
+                        addUpdate.get(OP_ADDR).set(address);
                         break;
                     }
                     case GROUP: {
-                        group = value;
+                        ServerConfigResourceDefinition.GROUP.parseAndSetParameter(value, addUpdate, reader);
                         break;
                     }
                     case AUTO_START: {
-                        start = Boolean.valueOf(value);
+                        ServerConfigResourceDefinition.AUTO_START.parseAndSetParameter(value, addUpdate, reader);
                         break;
                     }
                     default:
@@ -1231,23 +1237,15 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 }
             }
         }
-        if (name == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-        }
-        if (group == null) {
-            throw missingRequired(reader, Collections.singleton(Attribute.GROUP));
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
         }
 
-        final ModelNode address = parentAddress.clone().add(SERVER_CONFIG, name);
-        final ModelNode addUpdate = Util.getEmptyOperation(ADD, address);
-        addUpdate.get(GROUP).set(group);
-        if (start != null) {
-            addUpdate.get(AUTO_START).set(start.booleanValue());
-        }
         return addUpdate;
     }
 
-    private void parseServerSocketBindings(final XMLExtendedStreamReader reader, final ModelNode address,
+    private void parseServerSocketBindings(final XMLExtendedStreamReader reader, final ModelNode serverAddOperation,
             final List<ModelNode> updates) throws XMLStreamException {
         // Handle attributes
         String name = null;
@@ -1261,19 +1259,11 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case SOCKET_BINDING_GROUP: {
-                        if (name != null)
-                            throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                        name = value;
+                        ServerConfigResourceDefinition.SOCKET_BINDING_GROUP.parseAndSetParameter(value, serverAddOperation, reader);
                         break;
                     }
                     case PORT_OFFSET: {
-                        try {
-                            if (offset != null)
-                                throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
-                            offset = Integer.parseInt(value);
-                        } catch (final NumberFormatException e) {
-                            throw MESSAGES.invalid(e, offset, attribute.getLocalName(), reader.getLocation());
-                        }
+                        ServerConfigResourceDefinition.SOCKET_BINDING_PORT_OFFSET.parseAndSetParameter(value, serverAddOperation, reader);
                         break;
                     }
                     default:
@@ -1281,22 +1271,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 }
             }
         }
-        if (offset == null) {
-            offset = 0;
-        }
 
         // Handle elements
         requireNoContent(reader);
-
-        if (name != null) {
-            ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_GROUP, name);
-            updates.add(update);
-        }
-
-        if (offset != 0) {
-            ModelNode update = Util.getWriteAttributeOperation(address, SOCKET_BINDING_PORT_OFFSET, offset.intValue());
-            updates.add(update);
-        }
 
     }
 
@@ -1392,12 +1369,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             writer.writeStartElement(Element.SERVER.getLocalName());
 
             writeAttribute(writer, Attribute.NAME, prop.getName());
-            if (server.hasDefined(GROUP)) {
-                writeAttribute(writer, Attribute.GROUP, server.get(GROUP).asString());
-            }
-            if (server.hasDefined(AUTO_START)) {
-                writeAttribute(writer, Attribute.AUTO_START, server.get(AUTO_START).asString());
-            }
+            ServerConfigResourceDefinition.GROUP.marshallAsAttribute(server, writer);
+            ServerConfigResourceDefinition.AUTO_START.marshallAsAttribute(server, writer);
             if (server.hasDefined(PATH)) {
                 writePaths(writer, server.get(PATH));
             }
@@ -1415,12 +1388,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
             if (server.hasDefined(SOCKET_BINDING_GROUP) || server.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
                 writer.writeStartElement(Element.SOCKET_BINDINGS.getLocalName());
-                if (server.hasDefined(SOCKET_BINDING_GROUP)) {
-                    writeAttribute(writer, Attribute.SOCKET_BINDING_GROUP, server.get(SOCKET_BINDING_GROUP).asString());
-                }
-                if (server.hasDefined(SOCKET_BINDING_PORT_OFFSET)) {
-                    writeAttribute(writer, Attribute.PORT_OFFSET, server.get(SOCKET_BINDING_PORT_OFFSET).asString());
-                }
+                ServerConfigResourceDefinition.SOCKET_BINDING_GROUP.marshallAsAttribute(server, writer);
+                ServerConfigResourceDefinition.SOCKET_BINDING_PORT_OFFSET.marshallAsAttribute(server, writer);
                 writer.writeEndElement();
             }
 
