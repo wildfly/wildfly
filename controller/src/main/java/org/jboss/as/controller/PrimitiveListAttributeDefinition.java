@@ -22,6 +22,11 @@
 
 package org.jboss.as.controller;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -29,11 +34,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * Date: 13.10.2011
@@ -115,19 +115,12 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     }
 
 
-    public static class Builder {
-        private final String name;
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, PrimitiveListAttributeDefinition> {
         private final ModelType valueType;
-        private String xmlName;
-        private boolean allowNull;
-        private int minSize;
-        private int maxSize;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
+
 
         public Builder(final String name, final ModelType valueType) {
-            this.name = name;
+            super(name, ModelType.LIST);
             this.valueType = valueType;
         }
 
@@ -139,41 +132,6 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
             if (xmlName == null) { xmlName = name; }
             if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
             return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, valueType, minSize, maxSize, alternatives, requires, flags);
-        }
-
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
-        }
-
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
-        public Builder setMaxSize(final int maxSize) {
-            this.maxSize = maxSize;
-            return this;
-        }
-
-        public Builder setMinSize(final int minSize) {
-            this.minSize = minSize;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
-            return this;
         }
     }
 }

@@ -36,6 +36,7 @@
   import org.jboss.as.controller.operations.validation.ParameterValidator;
   import org.jboss.as.controller.registry.AttributeAccess;
   import org.jboss.dmr.ModelNode;
+  import org.jboss.dmr.ModelType;
 
   /**
    * AttributeDefinition suitable for managing LISTs of OBJECTs, which takes into account
@@ -45,6 +46,7 @@
    *
    * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
    * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+   * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
    */
   public class ObjectListAttributeDefinition extends ListAttributeDefinition {
       private final ObjectTypeAttributeDefinition valueType;
@@ -169,19 +171,11 @@
       }
 
 
-      public static class Builder {
-          private final String name;
+      public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,ObjectListAttributeDefinition>{
           private final ObjectTypeAttributeDefinition valueType;
-          private String xmlName;
-          private boolean allowNull;
-          private int minSize;
-          private int maxSize;
-          private String[] alternatives;
-          private String[] requires;
-          private AttributeAccess.Flag[] flags;
 
           public Builder(final String name, final ObjectTypeAttributeDefinition valueType) {
-              this.name = name;
+              super(name, ModelType.LIST);
               this.valueType = valueType;
           }
 
@@ -193,41 +187,6 @@
               if (xmlName == null) xmlName = name;
               if (maxSize < 1) maxSize = Integer.MAX_VALUE;
               return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
-          }
-
-          public Builder setAllowNull(final boolean allowNull) {
-              this.allowNull = allowNull;
-              return this;
-          }
-
-          public Builder setAlternates(final String... alternates) {
-              this.alternatives = alternates;
-              return this;
-          }
-
-          public Builder setFlags(final AttributeAccess.Flag... flags) {
-              this.flags = flags;
-              return this;
-          }
-
-          public Builder setMaxSize(final int maxSize) {
-              this.maxSize = maxSize;
-              return this;
-          }
-
-          public Builder setMinSize(final int minSize) {
-              this.minSize = minSize;
-              return this;
-          }
-
-          public Builder setRequires(final String... requires) {
-              this.requires = requires;
-              return this;
-          }
-
-          public Builder setXmlName(final String xmlName) {
-              this.xmlName = xmlName;
-              return this;
           }
       }
   }
