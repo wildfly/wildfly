@@ -22,6 +22,15 @@
 
 package org.jboss.as.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -32,15 +41,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * Date: 15.11.2011
@@ -227,22 +227,14 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         return result;
     }
 
-    public static class Builder {
-        private final String name;
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, ObjectTypeAttributeDefinition> {
         private String suffix;
         private final AttributeDefinition[] valueTypes;
-        private ParameterValidator validator;
-        private ParameterCorrector corrector;
-        private String xmlName;
-        private boolean allowNull;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
 
         public Builder(final String name, final AttributeDefinition... valueTypes) {
-            this.name = name;
+            super(name, ModelType.OBJECT, true);
             this.valueTypes = valueTypes;
-            this.allowNull = true;
+
         }
 
         public static Builder of(final String name, final AttributeDefinition... valueTypes) {
@@ -250,7 +242,6 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         }
 
         public static Builder of(final String name, final AttributeDefinition[] valueTypes, final AttributeDefinition[] moreValueTypes) {
-
             ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(valueTypes));
             list.addAll(Arrays.asList(moreValueTypes));
             AttributeDefinition[] allValueTypes = new AttributeDefinition[list.size()];
@@ -264,42 +255,8 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, flags);
         }
 
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
-        }
-
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setCorrector(final ParameterCorrector corrector) {
-            this.corrector = corrector;
-            return this;
-        }
-
-        public void setValidator(ParameterValidator validator) {
-            this.validator = validator;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
         public Builder setSuffix(final String suffix) {
             this.suffix = suffix;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
             return this;
         }
     }

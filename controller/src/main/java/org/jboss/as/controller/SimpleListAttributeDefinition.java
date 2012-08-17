@@ -25,7 +25,6 @@ package org.jboss.as.controller;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -37,12 +36,14 @@ import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Date: 13.10.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
@@ -173,19 +174,11 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         return result;
     }
 
-    public static class Builder {
-        private final String name;
+    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,SimpleListAttributeDefinition>{
         private final AttributeDefinition valueType;
-        private String xmlName;
-        private boolean allowNull;
-        private int minSize;
-        private int maxSize;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
 
         public Builder(final String name, final AttributeDefinition valueType) {
-            this.name = name;
+            super(name, ModelType.LIST);
             this.valueType = valueType;
         }
 
@@ -205,41 +198,6 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
             if (xmlName == null) xmlName = name;
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
-        }
-
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
-        }
-
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
-        public Builder setMaxSize(final int maxSize) {
-            this.maxSize = maxSize;
-            return this;
-        }
-
-        public Builder setMinSize(final int minSize) {
-            this.minSize = minSize;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
-            return this;
         }
     }
 }
