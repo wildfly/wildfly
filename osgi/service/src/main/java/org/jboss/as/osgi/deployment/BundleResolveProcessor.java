@@ -75,6 +75,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
         XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
         try {
+            LOGGER.debugf("Resolve: %s", depUnit.getName());
             resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
 
