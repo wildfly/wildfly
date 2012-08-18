@@ -25,10 +25,13 @@ import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
@@ -45,7 +48,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.IntegrationService.BootstrapPhase;
 import org.jboss.osgi.framework.util.ServiceTracker;
 
@@ -57,12 +59,13 @@ import org.jboss.osgi.framework.util.ServiceTracker;
  */
 public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
-    static final ServiceName INITIAL_DEPLOYMENTS = SERVICE_BASE_NAME.append("initial", "deployments");
-    static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = IntegrationService.BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, IntegrationService.BootstrapPhase.COMPLETE);
+    private static final ServiceName INITIAL_DEPLOYMENTS = SERVICE_BASE_NAME.append("initial", "deployments");
 
-    private final AtomicBoolean deploymentInstallComplete = new AtomicBoolean(false);
-    private final Set<ServiceName> deploymentPhaseServices = new HashSet<ServiceName>();
-    private final Set<ServiceName> installedServices = new HashSet<ServiceName>();
+    public static final ServiceName REGISTER_PHASE_SERVICES_COMPLETE = INITIAL_DEPLOYMENTS.append("REGISTERED");
+    public static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
+
+    private final Map<String, Set<ServiceName>> deploymentPhaseServices = new HashMap<String, Set<ServiceName>>();
+    private final Map<String, AtomicInteger> deploymentPhaseCounts = new HashMap<String, AtomicInteger>();
     private final ServiceTarget serviceTarget;
     private final Set<String> deploymentNames;
 
@@ -73,14 +76,19 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         serviceTarget = context.getServiceTarget();
         deploymentNames = getDeploymentNames(context);
 
-        // Get the INSTALL phase service names
-        for (String deploymentName : deploymentNames) {
-            ServiceName serviceName = Services.deploymentUnitName(deploymentName);
-            deploymentPhaseServices.add(serviceName.append(Phase.INSTALL.toString()));
+        // Get the expected phase service names
+        for (Phase phase : Arrays.asList(Phase.REGISTER, Phase.INSTALL)) {
+            HashSet<ServiceName> serviceNames = new HashSet<ServiceName>();
+            deploymentPhaseServices.put(phase.toString(), serviceNames);
+            deploymentPhaseCounts.put(phase.toString(), new AtomicInteger(deploymentNames.size()));
+            for (String deploymentName : deploymentNames) {
+                ServiceName serviceName = Services.deploymentUnitName(deploymentName);
+                serviceNames.add(serviceName.append(phase.toString()));
+            }
         }
 
         // Register this tracker with the server controller
-        if (!deploymentNames.isEmpty()) {
+        if (deploymentNames.isEmpty() == false) {
             ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
             listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
             listenerTarget.addListener(Inheritance.ALL, this);
@@ -98,12 +106,33 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     protected boolean trackService(ServiceController<? extends Object> controller) {
         // [TODO] currently we track all persistet deployments.
         // If one fails it would mean that the OSGi framwork does not bootstrap
-        return deploymentPhaseServices.contains(controller.getName());
+        ServiceName serviceName = controller.getName();
+        String phaseName = serviceName.getSimpleName();
+        Set<ServiceName> serviceNames = deploymentPhaseServices.get(phaseName);
+        boolean trackService = serviceNames != null && serviceNames.contains(serviceName);
+        if (trackService) {
+            LOGGER.debugf("Track service: %s", serviceName);
+        }
+        return trackService;
     }
 
     @Override
     protected boolean allServicesAdded(Set<ServiceName> trackedServices) {
-        return deploymentPhaseServices.size() == trackedServices.size();
+        return deploymentPhaseServices.size() * deploymentNames.size() == trackedServices.size();
+    }
+
+    @Override
+    protected void serviceStarted(ServiceController<? extends Object> controller) {
+        ServiceName serviceName = controller.getName();
+        String phaseName = serviceName.getSimpleName();
+        AtomicInteger phaseCount = deploymentPhaseCounts.get(phaseName);
+        if (phaseCount != null) {
+            int remainingCount = phaseCount.decrementAndGet();
+            LOGGER.debugf("ServiceStarted: %s [%d]", serviceName, remainingCount);
+            if (Phase.REGISTER.toString().equals(phaseName) && remainingCount == 0) {
+                addPhaseCompleteService(serviceTarget, REGISTER_PHASE_SERVICES_COMPLETE);
+            }
+        }
     }
 
     @Override
@@ -112,23 +141,16 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         if (listenerTarget != null) {
             listenerTarget.removeListener(this);
         }
-        deploymentInstallComplete.set(true);
-        initialDeploymentsComplete(serviceTarget);
+        addPhaseCompleteService(serviceTarget, INITIAL_DEPLOYMENTS_COMPLETE);
     }
 
     public boolean isComplete() {
-        return deploymentInstallComplete.get();
+        AtomicInteger installCount = deploymentPhaseCounts.get(Phase.INSTALL.toString());
+        return installCount.get() == 0;
     }
 
     public boolean hasDeploymentName(String depname) {
         return deploymentNames.contains(depname);
-    }
-
-    public void registerBundleInstallService(ServiceName serviceName) {
-        synchronized (installedServices) {
-            LOGGER.tracef("Register bundle install service: %s", serviceName);
-            installedServices.add(serviceName);
-        }
     }
 
     private Set<String> getDeploymentNames(OperationContext context) {
@@ -149,7 +171,9 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         return result;
     }
 
-    private ServiceController<Void> initialDeploymentsComplete(ServiceTarget serviceTarget) {
-        return serviceTarget.addService(INITIAL_DEPLOYMENTS_COMPLETE, new ValueService<Void>(new ImmediateValue<Void>(null))).install();
+    private ServiceController<Object> addPhaseCompleteService(ServiceTarget serviceTarget, ServiceName serviceName) {
+        LOGGER.debugf("addPhaseCompleteService: %s", serviceName);
+        return serviceTarget.addService(serviceName, new ValueService<Object>(new ImmediateValue<Object>(new Object()))).install();
     }
+
 }
