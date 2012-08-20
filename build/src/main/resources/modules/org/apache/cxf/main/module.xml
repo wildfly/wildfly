@@ -23,12 +23,13 @@
   -->
 
 <module xmlns="urn:jboss:module:1.1" name="org.apache.cxf">
+
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="org.apache.cxf.impl" services="import">
+        <module name="org.apache.cxf.impl" services="import" export="true">
             <imports>
                 <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
                 <include path="META-INF/"/>
