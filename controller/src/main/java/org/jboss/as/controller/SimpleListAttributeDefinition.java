@@ -199,5 +199,14 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
         }
+
+        /*
+        --------------------------
+        added for binary compatibility for running compatibilty tests
+         */
+        @Override
+        public Builder setAllowNull(boolean allowNull) {
+            return super.setAllowNull(allowNull);
+        }
     }
 }

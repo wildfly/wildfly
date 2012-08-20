@@ -188,5 +188,14 @@
               if (maxSize < 1) maxSize = Integer.MAX_VALUE;
               return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
           }
+
+              /*
+        --------------------------
+        added for binary compatibility for running compatibility tests
+         */
+          @Override
+          public Builder setAllowNull(boolean allowNull) {
+              return super.setAllowNull(allowNull);
+          }
       }
   }
