@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,12 +22,31 @@
 
 package org.jboss.as.jpa.subsystem;
 
+import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.dmr.ModelNode;
+
 /**
- * @author Scott Marlow
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-interface CommonAttributes {
-    String DEFAULT_DATASOURCE = "default-datasource";
-    String JPA = "jpa";
-    String DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE = "default-extended-persistence-inheritance";
-    String DEFAULT_VFS = "default-vfs";
+public class JPASubsystemTransformer_1_1 extends AbstractSubsystemTransformer {
+
+    public JPASubsystemTransformer_1_1() {
+        super(CommonAttributes.JPA);
+    }
+
+    @Override
+    public ModelNode transformModel(TransformationContext context, ModelNode model) {
+        remove(model, CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
+        remove(model, CommonAttributes.DEFAULT_VFS);
+        return model;
+    }
+
+    private void remove(ModelNode model, String name) {
+        if (model.has(name)) {
+            model.remove(name);
+        }
+
+    }
+
 }

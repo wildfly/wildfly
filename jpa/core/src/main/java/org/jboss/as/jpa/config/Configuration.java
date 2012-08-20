@@ -217,4 +217,7 @@ public class Configuration {
         return providerClassToAdapterModuleName.get(providerClassName);
     }
 
+    public static String getDefaultProviderModuleName() {
+        return PROVIDER_MODULE_DEFAULT;
+    }
 }

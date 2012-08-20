@@ -133,9 +133,9 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
         // add dependencies for the default persistence provider module
         if (defaultProviderCount > 0) {
-            moduleDependencies.add(Configuration.PROVIDER_MODULE_DEFAULT);
+            moduleDependencies.add(Configuration.getDefaultProviderModuleName());
             ROOT_LOGGER.debugf("added (default provider) %s dependency to %s (since %d PU(s) didn't specify %s",
-                Configuration.PROVIDER_MODULE_DEFAULT, deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
+                Configuration.getDefaultProviderModuleName(), deploymentUnit.getName(),defaultProviderCount, Configuration.PROVIDER_MODULE + ")");
             // only inject default envers for default Hibernate module
             addDependency(moduleSpecification, moduleLoader, deploymentUnit, HIBERNATE_ENVERS_ID);
         }

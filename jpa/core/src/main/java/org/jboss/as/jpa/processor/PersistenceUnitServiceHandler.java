@@ -422,7 +422,7 @@ public class PersistenceUnitServiceHandler {
 
         final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
 
-        boolean convertVFS = false; // convert VFS url to FILE based url if JPA_ENABLE_VFS_URLS == false
+        boolean convertVFS = (false == JPAService.isDefaultVFS()); // convert VFS url to FILE based url if JPA_ENABLE_VFS_URLS == false
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
             String enableVFS = pu.getProperties().getProperty(Configuration.JPA_ENABLE_VFS_URLS);
             if (enableVFS != null && Boolean.parseBoolean(enableVFS) == false) {

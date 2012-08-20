@@ -27,6 +27,7 @@ import java.util.ServiceLoader;
 import javax.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.Configuration;
+import org.jboss.as.jpa.service.JPAService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -45,7 +46,8 @@ public class PersistenceProviderLoader {
      * @throws ModuleLoadException
      */
     public static void loadDefaultProvider() throws ModuleLoadException {
-        loadProviderModuleByName(Configuration.PROVIDER_MODULE_DEFAULT);
+        String defaultProviderModule = Configuration.getDefaultProviderModuleName();
+        loadProviderModuleByName(defaultProviderModule);
     }
 
     /**

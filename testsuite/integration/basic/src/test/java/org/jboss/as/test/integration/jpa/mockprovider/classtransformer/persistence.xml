@@ -27,10 +27,8 @@
 		<description>Persistence Unit.</description>
 		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
 		<properties>
-			<property name="hibernate.hbm2ddl.auto" value="create-drop" />
-			<property name="hibernate.show_sql" value="true" />
-                        <property name="hibernate.ejb.use_class_enhancer" value="true" />
-                        <property name="jboss.as.jpa.vfs" value="false" />                        
+            <property name="hibernate.ejb.use_class_enhancer" value="true" />
+            <property name="jboss.as.jpa.vfs" value="false" />
 		</properties>
 	</persistence-unit>
 </persistence>
