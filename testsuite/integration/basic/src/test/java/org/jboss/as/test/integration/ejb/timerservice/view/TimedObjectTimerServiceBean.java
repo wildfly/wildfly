@@ -21,14 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.view;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.Local;
 import javax.ejb.Stateless;
 import javax.ejb.TimedObject;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -38,10 +39,10 @@ import java.util.concurrent.TimeUnit;
 public class TimedObjectTimerServiceBean implements TimedObject, LocalInterface {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static int TIMER_TIMEOUT_TIME_MS = 100;
-    private static int TIMER_CALL_WAITING_S = 2;
-    
-    private static boolean timerServiceCalled = false;
+    private static final int TIMER_TIMEOUT_TIME_MS = 100;
+    private static final int TIMER_CALL_WAITING_S = 2;
+
+    private static volatile boolean timerServiceCalled = false;
 
     @Resource
     private TimerService timerService;

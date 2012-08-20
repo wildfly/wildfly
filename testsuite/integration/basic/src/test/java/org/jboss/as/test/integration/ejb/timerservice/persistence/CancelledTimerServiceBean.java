@@ -40,9 +40,9 @@ public class CancelledTimerServiceBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
 
-    private static int TIMER_CALL_WAITING_S = 30;
-    private static int TIMER_CALL_QUICK_WAITING_S = 2;
-    private static boolean timerServiceCalled = false;
+    private static final int TIMER_CALL_WAITING_S = 30;
+    private static final int TIMER_CALL_QUICK_WAITING_S = 2;
+    private static volatile boolean timerServiceCalled = false;
 
     @Resource
     private TimerService timerService;

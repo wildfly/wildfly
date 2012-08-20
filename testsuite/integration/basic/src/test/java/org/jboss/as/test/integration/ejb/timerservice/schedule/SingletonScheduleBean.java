@@ -22,10 +22,11 @@
 
 package org.jboss.as.test.integration.ejb.timerservice.schedule;
 
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
 
 /**
  * User: jpai
@@ -34,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 public class SingletonScheduleBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_CALL_WAITING_S = 2;
 
-    private static boolean timerServiceCalled = false;
+    private static volatile boolean timerServiceCalled = false;
 
 
     @Schedule(second="*", minute = "*", hour = "*")

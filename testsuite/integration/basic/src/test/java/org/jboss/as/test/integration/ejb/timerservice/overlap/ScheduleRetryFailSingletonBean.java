@@ -63,8 +63,8 @@ import org.jboss.logging.Logger;
 @AccessTimeout(unit = TimeUnit.MILLISECONDS, value = 100)  // make the test faster
 public class ScheduleRetryFailSingletonBean {
     private static final Logger LOGGER = Logger.getLogger(ScheduleRetryFailSingletonBean.class);
-    private static CountDownLatch started = new CountDownLatch(1);
-    private static CountDownLatch alive = new CountDownLatch(4);
+    private static final CountDownLatch started = new CountDownLatch(1);
+    private static final CountDownLatch alive = new CountDownLatch(4);
 
     /**
      * count the number of invoked timeouts

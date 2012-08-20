@@ -39,10 +39,10 @@ import org.apache.log4j.Logger;
 @Stateless
 public class AnnotationTimerServiceBean {
     private static final Logger log = Logger.getLogger(AnnotationTimerServiceBean.class);
-    private static CountDownLatch latch = new CountDownLatch(1);
+    private static volatile CountDownLatch latch = new CountDownLatch(1);
 
-    private static boolean timerServiceCalled = false;
-    private static int TIMER_CALL_WAITING_S = 2;
+    private static volatile boolean timerServiceCalled = false;
+    private static final int TIMER_CALL_WAITING_S = 2;
 
     private static String timerInfo;
     private static boolean isPersistent;

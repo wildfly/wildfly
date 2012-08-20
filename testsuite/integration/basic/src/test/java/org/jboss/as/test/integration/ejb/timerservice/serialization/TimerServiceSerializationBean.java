@@ -21,13 +21,14 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.serialization;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.ejb.Timeout;
 import javax.ejb.Timer;
 import javax.ejb.TimerService;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Stuart Douglas
@@ -36,12 +37,12 @@ import java.util.concurrent.TimeUnit;
 public class TimerServiceSerializationBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
-    private static int TIMER_INIT_TIME_MS = 100;
-    private static int TIMER_TIMEOUT_TIME_MS = 100;
+    private static final int TIMER_INIT_TIME_MS = 100;
+    private static final int TIMER_TIMEOUT_TIME_MS = 100;
     // should to be greater then (timer init time + timeout time)
-    private static int TIMER_CALL_WAITING_S = 2;
-    
-    private static InfoA info;
+    private static final int TIMER_CALL_WAITING_S = 2;
+
+    private static volatile InfoA info;
 
     @Resource
     private TimerService timerService;

@@ -21,10 +21,11 @@
  */
 package org.jboss.as.test.integration.ejb.timerservice.schedule.descriptor;
 
-import javax.ejb.Timer;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.ejb.Timer;
 
 /**
  * Ejb with it's timers managed by a descriptor
@@ -33,11 +34,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class DescriptorScheduleBean {
 
-    private static String timerInfo;
-    private static Date start;
+    private static volatile String timerInfo;
+    private static volatile Date start;
 
     private static int TIMER_CALL_WAITING_S = 30;
-    private static CountDownLatch latch = new CountDownLatch(1);
+    private static volatile CountDownLatch latch = new CountDownLatch(1);
 
     public void descriptorScheduledMethod(final Timer timer) {
         timerInfo = (String) timer.getInfo();

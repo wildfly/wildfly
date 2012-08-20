@@ -44,10 +44,10 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class BMPEntityBeanTimerTestCase {
 
-    private static int TIMER_CALL_WAITING_S = 10;
-    private static int TIMER_FOR_REMOVING_TIMEOUT_MS = 800;
+    private static final int TIMER_CALL_WAITING_S = 10;
+    private static final int TIMER_FOR_REMOVING_TIMEOUT_MS = 800;
     // has to be greater than timer for removing timeout
-    private static int TIMER_REMOVED_CALL_WAITING_MS = 1600;
+    private static final int TIMER_REMOVED_CALL_WAITING_MS = 1600;
     private static final String ARCHIVE_NAME = "SimpleLocalHomeTest.war";
 
     @ArquillianResource

@@ -39,9 +39,9 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class OverlapTimerTestCase {
 
-    private static int TIMER_CALL_WAITING1_S = 3;
-    private static int TIMER_CALL_WAITING2_S = 5;
-    
+    private static final int TIMER_CALL_WAITING1_S = 3;
+    private static final int TIMER_CALL_WAITING2_S = 5;
+
     @Deployment
     public static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "overlap-timer-test.jar");
