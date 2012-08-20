@@ -21,19 +21,34 @@
  */
 package org.jboss.as.test.integration.ejb.entity.cmp.relationship.manyToManyBidirectional;
 
-import java.util.Iterator;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
-import org.jboss.as.test.integration.ejb.entity.cmp.relationship.AbstractRelationshipTest;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Iterator;
+
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
+import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CmpTestRunner.class)
-public class ABTestCase extends AbstractRelationshipTest {
+public class ABTestCase extends AbstractCmpTest {
+
     static org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(ABTestCase.class);
+
+    @Deployment
+    public static Archive<?> deploy() {
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "mtom-bi-cmp-relationship.jar");
+        jar.addPackage(ABTestCase.class.getPackage());
+        jar.addAsManifestResource(ABTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(ABTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        AbstractCmpTest.addDeploymentAssets(jar);
+        return jar;
+    }
 
     private AHome getAHome() {
         try {
