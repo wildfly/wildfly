@@ -40,6 +40,7 @@ import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.deployment.Attachments;
@@ -215,6 +216,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         installTransactionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
 
         weldServiceBuilder.addDependencies(jpaServices);
+
+        //make sure JNDI bindings are up
+        weldServiceBuilder.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+
         weldServiceBuilder.install();
 
     }
