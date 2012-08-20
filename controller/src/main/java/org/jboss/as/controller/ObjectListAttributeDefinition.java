@@ -100,7 +100,6 @@
       }
 
       protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle, boolean forOperation) {
-          node.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
           node.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
           node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(valueType.isAllowExpression());
           if (forOperation) {

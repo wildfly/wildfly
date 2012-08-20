@@ -165,7 +165,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         if (forOperation) {
             result.get(ModelDescriptionConstants.REQUIRED).set(!valueType.isAllowNull());
         }
-        result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
+        result.get(ModelDescriptionConstants.NILLABLE).set(valueType.isAllowNull());
         final ModelNode defaultValue = valueType.getDefaultValue();
         if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
             result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
