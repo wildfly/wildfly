@@ -95,7 +95,9 @@ public class ModelTestUtils {
      */
     public static ModelNode checkResultAndGetContents(ModelNode result) {
         checkOutcome(result);
-        Assert.assertTrue(result.hasDefined(RESULT));
+        Assert.assertTrue("could not check for result as its missing!  look for yourself here [" + result.toString() +
+                "] and result.hasDefined(RESULT) returns " + result.hasDefined(RESULT)
+                , result.hasDefined(RESULT));
         return result.get(RESULT);
     }
 

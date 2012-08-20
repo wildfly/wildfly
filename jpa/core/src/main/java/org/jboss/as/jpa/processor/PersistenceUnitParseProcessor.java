@@ -29,6 +29,7 @@ import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
 import org.jboss.as.jpa.puparser.PersistenceUnitXmlParser;
+import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -237,7 +238,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit ) {
 
         for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
-            boolean convertVFS = false; // convert VFS url to FILE based url if JPA_ENABLE_VFS_URLS == false
+            boolean convertVFS = (false == JPAService.isDefaultVFS()); // convert VFS url to FILE based url if JPA_ENABLE_VFS_URLS == false
             String enableVFS = pu.getProperties().getProperty(Configuration.JPA_ENABLE_VFS_URLS);
             if (enableVFS != null && Boolean.parseBoolean(enableVFS) == false) {
                 convertVFS = true;

@@ -40,9 +40,9 @@ import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.ExtendedPersistenceDeepInheritance;
 import org.jboss.as.jpa.container.ExtendedPersistenceShallowInheritance;
-import org.jboss.as.jpa.container.SFSBCallStack;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
 import org.jboss.as.jpa.processor.JpaAttachments;
+import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.naming.ManagedReference;
@@ -150,7 +150,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 if (JPA_LOGGER.isDebugEnabled())
                     JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
-                boolean useDeepInheritance = true;      // ExtendedPersistenceInheritance.DEEP is enabled by default
+                boolean useDeepInheritance = !ExtendedPersistenceInheritance.SHALLOW.equals(JPAService.getDefaultExtendedPersistenceInheritance());
                                                         // get deployment settings from top level du (jboss-all.xml is only parsed at the top level).
                 JPADeploymentSettings jpaDeploymentSettings =
                         DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(JpaAttachments.DEPLOYMENT_SETTINGS_KEY);

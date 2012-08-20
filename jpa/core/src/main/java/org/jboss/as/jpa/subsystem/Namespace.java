@@ -31,12 +31,9 @@ import java.util.Map;
 enum Namespace {
     // must be first
     UNKNOWN(null),
-    JPA_1_0("urn:jboss:domain:jpa:1.0"),;
-
-    /**
-     * The current namespace version.
-     */
-    public static final Namespace CURRENT = JPA_1_0;
+    JPA_1_0("urn:jboss:domain:jpa:1.0"),
+    JPA_1_1("urn:jboss:domain:jpa:1.1"),
+    ;
 
     private final String name;
 

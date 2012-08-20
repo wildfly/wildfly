@@ -31,7 +31,9 @@ public enum Element {
     // must be first
     UNKNOWN(null),
     JPA(CommonAttributes.JPA),
-    DEFAULT_DATASOURCE(CommonAttributes.DEFAULT_DATASOURCE),;
+    DEFAULT_DATASOURCE(CommonAttributes.DEFAULT_DATASOURCE),
+    DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE),
+    DEFAULT_VFS(CommonAttributes.DEFAULT_VFS),;
 
     private final String name;
 
