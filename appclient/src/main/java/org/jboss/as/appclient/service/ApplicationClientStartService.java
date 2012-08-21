@@ -150,6 +150,12 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
             }
         });
         thread.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CurrentServiceContainer.getServiceContainer().shutdown();
+            }
+        }));
 
     }
 
