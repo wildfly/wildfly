@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -110,6 +111,7 @@ public class Util {
     public static final String READ_RESOURCE_DESCRIPTION = "read-resource-description";
     public static final String RELEASE_CODENAME = "release-codename";
     public static final String RELEASE_VERSION = "release-version";
+    public static final String REMOVE = "remove";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
@@ -138,6 +140,7 @@ public class Util {
     public static final String TRUE = "true";
     public static final String TYPE = "type";
     public static final String UNDEFINE_ATTRIBUTE = "undefine-attribute";
+    public static final String UNDEPLOY = "undeploy";
     public static final String VALID = "valid";
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
@@ -195,6 +198,41 @@ public class Util {
         return list;
     }
 
+    public static List<String> getList(ModelNode operationResult, String wildcardExpr) {
+        if(!operationResult.hasDefined(RESULT))
+            return Collections.emptyList();
+        final List<ModelNode> nodeList = operationResult.get(RESULT).asList();
+        if(nodeList.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<String> list = new ArrayList<String>(nodeList.size());
+        final Pattern pattern = Pattern.compile(wildcardToJavaRegex(wildcardExpr));
+        for(ModelNode node : nodeList) {
+            final String candidate = node.asString();
+            if(pattern.matcher(candidate).matches()) {
+                list.add(candidate);
+            }
+        }
+        return list;
+    }
+
+    protected static String wildcardToJavaRegex(String expr) {
+        if(expr == null) {
+            throw new IllegalArgumentException("expr is null");
+        }
+        final StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < expr.length(); ++i) {
+            final char ch = expr.charAt(i);
+            if(ch == '*') {
+                buf.append('.');
+            } else if(ch == '.') {
+                buf.append('\\');
+            }
+            buf.append(ch);
+        }
+        return buf.toString();
+    }
+
     public static boolean listContains(ModelNode operationResult, String item) {
         if(!operationResult.hasDefined(RESULT))
             return false;
@@ -239,8 +277,8 @@ public class Util {
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         ModelNode request;
         try {
-            builder.setOperationName("read-children-names");
-            builder.addProperty("child-type", "deployment");
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addProperty(Util.CHILD_TYPE, Util.DEPLOYMENT);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
             throw new IllegalStateException("Failed to build operation", e);
@@ -260,9 +298,9 @@ public class Util {
         }
 
         builder = new DefaultOperationRequestBuilder();
-        builder.addNode("deployment", name);
-        builder.setOperationName("read-attribute");
-        builder.addProperty("name", "enabled");
+        builder.addNode(Util.DEPLOYMENT, name);
+        builder.setOperationName(Util.READ_ATTRIBUTE);
+        builder.addProperty(Util.NAME, Util.ENABLED);
         try {
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
@@ -272,10 +310,10 @@ public class Util {
         try {
             ModelNode outcome = client.execute(request);
             if (isSuccess(outcome)) {
-                if(!outcome.hasDefined("result")) {
+                if(!outcome.hasDefined(RESULT)) {
                     return false;
                 }
-                return outcome.get("result").asBoolean();
+                return outcome.get(RESULT).asBoolean();
             }
         } catch(Exception e) {
         }
@@ -379,20 +417,43 @@ public class Util {
 
     public static List<String> getDeployments(ModelControllerClient client) {
 
-        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
-            builder.setOperationName("read-children-names");
-            builder.addProperty("child-type", "deployment");
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addProperty(Util.CHILD_TYPE, Util.DEPLOYMENT);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
             throw new IllegalStateException("Failed to build operation", e);
         }
 
         try {
-            ModelNode outcome = client.execute(request);
+            final ModelNode outcome = client.execute(request);
             if (isSuccess(outcome)) {
                 return getList(outcome);
+            }
+        } catch (Exception e) {
+        }
+
+        return Collections.emptyList();
+    }
+
+    public static List<String> getDeployments(ModelControllerClient client, String wildcardExpr) {
+
+        final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
+        final ModelNode request;
+        try {
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addProperty(Util.CHILD_TYPE, Util.DEPLOYMENT);
+            request = builder.buildRequest();
+        } catch (OperationFormatException e) {
+            throw new IllegalStateException("Failed to build operation", e);
+        }
+
+        try {
+            final ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                return getList(outcome, wildcardExpr);
             }
         } catch (Exception e) {
         }
@@ -405,8 +466,8 @@ public class Util {
         DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
-            builder.setOperationName("read-children-names");
-            builder.addProperty("child-type", "server-group");
+            builder.setOperationName(Util.READ_CHILDREN_NAMES);
+            builder.addProperty(Util.CHILD_TYPE, Util.SERVER_GROUP);
             request = builder.buildRequest();
         } catch (OperationFormatException e) {
             throw new IllegalStateException("Failed to build operation", e);
