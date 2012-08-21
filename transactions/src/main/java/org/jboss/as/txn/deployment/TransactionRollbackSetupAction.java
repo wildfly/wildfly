@@ -23,6 +23,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class TransactionRollbackSetupAction implements SetupAction, Service<TransactionRollbackSetupAction> {
 
+    private static final ThreadLocal<Integer> depth = new ThreadLocal<Integer>();
 
     private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
 
@@ -34,31 +35,13 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
     @Override
     public void setup(final Map<String, Object> properties) {
-
+        changeDepth(1);
     }
 
     @Override
     public void teardown(final Map<String, Object> properties) {
-        try {
-            final TransactionManager tm = transactionManager.getValue();
-            final int status = tm.getStatus();
-
-            switch (status) {
-                case Status.STATUS_ACTIVE:
-                case Status.STATUS_COMMITTING:
-                case Status.STATUS_MARKED_ROLLBACK:
-                case Status.STATUS_PREPARING:
-                case Status.STATUS_ROLLING_BACK:
-                case Status.STATUS_PREPARED:
-                    try {
-                        TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
-                        tm.rollback();
-                    } catch (Exception ex) {
-                        TransactionLogger.ROOT_LOGGER.unableToRollBack(ex);
-                    }
-            }
-        } catch (Exception e) {
-            TransactionLogger.ROOT_LOGGER.unableToGetTransactionStatus(e);
+        if (changeDepth(-1) == 0) {
+            checkTransactionStatus();
         }
     }
 
@@ -89,5 +72,40 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
     public InjectedValue<TransactionManager> getTransactionManager() {
         return transactionManager;
+    }
+
+    private int changeDepth(int increment) {
+        Integer now = depth.get();
+        int newVal = now == null ? increment : now.intValue() + increment;
+        if (newVal == 0) {
+            depth.set(null);
+        } else {
+            depth.set(Integer.valueOf(newVal));
+        }
+        return newVal;
+    }
+
+    private void checkTransactionStatus() {
+        try {
+            final TransactionManager tm = transactionManager.getValue();
+            final int status = tm.getStatus();
+
+            switch (status) {
+                case Status.STATUS_ACTIVE:
+                case Status.STATUS_COMMITTING:
+                case Status.STATUS_MARKED_ROLLBACK:
+                case Status.STATUS_PREPARING:
+                case Status.STATUS_ROLLING_BACK:
+                case Status.STATUS_PREPARED:
+                    try {
+                        TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
+                        tm.rollback();
+                    } catch (Exception ex) {
+                        TransactionLogger.ROOT_LOGGER.unableToRollBack(ex);
+                    }
+            }
+        } catch (Exception e) {
+            TransactionLogger.ROOT_LOGGER.unableToGetTransactionStatus(e);
+        }
     }
 }
