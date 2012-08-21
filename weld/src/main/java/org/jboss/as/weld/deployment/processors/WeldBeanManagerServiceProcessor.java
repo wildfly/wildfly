@@ -23,14 +23,13 @@ package org.jboss.as.weld.deployment.processors;
 
 import java.util.Set;
 
-import javax.enterprise.inject.spi.BeanManager;
-
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ServiceReferenceObjectFactory;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -49,7 +48,7 @@ import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * {@link DeploymentUnitProcessor} that binds the bean manager to JNDI
@@ -119,12 +118,10 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
     private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName, final Set<ServiceName> dependencies) {
         final ServiceName beanManagerBindingServiceName = contextServiceName.append("BeanManager");
         dependencies.add(beanManagerBindingServiceName);
-        InjectedValue<BeanManager> injectedBeanManager = new InjectedValue<BeanManager>();
         BinderService beanManagerBindingService = new BinderService("BeanManager");
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)
-                .addInjection(beanManagerBindingService.getManagedObjectInjector(), new ValueManagedReferenceFactory(injectedBeanManager))
+                .addInjection(beanManagerBindingService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(ServiceReferenceObjectFactory.createReference(beanManagerServiceName, ServiceReferenceObjectFactory.class))))
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, beanManagerBindingService.getNamingStoreInjector())
-                .addDependency(beanManagerServiceName, BeanManager.class, injectedBeanManager)
                 .install();
     }
 

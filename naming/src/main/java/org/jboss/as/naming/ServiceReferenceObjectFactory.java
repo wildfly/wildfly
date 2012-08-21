@@ -21,23 +21,21 @@
  */
 package org.jboss.as.naming;
 
-import javax.naming.RefAddr;
-import org.jboss.as.naming.context.ModularReference;
-
 import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.Name;
+import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
+import org.jboss.as.naming.context.ModularReference;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceController.State;
-
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 /**
@@ -49,7 +47,7 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
  *
  * @author Stuart Douglas
  */
-public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory {
+public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory {
 
     private volatile ServiceRegistry serviceRegistry;
 
@@ -110,8 +108,10 @@ public abstract class ServiceReferenceObjectFactory implements ServiceAwareObjec
      * {@link ObjectFactory#getObjectInstance(Object, Name, Context, Hashtable)}, but with the addition of the service value as
      * the first parameter.
      */
-    public abstract Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx,
-                                             Hashtable<?, ?> environment) throws Exception;
+    public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx,
+                                             Hashtable<?, ?> environment) throws Exception {
+        return serviceValue;
+    }
 
     /**
      * listener that notifies when the service changes state
