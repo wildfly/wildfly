@@ -13,7 +13,7 @@
 
     <groupId>org.jboss.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>1.0.1.CR3</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
