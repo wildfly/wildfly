@@ -27,8 +27,10 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,6 +42,7 @@ import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.common.beans.property.PropertiesValueResolver;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
 import org.jgroups.Global;
@@ -252,7 +255,16 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
     private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
         String protocol = protocolConfig.getName();
         final Map<String, String> properties = new HashMap<String, String>(this.configuration.getDefaults().getProperties(protocol));
-        properties.putAll(protocolConfig.getProperties());
+        Map<String, String> propertiesMap = protocolConfig.getProperties();
+        Map<String, String> propertiesSubstitutionMap = new HashMap<String,String>();
+        Set<String> keys  = propertiesMap.keySet();
+        for(Iterator<String> it = keys.iterator();it.hasNext();){
+            String key = (String)it.next();
+            String value = propertiesMap.get(key);
+            value = PropertiesValueResolver.replaceProperties(value);
+            propertiesSubstitutionMap.put(key, value);
+            }
+        properties.putAll(propertiesSubstitutionMap);
         return new org.jgroups.conf.ProtocolConfiguration(protocol, properties) {
             @Override
             public Map<String, String> getOriginalProperties() {

@@ -63,6 +63,10 @@
             <artifactId>jgroups</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.common</groupId>
+            <artifactId>jboss-common-beans</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-clustering-common</artifactId>
             <version>${project.version}</version>
