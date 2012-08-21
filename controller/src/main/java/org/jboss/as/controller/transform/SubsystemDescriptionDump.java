@@ -1,26 +1,5 @@
 package org.jboss.as.controller.transform;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.extension.SubsystemInformation;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.logging.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -30,7 +9,24 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Set;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.SubsystemInformation;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -69,13 +65,13 @@ public class SubsystemDescriptionDump implements OperationStepHandler {
         }
     }
 
-    public static ModelNode readFullModelDescription(PathAddress address, ManagementResourceRegistration reg) {
+    public static ModelNode readFullModelDescription(PathAddress address, ImmutableManagementResourceRegistration reg) {
          ModelNode node = new ModelNode();
          node.get(ModelDescriptionConstants.MODEL_DESCRIPTION).set(reg.getModelDescription(PathAddress.EMPTY_ADDRESS).getModelDescription(Locale.getDefault()));
          node.get(ModelDescriptionConstants.ADDRESS).set(address.toModelNode());
          for (PathElement pe : reg.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
              ModelNode children = node.get(ModelDescriptionConstants.CHILDREN);
-             ManagementResourceRegistration sub = reg.getSubModel(PathAddress.pathAddress(pe));
+             ImmutableManagementResourceRegistration sub = reg.getSubModel(PathAddress.pathAddress(pe));
              children.add(readFullModelDescription(address.append(pe), sub));
          }
          return node;

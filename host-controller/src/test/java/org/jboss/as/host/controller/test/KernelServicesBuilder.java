@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.subsystem.test;
+package org.jboss.as.host.controller.test;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,9 +28,8 @@ import javax.xml.stream.XMLStreamException;
 
 import junit.framework.AssertionFailedError;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.RunningMode;
+import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -40,19 +39,31 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface KernelServicesBuilder {
+
+    /**
+     * The default is to validate the operations sent in to the model controller. Turn it off call this method
+     *
+     * @return this builder
+     */
+    KernelServicesBuilder setDontValidateOperations();
+
+
+    KernelServicesBuilder setModelValidationConfiguration(ValidationConfiguration validationConfiguration);
+
+
     /**
      * Sets the subsystem xml resource containing the xml to be parsed to create the boot operations used to initialize the controller.The resource is loaded using similar
      * semantics to {@link Class#getResource(String)}
      * @param subsystemXml the subsystem xml
+     * @return this builder
      * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setSubsystemXml(String)} or {@link #setSubsystemXmlResource(String)} have
      * already been called
-     * @return this builder
      * @throws IllegalStateException if {@link #build()} has already been called
      * @throws AssertionFailedError if the resource could not be found
      * @throws IOException if there were problems reading the resource
      * @throws XMLStreamException if there were problems parsing the xml
      */
-    KernelServicesBuilder setSubsystemXmlResource(String resource) throws IOException, XMLStreamException;
+    KernelServicesBuilder setXmlResource(String resource) throws IOException, XMLStreamException;
 
     /**
      * Sets the subsystem xml to be parsed to create the boot operations used to initialize the controller
@@ -63,7 +74,7 @@ public interface KernelServicesBuilder {
      * @throws IllegalStateException if {@link #build()} has already been called
      * @throws XMLStreamException if there were problems parsing the xml
      */
-    KernelServicesBuilder setSubsystemXml(String subsystemXml) throws XMLStreamException;
+    KernelServicesBuilder setXml(String subsystemXml) throws XMLStreamException;
 
     /**
      * Sets the boot operations to be used to initialize the controller
@@ -76,19 +87,15 @@ public interface KernelServicesBuilder {
     KernelServicesBuilder setBootOperations(List<ModelNode> bootOperations);
 
     /**
-     * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
-     * When {@link #build()} is called any legacy controllers will be created as well.
+     * Adds a model initializer which can be used to initialize the model before executing the boot operations
      *
-     * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
-     * @param modelVersion The model version of the legacy subsystem
-     * @return the legacy kernel services initializer
-     * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link RunningMode#ADMIN_ONLY}
-     * @throws IllegalStateException if {@link #build()} has already been called
-     * @throws IllegalArgumentException if any of the {@code resources} could not be found
-     * @throws AssertionFailedError if the extension class name was not found in the {@code resources}
-     * @throws AssertionFailedError if the extension class does not implement {@link Extension}}
+     * @param modelInitializer the model initilaizer
+     * @return this builder
+     * @throws IllegalStateException if the model initializer was already set or if {@link #build()} has already been called
      */
-     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelVersion modelVersion);
+    KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer);
+
+    //TODO legacy services
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.

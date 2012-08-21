@@ -122,6 +122,11 @@
             <artifactId>jboss-stdio</artifactId>
         </dependency>
         <dependency>
+           <groupId>org.jboss.as</groupId>
+           <artifactId>jboss-as-model-test</artifactId>
+           <scope>test</scope>
+        </dependency>
+        <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>
            <scope>test</scope>

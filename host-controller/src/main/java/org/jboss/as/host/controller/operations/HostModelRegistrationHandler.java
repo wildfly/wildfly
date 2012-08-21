@@ -47,31 +47,21 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Locale;
 
-import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
-import org.jboss.as.host.controller.HostRunningModeControl;
-import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleClassLoader;
 
 /**
  * The handler to add the local host definition to the DomainModel.
@@ -139,8 +129,15 @@ public class HostModelRegistrationHandler implements OperationStepHandler, Descr
 
     private static void initCoreModel(final ModelNode root, HostControllerEnvironment environment) {
 
-        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
-        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+        try {
+            root.get(RELEASE_VERSION).set(Version.AS_VERSION);
+            root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+        } catch (RuntimeException e) {
+            if (HostModelRegistrationHandler.class.getClassLoader() instanceof ModuleClassLoader) {
+                //The standalone tests can't get this info
+                throw e;
+            }
+        }
         root.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
         root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
         root.get(MANAGEMENT_MICRO_VERSION).set(Version.MANAGEMENT_MICRO_VERSION);

@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.subsystem.test;
+package org.jboss.as.model.test;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
@@ -32,7 +32,12 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 
-class StringConfigurationPersister extends AbstractConfigurationPersister {
+/**
+ * Internal class used to marshall/read the model
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ */
+public class StringConfigurationPersister extends AbstractConfigurationPersister {
 
     private final List<ModelNode> bootOperations;
     volatile String marshalled;
@@ -53,11 +58,11 @@ class StringConfigurationPersister extends AbstractConfigurationPersister {
         return bootOperations;
     }
 
-    List<ModelNode> getBootOperations(){
+    public List<ModelNode> getBootOperations(){
         return bootOperations;
     }
 
-    String getMarshalled() {
+    public String getMarshalled() {
         return marshalled;
     }
 

@@ -19,41 +19,14 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.host.controller.model.jvm;
-
-import junit.framework.Assert;
-
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
+package org.jboss.as.model.test;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ServerJvmModelTestCase extends AbstractJvmModelTest {
-
-    public ServerJvmModelTestCase() {
-        super(true);
-    }
-
-    @Test
-    public void testWriteDebugEnabled() throws Exception {
-        testEmptyAddSubsystem();
-        ModelNode value = new ModelNode(true);
-        Assert.assertEquals(value, writeTest("debug-enabled", value));
-    }
-
-    @Test
-    public void testWriteDebugOptions() throws Exception {
-        testEmptyAddSubsystem();
-        ModelNode value = new ModelNode("abc");
-        Assert.assertEquals(value, writeTest("debug-options", value));
-    }
-
-    protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
-        super.initModel(rootResource, registration);
-        registration.registerSubModel(JvmResourceDefinition.SERVER);
-    }
+public enum OperationValidation {
+    NONE,
+    EXIT_ON_VALIDATION_ERROR,
+    LOG_VALIDATION_ERRORS
 }

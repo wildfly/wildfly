@@ -31,7 +31,7 @@ import org.jboss.msc.service.ServiceTarget;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class HostPathManagerService extends PathManagerService {
+public class HostPathManagerService extends PathManagerService {
 
     public static ServiceController<?> addService(ServiceTarget serviceTarget, HostPathManagerService service, HostControllerEnvironment hostEnvironment) {
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(SERVICE_NAME, service);

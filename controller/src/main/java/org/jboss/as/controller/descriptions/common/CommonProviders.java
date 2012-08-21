@@ -66,7 +66,14 @@ public final class CommonProviders {
     public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getSpecifiedInterfaceDescription(locale);
+            return InterfaceDescription.getSpecifiedInterfaceDescription(locale, false);
+        }
+    };
+
+    public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER_SERVER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return InterfaceDescription.getSpecifiedInterfaceDescription(locale, true);
         }
     };
 

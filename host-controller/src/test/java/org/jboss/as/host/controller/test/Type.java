@@ -2,7 +2,7 @@
 * JBoss, Home of Professional Open Source.
 * Copyright 2011, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
-* distribution for a full listing of individual contributors.
+* distribution for a full listing of individual contributors. 
 *
 * This is free software; you can redistribute it and/or modify it
 * under the terms of the GNU Lesser General Public License as
@@ -18,24 +18,11 @@
 * License along with this software; if not, write to the Free
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
-package org.jboss.as.subsystem.test;
+*/ 
+package org.jboss.as.host.controller.test;
 
-import org.jboss.as.controller.Extension;
-
-/**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- */
-public class TransformedSubsystem extends AbstractSubsystemTest {
-
-    protected TransformedSubsystem(String mainSubsystemName, Extension mainExtension) {
-        super(mainSubsystemName, mainExtension);
-    }
-
-    public static TransformedSubsystem create(String mainSubsystemName, Extension mainExtension) {
-        return new TransformedSubsystem(mainSubsystemName, mainExtension);
-    }
-
-
+public enum Type {
+    STANDALONE,
+    HOST,
+    DOMAIN
 }
