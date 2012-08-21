@@ -65,7 +65,7 @@ public interface LegacyKernelServicesInitializer {
      * </ul>
      *
      * @param resource the string containing the resource to be resolved
-     * @return the determined class loader search url
+     * @return this initializer
      * @throws MalformedURLException if the URL format is bad
      * @throws IllegalArgumentException if the {@code resource} is null
      * @throws IllegalArgumentException if the resolved {@code resource} does not exist
@@ -77,7 +77,7 @@ public interface LegacyKernelServicesInitializer {
      * GAV.
      *
      * @param artifactGav a maven GAV, e.g.: {@code org.sonatype.aether:aether-api:1.13.1}
-     * @return the determined class loader search url
+     * @return this initializer
      * @throws MalformedURLException if the URL format is bad
      * @throws IllegalArgumentException if the {@code artifactGav} is null
      * @throws IllegalArgumentException if the resolved {@code artifactGav} does not exist
@@ -85,7 +85,19 @@ public interface LegacyKernelServicesInitializer {
      */
     LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws MalformedURLException;
 
+    /**
+     * Add a class name pattern that should be loaded from the parent classloader
+     *
+     * @param the class name pattern
+     * @return this initializer
+     */
     LegacyKernelServicesInitializer addParentFirstClassPattern(String pattern);
 
+    /**
+     * Add a class name pattern that should be loaded from the child classloader
+     *
+     * @param the class name pattern
+     * @return this initializer
+     */
     LegacyKernelServicesInitializer addChildFirstClassPattern(String pattern);
 }

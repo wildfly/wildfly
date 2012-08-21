@@ -47,6 +47,8 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -60,15 +62,21 @@ public class OperationValidator {
     private final ImmutableManagementResourceRegistration root;
     private final boolean validateDescriptions;
     private final boolean includeOperationInError;
+    private final boolean exitOnError;
 
     public OperationValidator(final ImmutableManagementResourceRegistration root) {
         this(root, true, true);
     }
 
     public OperationValidator(final ImmutableManagementResourceRegistration root, boolean validateDescriptions, boolean includeOperationInError) {
+        this(root, true, true, true);
+    }
+
+    public OperationValidator(final ImmutableManagementResourceRegistration root, boolean validateDescriptions, boolean includeOperationInError, boolean exitOnError) {
         this.root = root;
         this.validateDescriptions = validateDescriptions;
         this.includeOperationInError = includeOperationInError;
+        this.exitOnError = exitOnError;
     }
 
     /**
@@ -83,7 +91,17 @@ public class OperationValidator {
         }
 
         for (ModelNode operation : operations) {
-            validateOperation(operation);
+            try {
+                validateOperation(operation);
+            } catch (RuntimeException e) {
+                if (exitOnError) {
+                    throw e;
+                } else {
+                    System.out.println("---- Operation validation error:");
+                    System.out.println(e.getMessage());
+                }
+
+            }
         }
     }
 
@@ -95,6 +113,10 @@ public class OperationValidator {
      */
     public void validateOperation(final ModelNode operation) {
         if (operation == null) {
+            return;
+        }
+        OperationEntry entry = root.getOperationEntry(PathAddress.pathAddress(operation.get(OP_ADDR)), operation.get(OP).asString());
+        if (entry.getType() == EntryType.PRIVATE) {
             return;
         }
         final DescriptionProvider provider = getDescriptionProvider(operation);
@@ -218,6 +240,9 @@ public class OperationValidator {
             return;
         }
         if (describedProperty.hasDefined(MIN)) {
+            if (value.getType() == ModelType.EXPRESSION) {
+                return;
+            }
             switch (modelType) {
                 case BIG_DECIMAL: {
                     final BigDecimal min;

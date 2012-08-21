@@ -24,13 +24,16 @@ package org.jboss.as.controller.descriptions.common;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Arrays;
@@ -38,6 +41,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -52,6 +56,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -75,12 +80,21 @@ public class InterfaceDescription {
         return root;
     }
 
-    public static ModelNode getSpecifiedInterfaceDescription(final Locale locale) {
+    public static ModelNode getSpecifiedInterfaceDescription(final Locale locale, boolean server) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("specified_interface"));
         NAME.addResourceAttributeDescription(bundle, "interface", root);
+
+        if (server) {
+            //Quick and dirty hack to get this passing the tests, the whole thing shouldbe converted to resource definition
+            //NetworkInterfaceRuntimeHandler.RESOLVED_ADDRESS lives in the server module and so is invisible from here
+            root.get(ATTRIBUTES, "resolved-address", DESCRIPTION).set(bundle.getString("interface.resolved-address"));
+            root.get(ATTRIBUTES, "resolved-address", STORAGE).set(Storage.RUNTIME.toString());
+            root.get(ATTRIBUTES, "resolved-address", TYPE).set(ModelType.STRING);
+        }
+
         populateInterface(root, bundle, true);
         return root;
     }

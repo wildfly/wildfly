@@ -715,6 +715,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         final ModelNode hostAdd = new ModelNode();
         hostAdd.get(OP).set(HostModelRegistrationHandler.OPERATION_NAME);
         hostAdd.get(NAME).set(resolvedHost);
+        hostAdd.get(OP_ADDR).setEmptyList();
 
         operationList.add(hostAdd);
 

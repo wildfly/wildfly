@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.host.controller;
+package org.jboss.as.host.controller.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -44,13 +44,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -70,10 +66,8 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
@@ -89,8 +83,8 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
@@ -102,12 +96,6 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.After;
 import org.junit.Before;
-import org.w3c.dom.Document;
-import org.w3c.dom.bootstrap.DOMImplementationRegistry;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSParser;
-import org.w3c.dom.ls.LSSerializer;
 
 /**
  * TODO this class can perhaps be generalized into a lightweight version of the subsystem test framework
@@ -151,40 +139,6 @@ public class ManagementTestSetup {
             }
             finally {
                 container = null;
-            }
-        }
-    }
-
-    static void createModel(final OperationContext context, final ModelNode node) {
-        createModel(context, PathAddress.EMPTY_ADDRESS, node);
-    }
-
-    static void createModel(final OperationContext context, final PathAddress base, final ModelNode node) {
-        if(! node.isDefined()) {
-            return;
-        }
-        final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
-        final Set<String> children = registration.getChildNames(base);
-        final ModelNode current = new ModelNode();
-        final Resource resource = base.size() == 0 ? context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS) : context.createResource(base);
-        if(node.getType() == ModelType.OBJECT) {
-            for(final String key : node.keys()) {
-                if(! children.contains(key)) {
-                    current.get(key).set(node.get(key));
-                }
-            }
-            resource.getModel().set(current);
-        } else {
-            resource.getModel().set(node);
-            return;
-        }
-        if(children != null && ! children.isEmpty()) {
-            for(final String childType : children) {
-                if(node.hasDefined(childType)) {
-                    for(final String key : node.get(childType).keys()) {
-                        createModel(context, base.append(PathElement.pathElement(childType, key)), node.get(childType, key));
-                    }
-                }
             }
         }
     }
@@ -263,55 +217,11 @@ public class ManagementTestSetup {
     }
 
     protected String readResource(String resourceName) throws IOException {
-        URL configURL = getClass().getResource(resourceName);
-        org.junit.Assert.assertNotNull(resourceName + " url is null", configURL);
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(configURL.openStream()));
-        StringWriter writer = new StringWriter();
-        try {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                writer.write(line);
-                writer.write("\n");
-            }
-        } finally {
-            reader.close();
-        }
-        return writer.toString();
+        return ModelTestUtils.readResource(getClass(), resourceName);
     }
 
-    protected void compareXml(String expected, String marshalled, boolean removeNamespace) throws Exception {
-        //TODO improve this if we end up using this for other parts of the global model
-        if (removeNamespace) {
-            expected = removeNamespace(expected);
-            marshalled = removeNamespace(marshalled);
-        }
-        expected = normalizeXML(expected);
-        marshalled = normalizeXML(marshalled);
-        Assert.assertEquals(expected, marshalled);
-    }
-
-    private String removeNamespace(String xml) {
-        return xml.replaceFirst(" xmlns=\".*\"", "");
-    }
-
-    protected String normalizeXML(String xml) throws Exception {
-        // Remove all white space adjoining tags ("trim all elements")
-        xml = xml.replaceAll("\\s*<", "<");
-        xml = xml.replaceAll(">\\s*", ">");
-
-        DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-        DOMImplementationLS domLS = (DOMImplementationLS) registry.getDOMImplementation("LS");
-        LSParser lsParser = domLS.createLSParser(DOMImplementationLS.MODE_SYNCHRONOUS, null);
-
-        LSInput input = domLS.createLSInput();
-        input.setStringData(xml);
-        Document document = lsParser.parse(input);
-
-        LSSerializer lsSerializer = domLS.createLSSerializer();
-        lsSerializer.getDomConfig().setParameter("comments", Boolean.FALSE);
-        lsSerializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
-        return lsSerializer.writeToString(document);
+    protected void compareXml(String expected, String marshalled, boolean ignoreNamespace) throws Exception {
+        ModelTestUtils.compareXml(expected, marshalled, ignoreNamespace);
     }
 
     class ModelControllerService extends AbstractControllerService {
@@ -406,10 +316,8 @@ public class ManagementTestSetup {
         private class StringPersistenceResource implements PersistenceResource {
 
             private byte[] bytes;
-            private final AbstractConfigurationPersister persister;
 
             StringPersistenceResource(final ModelNode model, final AbstractConfigurationPersister persister) throws ConfigurationPersistenceException {
-                this.persister = persister;
                 ByteArrayOutputStream output = new ByteArrayOutputStream(1024 * 8);
                 try {
                     try {

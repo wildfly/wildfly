@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.subsystem.test;
+package org.jboss.as.model.test;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -61,10 +61,11 @@ import org.sonatype.aether.version.InvalidVersionSpecificationException;
 import org.sonatype.aether.version.VersionScheme;
 
 /**
+ * Internal use only.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class ChildFirstClassLoader extends URLClassLoader {
+public class ChildFirstClassLoader extends URLClassLoader {
 
     private static final RepositorySystem REPOSITORY_SYSTEM = newRepositorySystem();
     private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/sonatype/aether/aether-api/" : "\\org\\sonatype\\aether\\aether-api\\";

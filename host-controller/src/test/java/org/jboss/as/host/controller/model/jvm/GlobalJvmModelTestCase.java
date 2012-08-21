@@ -25,8 +25,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.test.KernelServices;
+import org.jboss.as.host.controller.test.Type;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -34,32 +34,28 @@ import org.junit.Test;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class GlobalJvmModelTestCase extends AbstractJvmModelTest {
+public abstract class GlobalJvmModelTestCase extends AbstractJvmModelTest {
 
-    public GlobalJvmModelTestCase() {
-        super(false);
+    public GlobalJvmModelTestCase(Type type) {
+        super(type, false);
     }
 
     @Test
     public void testWriteDebugEnabled() throws Exception {
-        testEmptyAddSubsystem();
+        KernelServices kernelServices = doEmptyJvmAdd();
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set("debug-enabled");
         op.get(VALUE).set(true);
-        executeForFailure(op);
+        kernelServices.executeForFailure(op);
     }
 
     @Test
     public void testWriteDebugOptions() throws Exception {
-        testEmptyAddSubsystem();
+        KernelServices kernelServices = doEmptyJvmAdd();
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION);
         op.get(NAME).set("debug-options");
         op.get(VALUE).set(true);
-        executeForFailure(op);
+        kernelServices.executeForFailure(op);
     }
 
-    protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
-        super.initModel(rootResource, registration);
-        registration.registerSubModel(JvmResourceDefinition.GLOBAL);
-    }
 }

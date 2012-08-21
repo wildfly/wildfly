@@ -1034,6 +1034,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-model-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-naming</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6220,6 +6226,7 @@
                 <module>mail</module>
                 <module>messaging</module>
                 <module>modcluster</module>
+                <module>model-test</module>
                 <module>naming</module>
                 <module>osgi</module>
                 <module>pojo</module>
