@@ -22,9 +22,6 @@
 package org.jboss.as.cli.handlers;
 
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REMOVE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -367,19 +364,31 @@ public class UndeployHandler extends DeploymentHandler {
         }
 
         if(name == null) {
-            throw new OperationFormatException("Required argument name are missing.");
+            throw new OperationFormatException("Deployment name is missing.");
         }
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         DefaultOperationRequestBuilder builder;
 
+        final List<String> deploymentNames;
+        if(name.indexOf('*') < 0) {
+            deploymentNames = Collections.singletonList(name);
+        } else {
+            deploymentNames = Util.getDeployments(client, name);
+            if(deploymentNames.isEmpty()) {
+                throw new CommandFormatException("No deployment matched wildcard expression " + name);
+            }
+        }
+
         if(ctx.isDomainMode()) {
-            final List<String> serverGroups;
+            List<String> serverGroups = Collections.emptyList();
             if(allRelevantServerGroups) {
-                if(keepContent) {
-                    serverGroups = Util.getAllEnabledServerGroups(name, client);
-                } else {
-                    serverGroups = Util.getAllReferencingServerGroups(name, client);
+                for(String deploymentName : deploymentNames) {
+                    if(keepContent) {
+                        serverGroups = Util.getAllEnabledServerGroups(deploymentName, client);
+                    } else {
+                        serverGroups = Util.getAllReferencingServerGroups(deploymentName, client);
+                    }
                 }
             } else {
                 if(serverGroupsStr == null) {
@@ -392,33 +401,38 @@ public class UndeployHandler extends DeploymentHandler {
 
             if(serverGroups.isEmpty()) {
                 if(keepContent) {
-                    throw new OperationFormatException("None server group is specified or available.");
+                    throw new OperationFormatException("None of the server groups is specified or references specified deployment.");
                 }
             } else {
-                for (String group : serverGroups){
-                    ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_UNDEPLOY_OPERATION, name, group);
-                    steps.add(groupStep);
-                }
-
-//                if(!keepContent) {
-                    for (String group : serverGroups) {
-                        ModelNode groupStep = Util.configureDeploymentOperation(DEPLOYMENT_REMOVE_OPERATION, name, group);
+                for(String deploymentName : deploymentNames) {
+                    for (String group : serverGroups){
+                        ModelNode groupStep = Util.configureDeploymentOperation(Util.UNDEPLOY, deploymentName, group);
                         steps.add(groupStep);
+  //                      if(!keepContent) {
+                            groupStep = Util.configureDeploymentOperation(Util.REMOVE, deploymentName, group);
+                            steps.add(groupStep);
+//                        }
                     }
-//                }
+                }
             }
-        } else if(Util.isDeployedAndEnabledInStandalone(name, client)) {
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("undeploy");
-            builder.addNode("deployment", name);
-            steps.add(builder.buildRequest());
+        } else {
+            for(String deploymentName : deploymentNames) {
+                if(Util.isDeployedAndEnabledInStandalone(deploymentName, client)) {
+                    builder = new DefaultOperationRequestBuilder();
+                    builder.setOperationName(Util.UNDEPLOY);
+                    builder.addNode(Util.DEPLOYMENT, deploymentName);
+                    steps.add(builder.buildRequest());
+                }
+            }
         }
 
         if (!keepContent) {
-            builder = new DefaultOperationRequestBuilder();
-            builder.setOperationName("remove");
-            builder.addNode("deployment", name);
-            steps.add(builder.buildRequest());
+            for(String deploymentName : deploymentNames) {
+                builder = new DefaultOperationRequestBuilder();
+                builder.setOperationName(Util.REMOVE);
+                builder.addNode(Util.DEPLOYMENT, deploymentName);
+                steps.add(builder.buildRequest());
+            }
         }
         return composite;
     }
