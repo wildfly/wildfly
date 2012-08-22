@@ -23,6 +23,9 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import javax.sql.DataSource;
+
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -40,7 +43,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author John Bailey
  */
-public class DataSourceReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
+public class DataSourceReferenceFactoryService implements Service<ManagedReferenceFactory>, ContextListAndJndiViewManagedReferenceFactory {
     public static final ServiceName SERVICE_NAME_BASE = AbstractDataSourceService.SERVICE_NAME_BASE.append("reference-factory");
     private final InjectedValue<DataSource> dataSourceValue = new InjectedValue<DataSource>();
 
@@ -64,5 +67,17 @@ public class DataSourceReferenceFactoryService implements Service<ManagedReferen
 
     public Injector<DataSource> getDataSourceInjector() {
         return dataSourceValue; // TODO: Should we use unique references
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        final Object value = reference != null ? reference.getInstance() : null;
+        return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        final Object value = reference != null ? reference.getInstance() : null;
+        return String.valueOf(value);
     }
 }

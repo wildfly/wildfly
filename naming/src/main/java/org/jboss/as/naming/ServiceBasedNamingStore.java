@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -47,11 +49,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-
 /**
  * @author John Bailey
  * @author Jason T. Greene
+ * @author Eduardo Martins
  */
 public class ServiceBasedNamingStore implements NamingStore {
     private final Name EMPTY_NAME = new CompositeName();
@@ -66,17 +67,22 @@ public class ServiceBasedNamingStore implements NamingStore {
         this.serviceNameBase = serviceNameBase;
     }
 
-    public Object lookup(final Name name) throws NamingException {
+    @Override
+    public Object lookup(Name name) throws NamingException {
+        return lookup(name, true);
+    }
+
+    public Object lookup(final Name name, boolean dereference) throws NamingException {
         if (name.isEmpty()) {
             return new NamingContext(EMPTY_NAME, this, null);
         }
         final ServiceName lookupName = buildServiceName(name);
-        Object obj = lookup(name.toString(), lookupName);
+        Object obj = lookup(name.toString(), lookupName, dereference);
         if (obj == null) {
             final ServiceName lower = boundServices.lower(lookupName);
             if (lower != null && lower.isParentOf(lookupName)) {
                 // Parent might be a reference or a link
-                obj = lookup(name.toString(), lower);
+                obj = lookup(name.toString(), lower, dereference);
                 //if the lower is a context that has been explicitly bound then
                 //we do not return a resolve result, as this will result in an
                 //infinite loop
@@ -115,7 +121,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         return cpe;
     }
 
-    private Object lookup(final String name, final ServiceName lookupName) throws NamingException {
+    private Object lookup(final String name, final ServiceName lookupName, boolean dereference) throws NamingException {
         final ServiceController<?> controller = serviceRegistry.getService(lookupName);
         final Object object;
         if (controller != null) {
@@ -128,7 +134,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         } else {
             return null;
         }
-        if (object instanceof ManagedReferenceFactory) {
+        if (dereference && object instanceof ManagedReferenceFactory) {
             try {
                 return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
             } catch (Exception e) {
@@ -146,7 +152,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         boolean isContextBinding = false;
         if (floor != null && floor.isParentOf(lookupName)) {
             // Parent might be a reference or a link
-            Object obj = lookup(name.toString(), floor);
+            Object obj = lookup(name.toString(), floor, true);
             if (obj instanceof NamingContext) {
                 isContextBinding = true;
             } else if (obj != null) {
@@ -163,8 +169,19 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (childParts.length > lookupParts.length + 1) {
                 childContexts.add(childParts[lookupParts.length]);
             } else {
-                final Object binding = lookup(name.toString(), child);
-                results.add(new NameClassPair(childParts[childParts.length - 1], binding.getClass().getName()));
+                final Object binding = lookup(name.toString(), child, false);
+                final String bindingType;
+                if (binding instanceof ContextListManagedReferenceFactory) {
+                    bindingType = ContextListManagedReferenceFactory.class.cast(binding)
+                            .getInstanceClassName();
+                } else {
+                    if (binding instanceof ManagedReferenceFactory) {
+                        bindingType = ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+                    } else {
+                        bindingType = binding.getClass().getName();
+                    }
+                }
+                results.add(new NameClassPair(childParts[childParts.length - 1],bindingType));
             }
         }
         for (String contextName : childContexts) {
@@ -179,7 +196,7 @@ public class ServiceBasedNamingStore implements NamingStore {
         boolean isContextBinding = false;
         if (floor != null && floor.isParentOf(lookupName)) {
             // Parent might be a reference or a link
-            Object obj = lookup(name.toString(), floor);
+            Object obj = lookup(name.toString(), floor, true);
             if (obj instanceof NamingContext) {
                 isContextBinding = true;
             } else if (obj != null) {
@@ -195,7 +212,7 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (childParts.length > lookupParts.length + 1) {
                 childContexts.add(childParts[lookupParts.length]);
             } else {
-                final Object binding = lookup(name.toString(), child);
+                final Object binding = lookup(name.toString(), child, true);
                 results.add(new Binding(childParts[childParts.length - 1], binding));
             }
         }

@@ -45,6 +45,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingMessages;
@@ -178,7 +180,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final Hashtable<String, String> environment = getObjectFactoryEnvironment(context,model);
 
         final BinderService binderService = new BinderService(name, objectFactoryClassInstance);
-        binderService.getManagedObjectInjector().inject(new ManagedReferenceFactory() {
+        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
                 try {
@@ -186,6 +188,29 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
                     return new ValueManagedReference(new ImmediateValue<Object>(value));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public String getInstanceClassName() {
+                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                try {
+                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    final Object value = getReference().getInstance();
+                    return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+                } finally {
+                    SecurityActions.setContextClassLoader(cl);
+                }
+            }
+
+            @Override
+            public String getJndiViewInstanceValue() {
+                final ClassLoader cl = SecurityActions.getContextClassLoader();
+                try {
+                    SecurityActions.setContextClassLoader(objectFactoryClassInstance.getClass().getClassLoader());
+                    return String.valueOf(getReference().getInstance());
+                } finally {
+                    SecurityActions.setContextClassLoader(cl);
                 }
             }
         });
@@ -227,7 +252,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
 
         final BinderService binderService = new BinderService(name);
-        binderService.getManagedObjectInjector().inject(new ManagedReferenceFactory() {
+        binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
                 try {
@@ -236,6 +261,17 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
+            }
+
+            @Override
+            public String getInstanceClassName() {
+                final Object value = getReference().getInstance();
+                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+            }
+
+            @Override
+            public String getJndiViewInstanceValue() {
+                return String.valueOf(getReference().getInstance());
             }
         });
 

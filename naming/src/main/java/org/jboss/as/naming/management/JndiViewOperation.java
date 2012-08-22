@@ -22,22 +22,25 @@
 
 package org.jboss.as.naming.management;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import javax.naming.Context;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.naming.JndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -125,13 +128,29 @@ public class JndiViewOperation implements OperationStepHandler {
             final ModelNode node = current.get(pair.getName());
             node.get("class-name").set(pair.getClassName());
             try {
-                final Object value = context.lookup(pair.getName());
+                final Object value;
+                if(context instanceof NamingContext) {
+                    value = ((NamingContext)context).lookup(pair.getName(), false);
+                } else {
+                    value = context.lookup(pair.getName());
+                }
                 if (value instanceof Context) {
                     addEntries(node.get("children"), Context.class.cast(value));
                 } else if (value instanceof Reference) {
                     //node.get("value").set(value.toString());
                 } else {
-                    node.get("value").set(value.toString());
+                    final String jndiViewValue;
+                    if (value instanceof JndiViewManagedReferenceFactory) {
+                        jndiViewValue = JndiViewManagedReferenceFactory.class.cast(value)
+                                .getJndiViewInstanceValue();
+                    } else {
+                        if (value instanceof ManagedReferenceFactory) {
+                            jndiViewValue = JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE;
+                        } else {
+                            jndiViewValue = String.valueOf(value);
+                        }
+                    }
+                    node.get("value").set(jndiViewValue);
                 }
             } catch (NamingException e) {
                 // Ignore for now..

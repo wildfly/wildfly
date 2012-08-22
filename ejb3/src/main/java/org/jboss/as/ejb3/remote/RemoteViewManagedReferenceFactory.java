@@ -21,20 +21,21 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import javax.ejb.EJBHome;
+import javax.ejb.EJBLocalHome;
+
 import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.JndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
 import org.jboss.ejb.client.StatelessEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
-
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-
-import static org.jboss.as.ejb3.EjbMessages.*;
 import org.jboss.msc.value.Value;
 
 
@@ -42,8 +43,9 @@ import org.jboss.msc.value.Value;
  * Managed reference factory for remote EJB views that are bound to java: JNDI locations
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
-public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactory {
+public class RemoteViewManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
 
     private final String appName;
     private final String moduleName;
@@ -65,6 +67,17 @@ public class RemoteViewManagedReferenceFactory implements ManagedReferenceFactor
         this.viewClass = viewClass;
         this.stateful = stateful;
         this.viewClassLoader = viewClassLoader;
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        return viewClass;
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        return stateful ? JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE : String.valueOf(getReference()
+                .getInstance());
     }
 
     @Override

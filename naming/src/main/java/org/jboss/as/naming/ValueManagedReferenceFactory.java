@@ -31,8 +31,9 @@ import org.jboss.msc.value.Value;
  * to fetch the injected value, and takes no action when the value is returned.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Eduardo Martins
  */
-public final class ValueManagedReferenceFactory implements ManagedReferenceFactory {
+public final class ValueManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
     private final Value<?> value;
 
     /**
@@ -47,6 +48,30 @@ public final class ValueManagedReferenceFactory implements ManagedReferenceFacto
     @Override
     public ManagedReference getReference() {
         return new ValueManagedReference(value.getValue());
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        final Object instance = value != null ? value.getValue() : null;
+        if(instance == null) {
+            return ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+        }
+        return instance.getClass().getName();
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        final Object instance = value != null ? value.getValue() : null;
+        if (instance == null) {
+            return "null";
+        }
+        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(instance.getClass().getClassLoader());
+            return instance.toString();
+        } finally {
+            SecurityActions.setContextClassLoader(cl);
+        }
     }
 
     public static class ValueManagedReference implements ManagedReference, Serializable {
