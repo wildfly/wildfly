@@ -22,11 +22,14 @@
 package org.jboss.as.cli.handlers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 
 /**
@@ -36,14 +39,19 @@ import org.jboss.as.cli.impl.ArgumentWithoutValue;
  */
 public class HelpHandler extends CommandHandlerWithHelp {
 
+    private final CommandRegistry cmdRegistry;
     private final ArgumentWithoutValue commands = new ArgumentWithoutValue(this, "--commands");
 
-    public HelpHandler() {
-        this("help");
+    public HelpHandler(CommandRegistry cmdRegistry) {
+        this("help", cmdRegistry);
     }
 
-    public HelpHandler(String command) {
+    public HelpHandler(String command, CommandRegistry cmdRegistry) {
         super(command);
+        if(cmdRegistry == null) {
+            throw new IllegalArgumentException("CommandRegistry is null");
+        }
+        this.cmdRegistry = cmdRegistry;
         // trick to disable the help arg
         helpArg.setExclusive(false);
         helpArg.addCantAppearAfter(commands);
@@ -64,7 +72,13 @@ public class HelpHandler extends CommandHandlerWithHelp {
 
         if(printCommands) {
             final List<String> commands = new ArrayList<String>();
-            ctx.getDefaultCommandCompleter().complete(ctx, "", 0, commands);
+            for(String cmd : cmdRegistry.getTabCompletionCommands()) {
+                CommandHandler handler = cmdRegistry.getCommandHandler(cmd);
+                if(handler.isAvailable(ctx)) {
+                    commands.add(cmd);
+                }
+            }
+            Collections.sort(commands);
 
             ctx.printLine("Commands available in the current context:");
             ctx.printColumns(commands);
