@@ -105,6 +105,10 @@ public class CommandLineConstants {
 
     public static final String MODULE_PATH = "-mp";
 
+    // java.net properties
+    public static final String PREFER_IPV4_STACK = "java.net.preferIPv4Stack";
+    public static final String PREFER_IPV6_ADDRESSES = "java.net.preferIPv6Addresses";
+
     /** Additional class path items, used only by app client*/
     public static final String APPCLIENT_CONFIG = "--appclient-config";
     public static final String SHORT_HOST = "-H";

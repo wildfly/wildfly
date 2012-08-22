@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -126,8 +127,19 @@ public final class Main {
                                     return null;
                                 }
                                 i += pcSocketConfig.getArgIncrement();
+                            } else if (arg.startsWith("-D" + CommandLineConstants.PREFER_IPV4_STACK + "=")) {
+                                // AS7-5409 set the property for this process and pass it to HC via javaOptions
+                                String val = parseValue(arg, "-D" + CommandLineConstants.PREFER_IPV4_STACK);
+                                SecurityActions.setSystemProperty(CommandLineConstants.PREFER_IPV4_STACK, val);
+                                addJavaOption(arg, javaOptions);
+                            } else if (arg.startsWith("-D" + CommandLineConstants.PREFER_IPV6_ADDRESSES + "=")) {
+                                // AS7-5409 set the property for this process and pass it to HC via javaOptions
+                                String val = parseValue(arg, "-D" + CommandLineConstants.PREFER_IPV6_ADDRESSES);
+                                SecurityActions.setSystemProperty(CommandLineConstants.PREFER_IPV6_ADDRESSES, val);
+                                addJavaOption(arg, javaOptions);
+
                             } else {
-                                smOptions.add(arg);
+                                addJavaOption(arg, smOptions);
                             }
                         }
                         break OUT;
@@ -139,7 +151,7 @@ public final class Main {
                         }
                         i += pcSocketConfig.getArgIncrement();
                     } else {
-                        javaOptions.add(arg);
+                        addJavaOption(arg, javaOptions);
                     }
                 }
                 break OUT;
@@ -239,6 +251,28 @@ public final class Main {
         return value;
     }
 
+    private static void addJavaOption(String option, List<String> javaOptions) {
+
+        // Remove any existing -D options that this one replaces
+        if (option.startsWith("-D")) {
+            String key;
+            int splitPos = option.indexOf('=');
+            if (splitPos < 0) {
+                key = option;
+            } else {
+                key = option.substring(0, splitPos);
+            }
+            for (Iterator<String> iter = javaOptions.iterator(); iter.hasNext();) {
+                String existingOp = iter.next();
+                if (existingOp.equals(key) || (existingOp.startsWith(key) && existingOp.indexOf('=') == key.length())) {
+                    iter.remove();
+                }
+            }
+        }
+
+        javaOptions.add(option);
+    }
+
     private static class PCSocketConfig {
         private String bindAddress;
         private int bindPort = 0;
@@ -246,12 +280,16 @@ public final class Main {
         private boolean parseFailed;
 
         private PCSocketConfig() {
-            boolean preferIPv6 = Boolean.valueOf(SecurityActions.getSystemProperty("java.net.preferIPv6Addresses", "false"));
-            bindAddress = preferIPv6 ? "::1" : "127.0.0.1";
         }
 
         private String getBindAddress() {
-            return bindAddress;
+            if (bindAddress != null) {
+                return bindAddress;
+            } else {
+                boolean v4Stack = Boolean.valueOf(SecurityActions.getSystemProperty(CommandLineConstants.PREFER_IPV4_STACK, "false"));
+                boolean useV6 = !v4Stack && Boolean.valueOf(SecurityActions.getSystemProperty(CommandLineConstants.PREFER_IPV6_ADDRESSES, "false"));
+                return useV6 ? "::1" : "127.0.0.1";
+            }
         }
 
         private int getBindPort() {
