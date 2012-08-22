@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.Writer;
 
 import javax.ejb.EJB;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,17 +35,30 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
+ * @author Eduardo Martins
  */
-@WebServlet(name="SimpleServlet", urlPatterns={"/simple"})
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
 public class SimpleServlet extends HttpServlet {
     @EJB
     private SimpleStatelessSessionBean bean;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String msg = req.getParameter("input");
 
+        testAS7_5347(resp);
+
+        String msg = req.getParameter("input");
         Writer writer = resp.getWriter();
         writer.write(bean.echo(msg));
+    }
+
+    private void testAS7_5347(HttpServletResponse resp) throws IOException {
+        // java:module includes child EJBContext, which can't be looked up on a servlet, yet list() on this context must not
+        // fail, more info at AS7-5347
+        try {
+            new InitialContext().list("java:module");
+        } catch (NamingException e) {
+            resp.getWriter().write("AS7-5347 solution check failed");
+        }
     }
 }
