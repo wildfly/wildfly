@@ -86,7 +86,7 @@ public class InitialContext extends NamingContext {
         super(environment);
     }
 
-    public Object lookup(final Name name) throws NamingException {
+    public Object lookup(final Name name, boolean dereference) throws NamingException {
         final ParsedName parsedName = parse(name);
         if (parsedName.namespace() == null) {
             //TODO: this is a bit of a hack, there should be a better way to handle this
@@ -117,7 +117,7 @@ public class InitialContext extends NamingContext {
         }
         final Context namespaceContext = findContext(name, parsedName);
         if (namespaceContext == null)
-            return super.lookup(parsedName.remaining());
+            return super.lookup(parsedName.remaining(),dereference);
         else
             return namespaceContext.lookup(parsedName.remaining());
     }

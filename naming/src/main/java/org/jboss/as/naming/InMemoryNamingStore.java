@@ -22,7 +22,23 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.util.NamingUtils.cannotProceedException;
+import static org.jboss.as.naming.util.NamingUtils.emptyNameException;
+import static org.jboss.as.naming.util.NamingUtils.getLastComponent;
+import static org.jboss.as.naming.util.NamingUtils.isEmpty;
+import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
+import static org.jboss.as.naming.util.NamingUtils.nameAlreadyBoundException;
+import static org.jboss.as.naming.util.NamingUtils.nameNotFoundException;
+import static org.jboss.as.naming.util.NamingUtils.notAContextException;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.ReentrantLock;
+
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
 import javax.naming.CompositeName;
@@ -36,20 +52,6 @@ import javax.naming.event.EventContext;
 import javax.naming.event.NamingEvent;
 import javax.naming.event.NamingListener;
 import javax.naming.spi.ResolveResult;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import static org.jboss.as.naming.util.NamingUtils.cannotProceedException;
-import static org.jboss.as.naming.util.NamingUtils.emptyNameException;
-import static org.jboss.as.naming.util.NamingUtils.getLastComponent;
-import static org.jboss.as.naming.util.NamingUtils.isEmpty;
-import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
-import static org.jboss.as.naming.util.NamingUtils.nameAlreadyBoundException;
-import static org.jboss.as.naming.util.NamingUtils.nameNotFoundException;
-import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 
 
 /**
@@ -160,6 +162,12 @@ public class InMemoryNamingStore implements WritableNamingStore {
         }
         checkPermissions(name, JndiPermission.Action.LOOKUP);
         return root.accept(new LookupVisitor(name));
+    }
+
+    @Override
+    public Object lookup(Name name, boolean dereference) throws NamingException {
+        // ignoring dereference arg, it's not relevant to this store impl
+        return lookup(name);
     }
 
     /**

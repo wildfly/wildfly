@@ -39,6 +39,7 @@ import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.as.ejb3.context.EjbContextResourceReferenceProcessor;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -121,9 +122,15 @@ public class EjbContextJndiBindingProcessor implements DeploymentUnitProcessor {
         }
     };
 
-    private static final ManagedReferenceFactory ejbContextManagedReferenceFactory = new ManagedReferenceFactory() {
+    private static final ManagedReferenceFactory ejbContextManagedReferenceFactory = new ContextListManagedReferenceFactory() {
+
         public ManagedReference getReference() {
             return ejbContextManagedReference;
+        }
+
+        @Override
+        public String getInstanceClassName() {
+            return EJBContext.class.getName();
         }
     };
 
