@@ -28,8 +28,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.EnumSet;
+import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
+import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -38,7 +40,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -50,6 +51,11 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  */
 class MessagingPathHandlers {
+
+    public static final String[] PATHS = { BINDINGS_DIRECTORY,
+        JOURNAL_DIRECTORY,
+        LARGE_MESSAGES_DIRECTORY,
+        PAGING_DIRECTORY };
 
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CommonAttributes.PATH, CommonAttributes.RELATIVE_TO };
     static final OperationStepHandler PATH_ADD = new OperationStepHandler() {
@@ -72,7 +78,7 @@ class MessagingPathHandlers {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.removeResource(PathAddress.EMPTY_ADDRESS);
+            context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
             context.completeStep();
         }
@@ -82,7 +88,7 @@ class MessagingPathHandlers {
         registration.registerOperationHandler(ADD, PATH_ADD, MessagingSubsystemProviders.PATH_ADD);
         registration.registerOperationHandler(REMOVE, PATH_REMOVE, MessagingSubsystemProviders.PATH_REMOVE);
         for(final AttributeDefinition def : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(def.getName(), null, PATH_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
+            registration.registerReadWriteAttribute(def, null, PATH_ATTR);
         }
     }
 
@@ -110,5 +116,6 @@ class MessagingPathHandlers {
             }, OperationContext.Stage.RUNTIME);
         }
     }
+
 
 }

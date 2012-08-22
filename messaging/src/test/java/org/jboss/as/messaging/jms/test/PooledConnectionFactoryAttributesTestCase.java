@@ -10,8 +10,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hornetq.ra.HornetQResourceAdapter;
-import org.jboss.as.messaging.jms.JMSServices;
-import org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttribute;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryService;
 import org.junit.Test;
 
@@ -44,15 +45,15 @@ public class PooledConnectionFactoryAttributesTestCase {
         KNOWN_ATTRIBUTES = new TreeSet<String>();
         // these are supported but it is not found by JavaBeans introspector because of the type
         // difference b/w the getter and the setters (Long vs long)
-        KNOWN_ATTRIBUTES.add(JMSServices.SETUP_ATTEMPTS_PROP_NAME);
-        KNOWN_ATTRIBUTES.add(JMSServices.SETUP_INTERVAL_PROP_NAME);
-        KNOWN_ATTRIBUTES.add(JMSServices.USE_JNDI_PROP_NAME);
+        KNOWN_ATTRIBUTES.add(Pooled.SETUP_ATTEMPTS_PROP_NAME);
+        KNOWN_ATTRIBUTES.add(Pooled.SETUP_INTERVAL_PROP_NAME);
+        KNOWN_ATTRIBUTES.add(Pooled.USE_JNDI_PROP_NAME);
 
     }
 
     @Test
     public void compareAS7PooledConnectionFactoryAttributesAndHornetQConnectionFactoryProperties() throws Exception {
-        SortedSet<String> pooledConnectionFactoryAttributes = findAllResourceAdapterProperties(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS);
+        SortedSet<String> pooledConnectionFactoryAttributes = findAllResourceAdapterProperties(PooledConnectionFactoryDefinition.ATTRIBUTES);
         pooledConnectionFactoryAttributes.removeAll(KNOWN_ATTRIBUTES);
 
         SortedSet<String> hornetQRAProperties = findAllPropertyNames(HornetQResourceAdapter.class);
@@ -89,9 +90,9 @@ public class PooledConnectionFactoryAttributesTestCase {
         return names;
     }
 
-    private static final SortedSet<String> findAllResourceAdapterProperties(PooledConnectionFactoryAttribute... attrs) {
+    private static final SortedSet<String> findAllResourceAdapterProperties(ConnectionFactoryAttribute... attrs) {
         SortedSet<String> names = new TreeSet<String>();
-        for (PooledConnectionFactoryAttribute attr : attrs) {
+        for (ConnectionFactoryAttribute attr : attrs) {
             if (attr.isResourceAdapterProperty()) {
                 names.add(attr.getPropertyName());
             }

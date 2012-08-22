@@ -32,8 +32,10 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -95,8 +97,11 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
-        registry.registerOperationHandler(GET_ROLES_AS_JSON, AddressControlHandler.INSTANCE, AddressControlHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-
+        OperationDefinition rolesAsJsonDef = new SimpleOperationDefinitionBuilder(GET_ROLES_AS_JSON, getResourceDescriptionResolver())
+                .setReplyType(STRING)
+                .withFlags(EnumSet.of(OperationEntry.Flag.READ_ONLY))
+                .build();
+        registry.registerOperationHandler(rolesAsJsonDef, AddressControlHandler.INSTANCE);
         super.registerOperations(registry);
     }
 

@@ -30,8 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
@@ -44,42 +42,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.messaging.CommonAttributes.BINDING_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
-import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY_TYPE;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
-import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE_MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE_SUBSCRIPTION_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
-import static org.jboss.as.messaging.CommonAttributes.HA;
-import static org.jboss.as.messaging.CommonAttributes.INITIAL_MESSAGE_PACKET_SIZE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
-import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_MESSAGE_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.NON_DURABLE_SUBSCRIPTION_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_BYTES_PER_PAGE;
-import static org.jboss.as.messaging.CommonAttributes.NUMBER_OF_PAGES;
-import static org.jboss.as.messaging.CommonAttributes.PARAMS;
-import static org.jboss.as.messaging.CommonAttributes.PAUSED;
-import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
-import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
-import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
-import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.SUBSCRIPTION_COUNT;
-import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
-import static org.jboss.as.messaging.CommonAttributes.TOPIC_ADDRESS;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -87,11 +54,10 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.messaging.jms.AbstractAddJndiHandler;
+import org.jboss.as.messaging.jms.ConnectorAttribute;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
-import org.jboss.as.messaging.jms.JMSServices;
-import org.jboss.as.messaging.jms.JMSTopicControlHandler;
-import org.jboss.as.messaging.jms.PooledConnectionFactoryAttribute;
+import org.jboss.as.messaging.jms.JMSTopicDefinition;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -102,6 +68,7 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
+@Deprecated
 public class MessagingDescriptions {
 
     static final String RESOURCE_NAME = MessagingDescriptions.class.getPackage().getName() + ".LocalDescriptions";
@@ -144,56 +111,6 @@ public class MessagingDescriptions {
         }
 
         return result;
-    }
-
-    public static ModelNode getQueueResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("queue"));
-
-
-        for (AttributeDefinition attr : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "queue", node);
-        }
-
-        final ModelNode attributes = node.get(ATTRIBUTES);
-
-        // Runtime attributes
-        addResourceAttributeDescription(bundle, "queue", attributes, CommonAttributes.ID, ModelType.LONG, false, null);
-        addResourceAttributeDescription(bundle, "queue", attributes, PAUSED, ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "queue", attributes, TEMPORARY, ModelType.BOOLEAN, false, null);
-
-        // Metrics
-        addResourceAttributeDescription(bundle, "queue", attributes, MESSAGE_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "queue", attributes, SCHEDULED_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "queue", attributes, CONSUMER_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "queue", attributes, DELIVERING_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "queue", attributes, MESSAGES_ADDED, ModelType.LONG, false, MeasurementUnit.NONE);
-
-        node.get(OPERATIONS); // placeholder
-
-        node.get(CHILDREN).setEmptyObject();
-
-        return node;
-    }
-
-    public static ModelNode getQueueAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("queue.add"));
-
-        for (AttributeDefinition attr : CommonAttributes.CORE_QUEUE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "queue", node);
-        }
-
-        return node;
-    }
-
-    public static ModelNode getQueueRemove(Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, QUEUE);
     }
 
     public static ModelNode getListScheduledMessages(Locale locale) {
@@ -463,104 +380,6 @@ public class MessagingDescriptions {
         return result;
     }
 
-    static ModelNode getJmsQueueResource(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("jms-queue"));
-
-        for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
-            attr.addResourceAttributeDescription(bundle, "jms-queue", node);
-        }
-
-        final ModelNode attributes = node.get(ATTRIBUTES);
-
-        // Runtime attributes
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, QUEUE_ADDRESS.getName(), ModelType.STRING, false, null);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, EXPIRY_ADDRESS.getName(), ModelType.STRING, true, null);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, DEAD_LETTER_ADDRESS.getName(), ModelType.STRING, true, null);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, PAUSED, ModelType.BOOLEAN, false, null);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, TEMPORARY, ModelType.BOOLEAN, false, null);
-
-        // Metrics
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, MESSAGE_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, SCHEDULED_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, CONSUMER_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, DELIVERING_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-queue", attributes, MESSAGES_ADDED, ModelType.LONG, false, MeasurementUnit.NONE);
-
-        node.get(OPERATIONS); //placeholder
-
-        node.get(CHILDREN).setEmptyObject();
-
-        return node;
-    }
-
-    public static ModelNode getJmsQueueAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("jms-queue.add"));
-        for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(bundle, "jms-queue", node);
-        }
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return node;
-    }
-
-    public static ModelNode getJmsQueueRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, JMS_QUEUE);
-    }
-
-    static ModelNode getTopic(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("jms-topic"));
-
-        ENTRIES.addResourceAttributeDescription(bundle, "jms-topic", node);
-
-        final ModelNode attributes = node.get(ATTRIBUTES);
-
-        // Runtime attributes
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, TOPIC_ADDRESS, ModelType.STRING, false, null);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, TEMPORARY, ModelType.BOOLEAN, false, null);
-
-        // Metrics
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, MESSAGE_COUNT, ModelType.LONG, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, DELIVERING_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, MESSAGES_ADDED, ModelType.LONG, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, DURABLE_MESSAGE_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, NON_DURABLE_MESSAGE_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, SUBSCRIPTION_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, DURABLE_SUBSCRIPTION_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-        addResourceAttributeDescription(bundle, "jms-topic", attributes, NON_DURABLE_SUBSCRIPTION_COUNT, ModelType.INT, false, MeasurementUnit.NONE);
-
-        node.get(OPERATIONS); // placeholder
-
-        node.get(CHILDREN).setEmptyObject();
-
-        return node;
-    }
-
-    public static ModelNode getTopicAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("jms-topic.add"));
-        ENTRIES.addOperationParameterDescription(bundle, "jms-topic", node);
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return node;
-    }
-
-    public static ModelNode getTopicRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, "jms-topic");
-    }
-
     public static ModelNode getListSubscriptionsOperation(Locale locale, String operationName) {
 
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -628,7 +447,7 @@ public class MessagingDescriptions {
     public static ModelNode getListMessagesForSubscription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getListMessagesBase(bundle, JMSTopicControlHandler.LIST_MESSAGES_FOR_SUBSCRIPTION);
+        final ModelNode result = getListMessagesBase(bundle, JMSTopicDefinition.LIST_MESSAGES_FOR_SUBSCRIPTION);
 
         final ModelNode replyProps = result.get(REPLY_PROPERTIES);
         replyProps.get(DESCRIPTION).set(bundle.getString("jms-topic.list-messages-for-subscription.reply"));
@@ -664,7 +483,7 @@ public class MessagingDescriptions {
     public static ModelNode getListMessagesForSubscriptionAsJSON(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
-        final ModelNode result = getListMessagesBase(bundle, JMSTopicControlHandler.LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON);
+        final ModelNode result = getListMessagesBase(bundle, JMSTopicDefinition.LIST_MESSAGES_FOR_SUBSCRIPTION_AS_JSON);
 
         final ModelNode replyProps = result.get(REPLY_PROPERTIES);
         replyProps.get(DESCRIPTION).set("jms-topic.list-messages-for-subscription-as-json.reply");
@@ -694,15 +513,15 @@ public class MessagingDescriptions {
 
         final ModelNode result = new ModelNode();
 
-        result.get(OPERATION_NAME).set(JMSTopicControlHandler.COUNT_MESSAGES_FOR_SUBSCRIPTION);
-        result.get(DESCRIPTION).set(bundle.getString("jms-topic." + JMSTopicControlHandler.COUNT_MESSAGES_FOR_SUBSCRIPTION));
+        result.get(OPERATION_NAME).set(JMSTopicDefinition.COUNT_MESSAGES_FOR_SUBSCRIPTION);
+        result.get(DESCRIPTION).set(bundle.getString("jms-topic." + JMSTopicDefinition.COUNT_MESSAGES_FOR_SUBSCRIPTION));
 
         final ModelNode reqProps = result.get(REQUEST_PROPERTIES);
         final ModelNode clientId = reqProps.get(CLIENT_ID.getName());
         clientId.get(DESCRIPTION).set(bundle.getString("jms-topic.client-id"));
         clientId.get(TYPE).set(ModelType.STRING);
         clientId.get(NILLABLE).set(false);
-        final ModelNode subscriptionName = reqProps.get(JMSTopicControlHandler.SUBSCRIPTION_NAME);
+        final ModelNode subscriptionName = reqProps.get(JMSTopicDefinition.SUBSCRIPTION_NAME);
         subscriptionName.get(DESCRIPTION).set(bundle.getString("jms-topic.subscription-name"));
         subscriptionName.get(TYPE).set(ModelType.STRING);
         subscriptionName.get(NILLABLE).set(false);
@@ -721,15 +540,15 @@ public class MessagingDescriptions {
 
         final ModelNode result = new ModelNode();
 
-        result.get(OPERATION_NAME).set(JMSTopicControlHandler.DROP_DURABLE_SUBSCRIPTION);
-        result.get(DESCRIPTION).set(bundle.getString("jms-topic." + JMSTopicControlHandler.DROP_DURABLE_SUBSCRIPTION));
+        result.get(OPERATION_NAME).set(JMSTopicDefinition.DROP_DURABLE_SUBSCRIPTION);
+        result.get(DESCRIPTION).set(bundle.getString("jms-topic." + JMSTopicDefinition.DROP_DURABLE_SUBSCRIPTION));
 
         final ModelNode reqProps = result.get(REQUEST_PROPERTIES);
         final ModelNode clientId = reqProps.get(CLIENT_ID.getName());
         clientId.get(DESCRIPTION).set(bundle.getString("jms-topic.client-id"));
         clientId.get(TYPE).set(ModelType.STRING);
         clientId.get(NILLABLE).set(false);
-        final ModelNode subscriptionName = reqProps.get(JMSTopicControlHandler.SUBSCRIPTION_NAME);
+        final ModelNode subscriptionName = reqProps.get(JMSTopicDefinition.SUBSCRIPTION_NAME);
         subscriptionName.get(DESCRIPTION).set(bundle.getString("jms-topic.subscription-name"));
         subscriptionName.get(TYPE).set(ModelType.STRING);
         subscriptionName.get(NILLABLE).set(false);
@@ -739,155 +558,9 @@ public class MessagingDescriptions {
         return result;
     }
 
-    static ModelNode getConnectionFactory(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString(CONNECTION_FACTORY));
-        addConnectionFactoryProperties(bundle, node, true);
-
-        final ModelNode attributes = node.get(ATTRIBUTES);
-
-        // Runtime attributes
-        addResourceAttributeDescription(bundle, CONNECTION_FACTORY, attributes, HA.getName(), ModelType.BOOLEAN, false, null);
-        CONNECTION_FACTORY_TYPE.addResourceAttributeDescription(bundle, CONNECTION_FACTORY, node);
-
-        addResourceAttributeDescription(bundle, CONNECTION_FACTORY, attributes, INITIAL_MESSAGE_PACKET_SIZE, ModelType.INT, false, MeasurementUnit.BYTES);
-
-        node.get(OPERATIONS); // placeholder
-
-        node.get(CHILDREN).setEmptyObject();
-
-        return node;
-    }
-
-    static ModelNode getConnectionFactoryAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString(CONNECTION_FACTORY + ".add"));
-        addConnectionFactoryProperties(bundle, node, false);
-        CONNECTION_FACTORY_TYPE.addOperationParameterDescription(bundle, CONNECTION_FACTORY, node);
-
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return node;
-    }
-
-    static ModelNode getConnectionFactoryRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, CONNECTION_FACTORY);
-    }
-
-    static ModelNode getPooledConnectionFactory(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
-        addPooledConnectionFactoryProperties(bundle, node, true);
-
-        node.get(OPERATIONS); // placeholder
-
-        node.get(CHILDREN).setEmptyObject();
-
-        return node;
-    }
-
-    static ModelNode getPooledConnectionFactoryAdd(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ADD);
-        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.add"));
-        addPooledConnectionFactoryProperties(bundle, node, false);
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return node;
-    }
-
-    private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final boolean resource) {
-
-        for (AttributeDefinition attr : PooledConnectionFactoryAttribute.getDefinitions(JMSServices.POOLED_CONNECTION_FACTORY_ATTRS)) {
-            if (resource) {
-                attr.addResourceAttributeDescription(bundle, "pooled-connection-factory", node);
-            } else {
-                attr.addOperationParameterDescription(bundle, "pooled-connection-factory", node);
-            }
-
-            if (attr.getName().equals(CONNECTOR)) {
-                final String propType =  resource ? ATTRIBUTES : REQUEST_PROPERTIES;
-                node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
-            }
-        }
-    }
-
-    static ModelNode getPooledConnectionFactoryRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, POOLED_CONNECTION_FACTORY);
-    }
-
-    private static void addConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, boolean resource) {
-
-        for (AttributeDefinition attr : JMSServices.CONNECTION_FACTORY_ATTRS) {
-
-            if (resource) {
-                attr.addResourceAttributeDescription(bundle, "connection-factory", node);
-            } else {
-                attr.addOperationParameterDescription(bundle, "connection-factory", node);
-            }
-
-            if (attr.getName().equals(CONNECTOR)) {
-                String propType = resource ? ATTRIBUTES : REQUEST_PROPERTIES;
-                node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
-            }
-        }
-    }
-
-    public static ModelNode getGetNodes(Locale locale) {
-        final ModelNode result = getDescriptionOnlyOperation(locale,  ClusterConnectionDefinition.GET_NODES, CLUSTER_CONNECTION);
-        result.get(REPLY_PROPERTIES, DESCRIPTION).set(getResourceBundle(locale).getString("cluster-connection.get-nodes.reply"));
-        result.get(REPLY_PROPERTIES, TYPE).set(ModelType.OBJECT);
-        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.STRING);
-        return result;
-    }
-
-    private static void getParamChildrenDescription(final ResourceBundle bundle, final ModelNode parent, final String prefix) {
-        parent.get(CHILDREN, CommonAttributes.PARAM, DESCRIPTION).set(bundle.getString(prefix + ".param"));
-        parent.get(CHILDREN, CommonAttributes.PARAM, MIN_OCCURS).set(0);
-        parent.get(CHILDREN, CommonAttributes.PARAM, MODEL_DESCRIPTION);
-    }
-
-    static ModelNode getConnectorServiceParamResource(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("connector-service.param"));
-        CommonAttributes.VALUE.addResourceAttributeDescription(bundle, "connector-service.param", root);
-
-        root.get(OPERATIONS); // placeholder
-
-        root.get(CHILDREN).setEmptyObject();
-
-        return root;
-    }
-
-    public static ModelNode getConnectorServiceParamAdd(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("connector-service.param.add"));
-        CommonAttributes.VALUE.addOperationParameterDescription(bundle, "connector-service.param", op);
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getConnectorServiceParamRemove(final Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, "connector-service.param");
-    }
-
     private static ModelNode addParamsParameterDescription(ModelNode operation, final String description, final ResourceBundle bundle) {
 
-        final ModelNode node = operation.get(REQUEST_PROPERTIES, PARAMS);
+        final ModelNode node = operation.get(REQUEST_PROPERTIES, PARAM);
 
         node.get(TYPE).set(ModelType.OBJECT);
         node.get(DESCRIPTION).set(bundle.getString(description));
@@ -895,39 +568,6 @@ public class MessagingDescriptions {
         node.get(VALUE_TYPE).set(ModelType.STRING);
 
         return node;
-    }
-
-    static ModelNode getAcceptorAdd(final Locale locale, AttributeDefinition... attrs) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
-
-        for (AttributeDefinition attr : attrs) {
-            attr.addOperationParameterDescription(bundle, null, op);
-        }
-
-        addParamsParameterDescription(op, "acceptor.add.params", bundle);
-
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
-    }
-
-    static ModelNode getConnectorAdd(final Locale locale, AttributeDefinition... attrs) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        final ModelNode op = new ModelNode();
-        op.get(OPERATION_NAME).set(ADD);
-        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
-        for (AttributeDefinition attr : attrs) {
-            attr.addOperationParameterDescription(bundle, null, op);
-        }
-
-        addParamsParameterDescription(op, "connector.add.params", bundle);
-
-        op.get(REPLY_PROPERTIES).setEmptyObject();
-        return op;
     }
 
     public static ModelNode getPathResource(Locale locale, String pathType) {
@@ -964,6 +604,80 @@ public class MessagingDescriptions {
         return getDescriptionOnlyOperation(locale, REMOVE, PATH);
     }
 
+    static ModelNode getAcceptorAdd(final Locale locale, AttributeDefinition... attrs) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("acceptor.add"));
+
+        for (AttributeDefinition attr : attrs) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+
+        addParamsParameterDescription(op, "acceptor.add.params", bundle);
+
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    static ModelNode getConnectorAdd(final Locale locale, AttributeDefinition... attrs) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode op = new ModelNode();
+        op.get(OPERATION_NAME).set(ADD);
+        op.get(DESCRIPTION).set(bundle.getString("connector.add"));
+        for (AttributeDefinition attr : attrs) {
+            attr.addOperationParameterDescription(bundle, null, op);
+        }
+
+        addParamsParameterDescription(op, "connector.add.params", bundle);
+
+        op.get(REPLY_PROPERTIES).setEmptyObject();
+        return op;
+    }
+
+    public static ModelNode getPooledConnectionFactory(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory"));
+        addPooledConnectionFactoryProperties(bundle, node, true);
+
+        node.get(OPERATIONS); // placeholder
+
+        node.get(CHILDREN).setEmptyObject();
+
+        return node;
+    }
+
+    private static void addPooledConnectionFactoryProperties(final ResourceBundle bundle, final ModelNode node, final boolean resource) {
+
+        for (AttributeDefinition attr : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
+            if (resource) {
+                attr.addResourceAttributeDescription(bundle, CommonAttributes.POOLED_CONNECTION_FACTORY, node);
+            } else {
+                attr.addOperationParameterDescription(bundle, CommonAttributes.POOLED_CONNECTION_FACTORY, node);
+            }
+
+            if (attr.getName().equals(ConnectorAttribute.CONNECTOR.getName())) {
+                final String propType = resource ? ATTRIBUTES : REQUEST_PROPERTIES;
+                node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
+            }
+        }
+    }
+
+    public static ModelNode getPooledConnectionFactoryAdd(final Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ADD);
+        node.get(DESCRIPTION).set(bundle.getString("pooled-connection-factory.add"));
+        addPooledConnectionFactoryProperties(bundle, node, false);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+
     public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String operationName, final String descriptionPrefix) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -971,69 +685,37 @@ public class MessagingDescriptions {
     }
 
     public static ModelNode getNoArgSimpleReplyOperation(final Locale locale, final String operationName,
-                                                         final String descriptionPrefix, final ModelType replyType,
-                                                         final boolean describeReply) {
+            final String descriptionPrefix, final ModelType replyType,
+            final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
         return CommonDescriptions.getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, replyType, describeReply);
     }
 
     public static ModelNode getSingleParamSimpleReplyOperation(final Locale locale, final String operationName,
-                                                         final String descriptionPrefix, final String paramName,
-                                                         final ModelType paramType, final boolean paramNillable,
-                                                         final ModelType replyType, final boolean describeReply) {
+            final String descriptionPrefix, final String paramName,
+            final ModelType paramType, final boolean paramNillable,
+            final ModelType replyType, final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
         return CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable, replyType, describeReply);
     }
 
     public static ModelNode getSingleParamSimpleListReplyOperation(final Locale locale, final String operationName,
-                                                         final String descriptionPrefix, final String paramName,
-                                                         final ModelType paramType, final boolean paramNillable,
-                                                         final ModelType listValueType, final boolean describeReply) {
+            final String descriptionPrefix, final String paramName,
+            final ModelType paramType, final boolean paramNillable,
+            final ModelType listValueType, final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
         return CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
                 paramType, paramNillable, listValueType, describeReply);
     }
 
     public static ModelNode getNoArgSimpleListReplyOperation(final Locale locale, final String operationName,
-                                                         final String descriptionPrefix, final ModelType listValueType,
-                                                         final boolean describeReply) {
+            final String descriptionPrefix, final ModelType listValueType,
+            final boolean describeReply) {
         final ResourceBundle bundle = getResourceBundle(locale);
         return CommonDescriptions.getNoArgSimpleListReplyOperation(bundle, operationName, descriptionPrefix, listValueType, describeReply);
     }
 
-    public static ModelNode getAddJndiOperation(final Locale locale, final String resourceType) {
-        final ResourceBundle bundle =  getResourceBundle(locale);
-
-        final ModelNode result = new ModelNode();
-        result.get(OPERATION_NAME).set(AbstractAddJndiHandler.ADD_JNDI);
-        result.get(DESCRIPTION).set(bundle.getString(resourceType + "." + AbstractAddJndiHandler.ADD_JNDI));
-
-        final ModelNode binding = result.get(REQUEST_PROPERTIES, CommonAttributes.JNDI_BINDING);
-        binding.get(DESCRIPTION).set(bundle.getString(CommonAttributes.JNDI_BINDING));
-        binding.get(TYPE).set(ModelType.STRING);
-        binding.get(REQUIRED).set(true);
-        binding.get(NILLABLE).set(false);
-        binding.get(MIN_LENGTH).set(1);
-
-        result.get(REPLY_PROPERTIES).setEmptyObject();
-        return result;
-    }
-
-    private static ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix,
-                                                             final ModelNode attributes, final String attrName,
-                                                             final ModelType type, final boolean nillable,
-                                                             final MeasurementUnit measurementUnit) {
-        final ModelNode attr = attributes.get(attrName);
-        attr.get(DESCRIPTION).set(bundle.getString(prefix + "." + attrName));
-        attr.get(TYPE).set(type);
-        attr.get(NILLABLE).set(nillable);
-        if (measurementUnit != null) {
-            attr.get(UNIT).set(measurementUnit.getName());
-        }
-        return attr;
-    }
-
-    public static ResourceBundle getResourceBundle(Locale locale) {
+    private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }

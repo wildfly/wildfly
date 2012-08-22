@@ -22,12 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import java.util.EnumSet;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Write attribute handler for attributes that update a cluster connection resource.
@@ -41,14 +36,4 @@ public class ClusterConnectionWriteAttributeHandler extends ReloadRequiredWriteA
     private ClusterConnectionWriteAttributeHandler() {
         super(ClusterConnectionDefinition.ATTRIBUTES);
     }
-
-    public void registerAttributes(final ManagementResourceRegistration registry, boolean registerRuntimeOnly) {
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : ClusterConnectionDefinition.ATTRIBUTES) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
-            }
-        }
-    }
-
 }

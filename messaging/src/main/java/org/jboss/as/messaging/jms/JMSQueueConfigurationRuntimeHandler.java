@@ -25,9 +25,6 @@ package org.jboss.as.messaging.jms;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,18 +41,12 @@ public class JMSQueueConfigurationRuntimeHandler extends AbstractJMSRuntimeHandl
 
     }
 
-    public void registerAttributes(final ManagementResourceRegistration registry) {
-        for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
-            registry.registerReadOnlyAttribute(attr.getName(), this, AttributeAccess.Storage.RUNTIME);
-        }
-    }
-
     @Override
     protected void executeReadAttribute(final String attributeName, final OperationContext context, final ModelNode destination, final PathAddress address, final boolean includeDefault) {
         if (destination.hasDefined(attributeName)) {
             context.getResult().set(destination.get(attributeName));
         } else if(includeDefault) {
-            for (AttributeDefinition attr : CommonAttributes.JMS_QUEUE_ATTRIBUTES) {
+            for (AttributeDefinition attr : JMSQueueDefinition.ATTRIBUTES) {
                 if(attr.getName().equals(attributeName)) {
                     context.getResult().set(attr.getDefaultValue());
                 }

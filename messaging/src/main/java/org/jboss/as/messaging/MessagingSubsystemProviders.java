@@ -33,65 +33,6 @@ import org.jboss.dmr.ModelNode;
  */
 class MessagingSubsystemProviders {
 
-    static final DescriptionProvider QUEUE_RESOURCE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getQueueResource(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_QUEUE_RESOURCE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getJmsQueueResource(locale);
-        }
-
-    };
-
-    public static final DescriptionProvider CF = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getConnectionFactory(locale);
-        }
-
-    };
-
-    public static final DescriptionProvider CF_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getConnectionFactoryAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider CF_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getConnectionFactoryRemove(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_TOPIC_RESOURCE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopic(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_TOPIC_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopicAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider JMS_TOPIC_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getTopicRemove(locale);
-        }
-    };
-
-
     public static class PathProvider implements DescriptionProvider  {
         final String pathType;
 
@@ -116,34 +57,6 @@ class MessagingSubsystemProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return MessagingDescriptions.getPathRemove(locale);
-        }
-    };
-
-    public static final DescriptionProvider RA = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getPooledConnectionFactory(locale);
-        }
-    };
-
-    public static final DescriptionProvider RA_ADD = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getPooledConnectionFactoryAdd(locale);
-        }
-    };
-
-    public static final DescriptionProvider RA_REMOVE = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            return MessagingDescriptions.getPooledConnectionFactoryRemove(locale);
-        }
-    };
-
-    public static final DescriptionProvider CONNECTOR_SERVICE_PARAM_RESOURCE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getConnectorServiceParamResource(locale);
         }
     };
 }

@@ -244,6 +244,7 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
+                 <compress-large-messages>true</compress-large-messages>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
@@ -287,6 +288,7 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
+                 <compress-large-messages>false</compress-large-messages>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>

@@ -48,6 +48,8 @@ import org.jboss.dmr.ModelType;
 */
 public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
 
+    private static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
+
     public static SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
@@ -69,7 +71,7 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP),
+        super(DiscoveryGroupDefinition.DISCOVERY_GROUP_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),
                 DiscoveryGroupAdd.INSTANCE,
                 DiscoveryGroupRemove.INSTANCE);

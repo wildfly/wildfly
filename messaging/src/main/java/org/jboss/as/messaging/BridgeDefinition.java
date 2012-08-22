@@ -30,8 +30,6 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
 
-import java.util.EnumSet;
-
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -41,12 +39,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 
 
@@ -57,7 +52,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class BridgeDefinition extends SimpleResourceDefinition {
 
-    public static final String[] OPERATIONS = { START, STOP };
+    public static final String[] OPERATIONS = {START, STOP};
+    private static final PathElement BRIDGE_PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
 
     private final boolean registerRuntimeOnly;
 
@@ -97,19 +93,19 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {
-        BridgeDefinition.QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
-        CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
-        CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CONNECTION_TTL,
-        CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
-        CommonAttributes.CHECK_PERIOD,
-        RECONNECT_ATTEMPTS,
-        USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-        USER, PASSWORD,
-        ConnectorRefsAttribute.BRIDGE_CONNECTORS, CommonAttributes.DISCOVERY_GROUP_NAME
+            BridgeDefinition.QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
+            CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
+            CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CONNECTION_TTL,
+            CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
+            CommonAttributes.CHECK_PERIOD,
+            RECONNECT_ATTEMPTS,
+            USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
+            USER, PASSWORD,
+            ConnectorRefsAttribute.BRIDGE_CONNECTORS, CommonAttributes.DISCOVERY_GROUP_NAME
     };
 
     public BridgeDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.BRIDGE),
+        super(BRIDGE_PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BRIDGE),
                 BridgeAdd.INSTANCE,
                 BridgeRemove.INSTANCE);
@@ -126,7 +122,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
         }
 
         if (registerRuntimeOnly) {
-            registry.registerReadOnlyAttribute(BridgeControlHandler.STARTED, BridgeControlHandler.INSTANCE);
+            BridgeControlHandler.INSTANCE.registerAttributes(registry);
         }
 
         registry.registerReadWriteAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN, null, new OperationStepHandler() {
@@ -145,13 +141,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
         if (registerRuntimeOnly) {
-            for (String operation : OPERATIONS) {
-                final DescriptionProvider desc = new DefaultOperationDescriptionProvider(operation, getResourceDescriptionResolver());
-                registry.registerOperationHandler(operation,
-                        BridgeControlHandler.INSTANCE,
-                        desc,
-                        EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
-            }
+            BridgeControlHandler.INSTANCE.registerOperations(registry, getResourceDescriptionResolver());
         }
 
         super.registerOperations(registry);

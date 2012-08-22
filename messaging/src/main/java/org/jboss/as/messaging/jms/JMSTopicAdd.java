@@ -23,10 +23,8 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -34,9 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -52,12 +48,12 @@ import org.jboss.msc.service.ServiceTarget;
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:andy.taylor@jboss.com">Andy Taylor</a>
  */
-public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class JMSTopicAdd extends AbstractAddStepHandler {
 
     public static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        ENTRIES.validateAndSet(operation, model);
+        JndiEntriesAttribute.DESTINATION.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -66,7 +62,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionPr
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final ModelNode entries = ENTRIES.resolveModelAttribute(context, model);
+        final ModelNode entries = JndiEntriesAttribute.DESTINATION.resolveModelAttribute(context, model);
         final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
         installServices(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
     }
@@ -88,10 +84,4 @@ public class JMSTopicAdd extends AbstractAddStepHandler implements DescriptionPr
             newControllers.add(controller);
         }
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getTopicAdd(locale);
-    }
-
 }

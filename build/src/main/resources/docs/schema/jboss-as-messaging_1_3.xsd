@@ -692,6 +692,7 @@
          <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="producer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="producer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="compress-large-messages" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="cache-large-message-client" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="min-large-message-size" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="client-id" type="xs:string" maxOccurs="1" minOccurs="0" />

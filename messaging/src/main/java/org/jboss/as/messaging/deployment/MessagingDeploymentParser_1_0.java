@@ -22,6 +22,13 @@
 
 package org.jboss.as.messaging.deployment;
 
+import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.jms.JndiEntriesAttribute.DESTINATION;
+
 import java.util.Collections;
 import java.util.EnumSet;
 
@@ -37,13 +44,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
-import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
-import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 
 /**
@@ -154,7 +154,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (element) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    ENTRIES.parseAndAddParameterElement(entry, topic, reader);
+                    DESTINATION.parseAndAddParameterElement(entry, topic, reader);
                     break;
                 }
                 default: {
@@ -181,7 +181,7 @@ class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementRea
             switch (element) {
                 case ENTRY: {
                     final String entry = propertyReplacer.replaceProperties(readStringAttributeElement(reader, CommonAttributes.NAME));
-                    ENTRIES.parseAndAddParameterElement(entry, queue, reader);
+                    DESTINATION.parseAndAddParameterElement(entry, queue, reader);
                     break;
                 }
                 case SELECTOR: {

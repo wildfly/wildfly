@@ -50,8 +50,10 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     HornetQServerResourceDefinition(boolean registerRuntimeOnly) {
-        super(HORNETQ_SERVER_PATH, MessagingExtension.getResourceDescriptionResolver(CommonAttributes.HORNETQ_SERVER),
-                HornetQServerAdd.INSTANCE, HornetQServerRemove.INSTANCE);
+        super(HORNETQ_SERVER_PATH,
+                MessagingExtension.getResourceDescriptionResolver(CommonAttributes.HORNETQ_SERVER),
+                HornetQServerAdd.INSTANCE,
+                HornetQServerRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
@@ -81,7 +83,7 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
 
     /**
      * {@inheritDoc}
-     *
+     * <p/>
      * The resource description has a small tweak from the standard
      */
     @Override
@@ -97,4 +99,6 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
             }
         };
     }
+
+
 }

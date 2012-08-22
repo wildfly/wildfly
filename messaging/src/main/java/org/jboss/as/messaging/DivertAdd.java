@@ -56,9 +56,6 @@ public class DivertAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        model.setEmptyObject();
-
         for (final AttributeDefinition attributeDefinition : DivertDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
         }

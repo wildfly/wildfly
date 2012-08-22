@@ -24,9 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -39,11 +36,6 @@ public class JMSTopicConfigurationRuntimeHandler extends AbstractJMSRuntimeHandl
     public static final JMSTopicConfigurationRuntimeHandler INSTANCE = new JMSTopicConfigurationRuntimeHandler();
 
     private JMSTopicConfigurationRuntimeHandler() {
-    }
-
-
-    public void registerAttributes(final ManagementResourceRegistration registry) {
-        registry.registerReadOnlyAttribute(CommonAttributes.ENTRIES.getName(), this, AttributeAccess.Storage.RUNTIME);
     }
 
     @Override
