@@ -27,6 +27,8 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -97,7 +99,7 @@ public final class OptionalLookupInjectionSource extends InjectionSource {
         return lookupName.hashCode();
     }
 
-    private static class OptionalLookupManagedReferenceFactory implements ManagedReferenceFactory {
+    private static class OptionalLookupManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
         private final String lookupName;
 
         public OptionalLookupManagedReferenceFactory(final String lookupName) {
@@ -112,6 +114,17 @@ public final class OptionalLookupInjectionSource extends InjectionSource {
             } catch (NamingException e) {
                 return null;
             }
+        }
+
+        @Override
+        public String getInstanceClassName() {
+            final Object value = getReference().getInstance();
+            return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+        }
+
+        @Override
+        public String getJndiViewInstanceValue() {
+            return String.valueOf(getReference().getInstance());
         }
     }
 }
