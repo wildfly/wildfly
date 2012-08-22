@@ -217,6 +217,7 @@ public enum Phase {
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1A00;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;
     public static final int STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY    = 0x1C00;
+    public static final int STRUCTURE_DEPLOYMENT_DEPENDENCIES           = 0x1D00;
 
     // PARSE
     public static final int PARSE_EE_DEPLOYMENT_PROPERTIES              = 0x0001;
@@ -293,7 +294,6 @@ public enum Phase {
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x4000;
     public static final int PARSE_JACORB                                = 0x4100;
     public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x4200;
-    public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x4300;
     public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x4400;
     public static final int PARSE_DSXML_DEPLOYMENT                      = 0x4500;
     public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x4600;
@@ -458,6 +458,7 @@ public enum Phase {
     public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
     public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
     public static final int INSTALL_WAB_SERVLETCONTEXT_SERVICE          = 0x2050;
+    public static final int INSTALL_DEPLOYMENT_COMPLETE_SERVICE         = 0x2100;
 
     // CLEANUP
     public static final int CLEANUP_REFLECTION_INDEX                    = 0x0100;

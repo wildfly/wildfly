@@ -22,18 +22,6 @@
 
 package org.jboss.as.web.deployment;
 
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.security.jacc.PolicyConfiguration;
-
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleListener;
@@ -85,6 +73,17 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
+
+import javax.security.jacc.PolicyConfiguration;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * {@code DeploymentUnitProcessor} creating the actual deployment services.
@@ -268,6 +267,10 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
         try {
             final ServiceName webappServiceName = WebSubsystemServices.deploymentServiceName(hostName, pathName);
             final ServiceName realmServiceName = webappServiceName.append("realm");
+
+
+            deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, webappServiceName);
+            deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, realmServiceName);
 
             final JBossWebRealmService realmService = new JBossWebRealmService(deploymentUnit);
             ServiceBuilder<Realm> realmBuilder = serviceTarget.addService(realmServiceName, realmService);

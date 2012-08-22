@@ -38,8 +38,8 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
-import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.ELExpressionFactoryProcessor;
+import org.jboss.as.web.deployment.EarContextRootProcessor;
 import org.jboss.as.web.deployment.JBossWebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.ServletContainerInitializerDeploymentProcessor;
 import org.jboss.as.web.deployment.TldParsingDeploymentProcessor;
@@ -50,7 +50,6 @@ import org.jboss.as.web.deployment.WarDeploymentProcessor;
 import org.jboss.as.web.deployment.WarMetaDataProcessor;
 import org.jboss.as.web.deployment.WarStructureDeploymentProcessor;
 import org.jboss.as.web.deployment.WebFragmentParsingDeploymentProcessor;
-import org.jboss.as.web.deployment.WebInitializeInOrderProcessor;
 import org.jboss.as.web.deployment.WebJBossAllParser;
 import org.jboss.as.web.deployment.WebParsingDeploymentProcessor;
 import org.jboss.as.web.deployment.component.WebComponentProcessor;
@@ -120,7 +119,6 @@ class WebSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_COMPONENTS, new WebComponentProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EAR_CONTEXT_ROOT, new EarContextRootProcessor());
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_MERGE_METADATA, new WarMetaDataProcessor());
-                processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_WEB_INITIALIZE_IN_ORDER, new WebInitializeInOrderProcessor(defaultVirtualServer));
 
                 processorTarget.addDeploymentProcessor(WebExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new WarClassloadingDependencyProcessor());
 

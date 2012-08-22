@@ -22,28 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-import static org.jboss.as.server.Services.addServerExecutorDependency;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolverHolder;
-import javax.sql.DataSource;
-import javax.validation.ValidatorFactory;
-
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -95,6 +73,27 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+
+import javax.persistence.ValidationMode;
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolverHolder;
+import javax.sql.DataSource;
+import javax.validation.ValidatorFactory;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 /**
  * Handle the installation of the Persistence Unit service
@@ -315,6 +314,8 @@ public class PersistenceUnitServiceHandler {
 
 
             final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+
+            deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
             // add the PU service as a dependency to all EE components in this scope
             addPUServiceDependencyToComponents(components, puServiceName);
 

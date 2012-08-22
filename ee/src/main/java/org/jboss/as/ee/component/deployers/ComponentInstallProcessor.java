@@ -128,6 +128,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceBuilder<Component> startBuilder = serviceTarget.addService(startServiceName, startService);
         final EEModuleConfiguration moduleConfiguration = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
 
+        deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_COMPLETE_SERVICES, startServiceName);
+
         if (moduleConfiguration == null) {
             return;
         }

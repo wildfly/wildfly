@@ -51,6 +51,8 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
+import org.jboss.as.server.deployment.dependencies.DeploymentDependenciesProcessor;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexService;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
@@ -256,6 +258,7 @@ public final class ServerService extends AbstractControllerService {
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_PARSE_JBOSS_ALL_XML, new JBossAllXMLParsingProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE, new DeploymentStructureDescriptorParser());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_CLASS_PATH, new ManifestClassPathProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_DEPLOYMENT_DEPENDENCIES, new DeploymentDependenciesProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_DEPENDENCIES_MANIFEST, new ManifestDependencyProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_COMPOSITE_ANNOTATION_INDEX, new CompositeIndexProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.PARSE, Phase.PARSE_EXTENSION_LIST, new ManifestExtensionListProcessor());
@@ -274,6 +277,7 @@ public final class ServerService extends AbstractControllerService {
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.POST_MODULE, Phase.POST_MODULE_REFLECTION_INDEX, new InstallReflectionIndexProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.FIRST_MODULE_USE, Phase.FIRST_MODULE_USE_TRANSFORMER, new ClassFileTransformerProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.INSTALL, Phase.INSTALL_SERVICE_ACTIVATOR, new ServiceActivatorProcessor());
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.INSTALL, Phase.INSTALL_DEPLOYMENT_COMPLETE_SERVICE, new DeploymentCompleteServiceProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.CLEANUP, Phase.CLEANUP_REFLECTION_INDEX, new CleanupReflectionIndexProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.CLEANUP, Phase.CLEANUP_ANNOTATION_INDEX, new CleanupAnnotationIndexProcessor());
 
@@ -283,6 +287,8 @@ public final class ServerService extends AbstractControllerService {
 
             //jboss.xml parsers
             DeploymentStructureDescriptorParser.registerJBossXMLParsers();
+            DeploymentDependenciesProcessor.registerJBossXMLParsers();
+
 
             try {
                 // Boot but don't rollback on runtime failures
