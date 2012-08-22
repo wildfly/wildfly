@@ -32,7 +32,7 @@ import org.jboss.msc.value.Value;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ValueManagedReferenceFactory implements ManagedReferenceFactory {
+public final class ValueManagedReferenceFactory implements InstanceTypeAwareManagedReferenceFactory {
     private final Value<?> value;
 
     /**
@@ -47,6 +47,15 @@ public final class ValueManagedReferenceFactory implements ManagedReferenceFacto
     @Override
     public ManagedReference getReference() {
         return new ValueManagedReference(value.getValue());
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        final Object instance = value != null ? value.getValue() : null;
+        if(instance == null) {
+            return ManagedReference.class.getName();
+        }
+        return instance.getClass().getName();
     }
 
     public static class ValueManagedReference implements ManagedReference, Serializable {
