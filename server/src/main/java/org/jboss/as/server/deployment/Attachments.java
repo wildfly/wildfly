@@ -64,6 +64,11 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<AttachableDependency>> NEXT_PHASE_ATTACHABLE_DEPS = AttachmentKey.createList(AttachableDependency.class);
 
     /**
+     * Specifies that the next phase is passive, and will not start unless all its dependencies are present.
+     */
+    public static final AttachmentKey<Boolean> NEXT_PHASE_PASSIVE = AttachmentKey.create(Boolean.class);
+
+    /**
      * A set of subsystem names that should not be processed. Any subsystem whos name is in this list will not have
      * its deployment unit processors run.
      */
@@ -291,6 +296,14 @@ public final class Attachments {
      * Setup actions that must be run before running an arquillian test
      */
     public static final AttachmentKey<AttachmentList<SetupAction>> SETUP_ACTIONS = AttachmentKey.createList(SetupAction.class);
+
+    /**
+     * List of services that need to be up before we consider this deployment 'done'. This is used to manage initialize-in-order,
+     * and inter deployment dependencies.
+     *
+     * It would better if this could be handled by MSC without needing to add all these into a list manually
+     */
+    public static final AttachmentKey<AttachmentList<ServiceName>> DEPLOYMENT_COMPLETE_SERVICES = AttachmentKey.createList(ServiceName.class);
 
     //
     // CLEANUP

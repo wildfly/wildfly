@@ -31,6 +31,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore
 public class IIOPNamingTestCase {
 
     @ContainerResource

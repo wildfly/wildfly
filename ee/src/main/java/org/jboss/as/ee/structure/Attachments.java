@@ -24,10 +24,8 @@ package org.jboss.as.ee.structure;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ear.spec.ModuleMetaData;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -61,16 +59,6 @@ public final class Attachments {
      * A Marker that identifies the a type of deployment
      */
     public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE = AttachmentKey.create(DeploymentType.class);
-
-
-    /**
-     * Services that must be waited on for this deployment if initialize in order is enabled. Only once all these services are up can the next deployment
-     * start. It is not necessary to add component start services to this list, they are handed automatically.
-     *
-     * These entries must be added before the {@link org.jboss.as.server.deployment.Phase#POST_MODULE} phase, as this is the phase where the dependencies are
-     * set up.
-     */
-    public static final AttachmentKey<AttachmentList<ServiceName>> INITIALISE_IN_ORDER_SERVICES = AttachmentKey.createList(ServiceName.class);
 
     /**
      * If this is set to true property replacement will be enabled for spec descriptors

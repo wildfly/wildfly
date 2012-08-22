@@ -24,8 +24,7 @@ package org.jboss.as.ee.structure;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -54,7 +53,6 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
         if (earConfig != null) {
             final boolean inOrder = earConfig.getInitializeInOrder();
             if (inOrder && earConfig.getModules().size() > 1) {
-
 
                 final Map<String, DeploymentUnit> deploymentUnitMap = new HashMap<String, DeploymentUnit>();
                 for (final DeploymentUnit subDeployment : parent.getAttachment(org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS)) {
@@ -87,16 +85,8 @@ public class InitializeInOrderProcessor implements DeploymentUnitProcessor {
                         final ServiceName serviceName = Services.deploymentUnitName(parent.getName(), previous.getFileName());
                         phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, serviceName.append(Phase.INSTALL.name()));
                         final DeploymentUnit prevDeployment = deploymentUnitMap.get(previous.getFileName());
-                        final EEModuleDescription eeModuleDescription = prevDeployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-                        if (eeModuleDescription != null) {
-                            for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
-                                phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, component.getStartServiceName());
-                            }
-                        }
-                        for (final ServiceName name : prevDeployment.getAttachmentList(Attachments.INITIALISE_IN_ORDER_SERVICES)) {
-                            phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, name);
-                        }
 
+                        phaseContext.addToAttachmentList(org.jboss.as.server.deployment.Attachments.NEXT_PHASE_DEPS, DeploymentCompleteServiceProcessor.serviceName(prevDeployment.getServiceName()));
                     }
                 }
             }
