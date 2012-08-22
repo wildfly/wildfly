@@ -59,6 +59,7 @@ class ModClusterAddSSL extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attr : ModClusterSSLResourceDefinition.ATTRIBUTES) {
+            if (attr.getName().equals(CommonAttributes.PASSWORD)) { continue; }
             attr.validateAndSet(operation, model);
         }
     }

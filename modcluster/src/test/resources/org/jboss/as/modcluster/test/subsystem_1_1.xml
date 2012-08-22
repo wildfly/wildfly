@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:modcluster:1.2">
+<subsystem xmlns="urn:jboss:domain:modcluster:1.1">
     <mod-cluster-config proxy-list="example.com:6666" load-balancing-group="mydomain" advertise="true" advertise-security-key="mysecuritykey"
                         excluded-contexts="a,b,c" auto-enable-contexts="true" stop-context-timeout="10" socket-timeout="20" connector="ajp">
         <simple-load-provider factor="15"/>
@@ -15,6 +15,6 @@
             </load-metric>
             <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass" weight="5"/>
         </dynamic-load-provider>
-        <ssl ca-certificate-file="/home/rhusar/client-keystore.jsk" truststore-password="test" keystore-password="test" certificate-key-file="/home/rhusar/client-keystore.jsk" />
+        <ssl ca-certificate-file="/home/rhusar/client-keystore.jsk" certificate-key-file="/home/rhusar/client-keystore.jsk" password="mypassword"/>
     </mod-cluster-config>
 </subsystem>

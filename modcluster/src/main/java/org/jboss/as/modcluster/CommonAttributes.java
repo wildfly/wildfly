@@ -73,6 +73,7 @@ interface CommonAttributes {
     String PROPERTY = "property";
     String VALUE = "value";
     String KEY_ALIAS = "key-alias";
+    String KEYSTORE_PASSWORD = "keystore-password";
     String PASSWORD = "password";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CIPHER_SUITE = "cipher-suite";
@@ -80,6 +81,7 @@ interface CommonAttributes {
     String VERIFY_CLIENT = "verify-client";
     String CA_CERTIFICATE_FILE = "ca-certificate-file";
     String CA_REVOCATION_URL = "ca-revocation-url";
+    String TRUSTSTORE_PASSWORD = "truststore-password";
     String CONFIGURATION = "configuration";
 
     String PORT = "port";

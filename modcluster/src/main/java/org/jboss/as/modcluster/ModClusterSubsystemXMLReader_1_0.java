@@ -162,6 +162,8 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     throw unexpectedAttribute(reader, i);
             }
         }
+        ssl.get(CommonAttributes.KEYSTORE_PASSWORD).set(ssl.get(CommonAttributes.PASSWORD));
+        ssl.get(CommonAttributes.TRUSTSTORE_PASSWORD).set(ssl.get(CommonAttributes.PASSWORD));
         ParseUtils.requireNoContent(reader);
     }
 

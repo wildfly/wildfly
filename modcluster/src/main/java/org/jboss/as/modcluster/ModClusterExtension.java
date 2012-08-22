@@ -22,6 +22,11 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
@@ -33,11 +38,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
-import javax.xml.stream.XMLStreamConstants;
-import java.util.List;
-
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
-
 /**
  * Domain extension used to initialize the mod_cluster subsystem element handlers.
  *
@@ -48,7 +48,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
@@ -95,7 +95,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         for (Namespace namespace : Namespace.values()) {
             XMLElementReader<List<ModelNode>> reader = namespace.getXMLReader();
             if (reader != null) {
-                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getXMLReader());
+                context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
             }
         }
     }

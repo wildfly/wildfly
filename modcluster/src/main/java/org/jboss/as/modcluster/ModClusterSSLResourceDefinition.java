@@ -22,21 +22,23 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@link ResourceDefinition} implementation for the core mod-cluster SSL configuration resource.
@@ -50,10 +52,11 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     public static final SimpleAttributeDefinition PASSWORD = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PASSWORD, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode("changeit"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
             .build();
 
     public static final SimpleAttributeDefinition CERTIFICATE_KEY_FILE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CERTIFICATE_KEY_FILE, ModelType.STRING, true)
@@ -81,8 +84,23 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
+    static final SimpleAttributeDefinition TRUSTSTORE_PASSWORD = new SimpleAttributeDefinitionBuilder(CommonAttributes.TRUSTSTORE_PASSWORD, ModelType.STRING)
+            .setAllowNull(true)
+                    .setAllowExpression(true)
+                    .setValidator(new StringLengthValidator(1, true, true))
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
+    static final SimpleAttributeDefinition KEYSTORE_PASSWORD = new SimpleAttributeDefinitionBuilder(CommonAttributes.KEYSTORE_PASSWORD, ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode("changeit"))
+            .setValidator(new StringLengthValidator(1, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            KEY_ALIAS, PASSWORD, CERTIFICATE_KEY_FILE, CIPHER_SUITE, PROTOCOL, CA_CERTIFICATE_FILE, CA_REVOCATION_URL
+            KEY_ALIAS, PASSWORD, CERTIFICATE_KEY_FILE, CIPHER_SUITE, PROTOCOL, CA_CERTIFICATE_FILE, CA_REVOCATION_URL, TRUSTSTORE_PASSWORD, KEYSTORE_PASSWORD
     };
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;

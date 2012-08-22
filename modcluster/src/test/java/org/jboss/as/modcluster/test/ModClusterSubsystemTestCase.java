@@ -21,13 +21,12 @@
 */
 package org.jboss.as.modcluster.test;
 
+import java.io.IOException;
+
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -42,6 +41,11 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testXsd10() throws Exception {
         standardSubsystemTest("subsystem_1_0.xml");
+    }
+
+    @Test
+    public void testXsd11() throws Exception {
+        standardSubsystemTest("subsystem_1_1.xml");
     }
 
 
@@ -63,7 +67,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        if (configId != null && configId.equals("subsystem_1_0.xml")) {
+        if (configId != null && !configId.equals("subsystem.xml")) {
             return;
         }
 
