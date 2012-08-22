@@ -31,14 +31,14 @@
     <dependencyManagement>
 
         <dependencies>
-            <!-- JBoss distributes a complete set of Java EE 6 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-                a collection) of artifacts. We use this here so that we always get the correct
-                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can
-                read this as the JBoss stack of the Java EE full Profile 6 APIs), and we use
-                version 3.0.0.Beta1 which is the latest release of the stack. You can actually
-                use this stack with any version of JBoss AS that implements Java EE 6, not
-                just JBoss AS 7! -->
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including 
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
+                a collection) of artifacts. We use this here so that we always get the correct 
+                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read 
+                this as the JBoss stack of the Java EE full Profile 6 APIs), and we use version 
+                3.0.0.Beta1 which is the latest release of the stack. You can actually use 
+                this stack with any version of JBoss AS that implements Java EE 6, not just 
+                JBoss AS 7! -->
             <dependency>
                 <groupId>org.jboss.spec</groupId>
                 <artifactId>jboss-javaee-6.0</artifactId>
@@ -61,6 +61,76 @@
                 </exclusions>
             </dependency>
         </dependencies>
+
+        <dependency>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbossjta</artifactId>
+            <version>${version.org.jboss.jbossts.jbossjts}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.ws.native</groupId>
+                    <artifactId>jbossws-native-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>emma</artifactId>
+                    <groupId>emma</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>emma_ant</artifactId>
+                    <groupId>emma</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>hornetq-core</artifactId>
+                    <groupId>org.hornetq</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>netty</artifactId>
+                    <groupId>org.jboss.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>wrapper</artifactId>
+                    <groupId>tanukisoft</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jacorb</artifactId>
+                    <groupId>jacorb</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jfreechart</artifactId>
+                    <groupId>jfree</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jboss-corba-ots-spi</artifactId>
+                    <groupId>org.jboss.integration</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jboss-server-manager</artifactId>
+                    <groupId>org.jboss.jbossas</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+                    <groupId>org.jboss.spec.javax.ejb</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jnp-client</artifactId>
+                    <groupId>org.jboss.naming</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                    <groupId>org.jboss.spec.javax.servlet</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jbossws-common</artifactId>
+                    <groupId>org.jboss.ws</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jcl-over-slf4j</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
     </dependencyManagement>
 </project>
