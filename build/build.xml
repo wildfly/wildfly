@@ -328,6 +328,10 @@
             <maven-resource group="com.google.guava" artifact="guava" />
         </module-def>
 
+        <module-def name="com.googlecode.jtype">
+            <maven-resource group="com.googlecode.jtype" artifact="jtype" />
+        </module-def>
+
         <module-def name="com.h2database.h2">
             <maven-resource group="com.h2database" artifact="h2"/>
         </module-def>

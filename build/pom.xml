@@ -233,6 +233,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>com.googlecode.jtype</groupId>
+                    <artifactId>jtype</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>com.sun.codemodel</groupId>
                     <artifactId>codemodel</artifactId>
                 </dependency>
