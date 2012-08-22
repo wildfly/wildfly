@@ -31,6 +31,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -59,7 +60,39 @@ public class PropertyNameCompleter extends DefaultCompleter {
                 if(!result.isDefined()) {
                     return Collections.emptyList();
                 }
-                final ModelNode attrs = result.get(Util.ATTRIBUTES);
+                final ModelNode attrs;
+                if(result.getType().equals(ModelType.LIST)) {
+                    ModelNode wildcardResult = null;
+                    // wildcard address
+                    for(ModelNode item : result.asList()) {
+                        final ModelNode addr = item.get(Util.ADDRESS);
+                        if(!addr.getType().equals(ModelType.LIST)) {
+                            return Collections.emptyList();
+                        }
+                        for(ModelNode node : addr.asList()) {
+                            if(!node.getType().equals(ModelType.PROPERTY)) {
+                                throw new IllegalArgumentException(node.getType().toString());
+                            }
+                            if("*".equals(node.asProperty().getValue().asString())) {
+                                wildcardResult = item;
+                                break;
+                            }
+                        }
+                        if(wildcardResult != null) {
+                            break;
+                        }
+                    }
+                    if(wildcardResult == null) {
+                        throw new IllegalStateException("Failed to locate the wildcard result.");
+                    }
+                    wildcardResult = wildcardResult.get(Util.RESULT);
+                    if(!wildcardResult.isDefined()) {
+                        return Collections.emptyList();
+                    }
+                    attrs = wildcardResult.get(Util.ATTRIBUTES);
+                } else {
+                    attrs = result.get(Util.ATTRIBUTES);
+                }
                 if(!attrs.isDefined()) {
                     return Collections.emptyList();
                 }
