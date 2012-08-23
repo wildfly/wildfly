@@ -34,6 +34,7 @@ import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroups
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
+import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -48,6 +49,7 @@ import org.junit.runners.Suite;
     BasicOpsTestCase.class,
     DeployAllServerGroupsTestCase.class,
     DeploySingleServerGroupTestCase.class,
+    UndeployWildcardDomainTestCase.class,
     JmsTestCase.class,
     DataSourceTestCase.class,
     RolloutPlanTestCase.class

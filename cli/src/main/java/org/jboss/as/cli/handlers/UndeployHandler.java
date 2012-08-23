@@ -380,43 +380,40 @@ public class UndeployHandler extends DeploymentHandler {
             }
         }
 
-        if(ctx.isDomainMode()) {
-            List<String> serverGroups = Collections.emptyList();
-            if(allRelevantServerGroups) {
-                for(String deploymentName : deploymentNames) {
+        for(String deploymentName : deploymentNames) {
+
+            final List<String> serverGroups;
+            if(ctx.isDomainMode()) {
+                if(allRelevantServerGroups) {
                     if(keepContent) {
                         serverGroups = Util.getAllEnabledServerGroups(deploymentName, client);
                     } else {
                         serverGroups = Util.getAllReferencingServerGroups(deploymentName, client);
                     }
-                }
-            } else {
-                if(serverGroupsStr == null) {
-                    //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
-                    serverGroups = Collections.emptyList();
                 } else {
-                    serverGroups = Arrays.asList(serverGroupsStr.split(","));
+                    if(serverGroupsStr == null) {
+                        //throw new OperationFormatException("Either --all-relevant-server-groups or --server-groups must be specified.");
+                        serverGroups = Collections.emptyList();
+                    } else {
+                        serverGroups = Arrays.asList(serverGroupsStr.split(","));
+                    }
                 }
-            }
 
-            if(serverGroups.isEmpty()) {
-                if(keepContent) {
-                    throw new OperationFormatException("None of the server groups is specified or references specified deployment.");
-                }
-            } else {
-                for(String deploymentName : deploymentNames) {
+                if(serverGroups.isEmpty()) {
+                    if(keepContent) {
+                        throw new OperationFormatException("None of the server groups is specified or references specified deployment.");
+                    }
+                } else {
                     for (String group : serverGroups){
                         ModelNode groupStep = Util.configureDeploymentOperation(Util.UNDEPLOY, deploymentName, group);
                         steps.add(groupStep);
-  //                      if(!keepContent) {
+//                      if(!keepContent) {
                             groupStep = Util.configureDeploymentOperation(Util.REMOVE, deploymentName, group);
                             steps.add(groupStep);
-//                        }
+//                      }
                     }
                 }
-            }
-        } else {
-            for(String deploymentName : deploymentNames) {
+            } else {
                 if(Util.isDeployedAndEnabledInStandalone(deploymentName, client)) {
                     builder = new DefaultOperationRequestBuilder();
                     builder.setOperationName(Util.UNDEPLOY);
