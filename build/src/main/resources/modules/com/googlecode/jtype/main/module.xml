@@ -22,23 +22,11 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate.validator">
-  <resources>
-    <!-- Insert resources here -->
-  </resources>
+<module xmlns="urn:jboss:module:1.1" name="com.googlecode.jtype">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
 
-  <dependencies>
-    <module name="com.googlecode.jtype"/>
-    <module name="javax.api"/>
-    <module name="javax.persistence.api"/>
-    <module name="javax.validation.api"/>
-    <module name="javax.persistence.api"/>
-    <module name="javax.xml.bind.api"/>
-    <module name="org.jboss.logging"/>
-    <module name="org.jboss.common-core"/>
-    <module name="org.joda.time"/>
-    <module name="org.slf4j"/>
-    <module name="org.apache.xerces" services="import"/>
-    <module name="sun.jdk" services="import"/>
-  </dependencies>
+    <dependencies>
+    </dependencies>
 </module>

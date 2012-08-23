@@ -79,6 +79,7 @@
         <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>11.0.2</version.com.google.guava>
+        <version.com.googlecode.jtype>0.1.1</version.com.googlecode.jtype>
         <version.com.h2database>1.3.168</version.com.h2database>
         <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
         <version.com.sun.faces>2.1.12-jbossorg-1</version.com.sun.faces>
@@ -1231,6 +1232,12 @@
                         <artifactId>jsr305</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.googlecode.jtype</groupId>
+                <artifactId>jtype</artifactId>
+                <version>${version.com.googlecode.jtype}</version>
             </dependency>
 
             <dependency>
