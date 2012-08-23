@@ -47,7 +47,7 @@ import org.jboss.as.service.descriptor.JBossServiceConstructorConfig;
 import org.jboss.as.service.descriptor.JBossServiceConstructorConfig.Argument;
 import org.jboss.as.service.descriptor.JBossServiceDependencyConfig;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
-import org.jboss.common.beans.property.PropertyEditors;
+import org.jboss.common.beans.property.finder.PropertyEditorFinder;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MethodInjector;
@@ -212,7 +212,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
     }
 
     private static Object newValue(final Class<?> type, final String value) {
-        final PropertyEditor editor = PropertyEditors.findEditor(type);
+        final PropertyEditor editor = PropertyEditorFinder.getInstance().find(type);
         if (editor == null) {
             SarLogger.DEPLOYMENT_SERVICE_LOGGER.propertyNotFound(type);
             return null;
