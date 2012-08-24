@@ -48,10 +48,10 @@ public abstract class AttributeMarshaller {
      */
 
     public void marshallAsAttribute(final AttributeDefinition attribute,final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
-
+        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsAttribute(attribute.getName());
     }
 
     public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
-
+        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsElement(attribute.getName());
     }
 }

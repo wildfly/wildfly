@@ -29,7 +29,6 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -44,6 +43,7 @@ import org.jboss.dmr.Property;
  *
  * @author Jeff Mesnil (c) 2012 Red Hat Inc.
  */
+//todo it should be converted to use PropertiesAttributeDefinition
 public class JNDIContextAttributeDefinition extends SimpleAttributeDefinition {
 
     protected JNDIContextAttributeDefinition(String name, String xmlName) {

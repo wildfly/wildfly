@@ -107,7 +107,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     public void marshallAsElement(final ModelNode resourceModel, boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (resourceModel.hasDefined(getName())) {
+        /*if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
             for (ModelNode handler : resourceModel.get(getName()).asList()) {
                 writer.writeStartElement("element");
@@ -115,7 +115,8 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
                 writer.writeEndElement();
             }
             writer.writeEndElement();
-        }
+        }*/
+        attributeMarshaller.marshallAsElement(this,resourceModel,marshalDefault,writer);
     }
 
 
@@ -139,6 +140,9 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
         public PrimitiveListAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
             if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
+            if (validator == null) {
+                validator = new ModelTypeValidator(valueType, allowNull, allowExpression);
+            }
             return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, valueType, minSize, maxSize, alternatives, requires, attributeMarshaller, flags);
         }
     }

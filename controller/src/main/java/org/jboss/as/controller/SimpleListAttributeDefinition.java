@@ -48,13 +48,13 @@ import org.jboss.dmr.ModelType;
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
 
-    private SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, null,flags);
-        this.valueType = valueType;
-    }
     private SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, flags);
         this.valueType = valueType;
+    }
+
+    public AttributeDefinition getValueType() {
+        return valueType;
     }
 
     @Override
@@ -184,6 +184,11 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         public Builder(final String name, final AttributeDefinition valueType) {
             super(name, ModelType.LIST);
             this.valueType = valueType;
+        }
+
+        public Builder(final SimpleListAttributeDefinition basis) {
+            super(basis);
+            valueType = basis.getValueType();
         }
 
         public static Builder of(final String name, final AttributeDefinition valueType) {

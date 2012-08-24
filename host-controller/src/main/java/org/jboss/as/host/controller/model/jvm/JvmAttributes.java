@@ -26,10 +26,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -79,8 +80,11 @@ public class JvmAttributes {
             .setAllowExpression(false)
             .build();
 
-    public static final AttributeDefinition ENVIRONMENT_VARIABLES =
-            new PropertiesAttributeDefinition(JvmAttributes.JVM_ENV_VARIABLES, Element.VARIABLE.getLocalName(), true);
+    public static final PropertiesAttributeDefinition ENVIRONMENT_VARIABLES = new PropertiesAttributeDefinition.Builder(JvmAttributes.JVM_ENV_VARIABLES, true)
+            .setXmlName(Element.VARIABLE.getLocalName())
+            .setAllowNull(true)
+            .setValidator(new StringLengthValidator(1, true))
+            .build();
 
     public static final SimpleAttributeDefinition JAVA_AGENT =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_JAVA_AGENT, ModelType.STRING, true)
@@ -93,8 +97,26 @@ public class JvmAttributes {
             .setAllowExpression(false)
             .build();
 
-    public static final AttributeDefinition OPTIONS =
-            new JVMOptionsAttributeDefiniton(JvmAttributes.JVM_OPTIONS);
+    public static final AttributeDefinition OPTIONS = new StringListAttributeDefinition.Builder(JvmAttributes.JVM_OPTIONS)
+            .setValidator(new StringLengthValidator(1, true))
+            .setAllowNull(true)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
+                        if (list.size() > 0) {
+                            writer.writeStartElement(attribute.getName());
+                            for (ModelNode child : list) {
+                                writer.writeEmptyElement(Element.OPTION.getLocalName());
+                                writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asString());
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
+                }
+            })
+            .build();
 
     public static final SimpleAttributeDefinition STACK_SIZE =
             SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_STACK, ModelType.STRING, true)
@@ -153,28 +175,5 @@ public class JvmAttributes {
 
     static AttributeDefinition[] getAttributes(boolean server) {
         return server ? SERVER_ATTRIBUTES : GLOBAL_ATTRIBUTES;
-    }
-
-    static class JVMOptionsAttributeDefiniton extends PrimitiveListAttributeDefinition {
-
-        JVMOptionsAttributeDefiniton(String name) {
-            super(name, name, true, ModelType.STRING, new StringLengthValidator(1, false));
-        }
-
-        @Override
-        public void marshallAsElement(ModelNode resourceModel,final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-            if (resourceModel.hasDefined(getName())) {
-                List<ModelNode> list = resourceModel.get(getName()).asList();
-                if (list.size() > 0) {
-                    writer.writeStartElement(getName());
-                    for (ModelNode child : list) {
-                        writer.writeEmptyElement(Element.OPTION.getLocalName());
-                        writer.writeAttribute(ModelDescriptionConstants.VALUE, child.asString());
-                    }
-                    writer.writeEndElement();
-                }
-            }
-        }
-
     }
 }

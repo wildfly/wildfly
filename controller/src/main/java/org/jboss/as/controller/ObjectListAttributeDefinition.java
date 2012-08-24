@@ -176,7 +176,7 @@
       }
 
 
-      public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,ObjectListAttributeDefinition>{
+      public static final class Builder extends AbstractAttributeDefinitionBuilder<Builder,ObjectListAttributeDefinition>{
           private final ObjectTypeAttributeDefinition valueType;
 
           public Builder(final String name, final ObjectTypeAttributeDefinition valueType) {

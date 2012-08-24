@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -45,8 +46,23 @@ import org.jboss.dmr.Property;
  * @since 7.2
  */
 public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
+    /**
+     *
+     * @param name
+     * @param xmlName
+     * @param allowNull
+     * @param expressionAllowed
+     * @deprecated use {@link Builder}
+     */
+    @Deprecated
     public SimpleMapAttributeDefinition(final String name, final String xmlName, boolean allowNull, boolean expressionAllowed) {
-        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    }
+
+    private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
+                                         final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, flags);
     }
 
     @Override
@@ -82,6 +98,24 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             writer.writeAttribute(NAME.getLocalName(), property.getName());
             writer.writeCharacters(property.getValue().asString());
             writer.writeEndElement();
+        }
+    }
+
+    public static final class Builder extends AbstractAttributeDefinitionBuilder<Builder, SimpleMapAttributeDefinition> {
+        public Builder(final String name, boolean allowNull) {
+            super(name, ModelType.OBJECT, allowNull);
+        }
+
+        public Builder(final PropertiesAttributeDefinition basis) {
+            super(basis);
+        }
+
+        @Override
+        public SimpleMapAttributeDefinition build() {
+            if (validator == null) {
+                validator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
+            }
+            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, flags);
         }
     }
 }
