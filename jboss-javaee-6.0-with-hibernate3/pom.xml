@@ -33,147 +33,141 @@
 
         <dependencies>
 
-                <!-- Define hiberante artifacts versions -->
-
-                <!-- Define dependency version of hibernate-core -->
-                <dependency>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-core</artifactId>
-                    <version>${version.org.hibernate3}</version>
-
-               <!-- Some transitive dependencies of Hibernate 3 are available 
-                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
-                    depend on the modules -->
-                    <exclusions>
-                        <exclusion>
-                            <groupId>antlr</groupId>
-                            <artifactId>antlr</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>commons-collections</groupId>
-                            <artifactId>commons-collections</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>dom4j</groupId>
-                            <artifactId>dom4j</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>javax.transaction</groupId>
-                            <artifactId>jta</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-
-                <!-- Define dependency version of hibernate-entitymanager -->
-                <dependency>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-entitymanager</artifactId>
-                    <version>${version.org.hibernate3}</version>
-               <!-- Some transitive dependencies of Hibernate 3 are available 
-                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
-                    depend on the modules -->
-                    <exclusions>
-                        <exclusion>
-                            <groupId>asm</groupId>
-                            <artifactId>asm</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>javassist</groupId>
-                            <artifactId>javassist</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>cglib</groupId>
-                            <artifactId>cglib</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-
-              <!-- Define dependency version of hibernate-validator -->
-                <dependency>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-validator</artifactId>
-                    <version>${version.org.hibernate3.validator}</version>
-               <!-- Some transitive dependencies of Hibernate 3 are available 
-                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
-                    depend on the modules -->
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-
-            <!-- Define dependency version of hibernate-commons-annotations -->
-                <dependency>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-commons-annotations</artifactId>
-                    <version>${version.org.hibernate3.commons.annotations}</version>
-               <!-- Some transitive dependencies of Hibernate 3 are available 
-                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
-                    depend on the modules -->
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-
-                 <!-- Define dependency version of hibernate-infinispan -->
-                <dependency>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-infinispan</artifactId>
-                    <version>${version.org.hibernate3}</version>
-                    <exclusions>
-                   <!-- Some transitive dependencies of Hibernate 3 are 
-                        available in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, 
-                        but instead depend on the modules -->
-                        <exclusion>
-                            <groupId>org.infinispan</groupId>
-                            <artifactId>infinispan-core</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.hibernate</groupId>
-                            <artifactId>hibernate-testing</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.slf4j</groupId>
-                            <artifactId>slf4j-api</artifactId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                
-           <!-- JBoss distributes a complete set of Java EE 6 APIs including
-                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or
-                a collection) of artifacts. We use this here so that we always get the correct
-                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can
-                read this as the JBoss stack of the Java EE full Profile 6 APIs), and we use
-                version 3.0.0.Beta1 which is the latest release of the stack. You can actually
-                use this stack with any version of JBoss AS that implements Java EE 6, not
-                just JBoss AS 7! -->
-                <dependency>
-                    <groupId>org.jboss.spec</groupId>
-                    <artifactId>jboss-javaee-6.0</artifactId>
-                    <version>${version.org.jboss.spec.jboss.javaee.6.0}</version>
-                    <type>pom</type>
-                    <scope>import</scope>
-                </dependency>
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including 
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
+                a collection) of artifacts. We use this here so that we always get the correct 
+                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read 
+                this as the JBoss stack of the Java EE full Profile 6 APIs), and we use version 
+                3.0.0.Beta1 which is the latest release of the stack. You can actually use 
+                this stack with any version of JBoss AS that implements Java EE 6, not just 
+                JBoss AS 7! -->
+            <dependency>
+                <groupId>org.jboss.spec</groupId>
+                <artifactId>jboss-javaee-6.0</artifactId>
+                <version>${version.org.jboss.spec.jboss.javaee.6.0}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
             <!-- Hibernate ORM sub-modules -->
 
 
+            <!-- Define dependency version of hibernate-core -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.org.hibernate3}</version>
 
+                <!-- Some transitive dependencies of Hibernate 3 are available 
+                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
+                    depend on the modules -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>antlr</groupId>
+                        <artifactId>antlr</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>commons-collections</groupId>
+                        <artifactId>commons-collections</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>dom4j</groupId>
+                        <artifactId>dom4j</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.transaction</groupId>
+                        <artifactId>jta</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
-            <!-- Tools -->
+            <!-- Define dependency version of hibernate-entitymanager -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-entitymanager</artifactId>
+                <version>${version.org.hibernate3}</version>
+                <!-- Some transitive dependencies of Hibernate 3 are available 
+                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
+                    depend on the modules -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>asm</groupId>
+                        <artifactId>asm</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>cglib</groupId>
+                        <artifactId>cglib</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Define dependency version of hibernate-validator -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${version.org.hibernate3.validator}</version>
+                <!-- Some transitive dependencies of Hibernate 3 are available 
+                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
+                    depend on the modules -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Define dependency version of hibernate-commons-annotations -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-commons-annotations</artifactId>
+                <version>${version.org.hibernate3.commons.annotations}</version>
+                <!-- Some transitive dependencies of Hibernate 3 are available 
+                    in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, but instead 
+                    depend on the modules -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Define dependency version of hibernate-infinispan -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-infinispan</artifactId>
+                <version>${version.org.hibernate3}</version>
+                <exclusions>
+                    <!-- Some transitive dependencies of Hibernate 3 are 
+                        available in JBoss AS 7 as modules, so we don't include them in WEB-INF/lib, 
+                        but instead depend on the modules -->
+                    <exclusion>
+                        <groupId>org.infinispan</groupId>
+                        <artifactId>infinispan-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-testing</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

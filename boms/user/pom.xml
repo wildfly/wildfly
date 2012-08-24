@@ -3,13 +3,6 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-   
-    <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>8</version>
-        <relativePath />
-    </parent>
 
     <groupId>org.jboss.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
@@ -37,10 +30,10 @@
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.errai>2.0.0.Final</version.org.jboss.errai>
         <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>        
-        <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
-        <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.logging.processor>1.0.1.Final</version.org.jboss.logging.processor>
+        <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
+        <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
         <version.org.richfaces>4.2.0.Final</version.org.richfaces>
         
 
@@ -57,7 +50,7 @@
         <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>
         
         <!-- Version of Hibernate 3 projects -->
-        <version.org.hibernate3>4.1.1.Final</version.org.hibernate3>
+        <version.org.hibernate3>3.6.10.Final</version.org.hibernate3>
         <version.org.hibernate3.validator>3.1.0.GA</version.org.hibernate3.validator>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
 
