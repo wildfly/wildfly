@@ -46,7 +46,6 @@ import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.MarshalledValue;
 import org.jboss.as.clustering.MarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager.LockResult;
@@ -174,11 +173,11 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
             Operation<Void> operation = new Operation<Void>() {
                 @Override
                 public Void invoke(Cache<K, MarshalledValue<E, C>> cache) {
-                    cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(id, value);
+                    cache.put(id, value);
                     return null;
                 }
             };
-            this.invoke(operation);
+            this.invoker.invoke(this.cache, operation, Flag.SKIP_REMOTE_LOOKUP);
         } finally {
             this.releaseSessionOwnership(id, false);
         }
@@ -199,7 +198,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
                 return cache.get(id);
             }
         };
-        return this.unmarshalEntry(id, this.invoke(operation));
+        return this.unmarshalEntry(id, this.invoker.invoke(this.cache, operation));
     }
 
     @Override
@@ -212,11 +211,11 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
                 Operation<Void> operation = new Operation<Void>() {
                     @Override
                     public Void invoke(Cache<K, MarshalledValue<E, C>> cache) {
-                        cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(id, value);
+                        cache.put(id, value);
                         return null;
                     }
                 };
-                this.invoke(operation);
+                this.invoker.invoke(this.cache, operation, Flag.SKIP_REMOTE_LOOKUP);
             }
         } finally {
             this.releaseSessionOwnership(id, false);
@@ -233,14 +232,10 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
             }
         };
         try {
-            return this.unmarshalEntry(id, this.invoke(operation));
+            return this.unmarshalEntry(id, this.invoker.invoke(this.cache, operation));
         } finally {
             this.releaseSessionOwnership(id, true);
         }
-    }
-
-    private <R> R invoke(Operation<R> operation) {
-        return this.invoker.invoke(this.cache, new BatchOperation<K, MarshalledValue<E, C>, R>(operation));
     }
 
     private K unmarshalKey(MarshalledValue<K, C> key) {
@@ -305,7 +300,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
                 return null;
             }
         };
-        this.invoker.invoke(this.cache, operation);
+        this.invoker.invoke(this.cache, operation, Flag.FAIL_SILENTLY);
     }
 
     @Override

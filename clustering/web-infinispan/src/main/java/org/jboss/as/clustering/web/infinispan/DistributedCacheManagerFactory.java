@@ -35,6 +35,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
+import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
@@ -76,7 +77,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     private static final ServiceName JVM_ROUTE_REGISTRY_SERVICE_NAME = DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME.getParent();
 
     private SessionAttributeStorageFactory storageFactory = new SessionAttributeStorageFactoryImpl();
-    private CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
+    private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 10, 100);
     private SessionAttributeMarshallerFactory marshallerFactory = new SessionAttributeMarshallerFactoryImpl();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Registry> registry = new InjectedValue<Registry>();

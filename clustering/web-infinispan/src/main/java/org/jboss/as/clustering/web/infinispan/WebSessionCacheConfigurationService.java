@@ -43,10 +43,7 @@ public class WebSessionCacheConfigurationService extends AbstractCacheConfigurat
 
     @Override
     protected ConfigurationBuilder getConfigurationBuilder() {
-        Configuration configuration = this.configuration.getValue();
-        ConfigurationBuilder builder = new ConfigurationBuilder().read(configuration);
-        builder.transaction().syncCommitPhase(configuration.clustering().cacheMode().isSynchronous());
-        return builder;
+        return new ConfigurationBuilder().read(this.configuration.getValue());
     }
 
     @Override
