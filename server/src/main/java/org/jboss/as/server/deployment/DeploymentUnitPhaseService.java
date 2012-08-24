@@ -33,7 +33,6 @@ import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -128,10 +127,6 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             phaseServiceBuilder.addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, phaseService.getDeployerChainsInjector());
             phaseServiceBuilder.addDependency(context.getController().getName());
 
-            final Boolean nextPhasePassive = processorContext.getAttachment(Attachments.NEXT_PHASE_PASSIVE);
-            if(nextPhasePassive != null && nextPhasePassive) {
-                phaseServiceBuilder.setInitialMode(ServiceController.Mode.PASSIVE);
-            }
             final List<ServiceName> nextPhaseDeps = processorContext.getAttachment(Attachments.NEXT_PHASE_DEPS);
             if(nextPhaseDeps != null) {
                 phaseServiceBuilder.addDependencies(nextPhaseDeps);

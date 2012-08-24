@@ -64,11 +64,6 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<AttachableDependency>> NEXT_PHASE_ATTACHABLE_DEPS = AttachmentKey.createList(AttachableDependency.class);
 
     /**
-     * Specifies that the next phase is passive, and will not start unless all its dependencies are present.
-     */
-    public static final AttachmentKey<Boolean> NEXT_PHASE_PASSIVE = AttachmentKey.create(Boolean.class);
-
-    /**
      * A set of subsystem names that should not be processed. Any subsystem whos name is in this list will not have
      * its deployment unit processors run.
      */

@@ -1,5 +1,8 @@
 package org.jboss.as.test.integration.deployment.dependencies;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -10,9 +13,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 
 /**
@@ -47,16 +47,20 @@ public class InterDeploymentDependenciesTestCase {
     @Test
     public void testDeploymentDependencies() throws NamingException {
         try {
-            deployer.deploy("dependent");
-
+            boolean failed = true;
             try {
-                new InitialContext().lookup("java:global/dependent/DependentEjb");
-                Assert.fail("deployment should have waited");
-            } catch (NamingException e) {
-                //expected
-            }
+                deployer.deploy("dependent");
+                failed = false;
+            } catch (Exception e) {
 
+            } finally {
+                deployer.undeploy("dependent");
+            }
+            if(!failed) {
+                Assert.fail("Deployment did not fail");
+            }
             deployer.deploy("dependee");
+            deployer.deploy("dependent");
 
             StringView ejb = (StringView) new InitialContext().lookup("java:global/dependent/DependentEjb");
             Assert.assertEquals("hello", ejb.getString());
