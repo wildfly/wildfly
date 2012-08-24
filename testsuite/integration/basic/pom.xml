@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-ts-integ</artifactId>
-        <version>7.1.3.Beta1</version>
+        <version>7.1.3.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -15,7 +15,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-ts-integ-basic</artifactId>
-    <version>7.1.3.Beta1</version>
+    <version>7.1.3.Final-SNAPSHOT</version>
 
     <name>JBoss Application Server Test Suite: Integration - Basic</name>
 
