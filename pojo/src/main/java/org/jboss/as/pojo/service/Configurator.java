@@ -26,11 +26,11 @@ import org.jboss.as.pojo.PojoMessages;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.common.beans.property.finder.PropertyEditorFinder;
 import org.jboss.common.beans.property.PropertiesValueResolver;
 import org.jboss.logging.Logger;
 
 import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -111,7 +111,7 @@ public class Configurator {
 
         // Next look for a property editor
         if (valueClass == String.class) {
-            PropertyEditor editor = PropertyEditorFinder.getInstance().find(clazz);
+            PropertyEditor editor = PropertyEditorManager.findEditor(clazz);
             if (editor != null) {
                 editor.setAsText((String) value);
                 return editor.getValue();
