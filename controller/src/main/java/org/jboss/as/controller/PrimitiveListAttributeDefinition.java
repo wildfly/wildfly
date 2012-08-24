@@ -44,13 +44,13 @@ import org.jboss.dmr.ModelType;
 public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     private final ModelType valueType;
 
-    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, new ModelTypeValidator(valueType), alternatives, requires, flags);
+    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, minSize, maxSize, new ModelTypeValidator(valueType), alternatives, requires, attributeMarshaller, flags);
         this.valueType = valueType;
     }
 
-    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, elementValidator, alternatives, requires, flags);
+    public PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final ModelType valueType, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, minSize, maxSize, elementValidator, alternatives, requires,attributeMarshaller, flags);
         this.valueType = valueType;
     }
 
@@ -72,6 +72,10 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     public PrimitiveListAttributeDefinition(final String name, final boolean allowNull, final ModelType valueType, ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
         super(name, allowNull, elementValidator, flags);
         this.valueType = valueType;
+    }
+
+    public ModelType getValueType() {
+        return valueType;
     }
 
     @Override
@@ -102,7 +106,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(final ModelNode resourceModel, boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
             for (ModelNode handler : resourceModel.get(getName()).asList()) {
@@ -123,6 +127,10 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
             super(name, ModelType.LIST);
             this.valueType = valueType;
         }
+        public Builder(final PrimitiveListAttributeDefinition basic) {
+            super(basic);
+            this.valueType = basic.getValueType();
+        }
 
         public static Builder of(final String name, final ModelType valueType) {
             return new Builder(name, valueType);
@@ -131,7 +139,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
         public PrimitiveListAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
             if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
-            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, valueType, minSize, maxSize, alternatives, requires, flags);
+            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, valueType, minSize, maxSize, alternatives, requires, attributeMarshaller, flags);
         }
     }
 }

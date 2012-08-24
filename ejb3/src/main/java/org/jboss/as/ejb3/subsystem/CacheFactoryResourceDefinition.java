@@ -21,10 +21,12 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -34,9 +36,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author Paul Ferraro
@@ -83,7 +82,7 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
 
 
         @Override
-        public void marshallAsElement(ModelNode model, XMLStreamWriter writer) throws XMLStreamException {
+        public void marshallAsElement(ModelNode model, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (model.hasDefined(this.getName())) {
                 StringBuilder builder = new StringBuilder();
                 for (ModelNode alias : model.get(this.getName()).asList()) {

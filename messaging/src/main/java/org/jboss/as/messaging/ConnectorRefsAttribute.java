@@ -24,16 +24,11 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 
+import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +55,7 @@ public class ConnectorRefsAttribute extends PrimitiveListAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             List<ModelNode> list = resourceModel.get(getName()).asList();
             if (list.size() > 0) {

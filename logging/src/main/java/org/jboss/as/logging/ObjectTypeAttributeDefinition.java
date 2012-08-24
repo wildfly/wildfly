@@ -97,7 +97,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(final ModelNode resourceModel,final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
             for (AttributeDefinition valueType : valueTypes) {

@@ -25,7 +25,11 @@ package org.jboss.as.controller.resource;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
 import java.util.Locale;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -33,6 +37,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -44,6 +49,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -75,7 +82,23 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
 
     // Domain-only attributes
 
-    public static final ListAttributeDefinition INCLUDES = SocketBindingGroupIncludesAttribute.INSTANCE;
+    public static final ListAttributeDefinition INCLUDES = new PrimitiveListAttributeDefinition(ModelDescriptionConstants.INCLUDES, Element.INCLUDE.getLocalName(), true, ModelType.STRING, 0, Integer.MAX_VALUE,
+            null, null, new StringLengthValidator(1, true), new AttributeMarshaller() {
+        @Override
+        public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            //
+        }
+
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (isMarshallable(attribute, resourceModel)) {
+                for (ModelNode included : resourceModel.get(attribute.getName()).asList()) {
+                    writer.writeEmptyElement(attribute.getXmlName());
+                    writer.writeAttribute(Attribute.SOCKET_BINDING_GROUP.getLocalName(), included.asString());
+                }
+            }
+        }
+    }, AttributeAccess.Flag.RESTART_JVM);
 
     private final boolean forDomainModel;
 
