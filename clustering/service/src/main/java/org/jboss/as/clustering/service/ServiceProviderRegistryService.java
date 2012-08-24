@@ -40,7 +40,7 @@ import org.jboss.as.clustering.GroupMembershipNotifier;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.infinispan.atomic.AtomicMapCache;
-import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
+import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -66,6 +66,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
     private final Value<GroupMembershipNotifier> notifierRef;
     private final Value<GroupRpcDispatcher> dispatcherRef;
     private final Map<String, Listener> listeners = new ConcurrentHashMap<String, Listener>();
+    private final CacheInvoker invoker = new BatchCacheInvoker();
 
     volatile GroupRpcDispatcher dispatcher;
     private volatile GroupMembershipNotifier notifier;
@@ -92,7 +93,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 return map.keySet();
             }
         };
-        Set<ClusterNode> nodes = this.invoke(operation);
+        Set<ClusterNode> nodes = this.invoker.invoke(this.cache, operation);
         listener.serviceProvidersChanged(nodes, false);
     }
 
@@ -106,7 +107,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 return null;
             }
         };
-        this.invoke(operation);
+        this.invoker.invoke(this.cache, operation);
         this.listeners.remove(service);
     }
 
@@ -130,7 +131,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 return result;
             }
         };
-        return this.invoke(operation);
+        return this.invoker.invoke(this.cache, operation);
     }
 
     @Override
@@ -168,7 +169,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 return updates;
             }
         };
-        this.notifyListeners(this.invoke(operation), false);
+        this.notifyListeners(this.invoker.invoke(this.cache, operation), false);
     }
 
     @Override
@@ -197,7 +198,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
                 return updates;
             }
         };
-        this.notifyListeners(this.invoke(operation), true);
+        this.notifyListeners(this.invoker.invoke(this.cache, operation), true);
     }
 
     void purgeDeadMembers(List<ClusterNode> deadNodes, Map<String, Set<ClusterNode>> updates) {
@@ -227,10 +228,6 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
         // Only respond to remote post-modify events
         if (event.isPre() || event.isOriginLocal()) return;
         this.notifyListeners(Collections.singletonMap(event.getKey(), event.getValue().keySet()), false);
-    }
-
-    private <R> R invoke(Operation<R> operation) {
-        return new BatchOperation<String, Map<ClusterNode, Void>, R>(operation).invoke(this.cache);
     }
 
     static interface Operation<R> extends CacheInvoker.Operation<String, Map<ClusterNode, Void>, R> {

@@ -36,6 +36,7 @@ import org.jboss.as.clustering.MarshallingContext;
 import org.jboss.as.clustering.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
+import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
@@ -79,7 +80,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     private boolean passivateEventsOnReplicate = DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE;
 
     private final MarshallerFactory factory = Marshalling.getMarshallerFactory("river", MarshallerFactory.class.getClassLoader());
-    private CacheInvoker invoker = new RetryingCacheInvoker(0, 0);
+    private CacheInvoker invoker = new RetryingCacheInvoker(new BatchCacheInvoker(), 0, 0);
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> groupCache = new InjectedValue<Cache>();
     private final InjectedValue<SharedLocalYieldingClusterLockManager> lockManager = new InjectedValue<SharedLocalYieldingClusterLockManager>();
