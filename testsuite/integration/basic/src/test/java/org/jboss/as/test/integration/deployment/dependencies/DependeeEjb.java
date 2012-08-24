@@ -33,7 +33,8 @@ public class DependeeEjb implements StringView {
     public String hello;
 
     @PostConstruct
-    public void post() {
+    public void post() throws InterruptedException {
+        Thread.sleep(100);
         hello = "hello";
     }
 

@@ -22,10 +22,13 @@
 
 package org.jboss.as.server.deployment.dependencies;
 
+import javax.xml.namespace.QName;
+
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerService;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -34,8 +37,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.msc.service.ServiceName;
-
-import javax.xml.namespace.QName;
 
 /**
  * Processor that handles inter-deployment dependencies. If this deployment has a dependency specified on
@@ -74,9 +75,8 @@ public class DeploymentDependenciesProcessor implements DeploymentUnitProcessor 
     private void processDependencies(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit) {
         final DeploymentDependencies deps = deploymentUnit.getAttachment(DeploymentDependencies.ATTACHMENT_KEY);
         if (!deps.getDependencies().isEmpty()) {
-            phaseContext.putAttachment(Attachments.NEXT_PHASE_PASSIVE, true);
             for (final String deployment : deps.getDependencies()) {
-                final ServiceName name = Services.deploymentUnitName(deployment);
+                final ServiceName name =  DeploymentCompleteServiceProcessor.serviceName(Services.deploymentUnitName(deployment));
                 phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, name);
             }
         }
