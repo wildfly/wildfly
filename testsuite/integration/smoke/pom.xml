@@ -4,7 +4,7 @@
   Set these VM properties in your IDE debugger 
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.1.3.Final-SNAPSHOT
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.1.3.Beta1
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-ts-integ</artifactId>
-        <version>7.1.3.Final-SNAPSHOT</version>
+        <version>7.1.3.Beta1</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -23,7 +23,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-ts-integ-smoke</artifactId>
-    <version>7.1.3.Final-SNAPSHOT</version>
+    <version>7.1.3.Beta1</version>
 
     <name>JBoss Application Server Test Suite: Integration - Smoke</name>
 
