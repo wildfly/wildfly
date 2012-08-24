@@ -29,58 +29,80 @@
         <version.org.jboss.arquillian.graphene>1.0.0.Final</version.org.jboss.arquillian.graphene>
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.errai>2.0.0.Final</version.org.jboss.errai>
-        <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>        
+        <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.logging.processor>1.0.1.Final</version.org.jboss.logging.processor>
         <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
         <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
         <version.org.richfaces>4.2.0.Final</version.org.richfaces>
-        
+
 
         <!-- Version of Hibernate projects -->
         <version.org.hibernate>4.1.1.Final</version.org.hibernate>
-        <version.org.hibernate.common>4.0.1.Final</version.org.hibernate.common>      
-        <version.org.hibernate.javax.persistence>1.0.1.Final</version.org.hibernate.javax.persistence>        
-        <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>        
-        <version.org.hibernate.search>4.1.0.CR3</version.org.hibernate.search>        
+        <version.org.hibernate.common>4.0.1.Final</version.org.hibernate.common>
+        <version.org.hibernate.javax.persistence>1.0.1.Final</version.org.hibernate.javax.persistence>
+        <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>
+        <version.org.hibernate.search>4.1.0.CR3</version.org.hibernate.search>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
         <version.org.hibernate.search>4.1.0.CR3</version.org.hibernate.search>
         <version.org.hibernate.common>4.0.1.Final</version.org.hibernate.common>
         <version.org.hibernate.javax.persistence>1.0.1.Final</version.org.hibernate.javax.persistence>
         <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>
-        
+
         <!-- Version of Hibernate 3 projects -->
         <version.org.hibernate3>3.6.10.Final</version.org.hibernate3>
         <version.org.hibernate3.validator>3.1.0.GA</version.org.hibernate3.validator>
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
 
         <!-- Versions of projects not directly under JBoss umbrella -->
-        <version.com.google.gwt>2.4.0</version.com.google.gwt>        
+        <version.com.google.gwt>2.4.0</version.com.google.gwt>
         <version.junit>4.10</version.junit>
         <version.log4j>1.2.16</version.log4j>
         <version.org.mvel>2.1.Beta8</version.org.mvel>
-        <version.org.osgi>4.2.0</version.org.osgi>        
+        <version.org.osgi>4.2.0</version.org.osgi>
         <version.org.testng>5.14.6</version.org.testng>
 
         <!-- Versions of Maven plugins, user must setup them by his/her own -->
         <version.org.apache.maven.surefire.plugin>2.10</version.org.apache.maven.surefire.plugin>
-        <version.org.codehaus.mojo.gwt.maven.plugin>${version.com.google.gwt}</version.org.codehaus.mojo.gwt.maven.plugin>        
+        <version.org.codehaus.mojo.gwt.maven.plugin>${version.com.google.gwt}</version.org.codehaus.mojo.gwt.maven.plugin>
         <version.org.jboss.as.plugins.jboss.as.maven.plugin>7.1.0.Final</version.org.jboss.as.plugins.jboss.as.maven.plugin>
 
+
+        <!-- Repository Deployment URLs -->
+
+        <jboss.releases.repo.url>
+            https://repository.jboss.org/nexus/service/local/staging/deploy/maven2/
+        </jboss.releases.repo.url>
+        <jboss.snapshots.repo.url>
+            https://repository.jboss.org/nexus/content/repositories/snapshots/
+        </jboss.snapshots.repo.url>
     </properties>
 
     <modules>
         <module>jboss-javaee-6.0-with-errai</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
         <module>jboss-javaee-6.0-with-hibernate3</module>
-        <module>jboss-javaee-6.0-with-infinispan</module>        
+        <module>jboss-javaee-6.0-with-infinispan</module>
         <module>jboss-javaee-6.0-with-logging</module>
         <module>jboss-javaee-6.0-with-osgi</module>
         <module>jboss-javaee-6.0-with-richfaces</module>
-        <module>jboss-javaee-6.0-with-security</module>        
+        <module>jboss-javaee-6.0-with-security</module>
         <module>jboss-javaee-6.0-with-tools</module>
-        <module>jboss-javaee-6.0-with-transactions</module>        
+        <module>jboss-javaee-6.0-with-transactions</module>
     </modules>
+
+    <distributionManagement>
+        <repository>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Releases Repository</name>
+            <url>${jboss.releases.repo.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>${jboss.snapshots.repo.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <plugins>
