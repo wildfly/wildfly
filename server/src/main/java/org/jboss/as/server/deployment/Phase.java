@@ -219,8 +219,7 @@ public enum Phase {
     public static final int PARSE_EXTENSION_LIST                        = 0x0700;
     public static final int PARSE_EXTENSION_NAME                        = 0x0800;
     public static final int PARSE_OSGI_BUNDLE_INFO                      = 0x0900;
-    public static final int PARSE_OSGI_XSERVICE_PROPERTIES              = 0x0A00;
-    public static final int PARSE_OSGI_DEPLOYMENT                       = 0x0A80;
+    public static final int PARSE_OSGI_PROPERTIES                       = 0x0A00;
     public static final int PARSE_WEB_DEPLOYMENT                        = 0x0B00;
     public static final int PARSE_WEB_DEPLOYMENT_FRAGMENT               = 0x0C00;
     public static final int PARSE_JSF_VERSION                           = 0x0C50;
@@ -273,14 +272,19 @@ public enum Phase {
     public static final int PARSE_EJB_SECURITY_ROLE_REF_DD              = 0x3501;
     public static final int PARSE_EJB_ASSEMBLY_DESC_DD                  = 0x3600;
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
+    public static final int PARSE_OSGI_DEPLOYMENT                       = 0x3700;
+    public static final int PARSE_OSGI_SUBSYSTEM_ACTIVATOR              = 0x3800;
     // should be after all components are known
-    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x3700;
-    public static final int PARSE_JACORB                                = 0x3A00;
-    public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x3B00;
-    public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x3C00;
-    public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x3D00;
-    public static final int PARSE_DSXML_DEPLOYMENT                      = 0x3E00;
-    public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x3F00;
+    public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x4000;
+    public static final int PARSE_JACORB                                = 0x4100;
+    public static final int PARSE_TRANSACTION_ROLLBACK_ACTION           = 0x4200;
+    public static final int PARSE_WEB_INITIALIZE_IN_ORDER               = 0x4300;
+    public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x4400;
+    public static final int PARSE_DSXML_DEPLOYMENT                      = 0x4500;
+    public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x4600;
+
+    // REGISTER
+    public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;

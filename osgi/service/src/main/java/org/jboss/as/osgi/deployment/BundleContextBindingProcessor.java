@@ -128,7 +128,6 @@ public class BundleContextBindingProcessor implements DeploymentUnitProcessor {
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(serviceName, binderService);
         builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
         builder.addDependency(contextServiceName, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
         builder.install();
     }
 
