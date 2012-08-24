@@ -24,7 +24,6 @@ package org.jboss.as.controller;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -64,10 +63,10 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         this.elementValidator = elementValidator;
     }
 
-    public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
+    protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                  final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), alternatives, requires, flags);
+                                  final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, flags);
         this.elementValidator = elementValidator;
     }
 

@@ -2512,4 +2512,13 @@ public interface ControllerMessages {
 
     @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
     RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
+
+
+    @Message(id = 14874, value = "Could not marshal attribute as element: %s")
+    UnsupportedOperationException couldNotMarshalAttributeAsElement(String attributeName);
+
+    @Message(id = 14875, value = "Could not marshal attribute as attribute: %s")
+    UnsupportedOperationException couldNotMarshalAttributeAsAttribute(String attributeName);
+
+
 }

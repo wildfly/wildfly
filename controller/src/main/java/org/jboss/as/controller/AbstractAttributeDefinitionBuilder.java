@@ -50,8 +50,8 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     protected ParameterCorrector corrector;
     protected ParameterValidator validator;
     protected boolean validateNull = true;
-    protected int minSize;
-    protected int maxSize;
+    protected int minSize = 0;
+    protected int maxSize = Integer.MAX_VALUE;
     protected AttributeAccess.Flag[] flags;
     protected AttributeMarshaller attributeMarshaller = null;
 
