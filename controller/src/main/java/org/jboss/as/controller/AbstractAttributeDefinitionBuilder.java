@@ -52,9 +52,8 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     protected boolean validateNull = true;
     protected int minSize;
     protected int maxSize;
-
-
     protected AttributeAccess.Flag[] flags;
+    protected AttributeMarshaller attributeMarshaller = null;
 
     public AbstractAttributeDefinitionBuilder(final String attributeName, final ModelType type) {
         this(attributeName, type, false);
@@ -67,7 +66,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
         this.xmlName = name;
     }
 
-    public AbstractAttributeDefinitionBuilder(final SimpleAttributeDefinition basis) {
+    public AbstractAttributeDefinitionBuilder(final AttributeDefinition basis) {
         this.name = basis.getName();
         this.type = basis.getType();
         this.xmlName = basis.getXmlName();
@@ -80,6 +79,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
         this.validator = basis.getValidator();
         Set<AttributeAccess.Flag> basisFlags = basis.getFlags();
         this.flags = basisFlags.toArray(new AttributeAccess.Flag[basisFlags.size()]);
+        this.attributeMarshaller = basis.getAttributeMarshaller();
     }
 
     public abstract ATTRIBUTE build();
@@ -227,5 +227,9 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     public BUILDER setMinSize(final int minSize) {
         this.minSize = minSize;
         return (BUILDER) this;
+    }
+    public BUILDER setAttributeMarshaller(AttributeMarshaller marshaller){
+        this.attributeMarshaller = marshaller;
+        return (BUILDER)this;
     }
 }

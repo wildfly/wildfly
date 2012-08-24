@@ -45,7 +45,7 @@ public class SelectorAttribute extends SimpleAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel,final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             String selector = resourceModel.get(getName()).asString();
             writer.writeEmptyElement(Element.SELECTOR.getLocalName());

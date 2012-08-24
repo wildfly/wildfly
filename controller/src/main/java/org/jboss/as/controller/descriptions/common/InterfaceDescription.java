@@ -256,7 +256,7 @@ public class InterfaceDescription {
     private static AttributeDefinition createNestedComplexType(final String name) {
         return new AttributeDefinition(name, name, null, ModelType.OBJECT, true, false, MeasurementUnit.NONE, createNestedParamValidator(), ALTERNATIVES_ANY, null, AttributeAccess.Flag.RESTART_ALL_SERVICES) {
             @Override
-            public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+            public void marshallAsElement(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
                 throw new UnsupportedOperationException();
             }
 
@@ -323,7 +323,7 @@ public class InterfaceDescription {
                 setValueType(node);
             }
             @Override
-            public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+            public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
                 throw new RuntimeException();
             }
 

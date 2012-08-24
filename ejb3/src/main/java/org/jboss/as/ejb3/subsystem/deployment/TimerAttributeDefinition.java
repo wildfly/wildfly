@@ -28,11 +28,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import java.util.Date;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.ejb.EJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
@@ -50,8 +51,6 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 /**
  * Attribute definition for the list of timers associated with an EJB.
  *
@@ -97,7 +96,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         throw MESSAGES.runtimeAttributeNotMarshallable(getName());
     }
 

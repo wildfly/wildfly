@@ -27,7 +27,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -71,19 +70,20 @@ public abstract class AttributeDefinition {
     private final ParameterCorrector valueCorrector;
     private final ParameterValidator validator;
     private final EnumSet<AttributeAccess.Flag> flags;
+    protected final AttributeMarshaller attributeMarshaller;
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, true, alternatives, requires, flags);
+                null, validator, true, alternatives, requires, null, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
-                                  boolean validateNull, final String[] alternatives, final String[] requires,
+                                  boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
                                   final AttributeAccess.Flag... flags) {
 
         this.name = name;
@@ -112,6 +112,11 @@ public abstract class AttributeDefinition {
             this.flags = EnumSet.of(flags[0]);
         } else {
             this.flags = EnumSet.of(flags[0], flags);
+        }
+        if (attributeMarshaller != null) {
+            this.attributeMarshaller = attributeMarshaller;
+        } else {
+            this.attributeMarshaller = new DefaultAttributeMarshaller();
         }
     }
 
@@ -170,7 +175,7 @@ public abstract class AttributeDefinition {
      * @return {@code true} if the given {@code resourceModel} has a defined value under this attribute's {@link #getName()} () name}.
      */
     public boolean isMarshallable(final ModelNode resourceModel) {
-        return isMarshallable(resourceModel, true);
+        return attributeMarshaller.isMarshallable(this, resourceModel, true);
     }
 
     /**
@@ -183,7 +188,7 @@ public abstract class AttributeDefinition {
      * and {@code marshallDefault} is {@code true} or that value differs from this attribute's {@link #getDefaultValue() default value}.
      */
     public boolean isMarshallable(final ModelNode resourceModel, final boolean marshallDefault) {
-        return resourceModel.hasDefined(name) && (marshallDefault || !resourceModel.get(name).equals(defaultValue));
+        return attributeMarshaller.isMarshallable(this, resourceModel, marshallDefault);
     }
 
     /**
@@ -279,14 +284,27 @@ public abstract class AttributeDefinition {
     }
 
     /**
-     * Marshalls the value from the given {@code resourceModel} as an xml element, if it
+     * Marshalls the value from the given {@code resourceModel} as an xml attribute, if it
      * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
      *
      * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
      * @param writer stream writer to use for writing the attribute
      * @throws javax.xml.stream.XMLStreamException if thrown by {@code writer}
      */
-    public abstract void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException;
+    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException{
+        marshallAsElement(resourceModel,true,writer);
+    }
+
+    /**
+     * Marshalls the value from the given {@code resourceModel} as an xml element, if it
+     * {@link #isMarshallable(org.jboss.dmr.ModelNode, boolean) is marshallable}.
+     *
+     * @param resourceModel the model, a non-null node of {@link org.jboss.dmr.ModelType#OBJECT}.
+     * @param writer        stream writer to use for writing the attribute
+     * @throws javax.xml.stream.XMLStreamException
+     *          if thrown by {@code writer}
+     */
+    public abstract void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException;
 
     /**
      * Creates a returns a basic model node describing the attribute, after attaching it to the given overall resource
@@ -468,6 +486,10 @@ public abstract class AttributeDefinition {
         }
 
         return node;
+    }
+
+    public AttributeMarshaller getAttributeMarshaller() {
+        return attributeMarshaller;
     }
 
     private final OperationContext NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new OperationContext() {

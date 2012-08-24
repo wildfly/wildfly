@@ -24,23 +24,21 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.parsing.Attribute.NAME;
+import static org.jboss.as.controller.parsing.Element.PROPERTY;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import static org.jboss.as.controller.parsing.Attribute.NAME;
-import static org.jboss.as.controller.parsing.Attribute.VALUE;
-import static org.jboss.as.controller.parsing.Element.PROPERTY;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -70,7 +68,7 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel, final boolean marshaDefault, XMLStreamWriter writer) throws XMLStreamException {
         resourceModel = resourceModel.get(getXmlName());
         writer.writeStartElement(getName());
         marshalToElement(resourceModel, writer);

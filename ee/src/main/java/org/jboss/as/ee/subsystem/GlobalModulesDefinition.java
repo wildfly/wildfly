@@ -31,7 +31,6 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -111,7 +110,7 @@ public class GlobalModulesDefinition extends ListAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode eeSubSystem, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode eeSubSystem, boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         if (eeSubSystem.hasDefined(getName()) && eeSubSystem.asInt() > 0) {
             writer.writeStartElement(Element.GLOBAL_MODULES.getLocalName());
             final ModelNode globalModules = eeSubSystem.get(getName());

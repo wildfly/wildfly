@@ -22,6 +22,15 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -32,15 +41,6 @@ import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 /**
  * Date: 13.10.2011
@@ -98,7 +98,7 @@ public class LogHandlerListAttributeDefinition extends ListAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
             for (ModelNode handler : resourceModel.get(getName()).asList()) {

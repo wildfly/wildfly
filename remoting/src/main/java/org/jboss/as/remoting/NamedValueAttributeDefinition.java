@@ -36,7 +36,7 @@ class NamedValueAttributeDefinition extends SimpleAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer)
+    public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer)
             throws XMLStreamException {
         if (isMarshallable(resourceModel)) {
             writer.writeEmptyElement(getXmlName());

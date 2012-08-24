@@ -41,7 +41,7 @@ public class JNDIResourceAttributeDefinition extends SimpleAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel,final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             String name = resourceModel.get(getName()).asString();
             writer.writeEmptyElement(getXmlName());

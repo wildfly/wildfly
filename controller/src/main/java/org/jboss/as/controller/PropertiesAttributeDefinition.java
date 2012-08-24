@@ -1,17 +1,15 @@
 package org.jboss.as.controller;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 /**
  * @author Jason T. Greene
@@ -44,7 +42,7 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel,boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         if (!isMarshallable(resourceModel)) { return; }
 
         resourceModel = resourceModel.get(getName());

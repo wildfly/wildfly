@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -117,7 +116,7 @@ public class LoginModulesAttributeDefinition extends ListAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
       if (resourceModel.hasDefined(getName()) && resourceModel.asInt() > 0) {
             final ModelNode modules = resourceModel.get(getName());
             for (ModelNode module : modules.asList()) {

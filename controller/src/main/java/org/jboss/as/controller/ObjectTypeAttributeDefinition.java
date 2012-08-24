@@ -68,8 +68,8 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     /*
      * Constructor which allows specifying a custom ParameterValidator. Disabled by default.
      */
-    private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives, requires, flags);
+    private ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull, final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives, requires, attributeMarshaller, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";
@@ -145,7 +145,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(final ModelNode resourceModel, final XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
         if (resourceModel.hasDefined(getName())) {
             writer.writeStartElement(getXmlName());
             for (AttributeDefinition valueType : valueTypes) {
@@ -252,7 +252,7 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
-            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, flags);
+            return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires,attributeMarshaller, flags);
         }
 
         public Builder setSuffix(final String suffix) {

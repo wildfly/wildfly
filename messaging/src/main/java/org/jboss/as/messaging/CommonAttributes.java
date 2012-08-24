@@ -40,20 +40,26 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.OBJECT;
 
+import java.util.List;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.messaging.jms.ConnectionFactoryTypeValidator;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.metadata.ejb.jboss.LocalBindingMetaData;
 
 /**
  * @author Emanuel Muckenhuber
@@ -431,7 +437,34 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinition("relative-to", ModelType.STRING, true);
 
-    RemotingInterceptorsAttribute REMOTING_INTERCEPTORS = RemotingInterceptorsAttribute.INSTANCE;
+
+    PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder(CommonAttributes.REMOTING_INTERCEPTORS_STRING, ModelType.STRING)
+            .setAllowNull(true)
+            .setMinSize(1)
+            .setMaxSize(Integer.MAX_VALUE)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new StringLengthValidator(1))
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        List<ModelNode> list = resourceModel.get(attribute.getName()).asList();
+                        if (list.size() > 0) {
+                            writer.writeStartElement(attribute.getXmlName());
+
+                            for (ModelNode child : list) {
+                                writer.writeStartElement(Element.CLASS_NAME.getLocalName());
+                                writer.writeCharacters(child.asString());
+                                writer.writeEndElement();
+                            }
+
+                            writer.writeEndElement();
+                        }
+                    }
+                }
+            })
+            .build();
+
 
     SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
