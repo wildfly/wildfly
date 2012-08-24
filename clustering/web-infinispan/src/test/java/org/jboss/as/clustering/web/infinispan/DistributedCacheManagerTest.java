@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -317,14 +318,11 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
+        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.SKIP_CACHE_LOAD), same(Flag.SKIP_REMOTE_LOOKUP))).thenReturn(null);
 
         this.manager.removeSession(sessionId);
 
         CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
-
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.withFlags(Flag.SKIP_CACHE_LOAD, Flag.SKIP_REMOTE_LOOKUP)).thenReturn(this.cache);
 
         operation.invoke(this.cache);
 
@@ -339,14 +337,11 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
+        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.SKIP_CACHE_LOAD), same(Flag.CACHE_MODE_LOCAL))).thenReturn(null);
 
         this.manager.removeSessionLocal(sessionId);
 
         CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
-
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.withFlags(Flag.SKIP_CACHE_LOAD, Flag.CACHE_MODE_LOCAL)).thenReturn(this.cache);
 
         operation.invoke(this.cache);
 
@@ -361,14 +356,11 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
+        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.SKIP_CACHE_LOAD), same(Flag.CACHE_MODE_LOCAL))).thenReturn(null);
 
         this.manager.removeSessionLocal(sessionId, null);
 
         CacheInvoker.Operation<String, Map<Object, Object>, Void> operation = capturedOperation.getValue();
-
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.withFlags(Flag.SKIP_CACHE_LOAD, Flag.CACHE_MODE_LOCAL)).thenReturn(this.cache);
 
         operation.invoke(this.cache);
 
@@ -390,7 +382,7 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
+        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.FAIL_SILENTLY))).thenReturn(null);
         when(this.cache.startBatch()).thenReturn(false);
 
         this.manager.evictSession(sessionId);
@@ -412,8 +404,7 @@ public class DistributedCacheManagerTest {
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
 
-        when(this.invoker.invoke(same(this.cache), capturedOperation.capture())).thenReturn(null);
-        when(this.cache.startBatch()).thenReturn(false);
+        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.FAIL_SILENTLY))).thenReturn(null);
 
         this.manager.evictSession(sessionId, null);
 
@@ -433,13 +424,15 @@ public class DistributedCacheManagerTest {
         verifyZeroInteractions(this.cache);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void getSessionIds() {
         String sessionId = "abc";
 
-        when(this.cache.getAdvancedCache()).thenReturn(this.cache);
-        when(this.cache.withFlags(Flag.SKIP_LOCKING, Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_CACHE_LOAD)).thenReturn(this.cache);
-        when(this.cache.keySet()).thenReturn(Collections.singleton(sessionId));
+        @SuppressWarnings("rawtypes")
+        ArgumentCaptor<CacheInvoker.Operation> capturedOperation = ArgumentCaptor.forClass(CacheInvoker.Operation.class);
+
+        when(this.invoker.invoke(same(this.cache), capturedOperation.capture(), same(Flag.SKIP_LOCKING), same(Flag.SKIP_REMOTE_LOOKUP), same(Flag.SKIP_CACHE_LOAD))).thenReturn(Collections.singleton(sessionId));
 
         Map<String, String> result = this.manager.getSessionIds();
 
@@ -447,6 +440,16 @@ public class DistributedCacheManagerTest {
         assertEquals(1, result.size());
         assertTrue(result.containsKey(sessionId));
         assertNull(result.get(sessionId));
+
+        CacheInvoker.Operation<String, Map<Object, Object>, Set<String>> operation = capturedOperation.getValue();
+
+        when(this.cache.keySet()).thenReturn(Collections.singleton(sessionId));
+
+        Set<String> operationResult = operation.invoke(this.cache);
+
+        assertNotNull(operationResult);
+        assertEquals(1, operationResult.size());
+        assertTrue(operationResult.contains(sessionId));
     }
 
     @Test
