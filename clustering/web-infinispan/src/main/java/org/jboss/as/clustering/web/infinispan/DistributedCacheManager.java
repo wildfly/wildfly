@@ -23,8 +23,10 @@ package org.jboss.as.clustering.web.infinispan;
 
 import java.io.IOException;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.infinispan.Cache;
@@ -42,7 +44,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.invoker.BatchOperation;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.registry.Registry;
@@ -176,7 +177,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
             }
         };
 
-        this.invoke(operation);
+        this.invoker.invoke(this.cache, operation);
     }
 
     /**
@@ -230,7 +231,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         };
 
         try {
-            return this.invoke(operation);
+            return this.invoker.invoke(this.cache, operation);
         } catch (Exception e) {
             ROOT_LOGGER.sessionLoadFailed(e, sessionId);
 
@@ -269,11 +270,11 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         Operation<Void> operation = new Operation<Void>() {
             @Override
             public Void invoke(Cache<String, Map<Object, Object>> cache) {
-                cache.getAdvancedCache().withFlags(Flag.SKIP_CACHE_LOAD, local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP).remove(sessionId);
+                cache.remove(sessionId);
                 return null;
             }
         };
-        this.invoke(operation);
+        this.invoker.invoke(this.cache, operation, Flag.SKIP_CACHE_LOAD, local ? Flag.CACHE_MODE_LOCAL : Flag.SKIP_REMOTE_LOOKUP);
     }
 
     /**
@@ -305,7 +306,7 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
                 return null;
             }
         };
-        this.invoke(operation);
+        this.invoker.invoke(this.cache, operation, Flag.FAIL_SILENTLY);
     }
 
     /**
@@ -330,7 +331,13 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
     @Override
     public Map<String, String> getSessionIds() {
         Map<String, String> result = new HashMap<String, String>();
-        for (String sessionId: this.cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING, Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_CACHE_LOAD).keySet()) {
+        Operation<Set<String>> operation = new Operation<Set<String>>() {
+            @Override
+            public Set<String> invoke(Cache<String, Map<Object, Object>> cache) {
+                return cache.keySet();
+            }
+        };
+        for (String sessionId: this.invoker.invoke(this.cache, operation, Flag.SKIP_LOCKING, Flag.SKIP_REMOTE_LOOKUP, Flag.SKIP_CACHE_LOAD)) {
             result.put(sessionId, null);
         }
         return result;
@@ -491,10 +498,6 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         ROOT_LOGGER.tracef(message, args);
     }
 
-    private <R> R invoke(CacheInvoker.Operation<String, Map<Object, Object>, R> operation) {
-        return this.invoker.invoke(this.cache, new BatchOperation<String, Map<Object, Object>, R>(operation));
-    }
-
     // Simplified CacheInvoker.Operation using assigned key/value types
     abstract class Operation<R> implements CacheInvoker.Operation<String, Map<Object, Object>, R> {
     }
@@ -523,8 +526,8 @@ public class DistributedCacheManager<T extends OutgoingDistributableSessionData>
         }
 
         @Override
-        public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation) {
-            return this.invoker.invoke(this.forceSynchronous || forceThreadSynchronous.get().booleanValue() ? cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS) : cache, operation);
+        public <K, V, R> R invoke(Cache<K, V> cache, Operation<K, V, R> operation, Flag... flags) {
+            return this.invoker.invoke(cache, operation, this.forceSynchronous || forceThreadSynchronous.get().booleanValue() ? EnumSet.of(Flag.FORCE_SYNCHRONOUS, flags).toArray(new Flag[0]) : flags);
         }
     }
 }
