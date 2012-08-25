@@ -6,12 +6,33 @@
 
     <groupId>org.jboss.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.1.CR4</version>
 
     <packaging>pom</packaging>
 
     <name>JBoss BOM Parent</name>
     <description>Dependency Management BOM Parent</description>
+
+    <url>http://www.jboss.org</url>
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.jboss.org/</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:jboss-jdf/jboss-bom.git</connection>
+        <developerConnection>scm:git:git@github.com:jboss-jdf/jboss-bom.git</developerConnection>
+        <url>http://github.com/jboss-jdf/jboss-bom</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>jboss.org</id>
+            <name>JBoss.org Community</name>
+            <organization>JBoss.org</organization>
+            <organizationUrl>http://www.jboss.org</organizationUrl>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
@@ -20,12 +41,6 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-
-    <scm>
-        <connection>scm:git:git@github.com:jboss-jdf/jboss-bom.git</connection>
-        <developerConnection>scm:git:git@github.com:jboss-jdf/jboss-bom.git</developerConnection>
-        <url>http://github.com/jboss-jdf/jboss-bom</url>
-    </scm>
 
     <properties>
         <!-- Versions of JBoss projects -->
