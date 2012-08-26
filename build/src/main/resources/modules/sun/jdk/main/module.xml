@@ -42,6 +42,8 @@
                 <path name="com/sun/security/auth"/>
                 <path name="com/sun/security/auth/login"/>
                 <path name="com/sun/security/auth/module"/>
+                <path name="sun/jdbc/odbc"/>
+                <path name="sun/jdbc/odbc/ee"/>
                 <path name="sun/font"/>
                 <path name="sun/misc"/>
                 <path name="sun/io"/>
