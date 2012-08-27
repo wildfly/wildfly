@@ -39,13 +39,13 @@ import org.junit.runner.RunWith;
 
 @RunWith(CmpTestRunner.class)
 public class OrderByQueryTestCase extends AbstractCmpTest {
-	
+
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
         jar.addPackage(OrderByQueryTestCase.class.getPackage());
         jar.addAsManifestResource(OrderByQueryTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(OrderByQueryTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(OrderByQueryTestCase.class.getPackage(), "jbosscmp-jdbc-"+OrderByQueryTestCase.class.getSimpleName()+".xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }
@@ -128,7 +128,7 @@ public class OrderByQueryTestCase extends AbstractCmpTest {
             order.remove();
         }
     }
-    
+
 }
 
 
