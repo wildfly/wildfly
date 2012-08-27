@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.integration.ejb.entity.cmp.commerce;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,9 +37,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  * @author <a href="mailto:alex@jboss.org">Alexey Loubyansky</a>
  * @version <tt>$Revision: 81036 $</tt>
@@ -48,7 +48,7 @@ public class LazyResultSetLoadingTestCase extends AbstractCmpTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
         jar.addPackage(LazyResultSetLoadingTestCase.class.getPackage());
         jar.addAsManifestResource(LazyResultSetLoadingTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(LazyResultSetLoadingTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(LazyResultSetLoadingTestCase.class.getPackage(), "jbosscmp-jdbc-"+LazyResultSetLoadingTestCase.class.getSimpleName()+".xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }
