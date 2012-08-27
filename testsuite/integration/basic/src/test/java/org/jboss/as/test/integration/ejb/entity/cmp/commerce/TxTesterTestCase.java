@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.ejb.entity.cmp.commerce;
 
+import static org.junit.Assert.fail;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.test.integration.ejb.entity.cmp.AbstractCmpTest;
 import org.jboss.as.test.integration.ejb.entity.cmp.CmpTestRunner;
@@ -31,8 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.fail;
-
 @RunWith(CmpTestRunner.class)
 public class TxTesterTestCase extends AbstractCmpTest {
 
@@ -41,7 +41,7 @@ public class TxTesterTestCase extends AbstractCmpTest {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "cmp-commerce.jar");
         jar.addPackage(TxTesterTestCase.class.getPackage());
         jar.addAsManifestResource(TxTesterTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(TxTesterTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addAsManifestResource(TxTesterTestCase.class.getPackage(), "jbosscmp-jdbc-"+TxTesterTestCase.class.getSimpleName()+".xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }
