@@ -72,6 +72,8 @@ public class Log4jAppenderTestCase {
         handler.setFormatter(formatter);
         logger.info(DFT_MESSAGE);
         Assert.assertEquals(String.format(pattern, DFT_MESSAGE), appender.messages.get(0));
+        logger.infof("%s", DFT_MESSAGE);
+        Assert.assertEquals(String.format(pattern, DFT_MESSAGE), appender.messages.get(1));
     }
 
     @Test

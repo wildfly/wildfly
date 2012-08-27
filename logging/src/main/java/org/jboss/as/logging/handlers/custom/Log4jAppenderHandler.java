@@ -27,9 +27,7 @@ import java.util.logging.Formatter;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.Category;
-import org.apache.log4j.JBossLevelMapping;
 import org.apache.log4j.Layout;
-import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
@@ -127,27 +125,6 @@ class Log4jAppenderHandler extends ExtHandler {
         }
     }
 
-    static ExtLogRecord getLogRecordFor(LoggingEvent event) {
-        final ExtLogRecord rec = (ExtLogRecord) event.getProperties().get("org.jboss.logmanager.record");
-        if (rec != null) {
-            return rec;
-        }
-        final ExtLogRecord newRecord = new ExtLogRecord(JBossLevelMapping.getLevelFor(event.getLevel()), (String) event.getMessage(), event.getFQNOfLoggerClass());
-        newRecord.setLoggerName(event.getLoggerName());
-        newRecord.setMillis(event.getTimeStamp());
-        newRecord.setThreadName(event.getThreadName());
-        newRecord.setThrown(event.getThrowableInformation().getThrowable());
-        newRecord.setNdc(event.getNDC());
-        if (event.locationInformationExists()) {
-            final LocationInfo locationInfo = event.getLocationInformation();
-            newRecord.setSourceClassName(locationInfo.getClassName());
-            newRecord.setSourceFileName(locationInfo.getFileName());
-            newRecord.setSourceLineNumber(Integer.parseInt(locationInfo.getLineNumber()));
-            newRecord.setSourceMethodName(locationInfo.getMethodName());
-        }
-        return newRecord;
-    }
-
     /**
      * Dummy category for the logging event
      */
@@ -181,7 +158,7 @@ class Log4jAppenderHandler extends ExtHandler {
 
         @Override
         public String format(final LoggingEvent event) {
-            return formatter.format(getLogRecordFor(event));
+            return formatter.format(event.getLogRecord());
         }
 
         @Override
