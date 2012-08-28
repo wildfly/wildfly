@@ -111,7 +111,7 @@
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
-        <version.org.apache.cxf>2.6.1</version.org.apache.cxf>
+        <version.org.apache.cxf>2.6.2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.0</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0</version.org.apache.felix.log>
@@ -231,12 +231,12 @@
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>1.1.9.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
-        <version.org.jboss.ws.api>1.0.1.Beta1</version.org.jboss.ws.api>
-        <version.org.jboss.ws.spi>2.1.0.Beta1</version.org.jboss.ws.spi>
-        <version.org.jboss.ws.common>2.1.0.Beta1</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.0.0.GA</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>4.1.0.Beta1</version.org.jboss.ws.cxf>
-        <version.org.jboss.ws.jbossws-native>4.1.0.Beta1</version.org.jboss.ws.jbossws-native>
+        <version.org.jboss.ws.api>1.0.1.Beta3</version.org.jboss.ws.api>
+        <version.org.jboss.ws.spi>2.1.0.Beta3</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.common>2.1.0.Beta3</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common.tools>1.0.1.GA</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>4.1.0.Beta2</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.jbossws-native>4.1.0.Beta2</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
         <version.org.jboss.xnio>3.0.5.GA</version.org.jboss.xnio>
