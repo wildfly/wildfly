@@ -29,7 +29,7 @@
     </resources>
 
     <dependencies>
-        <module name="org.apache.cxf.impl" services="import" export="true">
+        <module name="org.apache.cxf.impl" services="import">
             <imports>
                 <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
                 <include path="META-INF/"/>
