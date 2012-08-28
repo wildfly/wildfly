@@ -960,7 +960,9 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public void clearScreen() {
-        console.clearScreen();
+        if(console != null) {
+            console.clearScreen();
+        }
     }
 
     String promptConnectPart;
@@ -1006,6 +1008,13 @@ class CommandContextImpl implements CommandContext {
 
     @Override
     public CommandHistory getHistory() {
+        if(console == null) {
+            try {
+                initBasicConsole(null, null);
+            } catch (CliInitializationException e) {
+                throw new IllegalStateException("Failed to initialize console.", e);
+            }
+        }
         return console.getHistory();
     }
 
