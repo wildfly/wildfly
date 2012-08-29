@@ -13,7 +13,7 @@
       <entity>
          <ejb-name>UserEJB</ejb-name>
          <fetch-size>1000</fetch-size>
-         <table-name>USER_DATA</table-name>
+         <table-name>USER_DATA_C</table-name>
          <cmp-field>
             <field-name>userId</field-name>
             <column-name>USER_ID</column-name>
@@ -99,8 +99,12 @@
          </query>
       </entity>
       <entity>
+		<ejb-name>CustomerEJB</ejb-name>
+		<table-name>CUSTOMER_C</table-name>
+	</entity>
+      <entity>
          <ejb-name>OrderEJB</ejb-name>
-         <table-name>ORDER_DATA</table-name>
+         <table-name>ORDER_DATA_C</table-name>
          <cmp-field>
             <field-name>ordernumber</field-name>
             <column-name>ORDER_NUMBER</column-name>
@@ -163,8 +167,8 @@
                   <distinct/>
                   <ejb-name>OrderEJB</ejb-name>
                </select>
-               <from>, AddressEJB as a</from>
-               <where>ORDER_DATA.SHIPPING_ADDRESS=a.id AND a.state='CA'</where>
+               <from>, ADDRESS_C as a</from>
+               <where>ORDER_DATA_C.SHIPPING_ADDRESS=a.id AND a.state='CA'</where>
             </declared-sql>
          </query>
          <query>
@@ -185,8 +189,8 @@
                   <ejb-name>AddressEJB</ejb-name>
                   <field-name>state</field-name>
                </select>
-               <from>, ORDER_DATA as o</from>
-               <where>o.SHIPPING_ADDRESS=AddressEJB.id</where>
+               <from>, ORDER_DATA_C as o</from>
+               <where>o.SHIPPING_ADDRESS=ADDRESS_C.id</where>
             </declared-sql>
          </query>
          <query>
@@ -223,8 +227,17 @@
          </query>
       </entity>
       <entity>
+		<ejb-name>AddressEJB</ejb-name>
+		<table-name>ADDRESS_C</table-name>
+	</entity>
+	<entity>
+		<ejb-name>LineItemEJB</ejb-name>
+		<table-name>LINEITEM_C</table-name>
+	</entity>
+		
+      <entity>
          <ejb-name>ProductEJB</ejb-name>
-         <table-name>PRODUCT</table-name>
+         <table-name>PRODUCT_C</table-name>
          <load-groups>
             <load-group>
                <load-group-name>basic</load-group-name>
@@ -251,7 +264,25 @@
             <load-group-name>shipping info</load-group-name>
          </lazy-load-groups>
       </entity>
-
+	
+	<entity>
+		<ejb-name>ProductCategoryEJB</ejb-name>
+		<table-name>PRODUCT_CATEGORY_C</table-name>
+	</entity>
+	<entity>
+		<ejb-name>ProductCategoryBatchDeleteEJB</ejb-name>
+		<table-name>PRODUCT_CATEGORY_BATCH_DELETE_C</table-name>
+	</entity>  
+	<entity>
+		<ejb-name>ProductCategoryTypeEJB</ejb-name>
+		<table-name>PRODUCT_CATEGORY_TYPE_C</table-name>
+	</entity>  
+	<entity>
+		<ejb-name>ProductCategoryTypeBatchDeleteEJB</ejb-name>
+		<table-name>PRODUCT_CATEGORY_TYPE_BATCH_DELETE_C</table-name>
+	</entity>  
+	
+	
    </enterprise-beans>
    <relationships>
       <ejb-relation>
@@ -291,7 +322,7 @@
       <ejb-relation>
          <ejb-relation-name>Product-ProductCategory</ejb-relation-name>
          <relation-table-mapping>
-            <table-name>PRODUCT_PRODUCT_CATEGORY</table-name>
+            <table-name>PRODUCT_PRODUCT_CATEGORY_C</table-name>
          </relation-table-mapping>
          <ejb-relationship-role>
             <ejb-relationship-role-name>product.getProductCategories()</ejb-relationship-role-name>
@@ -319,7 +350,7 @@
       <ejb-relation>
          <ejb-relation-name>Customer-Addresses</ejb-relation-name>
          <relation-table-mapping>
-            <table-name>CUSTOMER_ADDRESS</table-name>
+            <table-name>CUSTOMER_ADDRESS_C</table-name>
             <create-table>true</create-table>
          </relation-table-mapping>
          <ejb-relationship-role>
