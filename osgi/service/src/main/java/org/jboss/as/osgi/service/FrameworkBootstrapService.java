@@ -26,8 +26,6 @@ import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
-import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_PACKAGES;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -77,12 +75,12 @@ public class FrameworkBootstrapService implements Service<Void> {
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
-    private final ServiceVerificationHandler verificationHandler;
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
-        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, extensions, verificationHandler);
+    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, List<SubsystemExtension> extensions,
+            ServiceVerificationHandler verificationHandler) {
+        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, extensions);
         ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
@@ -90,8 +88,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         return builder.install();
     }
 
-    private FrameworkBootstrapService(OSGiRuntimeResource resource, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
-        this.verificationHandler = verificationHandler;
+    private FrameworkBootstrapService(OSGiRuntimeResource resource, List<SubsystemExtension> extensions) {
         this.extensions = extensions;
         this.resource = resource;
     }
@@ -178,27 +175,29 @@ public class FrameworkBootstrapService implements Service<Void> {
         // Setup default system modules
         String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
         if (sysmodules == null) {
-            StringBuffer buffer = new StringBuffer();
-            buffer.append("javax.api,");
-            buffer.append("javax.inject.api,");
-            buffer.append("org.apache.xerces,");
-            buffer.append("org.jboss.as.configadmin,");
-            buffer.append("org.jboss.as.controller-client,");
-            buffer.append("org.jboss.as.osgi,");
-            buffer.append("org.jboss.logging,");
-            buffer.append("org.jboss.modules,");
-            buffer.append("org.jboss.msc,");
-            buffer.append("org.jboss.osgi.framework,");
-            buffer.append("org.jboss.osgi.repository,");
-            buffer.append("org.slf4j");
-            props.put(PROP_JBOSS_OSGI_SYSTEM_MODULES, buffer.toString());
+            Set<String> sysModules = new LinkedHashSet<String>();
+            sysModules.add("javax.api");
+            sysModules.add("javax.inject.api");
+            sysModules.add("org.apache.xerces");
+            sysModules.add("org.jboss.as.configadmin");
+            sysModules.add("org.jboss.as.controller-client");
+            sysModules.add("org.jboss.as.osgi");
+            sysModules.add("org.jboss.logging");
+            sysModules.add("org.jboss.modules");
+            sysModules.add("org.jboss.msc");
+            sysModules.add("org.jboss.osgi.framework");
+            sysModules.add("org.jboss.osgi.repository");
+            sysModules.add("org.jboss.osgi.resolver");
+            sysmodules = sysModules.toString();
+            sysmodules = sysmodules.substring(1, sysmodules.length() - 1);
+            props.put(PROP_JBOSS_OSGI_SYSTEM_MODULES, sysmodules);
         }
 
         // Setup default system packages
-        String syspackages = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_PACKAGES);
+        String syspackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES);
         if (syspackages == null) {
             Set<String> sysPackages = new LinkedHashSet<String>();
-            sysPackages.addAll(Arrays.asList(SystemPathsPlugin.DEFAULT_SYSTEM_PACKAGES));
+            sysPackages.addAll(Arrays.asList(SystemPackagesIntegration.JAVAX_API_PACKAGES));
             sysPackages.addAll(Arrays.asList(SystemPathsPlugin.DEFAULT_FRAMEWORK_PACKAGES));
             sysPackages.add("javax.inject");
             sysPackages.add("org.apache.xerces.jaxp");
@@ -210,16 +209,14 @@ public class FrameworkBootstrapService implements Service<Void> {
             sysPackages.add("org.jboss.logging;version=3.1.0");
             sysPackages.add("org.jboss.osgi.repository;version=1.0");
             sysPackages.add("org.osgi.service.repository;version=1.0");
-            sysPackages.add("org.slf4j;version=1.6.1");
             syspackages = sysPackages.toString();
             syspackages = syspackages.substring(1, syspackages.length() - 1);
-            props.put(PROP_JBOSS_OSGI_SYSTEM_PACKAGES, syspackages);
+            props.put(Constants.FRAMEWORK_SYSTEMPACKAGES, syspackages);
         }
 
         String extrapackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
         if (extrapackages != null) {
-            syspackages += "," + extrapackages;
+            props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extrapackages);
         }
-        props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, syspackages);
     }
 }
