@@ -56,7 +56,6 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
 
     public static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("subsystemstate");
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES = "org.jboss.osgi.system.modules";
-    public static final String PROP_JBOSS_OSGI_SYSTEM_PACKAGES = "org.jboss.osgi.system.packages";
     public static final String PROP_JBOSS_OSGI_SYSTEM_MODULES_EXTRA = "org.jboss.osgi.system.modules.extra";
 
     private final Map<String, Object> properties = new LinkedHashMap<String, Object>();
