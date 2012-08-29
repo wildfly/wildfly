@@ -18,8 +18,10 @@
 	       <capabilities>
 	           <!-- modules registered with the OSGi layer on startup -->
                <capability name="javax.annotation.api"/>
-	           <capability name="javax.servlet.api"/>
-	           <capability name="javax.transaction.api"/>
+               <capability name="javax.jws.api"/>
+               <capability name="javax.servlet.api"/>
+               <capability name="javax.transaction.api"/>
+               <capability name="javax.xml.ws.api"/>
 	           <capability name="org.slf4j"/>
 	           <!-- bundles started in startlevel 1 -->
 	           <capability name="org.apache.felix.log" startlevel="1"/>
