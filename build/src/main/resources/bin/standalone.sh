@@ -51,13 +51,6 @@ case "`uname`" in
         ;;
 esac
 
-# Read an optional running configuration file
-if [ "x$RUN_CONF" = "x" ]; then
-    RUN_CONF="$DIRNAME/standalone.conf"
-fi
-if [ -r "$RUN_CONF" ]; then
-    . "$RUN_CONF"
-fi
 
 if [ "$DEBUG_MODE" = "true" ]; then
     JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=$DEBUG_PORT,server=y,suspend=n"
@@ -81,11 +74,23 @@ if [ "x$JBOSS_HOME" = "x" ]; then
 else
  SANITIZED_JBOSS_HOME=`cd "$JBOSS_HOME"; pwd`
  if [ "$RESOLVED_JBOSS_HOME" != "$SANITIZED_JBOSS_HOME" ]; then
-   echo "WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur."
    echo ""
+   echo "   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur."
+   echo ""
+   echo "             JBOSS_HOME: $JBOSS_HOME"
+   echo ""
+   sleep 2s
  fi
 fi
 export JBOSS_HOME
+
+# Read an optional running configuration file
+if [ "x$RUN_CONF" = "x" ]; then
+    RUN_CONF="$DIRNAME/standalone.conf"
+fi
+if [ -r "$RUN_CONF" ]; then
+    . "$RUN_CONF"
+fi
 
 # Setup the JVM
 if [ "x$JAVA" = "x" ]; then
