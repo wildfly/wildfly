@@ -14,17 +14,6 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-rem Read an optional configuration file.
-if "x%STANDALONE_CONF%" == "x" (
-   set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
-)
-if exist "%STANDALONE_CONF%" (
-   echo Calling "%STANDALONE_CONF%"
-   call "%STANDALONE_CONF%" %*
-) else (
-   echo Config file not found "%STANDALONE_CONF%"
-)
-
 pushd %DIRNAME%..
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
@@ -37,8 +26,25 @@ pushd "%JBOSS_HOME%"
 set "SANITIZED_JBOSS_HOME=%CD%"
 popd
 
-if "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
-    echo WARNING JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
+   echo.
+   echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
+   echo.
+   echo             JBOSS_HOME: %JBOSS_HOME%
+   echo.
+   rem 2 seconds pause
+   ping 127.0.0.1 -n 3 > nul
+)
+
+rem Read an optional configuration file.
+if "x%STANDALONE_CONF%" == "x" (
+   set "STANDALONE_CONF=%DIRNAME%standalone.conf.bat"
+)
+if exist "%STANDALONE_CONF%" (
+   echo Calling "%STANDALONE_CONF%"
+   call "%STANDALONE_CONF%" %*
+) else (
+   echo Config file not found "%STANDALONE_CONF%"
 )
 
 set DIRNAME=
