@@ -173,19 +173,11 @@ public class DomainXml extends CommonXml {
             writeNewLine(writer);
         }
         if (modelNode.hasDefined(PROFILE)) {
-            boolean started = false;
+            writer.writeStartElement(Element.PROFILES.getLocalName());
             for (final Property profile : modelNode.get(PROFILE).asPropertyList()) {
-                if (profile.getValue().isDefined()) {
-                    if (!started) {
-                        writer.writeStartElement(Element.PROFILES.getLocalName());
-                        started = true;
-                    }
-                    writeProfile(writer, profile.getName(), profile.getValue(), context);
-                }
+                writeProfile(writer, profile.getName(), profile.getValue(), context);
             }
-            if (started) {
-                writer.writeEndElement();
-            }
+            writer.writeEndElement();
             writeNewLine(writer);
         }
         if (modelNode.hasDefined(INTERFACE)) {

@@ -21,17 +21,14 @@
 */
 package org.jboss.as.host.controller.test;
 
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Fast track to initialize model with resources required by the operations required.
- * When testing the xml variety things added here might be added back to the marshalled
- * xml, causing problems when comparing the original and marshalled xml. Use {@link ModelWriteSanitizer}
- * to remove things added here from the model.
+ * Allows you to remove parts of the model before persisting/marshalling to xml.
  *
+ * @see ModelInitializer
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface ModelInitializer {
-
-    void populateModel(Resource rootResource);
+public interface ModelWriteSanitizer {
+    ModelNode sanitize(ModelNode model);
 }

@@ -213,7 +213,7 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
 
         KernelServices kernelServices = createKernelServicesBuilder(type)
                 .setBootOperations(Collections.singletonList(op))
-                .setModelInitializer(getModelInitializer())
+                .setModelInitializer(getModelInitializer(), null)
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
@@ -334,7 +334,7 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
 
         KernelServices kernelServices = createKernelServicesBuilder(type)
                 .setBootOperations(bootOps)
-                .setModelInitializer(getModelInitializer())
+                .setModelInitializer(getModelInitializer(), null)
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
