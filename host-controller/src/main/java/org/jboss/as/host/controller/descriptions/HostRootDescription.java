@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
@@ -59,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_MODE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
@@ -178,6 +180,18 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, PROCESS_STATE, REQUIRED).set(true);
         root.get(ATTRIBUTES, PROCESS_STATE, NILLABLE).set(false);
         root.get(ATTRIBUTES, PROCESS_STATE, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, RUNNING_MODE, DESCRIPTION).set(bundle.getString("host.running-mode"));
+        root.get(ATTRIBUTES, RUNNING_MODE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, RUNNING_MODE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, RUNNING_MODE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, RUNNING_MODE, MIN_LENGTH).set(1);
+
+        root.get(ATTRIBUTES, HOST_STATE, DESCRIPTION).set(bundle.getString("host.host-state"));
+        root.get(ATTRIBUTES, HOST_STATE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, HOST_STATE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, HOST_STATE, NILLABLE).set(false);
+        root.get(ATTRIBUTES, HOST_STATE, MIN_LENGTH).set(1);
 
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, DESCRIPTION).set(bundle.getString("host.domain-controller"));
         root.get(ATTRIBUTES, DOMAIN_CONTROLLER, TYPE).set(ModelType.OBJECT);
