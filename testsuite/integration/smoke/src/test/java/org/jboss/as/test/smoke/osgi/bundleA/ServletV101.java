@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2010, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,30 +22,20 @@
 package org.jboss.as.test.smoke.osgi.bundleA;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Writer;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.framework.BundleContext;
-
-/**
- * @author David Bosschaert
- */
-@WebServlet(name = "TestServlet", urlPatterns = { "/test" })
-public class TestServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+@SuppressWarnings("serial")
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
+public class ServletV101 extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        PrintWriter writer = resp.getWriter();
-        BundleContext ctxt = (BundleContext)
-                getServletContext().getAttribute("osgi-bundlecontext");
-
-        writer.write("Servlet hosted in: " + ctxt.getBundle().getSymbolicName());
-        writer.close();
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Writer writer = resp.getWriter();
+        writer.write(getClass().getSimpleName());
     }
 }
