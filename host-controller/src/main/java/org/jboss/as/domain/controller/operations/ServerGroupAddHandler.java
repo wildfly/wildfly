@@ -59,7 +59,7 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
 
     private ServerGroupAddHandler() {
         validator.registerValidator(PROFILE, new StringLengthValidator(1));
-        validator.registerValidator(SOCKET_BINDING_GROUP, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
+        validator.registerValidator(SOCKET_BINDING_GROUP, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
         validator.registerValidator(SOCKET_BINDING_PORT_OFFSET, new ModelTypeValidator(ModelType.INT, true, false));
         validator.registerValidator(JVM, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
         validator.registerValidator(MANAGEMENT_SUBSYSTEM_ENDPOINT, new ModelTypeValidator(true, false, true, ModelType.BOOLEAN));
