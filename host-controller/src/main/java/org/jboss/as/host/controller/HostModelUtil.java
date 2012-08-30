@@ -87,6 +87,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
+import org.jboss.as.domain.management.connections.database.DatabaseConnectionResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
@@ -256,6 +257,7 @@ public class HostModelUtil {
         ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
         management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+        management.registerSubModel(DatabaseConnectionResourceDefinition.INSTANCE);
         management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
         management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
 
