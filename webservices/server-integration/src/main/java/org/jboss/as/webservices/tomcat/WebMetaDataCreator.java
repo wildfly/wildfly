@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.metadata.ear.spec.EarMetaData;

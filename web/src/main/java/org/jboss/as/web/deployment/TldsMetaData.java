@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.web.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.metadata.web.spec.TldMetaData;
 
 /**

@@ -84,4 +84,5 @@ public class Attachments {
 
     public static final AttachmentKey<EEResourceReferenceProcessorRegistry> RESOURCE_REFERENCE_PROCESSOR_REGISTRY = AttachmentKey.create(EEResourceReferenceProcessorRegistry.class);
 
+    public static final AttachmentKey<ComponentRegistry> COMPONENT_REGISTRY = AttachmentKey.create(ComponentRegistry.class);
 }

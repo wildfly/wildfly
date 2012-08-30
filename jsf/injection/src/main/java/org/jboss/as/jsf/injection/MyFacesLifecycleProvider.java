@@ -21,37 +21,35 @@
  */
 package org.jboss.as.jsf.injection;
 
-import org.apache.myfaces.config.annotation.LifecycleProvider2;
-import org.jboss.as.jsf.JSFMessages;
-import org.jboss.as.web.deployment.WebInjectionContainer;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.naming.NamingException;
-import java.lang.reflect.InvocationTargetException;
+
+import org.apache.myfaces.config.annotation.LifecycleProvider2;
+import org.jboss.as.web.common.StartupContext;
+import org.jboss.as.web.common.WebInjectionContainer;
 
 /**
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class MyFacesLifecycleProvider implements LifecycleProvider2 {
 
-    private final WebInjectionContainer container;
+    private final WebInjectionContainer injectionContainer;
 
     public MyFacesLifecycleProvider() {
-        this.container = WebInjectionContainer.getCurrentInjectionContainer();
-        if (this.container == null) {
-            throw JSFMessages.MESSAGES.noThreadLocalInjectionContainer();
-        }
+        this.injectionContainer = StartupContext.getInjectionContainer();
     }
 
     public Object newInstance(String className) throws ClassNotFoundException, IllegalAccessException, InstantiationException, NamingException, InvocationTargetException {
-        return container.newInstance(className);
+        return injectionContainer.newInstance(className);
     }
 
     public void postConstruct(Object obj) throws IllegalAccessException, InvocationTargetException {
-       // do nothing.  container.newInstance() took care of this.
+        // do nothing.  container.newInstance() took care of this.
     }
 
     public void destroyInstance(Object obj) throws IllegalAccessException, InvocationTargetException {
-        container.destroyInstance(obj);
+        injectionContainer.destroyInstance(obj);
     }
 
 }

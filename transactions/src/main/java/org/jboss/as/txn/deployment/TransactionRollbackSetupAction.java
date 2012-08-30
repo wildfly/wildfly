@@ -109,7 +109,10 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
     private void checkTransactionStatus() {
         try {
-            final TransactionManager tm = transactionManager.getValue();
+            final TransactionManager tm = transactionManager.getOptionalValue();
+            if(tm == null) {
+                return;
+            }
             final int status = tm.getStatus();
 
             switch (status) {

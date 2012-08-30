@@ -119,6 +119,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.as.web.common.WarMetaData;
 
 /**
  * @author Remy Maucherat

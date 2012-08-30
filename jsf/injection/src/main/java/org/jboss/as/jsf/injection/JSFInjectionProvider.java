@@ -23,24 +23,18 @@ package org.jboss.as.jsf.injection;
 
 import com.sun.faces.spi.DiscoverableInjectionProvider;
 import com.sun.faces.spi.InjectionProviderException;
-import org.jboss.as.jsf.JSFMessages;
-import org.jboss.as.web.deployment.WebInjectionContainer;
-
-import javax.naming.NamingException;
-import java.lang.reflect.InvocationTargetException;
+import org.jboss.as.web.common.StartupContext;
+import org.jboss.as.web.common.WebInjectionContainer;
 
 /**
  * @author Stuart Douglas
  */
 public class JSFInjectionProvider extends DiscoverableInjectionProvider {
 
-    private final WebInjectionContainer container;
+    private final WebInjectionContainer instanceManager;
 
     public JSFInjectionProvider() {
-        this.container = WebInjectionContainer.getCurrentInjectionContainer();
-        if (this.container == null) {
-            throw JSFMessages.MESSAGES.noThreadLocalInjectionContainer();
-        }
+        this.instanceManager = StartupContext.getInjectionContainer();
     }
 
     @Override
@@ -50,25 +44,15 @@ public class JSFInjectionProvider extends DiscoverableInjectionProvider {
 
     @Override
     public void invokePreDestroy(final Object managedBean) throws InjectionProviderException {
-        try {
-            container.destroyInstance(managedBean);
-        } catch (IllegalAccessException e) {
-            throw JSFMessages.MESSAGES.instanceDestructionFailed(e);
-        } catch (InvocationTargetException e) {
-            throw JSFMessages.MESSAGES.instanceDestructionFailed(e);
-        }
+        instanceManager.destroyInstance(managedBean);
     }
 
     @Override
     public void invokePostConstruct(final Object managedBean) throws InjectionProviderException {
         try {
-            container.newInstance(managedBean);
-        } catch (IllegalAccessException e) {
-            throw JSFMessages.MESSAGES.instanceCreationFailed(e);
-        } catch (InvocationTargetException e) {
-            throw JSFMessages.MESSAGES.instanceCreationFailed(e);
-        } catch (NamingException e) {
-            throw JSFMessages.MESSAGES.instanceCreationFailed(e);
+            instanceManager.newInstance(managedBean);
+        } catch (Exception e) {
+            throw new InjectionProviderException(e);
         }
     }
 }

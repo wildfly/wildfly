@@ -37,6 +37,7 @@ import org.jboss.metadata.ear.spec.ModulesMetaData;
 import org.jboss.metadata.ear.spec.WebModuleMetaData;
 import org.jboss.metadata.web.jboss.JBoss70WebMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.as.web.common.WarMetaData;
 
 /**
  * Deployment unit processor responsible for detecting web deployments and determining if they have a parent EAR file and

@@ -22,11 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
-import static org.jboss.as.server.deployment.Attachments.MODULE;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,10 +34,12 @@ import org.jboss.as.ee.component.ClassDescriptionTraversal;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentNamingMode;
+import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
@@ -70,6 +67,12 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
+import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
+import static org.jboss.as.server.deployment.Attachments.MODULE;
+
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Eduardo Martins
@@ -83,6 +86,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         if (module == null || moduleConfiguration == null) {
             return;
         }
+        final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
+        ComponentRegistry componentRegistry = deploymentUnit.getAttachment(COMPONENT_REGISTRY);
 
         final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
@@ -93,6 +98,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
             try {
                 ROOT_LOGGER.tracef("Installing component %s", configuration.getComponentClass().getName());
                 deployComponent(phaseContext, configuration, dependencies, bindingDependencyService);
+                componentRegistry.addComponent(configuration);
 
                 //we need to make sure that the web deployment has a dependency on all components it the app, so web components are started
                 //when the web subsystem is starting

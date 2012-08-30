@@ -45,6 +45,7 @@ import org.jboss.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.as.web.common.WarMetaData;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 

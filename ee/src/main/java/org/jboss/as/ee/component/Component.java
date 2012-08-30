@@ -62,5 +62,8 @@ public interface Component {
      */
     ComponentInstance createInstance();
 
+    ComponentInstance createInstance(Object instance);
+
     NamespaceContextSelector getNamespaceContextSelector();
+
 }

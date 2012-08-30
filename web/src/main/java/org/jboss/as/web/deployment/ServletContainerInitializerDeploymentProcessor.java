@@ -58,6 +58,7 @@ import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
+import org.jboss.as.web.common.WarMetaData;
 
 /**
  * SCI deployment processor.

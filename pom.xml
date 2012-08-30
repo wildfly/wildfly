@@ -1233,6 +1233,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-web-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-webservices-server-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6405,6 +6411,7 @@
                 <module>spec-api</module>
                 <module>transactions</module>
                 <module>web</module>
+                <module>web-common</module>
                 <module>webservices</module>
                 <module>weld</module>
                 <module>xts</module>

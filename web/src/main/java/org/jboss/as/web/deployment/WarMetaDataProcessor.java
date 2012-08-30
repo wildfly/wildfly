@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;

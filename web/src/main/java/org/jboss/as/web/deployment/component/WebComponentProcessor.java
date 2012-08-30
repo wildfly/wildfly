@@ -35,9 +35,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.web.deployment.TldsMetaData;
-import org.jboss.as.web.deployment.WarMetaData;
-import org.jboss.as.web.deployment.WebAttachments;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.web.spec.FilterMetaData;
@@ -92,7 +92,6 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         }
 
         final Map<String, ComponentDescription> componentByClass = new HashMap<String, ComponentDescription>();
-        final Map<String, ComponentInstantiator> webComponents = new HashMap<String, ComponentInstantiator>();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
@@ -119,8 +118,6 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 if (!(description.getViews().size() == 1)) {
                     throw MESSAGES.wrongComponentType(clazz);
                 }
-                ManagedBeanComponentInstantiator instantiator = new ManagedBeanComponentInstantiator(deploymentUnit, description);
-                webComponents.put(clazz, instantiator);
             } else {
                 //we do not make the standard tags into components, as there is no need
                 if (compositeIndex.getClassByName(DotName.createSimple(clazz)) == null) {
@@ -137,10 +134,9 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 }
                 description = new WebComponentDescription(clazz, clazz, moduleDescription, deploymentUnit.getServiceName(), applicationClassesDescription);
                 moduleDescription.addComponent(description);
-                webComponents.put(clazz, new WebComponentInstantiator(deploymentUnit, description));
+                deploymentUnit.addToAttachmentList(WebComponentDescription.WEB_COMPONENTS, description.getStartServiceName());
             }
         }
-        deploymentUnit.putAttachment(WebAttachments.WEB_COMPONENT_INSTANTIATORS, webComponents);
     }
 
     @Override

@@ -78,7 +78,7 @@
 
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-web</artifactId>
+            <artifactId>jboss-as-web-common</artifactId>
         </dependency>
 
         <dependency>

@@ -35,7 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
-import org.jboss.as.web.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.metadata.parser.jsp.TldMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.TldMetaData;

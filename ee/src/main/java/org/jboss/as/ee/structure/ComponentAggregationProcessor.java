@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
@@ -36,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 
+import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
 import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
@@ -51,10 +53,14 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
+        final ComponentRegistry componentRegistry = new ComponentRegistry(phaseContext.getServiceRegistry());
+        deploymentUnit.putAttachment(COMPONENT_REGISTRY, componentRegistry);
+
         if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
 
             final EEApplicationDescription applicationDescription = new EEApplicationDescription();
             deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION, applicationDescription);
+
 
             final EEModuleDescription earDesc = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
             if (earDesc != null) {
