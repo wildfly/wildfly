@@ -18,18 +18,21 @@
  */
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
@@ -38,9 +41,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -107,13 +110,6 @@ import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
-import org.jboss.as.host.controller.operations.ServerAddHandler;
-import org.jboss.as.host.controller.operations.ServerRemoveHandler;
-import org.jboss.as.host.controller.operations.ServerRestartHandler;
-import org.jboss.as.host.controller.operations.ServerRestartRequiredServerConfigWriteAttributeHandler;
-import org.jboss.as.host.controller.operations.ServerStartHandler;
-import org.jboss.as.host.controller.operations.ServerStatusHandler;
-import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
@@ -121,9 +117,8 @@ import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.operations.RunningModeReadHandler;
-import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
-import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
@@ -196,6 +191,18 @@ public class HostModelUtil {
         hostRegistration.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, flags);
 
         hostRegistration.registerReadWriteAttribute(HostRootDescription.DIRECTORY_GROUPING, null, new ReloadRequiredWriteAttributeHandler(HostRootDescription.DIRECTORY_GROUPING));
+        //In description but were not registered
+        hostRegistration.registerReadOnlyAttribute(PRODUCT_NAME, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(DOMAIN_CONTROLLER, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_STATE, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(RELEASE_VERSION, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(NAMESPACES, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, null, Storage.RUNTIME);
+        hostRegistration.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, null, Storage.RUNTIME);
 
         hostRegistration.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
         hostRegistration.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);

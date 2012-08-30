@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.operations;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_MODE;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -56,7 +58,7 @@ public class RunningModeReadHandler implements OperationStepHandler {
     }
 
     public static void createAndRegister(final RunningModeControl runningModeControl, final ManagementResourceRegistration resourceRegistration) {
-        AttributeDefinition def = SimpleAttributeDefinitionBuilder.create("running-mode", ModelType.STRING)
+        AttributeDefinition def = SimpleAttributeDefinitionBuilder.create(RUNNING_MODE, ModelType.STRING)
             .setValidator(new EnumValidator(RunningMode.class, false, false))
                 .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
