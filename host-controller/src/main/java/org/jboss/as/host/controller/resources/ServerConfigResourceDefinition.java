@@ -82,7 +82,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
 
-    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING).build();
+    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, true).build();
 
     public static final SimpleAttributeDefinition AUTO_START = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.AUTO_START, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
@@ -110,13 +110,13 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
      * resource description. So for compatibility we register it here as well, and include it in the description
      * to be consistent and to avoid having to do hacks just to not register it.
      */
-    public static final AttributeDefinition PRIORITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PRIORITY, ModelType.INT).build();
+    public static final AttributeDefinition PRIORITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PRIORITY, ModelType.INT, true).build();
     /**
      * Bogus attribute that we accidentally registered in AS 7.1.2/EAP 6 even though it didn't appear in the
      * resource description. So for compatibility we register it here as well, and include it in the description
      * to be consistent and to avoid having to do hacks just to not register it.
      */
-    public static final AttributeDefinition CPU_AFFINITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CPU_AFFINITY, ModelType.STRING).build();
+    public static final AttributeDefinition CPU_AFFINITY  = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CPU_AFFINITY, ModelType.STRING, true).build();
 
 
     /** The attributes that can be written by the {@code add} operation */
