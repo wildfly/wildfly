@@ -4,6 +4,7 @@
    <server-groups>
 	  <server-group name="test" profile="test">
          <jvm name="empty"/>
+         <socket-binding-group ref="test-sockets"/>
  	  </server-group>
    </server-groups>	  
 </domain>

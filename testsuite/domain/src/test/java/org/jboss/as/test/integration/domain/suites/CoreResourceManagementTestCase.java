@@ -662,6 +662,7 @@ public class CoreResourceManagementTestCase {
         add.get(OP).set(ADD);
         add.get(OP_ADDR).add(SERVER_GROUP, serverGroupName);
         add.get(PROFILE).set("default");
+        add.get(SOCKET_BINDING_GROUP).set(bindingGroupName);
         validateResponse(masterClient.execute(add));
 
         // remove server group
