@@ -46,6 +46,7 @@ import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.OperationValidation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
@@ -183,8 +184,8 @@ public class CoreModelTestDelegate {
             validateDescriptionProviders(validationConfiguration, kernelServices);
 
             //TODO Fix model and readd this
-            System.out.println("---- Skipping validating model descriptions - this needs reenabling and the model needs to be fixed");
-            //ModelTestUtils.validateModelDescriptions(PathAddress.EMPTY_ADDRESS, kernelServices.getRootRegistration());
+//            System.out.println("---- Skipping validating model descriptions - this needs reenabling and the model needs to be fixed");
+            ModelTestUtils.validateModelDescriptions(PathAddress.EMPTY_ADDRESS, kernelServices.getRootRegistration());
 
             return kernelServices;
         }
