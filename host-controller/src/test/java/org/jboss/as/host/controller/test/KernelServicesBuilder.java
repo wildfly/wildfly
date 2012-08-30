@@ -87,13 +87,15 @@ public interface KernelServicesBuilder {
     KernelServicesBuilder setBootOperations(List<ModelNode> bootOperations);
 
     /**
-     * Adds a model initializer which can be used to initialize the model before executing the boot operations
+     * Adds a model initializer which can be used to initialize the model before executing the boot operations, and a model write sanitizer
+     * which can be used to remove resources from the model for the xml comparison tests.
      *
-     * @param modelInitializer the model initilaizer
+     * @param modelInitializer the model initilizer
+     * @param modelWriteSanitizer the model write sanitizer
      * @return this builder
      * @throws IllegalStateException if the model initializer was already set or if {@link #build()} has already been called
      */
-    KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer);
+    KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer);
 
     //TODO legacy services
 

@@ -176,9 +176,10 @@ public class CoreModelTestDelegate {
         }
 
         @Override
-        public KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer) {
+        public KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer) {
             bootOperationBuilder.validateNotAlreadyBuilt();
             this.modelInitializer = modelInitializer;
+            testParser.setModelWriteSanitizer(modelWriteSanitizer);
             return this;
         }
 

@@ -50,6 +50,7 @@ public class TestParser implements ModelTestParser {
     private final Type type;
     private final XMLElementReader<List<ModelNode>> reader;
     private final XMLElementWriter<ModelMarshallingContext> writer;
+    private volatile ModelWriteSanitizer writeSanitizer;
 
     public TestParser(Type type, XMLElementReader<List<ModelNode>> reader, XMLElementWriter<ModelMarshallingContext> writer) {
         this.type = type;
@@ -83,15 +84,24 @@ public class TestParser implements ModelTestParser {
         return testParser;
     }
 
+    void setModelWriteSanitizer(ModelWriteSanitizer writeSanitizer) {
+        this.writeSanitizer = writeSanitizer;
+    }
+
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {
         this.reader.readElement(reader, value);
     }
 
     @Override
-    public void writeContent(final XMLExtendedStreamWriter streamWriter, final ModelMarshallingContext context) throws XMLStreamException {
+    public void writeContent(XMLExtendedStreamWriter streamWriter, ModelMarshallingContext context) throws XMLStreamException {
+        this.writer.writeContent(streamWriter, sanitizeContext(wrapPossibleHost(context)));
+    }
+
+    private ModelMarshallingContext wrapPossibleHost(final ModelMarshallingContext context) {
+
         if (type == Type.HOST) {
-            this.writer.writeContent(streamWriter, new ModelMarshallingContext() {
+            return new ModelMarshallingContext() {
 
                 @Override
                 public XMLElementWriter<SubsystemMarshallingContext> getSubsystemWriter(String subsystemName) {
@@ -107,9 +117,32 @@ public class TestParser implements ModelTestParser {
                 public ModelNode getModelNode() {
                     return context.getModelNode().get(ModelDescriptionConstants.HOST, "master");
                 }
-            });
-        } else {
-            this.writer.writeContent(streamWriter, context);
+            };
         }
+
+        return context;
+    }
+    private ModelMarshallingContext sanitizeContext(final ModelMarshallingContext context) {
+        if (writeSanitizer == null) {
+            return context;
+        }
+        final ModelNode model = writeSanitizer.sanitize(context.getModelNode());
+        return new ModelMarshallingContext() {
+
+            @Override
+            public XMLElementWriter<SubsystemMarshallingContext> getSubsystemWriter(String subsystemName) {
+                return context.getSubsystemWriter(subsystemName);
+            }
+
+            @Override
+            public XMLElementWriter<SubsystemMarshallingContext> getSubsystemDeploymentWriter(String subsystemName) {
+                return context.getSubsystemDeploymentWriter(subsystemName);
+            }
+
+            @Override
+            public ModelNode getModelNode() {
+                return model;
+            }
+        };
     }
 }
