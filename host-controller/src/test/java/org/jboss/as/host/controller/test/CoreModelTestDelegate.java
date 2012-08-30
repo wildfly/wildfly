@@ -62,7 +62,6 @@ public class CoreModelTestDelegate {
 
     private final Class<?> testClass;
     private final List<KernelServices> kernelServices = new ArrayList<KernelServices>();
-    private XMLMapper xmlMapper;
 
     public CoreModelTestDelegate(Class<?> testClass) {
         this.testClass = testClass;
@@ -70,7 +69,6 @@ public class CoreModelTestDelegate {
 
     void initializeParser() throws Exception {
         //Initialize the parser
-        xmlMapper = XMLMapper.Factory.create();
 
     }
 
@@ -82,14 +80,6 @@ public class CoreModelTestDelegate {
             }
         }
         kernelServices.clear();
-        xmlMapper = null;
-    }
-
-    protected List<ModelNode> parse(String xml) throws XMLStreamException {
-        final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
-        final List<ModelNode> operationList = new ArrayList<ModelNode>();
-        xmlMapper.parseDocument(operationList, reader);
-        return operationList;
     }
 
 
@@ -136,6 +126,7 @@ public class CoreModelTestDelegate {
         //TODO set this to EXIT_ON_VALIDATION_ERROR once model is fixed
         private OperationValidation validateOperations = OperationValidation.LOG_VALIDATION_ERRORS;
         private ValidationConfiguration validationConfiguration;
+        private XMLMapper xmlMapper = XMLMapper.Factory.create();
 
 
         public KernelServicesBuilderImpl(Type type) {
@@ -199,7 +190,10 @@ public class CoreModelTestDelegate {
         }
         @Override
         public List<ModelNode> parse(String xml) throws XMLStreamException {
-            return CoreModelTestDelegate.this.parse(xml);
+            final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));
+            final List<ModelNode> operationList = new ArrayList<ModelNode>();
+            xmlMapper.parseDocument(operationList, reader);
+            return operationList;
         }
     }
 }
