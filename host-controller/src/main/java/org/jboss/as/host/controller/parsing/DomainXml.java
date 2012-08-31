@@ -564,8 +564,10 @@ public class DomainXml extends CommonXml {
                     Element.INTERFACES.getLocalName(), reader.getLocation());
         }
 
+        /*This will be reintroduced for 7.2.0, leave commented out
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
         includes.setEmptyList();
+        */
         updates.add(bindingGroupUpdate);
 
         // Handle elements
