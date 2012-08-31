@@ -23,10 +23,10 @@
 package org.jboss.as.logging;
 
 import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
-import org.jboss.as.controller.PathAddress;
+import java.io.Closeable;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -54,19 +54,7 @@ public interface LoggingLogger extends BasicLogger {
      */
     LoggingLogger ROOT_LOGGER = Logger.getMessageLogger(LoggingLogger.class, LoggingLogger.class.getPackage().getName());
 
-    /**
-     * Logs an error message indicating the class, represented by the {@code className} parameter, caught exception
-     * attempting to revert the operation, represented by the {@code op} parameter, at the address, represented by the
-     * {@code address} parameter.
-     *
-     * @param cause     the cause of the error.
-     * @param className the name of the class that caught the error.
-     * @param op        the operation.
-     * @param address   the address.
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 11500, value = "%s caught exception attempting to revert operation %s at address %s")
-    void errorRevertingOperation(@Cause Throwable cause, String className, String op, PathAddress address);
+    // id = 11500, value = "%s caught exception attempting to revert operation %s at address %s" -- now unused
 
     /**
      * Logs a warning message indicating an error occurred trying to set the property, represented by the
@@ -80,19 +68,8 @@ public interface LoggingLogger extends BasicLogger {
     @Message(id = 11501, value = "An error occurred trying to set the property '%s' on handler '%s'.")
     void errorSettingProperty(@Cause Throwable cause, String propertyName, String className);
 
-    /**
-     * Logs an informational message indicating the bootstrap log handlers are being removed.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 11502, value = "Removing bootstrap log handlers")
-    void removingBootstrapLogHandlers();
-
-    /**
-     * Logs an informational message indicating the bootstrap log handlers have been restored.
-     */
-    @LogMessage(level = INFO)
-    @Message(id = 11503, value = "Restored bootstrap log handlers")
-    void restoredBootstrapLogHandlers();
+    // id = 11502, value = "Removing bootstrap log handlers" -- now unused
+    // id = 11503, value = "Restored bootstrap log handlers" -- now unused
 
     /**
      * Logs a warning message indicating an unknown property, represented by the {@code propertyName} parameter, for
@@ -104,4 +81,43 @@ public interface LoggingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11504, value = "Unknown property '%s' for '%s'.")
     void unknownProperty(String propertyName, String className);
+
+    /**
+     * Logs an error message indicating to failure to close the resource represented by the {@code closeable}
+     * parameter.
+     *
+     * @param cause     the cause of the error
+     * @param closeable the resource
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11505, value = "Failed to close resource %s")
+    void failedToCloseResource(@Cause Throwable cause, Closeable closeable);
+
+    /**
+     * Logs a warning message indicating the attribute, represented by the {@code name} parameter, is not a
+     * configurable  property value.
+     *
+     * @param name the name of the attribute
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11506, value = "The attribute %s could not be set as it is not a configurable property value.")
+    void invalidPropertyAttribute(String name);
+
+    /**
+     * Logs a warning message indicating the path manager service has not been started and any changes may be lost as a
+     * result of this.
+     * <p/>
+     * Essentially this means the {@code logging.properties} could not be written out and until the changes may have
+     * been lost unless they were written to the logging subsystem in the XML configuration.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11507, value = "The path manager service does not appear to be started. Any changes may be lost as a result of this.")
+    void pathManagerServiceNotStarted();
+
+    /**
+     * Logs a warning message indicating filters are not currently supported for log4j appenders.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11508, value = "Filters are not currently supported for log4j appenders.")
+    void filterNotSupported();
 }

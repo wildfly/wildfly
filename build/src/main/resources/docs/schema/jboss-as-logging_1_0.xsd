@@ -258,7 +258,8 @@
         <xs:attribute name="value">
             <xs:simpleType>
                 <xs:restriction base="xs:string">
-                    <xs:pattern value="^[0-9]+[bkmgtp]?$"/>
+                    <!-- XSD doesn't allow ^ or $ so ^[0-9]+[bkmgtp]?$ is invalid -->
+                    <xs:pattern value="[0-9]+[bkmgtp]"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>

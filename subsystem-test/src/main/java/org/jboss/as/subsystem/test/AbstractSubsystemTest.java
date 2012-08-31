@@ -217,6 +217,18 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
+     * Allows for sorting the addresses. Paths that require children or other paths to be removed first must be at the
+     * top of the list as the result is processed in reverse order.
+     *
+     * @param addresses the list of addresses to sort.
+     *
+     * @return a sorted list of the address.
+     */
+    protected List<PathAddress> orderAddressesForRemove(final List<PathAddress> addresses) {
+        return addresses;
+     }
+
+    /**
      * Grabs the current root resource
      *
      * @param kernelServices the kernel services used to access the controller

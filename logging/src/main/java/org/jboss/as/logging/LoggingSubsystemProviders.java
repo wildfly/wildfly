@@ -69,33 +69,14 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.logging.handlers.HandlerLevelChange;
-import org.jboss.as.logging.handlers.async.AsyncHandlerAssignSubhandler;
-import org.jboss.as.logging.handlers.async.AsyncHandlerUnassignSubhandler;
-import org.jboss.as.logging.handlers.async.AsyncHandlerUpdateProperties;
-import org.jboss.as.logging.handlers.async.AsyncHandlerWriteAttributeHandler;
-import org.jboss.as.logging.handlers.console.ConsoleHandlerUpdateProperties;
-import org.jboss.as.logging.handlers.custom.CustomHandlerUpdateProperties;
-import org.jboss.as.logging.handlers.file.FileHandlerUpdateProperties;
-import org.jboss.as.logging.handlers.file.HandlerFileChange;
-import org.jboss.as.logging.handlers.file.PeriodicHandlerUpdateProperties;
-import org.jboss.as.logging.handlers.file.SizeRotatingHandlerUpdateProperties;
-import org.jboss.as.logging.loggers.LoggerAssignHandler;
-import org.jboss.as.logging.loggers.LoggerLevelChange;
-import org.jboss.as.logging.loggers.LoggerUnassignHandler;
-import org.jboss.as.logging.loggers.RootLoggerAdd;
-import org.jboss.as.logging.loggers.RootLoggerAssignHandler;
-import org.jboss.as.logging.loggers.RootLoggerLevelChange;
-import org.jboss.as.logging.loggers.RootLoggerRemove;
-import org.jboss.as.logging.loggers.RootLoggerUnassignHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class LoggingSubsystemProviders {
 
@@ -190,7 +171,7 @@ class LoggingSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(RootLoggerAdd.LEGACY_OPERATION_NAME);
+            node.get(OPERATION_NAME).set(LoggerOperations.ROOT_LOGGER_ADD_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("root.logger.set"));
 
             addCommonLoggerRequestProperties(node, bundle);
@@ -223,7 +204,7 @@ class LoggingSubsystemProviders {
 
             final ModelNode operation = new ModelNode();
 
-            operation.get(OPERATION_NAME).set(RootLoggerRemove.LEGACY_OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(LoggerOperations.ROOT_LOGGER_REMOVE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("root.logger.remove"));
             operation.get(REQUEST_PROPERTIES).setEmptyObject();
             operation.get(REPLY_PROPERTIES).setEmptyObject();
@@ -240,7 +221,7 @@ class LoggingSubsystemProviders {
 
             final ModelNode operation = new ModelNode();
 
-            operation.get(OPERATION_NAME).set(RootLoggerLevelChange.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(LoggerOperations.ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("root.logger.change-level"));
             LEVEL.addOperationParameterDescription(bundle, "logger", operation);
 
@@ -255,7 +236,7 @@ class LoggingSubsystemProviders {
 
             final ModelNode node = new ModelNode();
 
-            node.get(OPERATION_NAME).set(RootLoggerAssignHandler.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(LoggerOperations.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("root.logger.assign-handler"));
             NAME.addOperationParameterDescription(bundle, "handler", node);
 
@@ -270,7 +251,7 @@ class LoggingSubsystemProviders {
 
             final ModelNode node = new ModelNode();
 
-            node.get(OPERATION_NAME).set(RootLoggerUnassignHandler.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(LoggerOperations.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("root.logger.unassign-handler"));
             NAME.addOperationParameterDescription(bundle, "handler", node);
 
@@ -330,7 +311,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(LoggerLevelChange.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(LoggerOperations.CHANGE_LEVEL_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("logger.change-level"));
             LEVEL.addOperationParameterDescription(bundle, "logger", node);
 
@@ -344,7 +325,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(LoggerAssignHandler.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(LoggerOperations.ADD_HANDLER_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("logger.assign-handler"));
             NAME.addOperationParameterDescription(bundle, "handler", node);
 
@@ -358,7 +339,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(LoggerUnassignHandler.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(LoggerOperations.REMOVE_HANDLER_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("logger.unassign-handler"));
             NAME.addOperationParameterDescription(bundle, "handler", node);
 
@@ -465,7 +446,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(AsyncHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(HandlerOperations.UPDATE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("async.handler.update"));
 
             NAME.addOperationParameterDescription(bundle, "handler", operation);
@@ -486,7 +467,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(AsyncHandlerAssignSubhandler.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(HandlerOperations.ADD_SUBHANDLER_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("async.handler.assign-subhandler"));
             NAME.addOperationParameterDescription(bundle, "handler", node);
 
@@ -500,7 +481,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(AsyncHandlerUnassignSubhandler.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(HandlerOperations.REMOVE_SUBHANDLER_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("async.handler.unassign-subhandler"));
             NAME.addOperationParameterDescription(bundle, "handler", node);
 
@@ -543,7 +524,7 @@ class LoggingSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(ConsoleHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(HandlerOperations.UPDATE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("console.handler.update"));
 
             addCommonHandlerOutputStreamRequestProperties(operation, bundle);
@@ -602,7 +583,7 @@ class LoggingSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(FileHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(HandlerOperations.UPDATE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("file.handler.update"));
 
             addCommonFileHandlerRequestProperties(operation, bundle);
@@ -646,7 +627,7 @@ class LoggingSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(PeriodicHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(HandlerOperations.UPDATE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("periodic.handler.update"));
 
             addCommonFileHandlerRequestProperties(operation, bundle);
@@ -693,7 +674,7 @@ class LoggingSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(SizeRotatingHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(HandlerOperations.UPDATE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("size.periodic.handler.update"));
 
             addCommonFileHandlerRequestProperties(operation, bundle);
@@ -743,7 +724,7 @@ class LoggingSubsystemProviders {
         public ModelNode getModelDescription(Locale locale) {
             final ResourceBundle bundle = getResourceBundle(locale);
             final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(CustomHandlerUpdateProperties.OPERATION_NAME);
+            operation.get(OPERATION_NAME).set(HandlerOperations.UPDATE_OPERATION_NAME);
             operation.get(DESCRIPTION).set(bundle.getString("custom.handler.update"));
 
             addCommonHandlerRequestProperties(operation, bundle);
@@ -781,7 +762,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(HandlerLevelChange.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(HandlerOperations.CHANGE_LEVEL_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("handler.change-level"));
             LEVEL.addOperationParameterDescription(bundle, "logger", node);
 
@@ -795,7 +776,7 @@ class LoggingSubsystemProviders {
             final ResourceBundle bundle = getResourceBundle(locale);
 
             final ModelNode node = new ModelNode();
-            node.get(OPERATION_NAME).set(HandlerFileChange.OPERATION_NAME);
+            node.get(OPERATION_NAME).set(HandlerOperations.CHANGE_FILE_OPERATION_NAME);
             node.get(DESCRIPTION).set(bundle.getString("handler.change-file"));
             final ModelNode file = FILE.addOperationParameterDescription(bundle, "file.handler", node);
             addRequestPropertiesValueType(file, PATH, bundle.getString("file.handler.path"));

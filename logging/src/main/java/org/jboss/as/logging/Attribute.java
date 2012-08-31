@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  *
  */
-public enum Attribute {
+enum Attribute {
 
     UNKNOWN(null),
 
@@ -38,7 +38,6 @@ public enum Attribute {
     AUTOFLUSH(CommonAttributes.AUTOFLUSH),
     CATEGORY(CommonAttributes.CATEGORY),
     CLASS(CommonAttributes.CLASS),
-    FILE_NAME(CommonAttributes.FILE_NAME),
     MIN_INCLUSIVE(CommonAttributes.MIN_INCLUSIVE),
     MIN_LEVEL(CommonAttributes.MIN_LEVEL),
     MAX_BACKUP_INDEX(CommonAttributes.MAX_BACKUP_INDEX),

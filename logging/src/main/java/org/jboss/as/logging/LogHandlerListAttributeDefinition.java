@@ -25,13 +25,17 @@ package org.jboss.as.logging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -40,7 +44,10 @@ import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.logging.resolvers.HandlerResolver;
+import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.config.PropertyConfigurable;
 
 /**
  * Date: 13.10.2011
@@ -48,12 +55,40 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 //todo replace with   SimpleListAttributeDefinition
-public class LogHandlerListAttributeDefinition extends ListAttributeDefinition {
+public class LogHandlerListAttributeDefinition extends ListAttributeDefinition implements ConfigurationProperty<Set<String>> {
     private final SimpleAttributeDefinition valueType;
+    private final String propertyName;
+    private final HandlerResolver resolver = HandlerResolver.INSTANCE;
 
-    private LogHandlerListAttributeDefinition(final String name, final String xmlName, final SimpleAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+    LogHandlerListAttributeDefinition(final String name, final String xmlName, final String propertyName, final SimpleAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, flags);
+        this.propertyName = propertyName;
         this.valueType = valueType;
+    }
+
+    @Override
+    public ModelNodeResolver<Set<String>> resolver() {
+        return resolver;
+    }
+
+    @Override
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    @Override
+    public Set<String> resolvePropertyValue(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        Set<String> result = Collections.emptySet();
+        final ModelNode value = resolveModelAttribute(context, model);
+        if (value.isDefined()) {
+            result = resolver.resolveValue(context, value);
+        }
+        return result;
+    }
+
+    @Override
+    public void setPropertyValue(final OperationContext context, final ModelNode model, final PropertyConfigurable configuration) throws OperationFailedException {
+        throw LoggingMessages.MESSAGES.unsupportedMethod("setPropertyValue", getClass().getName());
     }
 
     @Override
@@ -175,67 +210,5 @@ public class LogHandlerListAttributeDefinition extends ListAttributeDefinition {
             }
         }
         return result;
-    }
-
-    public static class Builder {
-        private final String name;
-        private final SimpleAttributeDefinition valueType;
-        private String xmlName;
-        private boolean allowNull;
-        private int minSize;
-        private int maxSize;
-        private String[] alternatives;
-        private String[] requires;
-        private AttributeAccess.Flag[] flags;
-
-        public Builder(final String name, final SimpleAttributeDefinition valueType) {
-            this.name = name;
-            this.valueType = valueType;
-        }
-
-        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
-            return new Builder(name, valueType);
-        }
-
-        public LogHandlerListAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
-            if (maxSize < 1) maxSize = Integer.MAX_VALUE;
-            return new LogHandlerListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, flags);
-        }
-
-        public Builder setAllowNull(final boolean allowNull) {
-            this.allowNull = allowNull;
-            return this;
-        }
-
-        public Builder setAlternates(final String... alternates) {
-            this.alternatives = alternates;
-            return this;
-        }
-
-        public Builder setFlags(final AttributeAccess.Flag... flags) {
-            this.flags = flags;
-            return this;
-        }
-
-        public Builder setMaxSize(final int maxSize) {
-            this.maxSize = maxSize;
-            return this;
-        }
-
-        public Builder setMinSize(final int minSize) {
-            this.minSize = minSize;
-            return this;
-        }
-
-        public Builder setRequires(final String... requires) {
-            this.requires = requires;
-            return this;
-        }
-
-        public Builder setXmlName(final String xmlName) {
-            this.xmlName = xmlName;
-            return this;
-        }
     }
 }
