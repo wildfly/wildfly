@@ -36,7 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -97,9 +97,9 @@ public class ServerGroupDescription {
         root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION);
 
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, DESCRIPTION).set(bundle.getString("server-group.deployment-overlay-link"));
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MIN_OCCURS).set(0);
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MODEL_DESCRIPTION);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, DESCRIPTION).set(bundle.getString("server-group.deployment-overlay"));
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MIN_OCCURS).set(0);
+        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, JVM, DESCRIPTION).set(bundle.getString("server-group.jvm"));
         root.get(CHILDREN, JVM, MIN_OCCURS).set(0);

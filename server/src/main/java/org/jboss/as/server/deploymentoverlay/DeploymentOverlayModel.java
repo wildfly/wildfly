@@ -13,7 +13,7 @@ public class DeploymentOverlayModel {
 
     protected static final PathElement CONTENT_PATH = PathElement.pathElement(ModelDescriptionConstants.CONTENT);
     protected static final PathElement DEPLOYMENT_OVERRIDE_PATH = PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT_OVERLAY);
-    protected static final PathElement DEPLOYMENT_OVERRIDE_LINK_PATH = PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK);
+    protected static final PathElement DEPLOYMENT_OVERRIDE_DEPLOYMENT_PATH = PathElement.pathElement(ModelDescriptionConstants.DEPLOYMENT);
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DeploymentOverlayModel.class.getClassLoader(), true, false);

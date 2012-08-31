@@ -141,7 +141,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.deploymentoverlay.ContentDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
-import org.jboss.as.server.deploymentoverlay.DeploymentOverlayLinkDefinition;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDeploymentDefinition;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
@@ -331,11 +331,12 @@ public class DomainModelUtil {
 
 
         //deployment overlays
-        final ManagementResourceRegistration contentOverrides = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
-        contentOverrides.registerSubModel(new ContentDefinition(contentRepo, fileRepository));
+        final ManagementResourceRegistration deploymentOverlays = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
+        deploymentOverlays.registerSubModel(new ContentDefinition(contentRepo, fileRepository));
 
         //server group deployment overlay links
-        serverGroups.registerSubModel(new DeploymentOverlayLinkDefinition(DeploymentOverlayPriority.SERVER_GROUP));
+        final ManagementResourceRegistration serverGroupDeploymentOverlay = serverGroups.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
+        serverGroupDeploymentOverlay.registerSubModel(new DeploymentOverlayDeploymentDefinition(DeploymentOverlayPriority.SERVER_GROUP));
 
         // Management client content
         ManagedDMRContentTypeResourceDefinition plansDef = new ManagedDMRContentTypeResourceDefinition(contentRepo, ROLLOUT_PLAN,

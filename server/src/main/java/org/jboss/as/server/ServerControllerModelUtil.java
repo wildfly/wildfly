@@ -122,7 +122,7 @@ import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deploymentoverlay.ContentDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
-import org.jboss.as.server.deploymentoverlay.DeploymentOverlayLinkDefinition;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDeploymentDefinition;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
@@ -384,7 +384,7 @@ public class ServerControllerModelUtil {
         contentOverrides.registerSubModel(new ContentDefinition(contentRepository, null));
 
         //deployment overlay links
-        root.registerSubModel(new DeploymentOverlayLinkDefinition(DeploymentOverlayPriority.SERVER));
+        contentOverrides.registerSubModel(new DeploymentOverlayDeploymentDefinition(DeploymentOverlayPriority.SERVER));
 
         // The sub-deployments registry
         deployments.registerSubModel(PathElement.pathElement(SUBDEPLOYMENT), ServerDescriptionProviders.SUBDEPLOYMENT_PROVIDER);

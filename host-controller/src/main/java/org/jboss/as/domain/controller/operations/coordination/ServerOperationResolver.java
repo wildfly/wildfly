@@ -31,7 +31,7 @@ import org.jboss.dmr.Property;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -370,7 +370,7 @@ public class ServerOperationResolver {
             } else if (SYSTEM_PROPERTY.equals(type)) {
                 String affectedGroup = address.getElement(0).getValue();
                 result = getServerSystemPropertyOperations(operation, address, Level.SERVER_GROUP, domain, affectedGroup, host);
-            }  else if (DEPLOYMENT_OVERLAY_LINK.equals(type)) {
+            } else if (DEPLOYMENT_OVERLAY.equals(type) && address.getLastElement().getKey().equals(DEPLOYMENT)) {
                 String groupName = address.getElement(0).getValue();
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
                 ModelNode serverOp = operation.clone();

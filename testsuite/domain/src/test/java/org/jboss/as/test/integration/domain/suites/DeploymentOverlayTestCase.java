@@ -210,14 +210,21 @@ public class DeploymentOverlayTestCase {
         executeOnMaster(op);
 
         //add the non-wildcard link to the server group
+        op = new ModelNode();
         addr = new ModelNode();
         addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_OVERLAY);
-        op = new ModelNode();
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.DEPLOYMENT).set("test.war");
-        op.get(ModelDescriptionConstants.DEPLOYMENT_OVERLAY).set(TEST_OVERLAY);
+        executeOnMaster(op);
+
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
+        addr.add(ModelDescriptionConstants.DEPLOYMENT, "test.war");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         executeOnMaster(op);
 
         //add the deployment overlay that will be linked to a single server

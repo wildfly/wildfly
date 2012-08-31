@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
@@ -43,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -182,7 +182,6 @@ public final class ManagedServerOperationsFactory {
         addSubsystems(updates);
         addDeployments(updates);
         addDeploymentOverlays(updates);
-        addDeploymentOverlayLinks(updates);
 
         return updates.model;
     }
@@ -564,23 +563,23 @@ public final class ManagedServerOperationsFactory {
                         updates.add(addOp);
                     }
                 }
-            }
-        }
-    }
+                if (serverGroup.hasDefined(DEPLOYMENT_OVERLAY)) {
+                    final ModelNode groupOverlay = serverGroup.get(DEPLOYMENT_OVERLAY).asObject();
+                    if (groupOverlay.has(name)) {
+                        List<Property> deployments = groupOverlay.get(name).asPropertyList();
+                        for (Property content : deployments) {
+                            final String deploymentName = content.getName();
+                            final ModelNode deploymentDetails = content.getValue();
+                            boolean regEx = deploymentDetails.hasDefined(REGULAR_EXPRESSION) ? deploymentDetails.require(REGULAR_EXPRESSION).asBoolean() : false;
 
-    public void addDeploymentOverlayLinks(final List<ModelNode> updates) {
-        if (serverGroup.hasDefined(DEPLOYMENT_OVERLAY_LINK)) {
+                            addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT_OVERLAY, name), PathElement.pathElement(DEPLOYMENT, deploymentName));
+                            addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
+                            addOp.get(REGULAR_EXPRESSION).set(regEx);
+                            updates.add(addOp);
+                        }
+                    }
+                }
 
-            for (Property deploymentOverlayLink : serverGroup.get(DEPLOYMENT_OVERLAY_LINK).asPropertyList()) {
-                String name = deploymentOverlayLink.getName();
-                ModelNode details = deploymentOverlayLink.getValue();
-
-                PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT_OVERLAY_LINK, name));
-                ModelNode addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
-                addOp.get(DEPLOYMENT).set(details.get(DEPLOYMENT));
-                addOp.get(REGULAR_EXPRESSION).set(details.get(REGULAR_EXPRESSION));
-                addOp.get(DEPLOYMENT_OVERLAY).set(details.get(DEPLOYMENT_OVERLAY));
-                updates.add(addOp);
             }
         }
     }

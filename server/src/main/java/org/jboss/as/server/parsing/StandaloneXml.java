@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
@@ -358,11 +357,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         if (element == Element.DEPLOYMENT_OVERLAYS) {
-            parseDeploymentOverlays(reader, namespace,  list);
-            element = nextElement(reader, namespace);
-        }
-        if (element == Element.DEPLOYMENT_OVERLAY_LINKS) {
-            parseDeploymentOverlayLinks(reader, namespace, new ModelNode(), list);
+            parseDeploymentOverlays(reader, namespace, new ModelNode(), list);
             element = nextElement(reader, namespace);
         }
         if (element != null) {
@@ -1019,10 +1014,6 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (modelNode.hasDefined(DEPLOYMENT_OVERLAY)) {
             writeDeploymentOverlays(writer, modelNode.get(DEPLOYMENT_OVERLAY));
-            writeNewLine(writer);
-        }
-        if (modelNode.hasDefined(DEPLOYMENT_OVERLAY_LINK)) {
-            writeDeploymentOverlayLinks(writer, modelNode.get(DEPLOYMENT_OVERLAY_LINK));
             writeNewLine(writer);
         }
         writer.writeEndElement();

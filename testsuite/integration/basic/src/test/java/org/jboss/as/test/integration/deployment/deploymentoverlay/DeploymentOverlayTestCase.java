@@ -63,10 +63,11 @@ public class DeploymentOverlayTestCase {
 
             //add the non-wildcard link
             op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_OVERLAY);
+            addr = new ModelNode();
+            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
+            addr.add(ModelDescriptionConstants.DEPLOYMENT, "test.war");
+            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get(ModelDescriptionConstants.DEPLOYMENT).set("test.war");
-            op.get(ModelDescriptionConstants.DEPLOYMENT_OVERLAY).set(TEST_OVERLAY);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             //add the deployment overlay that will be linked via wildcard
@@ -107,11 +108,12 @@ public class DeploymentOverlayTestCase {
 
             //add the wildcard link
             op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_WILDCARD);
+            addr = new ModelNode();
+            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
+            addr.add(ModelDescriptionConstants.DEPLOYMENT, ".*.war");
+            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-            op.get(ModelDescriptionConstants.DEPLOYMENT).set(".*.war");
             op.get(ModelDescriptionConstants.REGULAR_EXPRESSION).set(true);
-            op.get(ModelDescriptionConstants.DEPLOYMENT_OVERLAY).set(TEST_WILDCARD);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
         }
 
@@ -119,25 +121,18 @@ public class DeploymentOverlayTestCase {
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
 
             removeContentItem(managementClient, TEST_OVERLAY, "WEB-INF/web.xml");
+            removeDeploymentItem(managementClient, TEST_OVERLAY, "test.war");
 
             ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_OVERLAY);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
-
-            op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
+            removeDeploymentItem(managementClient, TEST_WILDCARD, ".*.war");
             removeContentItem(managementClient, TEST_WILDCARD, "WEB-INF/web.xml");
 
             removeContentItem(managementClient, TEST_WILDCARD, "WEB-INF/classes/wildcard-new-file");
 
-            op = new ModelNode();
-            op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_WILDCARD);
-            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
             op = new ModelNode();
             op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
@@ -153,6 +148,19 @@ public class DeploymentOverlayTestCase {
             addr = new ModelNode();
             addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
             addr.add(ModelDescriptionConstants.CONTENT, a);
+            op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+            op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        }
+
+
+        private void removeDeploymentItem(final ManagementClient managementClient, final String w, final String a) throws IOException, MgmtOperationException {
+            final ModelNode op;
+            final ModelNode addr;
+            op = new ModelNode();
+            addr = new ModelNode();
+            addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, w);
+            addr.add(ModelDescriptionConstants.DEPLOYMENT, a);
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
