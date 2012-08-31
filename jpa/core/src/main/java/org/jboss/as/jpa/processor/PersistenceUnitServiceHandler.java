@@ -22,6 +22,29 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.JpaMessages.MESSAGES;
+import static org.jboss.as.server.Services.addServerExecutorDependency;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.persistence.ValidationMode;
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolverHolder;
+import javax.sql.DataSource;
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -39,6 +62,7 @@ import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.ManagementAdaptor;
 import org.jboss.as.jpa.spi.PersistenceProviderAdaptor;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
+import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -55,6 +79,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.deployment.WarMetaData;
@@ -73,27 +98,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
-
-import javax.persistence.ValidationMode;
-import javax.persistence.spi.PersistenceProvider;
-import javax.persistence.spi.PersistenceProviderResolverHolder;
-import javax.sql.DataSource;
-import javax.validation.ValidatorFactory;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.JpaMessages.MESSAGES;
-import static org.jboss.as.server.Services.addServerExecutorDependency;
 
 /**
  * Handle the installation of the Persistence Unit service
@@ -229,8 +233,11 @@ public class PersistenceUnitServiceHandler {
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             final Collection<ComponentDescription> components = eeModuleDescription.getComponentDescriptions();
-            if (module == null)
-                throw MESSAGES.failedToGetModuleAttachment(phaseContext.getDeploymentUnit());
+            if (module == null) {
+                // Unresolved OSGi bundles would not have a module attached
+                ROOT_LOGGER.failedToGetModuleAttachment(deploymentUnit);
+                return;
+            }
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             final ModuleClassLoader classLoader = module.getClassLoader();
@@ -279,7 +286,7 @@ public class PersistenceUnitServiceHandler {
     private static void deployPersistenceUnit(DeploymentPhaseContext phaseContext, DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, Collection<ComponentDescription> components, ServiceTarget serviceTarget, ModuleClassLoader classLoader, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder, PersistenceUnitMetadata pu, boolean startEarly) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
-            final HashMap properties = new HashMap();
+            final HashMap<String, ValidatorFactory> properties = new HashMap<String, ValidatorFactory>();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 ValidatorFactory validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
@@ -307,13 +314,13 @@ public class PersistenceUnitServiceHandler {
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE);
 
-            phaseContext.getDeploymentUnit().addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
 
-
             final ServiceName puServiceName = PersistenceUnitServiceImpl.getPUServiceName(pu);
+            deploymentUnit.putAttachment(JpaAttachments.PERSISTENCE_UNIT_SERVICE_KEY, puServiceName);
 
             deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, puServiceName);
             // add the PU service as a dependency to all EE components in this scope
@@ -325,7 +332,7 @@ public class PersistenceUnitServiceHandler {
 
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
-            ServiceBuilder<PersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
+            ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
             boolean useDefaultDataSource = true;
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());

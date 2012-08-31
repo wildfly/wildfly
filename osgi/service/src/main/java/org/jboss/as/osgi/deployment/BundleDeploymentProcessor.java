@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
+import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
@@ -124,7 +125,8 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
         boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
         boolean isCDI = getAnnotation(depUnit, ManagedBean.class.getName()) != null;
-        return isWar || isEjb || isCDI;
+        boolean isJPA = JPADeploymentMarker.isJPADeployment(depUnit);
+        return isWar || isEjb || isCDI || isJPA;
     }
 
     @Override
