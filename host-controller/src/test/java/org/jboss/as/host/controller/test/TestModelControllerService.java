@@ -31,10 +31,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -62,9 +64,11 @@ import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
+import org.jboss.as.server.ServerEnvironmentResourceDescription;
 import org.jboss.as.server.ServerPathManagerService;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -87,7 +91,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     @Override
     protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-
+        //See server HttpManagementAddHandler
+        System.setProperty("jboss.as.test.disable.runtime", "1");
         if (type == Type.STANDALONE) {
             ServerControllerModelUtil.updateCoreModelNonVersions(rootResource.getModel(), null);
             //TODO - might have to add some of these - let's see how it goes without
@@ -103,9 +108,16 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     null /*remoteFileRepository*/,
                     pathManagerService);
 
+            //Add the same stuff as is added in ServerService.initModel()
+            rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
+            rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
+            rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
+            pathManagerService.addPathManagerResources(rootResource);
+
+
         } else if (type == Type.HOST){
             final String hostName = "master";
-            final ExtensionRegistry extensionRegistry = null;
+            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
             final HostControllerEnvironment env = createHostControllerEnvironment();
             final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
             final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
@@ -126,12 +138,12 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     persister,
                     env,
                     (HostRunningModeControl)runningModeControl,
-                    null /*localFileRepository*/,
+                    createHostFileRepository(),
                     info,
                     null /*serverInventory*/,
                     null /*remoteFileRepository*/,
-                    null /*contentRepository*/,
-                    null /*domainController*/,
+                    createContentRepository(),
+                    createDomainController(env, info),
                     extensionRegistry,
                     null /*vaultReader*/,
                     ignoredRegistry,
@@ -164,6 +176,12 @@ class TestModelControllerService extends ModelTestModelControllerService {
         if (modelInitializer != null) {
             modelInitializer.populateModel(rootResource);
         }
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        super.stop(context);
+        System.clearProperty("jboss.as.test.disable.runtime");
     }
 
     private ServerEnvironment createStandaloneServerEnvironment() {
