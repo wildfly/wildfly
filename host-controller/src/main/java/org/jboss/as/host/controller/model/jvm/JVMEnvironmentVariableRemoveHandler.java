@@ -36,9 +36,9 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
-final class JVMEnvironmentVariableRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public final class JVMEnvironmentVariableRemoveHandler implements OperationStepHandler, DescriptionProvider {
 
-    static final String OPERATION_NAME = "remove-item-from-environment-variables-list";
+    public static final String OPERATION_NAME = "remove-item-from-environment-variables-list";
     static final JVMEnvironmentVariableRemoveHandler INSTANCE = new JVMEnvironmentVariableRemoveHandler();
 
     private final ParameterValidator validator = new StringLengthValidator(1);
