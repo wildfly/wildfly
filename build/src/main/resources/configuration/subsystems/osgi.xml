@@ -18,6 +18,7 @@
 	       <capabilities>
 	           <!-- modules registered with the OSGi layer on startup -->
                <capability name="javax.jws.api"/>
+               <capability name="javax.persistence.api"/>
                <capability name="javax.servlet.api"/>
                <capability name="javax.transaction.api"/>
                <capability name="javax.ws.rs.api"/>

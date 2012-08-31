@@ -338,8 +338,8 @@ public interface JpaMessages {
      * @param deploymentUnit the deployment unit that failed.
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11447, value = "Failed to get module attachment for %s")
-    DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
+    //@Message(id = 11447, value = "Failed to get module attachment for %s")
+    //DeploymentUnitProcessingException failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
 
     /**
      * A message indicating a failure to parse the file.
