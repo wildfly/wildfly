@@ -22,6 +22,7 @@
 
 org.jboss.as.osgi.httpservice.HttpServiceExtension
 org.jboss.as.osgi.jmx.JMXExtension
+org.jboss.as.osgi.jpa.JPAExtension
 org.jboss.as.osgi.naming.NamingExtension
 org.jboss.as.osgi.web.WebExtension
 org.jboss.as.osgi.transactions.TransactionsExtension

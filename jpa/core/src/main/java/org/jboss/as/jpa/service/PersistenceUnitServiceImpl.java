@@ -54,7 +54,7 @@ import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
  *
  * @author Scott Marlow
  */
-public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServiceImpl>, PersistenceUnitService {
+public class PersistenceUnitServiceImpl implements Service<PersistenceUnitService>, PersistenceUnitService {
     private final InjectedValue<Map> properties = new InjectedValue<Map>();
     private final InjectedValue<DataSource> jtaDataSource = new InjectedValue<DataSource>();
     private final InjectedValue<DataSource> nonJtaDataSource = new InjectedValue<DataSource>();

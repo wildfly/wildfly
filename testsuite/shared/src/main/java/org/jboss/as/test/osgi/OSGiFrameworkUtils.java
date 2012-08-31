@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Assert;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
@@ -35,6 +36,7 @@ import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+import org.osgi.util.tracker.ServiceTracker;
 
 
 /**
@@ -82,5 +84,27 @@ public final class OSGiFrameworkUtils {
         assertNotNull("Bundles found", bundles);
         assertEquals("One bundle found", 1, bundles.length);
         return bundles[0];
+    }
+
+    public static <T> T waitForService(BundleContext context, Class<T> clazz) {
+        return waitForService(context, clazz, 5000, TimeUnit.MILLISECONDS);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T waitForService(BundleContext context, Class<T> clazz, long timeout, TimeUnit unit) {
+        ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
+        tracker.open();
+        T service = null;
+        long start = System.currentTimeMillis();
+        do {
+            try {
+                service = (T) tracker.waitForService(unit.toMillis(timeout));
+            } catch (InterruptedException intEx) {
+                // service will be null
+            }
+        } while (System.currentTimeMillis() - start < unit.toMillis(timeout));
+        tracker.close();
+        Assert.assertNotNull("Service registered: " + clazz.getName(), service);
+        return service;
     }
 }
