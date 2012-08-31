@@ -86,6 +86,13 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {
+        //TODO Gigantic HACK to disable the runtime part of this for the core model testing.
+        //The core model testing currently uses RunningMode.ADMIN_ONLY, but in the real world
+        //the http interface needs to be enabled even when that happens.
+        //I don't want to wire up all the services unless I can avoid it, so for now the tests set this system property
+        if (SecurityActions.getSystemProperty("jboss.as.test.disable.runtime") != null) {
+            return false;
+        }
         return true;
     }
 

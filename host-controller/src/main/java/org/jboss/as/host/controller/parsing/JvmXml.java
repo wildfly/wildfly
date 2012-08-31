@@ -487,7 +487,7 @@ public class JvmXml {
             JvmAttributes.HEAP_SIZE.marshallAsAttribute(jvmElement, writer);
             JvmAttributes.MAX_HEAP_SIZE.marshallAsAttribute(jvmElement, writer);
         }
-        if (JvmAttributes.PERMGEN_SIZE.isMarshallable(jvmElement) || JvmAttributes.MAX_HEAP_SIZE.isMarshallable(jvmElement)) {
+        if (JvmAttributes.PERMGEN_SIZE.isMarshallable(jvmElement) || JvmAttributes.MAX_PERMGEN_SIZE.isMarshallable(jvmElement)) {
             writer.writeEmptyElement(Element.PERMGEN.getLocalName());
             JvmAttributes.PERMGEN_SIZE.marshallAsAttribute(jvmElement, writer);
             JvmAttributes.MAX_PERMGEN_SIZE.marshallAsAttribute(jvmElement, writer);
