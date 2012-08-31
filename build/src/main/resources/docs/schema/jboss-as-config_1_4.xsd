@@ -124,7 +124,6 @@
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="server-deploymentsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployment-overlays" type="deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="deployment-overlay-links" type="deployment-overlay-linksType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
@@ -1073,7 +1072,7 @@
             <xs:element name="deployments" type="server-groupDeploymentsType" minOccurs="0"/>
 
             <xs:element name="system-properties" minOccurs="0" type="properties-with-boottime"/>
-            <xs:element name="deployment-overlay-links" type="deployment-overlay-linksType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="deployment-overlays" type="server-group-deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string">
             <xs:annotation>
@@ -2315,6 +2314,7 @@
     <xs:complexType name="deployment-overlayType">
         <xs:sequence>
             <xs:element name="content" type="deployment-overlay-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="deployment" type="deployment-overlay-deploymentType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:token"/>
     </xs:complexType>
@@ -2324,32 +2324,31 @@
         <xs:attribute name="content" type="xs:token" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="deployment-overlay-linksType">
+
+    <xs:complexType name="deployment-overlay-deploymentType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="regular-expression" type="xs:boolean" use="optional"/>
+    </xs:complexType>
+
+
+    <xs:complexType name="server-group-deployment-overlaysType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                   Stores information about the linking between deployment overlays and a deployment.
+                   Stores information about deployment overlays that can be used to override deployment content.
                 ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="deployment-overlay-link" type="deployment-overlay-linkType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="deployment-overlay" type="server-group-deployment-overlayType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="deployment-overlay-linkType">
+    <xs:complexType name="server-group-deployment-overlayType">
+        <xs:sequence>
+            <xs:element name="deployment" type="deployment-overlay-deploymentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:token"/>
-        <xs:attribute name="deployment" use="required" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                   The deployment that the given overlay is linked to. * is considered to be a wildcard, so *.jar will
-                   match all jar deployments.
-                ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="deployment-overlay" use="required" type="xs:token"/>
     </xs:complexType>
 
 </xs:schema>

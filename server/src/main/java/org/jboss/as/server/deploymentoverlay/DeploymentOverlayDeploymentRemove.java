@@ -16,11 +16,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
  *
  * @author Stuart Douglas
  */
-public class DeploymentOverlayLinkRemove extends AbstractRemoveStepHandler {
+public class DeploymentOverlayDeploymentRemove extends AbstractRemoveStepHandler {
 
     private final DeploymentOverlayPriority priority;
 
-    public DeploymentOverlayLinkRemove(final DeploymentOverlayPriority priority) {
+    public DeploymentOverlayDeploymentRemove(final DeploymentOverlayPriority priority) {
         this.priority = priority;
     }
 
@@ -28,10 +28,9 @@ public class DeploymentOverlayLinkRemove extends AbstractRemoveStepHandler {
     protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String deployment = DeploymentOverlayLinkDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
-        final String deploymentOverlay = DeploymentOverlayLinkDefinition.DEPLOYMENT_OVERLAY.resolveModelAttribute(context, model).asString();
-        final Boolean regularExpression = DeploymentOverlayLinkDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
-        DeploymentOverlayLinkAdd.installServices(context, null, null, name, deployment, deploymentOverlay, regularExpression, priority);
+        final String deploymentOverlay = address.getElement(address.size() - 2).getValue();
+        final Boolean regularExpression = DeploymentOverlayDeploymentDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
+        DeploymentOverlayDeploymentAdd.installServices(context, null, null, name, deploymentOverlay, regularExpression, priority);
     }
 
     @Override

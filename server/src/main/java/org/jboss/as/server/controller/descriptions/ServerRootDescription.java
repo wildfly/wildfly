@@ -37,7 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DUMP_SERVICES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -207,10 +206,6 @@ public class ServerRootDescription {
         root.get(CHILDREN, DEPLOYMENT_OVERLAY, DESCRIPTION).set(bundle.getString("server.deployment-overlay"));
         root.get(CHILDREN, DEPLOYMENT_OVERLAY, MIN_OCCURS).set(0);
         root.get(CHILDREN, DEPLOYMENT_OVERLAY, MODEL_DESCRIPTION);
-
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, DESCRIPTION).set(bundle.getString("server.deployment-overlay-link"));
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MIN_OCCURS).set(0);
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY_LINK, MODEL_DESCRIPTION);
 
         root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("server.subsystem"));
         root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(0);

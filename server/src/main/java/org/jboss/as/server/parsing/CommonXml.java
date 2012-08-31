@@ -69,10 +69,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_MAPPINGS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -85,13 +84,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REGULAR_EXPRESSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOURCE_NETWORK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -1055,7 +1053,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
 
-    protected void parseDeploymentOverlays(final XMLExtendedStreamReader reader, final Namespace namespace, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseDeploymentOverlays(final XMLExtendedStreamReader reader, final Namespace namespace, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);
 
         while (reader.nextTag() != END_ELEMENT) {
@@ -1064,7 +1062,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             switch (element) {
                 case DEPLOYMENT_OVERLAY:
-                    parseDeploymentOverlay(reader, list);
+                    parseDeploymentOverlay(reader, baseAddress, list);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -1072,7 +1070,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseDeploymentOverlay(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseDeploymentOverlay(final XMLExtendedStreamReader reader, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
@@ -1096,10 +1094,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         if (required.size() > 0) {
             throw missingRequired(reader, required);
         }
+        ModelNode addr = baseAddress.clone();
+        addr.add(DEPLOYMENT_OVERLAY, name);
 
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
-        op.get(OP_ADDR).set(DEPLOYMENT_OVERLAY, name);
+        op.get(OP_ADDR).set(addr);
         list.add(op);
 
         while (reader.nextTag() != END_ELEMENT) {
@@ -1107,7 +1107,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             switch (element) {
                 case CONTENT:
-                    parseContentOverride(name, reader, list);
+                    parseContentOverride(name, reader, baseAddress, list);
+                    break;
+                case DEPLOYMENT:
+                    parseDeploymentOverlayDeployment(name, reader, baseAddress, list);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -1115,73 +1118,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseDeploymentOverlayLinks(final XMLExtendedStreamReader reader, final Namespace namespace, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-        requireNoAttributes(reader);
-
-        while (reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, namespace);
-            final Element element = Element.forName(reader.getLocalName());
-
-            switch (element) {
-                case DEPLOYMENT_OVERLAY_LINK:
-                    parseDeploymentOverlayLink(reader, address, list);
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-    }
-
-    protected void parseDeploymentOverlayLink(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {
-
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.DEPLOYMENT, Attribute.DEPLOYMENT_OVERLAY);
-        String name = null;
-        String deployment = null;
-        String deploymentOverlay = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case NAME: {
-                    name = value;
-                    break;
-                }
-                case DEPLOYMENT: {
-                    deployment = value;
-                    break;
-                }
-                case DEPLOYMENT_OVERLAY: {
-                    deploymentOverlay = value;
-                    break;
-                }
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-
-
-        if (required.size() > 0) {
-            throw missingRequired(reader, required);
-        }
-
-        requireNoContent(reader);
-
-        final ModelNode addr = address.clone();
-        addr.add(DEPLOYMENT_OVERLAY_LINK, name);
-
-        final ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).set(addr);
-        op.get(DEPLOYMENT).set(deployment);
-        op.get(DEPLOYMENT_OVERLAY).set(deploymentOverlay);
-        list.add(op);
-
-    }
-
-    protected void parseContentOverride(final String name, final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseContentOverride(final String name, final XMLExtendedStreamReader reader, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.PATH, Attribute.CONTENT);
         String path = null;
@@ -1212,7 +1149,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             throw missingRequired(reader, required);
         }
 
-        final ModelNode address = new ModelNode();
+        final ModelNode address = baseAddress.clone();
         address.add(DEPLOYMENT_OVERLAY, name);
         address.add(CONTENT, path);
 
@@ -1220,6 +1157,50 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(address);
         op.get(CONTENT).set(content);
+        list.add(op);
+
+    }
+
+
+    protected void parseDeploymentOverlayDeployment(final String name, final XMLExtendedStreamReader reader, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
+
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        String depName = null;
+        boolean regEx = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME: {
+                    depName = value;
+                    break;
+                }
+                case REGULAR_EXPRESSION: {
+                    regEx = Boolean.parseBoolean(value);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        final ModelNode address = baseAddress.clone();
+        address.add(DEPLOYMENT_OVERLAY, name);
+        address.add(DEPLOYMENT, depName);
+
+        final ModelNode op = new ModelNode();
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).set(address);
+        op.get(REGULAR_EXPRESSION).set(regEx);
         list.add(op);
 
     }
@@ -1620,6 +1601,22 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     }
                 }
 
+                if (contentItem.hasDefined(DEPLOYMENT)) {
+                    final ModelNode deployments = contentItem.get(DEPLOYMENT);
+                    Set<String> deploymentNames = deployments.keys();
+                    if (deploymentNames.size() > 0) {
+                        for (String deploymentName : deploymentNames) {
+                            final ModelNode depNode = deployments.get(uniqueName);
+                            final boolean regEx = depNode.hasDefined(REGULAR_EXPRESSION) ? depNode.get(REGULAR_EXPRESSION).asBoolean() : false;
+                            writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
+                            writeAttribute(writer, Attribute.NAME, deploymentName);
+                            if (regEx) {
+                                writeAttribute(writer, Attribute.REGULAR_EXPRESSION, "true");
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
+                }
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -1627,25 +1624,5 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void writeDeploymentOverlayLinks(final XMLExtendedStreamWriter writer, final ModelNode modelNode)
-            throws XMLStreamException {
-
-        Set<String> names = modelNode.keys();
-        if (names.size() > 0) {
-            writer.writeStartElement(Element.DEPLOYMENT_OVERLAY_LINKS.getLocalName());
-            for (String uniqueName : names) {
-                final ModelNode contentItem = modelNode.get(uniqueName);
-                final String deployment = contentItem.get(DEPLOYMENT).asString();
-                writer.writeStartElement(Element.DEPLOYMENT_OVERLAY_LINK.getLocalName());
-                writeAttribute(writer, Attribute.NAME, uniqueName);
-                writeAttribute(writer, Attribute.DEPLOYMENT, deployment);
-                writeAttribute(writer, Attribute.DEPLOYMENT_OVERLAY, deployment);
-
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-            writeNewLine(writer);
-        }
-    }
 
 }

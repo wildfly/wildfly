@@ -21,7 +21,7 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
 
     private DeploymentOverlayDefinition() {
         super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_PATH,
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),
+                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, false),
                 DeploymentOverlayAdd.INSTANCE,
                 DeploymentOverlayRemove.INSTANCE);
     }

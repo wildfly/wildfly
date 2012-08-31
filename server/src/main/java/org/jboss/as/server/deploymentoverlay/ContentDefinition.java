@@ -22,7 +22,7 @@ public class ContentDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = { CONTENT};
+    private static final AttributeDefinition[] ATTRIBUTES = {CONTENT};
 
     public static AttributeDefinition[] attributes() {
         return ATTRIBUTES.clone();
@@ -30,7 +30,7 @@ public class ContentDefinition extends SimpleResourceDefinition {
 
     public ContentDefinition(final ContentRepository contentRepository, final DeploymentFileRepository remoteRepository) {
         super(DeploymentOverlayModel.CONTENT_PATH,
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.CONTENT),
+                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY + "." + ModelDescriptionConstants.CONTENT, false),
                 new ContentAdd(contentRepository, remoteRepository),
                 ContentRemove.INSTANCE);
     }

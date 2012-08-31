@@ -22,17 +22,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 /**
  * @author Stuart Douglas
  */
-public class DeploymentOverlayLinkAdd extends AbstractAddStepHandler {
+public class DeploymentOverlayDeploymentAdd extends AbstractAddStepHandler {
 
     private final DeploymentOverlayPriority priority;
 
-    public DeploymentOverlayLinkAdd(final DeploymentOverlayPriority priority) {
+    public DeploymentOverlayDeploymentAdd(final DeploymentOverlayPriority priority) {
         this.priority = priority;
     }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for(AttributeDefinition attr : DeploymentOverlayLinkDefinition.attributes()) {
+        for(AttributeDefinition attr : DeploymentOverlayDeploymentDefinition.attributes()) {
             attr.validateAndSet(operation, model);
         }
     }
@@ -41,14 +41,13 @@ public class DeploymentOverlayLinkAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final String deployment = DeploymentOverlayLinkDefinition.DEPLOYMENT.resolveModelAttribute(context, model).asString();
-        final String deploymentOverlay = DeploymentOverlayLinkDefinition.DEPLOYMENT_OVERLAY.resolveModelAttribute(context, model).asString();
-        final Boolean regularExpression = DeploymentOverlayLinkDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
-        installServices(context, verificationHandler, newControllers, name, deployment, deploymentOverlay, regularExpression, priority);
+        final String deploymentOverlay =address.getElement(address.size() - 2).getValue();
+        final Boolean regularExpression = DeploymentOverlayDeploymentDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
+        installServices(context, verificationHandler, newControllers, name, deploymentOverlay, regularExpression, priority);
     }
 
-    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deployment, final String deploymentOverlay, final boolean regularExpression, final DeploymentOverlayPriority priority) {
-        final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(deployment, regularExpression, priority);
+    static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deploymentOverlay, final boolean regularExpression, final DeploymentOverlayPriority priority) {
+        final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(name, regularExpression, priority);
 
         final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(name);
         ServiceBuilder<DeploymentOverlayLinkService> builder = context.getServiceTarget().addService(serviceName, service)

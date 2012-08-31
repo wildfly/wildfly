@@ -16,13 +16,7 @@ import org.jboss.dmr.ModelType;
  * Links a deployment overlay to a deployment
  * @author Stuart Douglas
  */
-public class DeploymentOverlayLinkDefinition extends SimpleResourceDefinition {
-
-    static final SimpleAttributeDefinition DEPLOYMENT =
-            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DEPLOYMENT, ModelType.STRING, false)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
+public class DeploymentOverlayDeploymentDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition REGULAR_EXPRESSION =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REGULAR_EXPRESSION, ModelType.BOOLEAN, false)
@@ -31,23 +25,18 @@ public class DeploymentOverlayLinkDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
-    static final SimpleAttributeDefinition DEPLOYMENT_OVERLAY =
-            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, ModelType.STRING, false)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = { DEPLOYMENT, DEPLOYMENT_OVERLAY, REGULAR_EXPRESSION };
+    private static final AttributeDefinition[] ATTRIBUTES = { REGULAR_EXPRESSION };
 
     public static AttributeDefinition[] attributes() {
         return ATTRIBUTES.clone();
     }
 
-    public DeploymentOverlayLinkDefinition(DeploymentOverlayPriority priority) {
-        super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_LINK_PATH,
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK),
-                new DeploymentOverlayLinkAdd(priority),
-                new DeploymentOverlayLinkRemove(priority));
+    public DeploymentOverlayDeploymentDefinition(DeploymentOverlayPriority priority) {
+        super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_DEPLOYMENT_PATH,
+                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY + "." + ModelDescriptionConstants.DEPLOYMENT),
+                new DeploymentOverlayDeploymentAdd(priority),
+                new DeploymentOverlayDeploymentRemove(priority));
     }
 
     @Override

@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
@@ -368,7 +367,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.DEPLOYMENT_OVERLAYS && expectedNs.ordinal() >= Namespace.DOMAIN_1_4.ordinal()) {
-            parseDeploymentOverlays(reader, expectedNs, list);
+            parseDeploymentOverlays(reader, expectedNs, new ModelNode(), list);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -705,8 +704,8 @@ public class DomainXml extends CommonXml {
                         parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
                         break;
                     }
-                    case DEPLOYMENT_OVERLAY_LINKS: {
-                        parseDeploymentOverlayLinks(reader, expectedNs, groupAddress, list);
+                    case DEPLOYMENT_OVERLAYS: {
+                        parseDeploymentOverlays(reader, expectedNs, groupAddress, list);
                         break;
                     }
                     case SYSTEM_PROPERTIES: {
@@ -988,8 +987,8 @@ public class DomainXml extends CommonXml {
         if (group.hasDefined(DEPLOYMENT)) {
             writeServerGroupDeployments(writer, group.get(DEPLOYMENT));
         }
-        if (group.hasDefined(DEPLOYMENT_OVERLAY_LINK)) {
-            writeDeploymentOverlayLinks(writer, group.get(DEPLOYMENT_OVERLAY_LINK));
+        if (group.hasDefined(DEPLOYMENT_OVERLAY)) {
+            writeDeploymentOverlays(writer, group.get(DEPLOYMENT_OVERLAY));
             writeNewLine(writer);
         }
         // System properties
