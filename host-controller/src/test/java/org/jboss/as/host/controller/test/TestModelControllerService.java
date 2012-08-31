@@ -105,7 +105,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     null /*vaultReader*/,
                     new ExtensionRegistry(ProcessType.STANDALONE_SERVER, runningModeControl),
                     false /*parallelBoot*/,
-                    null /*remoteFileRepository*/,
                     pathManagerService);
 
             //Add the same stuff as is added in ServerService.initModel()
@@ -373,6 +372,11 @@ class TestModelControllerService extends ModelTestModelControllerService {
             @Override
             public byte[] addContent(InputStream stream) throws IOException {
                 return null;
+            }
+
+            @Override
+            public boolean syncContent(byte[] hash) {
+                return false;
             }
         };
     }
