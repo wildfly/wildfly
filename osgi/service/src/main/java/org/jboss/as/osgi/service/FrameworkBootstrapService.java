@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.SubsystemExtension;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState;
@@ -83,7 +84,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         FrameworkBootstrapService service = new FrameworkBootstrapService(resource, extensions);
         ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
-        builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
+        builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addListener(Inheritance.ONCE, verificationHandler);
         return builder.install();
     }
@@ -113,6 +114,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             ServiceTarget serviceTarget = context.getChildTarget();
             JAXPServiceProvider.addService(serviceTarget);
             ResolverService.addService(serviceTarget);
+            RepositoryService.addService(serviceTarget);
 
             // Configure the {@link Framework} builder
             FrameworkBuilder builder = new FrameworkBuilder(props);
