@@ -37,9 +37,9 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-final class JVMEnvironmentVariableAddHandler implements OperationStepHandler, DescriptionProvider {
+public final class JVMEnvironmentVariableAddHandler implements OperationStepHandler, DescriptionProvider {
 
-    static final String OPERATION_NAME = "add-item-to-environment-variables-list";
+    public static final String OPERATION_NAME = "add-item-to-environment-variables-list";
     static final JVMEnvironmentVariableAddHandler INSTANCE = new JVMEnvironmentVariableAddHandler();
 
     private final ParameterValidator validator = new StringLengthValidator(1);

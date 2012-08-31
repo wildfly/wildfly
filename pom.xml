@@ -916,6 +916,12 @@
                 <version>${project.version}</version>
             </dependency>
 
+	         <dependency>
+	             <groupId>org.jboss.as</groupId>
+	             <artifactId>jboss-as-core-model-test</artifactId>
+                <version>${project.version}</version>
+	         </dependency>
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ee</artifactId>
@@ -6209,6 +6215,7 @@
                 <module>configadmin</module>
                 <module>config-assembly</module>
                 <module>connector</module>
+                <module>core-model-test</module>
                 <module>deployment-scanner</module>
                 <module>dist</module>
                 <module>ee</module>
