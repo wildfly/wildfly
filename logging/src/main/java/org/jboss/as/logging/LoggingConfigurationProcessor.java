@@ -33,6 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.xml.DOMConfigurator;
+import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -42,7 +43,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logmanager.LogContext;
-import org.jboss.logmanager.PropertyConfigurator;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -119,7 +119,7 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
                         }
                     } else {
                         // Load non-log4j types
-                        new PropertyConfigurator(logContext).configure(configStream);
+                        ConfigurationPersistence.getOrCreateConfigurationPersistence(logContext).configure(configStream);
                     }
                 } catch (Exception e) {
                     throw LoggingMessages.MESSAGES.failedToConfigureLogging(e, configFile.getName());

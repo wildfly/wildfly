@@ -23,6 +23,7 @@
 package org.jboss.as.logging.validators;
 
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.Logging.createOperationFailure;
 
 import java.text.SimpleDateFormat;
 
@@ -52,10 +53,10 @@ public class SuffixValidator extends ModelTypeValidator {
             try {
                 new SimpleDateFormat(suffix);
                 if (suffix.contains("s") || suffix.contains("S")) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSuffix(suffix)));
+                    throw createOperationFailure(MESSAGES.invalidSuffix(suffix));
                 }
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSuffix(suffix)));
+                throw createOperationFailure(MESSAGES.invalidSuffix(suffix));
             }
         }
     }

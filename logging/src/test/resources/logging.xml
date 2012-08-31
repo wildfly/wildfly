@@ -23,32 +23,41 @@
 <subsystem xmlns="urn:jboss:domain:logging:1.1">
     <async-handler name="async">
         <queue-length value="10"/>
-        <overflow-action value="block" />
+        <overflow-action value="block"/>
         <subhandlers>
-            <handler name="sizeLogger" />
-            <handler name="simpleFile" />
+            <handler name="sizeLogger"/>
+            <handler name="simpleFile"/>
         </subhandlers>
     </async-handler>
 
     <console-handler name="CONSOLE">
         <level name="INFO"/>
         <filter>
-            <level-range min-level="TRACE" max-level="WARN" />
+            <level-range min-level="TRACE" max-level="WARN"/>
         </filter>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
     </console-handler>
 
-    <file-handler name="simpleFile">
-        <level name="INFO" />
+    <file-handler name="anotherFile">
         <filter>
-            <deny />
+            <level-range min-level="TRACE" max-level="WARN" max-inclusive="false"/>
         </filter>
-        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
-        <append value="true" />
+        <file relative-to="jboss.server.log.dir" path="another.log"/>
+        <append value="true"/>
     </file-handler>
 
+    <file-handler name="simpleFile">
+        <level name="INFO"/>
+        <filter>
+            <deny/>
+        </filter>
+        <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
+        <append value="true"/>
+    </file-handler>
+
+    <!-- Can't use custom handlers as they require JBoss Modules
     <custom-handler name="customHandler" module="org.jboss.logmanager" class="org.jboss.logmanager.handler.ConsoleHandler">
         <filter>
             <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
@@ -63,15 +72,15 @@
         <properties>
             <property name="target" value="System.out"/>
         </properties>
-    </custom-handler>
+    </custom-handler> -->
 
     <periodic-rotating-file-handler name="FILE">
-        <encoding value="UTF-8" />
+        <encoding value="UTF-8"/>
         <filter>
             <any>
-                <level name="INFO" />
+                <level name="INFO"/>
                 <not>
-                    <level name="TRACE" />
+                    <level name="TRACE"/>
                 </not>
             </any>
         </filter>
@@ -83,26 +92,39 @@
     </periodic-rotating-file-handler>
 
     <size-rotating-file-handler name="sizeLogger">
-        <level name="DEBUG" />
-        <encoding value="UTF-8" />
+        <level name="DEBUG"/>
+        <encoding value="UTF-8"/>
         <filter>
             <all>
                 <change-level new-level="DEBUG"/>
-                <match pattern=".*" />
+                <match pattern=".*"/>
             </all>
         </filter>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
         <file relative-to="jboss.server.log.dir" path="sizeLogger.log"/>
-        <rotate-size value="64m" />
-        <max-backup-index value="1024" />
-        <append value="false" />
+        <rotate-size value="64m"/>
+        <max-backup-index value="1024"/>
+        <append value="false"/>
     </size-rotating-file-handler>
 
+    <logger category="com.example" use-parent-handlers="false">
+        <level name="TRACE"/>
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" min-inclusive="true"/>
+        </filter>
+        <handlers>
+            <handler name="sizeLogger"/>
+            <handler name="CONSOLE"/>
+        </handlers>
+    </logger>
 
     <logger category="com.arjuna">
         <level name="WARN"/>
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" min-inclusive="true"/>
+        </filter>
     </logger>
 
     <root-logger>
@@ -110,7 +132,6 @@
         <handlers>
             <handler name="CONSOLE"/>
             <handler name="FILE"/>
-            <handler name="customHandler" />
         </handlers>
     </root-logger>
 </subsystem>

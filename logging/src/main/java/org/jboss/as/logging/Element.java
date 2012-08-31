@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  *
  */
-public enum Element {
+enum Element {
 
     UNKNOWN((String) null),
 
