@@ -21,8 +21,9 @@
  */
 package org.jboss.as.naming.deployment;
 
-import java.util.Set;
+import java.util.List;
 
+import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -47,9 +48,13 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
+        //this will always be up but we need to make sure the naming service is
+        //not shut down before the deployment is undeployed when the container is shut down
+        phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, NamingService.SERVICE_NAME);
+
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
         final ServiceName serviceName = serviceName(deploymentUnit);
         final ServiceBuilder<Void> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, Service.NULL);
         serviceBuilder.addDependencies(dependencies);

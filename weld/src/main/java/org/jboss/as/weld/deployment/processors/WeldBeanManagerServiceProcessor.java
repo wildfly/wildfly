@@ -21,7 +21,7 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import java.util.Set;
+import java.util.List;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
@@ -70,7 +70,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             return;
         }
 
-        final Set<ServiceName> dependencies = deploymentUnit.getAttachment(Attachments.JNDI_DEPENDENCIES);
+        final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
 
 
         BeanDeploymentArchiveImpl rootBda = deploymentUnit
@@ -118,7 +118,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
-    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName, final Set<ServiceName> dependencies, final ServiceRegistry serviceRegistry) {
+    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName, final List<ServiceName> dependencies, final ServiceRegistry serviceRegistry) {
         final ServiceName beanManagerBindingServiceName = contextServiceName.append("BeanManager");
         dependencies.add(beanManagerBindingServiceName);
         BinderService beanManagerBindingService = new BinderService("BeanManager");
