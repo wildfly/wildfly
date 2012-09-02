@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,9 +64,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 /**
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
  * that belong to components that do not have their own java:comp namespace, and class level bindings declared in
@@ -72,6 +72,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  * This processor is also responsible for throwing an exception if any ee component classes have been marked as invalid.
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class
         ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
@@ -90,6 +91,10 @@ public class
             return;
         }
         final Set<ServiceName> dependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
+
+        // app & module context may have jndi bindings which need to be add as dependencies
+        dependencies.addAll(deploymentUnit.getAttachmentList(org.jboss.as.ee.naming.Attachments.APPLICATION_CONTEXT_CONFIG_DEPENDENCIES));
+        dependencies.addAll(deploymentUnit.getAttachmentList(org.jboss.as.ee.naming.Attachments.MODULE_CONTEXT_CONFIG_DEPENDENCIES));
 
         final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
 

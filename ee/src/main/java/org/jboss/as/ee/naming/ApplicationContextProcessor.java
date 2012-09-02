@@ -40,6 +40,7 @@ import org.jboss.msc.value.Values;
  * Deployment processor that deploys a naming context for the current application.
  *
  * @author John E. Bailey
+ * @author Eduardo Martins
  */
 public class ApplicationContextProcessor implements DeploymentUnitProcessor {
 
@@ -63,10 +64,12 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         serviceTarget.addService(applicationContextServiceName, contextService).install();
 
         final BinderService applicationNameBinder = new BinderService("AppName");
-        serviceTarget.addService(applicationContextServiceName.append("AppName"), applicationNameBinder)
+        final ServiceName appNameServiceName = applicationContextServiceName.append("AppName");
+        serviceTarget.addService(appNameServiceName, applicationNameBinder)
                 .addDependency(applicationContextServiceName, ServiceBasedNamingStore.class, applicationNameBinder.getNamingStoreInjector())
                 .addInjection(applicationNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getApplicationName())))
                 .install();
+        deploymentUnit.addToAttachmentList(Attachments.APPLICATION_CONTEXT_CONFIG_DEPENDENCIES,appNameServiceName);
 
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
     }
