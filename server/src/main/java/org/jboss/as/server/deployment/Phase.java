@@ -389,7 +389,6 @@ public enum Phase {
     public static final int POST_MODULE_EL_EXPRESSION_FACTORY           = 0x2C00;
 
     // INSTALL
-    public static final int INSTALL_JNDI_DEPENDENCY_SETUP               = 0x0100;
     public static final int INSTALL_JPA_INTERCEPTORS                    = 0x0200;
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;

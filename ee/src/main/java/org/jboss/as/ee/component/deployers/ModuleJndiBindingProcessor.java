@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ee.component.deployers;
 
+import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,9 +64,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 /**
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
  * that belong to components that do not have their own java:comp namespace, and class level bindings declared in
@@ -72,6 +72,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  * This processor is also responsible for throwing an exception if any ee component classes have been marked as invalid.
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class
         ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
@@ -89,7 +90,7 @@ public class
         if (moduleConfiguration == null) {
             return;
         }
-        final Set<ServiceName> dependencies = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
+        final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
         final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings = new HashMap<ServiceName, BindingConfiguration>();
 
@@ -157,7 +158,7 @@ public class
 
     }
 
-    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationClasses applicationClasses, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<Class<?>> classes, final String componentName, final ServiceName ownerName, final IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+    private void processClassConfigurations(final DeploymentPhaseContext phaseContext, final EEApplicationClasses applicationClasses, final EEModuleConfiguration moduleConfiguration, final Map<ServiceName, BindingConfiguration> deploymentDescriptorBindings, final Set<String> handledClasses, final ComponentNamingMode namingMode, final Set<Class<?>> classes, final String componentName, final ServiceName ownerName, final IntHolder handleCount, final List<ServiceName> dependencies) throws DeploymentUnitProcessingException {
         for (final Class<?> clazz : classes) {
             new ClassDescriptionTraversal(clazz, applicationClasses) {
                 @Override
@@ -200,7 +201,7 @@ public class
     }
 
 
-    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext, ServiceName serviceName, ServiceName ownerName, IntHolder handleCount, final Set<ServiceName> dependencies) throws DeploymentUnitProcessingException {
+    protected void addJndiBinding(final EEModuleConfiguration module, final BindingConfiguration bindingConfiguration, final DeploymentPhaseContext phaseContext, ServiceName serviceName, ServiceName ownerName, IntHolder handleCount, final List<ServiceName> dependencies) throws DeploymentUnitProcessingException {
         // Gather information about the dependency
         final String bindingName = bindingConfiguration.getName().startsWith("java:") ? bindingConfiguration.getName() : "java:module/env/" + bindingConfiguration.getName();
 
