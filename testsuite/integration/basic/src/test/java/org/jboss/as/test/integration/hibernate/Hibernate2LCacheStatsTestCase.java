@@ -59,7 +59,7 @@ import org.junit.runner.RunWith;
 public class Hibernate2LCacheStatsTestCase {
 
     private static final String FACTORY_CLASS = "<property name=\"hibernate.cache.region.factory_class\">org.jboss.as.jpa.hibernate4.infinispan.InfinispanRegionFactory</property>";
-    private static final String MODULE_DEPENDENCIES = "Dependencies: org.javassist export, org.infinispan export,org.hibernate\n";
+    private static final String MODULE_DEPENDENCIES = "Dependencies: org.javassist export, org.infinispan export,org.hibernate.envers export,org.hibernate\n";
 
     private static final String ARCHIVE_NAME = "hibernateSecondLevelStats_test";
 
