@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import javax.naming.CompositeName;
@@ -40,7 +42,6 @@ import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
-import org.jboss.as.naming.deployment.JndiNamingDependencySetupProcessor;
 import org.jboss.as.naming.management.JndiViewExtensionRegistry;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.naming.service.NamingStoreService;
@@ -50,8 +51,6 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -137,7 +136,6 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCY_SETUP, new JndiNamingDependencySetupProcessor());
                 processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
