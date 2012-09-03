@@ -50,7 +50,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     }
 
     public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
-        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null, null, flags);
+        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, flags);
     }
 
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
@@ -60,15 +60,15 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
 
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                   final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires, attributeMarshaller, flags);
+                                   final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, boolean resourceOnly, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires, attributeMarshaller, resourceOnly, flags);
         this.elementValidator = elementValidator;
     }
 
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                    final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires,null, flags);
+        super(name, xmlName, null, ModelType.LIST, allowNull, false, null, null, new ListValidator(elementValidator, allowNull, minSize, maxSize), allowNull, alternatives, requires,null, false, flags);
         this.elementValidator = elementValidator;
     }
 

@@ -56,13 +56,13 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
      */
     @Deprecated
     public SimpleMapAttributeDefinition(final String name, final String xmlName, boolean allowNull, boolean expressionAllowed) {
-        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, false, AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                          final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, flags);
+                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             if (validator == null) {
                 validator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
             }
-            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, flags);
+            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
         }
     }
 }

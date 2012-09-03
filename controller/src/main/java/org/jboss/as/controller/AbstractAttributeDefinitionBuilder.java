@@ -54,6 +54,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     protected int maxSize = Integer.MAX_VALUE;
     protected AttributeAccess.Flag[] flags;
     protected AttributeMarshaller attributeMarshaller = null;
+    protected boolean resourceOnly = false;
 
     public AbstractAttributeDefinitionBuilder(final String attributeName, final ModelType type) {
         this(attributeName, type, false);
@@ -228,8 +229,14 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
         this.minSize = minSize;
         return (BUILDER) this;
     }
-    public BUILDER setAttributeMarshaller(AttributeMarshaller marshaller){
+
+    public BUILDER setAttributeMarshaller(AttributeMarshaller marshaller) {
         this.attributeMarshaller = marshaller;
-        return (BUILDER)this;
+        return (BUILDER) this;
+    }
+
+    public BUILDER setResourceOnly() {
+        this.resourceOnly = true;
+        return (BUILDER) this;
     }
 }

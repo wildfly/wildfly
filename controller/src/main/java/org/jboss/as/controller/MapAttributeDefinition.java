@@ -65,8 +65,8 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                  final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, flags);
+                                  final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, resourceOnly, flags);
         this.elementValidator = elementValidator;
     }
 

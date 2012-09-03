@@ -48,8 +48,8 @@ import org.jboss.dmr.ModelType;
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
 
-    private SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, flags);
+    private SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,final boolean resourceOnly, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, flags);
         this.valueType = valueType;
     }
 
@@ -206,7 +206,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         public SimpleListAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
-            return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, flags);
+            return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, flags);
         }
 
         /*

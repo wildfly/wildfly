@@ -82,7 +82,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
 
-    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING).build();
+    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING).setResourceOnly().build();
 
     public static final SimpleAttributeDefinition AUTO_START = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.AUTO_START, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
