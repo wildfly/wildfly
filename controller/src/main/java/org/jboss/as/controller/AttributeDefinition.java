@@ -313,7 +313,9 @@ public abstract class AttributeDefinition {
      * @throws javax.xml.stream.XMLStreamException
      *          if thrown by {@code writer}
      */
-    public abstract void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException;
+    public void marshallAsElement(final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
+        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsElement(getName());
+    }
 
     /**
      * Creates a returns a basic model node describing the attribute, after attaching it to the given overall resource
