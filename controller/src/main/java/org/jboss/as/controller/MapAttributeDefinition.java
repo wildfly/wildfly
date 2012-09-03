@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.MapValidator;
@@ -65,8 +66,8 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                  final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, resourceOnly, flags);
+                                  final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.elementValidator = elementValidator;
     }
 
@@ -193,4 +194,8 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     protected abstract void addOperationParameterValueTypeDescription(ModelNode result, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle);
 
+    @Override
+    public void marshallAsElement(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+        attributeMarshaller.marshallAsElement(this, resourceModel, marshallDefault, writer);
+    }
 }

@@ -20,7 +20,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 //todo maybe replace with SimpleMapAttributeDefinition?
-public class PropertiesAttributeDefinition extends MapAttributeDefinition {
+public final class PropertiesAttributeDefinition extends MapAttributeDefinition {
 
     /**
      * @param name
@@ -35,8 +35,8 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
 
     private PropertiesAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                           final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                          final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
+                                          final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);
     }
 
     @Override
@@ -61,18 +61,23 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
         }
     }
 
-    @Override
-    public void marshallAsElement(ModelNode resourceModel, boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-        if (!isMarshallable(resourceModel)) { return; }
-
-        resourceModel = resourceModel.get(getName());
-        writer.writeStartElement(getName());
-        for (ModelNode property : resourceModel.asList()) {
-            writer.writeEmptyElement(getXmlName());
-            writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), property.asProperty().getName());
-            writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName(), property.asProperty().getValue().asString());
+    private static class PropertiesAttributeMarshaller extends AttributeMarshaller {
+        @Override
+        public boolean isMarshallable(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault) {
+            return resourceModel.isDefined() && resourceModel.hasDefined(attribute.getName());
         }
-        writer.writeEndElement();
+
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            resourceModel = resourceModel.get(attribute.getName());
+            writer.writeStartElement(attribute.getName());
+            for (ModelNode property : resourceModel.asList()) {
+                writer.writeEmptyElement(attribute.getXmlName());
+                writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), property.asProperty().getName());
+                writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.VALUE.getLocalName(), property.asProperty().getValue().asString());
+            }
+            writer.writeEndElement();
+        }
     }
 
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, PropertiesAttributeDefinition> {
@@ -90,7 +95,10 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
             if (validator == null) {
                 validator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
             }
-            return new PropertiesAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
+            if (attributeMarshaller == null) {
+                attributeMarshaller = new PropertiesAttributeMarshaller();
+            }
+            return new PropertiesAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
     }
 }

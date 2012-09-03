@@ -56,13 +56,13 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
      */
     @Deprecated
     public SimpleMapAttributeDefinition(final String name, final String xmlName, boolean allowNull, boolean expressionAllowed) {
-        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, false, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, false, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                          final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
+                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly,final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);
     }
 
     @Override
@@ -83,21 +83,28 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
         node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(new ModelNode(isAllowExpression()));
     }
 
-    @Override
-    public void marshallAsElement(ModelNode resourceModel, final boolean marshaDefault, XMLStreamWriter writer) throws XMLStreamException {
-        resourceModel = resourceModel.get(getXmlName());
-        writer.writeStartElement(getName());
-        marshalToElement(resourceModel, writer);
-        writer.writeEndElement();
-    }
+    private static class MapAttributeMarshaller extends AttributeMarshaller {
+        @Override
+        public boolean isMarshallable(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault) {
+            return resourceModel.isDefined() && resourceModel.hasDefined(attribute.getName());
+        }
 
-    public void marshalToElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
-        if (!resourceModel.isDefined()) { return; }
-        for (Property property : resourceModel.asPropertyList()) {
-            writer.writeStartElement(PROPERTY.getLocalName());
-            writer.writeAttribute(NAME.getLocalName(), property.getName());
-            writer.writeCharacters(property.getValue().asString());
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            resourceModel = resourceModel.get(attribute.getXmlName());
+            writer.writeStartElement(attribute.getName());
+            marshalToElement(resourceModel, writer);
             writer.writeEndElement();
+        }
+
+        private void marshalToElement(ModelNode resourceModel, XMLStreamWriter writer) throws XMLStreamException {
+            if (!resourceModel.isDefined()) { return; }
+            for (Property property : resourceModel.asPropertyList()) {
+                writer.writeStartElement(PROPERTY.getLocalName());
+                writer.writeAttribute(NAME.getLocalName(), property.getName());
+                writer.writeCharacters(property.getValue().asString());
+                writer.writeEndElement();
+            }
         }
     }
 
@@ -115,7 +122,10 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             if (validator == null) {
                 validator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
             }
-            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
+            if (attributeMarshaller == null) {
+                attributeMarshaller = new MapAttributeMarshaller();
+            }
+            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
     }
 }

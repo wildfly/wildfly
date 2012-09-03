@@ -81,24 +81,25 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
             .setDefaultValue(new ModelNode().set(0)).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     // Domain-only attributes
-
-    public static final ListAttributeDefinition INCLUDES = new PrimitiveListAttributeDefinition(ModelDescriptionConstants.INCLUDES, Element.INCLUDE.getLocalName(), true, ModelType.STRING, 0, Integer.MAX_VALUE,
-            null, null, new StringLengthValidator(1, true), new AttributeMarshaller() {
-        @Override
-        public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-            //
-        }
-
-        @Override
-        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-            if (isMarshallable(attribute, resourceModel)) {
-                for (ModelNode included : resourceModel.get(attribute.getName()).asList()) {
-                    writer.writeEmptyElement(attribute.getXmlName());
-                    writer.writeAttribute(Attribute.SOCKET_BINDING_GROUP.getLocalName(), included.asString());
+    public static final ListAttributeDefinition INCLUDES = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.INCLUDES, ModelType.STRING)
+            .setXmlName(Element.INCLUDE.getLocalName())
+            .setAllowNull(true)
+            .setMinSize(0)
+            .setMaxSize(Integer.MAX_VALUE)
+            .setValidator(new StringLengthValidator(1, true))
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel)) {
+                        for (ModelNode included : resourceModel.get(attribute.getName()).asList()) {
+                            writer.writeEmptyElement(attribute.getXmlName());
+                            writer.writeAttribute(Attribute.SOCKET_BINDING_GROUP.getLocalName(), included.asString());
+                        }
+                    }
                 }
-            }
-        }
-    }, AttributeAccess.Flag.RESTART_JVM);
+            })
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .build();
 
     private final boolean forDomainModel;
 

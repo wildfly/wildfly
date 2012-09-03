@@ -24,12 +24,12 @@
 
 package org.jboss.as.controller;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
-
-import java.util.Arrays;
-import java.util.EnumSet;
 
 /**
  * Builder for helping construct {@link SimpleOperationDefinition}
@@ -44,6 +44,7 @@ public class SimpleOperationDefinitionBuilder {
     protected AttributeDefinition[] parameters = new AttributeDefinition[0];
     protected ModelType replyType;
     protected ModelType replyValueType;
+    protected DeprecationData deprecationData = null;
 
     public SimpleOperationDefinitionBuilder(String name, ResourceDescriptionResolver resolver) {
         this.name = name;
@@ -51,7 +52,7 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     public SimpleOperationDefinition build() {
-        return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, parameters);
+        return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, deprecationData, parameters);
     }
 
     public SimpleOperationDefinitionBuilder setEntryType(OperationEntry.EntryType entryType) {
@@ -83,6 +84,11 @@ public class SimpleOperationDefinitionBuilder {
 
     public SimpleOperationDefinitionBuilder setReplyValueType(ModelType replyValueType) {
         this.replyValueType = replyValueType;
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setDeprecated(ModelVersion since) {
+        this.deprecationData = new DeprecationData(since);
         return this;
     }
 

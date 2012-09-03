@@ -1,6 +1,7 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -8,7 +9,6 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -48,7 +48,9 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
             WELCOME_FILES,
             MIME_MAPPINGS,
     };
-    private static final OperationDefinition ADD_MIME = new SimpleOperationDefinition("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"), MIME_NAME, MIME_VALUE);
+    private static final OperationDefinition ADD_MIME = new SimpleOperationDefinitionBuilder("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
+            .setParameters(MIME_NAME, MIME_VALUE)
+            .build();
     private static final OperationDefinition REMOVE_MIME = new SimpleOperationDefinitionBuilder("remove-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
                .addParameter(MIME_NAME)
                .build();

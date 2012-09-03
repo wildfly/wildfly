@@ -289,7 +289,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (cache.get(ModelKeys.INDEXING).isDefined()|| cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()){
             writer.writeStartElement(Element.INDEXING.getLocalName());
             CommonAttributes.INDEXING.marshallAsAttribute(cache, writer);
-            CommonAttributes.INDEXING_PROPERTIES.marshalToElement(cache.get(ModelKeys.INDEXING_PROPERTIES),writer);
+            CommonAttributes.INDEXING_PROPERTIES.marshallAsElement(cache,writer);
             writer.writeEndElement();
         }
     }

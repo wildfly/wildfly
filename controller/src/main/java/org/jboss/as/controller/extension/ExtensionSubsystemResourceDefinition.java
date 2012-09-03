@@ -36,6 +36,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -50,9 +51,11 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefinition {
-
-    public static final ListAttributeDefinition XML_NAMESPACES = new PrimitiveListAttributeDefinition(ModelDescriptionConstants.XML_NAMESPACES, false, ModelType.STRING,
-                    new StringLengthValidator(1, Integer.MAX_VALUE, false, false), AttributeAccess.Flag.STORAGE_RUNTIME);
+    public static final ListAttributeDefinition XML_NAMESPACES = new StringListAttributeDefinition.Builder(ModelDescriptionConstants.XML_NAMESPACES)
+            .setAllowNull(false)
+            .setStorageRuntime()
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+            .build();
 
     public static final SimpleAttributeDefinition MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MAJOR_VERSION, ModelType.INT, true)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();

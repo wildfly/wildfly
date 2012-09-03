@@ -1,6 +1,7 @@
 package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -22,7 +23,7 @@ public class SessionDefinition extends SimpleResourceDefinition {
     public static SessionDefinition INSTANCE = new SessionDefinition();
 
     private SessionDefinition() {
-        super(PathElement.pathElement("session"), new TestResourceDescriptionResolver());
+        super(PathElement.pathElement("session"), new NonResolvingResourceDescriptionResolver());
     }
 
     protected static final SimpleAttributeDefinition JNDI_NAME =

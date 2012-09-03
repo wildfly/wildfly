@@ -1,15 +1,17 @@
-package org.jboss.as.controller.transform;
+package org.jboss.as.controller.descriptions;
 
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
+ * Resource description resovler that does no resolving at all.
+ *
+ * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class TestResourceDescriptionResolver implements ResourceDescriptionResolver {
+public class NonResolvingResourceDescriptionResolver implements ResourceDescriptionResolver {
     @Override
     public ResourceBundle getResourceBundle(Locale locale) {
         return new ResourceBundle() {
@@ -20,17 +22,7 @@ public class TestResourceDescriptionResolver implements ResourceDescriptionResol
 
             @Override
             public Enumeration<String> getKeys() {
-                return new Enumeration<String>() {
-                    @Override
-                    public boolean hasMoreElements() {
-                        return false;
-                    }
-
-                    @Override
-                    public String nextElement() {
-                        return null;
-                    }
-                };
+                return Collections.enumeration(new HashSet<String>());
             }
         };
     }
@@ -67,7 +59,7 @@ public class TestResourceDescriptionResolver implements ResourceDescriptionResol
 
     @Override
     public String getOperationReplyDescription(String operationName, Locale locale, ResourceBundle bundle) {
-        return operationName;
+        return null;
     }
 
     @Override
@@ -78,5 +70,25 @@ public class TestResourceDescriptionResolver implements ResourceDescriptionResol
     @Override
     public String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle) {
         return childType;
+    }
+
+    @Override
+    public String getResourceDeprecatedDescription(Locale locale, ResourceBundle bundle) {
+        return "resource.deprecated";
+    }
+
+    @Override
+    public String getResourceAttributeDeprecatedDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+        return attributeName;
+    }
+
+    @Override
+    public String getOperationDeprecatedDescription(String operationName, Locale locale, ResourceBundle bundle) {
+        return operationName;
+    }
+
+    @Override
+    public String getOperationParameterDeprecatedDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
+        return operationName;
     }
 }
