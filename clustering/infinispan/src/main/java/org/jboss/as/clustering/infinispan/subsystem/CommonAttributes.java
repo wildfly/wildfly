@@ -1,9 +1,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -16,6 +20,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * Attributes used in setting up Infinispan configurations
@@ -309,7 +314,22 @@ public interface CommonAttributes {
     SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
             setAllowNull(true).
             build();
-    SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition(ModelKeys.INDEXING_PROPERTIES, ModelKeys.INDEXING_PROPERTIES,true,true);
+    SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.INDEXING_PROPERTIES, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    resourceModel = resourceModel.get(attribute.getName());
+                    if (!resourceModel.isDefined()) { return; }
+                    for (Property property : resourceModel.asPropertyList()) {
+                        writer.writeStartElement(org.jboss.as.controller.parsing.Element.PROPERTY.getLocalName());
+                        writer.writeAttribute(org.jboss.as.controller.parsing.Element.NAME.getLocalName(), property.getName());
+                        writer.writeCharacters(property.getValue().asString());
+                        writer.writeEndElement();
+                    }
+                }
+            })
+            .build();
     SimpleAttributeDefinition PURGE =
             new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
                     .setXmlName(Attribute.PURGE.getLocalName())

@@ -86,7 +86,7 @@ public class SimpleAttributeDefinitionBuilder extends AbstractAttributeDefinitio
 
     public SimpleAttributeDefinition build() {
         return new SimpleAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, flags);
+                corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);
     }
 
     /*

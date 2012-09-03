@@ -8,11 +8,12 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class StringListAttributeDefinition extends PrimitiveListAttributeDefinition {
+public final class StringListAttributeDefinition extends PrimitiveListAttributeDefinition {
 
     private StringListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives,
-                                          final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, ModelType.STRING, minSize, maxSize, alternatives, requires, elementValidator, attributeMarshaller, flags);
+                                          final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
+                                          final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, ModelType.STRING, minSize, maxSize, alternatives, requires, elementValidator, attributeMarshaller, resourceOnly, deprecated, flags);
     }
 
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, StringListAttributeDefinition> {
@@ -30,7 +31,7 @@ public class StringListAttributeDefinition extends PrimitiveListAttributeDefinit
 
         @Override
         public StringListAttributeDefinition build() {
-            return new StringListAttributeDefinition(name, xmlName, allowNull, minSize, maxSize, alternatives, requires, validator, attributeMarshaller, flags);
+            return new StringListAttributeDefinition(name, xmlName, allowNull, minSize, maxSize, alternatives, requires, validator, attributeMarshaller, resourceOnly, deprecated, flags);
         }
     }
 }

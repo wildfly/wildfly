@@ -42,12 +42,14 @@ public abstract class OperationDefinition {
     protected final AttributeDefinition[] parameters;
     protected final ModelType replyType;
     protected final ModelType replyValueType;
+    protected final DeprecationData deprecationData;
 
-    public OperationDefinition(String name,
+    protected OperationDefinition(String name,
                                OperationEntry.EntryType entryType,
                                EnumSet<OperationEntry.Flag> flags,
                                final ModelType replyType,
                                final ModelType replyValueType,
+                               final DeprecationData deprecationData,
                                AttributeDefinition... parameters) {
         this.name = name;
         this.entryType = entryType;
@@ -55,6 +57,7 @@ public abstract class OperationDefinition {
         this.parameters = parameters;
         this.replyType = replyType;
         this.replyValueType = replyValueType;
+        this.deprecationData = deprecationData;
     }
 
     public String getName() {

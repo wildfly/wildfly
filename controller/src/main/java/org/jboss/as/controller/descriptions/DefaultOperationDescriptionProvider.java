@@ -34,7 +34,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -49,6 +49,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
     private final ResourceDescriptionResolver descriptionResolver;
     private final ModelType replyType;
     private final ModelType replyValueType;
+    private final DeprecationData deprecationData;
     private final AttributeDefinition[] parameters;
 
     public DefaultOperationDescriptionProvider(final String operationName,
@@ -69,11 +70,21 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final ModelType replyType,
                                                final ModelType replyValueType,
                                                final AttributeDefinition... parameters) {
+        this(operationName, descriptionResolver, replyType, replyValueType, null, parameters);
+    }
+
+    public DefaultOperationDescriptionProvider(final String operationName,
+                                               final ResourceDescriptionResolver descriptionResolver,
+                                               final ModelType replyType,
+                                               final ModelType replyValueType,
+                                               final DeprecationData deprecationData,
+                                               final AttributeDefinition... parameters) {
         this.operationName = operationName;
         this.descriptionResolver = descriptionResolver;
         this.replyType = replyType;
         this.replyValueType = replyValueType;
         this.parameters = parameters;
+        this.deprecationData = deprecationData;
     }
 
     @Override
@@ -107,6 +118,11 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                     reply.get(VALUE_TYPE).set(getReplyValueTypeDescription(descriptionResolver, locale, bundle));
                 }
             }
+        }
+        if (deprecationData != null) {
+            ModelNode deprecated = result.get(ModelDescriptionConstants.DEPRECATED);
+            deprecated.get(ModelDescriptionConstants.SINCE).set(deprecationData.getSince().toString());
+            deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getOperationDeprecatedDescription(operationName, locale, bundle));
         }
 
         return result;

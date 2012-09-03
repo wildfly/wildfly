@@ -1,5 +1,6 @@
 package org.jboss.as.xts;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -36,6 +37,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
     @Deprecated //just legacy support
     private static final ObjectTypeAttributeDefinition ENVIRONMENT = ObjectTypeAttributeDefinition.
             Builder.of(CommonAttributes.XTS_ENVIRONMENT, ENVIRONMENT_URL)
+            .setDeprecated(ModelVersion.create(1,1,0))
             .build();
 
 

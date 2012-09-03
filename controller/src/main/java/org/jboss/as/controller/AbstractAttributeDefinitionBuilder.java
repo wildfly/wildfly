@@ -55,6 +55,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     protected AttributeAccess.Flag[] flags;
     protected AttributeMarshaller attributeMarshaller = null;
     protected boolean resourceOnly = false;
+    protected DeprecationData deprecated = null;
 
     public AbstractAttributeDefinitionBuilder(final String attributeName, final ModelType type) {
         this(attributeName, type, false);
@@ -237,6 +238,11 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
 
     public BUILDER setResourceOnly() {
         this.resourceOnly = true;
+        return (BUILDER) this;
+    }
+
+    public BUILDER setDeprecated(ModelVersion since) {
+        this.deprecated = new DeprecationData(since);
         return (BUILDER) this;
     }
 }

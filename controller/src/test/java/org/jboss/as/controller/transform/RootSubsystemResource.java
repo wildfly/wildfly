@@ -1,5 +1,6 @@
 package org.jboss.as.controller.transform;
 
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -31,7 +32,7 @@ public class RootSubsystemResource extends SimpleResourceDefinition {
 
     private RootSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "test-subsystem"),
-                new TestResourceDescriptionResolver());
+                new NonResolvingResourceDescriptionResolver());
     }
 
     @Override

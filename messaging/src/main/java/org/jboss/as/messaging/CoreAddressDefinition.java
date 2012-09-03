@@ -31,6 +31,7 @@ import static org.jboss.dmr.ModelType.STRING;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
@@ -56,6 +57,7 @@ public class CoreAddressDefinition extends SimpleResourceDefinition {
     @Deprecated
     private static final AttributeDefinition ROLES = ObjectListAttributeDefinition.Builder.of(CommonAttributes.ROLES_ATTR_NAME, SecurityRoleDefinition.getObjectTypeAttributeDefinition())
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setDeprecated(ModelVersion.create(1,2,0))
             .build();
 
     private static final AttributeDefinition QUEUE_NAMES = PrimitiveListAttributeDefinition.Builder.of(CommonAttributes.QUEUE_NAMES, STRING)

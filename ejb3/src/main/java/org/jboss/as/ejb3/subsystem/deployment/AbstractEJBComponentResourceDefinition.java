@@ -90,8 +90,11 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
             .build();
 
-    public static final ListAttributeDefinition DECLARED_ROLES = new PrimitiveListAttributeDefinition("declared-roles", true, ModelType.STRING,
-            new StringLengthValidator(1), AttributeAccess.Flag.STORAGE_RUNTIME) ;
+    public static final ListAttributeDefinition DECLARED_ROLES = new PrimitiveListAttributeDefinition.Builder("declared-roles", ModelType.STRING)
+            .setAllowNull(true)
+            .setValidator(new StringLengthValidator(1))
+            .setStorageRuntime()
+            .build();
 
     // Pool attributes
 

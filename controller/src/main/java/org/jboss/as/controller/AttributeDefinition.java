@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller;
 
-import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -30,7 +29,6 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -40,15 +38,8 @@ import org.jboss.as.controller.operations.validation.NillableOrExpressionParamet
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
-import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
@@ -71,21 +62,22 @@ public abstract class AttributeDefinition {
     private final ParameterValidator validator;
     private final EnumSet<AttributeAccess.Flag> flags;
     protected final AttributeMarshaller attributeMarshaller;
-    private boolean resourceOnly = false;
+    private final boolean resourceOnly;
+    private final DeprecationData deprecationData;
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, true, alternatives, requires, null, false, flags);
+                null, validator, true, alternatives, requires, null, false, null, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
                                   boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
-                                  boolean resourceOnly, final AttributeAccess.Flag... flags) {
+                                  boolean resourceOnly, DeprecationData deprecationData, final AttributeAccess.Flag... flags) {
 
         this.name = name;
         this.xmlName = xmlName;
@@ -120,6 +112,7 @@ public abstract class AttributeDefinition {
             this.attributeMarshaller = new DefaultAttributeMarshaller();
         }
         this.resourceOnly = resourceOnly;
+        this.deprecationData = deprecationData;
     }
 
     public String getName() {
@@ -333,6 +326,10 @@ public abstract class AttributeDefinition {
         final ModelNode attr = getNoTextDescription(false);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(getAttributeDeprecatedDescription(bundle, prefix));
+        }
         return result;
     }
 
@@ -353,6 +350,10 @@ public abstract class AttributeDefinition {
         final String description = resolver.getResourceAttributeDescription(getName(), locale, bundle);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(description);
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(resolver.getResourceAttributeDeprecatedDescription(getName(), locale, bundle));
+        }
         return result;
     }
 
@@ -370,6 +371,10 @@ public abstract class AttributeDefinition {
         final ModelNode param = getNoTextDescription(true);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(getAttributeDeprecatedDescription(bundle, prefix));
+        }
         return result;
     }
 
@@ -392,12 +397,33 @@ public abstract class AttributeDefinition {
         final String description = resolver.getOperationParameterDescription(operationName, getName(), locale, bundle);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
+        ModelNode deprecated = addDeprecatedInfo(result);
+        if (deprecated != null) {
+            deprecated.get(ModelDescriptionConstants.REASON).set(resolver.getOperationParameterDeprecatedDescription(operationName, getName(), locale, bundle));
+        }
         return result;
     }
 
     public String getAttributeTextDescription(final ResourceBundle bundle, final String prefix) {
         final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
+    }
+
+    public String getAttributeDeprecatedDescription(final ResourceBundle bundle, final String prefix) {
+        String bundleKey = prefix == null ? name : (prefix + "." + name);
+        bundleKey += "." + ModelDescriptionConstants.DEPRECATED;
+        return bundle.getString(bundleKey);
+    }
+
+    protected ModelNode addDeprecatedInfo(final ModelNode model) {
+        if (deprecationData == null) { return null; }
+        ModelNode deprecated = model.get(ModelDescriptionConstants.DEPRECATED);
+        deprecated.get(ModelDescriptionConstants.SINCE).set(deprecationData.getSince().toString());
+        /*String bundleKey = prefix == null ? name : (prefix + "." + name);
+        bundleKey+="."+ModelDescriptionConstants.DEPRECATED;*/
+        //deprecated.get(ModelDescriptionConstants.REASON).set(bundle.getString(bundleKey));
+        deprecated.get(ModelDescriptionConstants.REASON);
+        return deprecated;
     }
 
     public ModelNode getNoTextDescription(boolean forOperation) {
@@ -505,304 +531,34 @@ public abstract class AttributeDefinition {
         return attributeMarshaller;
     }
 
+    /**
+     * Show if attribute is resource only which means it wont be part of add operations but only present on resource
+     * @return true is attribute is resource only
+     */
     public boolean isResourceOnly() {
         return resourceOnly;
     }
 
-    private final OperationContext NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new OperationContext() {
+    /**
+     *
+     * @return true if attribute is deprecated
+     */
+    public boolean isDeprecated() {
+        return deprecationData != null;
+    }
 
-        @Override
-        public void setRollbackOnly() {
-        }
+    /**
+     * return deprecation data if there is any
+     * @return {@link DeprecationData}
+     */
+    public DeprecationData getDeprecationData() {
+        return deprecationData;
+    }
 
-        @Override
-        public void runtimeUpdateSkipped() {
-        }
-
-        @Override
-        public void revertRestartRequired() {
-        }
-
-        @Override
-        public void revertReloadRequired() {
-        }
-
-        @Override
-        public void restartRequired() {
-        }
-
-        @Override
-        public void report(MessageSeverity severity, String message) {
-        }
-
-        @Override
-        public void removeService(ServiceController<?> controller) throws UnsupportedOperationException {
-        }
-
-        @Override
-        public ServiceController<?> removeService(ServiceName name) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public Resource removeResource(PathAddress address) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public void reloadRequired() {
-        }
-
-        @Override
-        public Resource readResourceForUpdate(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public Resource readResource(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public Resource readResource(PathAddress address, boolean recursive) {
-            return null;
-        }
-
-        @Override
-        public Resource readResourceFromRoot(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public Resource readResourceFromRoot(PathAddress address, boolean recursive) {
-            return null;
-        }
-
-        @Override
-        public ModelNode readModelForUpdate(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public ModelNode readModel(PathAddress address) {
-            return null;
-        }
-
-        @Override
-        public final boolean isNormalServer() {
-            return false;
-        }
-
-        @Override
-        public boolean isRuntimeAffected() {
-            return false;
-        }
-
-        @Override
-        public boolean isRollbackOnly() {
-            return false;
-        }
-
-        @Override
-        public boolean isRollbackOnRuntimeFailure() {
-            return false;
-        }
-
-        @Override
-        public boolean isResourceServiceRestartAllowed() {
-            return false;
-        }
-
-        @Override
-        public boolean isResourceRegistryAffected() {
-            return false;
-        }
-
-        @Override
-        public boolean isModelAffected() {
-            return false;
-        }
-
-        @Override
-        public boolean isBooting() {
-            return false;
-        }
-
-        @Override
-        public boolean hasResult() {
-            return false;
-        }
-
-        @Override
-        public boolean hasFailureDescription() {
-            return false;
-        }
-
-        @Override
-        public ProcessType getProcessType() {
-            return null;
-        }
-
-        @Override
-        public RunningMode getRunningMode() {
-            return null;
-        }
-
-        @Override
-        @Deprecated
-        @SuppressWarnings("deprecation")
-        public Type getType() {
-            return null;
-        }
-
-        @Override
-        public ServiceTarget getServiceTarget() throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public ServiceRegistry getServiceRegistry(boolean modify) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public Resource getRootResource() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getResult() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getServerResults() {
-            return null;
-        }
-
-        @Override
-        public ManagementResourceRegistration getResourceRegistrationForUpdate() {
-            return null;
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getResourceRegistration() {
-            return null;
-        }
-
-        @Override
-        public ImmutableManagementResourceRegistration getRootResourceRegistration() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getFailureDescription() {
-            return null;
-        }
-
-        @Override
-        public ModelNode getResponseHeaders() {
-            return null;
-        }
-
-        @Override
-        public Stage getCurrentStage() {
-            return null;
-        }
-
-        @Override
-        public int getAttachmentStreamCount() {
-            return 0;
-        }
-
-        @Override
-        public InputStream getAttachmentStream(int index) {
-            return null;
-        }
-
-        @Override
-        public Resource createResource(PathAddress address) throws UnsupportedOperationException {
-            return null;
-        }
-
-        @Override
-        public void completeStep(RollbackHandler rollbackHandler) {
-        }
-
-        @Override
-        public ResultAction completeStep() {
-            return null;
-        }
-
-        @Override
-        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage)
-                throws IllegalArgumentException {
-        }
-
-        @Override
-        public void addStep(ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
-        }
-
-        @Override
-        public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
-        }
-
-        @Override
-        public void addResource(PathAddress address, Resource toAdd) {
-        }
-
-        @Override
-        public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
-            //
-        }
-
-        @Override
-        public void addStep(OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
-            //
-        }
-
-        @Override
-        public void acquireControllerLock() {
-        }
-
+    private static final ExpressionResolver NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new ExpressionResolver() {
         @Override
         public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
             return ExpressionResolver.DEFAULT.resolveExpressions(node);
-        }
-
-        @Override
-        public <T> T getAttachment(final AttachmentKey<T> key) {
-            return null;
-        }
-
-        @Override
-        public <T> T attach(final AttachmentKey<T> key, final T value) {
-            return null;
-        }
-
-        @Override
-        public <T> T attachIfAbsent(final AttachmentKey<T> key, final T value) {
-            return null;
-        }
-
-        @Override
-        public <T> T detach(final AttachmentKey<T> key) {
-            return null;
-        }
-
-        @Override
-        public Resource getOriginalRootResource() {
-            return null;
-        }
-
-        @Override
-        public boolean markResourceRestarted(PathAddress resource, Object owner) {
-            return false;
-        }
-
-        @Override
-        public boolean revertResourceRestarted(PathAddress resource, Object owner) {
-            return false;
         }
     };
 }

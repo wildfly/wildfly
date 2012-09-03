@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPRECATED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
@@ -41,11 +42,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REASON;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SINCE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -88,6 +91,7 @@ public class ModelTestModelDescriptionValidator {
         validResourceKeys.put(ATTRIBUTES, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(OPERATIONS, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(CHILDREN, NullDescriptorValidator.INSTANCE);
+        validResourceKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_RESOURCE_KEYS = Collections.unmodifiableMap(validResourceKeys);
 
         Map<String, ArbitraryDescriptorValidator> validChildTypeKeys = new HashMap<String, ModelTestModelDescriptionValidator.ArbitraryDescriptorValidator>();
@@ -117,6 +121,7 @@ public class ModelTestModelDescriptionValidator {
         paramAndAttributeKeys.put(ALLOWED, StringListValidator.INSTANCE);
         paramAndAttributeKeys.put(UNIT, NumericDescriptorValidator.INSTANCE);
         paramAndAttributeKeys.put(EXPRESSIONS_ALLOWED, BooleanDescriptorValidator.INSTANCE);
+        paramAndAttributeKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
 
         Map<String, AttributeOrParameterArbitraryDescriptorValidator> validAttributeKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
         validAttributeKeys.putAll(paramAndAttributeKeys);
@@ -125,6 +130,7 @@ public class ModelTestModelDescriptionValidator {
         validAttributeKeys.put(TAIL_COMMENT_ALLOWED, BooleanDescriptorValidator.INSTANCE);
         validAttributeKeys.put(STORAGE, StorageDescriptorValidator.INSTANCE);
         validAttributeKeys.put(RESTART_REQUIRED, NullDescriptorValidator.INSTANCE); //TODO some more validation here
+        validAttributeKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_ATTRIBUTE_KEYS = Collections.unmodifiableMap(validAttributeKeys);
 
         Map<String, ArbitraryDescriptorValidator> validOperationKeys = new HashMap<String, ArbitraryDescriptorValidator>();
@@ -132,6 +138,7 @@ public class ModelTestModelDescriptionValidator {
         validOperationKeys.put(OPERATION_NAME, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REQUEST_PROPERTIES, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REPLY_PROPERTIES, NullDescriptorValidator.INSTANCE);
+        validOperationKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_OPERATION_KEYS = Collections.unmodifiableMap(validOperationKeys);
 
         Map<String, AttributeOrParameterArbitraryDescriptorValidator> validParameterKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
@@ -504,6 +511,25 @@ public class ModelTestModelDescriptionValidator {
         @Override
         public String validate(ModelNode currentNode, String descriptor) {
             return null;
+        }
+    }
+
+    private static class DeprecatedDescriptorValidator implements ArbitraryDescriptorValidator, AttributeOrParameterArbitraryDescriptorValidator {
+        static final DeprecatedDescriptorValidator INSTANCE = new DeprecatedDescriptorValidator();
+        @Override
+        public String validate(ModelNode currentNode, String descriptor) {
+            if (!currentNode.get(descriptor).hasDefined(SINCE)) {
+                return "model key 'since' is missing on deprecated definition for '"+descriptor+"'";
+            }
+            if (!currentNode.get(descriptor).hasDefined(REASON)) {
+                return "model key 'reason' is missing on deprecated definition for '"+descriptor+"'";
+            }
+            return null;
+        }
+
+        @Override
+        public String validate(ModelType currentType, ModelNode currentNode, String descriptor) {
+            return validate(currentNode,descriptor);
         }
     }
 
