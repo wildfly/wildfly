@@ -18,13 +18,11 @@ import org.jboss.dmr.ModelType;
  *
  * @author Jason T. Greene
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
- *
  */
 //todo maybe replace with SimpleMapAttributeDefinition?
 public class PropertiesAttributeDefinition extends MapAttributeDefinition {
 
     /**
-     *
      * @param name
      * @param xmlName
      * @param allowNull
@@ -37,8 +35,8 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
 
     private PropertiesAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                           final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                          final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, flags);
+                                          final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
     }
 
     @Override
@@ -64,7 +62,7 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
     }
 
     @Override
-    public void marshallAsElement(ModelNode resourceModel,boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
+    public void marshallAsElement(ModelNode resourceModel, boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
         if (!isMarshallable(resourceModel)) { return; }
 
         resourceModel = resourceModel.get(getName());
@@ -92,7 +90,7 @@ public class PropertiesAttributeDefinition extends MapAttributeDefinition {
             if (validator == null) {
                 validator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
             }
-            return new PropertiesAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, flags);
+            return new PropertiesAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, flags);
         }
     }
 }

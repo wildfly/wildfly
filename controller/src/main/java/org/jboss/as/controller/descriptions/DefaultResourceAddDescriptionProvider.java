@@ -70,7 +70,9 @@ public class DefaultResourceAddDescriptionProvider implements DescriptionProvide
             if (attributeAccess.getStorageType() == AttributeAccess.Storage.CONFIGURATION) {
                 AttributeDefinition def = attributeAccess.getAttributeDefinition();
                 if (def != null) {
-                    def.addOperationParameterDescription(result, ADD, descriptionResolver, locale, bundle);
+                    if (!def.isResourceOnly()){
+                        def.addOperationParameterDescription(result, ADD, descriptionResolver, locale, bundle);
+                    }
                 } else {
                     // Just stick in a placeholder;
                     params.get(attr);

@@ -71,20 +71,21 @@ public abstract class AttributeDefinition {
     private final ParameterValidator validator;
     private final EnumSet<AttributeAccess.Flag> flags;
     protected final AttributeMarshaller attributeMarshaller;
+    private boolean resourceOnly = false;
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, true, alternatives, requires, null, flags);
+                null, validator, true, alternatives, requires, null, false, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
                                   boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
-                                  final AttributeAccess.Flag... flags) {
+                                  boolean resourceOnly, final AttributeAccess.Flag... flags) {
 
         this.name = name;
         this.xmlName = xmlName;
@@ -118,6 +119,7 @@ public abstract class AttributeDefinition {
         } else {
             this.attributeMarshaller = new DefaultAttributeMarshaller();
         }
+        this.resourceOnly = resourceOnly;
     }
 
     public String getName() {
@@ -501,6 +503,10 @@ public abstract class AttributeDefinition {
 
     public AttributeMarshaller getAttributeMarshaller() {
         return attributeMarshaller;
+    }
+
+    public boolean isResourceOnly() {
+        return resourceOnly;
     }
 
     private final OperationContext NO_OPERATION_CONTEXT_FOR_RESOLVING_MODEL_PARAMETERS = new OperationContext() {

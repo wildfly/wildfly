@@ -109,14 +109,14 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                                      final ParameterCorrector corrector, final ParameterValidator validator,
                                      boolean validateNull, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, null,flags);
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, null, false, flags);
     }
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterCorrector corrector, final ParameterValidator validator,
-                                     boolean validateNull, String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, AttributeAccess.Flag... flags) {
+                                     boolean validateNull, String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, final boolean resourceOnly, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, attributeMarshaller, flags);
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, attributeMarshaller, resourceOnly, flags);
     }
 
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final String[] alternatives) {
