@@ -109,7 +109,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertEquals(1, connector.require(CommonAttributes.PROPERTY).require("org.xnio.Options.WORKER_ACCEPT_THREADS").require(CommonAttributes.VALUE).asInt());
     }
 
-    @Test
+    @Test @Ignore("AS7-4127")
     public void testSubsystemWithThreadAttributeChange() throws Exception {
         final int port = 12345;
         KernelServices services = installInController(new AdditionalInitialization(){
@@ -154,7 +154,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-    @Test
+    @Test @Ignore("AS7-4127")
     public void testSubsystemWithConnectorPropertyChange() throws Exception {
         final int port = 12345;
         KernelServices services = installInController(new AdditionalInitialization(){
