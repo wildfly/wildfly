@@ -139,6 +139,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
     }
 
     class DefaultValueState implements ValueState {
+
         private ModelNode wrapper;
         private boolean list;
 
@@ -196,7 +197,11 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
             if(wrapper != null) {
                 if(name == null) {
                     if(buf != null && buf.length() > 0) {
-                        wrapper.add(getStringValue());
+                        if(list || wrapper.getType().equals(ModelType.LIST)) {
+                            wrapper.add(getStringValue());
+                        } else {
+                            wrapper.set(getStringValue());
+                        }
                     }
                 } else {
                     addChild(wrapper, name, getStringValue());
@@ -309,18 +314,5 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         public boolean isList() {
             return true;
         }
-    }
-
-    public static void main(String[] args) throws Exception {
-
-        ModelNode one = new ModelNode();
-        one.get("prop1").set("value1");
-        one.get("prop2").set("value2");
-        System.out.println(one);
-
-        ModelNode two = new ModelNode();
-        two.add("prop1", "value1");
-        two.add("prop2", "value2");
-        System.out.println(two);
     }
 }
