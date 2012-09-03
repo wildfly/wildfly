@@ -50,6 +50,7 @@ import org.jboss.as.osgi.deployment.OSGiManifestStructureProcessor;
 import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
+import org.jboss.as.osgi.service.FrameworkActivator;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.osgi.service.ModuleRegistrationTracker;
@@ -97,10 +98,13 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         LOGGER.infoActivatingSubsystem();
 
+        final Activation activation = getActivationMode(operation);
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final Activation activationMode = getActivationMode(operation);
         final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, verificationHandler);
         final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
+
+        // Create the framework activator
+        FrameworkActivator.create(serviceTarget, activation == Activation.LAZY);
 
         // Collect the subsystem extensions
         final List<SubsystemExtension> extensions = new ArrayList<SubsystemExtension>();
@@ -131,7 +135,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_RESOLVE_BUNDLE, new BundleResolveProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.CONFIGURE_MODULE, Phase.CONFIGURE_RESOLVE_SUB_BUNDLE, new BundleResolveSubProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_RESOLVER_MODULE, new ModuleRegisterProcessor(registrationTracker));
-                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_BUNDLE_ACTIVATE, new BundleActivateProcessor(deploymentTracker));
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_BUNDLE_ACTIVATE, new BundleActivateProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
@@ -141,7 +145,7 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
 
         // Add the subsystem state as a service
-        newControllers.add(SubsystemState.addService(serviceTarget, activationMode));
+        newControllers.add(SubsystemState.addService(serviceTarget, activation));
     }
 
     private Activation getActivationMode(ModelNode operation) {
