@@ -65,7 +65,6 @@ public class Util {
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_NAME = "deployment-name";
     public static final String DEPLOYMENT_OVERLAY = "deployment-overlay";
-    public static final String DEPLOYMENT_OVERLAY_LINK = "deployment-overlay-link";
     public static final String DESCRIPTION = "description";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_RESULTS = "domain-results";

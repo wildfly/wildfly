@@ -351,16 +351,14 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             if(deploymentStr == null) {
                 overlays = loadLinks(client, name);
             } else {
-                overlays = new ArrayList<String>();
-                final String[] deployments = deploymentStr.split(",+");
-                for(String deploymentName : deployments) {
-                    overlays.add(name + '-' + deploymentName);
-                }
+                overlays = Arrays.asList(deploymentStr.split(",+"));
             }
 
             for(String overlay : overlays) {
                 final ModelNode op = new ModelNode();
-                op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY_LINK, overlay);
+                final ModelNode addr = op.get(Util.ADDRESS);
+                addr.add(Util.DEPLOYMENT_OVERLAY, name);
+                addr.add(Util.DEPLOYMENT, overlay);
                 op.get(Util.OPERATION).set(Util.REMOVE);
                 steps.add(op);
             }
@@ -428,29 +426,28 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     }
 
     protected List<String> loadLinks(final ModelControllerClient client, String name) throws CommandLineException {
+        final List<String> contentList;
         final ModelNode op = new ModelNode();
+        final ModelNode addr = op.get(Util.ADDRESS);
+        addr.add(Util.DEPLOYMENT_OVERLAY, name);
         op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
-        op.get(Util.ADDRESS).setEmptyList();
-        op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT_OVERLAY_LINK);
+        op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
         final ModelNode response;
         try {
             response = client.execute(op);
         } catch (IOException e) {
-            throw new CommandLineException("Failed to load the list of existing overlay links", e);
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name, e);
         }
 
         final ModelNode result = response.get(Util.RESULT);
         if(!result.isDefined()) {
-            throw new CommandLineException("Failed to load the list of existing overlay links: " + response);
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name + ": " + response);
         }
-        final List<String> overlays = new ArrayList<String>();
+        contentList = new ArrayList<String>();
         for(ModelNode node : result.asList()) {
-            final String linkName = node.asString();
-            if(linkName.startsWith(name + '-')) {
-                overlays.add(linkName);
-            }
+            contentList.add(node.asString());
         }
-        return overlays;
+        return contentList;
     }
 
     protected void add(CommandContext ctx) throws CommandLineException {
@@ -570,10 +567,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 for(String deployment : deployments) {
                     op = new ModelNode();
                     address = op.get(Util.ADDRESS);
-                    address.add(Util.DEPLOYMENT_OVERLAY_LINK, name + "-" + deployment);
+                    address.add(Util.DEPLOYMENT_OVERLAY, name);
+                    address.add(Util.DEPLOYMENT, deployment);
                     op.get(Util.OPERATION).set(Util.ADD);
-                    op.get(Util.DEPLOYMENT).set(deployment);
-                    op.get(Util.DEPLOYMENT_OVERLAY).set(name);
                     steps.add(op);
                 }
             }
@@ -609,10 +605,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         for(String deployment : deployments) {
             final ModelNode op = new ModelNode();
             final ModelNode address = op.get(Util.ADDRESS);
-            address.add(Util.DEPLOYMENT_OVERLAY_LINK, name + "-" + deployment);
+            address.add(Util.DEPLOYMENT_OVERLAY, name);
+            address.add(Util.DEPLOYMENT, deployment);
             op.get(Util.OPERATION).set(Util.ADD);
-            op.get(Util.DEPLOYMENT).set(deployment);
-            op.get(Util.DEPLOYMENT_OVERLAY).set(name);
             steps.add(op);
         }
 
