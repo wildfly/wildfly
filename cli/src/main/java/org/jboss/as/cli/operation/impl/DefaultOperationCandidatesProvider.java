@@ -231,29 +231,34 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                 result = new ArrayList<CommandArgument>(propList.size());
                 for(final Property prop : propList) {
                     final CommandLineCompleterFactory factory = globalOpProps == null ? null : globalOpProps.get(prop.getName());
-                    final CommandLineCompleter completer;
+                    CommandLineCompleter propCompleter = null;
                     if(factory != null) {
-                        completer = factory.createCompleter(address);
+                        propCompleter = factory.createCompleter(address);
                     } else {
                         final ModelNode typeNode = prop.getValue().get(Util.TYPE);
                         if(typeNode.isDefined() && typeNode.asType().equals(ModelType.BOOLEAN)) {
-                            completer = SimpleTabCompleter.BOOLEAN;
-                        } else if(prop.getValue().has(Util.ALLOWED)) {
-                            final ModelNode allowedNode = prop.getValue().get(Util.ALLOWED);
-                            if(allowedNode.isDefined()) {
-                                final List<ModelNode> nodeList = allowedNode.asList();
-                                final String[] values = new String[nodeList.size()];
-                                for(int i = 0; i < values.length; ++i) {
-                                    values[i] = nodeList.get(i).asString();
-                                }
-                                completer = new SimpleTabCompleter(values);
-                            } else {
-                                completer = null;
-                            }
+                            propCompleter = SimpleTabCompleter.BOOLEAN;
                         } else {
-                            completer = null;
+                            if(prop.getValue().has(Util.VALUE_TYPE)) {
+                                final ModelNode valueTypeNode = prop.getValue().get(Util.VALUE_TYPE);
+                                try {
+                                    // the logic is: if value-type is set to a specific type
+                                    // (i.e. doesn't describe a custom structure)
+                                    // then if allowed is specified, use it.
+                                    // it might be broken but so far this is not looking clear to me
+                                    valueTypeNode.asType();
+                                    if(prop.getValue().has(Util.ALLOWED)) {
+                                        propCompleter = getAllowedCompleter(prop);
+                                    }
+                                } catch(IllegalArgumentException e) {
+                                    // TODO this means value-type describes a custom structure
+                                }
+                            } else if(prop.getValue().has(Util.ALLOWED)) {
+                                propCompleter = getAllowedCompleter(prop);
+                            }
                         }
                     }
+                    final CommandLineCompleter completer = propCompleter;
                     result.add(new CommandArgument(){
                         final String argName = prop.getName();
                         @Override
@@ -320,6 +325,19 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             result = Collections.emptyList();
         }
         return result;
+    }
+
+    private CommandLineCompleter getAllowedCompleter(final Property prop) {
+        final ModelNode allowedNode = prop.getValue().get(Util.ALLOWED);
+        if(allowedNode.isDefined()) {
+            final List<ModelNode> nodeList = allowedNode.asList();
+            final String[] values = new String[nodeList.size()];
+            for(int i = 0; i < values.length; ++i) {
+                values[i] = nodeList.get(i).asString();
+            }
+            return new SimpleTabCompleter(values);
+        }
+        return null;
     }
 
     @Override
