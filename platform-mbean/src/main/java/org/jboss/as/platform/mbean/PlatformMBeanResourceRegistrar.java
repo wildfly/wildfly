@@ -25,7 +25,6 @@ package org.jboss.as.platform.mbean;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.BUFFER_POOL_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.CLASS_LOADING_PATH;
@@ -54,6 +53,7 @@ import java.util.Locale;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
@@ -207,6 +207,7 @@ public class PlatformMBeanResourceRegistrar {
                     return PlatformMBeanDescriptions.getBufferPoolRootResource(locale);
                 }
             });
+            bufPoolRoot.registerReadOnlyAttribute(NAME,null, AttributeAccess.Storage.RUNTIME);
             ManagementResourceRegistration bufPool = bufPoolRoot.registerSubModel(PathElement.pathElement(NAME), new DescriptionProvider() {
                 @Override
                 public ModelNode getModelDescription(Locale locale) {
