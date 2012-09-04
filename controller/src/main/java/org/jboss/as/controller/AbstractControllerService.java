@@ -250,4 +250,6 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
+
+
 }

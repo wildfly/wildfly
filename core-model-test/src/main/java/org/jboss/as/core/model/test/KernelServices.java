@@ -69,7 +69,7 @@ public class KernelServices extends ModelTestKernelServices {
         ServiceTarget target = container.subTarget();
         StringConfigurationPersister persister = new StringConfigurationPersister(bootOperations, testParser);
         RunningModeControl runningModeControl = type == ModelType.HOST ? new HostRunningModeControl(runningMode, RestartMode.HC_ONLY) : new RunningModeControl(runningMode);
-        ModelTestModelControllerService svc = new TestModelControllerService(processType, runningModeControl, persister, validateOperations, type, modelInitializer);
+        ModelTestModelControllerService svc = TestModelControllerService.create(processType, runningModeControl, persister, validateOperations, type, modelInitializer);
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
