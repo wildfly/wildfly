@@ -32,12 +32,14 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
@@ -59,15 +61,10 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
     public void testEmptyRoot() throws Exception {
         KernelServices kernelServices = createEmptyRoot();
 
-        String hostName = InetAddress.getLocalHost().getHostName().toLowerCase();
-        int index = hostName.indexOf('.');
-        hostName = index == -1 ? hostName : hostName.substring(0, index);
-
-
         ModelNode model = kernelServices.readWholeModel(false, true);
         assertAttribute(model, ModelDescriptionConstants.NAMESPACES, new ModelNode().setEmptyList());
         assertAttribute(model, ModelDescriptionConstants.SCHEMA_LOCATIONS, new ModelNode().setEmptyList());
-        assertAttribute(model, ModelDescriptionConstants.NAME, new ModelNode(hostName));
+        assertAttribute(model, ModelDescriptionConstants.NAME, new ModelNode(getDefaultServerName()));
         assertAttribute(model, ModelDescriptionConstants.PRODUCT_NAME, null);
         assertAttribute(model, ModelDescriptionConstants.PRODUCT_VERSION, null);
         assertAttribute(model, ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION, new ModelNode(Version.MANAGEMENT_MAJOR_VERSION));
@@ -104,6 +101,45 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
         write.get(VALUE).set(new ModelNode());
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(write));
         Assert.assertEquals(originalName, kernelServices.executeForResult(read));
+    }
+
+    @Test
+    public void testNameSetInXml() throws Exception {
+        String originalXml = "<server xmlns=\"" + Namespace.CURRENT.getUriString() + "\" name=\"testing\"/>";
+        KernelServices kernelServices = createKernelServicesBuilder()
+                .setXml(originalXml)
+                .build();
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
+
+        ModelNode read = Util.createOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS);
+        read.get(NAME).set(NAME);
+        Assert.assertEquals("testing", kernelServices.executeForResult(read).asString());
+
+        String persistedXml = kernelServices.getPersistedSubsystemXml();
+        ModelTestUtils.compareXml(originalXml, persistedXml);
+    }
+
+    @Test
+    public void testNoNameSetInXml() throws Exception {
+        String originalXml = "<server xmlns=\"" + Namespace.CURRENT.getUriString() + "\"/>";
+        KernelServices kernelServices = createKernelServicesBuilder()
+                .setXml(originalXml)
+                .build();
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
+
+        ModelNode read = Util.createOperation(READ_ATTRIBUTE_OPERATION, PathAddress.EMPTY_ADDRESS);
+        read.get(NAME).set(NAME);
+        Assert.assertEquals(getDefaultServerName(), kernelServices.executeForResult(read).asString());
+
+        //Add and remove a system property so that some ops get executed on the model to trigger persistence, as it is there are none
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SYSTEM_PROPERTY, "test")));
+        add.get(VALUE).set("123");
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(add));
+        ModelNode remove = Util.createRemoveOperation(PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SYSTEM_PROPERTY, "test")));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(remove));
+
+        String persistedXml = kernelServices.getPersistedSubsystemXml();
+        ModelTestUtils.compareXml(originalXml, persistedXml);
     }
 
     @Test
@@ -228,6 +264,12 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServicesBuilder().build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         return kernelServices;
+    }
+
+    private String getDefaultServerName() throws Exception {
+        String hostName = InetAddress.getLocalHost().getHostName().toLowerCase();
+        int index = hostName.indexOf('.');
+        return index == -1 ? hostName : hostName.substring(0, index);
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {

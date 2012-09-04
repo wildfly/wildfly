@@ -84,6 +84,7 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
+import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -158,7 +159,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         parseNamespaces(reader, address, list);
 
-        String serverName = null;
+        ModelNode serverName = null;
 
         // attributes
         final int count = reader.getAttributeCount();
@@ -169,7 +170,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = value;
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
                             break;
                         }
                         default:
@@ -264,7 +265,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         parseNamespaces(reader, address, list);
 
-        String serverName = null;
+        ModelNode serverName = null;
 
         // attributes
         final int count = reader.getAttributeCount();
@@ -275,7 +276,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = value;
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
                             break;
                         }
                         default:
@@ -938,8 +939,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
-    private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        if (value != null && value.length() > 0) {
+    private void setServerName(final ModelNode address, final List<ModelNode> operationList, final ModelNode value) {
+        if (value != null && value.isDefined() && value.asString().length() > 0) {
             final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
             operationList.add(update);
         }
@@ -953,7 +954,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeStartElement(Element.SERVER.getLocalName());
 
         if (modelNode.hasDefined(NAME)) {
-            writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
+            ServerRootResourceDefinition.NAME.marshallAsAttribute(modelNode, false, writer);
         }
 
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
