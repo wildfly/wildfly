@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,10 +40,16 @@ import org.apache.directory.shared.kerberos.components.EncryptionKey;
 import org.apache.log4j.Logger;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.Utils;
 
 /**
- * A Krb5ConfServerSetupTask.
+ * This server setup task creates a krb5.conf file and generates KeyTab files for the HTTP server and users hnelson and jduke.
+ * The task also sets system properties
+ * <ul>
+ * <li>"java.security.krb5.conf" - path to the newly created krb5.conf is set</li>
+ * <li>"sun.security.krb5.debug" - true is set (Kerberos debugging for Oracle Java)</li>
+ * </ul>
  * 
  * @author Josef Cacek
  */
@@ -52,8 +59,13 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
     private static final File WORK_DIR = new File("SPNEGO-workdir");
     private static final String KRB5_CONF = "krb5.conf";
     private static final File KRB5_CONF_FILE = new File(WORK_DIR, KRB5_CONF);
-    private static final String HTTP_KEYTAB = "http.keytab";
-    private static final File HTTP_KEYTAB_FILE = new File(WORK_DIR, HTTP_KEYTAB);
+
+    public static final File HTTP_KEYTAB_FILE = new File(WORK_DIR, "http.keytab");
+    public static final File HNELSON_KEYTAB_FILE = new File(WORK_DIR, "hnelson.keytab");
+    public static final File JDUKE_KEYTAB_FILE = new File(WORK_DIR, "jduke.keytab");
+
+    private String origKrb5Conf;
+    private String origKrbDebug;
 
     // Public methods --------------------------------------------------------
 
@@ -69,27 +81,20 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         LOGGER.info("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
-        final String cannonicalHost = Utils.getCannonicalHost(managementClient);
+        final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
         final Map<String, String> map = new HashMap<String, String>();
         map.put("hostname", cannonicalHost);
         FileUtils.write(KRB5_CONF_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(KRB5_CONF), "UTF-8"), map), "UTF-8");
 
-        final String principalName = "HTTP/" + cannonicalHost + "@JBOSS.ORG";
-        LOGGER.info("Principal name: " + principalName);
-        final KerberosTime timeStamp = new KerberosTime();
-        final long principalType = 1L; //KRB5_NT_PRINCIPAL
+        createKeytab("HTTP/" + cannonicalHost + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
+        createKeytab("hnelson@JBOSS.ORG", "secret", HNELSON_KEYTAB_FILE);
+        createKeytab("jduke@JBOSS.ORG", "theduke", JDUKE_KEYTAB_FILE);
 
-        final Keytab keytab = Keytab.getInstance();
-        final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
-        for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, "httppwd")
-                .entrySet()) {
-            final EncryptionKey key = keyEntry.getValue();
-            final byte keyVersion = (byte) key.getKeyVersion();
-            entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
-        }
-        keytab.setEntries(entries);
-        keytab.write(HTTP_KEYTAB_FILE);
+        LOGGER.info("Setting Kerberos configuration: " + KRB5_CONF_FILE);
+        origKrb5Conf = Utils.setSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath());
+        origKrbDebug = Utils.setSystemProperty("sun.security.krb5.debug", "true");
+
     }
 
     /**
@@ -103,6 +108,8 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
      */
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
         FileUtils.deleteDirectory(WORK_DIR);
+        Utils.setSystemProperty("java.security.krb5.conf", origKrb5Conf);
+        Utils.setSystemProperty("sun.security.krb5.debug", origKrbDebug);
     }
 
     /**
@@ -123,13 +130,31 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         return HTTP_KEYTAB_FILE.getAbsolutePath();
     }
 
+    // Private methods -------------------------------------------------------
+
     /**
-     * Returns File which denotes a path to a keytab with JBoss AS credentials (HTTP/host@JBOSS.ORG).
+     * Creates a keytab file for given principal.
      * 
-     * @return
+     * @param principalName
+     * @param passPhrase
+     * @param keytabFile
+     * @throws IOException
      */
-    public static final File getKeyTabFile() {
-        return HTTP_KEYTAB_FILE;
+    private void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
+        LOGGER.info("Principal name: " + principalName);
+        final KerberosTime timeStamp = new KerberosTime();
+        final long principalType = 1L; //KRB5_NT_PRINCIPAL
+
+        final Keytab keytab = Keytab.getInstance();
+        final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
+        for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, passPhrase)
+                .entrySet()) {
+            final EncryptionKey key = keyEntry.getValue();
+            final byte keyVersion = (byte) key.getKeyVersion();
+            entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
+        }
+        keytab.setEntries(entries);
+        keytab.write(keytabFile);
     }
 
 }

@@ -1,0 +1,269 @@
+dn: ou=Users,dc=jboss,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: Users
+
+dn: uid=krbtgt,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: KDC Service
+sn: Service
+uid: krbtgt
+userPassword: secret
+krb5PrincipalName: krbtgt/JBOSS.ORG@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=ldap,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: LDAP
+sn: Service
+uid: ldap
+userPassword: randall
+krb5PrincipalName: ldap/${ldaphost}@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=HTTP,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: HTTP
+sn: Service
+uid: HTTP
+userPassword: httppwd
+krb5PrincipalName: HTTP/${hostname}@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=hnelson,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: Horatio Nelson
+sn: Nelson
+uid: hnelson
+userPassword: secret
+krb5PrincipalName: hnelson@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=jduke,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: Java Duke
+mail: jduke@JBOSS.ORG
+sn: duke
+uid: jduke
+userPassword: theduke
+krb5PrincipalName: jduke@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=jduke2,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: Java Duke2
+employeeNumber: judke2-123
+sn: Duke2
+uid: jduke2
+userPassword:: dGhlZHVrZTI=
+krb5PrincipalName: jduke2@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+# Example1
+
+dn: ou=Roles,dc=jboss,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: Roles
+
+dn: cn=Echo,ou=Roles,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: Echo
+description: the JBossAdmin group
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+dn: cn=TheDuke,ou=Roles,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: TheDuke
+description: TheDuke role context
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+# Example2
+
+dn: o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: dcObject
+objectClass: organization
+dc: jboss
+o: JBoss
+
+dn: ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: Roles
+
+dn: cn=jduke,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalRole
+description: cn=Echo,ou=Roles,o=example2,dc=jboss,dc=org
+description: cn=TheDuke,ou=Roles,o=example2,dc=jboss,dc=org
+postalAddress: jduke@JBOSS.ORG
+cn: jduke
+
+dn: cn=jduke2,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalRole
+description: cn=Echo2,ou=Roles,o=example2,dc=jboss,dc=org
+description: cn=TheDuke2,ou=Roles,o=example2,dc=jboss,dc=org
+postalAddress: jduke2@JBOSS.ORG
+cn: jduke2
+
+dn: cn=Echo,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: Echo
+description: the echo role
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+dn: cn=TheDuke,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: TheDuke
+description: the duke role
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+dn: cn=Echo2,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: Echo2
+description: the Echo2 role
+member: uid=jduke2,ou=Users,dc=jboss,dc=org
+
+dn: cn=TheDuke2,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: TheDuke2
+description: the duke2 role
+member: uid=jduke2,ou=Users,dc=jboss,dc=org
+
+dn: cn=JBossAdmin,ou=Roles,o=example2,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: JBossAdmin
+description: the JBossAdmin group
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+# Example3
+
+dn: o=example3,dc=jboss,dc=org
+objectclass: top
+objectclass: dcObject
+objectclass: organization
+dc: jboss
+o: JBoss
+
+dn: ou=Roles,o=example3,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: Roles
+
+dn: cn=jduke,ou=Roles,o=example3,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalRole
+description: cn=Echo,ou=Roles,o=example3,dc=jboss,dc=org
+description: cn=TheDuke,ou=Roles,o=example3,dc=jboss,dc=org
+cn: jduke
+
+dn: cn=Echo,ou=Roles,o=example3,dc=jboss,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: Echo
+description: the JBossAdmin group
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+dn: cn=TheDuke,ou=Roles,o=example3,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: TheDuke
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+# Example4
+
+dn: o=example4,dc=jboss,dc=org
+objectclass: top
+objectclass: dcObject
+objectclass: organization
+dc: jboss
+o: JBoss
+
+dn: ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: Roles
+
+dn: cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: RG1
+member: cn=empty
+
+dn: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: RG2
+member: cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+member: uid=jduke,ou=Users,dc=jboss,dc=org
+
+dn: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: RG3
+member: cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+
+dn: cn=R1,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: R1
+member: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+
+dn: cn=R2,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: R2
+member: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+
+dn: cn=R3,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: R3
+member: cn=RG2,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+member: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+
+dn: cn=R4,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: R4
+member: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+
+dn: cn=R5,ou=Roles,o=example4,dc=jboss,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: R5
+member: cn=RG3,cn=RG1,ou=Roles,o=example4,dc=jboss,dc=org
+member: uid=jduke,ou=Users,dc=jboss,dc=org
