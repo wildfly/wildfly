@@ -172,6 +172,31 @@ public class CMTTxInterceptor implements Interceptor {
         throw (Exception) t;
     }
 
+    public void handleExceptionInNoTx(InterceptorContext invocation, Throwable t, final EJBComponent component) throws Exception {
+        ApplicationExceptionDetails ae = component.getApplicationException(t.getClass(), invocation.getMethod());
+        if (ae != null) {
+            throw (Exception) t;
+        }
+
+        // if it's neither EJBException nor RemoteException
+        if (!(t instanceof EJBException || t instanceof RemoteException)) {
+            // errors and unchecked are wrapped into EJBException
+            if (t instanceof Error) {
+                //t = new EJBException(formatException("Unexpected Error", t));
+                Throwable cause = t;
+                t = EjbMessages.MESSAGES.unexpectedError();
+                t.initCause(cause);
+            } else if (t instanceof RuntimeException) {
+                t = new EJBException((Exception) t);
+            } else {
+                // an application exception
+                throw (Exception) t;
+            }
+        }
+
+        throw (Exception) t;
+    }
+
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
         final MethodIntf methodIntf = MethodIntfHelper.of(invocation);
@@ -208,8 +233,8 @@ public class CMTTxInterceptor implements Interceptor {
         try {
             return invocation.proceed();
         } catch (Throwable t) {
-            if(t instanceof Exception) {
-                throw (Exception)t;
+            if (t instanceof Exception) {
+                throw (Exception) t;
             } else {
                 //If this is an error we wrap in in an EJBException
                 throw new EJBException(new RuntimeException(t));
@@ -270,21 +295,19 @@ public class CMTTxInterceptor implements Interceptor {
             tm.suspend();
             try {
                 return invokeInNoTx(invocation);
-            } catch (Exception e) {
-                // If application exception was thrown, rethrow
-                if (component.getApplicationException(e.getClass(), invocation.getMethod()) != null) {
-                    throw e;
-                }
-                // Otherwise wrap in EJBException
-                else {
-                    throw new EJBException(e);
-                }
+            } catch (Throwable e) {
+                handleExceptionInNoTx(invocation, e, component);
             } finally {
                 tm.resume(tx);
             }
         } else {
-            return invokeInNoTx(invocation);
+            try {
+                return invokeInNoTx(invocation);
+            } catch (Throwable e) {
+                handleExceptionInNoTx(invocation, e, component);
+            }
         }
+        throw new RuntimeException("UNREACHABLE");
     }
 
     protected Object required(final InterceptorContext invocation, final EJBComponent component, final int timeout) throws Exception {
