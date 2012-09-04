@@ -21,11 +21,6 @@
  */
 package org.jboss.as.test.smoke.osgi;
 
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStart;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.bundleStop;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleInfo;
-import static org.jboss.as.test.osgi.OSGiManagementOperations.getBundleState;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -47,6 +42,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.osgi.OSGiManagementOperations;
 import org.jboss.as.test.smoke.osgi.bundleA.SimpleServlet;
 import org.jboss.as.test.smoke.osgi.bundleB.Echo;
 import org.jboss.dmr.ModelNode;
@@ -75,6 +71,7 @@ public class SimpleWebAppTestCase {
     static final String BUNDLE_B_WAR = "bundle-b.war";
     static final String BUNDLE_C_WAB = "bundle-c.wab";
     static final String BUNDLE_D_WAB = "bundle-d.wab";
+    static final String BUNDLE_E_JAR = "bundle-e.jar";
 
     static final Asset STRING_ASSET = new StringAsset("Hello from Resource");
 
@@ -163,7 +160,27 @@ public class SimpleWebAppTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
-                builder.addManifestHeader("Web-ContextPath", "/osgi-webapp");
+                builder.addManifestHeader("Web-ContextPath", "/bundle-d");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_E_JAR, testable = false)
+    public static Archive<?> getBundleWithJarExtension() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_E_JAR);
+        archive.addClasses(SimpleServlet.class, Echo.class);
+        archive.addAsResource(STRING_ASSET, "message.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PostConstruct.class, WebServlet.class);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addManifestHeader("Web-ContextPath", "/bundle-e");
                 return builder.openStream();
             }
         });
@@ -214,41 +231,52 @@ public class SimpleWebAppTestCase {
     @OperateOnDeployment(BUNDLE_D_WAB)
     public void testBundleWithWebContextPath() throws Exception {
 
-        ModelNode info = getBundleInfo(getControllerClient(), BUNDLE_D_WAB);
+        ModelNode info = OSGiManagementOperations.getBundleInfo(getControllerClient(), BUNDLE_D_WAB);
         Assert.assertEquals("ACTIVE", info.get(ModelConstants.STATE).asString());
         Assert.assertEquals(BUNDLE_D_WAB, info.get(ModelConstants.SYMBOLIC_NAME).asString());
 
-        String result = performCall("osgi-webapp", "simple", "Hello");
+        String result = performCall("bundle-d", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
 
-        result = performCall("osgi-webapp", "message.txt", null);
+        result = performCall("bundle-d", "message.txt", null);
         Assert.assertEquals("Hello from Resource", result);
 
-        Assert.assertTrue("Bundle stopped", bundleStop(getControllerClient(), BUNDLE_D_WAB));
-        Assert.assertEquals("RESOLVED", getBundleState(getControllerClient(), BUNDLE_D_WAB));
+        Assert.assertTrue("Bundle stopped", OSGiManagementOperations.bundleStop(getControllerClient(), BUNDLE_D_WAB));
+        Assert.assertEquals("RESOLVED", OSGiManagementOperations.getBundleState(getControllerClient(), BUNDLE_D_WAB));
 
         try {
-            performCall("osgi-webapp", "simple", "Hello");
+            performCall("bundle-d", "simple", "Hello");
             Assert.fail("IOException expected");
         } catch (IOException ex) {
             // expected
         }
 
         try {
-            performCall("osgi-webapp", "message.txt", null);
+            performCall("bundle-d", "message.txt", null);
             Assert.fail("IOException expected");
         } catch (IOException ex) {
             // expected
         }
 
-        Assert.assertTrue("Bundle started", bundleStart(getControllerClient(), BUNDLE_D_WAB));
-        Assert.assertEquals("ACTIVE", getBundleState(getControllerClient(), BUNDLE_D_WAB));
+        Assert.assertTrue("Bundle started", OSGiManagementOperations.bundleStart(getControllerClient(), BUNDLE_D_WAB));
+        Assert.assertEquals("ACTIVE", OSGiManagementOperations.getBundleState(getControllerClient(), BUNDLE_D_WAB));
 
-        result = performCall("osgi-webapp", "simple", "Hello");
+        result = performCall("bundle-d", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
 
-        result = performCall("osgi-webapp", "message.txt", null);
+        result = performCall("bundle-d", "message.txt", null);
         Assert.assertEquals("Hello from Resource", result);
+    }
+
+    @Test
+    @OperateOnDeployment(BUNDLE_E_JAR)
+    public void testSimpleBundleWithJarExtension() throws Exception {
+        String result = performCall("bundle-e", "simple", "Hello");
+        Assert.assertEquals("Simple Servlet called with input=Hello", result);
+        // [TODO] Test resource access
+        // [AS7-5486] Cannot access resources from OSGi WebApp with *.jar extension
+        //result = performCall("bundle-e", "message.txt", null);
+        //Assert.assertEquals("Hello from Resource", result);
     }
 
     private String performCall(String pattern, String param) throws Exception {
