@@ -88,7 +88,7 @@ final class SystemServicesIntegration implements Service<SystemServicesPlugin>, 
 
     @Override
     public ServiceController<SystemServicesPlugin> install(ServiceTarget serviceTarget) {
-        ServiceBuilder<SystemServicesPlugin> builder = serviceTarget.addService(getServiceName(), this);
+        ServiceBuilder<SystemServicesPlugin> builder = serviceTarget.addService(SYSTEM_SERVICES_PLUGIN, this);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedModelController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
@@ -96,7 +96,7 @@ final class SystemServicesIntegration implements Service<SystemServicesPlugin>, 
 
         // Subsystem extension dependencies
         for(SubsystemExtension extension : extensions) {
-            extension.configureSystemServiceDependencies(builder);
+            extension.configureServiceDependencies(SYSTEM_SERVICES_PLUGIN, builder);
         }
 
         builder.setInitialMode(Mode.ON_DEMAND);
