@@ -19,9 +19,19 @@
 package org.jboss.as.server.controller.descriptions;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DUMP_SERVICES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -31,6 +41,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -79,6 +90,59 @@ public class ServerDescriptions {
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
+    }
+
+    public static ModelNode getCompositeOperationDescription(Locale locale) {
+
+        final ResourceBundle bundle = getResourceBundle(locale);
+        final ModelNode root = new ModelNode();
+        root.get(OPERATION_NAME).set(COMPOSITE);
+        root.get(DESCRIPTION).set(bundle.getString("composite"));
+        root.get(REQUEST_PROPERTIES, STEPS, TYPE).set(ModelType.LIST); // TODO details of the type
+        root.get(REQUEST_PROPERTIES, STEPS, DESCRIPTION).set(bundle.getString("composite.steps"));
+        root.get(REQUEST_PROPERTIES, STEPS, REQUIRED).set(true);
+        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
+        // TODO details of the reply
+        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("composite.result"));
+        return root;
+    }
+
+    /** {@inheritDoc} */
+    public static ModelNode getShutdownOperationDescription(final Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(SHUTDOWN);
+        node.get(DESCRIPTION).set(bundle.getString("shutdown"));
+        node.get(REQUEST_PROPERTIES, RESTART, TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUEST_PROPERTIES, RESTART, DESCRIPTION).set(bundle.getString("shutdown.restart"));
+        node.get(REQUEST_PROPERTIES, RESTART, DEFAULT).set(false);
+        node.get(REQUEST_PROPERTIES, RESTART, REQUIRED).set(false);
+        node.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
+    }
+
+    public static ModelNode getDumpServicesOperationDescription(final Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(DUMP_SERVICES);
+        node.get(DESCRIPTION).set(bundle.getString("dump-services"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
+        return node;
+    }
+
+    public static ModelNode getRestartRequiredDescription(final Locale locale) {
+        ResourceBundle bundle = getResourceBundle(locale);
+
+        ModelNode node = new ModelNode();
+        node.get(OPERATION_NAME).set(ServerRestartRequiredHandler.OPERATION_NAME);
+        node.get(DESCRIPTION).set(bundle.getString("restart-required"));
+        node.get(REQUEST_PROPERTIES).setEmptyObject();
+        node.get(REPLY_PROPERTIES).setEmptyObject();
+        return node;
     }
 
 }

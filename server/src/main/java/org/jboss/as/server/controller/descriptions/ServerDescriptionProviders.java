@@ -40,16 +40,6 @@ public final class ServerDescriptionProviders {
     // Prevent instantiation
     private ServerDescriptionProviders() {}
 
-    /**
-     * Provider for the host model root.
-     */
-    public static final DescriptionProvider ROOT_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ServerRootDescription.getDescription(locale);
-        }
-    };
-
     public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
 
         @Override

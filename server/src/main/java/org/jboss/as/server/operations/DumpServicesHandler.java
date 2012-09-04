@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerRootDescription;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -68,6 +68,6 @@ public class DumpServicesHandler implements OperationStepHandler, DescriptionPro
 
     /** {@inheritDoc} */
     public ModelNode getModelDescription(final Locale locale) {
-        return ServerRootDescription.getDumpServicesOperationDescription(locale);
+        return ServerDescriptions.getDumpServicesOperationDescription(locale);
     }
 }
