@@ -88,15 +88,18 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final PathManagerService pathManagerService;
     private final ModelInitializer modelInitializer;
     private final DelegatingResourceDefinition rootResourceDefinition;
+    private final ControlledProcessState processState;
     private volatile Initializer initializer;
 
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, ModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition) {
-        super(processType, runningModeControl, null, persister, validateOps, rootResourceDefinition);
+    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
+            ModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+        super(processType, runningModeControl, null, persister, validateOps, rootResourceDefinition, processState);
         this.type = type;
         this.runningModeControl = runningModeControl;
         this.pathManagerService = type == ModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
         this.modelInitializer = modelInitializer;
         this.rootResourceDefinition = rootResourceDefinition;
+        this.processState = processState;
 
         if (type == ModelType.STANDALONE) {
             initializer = new ServerInitializer();
@@ -105,8 +108,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     @Deprecated
     //TODO remove this once host and domain are ported to resource definition
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, ModelType type, ModelInitializer modelInitializer) {
-        super(processType, runningModeControl, null, persister, validateOps);
+    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
+            ModelType type, ModelInitializer modelInitializer, ControlledProcessState processState) {
+        super(processType, runningModeControl, null, persister, validateOps, processState);
         if (type == ModelType.STANDALONE) {
             throw new IllegalStateException("Should not be called for standalone");
         }
@@ -114,14 +118,15 @@ class TestModelControllerService extends ModelTestModelControllerService {
         this.runningModeControl = runningModeControl;
         this.pathManagerService = type == ModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
         this.modelInitializer = modelInitializer;
+        this.processState = processState;
         this.rootResourceDefinition = null;
     }
 
     static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, ModelType type, ModelInitializer modelInitializer) {
         if (type == ModelType.STANDALONE) {
-            return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition());
+            return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(), new ControlledProcessState(true));
         }
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer);
+        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new ControlledProcessState(true));
     }
 
     @Override
@@ -171,7 +176,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     extensionRegistry,
                     null /*vaultReader*/,
                     ignoredRegistry,
-                    null /*processState*/,
+                    processState,
                     pathManagerService);
         } else if (type == ModelType.DOMAIN){
             final HostControllerEnvironment env = createHostControllerEnvironment();
@@ -426,8 +431,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
         final ServerEnvironment environment = createStandaloneServerEnvironment();
         final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, runningModeControl);
         final boolean parallelBoot = false;
-        //See if we can get this to work with these null
-        final ControlledProcessState processState = null;
         final AbstractVaultReader vaultReader = null;
 
         public void setRootResourceDefinitionDelegate() {

@@ -360,7 +360,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             String attr = operation.get(ModelDescriptionConstants.NAME).asString();
 
             //These are undefined for the community version
-            if (env != null) {
+            if (env != null && env.getProductConfig() != null) {
                 if (attr.equals(ModelDescriptionConstants.PRODUCT_VERSION)) {
                     String productVersion = env.getProductConfig().getProductVersion();
                     if (productVersion != null) {

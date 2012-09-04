@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.util.List;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningModeControl;
@@ -53,7 +54,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
             final StringConfigurationPersister persister, boolean validateOps) {
-        super(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE);
+        super(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;

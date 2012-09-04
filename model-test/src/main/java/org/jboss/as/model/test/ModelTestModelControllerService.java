@@ -90,17 +90,18 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private volatile boolean bootSuccess;
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-                           final StringConfigurationPersister persister, OperationValidation validateOps) {
+                           final StringConfigurationPersister persister, OperationValidation validateOps, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
-                new ControlledProcessState(true), DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+                processState == null ? new ControlledProcessState(true) : processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
         this.validateOps = validateOps;
     }
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-            final StringConfigurationPersister persister, final OperationValidation validateOps, final DelegatingResourceDefinition rootResourceDefinition) {
-        super(processType, runningModeControl, persister, new ControlledProcessState(true), rootResourceDefinition, null,
+            final StringConfigurationPersister persister, final OperationValidation validateOps, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+        super(processType, runningModeControl, persister,
+                processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
                 ExpressionResolver.DEFAULT);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;

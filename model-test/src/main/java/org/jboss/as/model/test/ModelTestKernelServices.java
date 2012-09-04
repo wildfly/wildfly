@@ -24,6 +24,7 @@ package org.jboss.as.model.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -119,7 +120,7 @@ public class ModelTestKernelServices {
     }
 
     /**
-     * Reads the whole model from the model controller
+     * Reads the whole model from the model controller without aliases or runtime attributes/resources
      *
      * @return the whole model
      */
@@ -128,15 +129,30 @@ public class ModelTestKernelServices {
     }
 
     /**
-     * Reads the whole model from the model controller
+     * Reads the whole model from the model controller without runtime attributes/resources
      *
+     * @param includeAliases whether to include aliases
      * @return the whole model
      */
     public ModelNode readWholeModel(boolean includeAliases) {
+        return readWholeModel(includeAliases, false);
+    }
+
+    /**
+     * Reads the whole model from the model controller
+     *
+     * @param includeAliases whether to include aliases
+     * @param includeRuntime whether to include runtime attributes/resources
+     * @return the whole model
+     */
+    public ModelNode readWholeModel(boolean includeAliases, boolean includeRuntime) {
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         op.get(RECURSIVE).set(true);
+        if (includeRuntime) {
+            op.get(INCLUDE_RUNTIME).set(true);
+        }
         if (includeAliases) {
             op.get(INCLUDE_ALIASES).set(true);
         }
