@@ -21,11 +21,15 @@
  */
 package org.jboss.as.test.integration.security.common;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
+
+import org.apache.commons.lang.SystemUtils;
 
 /**
  * Simple Krb5LoginModule configuration.
@@ -35,19 +39,57 @@ import javax.security.auth.login.Configuration;
 public class Krb5LoginConfiguration extends Configuration {
 
     /** The list with configuration entries. */
-    private static final AppConfigurationEntry[] configList = new AppConfigurationEntry[1];
+    private final AppConfigurationEntry[] configList = new AppConfigurationEntry[1];
 
-    static {
+    /**
+     * Create a new Krb5LoginConfiguration. Neither principal nor keytab are not filled and JGSS credential type is initiator.
+     * 
+     * @throws MalformedURLException
+     */
+    public Krb5LoginConfiguration() throws MalformedURLException {
+        this(null, null, false);
+    }
+
+    /**
+     * Create a new Krb5LoginConfiguration with given principal name, keytab and credential type.
+     * 
+     * @param principal principal name, may be <code>null</code>
+     * @param keyTab keytab file, may be <code>null</code>
+     * @param acceptor flag for setting credential type. Set to true, if the authenticated subject should be acceptor (i.e.
+     *        credsType=acceptor for IBM JDK, and storeKey=true for Oracle JDK)
+     * @throws MalformedURLException
+     */
+    public Krb5LoginConfiguration(final String principal, final File keyTab, final boolean acceptor)
+            throws MalformedURLException {
         final Map<String, Object> options = new HashMap<String, Object>();
         final String loginModule;
-        if (System.getProperty("java.vendor").startsWith("IBM")) {
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
             loginModule = "com.ibm.security.auth.module.Krb5LoginModule";
-            options.put("noAddress", "true");
+            if (keyTab != null) {
+                options.put("useKeytab", keyTab.toURI().toString());
+            }
+            if (acceptor) {
+                options.put("credsType", "acceptor");
+            } else {
+                options.put("noAddress", "true");
+            }
         } else {
             loginModule = "com.sun.security.auth.module.Krb5LoginModule";
+            if (keyTab != null) {
+                options.put("keyTab", keyTab.getAbsolutePath());
+                options.put("doNotPrompt", "true");
+                options.put("useKeyTab", "true");
+            }
+            if (acceptor) {
+                options.put("storeKey", "true");
+            }
         }
         options.put("refreshKrb5Config", "true");
+        options.put("debug", "true");
 
+        if (principal != null) {
+            options.put("principal", principal);
+        }
         configList[0] = new AppConfigurationEntry(loginModule, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
     }
 
