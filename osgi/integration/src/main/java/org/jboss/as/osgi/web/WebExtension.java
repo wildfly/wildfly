@@ -30,13 +30,15 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.as.osgi.parser.OSGiExtension;
-import org.jboss.as.osgi.web.WebContextActivationProcessor.WebContextLifecycleInterceptor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.osgi.framework.IntegrationService;
 
 /**
  * A WebApp extension to the OSGi subsystem
@@ -46,6 +48,9 @@ import org.jboss.msc.service.ServiceTarget;
  * @since 11-Jul-2012
  */
 public class WebExtension extends AbstractSubsystemExtension {
+
+    static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
+    static final String WEB_CONTEXT_PATH = "Web-ContextPath";
 
     @Override
     public void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
@@ -63,10 +68,15 @@ public class WebExtension extends AbstractSubsystemExtension {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAB_SERVLETCONTEXTFACTORY, new WabServletContextFactoryProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_DEPLOYMENT, new WebContextActivationProcessor());
-                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_SERVLETCONTEXT_SERVICE, new WabServletContextServiceProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
+    }
+
+    @Override
+    public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
+        if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
+            builder.addDependency(WebContextLifecycleInterceptor.SERVICE_NAME);
+        }
     }
 }
