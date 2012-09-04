@@ -41,6 +41,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.RunningModeControl;
@@ -112,13 +113,11 @@ public class ServerResourceDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition NAMESPACES = new SimpleMapAttributeDefinition.Builder(
                 new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.NAMESPACES, true).build()
             )
-            .setDefaultValue(new ModelNode().setEmptyList())
             .build();
 
     public static final AttributeDefinition SCHEMA_LOCATIONS = new SimpleMapAttributeDefinition.Builder(
             new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.SCHEMA_LOCATIONS, true).build()
             )
-            .setDefaultValue(new ModelNode().setEmptyList())
             .build();
 
     public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, true)
@@ -307,8 +306,8 @@ public class ServerResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(PRODUCT_NAME, infoHandler);
         resourceRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, infoHandler);
 
-        resourceRegistration.registerReadOnlyAttribute(NAMESPACES, null);
-        resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, null);
+        resourceRegistration.registerReadOnlyAttribute(NAMESPACES, DefaultEmptyListAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, DefaultEmptyListAttributeHandler.INSTANCE);
     }
 
     private static class ManagementVersionAttributeHandler implements OperationStepHandler {
@@ -379,4 +378,26 @@ public class ServerResourceDefinition extends SimpleResourceDefinition {
 
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
-    }}
+    }
+
+    private static class DefaultEmptyListAttributeHandler implements OperationStepHandler {
+        static final OperationStepHandler INSTANCE = new DefaultEmptyListAttributeHandler();
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
+            if (attr.equals(ModelDescriptionConstants.NAMESPACES)) {
+                getAttributeValueOrDefault(ServerResourceDefinition.NAMESPACES, context);
+            } else if (attr.equals(ModelDescriptionConstants.SCHEMA_LOCATIONS)) {
+                getAttributeValueOrDefault(ServerResourceDefinition.SCHEMA_LOCATIONS, context);
+            }
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }
+
+        private void getAttributeValueOrDefault(AttributeDefinition def, OperationContext context) throws OperationFailedException {
+            //TODO fails in the validator
+            //final ModelNode result = def.resolveModelAttribute(context, context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel());
+            final ModelNode result = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel().get(def.getName());
+            context.getResult().set(result.isDefined() ? result : new ModelNode().setEmptyList());
+        }
+    }
+}

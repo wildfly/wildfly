@@ -445,7 +445,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         @Override
         public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            ServerControllerModelUtil.updateCoreModel(rootResource.getModel(), null);
             //TODO - might have to add some more of these - let's see how it goes without
             final ContentRepository contentRepository = createContentRepository();
             final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();

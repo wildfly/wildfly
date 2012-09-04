@@ -28,10 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -92,19 +90,12 @@ import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author David Bosschaert
  */
 public class ServerControllerModelUtil {
-
-    public static void updateCoreModel(final ModelNode root, ServerEnvironment environment) {
-        //TODO Find some way to get these to return an empty list if not defined
-        root.get(NAMESPACES).setEmptyList();
-        root.get(SCHEMA_LOCATIONS).setEmptyList();
-    }
 
     public static void initOperations(final ManagementResourceRegistration root,
                                       final ContentRepository contentRepository,
