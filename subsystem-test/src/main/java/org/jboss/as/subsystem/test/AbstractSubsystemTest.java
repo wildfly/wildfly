@@ -1,6 +1,7 @@
 package org.jboss.as.subsystem.test;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -36,8 +37,12 @@ public abstract class AbstractSubsystemTest {
     private final SubsystemTestDelegate delegate;
 
     protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension) {
+        this(mainSubsystemName, mainExtension, null);
+    }
+
+    protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension, final Comparator<PathAddress> removeOrderComparator) {
         this.mainSubsystemName = mainSubsystemName;
-        this.delegate = new SubsystemTestDelegate(this.getClass(), mainSubsystemName, mainExtension);
+        this.delegate = new SubsystemTestDelegate(this.getClass(), mainSubsystemName, mainExtension, removeOrderComparator);
     }
 
     public String getMainSubsystemName() {
@@ -215,18 +220,6 @@ public abstract class AbstractSubsystemTest {
     protected void assertRemoveSubsystemResources(KernelServices kernelServices, Set<PathAddress> ignoredChildAddresses) {
         delegate.assertRemoveSubsystemResources(kernelServices, ignoredChildAddresses);
     }
-
-    /**
-     * Allows for sorting the addresses. Paths that require children or other paths to be removed first must be at the
-     * top of the list as the result is processed in reverse order.
-     *
-     * @param addresses the list of addresses to sort.
-     *
-     * @return a sorted list of the address.
-     */
-    protected List<PathAddress> orderAddressesForRemove(final List<PathAddress> addresses) {
-        return addresses;
-     }
 
     /**
      * Grabs the current root resource
