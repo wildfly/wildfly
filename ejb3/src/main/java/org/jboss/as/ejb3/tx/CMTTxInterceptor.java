@@ -283,7 +283,18 @@ public class CMTTxInterceptor implements Interceptor {
                 tm.resume(tx);
             }
         } else {
-            return invokeInNoTx(invocation);
+            try {
+                return invokeInNoTx(invocation);
+            } catch (Exception e) {
+                // If application exception was thrown, rethrow
+                if (component.getApplicationException(e.getClass(), invocation.getMethod()) != null) {
+                    throw e;
+                }
+                // Otherwise wrap in EJBException
+                else {
+                    throw new EJBException(e);
+                }
+            }
         }
     }
 
