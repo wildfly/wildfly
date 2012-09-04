@@ -49,9 +49,6 @@ public class PathElement {
      */
     private static final Pattern VALID_KEY_PATTERN = Pattern.compile("\\*|[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
 
-    //This is only ever for the root description providers
-    public static final PathElement ROOT = PathElement.pathElement("root");
-
     /**
      * Construct a new instance with a wildcard value.
      * @param key the path key to match

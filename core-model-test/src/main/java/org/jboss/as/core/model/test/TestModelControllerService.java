@@ -68,7 +68,7 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.ServerEnvironmentResourceDescription;
 import org.jboss.as.server.ServerPathManagerService;
-import org.jboss.as.server.controller.resources.ServerResourceDefinition;
+import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -431,7 +431,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         final AbstractVaultReader vaultReader = null;
 
         public void setRootResourceDefinitionDelegate() {
-            rootResourceDefinition.setDelegate(new ServerResourceDefinition(
+            rootResourceDefinition.setDelegate(new ServerRootResourceDefinition(
                     contentRepository,
                     persister,
                     environment,

@@ -66,7 +66,7 @@ import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.resources.ServerResourceDefinition;
+import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -315,7 +315,7 @@ public class ServerControllerUnitTestCase {
 
         @Override
         public void start(StartContext context) throws StartException {
-            rootResourceDefinition.setDelegate(new ServerResourceDefinition(MockRepository.INSTANCE,
+            rootResourceDefinition.setDelegate(new ServerRootResourceDefinition(MockRepository.INSTANCE,
                     persister, environment, processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER));
             super.start(context);
         }

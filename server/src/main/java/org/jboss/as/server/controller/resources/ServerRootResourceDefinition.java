@@ -106,7 +106,7 @@ import org.jboss.modules.ModuleClassLoader;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ServerResourceDefinition extends SimpleResourceDefinition {
+public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
     private static final ParameterValidator NOT_NULL_STRING_LENGTH_ONE_VALIDATOR = new StringLengthValidator(1, false, false);
 
@@ -173,7 +173,7 @@ public class ServerResourceDefinition extends SimpleResourceDefinition {
     private final boolean parallelBoot;
     private final PathManagerService pathManager;
 
-    public ServerResourceDefinition(
+    public ServerRootResourceDefinition(
             final ContentRepository contentRepository,
             final ExtensibleConfigurationPersister extensibleConfigurationPersister,
             final ServerEnvironment serverEnvironment,
@@ -183,8 +183,7 @@ public class ServerResourceDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
             final PathManagerService pathManager) {
-        // FIXME ServerResourceDefinition constructor
-        super(PathElement.ROOT, ServerDescriptions.getResourceDescriptionResolver(SERVER, false), null, null);
+        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), ServerDescriptions.getResourceDescriptionResolver(SERVER, false), null, null);
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
         this.serverEnvironment = serverEnvironment;
@@ -386,9 +385,9 @@ public class ServerResourceDefinition extends SimpleResourceDefinition {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             String attr = operation.get(ModelDescriptionConstants.NAME).asString();
             if (attr.equals(ModelDescriptionConstants.NAMESPACES)) {
-                getAttributeValueOrDefault(ServerResourceDefinition.NAMESPACES, context);
+                getAttributeValueOrDefault(ServerRootResourceDefinition.NAMESPACES, context);
             } else if (attr.equals(ModelDescriptionConstants.SCHEMA_LOCATIONS)) {
-                getAttributeValueOrDefault(ServerResourceDefinition.SCHEMA_LOCATIONS, context);
+                getAttributeValueOrDefault(ServerRootResourceDefinition.SCHEMA_LOCATIONS, context);
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }

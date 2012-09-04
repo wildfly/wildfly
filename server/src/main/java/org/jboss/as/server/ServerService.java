@@ -54,7 +54,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.controller.resources.ServerResourceDefinition;
+import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.ContentOverrideDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
@@ -217,7 +217,7 @@ public final class ServerService extends AbstractControllerService {
         extensibleConfigurationPersister = configurationPersisterFactory.createConfigurationPersister(serverEnvironment, getExecutorServiceInjector().getOptionalValue());
         setConfigurationPersister(extensibleConfigurationPersister);
         rootResourceDefinition.setDelegate(
-                new ServerResourceDefinition(injectedContentRepository.getValue(),
+                new ServerRootResourceDefinition(injectedContentRepository.getValue(),
                         extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
                         runningModeControl, vaultReader, configuration.getExtensionRegistry(),
                         getExecutorServiceInjector().getOptionalValue() != null,
