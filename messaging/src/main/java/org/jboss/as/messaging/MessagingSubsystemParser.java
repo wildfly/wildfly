@@ -39,7 +39,6 @@ import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
@@ -78,8 +77,8 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -429,8 +428,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case DISCOVERY_GROUP_REF: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
+                    final String groupRef = readStringAttributeElement(reader, ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.getXmlName());
+                    ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
                     break;
                 }
                 default: {
@@ -506,8 +505,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 case DISCOVERY_GROUP_REF: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
+                    final String groupRef = readStringAttributeElement(reader, BridgeDefinition.DISCOVERY_GROUP_NAME.getXmlName());
+                    BridgeDefinition.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
                     break;
                 }
                 case FAILOVER_ON_SERVER_SHUTDOWN: {
@@ -1366,7 +1365,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch(element) {
                 case ENTRY: {
                     final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                    JndiEntriesAttribute.DESTINATION.parseAndAddParameterElement(entry, topic, reader);
+                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, topic, reader);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -1390,7 +1389,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch(element) {
                 case ENTRY: {
                     final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                    JndiEntriesAttribute.DESTINATION.parseAndAddParameterElement(entry, queue, reader);
+                    CommonAttributes.DESTINATION_ENTRIES.parseAndAddParameterElement(entry, queue, reader);
                     break;
                 } case SELECTOR: {
                     if(queue.has(SELECTOR.getName())) {
@@ -1487,8 +1486,8 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
+                    final String groupRef = readStringAttributeElement(reader, Common.DISCOVERY_GROUP_NAME.getXmlName());
+                    Common.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
                     break;
                 } case CONNECTORS: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
@@ -1501,7 +1500,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             throw ParseUtils.unexpectedElement(reader);
                         }
                         final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                        JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
+                        Common.ENTRIES.parseAndAddParameterElement(entry, connectionFactory, reader);
                     }
                     break;
                 }

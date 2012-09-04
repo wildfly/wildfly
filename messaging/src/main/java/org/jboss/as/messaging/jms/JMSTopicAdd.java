@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -53,7 +54,7 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
     public static final JMSTopicAdd INSTANCE = new JMSTopicAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        JndiEntriesAttribute.DESTINATION.validateAndSet(operation, model);
+        CommonAttributes.DESTINATION_ENTRIES.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -62,8 +63,8 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        final ModelNode entries = JndiEntriesAttribute.DESTINATION.resolveModelAttribute(context, model);
-        final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
+        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
         installServices(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
     }
 

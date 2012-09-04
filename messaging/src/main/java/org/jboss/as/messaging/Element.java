@@ -33,7 +33,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
@@ -188,7 +187,7 @@ public enum Element {
    DISCOVERY_INITIAL_WAIT_TIMEOUT(Common.DISCOVERY_INITIAL_WAIT_TIMEOUT),
    DISCOVERY_GROUP_REF(CommonAttributes.DISCOVERY_GROUP_REF),
    DUPS_OK_BATCH_SIZE(Common.DUPS_OK_BATCH_SIZE),
-   ENTRIES(JndiEntriesAttribute.CONNECTION_FACTORY),
+   ENTRIES(Common.ENTRIES),
    ENTRY(CommonAttributes.ENTRY),
    FAILOVER_ON_INITIAL_CONNECTION(Common.FAILOVER_ON_INITIAL_CONNECTION),
    FAILOVER_ON_SERVER_SHUTDOWN(Common.FAILOVER_ON_SERVER_SHUTDOWN),
@@ -351,9 +350,9 @@ public enum Element {
     private static Map<String, AttributeDefinition> getConnectorRefDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
         result.put("simple", ClusterConnectionDefinition.CONNECTOR_REF);
-        result.put("broadcast-group", ConnectorRefsAttribute.BROADCAST_GROUP);
-        result.put("bridge", ConnectorRefsAttribute.BRIDGE_CONNECTORS);
-        result.put("cluster-connection", ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS);
+        result.put("broadcast-group", BroadcastGroupDefinition.CONNECTOR_REFS);
+        result.put("bridge", BridgeDefinition.CONNECTOR_REFS);
+        result.put("cluster-connection", ClusterConnectionDefinition.CONNECTOR_REFS);
         return result;
 
     }

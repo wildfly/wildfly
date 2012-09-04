@@ -17,7 +17,6 @@ public enum Attribute {
    @Deprecated
    BACKUP_CONNECTOR_NAME("backup-connector-name"),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
-   DISCOVERY_GROUP_NAME(CommonAttributes.DISCOVERY_GROUP_NAME),
    KEY(CommonAttributes.KEY),
    MATCH(CommonAttributes.MATCH),
    NAME(CommonAttributes.NAME),

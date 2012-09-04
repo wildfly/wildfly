@@ -1,5 +1,7 @@
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY;
+import static org.jboss.as.messaging.ClusterConnectionDefinition.CONNECTOR_REFS;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
@@ -331,16 +333,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             for(final Property property : node.asPropertyList()) {
                 writer.writeStartElement(Element.BRIDGE.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                final ModelNode bridge = property.getValue();
                 for (AttributeDefinition attribute : BridgeDefinition.ATTRIBUTES) {
                     if (CommonAttributes.FILTER == attribute) {
                         writeFilter(writer, property.getValue());
-                    } else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
-                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(bridge)) {
-                            writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
-                            CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(bridge, writer);
-                            writer.writeEndElement();
-                        }
                     } else {
                         attribute.marshallAsElement(property.getValue(), writer);
                     }
@@ -368,22 +363,15 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                         // we nest it in static-connectors
                         continue;
                     }
-                    if (attribute == ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS) {
-                        if (ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.isMarshallable(cluster)) {
+                    if (attribute == CONNECTOR_REFS) {
+                        if (attribute.isMarshallable(cluster)) {
                             writer.writeStartElement(Element.STATIC_CONNECTORS.getLocalName());
-                            ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
-                            ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.marshallAsElement(cluster, writer);
+                            ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
+                            CONNECTOR_REFS.marshallAsElement(cluster, writer);
                             writer.writeEndElement();
-                        } else if (ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster)) {
+                        } else if (ALLOW_DIRECT_CONNECTIONS_ONLY.isMarshallable(cluster)) {
                             writer.writeEmptyElement(Element.STATIC_CONNECTORS.getLocalName());
-                            ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
-                        }
-                    }
-                    else if (attribute == CommonAttributes.DISCOVERY_GROUP_NAME) {
-                        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(cluster)) {
-                            writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
-                            CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(cluster, writer);
-                            writer.writeEndElement();
+                            ALLOW_DIRECT_CONNECTIONS_ONLY.marshallAsAttribute(cluster, writer);
                         }
                     } else {
                         attribute.marshallAsElement(property.getValue(), writer);
@@ -624,11 +612,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeCommonConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException {
-        if (CommonAttributes.DISCOVERY_GROUP_NAME.isMarshallable(factory)) {
-            writer.writeStartElement(Element.DISCOVERY_GROUP_REF.getLocalName());
-            CommonAttributes.DISCOVERY_GROUP_NAME.marshallAsAttribute(factory, writer);
-            writer.writeEndElement();
-        }
+        Common.DISCOVERY_GROUP_NAME.marshallAsElement(factory, writer);
 
         // write the element for compatibility sake but it is deprecated
         Common.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(factory, writer);

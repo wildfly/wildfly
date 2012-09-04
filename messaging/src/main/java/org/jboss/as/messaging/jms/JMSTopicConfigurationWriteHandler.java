@@ -23,6 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.messaging.CommonAttributes;
 
 /**
  * Write attribute handler for attributes that update the persistent configuration of a JMS topic resource.
@@ -34,6 +35,6 @@ public class JMSTopicConfigurationWriteHandler extends ReloadRequiredWriteAttrib
     public static final JMSTopicConfigurationWriteHandler INSTANCE = new JMSTopicConfigurationWriteHandler();
 
     private JMSTopicConfigurationWriteHandler() {
-        super(JndiEntriesAttribute.DESTINATION);
+        super(CommonAttributes.DESTINATION_ENTRIES);
     }
 }

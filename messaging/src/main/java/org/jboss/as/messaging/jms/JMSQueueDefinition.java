@@ -44,7 +44,7 @@ import org.jboss.as.messaging.MessagingExtension;
  */
 public class JMSQueueDefinition extends SimpleResourceDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = { JndiEntriesAttribute.DESTINATION, CommonAttributes.SELECTOR, CommonAttributes.DURABLE };
+    static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE };
 
     static final AttributeDefinition QUEUE_ADDRESS = create("queue-address", STRING)
             .setStorageRuntime()

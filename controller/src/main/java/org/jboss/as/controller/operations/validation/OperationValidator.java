@@ -190,14 +190,15 @@ public class OperationValidator {
             if(described.hasDefined(ALTERNATIVES)) {
                 alternatives = described.get(ALTERNATIVES).asList();
             }
-            final boolean exist = actualParams.containsKey(paramName);
+            final boolean exist = actualParams.containsKey(paramName) && actualParams.get(paramName).isDefined();
             final String alternative = hasAlternative(actualParams.keySet(), alternatives);
+            final boolean alternativeExist = alternative != null && actualParams.get(alternative).isDefined();
             if (required) {
-                if(!exist && alternative == null) {
+                if(!exist && !alternativeExist) {
                     throw MESSAGES.validationFailedRequiredParameterNotPresent(paramName, formatOperationForMessage(operation));
                 }
             }
-            if(exist && alternative != null) {
+            if(exist && alternativeExist) {
                 throw MESSAGES.validationFailedRequiredParameterPresentAsWellAsAlternative(alternative, paramName, formatOperationForMessage(operation));
             }
         }

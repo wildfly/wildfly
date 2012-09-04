@@ -20,8 +20,9 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -50,8 +51,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
+                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME);
+                    ConnectionFactoryAttributes.Common.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
                     break;
                 } case CONNECTORS: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
@@ -64,7 +65,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                             throw ParseUtils.unexpectedElement(reader);
                         }
                         final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                        JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
+                        Common.ENTRIES.parseAndAddParameterElement(entry, connectionFactory, reader);
                     }
                     break;
                 }
@@ -232,8 +233,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     break;
                 case DISCOVERY_GROUP_REF: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.STATIC_CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
+                    final String groupRef = readStringAttributeElement(reader, BridgeDefinition.DISCOVERY_GROUP_NAME.getXmlName());
+                    BridgeDefinition.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, bridgeAdd, reader);
                     break;
                 }
                 case FAILOVER_ON_SERVER_SHUTDOWN: {
@@ -308,8 +309,8 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     if (seen.contains(Element.STATIC_CONNECTORS)) {
                         throw new XMLStreamException(MESSAGES.illegalElement(DISCOVERY_GROUP_REF, STATIC_CONNECTORS), reader.getLocation());
                     }
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
+                    final String groupRef = readStringAttributeElement(reader, ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.getXmlName());
+                    ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, clusterConnectionAdd, reader);
                     break;
                 }
                 default: {
