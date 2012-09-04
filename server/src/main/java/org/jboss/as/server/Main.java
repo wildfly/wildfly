@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -57,7 +56,7 @@ import org.jboss.stdio.StdioContext;
 public final class Main {
 
     public static void usage() {
-        CommandLineArgument.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
     private Main() {
