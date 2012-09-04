@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
@@ -32,6 +33,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
@@ -51,6 +53,13 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
 
     private ConnectionFactoryWriteAttributeHandler() {
         super(ConnectionFactoryDefinition.ATTRIBUTES);
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(ConnectionFactoryDefinition.ATTRIBUTES), MODEL);
+
+        super.execute(context, operation);
     }
 
     @Override

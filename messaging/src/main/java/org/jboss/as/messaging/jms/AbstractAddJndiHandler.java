@@ -60,7 +60,7 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler {
 
         JNDI_BINDING.validateOperation(operation);
         String jndiName = JNDI_BINDING.resolveModelAttribute(context, operation).asString();
-        final ModelNode entries = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(JndiEntriesAttribute.DESTINATION.getName());
+        final ModelNode entries = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(CommonAttributes.DESTINATION_ENTRIES.getName());
         for (ModelNode entry : entries.asList()) {
             if (jndiName.equals(entry.asString())) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiNameAlreadyRegistered(jndiName)));

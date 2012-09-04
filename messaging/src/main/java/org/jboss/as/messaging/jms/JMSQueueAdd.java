@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -71,8 +72,8 @@ public class JMSQueueAdd extends AbstractAddStepHandler {
         final boolean durable = DURABLE.resolveModelAttribute(context, model).asBoolean();
 
         final String selector = selectorNode.isDefined() ? selectorNode.asString() : null;
-        final ModelNode entries = JndiEntriesAttribute.DESTINATION.resolveModelAttribute(context, model);
-        final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+        final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
+        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
         installServices(verificationHandler, newControllers, name, serviceTarget, hqServiceName, selector, durable, jndiBindings);
 
     }

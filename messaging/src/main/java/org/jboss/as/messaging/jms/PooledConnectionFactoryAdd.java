@@ -24,7 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.NONE;
@@ -44,8 +43,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -64,6 +65,9 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, ConnectorAttribute.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName());
+
         for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             attribute.validateAndSet(operation, model);
         }
@@ -83,7 +87,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
 
         // We validated that jndiName part of the model in populateModel
         // TODO we only use a single jndi name here but the xsd indicates support for many
-        final String jndiName = resolvedModel.get(JndiEntriesAttribute.CONNECTION_FACTORY.getName()).asList().get(0).asString();
+        final String jndiName = resolvedModel.get(Common.ENTRIES.getName()).asList().get(0).asString();
 
         final int minPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE.getName()).asInt();
         final int maxPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE.getName()).asInt();
@@ -134,8 +138,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
     }
 
     static String getDiscoveryGroup(final ModelNode model) {
-        if(model.hasDefined(DISCOVERY_GROUP_NAME.getName())) {
-            return model.get(DISCOVERY_GROUP_NAME.getName()).asString();
+        if(model.hasDefined(Common.DISCOVERY_GROUP_NAME.getName())) {
+            return model.get(Common.DISCOVERY_GROUP_NAME.getName()).asString();
         }
         return null;
     }

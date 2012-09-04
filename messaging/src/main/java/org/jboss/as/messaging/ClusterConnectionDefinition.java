@@ -31,6 +31,8 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
+import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
@@ -43,10 +45,12 @@ import java.util.EnumSet;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -98,6 +102,22 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CONNECTOR_REF = create("connector-ref", STRING)
             .setFlags(RESTART_ALL_SERVICES)
+            .build();
+
+    public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(STATIC_CONNECTORS, STRING)
+            .setAllowNull(true)
+            .setValidator(new StringLengthValidator(1))
+            .setXmlName(CONNECTOR_REF_STRING)
+            .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(null))
+            .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
+            .setAllowNull(true)
+            .setAlternatives(STATIC_CONNECTORS)
+            .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = create("forward-when-no-consumers", BOOLEAN)
@@ -155,8 +175,8 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             CommonAttributes.CALL_TIMEOUT,
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-            CommonAttributes.DISCOVERY_GROUP_NAME,
-            ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS,
+            DISCOVERY_GROUP_NAME,
+            CONNECTOR_REFS,
     };
 
     public static final SimpleAttributeDefinition NODE_ID = create("node-id", STRING)

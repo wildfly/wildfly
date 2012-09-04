@@ -29,6 +29,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PER_SECOND;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.create;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -42,11 +43,16 @@ import javax.xml.stream.XMLStreamWriter;
 import org.hornetq.api.core.client.HornetQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.messaging.AttributeMarshallers;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.Element;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 public interface ConnectionFactoryAttributes {
 
@@ -112,6 +118,13 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .build();
 
+        SimpleAttributeDefinition DISCOVERY_GROUP_NAME =  SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
+                .setAllowNull(true)
+                .setAlternatives(CONNECTOR)
+                .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
+                .setRestartAllServices()
+                .build();
+
         AttributeDefinition DISCOVERY_INITIAL_WAIT_TIMEOUT = SimpleAttributeDefinitionBuilder.create("discovery-initial-wait-timeout", LONG)
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
@@ -121,6 +134,13 @@ public interface ConnectionFactoryAttributes {
         AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
                 .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_ACK_BATCH_SIZE))
                 .setAllowNull(true)
+                .build();
+
+        ListAttributeDefinition ENTRIES = PrimitiveListAttributeDefinition.Builder.of(CommonAttributes.ENTRIES, ModelType.STRING)
+                .setAllowNull(false)
+                .setRestartAllServices()
+                .setValidator(new StringLengthValidator(1))
+                .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(false))
                 .build();
 
         AttributeDefinition FAILOVER_ON_INITIAL_CONNECTION = SimpleAttributeDefinitionBuilder.create("failover-on-initial-connection", BOOLEAN)
@@ -206,7 +226,7 @@ public interface ConnectionFactoryAttributes {
 
         ConnectionFactoryAttribute[] ATTRIBUTES = {
                 create(ConnectorAttribute.CONNECTOR, null, false),
-                create(JndiEntriesAttribute.CONNECTION_FACTORY, null, false),
+                create(ENTRIES, null, false),
 
                 create(AUTO_GROUP, "autoGroup", true),
                 create(BLOCK_ON_ACKNOWLEDGE, "blockOnAcknowledge", true),
@@ -222,7 +242,7 @@ public interface ConnectionFactoryAttributes {
                 create(CONNECTION_TTL, "connectionTTL", true),
                 create(CommonAttributes.CONSUMER_MAX_RATE, "consumerMaxRate", true),
                 create(CONSUMER_WINDOW_SIZE, "consumerWindowSize", true),
-                create(CommonAttributes.DISCOVERY_GROUP_NAME, null, false),
+                create(DISCOVERY_GROUP_NAME, null, false),
                 create(DISCOVERY_INITIAL_WAIT_TIMEOUT, null, false), // Not used since messaging 1.2, we keep it for compatibility sake
                 create(DUPS_OK_BATCH_SIZE, "dupsOKBatchSize", true),
                 create(FAILOVER_ON_INITIAL_CONNECTION, "failoverOnInitialConnection", true),
@@ -242,6 +262,7 @@ public interface ConnectionFactoryAttributes {
                 create(TRANSACTION_BATCH_SIZE, "transactionBatchSize", true),
                 create(USE_GLOBAL_POOLS, "useGlobalPools", true)
         };
+
     }
 
     interface Regular {

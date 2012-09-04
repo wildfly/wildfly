@@ -52,7 +52,7 @@ import org.jboss.dmr.ModelType;
  */
 public class JMSTopicDefinition extends SimpleResourceDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = { JndiEntriesAttribute.DESTINATION };
+    static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES };
 
     static final AttributeDefinition TOPIC_ADDRESS = create(CommonAttributes.TOPIC_ADDRESS, STRING)
             .setStorageRuntime()

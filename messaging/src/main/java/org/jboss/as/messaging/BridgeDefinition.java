@@ -25,7 +25,8 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
+import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
+import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
@@ -37,9 +38,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -57,39 +60,55 @@ public class BridgeDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
+    public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(STATIC_CONNECTORS, STRING)
+            .setAllowNull(true)
+            .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
+            .setValidator(new StringLengthValidator(1))
+            .setXmlName(CONNECTOR_REF_STRING)
+            .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(STATIC_CONNECTORS))
+            .setRestartAllServices()
+            .build();
+
+    public static SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
+            .setAllowNull(true)
+            .setAlternatives(STATIC_CONNECTORS)
+            .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition QUEUE_NAME = create(CommonAttributes.QUEUE_NAME, STRING)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition PASSWORD = create("password", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD))
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USER = create("user", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER))
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION))
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS))
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition FORWARDING_ADDRESS = create("forwarding-address", STRING)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {
@@ -101,7 +120,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             RECONNECT_ATTEMPTS,
             USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD,
-            ConnectorRefsAttribute.BRIDGE_CONNECTORS, CommonAttributes.DISCOVERY_GROUP_NAME
+            CONNECTOR_REFS, DISCOVERY_GROUP_NAME
     };
 
     public BridgeDefinition(final boolean registerRuntimeOnly) {

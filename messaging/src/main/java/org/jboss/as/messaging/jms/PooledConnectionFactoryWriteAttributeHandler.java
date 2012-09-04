@@ -22,9 +22,14 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Write attribute handler for attributes that update the persistent configuration of a JMS pooled connection factory resource.
@@ -37,5 +42,12 @@ public class PooledConnectionFactoryWriteAttributeHandler extends ReloadRequired
 
     private PooledConnectionFactoryWriteAttributeHandler() {
         super(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES));
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)), MODEL);
+
+        super.execute(context, operation);
     }
 }

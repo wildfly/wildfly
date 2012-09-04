@@ -56,7 +56,7 @@ public class ConnectorAttribute extends SimpleAttributeDefinition {
     public static AttributeDefinition CONNECTOR = new ConnectorAttribute();
 
     protected ConnectorAttribute() {
-        super(CommonAttributes.CONNECTOR, CommonAttributes.CONNECTOR, null, OBJECT, true, false, null, RESTART_ALL_SERVICES);
+        super(CommonAttributes.CONNECTOR, CommonAttributes.CONNECTOR, null, OBJECT, true, false, null, null, null, false, new String[] { CommonAttributes.DISCOVERY_GROUP_NAME }, new String[0], RESTART_ALL_SERVICES);
     }
 
     @Override

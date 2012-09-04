@@ -49,6 +49,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -64,6 +65,9 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public interface CommonAttributes {
+
+    String DISCOVERY_GROUP_NAME = "discovery-group-name";
+    String ENTRIES = "entries";
 
     SimpleAttributeDefinition ALLOW_FAILBACK = new SimpleAttributeDefinition("allow-failback",
             new ModelNode().set(ConfigurationImpl.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN, true,
@@ -145,8 +149,10 @@ public interface CommonAttributes {
             .setStorageRuntime()
             .build();
 
-    SimpleAttributeDefinition DISCOVERY_GROUP_NAME = create("discovery-group-name", ModelType.STRING)
-            .setAllowNull(true)
+    ListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
+            .setAllowNull(false)
+            .setValidator(new StringLengthValidator(1))
+            .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(true))
             .setRestartAllServices()
             .build();
 
@@ -529,7 +535,6 @@ public interface CommonAttributes {
     String DIVERTS = "diverts";
     String DURABLE_MESSAGE_COUNT = "durable-message-count";
     String DURABLE_SUBSCRIPTION_COUNT = "durable-subscription-count";
-    String ENTRIES_STRING = "entries";
     String ENTRY = "entry";
     String FILE_DEPLOYMENT_ENABLED = "file-deployment-enabled";
     String GROUPING_HANDLER = "grouping-handler";

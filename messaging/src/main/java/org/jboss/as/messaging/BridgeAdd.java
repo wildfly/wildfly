@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.BridgeDefinition.CONNECTOR_REFS;
+import static org.jboss.as.messaging.BridgeDefinition.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.ArrayList;
@@ -60,23 +62,9 @@ public class BridgeAdd extends AbstractAddStepHandler {
 
         model.setEmptyObject();
 
-        // TODO the alternative between connectors and discovery group should be expressed by the attributes, not here
-        boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName());
-        boolean hasDiscGroup = operation.hasDefined(CommonAttributes.DISCOVERY_GROUP_NAME.getName());
-        if (!hasStatic && !hasDiscGroup) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOperationParameters(
-                    ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
-        } else if (hasStatic && hasDiscGroup) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotIncludeOperationParameters(
-                    ConnectorRefsAttribute.BRIDGE_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
-        }
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), DISCOVERY_GROUP_NAME.getName());
 
         for (final AttributeDefinition attributeDefinition : BridgeDefinition.ATTRIBUTES) {
-            if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.BRIDGE_CONNECTORS) {
-                continue;
-            } else if (hasStatic && attributeDefinition == CommonAttributes.DISCOVERY_GROUP_NAME) {
-                continue;
-            }
             attributeDefinition.validateAndSet(operation, model);
         }
 
@@ -139,7 +127,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(context, model).asLong();
         final long connectionTTL = CommonAttributes.CONNECTION_TTL.resolveModelAttribute(context, model).asLong();
-        final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
+        final ModelNode discoveryNode = BridgeDefinition.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
         final boolean ha = CommonAttributes.HA.resolveModelAttribute(context, model).asBoolean();

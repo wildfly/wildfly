@@ -28,7 +28,6 @@ import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONSUMER_MAX_RATE;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 
 import java.util.ArrayList;
@@ -46,7 +45,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.MessagingMessages;
+import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
@@ -68,14 +67,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        // TODO the alternative between connectors and discovery group should be expressed by the attributes, not here
-        boolean hasConnector = operation.hasDefined(ConnectorAttribute.CONNECTOR.getName());
-        boolean hasDiscoveryGroup = operation.hasDefined(DISCOVERY_GROUP_NAME.getName());
-        if (!hasConnector && !hasDiscoveryGroup) {
-            throw new OperationFailedException(MessagingMessages.MESSAGES.invalidOperationParameters(ConnectorAttribute.CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
-        } else if (hasConnector && hasDiscoveryGroup) {
-            throw new OperationFailedException(MessagingMessages.MESSAGES.cannotIncludeOperationParameters(ConnectorAttribute.CONNECTOR.getName(), DISCOVERY_GROUP_NAME.getName()));
-        }
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, ConnectorAttribute.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName());
 
         for (final AttributeDefinition attribute : ConnectionFactoryDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
@@ -100,8 +92,8 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     static ConnectionFactoryConfiguration createConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
 
-        final ModelNode entries = JndiEntriesAttribute.CONNECTION_FACTORY.resolveModelAttribute(context, model);
-        final String[] jndiBindings = JndiEntriesAttribute.getJndiBindings(entries);
+        final ModelNode entries = Common.ENTRIES.resolveModelAttribute(context, model);
+        final String[] jndiBindings = JMSServices.getJndiBindings(entries);
 
         final ConnectionFactoryConfiguration config = new ConnectionFactoryConfigurationImpl(name, HornetQClient.DEFAULT_HA, jndiBindings);
 
@@ -127,7 +119,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         }
         config.setConsumerMaxRate(CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());
         config.setConsumerWindowSize(Common.CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
-        final ModelNode discoveryGroupName = DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
+        final ModelNode discoveryGroupName = Common.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         if (discoveryGroupName.isDefined()) {
             config.setDiscoveryGroupName(discoveryGroupName.asString());
         }

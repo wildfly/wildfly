@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.ClusterConnectionDefinition.CONNECTOR_REFS;
+import static org.jboss.as.messaging.ClusterConnectionDefinition.DISCOVERY_GROUP_NAME;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,20 +60,9 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
 
         model.setEmptyObject();
 
-        // TODO the alternative between connectors and discovery group should be expressed by the attributes, not here
-        boolean hasStatic = operation.hasDefined(ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.getName());
-        boolean hasDiscGroup = operation.hasDefined(CommonAttributes.DISCOVERY_GROUP_NAME.getName());
-        if (hasStatic && hasDiscGroup) {
-            throw new OperationFailedException(new ModelNode().set(String.format("Operation cannot include both parameter %s and parameter %s",
-                    ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS.getName(), CommonAttributes.DISCOVERY_GROUP_NAME.getName())));
-        }
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), (DISCOVERY_GROUP_NAME.getName()));
 
         for (final AttributeDefinition attributeDefinition : ClusterConnectionDefinition.ATTRIBUTES) {
-            if (hasDiscGroup && attributeDefinition == ConnectorRefsAttribute.CLUSTER_CONNECTION_CONNECTORS) {
-                continue;
-            } else if (hasStatic && attributeDefinition == CommonAttributes.DISCOVERY_GROUP_NAME) {
-                continue;
-            }
             attributeDefinition.validateAndSet(operation, model);
         }
     }
@@ -112,7 +104,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
         final boolean forwardWhenNoConsumers = ClusterConnectionDefinition.FORWARD_WHEN_NO_CONSUMERS.resolveModelAttribute(context, model).asBoolean();
         final int maxHops = ClusterConnectionDefinition.MAX_HOPS.resolveModelAttribute(context, model).asInt();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
-        final ModelNode discoveryNode = CommonAttributes.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
+        final ModelNode discoveryNode = ClusterConnectionDefinition.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         final String discoveryGroupName = discoveryNode.isDefined() ? discoveryNode.asString() : null;
         final List<String> staticConnectors = discoveryGroupName == null ? getStaticConnectors(model) : null;
         final boolean allowDirectOnly = ClusterConnectionDefinition.ALLOW_DIRECT_CONNECTIONS_ONLY.resolveModelAttribute(context, model).asBoolean();

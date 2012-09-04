@@ -22,7 +22,12 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.OperationContext.Stage.MODEL;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Write attribute handler for attributes that update a cluster connection resource.
@@ -35,5 +40,12 @@ public class ClusterConnectionWriteAttributeHandler extends ReloadRequiredWriteA
 
     private ClusterConnectionWriteAttributeHandler() {
         super(ClusterConnectionDefinition.ATTRIBUTES);
+    }
+
+    @Override
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        context.addStep(new AlternativeAttributeCheckHandler(ClusterConnectionDefinition.ATTRIBUTES), MODEL);
+
+        super.execute(context, operation);
     }
 }

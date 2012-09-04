@@ -31,7 +31,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
-import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
@@ -45,8 +44,9 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
+ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -82,8 +82,8 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 // elements common to regular & pooled connection factories
                 case DISCOVERY_GROUP_REF: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.DISCOVERY_GROUP_REF, Element.CONNECTORS);
-                    final String groupRef = readStringAttributeElement(reader, DISCOVERY_GROUP_NAME.getXmlName());
-                    DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
+                    final String groupRef = readStringAttributeElement(reader, ConnectionFactoryAttributes.Common.DISCOVERY_GROUP_NAME.getXmlName());
+                    ConnectionFactoryAttributes.Common.DISCOVERY_GROUP_NAME.parseAndSetParameter(groupRef, connectionFactory, reader);
                     break;
                 } case CONNECTORS: {
                     checkOtherElementIsNotAlreadyDefined(reader, seen, Element.CONNECTORS, Element.DISCOVERY_GROUP_REF);
@@ -96,7 +96,7 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                             throw ParseUtils.unexpectedElement(reader);
                         }
                         final String entry = readStringAttributeElement(reader, CommonAttributes.NAME);
-                        JndiEntriesAttribute.CONNECTION_FACTORY.parseAndAddParameterElement(entry, connectionFactory, reader);
+                        Common.ENTRIES.parseAndAddParameterElement(entry, connectionFactory, reader);
                     }
                     break;
                 }
