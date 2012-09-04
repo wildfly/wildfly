@@ -60,7 +60,7 @@ public final class Main {
     }
 
     public static void usage() {
-        CommandLineArgument.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(System.out);
     }
 
     private Main() {
