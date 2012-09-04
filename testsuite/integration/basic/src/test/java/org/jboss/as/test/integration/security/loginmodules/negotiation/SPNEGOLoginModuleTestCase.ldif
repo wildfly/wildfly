@@ -16,19 +16,6 @@ userPassword: secret
 krb5PrincipalName: krbtgt/JBOSS.ORG@JBOSS.ORG
 krb5KeyVersionNumber: 0
 
-dn: uid=ldap,ou=Users,dc=jboss,dc=org
-objectClass: top
-objectClass: person
-objectClass: inetOrgPerson
-objectClass: krb5principal
-objectClass: krb5kdcentry
-cn: LDAP
-sn: Service
-uid: ldap
-userPassword: randall
-krb5PrincipalName: ldap/${hostname}@JBOSS.ORG
-krb5KeyVersionNumber: 0
-
 dn: uid=HTTP,ou=Users,dc=jboss,dc=org
 objectClass: top
 objectClass: person
@@ -66,4 +53,17 @@ sn: duke
 uid: jduke
 userPassword: theduke
 krb5PrincipalName: jduke@JBOSS.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=gsstestserver,ou=Users,dc=jboss,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: gsstestserver
+sn: Service
+uid: gsstestserver
+userPassword: gsstestpwd
+krb5PrincipalName: gsstestserver/xxx@JBOSS.ORG
 krb5KeyVersionNumber: 0

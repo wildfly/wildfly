@@ -21,31 +21,26 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
-import org.apache.http.annotation.Immutable;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthSchemeFactory;
-import org.apache.http.params.HttpParams;
-
 /**
- * SPNEGO (Simple and Protected GSSAPI Negotiation Mechanism) authentication scheme factory. Provides
- * {@link JBossNegotiateScheme} instances.
+ * A GSSTestConstants.
  * 
  * @author Josef Cacek
  */
-@Immutable
-public class JBossNegotiateSchemeFactory implements AuthSchemeFactory {
+public interface GSSTestConstants {
 
-    // Constructors ----------------------------------------------------------
+    public static final String PROPERTY_PORT = "gsstestserver.port";
+    public static final String PROPERTY_PRINCIPAL = "gsstestserver.principal";
+    public static final String PROPERTY_PASSWORD = "gsstestserver.password";
 
-    private final boolean stripPort;
+    public static final int PORT = Integer.getInteger(PROPERTY_PORT, 10961);
+    public static final String PRINCIPAL = System.getProperty(PROPERTY_PRINCIPAL, "gsstestserver/xxx@JBOSS.ORG");
+    public static final String PASSWORD = System.getProperty(PROPERTY_PASSWORD, "gsstestpwd");
 
-    public JBossNegotiateSchemeFactory(boolean stripPort) {
-        this.stripPort = stripPort;
-    }
+    public static final String CHAR_ENC = "UTF-8";
+    public static final int CMD_NOOP = 0;
+    public static final int CMD_NAME = 1;
+    public static final int CMD_STOP = 2;
 
-    // Public methods --------------------------------------------------------
+    public static final int SOCKET_TIMEOUT = 30000; //30s
 
-    public AuthScheme newInstance(final HttpParams params) {
-        return new JBossNegotiateScheme(stripPort);
-    }
 }
