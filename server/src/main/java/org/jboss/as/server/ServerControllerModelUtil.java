@@ -28,25 +28,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
@@ -54,15 +39,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROFILE_NAME;
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -71,30 +53,14 @@ import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
-import org.jboss.as.controller.operations.common.ProcessReloadHandler;
-import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
-import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
-import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
-import org.jboss.as.controller.operations.common.SnapshotListHandler;
-import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
-import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
-import org.jboss.as.controller.operations.common.ValidateOperationHandler;
-import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.StringLengthValidatingHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
@@ -102,24 +68,16 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
-import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
-import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
-import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.as.server.deployment.DeploymentReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentStatusHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
-import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
-import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
-import org.jboss.as.server.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.server.deploymentoverlay.ContentDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDeploymentDefinition;
@@ -128,13 +86,6 @@ import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
 import org.jboss.as.server.operations.DumpServicesHandler;
-import org.jboss.as.server.operations.LaunchTypeHandler;
-import org.jboss.as.server.operations.ProcessTypeHandler;
-import org.jboss.as.server.operations.RootResourceHack;
-import org.jboss.as.server.operations.RunningModeReadHandler;
-import org.jboss.as.server.operations.ServerProcessReloadHandler;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
-import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
@@ -147,7 +98,6 @@ import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.server.services.security.VaultRemoveHandler;
 import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
-import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -158,31 +108,31 @@ public class ServerControllerModelUtil {
 
     public static void updateCoreModel(final ModelNode root, ServerEnvironment environment) {
 
-        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
-        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
+//        root.get(RELEASE_VERSION).set(Version.AS_VERSION);
+//        root.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
         updateCoreModelNonVersions(root, environment);
     }
 
     public static void updateCoreModelNonVersions(final ModelNode root, ServerEnvironment environment) {
-        root.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
-        root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
-        root.get(MANAGEMENT_MICRO_VERSION).set(Version.MANAGEMENT_MICRO_VERSION);
+//        root.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
+//        root.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
+//        root.get(MANAGEMENT_MICRO_VERSION).set(Version.MANAGEMENT_MICRO_VERSION);
 
         // Community uses UNDEF values
-        ModelNode nameNode = root.get(PRODUCT_NAME);
-        ModelNode versionNode = root.get(PRODUCT_VERSION);
+//        ModelNode nameNode = root.get(PRODUCT_NAME);
+//        ModelNode versionNode = root.get(PRODUCT_VERSION);
 
-        if (environment != null) {
-            String productName = environment.getProductConfig().getProductName();
-            String productVersion = environment.getProductConfig().getProductVersion();
-
-            if (productName != null) {
-                nameNode.set(productName);
-            }
-            if (productVersion != null) {
-                versionNode.set(productVersion);
-            }
-        }
+//        if (environment != null) {
+//            String productName = environment.getProductConfig().getProductName();
+//            String productVersion = environment.getProductConfig().getProductVersion();
+//
+//            if (productName != null) {
+//                nameNode.set(productName);
+//            }
+//            if (productVersion != null) {
+//                versionNode.set(productVersion);
+//            }
+//        }
 
         root.get(NAMESPACES).setEmptyList();
         root.get(SCHEMA_LOCATIONS).setEmptyList();
@@ -212,99 +162,99 @@ public class ServerControllerModelUtil {
         boolean isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
 
         // Root resource attributes
-        if (serverEnvironment != null) { // TODO eliminate test cases that result in serverEnviroment == null
-            if (isDomain) {
-                root.registerReadOnlyAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), AttributeAccess.Storage.CONFIGURATION);
-                root.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
-            } else {
-                root.registerReadWriteAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), serverEnvironment.getProcessNameWriteHandler(), AttributeAccess.Storage.CONFIGURATION);
-            }
-        }
+//        if (serverEnvironment != null) { // TODO eliminate test cases that result in serverEnviroment == null
+//            if (isDomain) {
+//                root.registerReadOnlyAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), AttributeAccess.Storage.CONFIGURATION);
+//                root.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
+//            } else {
+//                root.registerReadWriteAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), serverEnvironment.getProcessNameWriteHandler(), AttributeAccess.Storage.CONFIGURATION);
+//            }
+//        }
 
         EnumSet<Flag> runtimeOnlyFlag = EnumSet.of(Flag.RUNTIME_ONLY);
 
-        // Global operations
-        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, runtimeOnlyFlag);
-        root.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
-        root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+//        // Global operations
+//        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, runtimeOnlyFlag);
+//        root.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
+//        root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+//
+//        if (serverEnvironment != null) {
+//            root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE);
+//        } else {
+//            root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE, false, runtimeOnlyFlag);
+//        }
+//
+//        // Other root resource operations
+//        root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
+//        XmlMarshallingHandler xmh = new XmlMarshallingHandler(extensibleConfigurationPersister);
+//        root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, runtimeOnlyFlag);
+//        root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
+//        root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
+//        root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
+//        root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
+//        root.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
+//                ValidateAddressOperationHandler.INSTANCE, false, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
-        if (serverEnvironment != null) {
-            root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE);
-        } else {
-            root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE, false, runtimeOnlyFlag);
-        }
-
-        // Other root resource operations
-        root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
-        XmlMarshallingHandler xmh = new XmlMarshallingHandler(extensibleConfigurationPersister);
-        root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, runtimeOnlyFlag);
-        root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
-        root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
-        root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
-                ValidateAddressOperationHandler.INSTANCE, false, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(contentRepository);
-        root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(contentRepository);
-        root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
-        root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
-
-        final DeploymentReplaceHandler drh = DeploymentReplaceHandler.create(contentRepository, vaultReader);
-        root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = DeploymentFullReplaceHandler.create(contentRepository, vaultReader);
-        root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
-
-        if (!isDomain) {
-            SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);
-            root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
-            SnapshotListHandler snapshotList = new SnapshotListHandler(extensibleConfigurationPersister);
-            root.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
-            SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(extensibleConfigurationPersister);
-            root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
-        }
-
-        root.registerOperationHandler(ServerRestartRequiredHandler.OPERATION_NAME, ServerRestartRequiredHandler.INSTANCE, ServerRestartRequiredHandler.INSTANCE, false);
-        root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_STATE, new ProcessStateAttributeHandler(processState), Storage.RUNTIME);
-        root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_TYPE, ProcessTypeHandler.INSTANCE, Storage.RUNTIME);
-        RunningModeReadHandler.createAndRegister(runningModeControl, root);
-        root.registerOperationHandler(ResolveExpressionHandler.OPERATION_NAME, ResolveExpressionHandler.INSTANCE,
-                ResolveExpressionHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
-
-        root.registerOperationHandler(SpecifiedInterfaceResolveHandler.OPERATION_NAME, SpecifiedInterfaceResolveHandler.INSTANCE, SpecifiedInterfaceResolveHandler.INSTANCE, runtimeOnlyFlag);
-        root.registerOperationHandler(WhoAmIOperation.OPERATION_NAME, WhoAmIOperation.INSTANCE, WhoAmIOperation.INSTANCE, true);
-
-        //Hack to be able to access the registry for the jmx facade
-        root.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE, runtimeOnlyFlag);
+//        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(contentRepository);
+//        root.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false);
+//        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(contentRepository);
+//        root.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
+//        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
+//        root.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
+//
+//        final DeploymentReplaceHandler drh = DeploymentReplaceHandler.create(contentRepository, vaultReader);
+//        root.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
+//        DeploymentFullReplaceHandler dfrh = DeploymentFullReplaceHandler.create(contentRepository, vaultReader);
+//        root.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
+//
+//        if (!isDomain) {
+//            SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);
+//            root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
+//            SnapshotListHandler snapshotList = new SnapshotListHandler(extensibleConfigurationPersister);
+//            root.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
+//            SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(extensibleConfigurationPersister);
+//            root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
+//        }
+//
+//        root.registerOperationHandler(ServerRestartRequiredHandler.OPERATION_NAME, ServerRestartRequiredHandler.INSTANCE, ServerRestartRequiredHandler.INSTANCE, false);
+//        root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_STATE, new ProcessStateAttributeHandler(processState), Storage.RUNTIME);
+//        root.registerReadOnlyAttribute(ServerDescriptionConstants.PROCESS_TYPE, ProcessTypeHandler.INSTANCE, Storage.RUNTIME);
+        //RunningModeReadHandler.createAndRegister(runningModeControl, root);
+//        root.registerOperationHandler(ResolveExpressionHandler.OPERATION_NAME, ResolveExpressionHandler.INSTANCE,
+//                ResolveExpressionHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
+//
+//        root.registerOperationHandler(SpecifiedInterfaceResolveHandler.OPERATION_NAME, SpecifiedInterfaceResolveHandler.INSTANCE, SpecifiedInterfaceResolveHandler.INSTANCE, runtimeOnlyFlag);
+//        root.registerOperationHandler(WhoAmIOperation.OPERATION_NAME, WhoAmIOperation.INSTANCE, WhoAmIOperation.INSTANCE, true);
+//
+//        //Hack to be able to access the registry for the jmx facade
+//        root.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE, runtimeOnlyFlag);
 
 
-        // Runtime operations
-        if (serverEnvironment != null) {
-            // Reload op -- does not work on a domain mode server
-            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN) {
-                ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl,
-                        processState, ServerDescriptions.getResourceDescriptionResolver("server"));
-                root.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
-            }
-
-            // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
-            if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE) {
-                ServerShutdownHandler serverShutdownHandler = new ServerShutdownHandler(processState);
-                root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, serverShutdownHandler, serverShutdownHandler);
-            }
-            root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(serverEnvironment.getLaunchType()), Storage.RUNTIME);
-
-            root.registerSubModel(ServerEnvironmentResourceDescription.of(serverEnvironment));
-        }
+//        // Runtime operations
+//        if (serverEnvironment != null) {
+//            // Reload op -- does not work on a domain mode server
+//            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN) {
+//                ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl,
+//                        processState, ServerDescriptions.getResourceDescriptionResolver("server"));
+//                root.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler);
+//            }
+//
+//            // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
+//            if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE) {
+//                ServerShutdownHandler serverShutdownHandler = new ServerShutdownHandler(processState);
+//                root.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, serverShutdownHandler, serverShutdownHandler);
+//            }
+//            //root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(serverEnvironment.getLaunchType()), Storage.RUNTIME);
+//
+//            root.registerSubModel(ServerEnvironmentResourceDescription.of(serverEnvironment));
+//        }
         // System Properties
         ManagementResourceRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), ServerDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
         SystemPropertyAddHandler spah = new SystemPropertyAddHandler(serverEnvironment, false);

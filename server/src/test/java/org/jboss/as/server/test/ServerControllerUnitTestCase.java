@@ -44,16 +44,20 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -62,7 +66,7 @@ import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.ServerResourceDefinition;
 import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -96,7 +100,7 @@ public class ServerControllerUnitTestCase {
         final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null, extensionRegistry));
         extensionRegistry.setWriterRegistry(persister);
         final ControlledProcessState processState = new ControlledProcessState(true);
-        final ModelControllerService svc = new ModelControllerService(processState, persister);
+        final ModelControllerService svc = new ModelControllerService(processState, persister, new DelegatingResourceDefinition());
         final ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
@@ -267,24 +271,30 @@ public class ServerControllerUnitTestCase {
         final CountDownLatch latch = new CountDownLatch(1);
         final StringConfigurationPersister persister;
         final ControlledProcessState processState;
+        final DelegatingResourceDefinition rootResourceDefinition;
+        final ServerEnvironment environment;
+        final ExtensionRegistry extensionRegistry;
         volatile ManagementResourceRegistration rootRegistration;
         volatile Exception error;
 
-        ModelControllerService(final ControlledProcessState processState, final StringConfigurationPersister persister) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, ServerDescriptionProviders.ROOT_PROVIDER, null, ExpressionResolver.DEFAULT);
+
+        ModelControllerService(final ControlledProcessState processState, final StringConfigurationPersister persister, final DelegatingResourceDefinition rootResourceDefinition) {
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, rootResourceDefinition, null, ExpressionResolver.DEFAULT);
             this.persister = persister;
             this.processState = processState;
+            this.rootResourceDefinition = rootResourceDefinition;
+
+            Properties properties = new Properties();
+            properties.put("jboss.home.dir", ".");
+
+            final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
+            environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
+            extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
         }
 
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             this.rootRegistration = rootRegistration;
-            Properties properties = new Properties();
-            properties.put("jboss.home.dir", ".");
-
-            final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
-            final ServerEnvironment environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), "."));
-            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL));
             ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment,
                     processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
         }
@@ -305,9 +315,44 @@ public class ServerControllerUnitTestCase {
 
         @Override
         public void start(StartContext context) throws StartException {
+            rootResourceDefinition.setDelegate(new ServerResourceDefinition(MockRepository.INSTANCE,
+                    persister, environment, processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER));
             super.start(context);
         }
     }
+
+    private static class DelegatingResourceDefinition implements ResourceDefinition {
+        private volatile ResourceDefinition delegate;
+
+        void setDelegate(ResourceDefinition delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerOperations(resourceRegistration);
+        }
+
+        @Override
+        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerChildren(resourceRegistration);
+        }
+
+        @Override
+        public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerAttributes(resourceRegistration);
+        }
+
+        @Override
+        public PathElement getPathElement() {
+            return delegate.getPathElement();
+        }
+
+        @Override
+        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+            return delegate.getDescriptionProvider(resourceRegistration);
+        }
+    };
 
     static class StringConfigurationPersister extends AbstractConfigurationPersister {
 

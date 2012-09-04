@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -75,4 +76,9 @@ public class ServerDescriptions {
         }
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
+    }
+
 }

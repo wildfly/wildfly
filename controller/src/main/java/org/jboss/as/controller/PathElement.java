@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.regex.Pattern;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * An element of a path specification for matching operations with addresses.
@@ -48,6 +48,9 @@ public class PathElement {
      * number, and cannot start or end with {@code -}.
      */
     private static final Pattern VALID_KEY_PATTERN = Pattern.compile("\\*|[_a-zA-Z](?:[-_a-zA-Z0-9]*[_a-zA-Z0-9])?");
+
+    //This is only ever for the root description providers
+    public static final PathElement ROOT = PathElement.pathElement("root");
 
     /**
      * Construct a new instance with a wildcard value.
