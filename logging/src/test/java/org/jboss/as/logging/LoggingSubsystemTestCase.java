@@ -43,7 +43,7 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     public LoggingSubsystemTestCase() {
-        super(LoggingExtension.SUBSYSTEM_NAME, new LoggingExtension());
+        super(LoggingExtension.SUBSYSTEM_NAME, new LoggingExtension(), RemoveOperationComparator.INSTANCE);
     }
 
     @Override
@@ -59,13 +59,6 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return LoggingTestEnvironment.get();
-    }
-
-    @Override
-    protected List<PathAddress> orderAddressesForRemove(final List<PathAddress> addresses) {
-        Collections.sort(addresses, RemoveOperationComparator.INSTANCE);
-        return addresses;
-
     }
 
     @Override
