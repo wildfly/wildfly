@@ -83,6 +83,10 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
             return resourceAdapters.addAll(ras);
         }
 
+        public boolean removeResourceAdapter(ResourceAdapter ra) {
+            return resourceAdapters.remove(ra);
+        }
+
         public boolean removeAllResourceAdapters(Collection<ResourceAdapter> ras) {
             return resourceAdapters.removeAll(ras);
         }

@@ -62,7 +62,8 @@ final class ResourceAdapterService implements Service<ResourceAdapter> {
 
     @Override
     public void stop(StopContext context) {
-
+        resourceAdapters.getValue().removeResourceAdapter(value);
+        SUBSYSTEM_RA_LOGGER.debugf("Stopping ResourceAdapter Service");
     }
 
     public Injector<ResourceAdaptersService.ModifiableResourceAdaptors> getResourceAdaptersInjector() {
