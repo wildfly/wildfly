@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,7 +39,7 @@ public class UnboundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHan
 
     public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.ACTIVE_COUNT, PoolAttributeDefinitions.COMPLETED_TASK_COUNT,
             PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT,
-            PoolAttributeDefinitions.REJECTED_COUNT, PoolAttributeDefinitions.TASK_COUNT);
+            PoolAttributeDefinitions.REJECTED_COUNT, PoolAttributeDefinitions.TASK_COUNT, PoolAttributeDefinitions.QUEUE_SIZE);
 
     public UnboundedQueueThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
         super(METRICS, serviceNameBase);
@@ -62,6 +61,8 @@ public class UnboundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHan
             context.getResult().set(pool.getRejectedCount());
         } else if (attributeName.equals(CommonAttributes.TASK_COUNT)) {
             context.getResult().set(pool.getTaskCount());
+        } else if (attributeName.equals(CommonAttributes.QUEUE_SIZE)) {
+            context.getResult().set(pool.getQueueSize());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
             throw ThreadsMessages.MESSAGES.unsupportedUnboundedQueueThreadPoolMetric(attributeName);

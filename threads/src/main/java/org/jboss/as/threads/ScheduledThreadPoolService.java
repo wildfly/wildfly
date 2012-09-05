@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
-
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -103,6 +102,11 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
     public long getTaskCount() {
         final ManagedScheduledExecutorService executor = getValue();
         return executor.getTaskCount();
+    }
+    
+    public int getQueueSize() {
+        final ManagedScheduledExecutorService executor = getValue();
+        return executor.getQueueSize();
     }
 
     private class ExecutorImpl extends ScheduledThreadPoolExecutor {

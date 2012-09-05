@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -39,7 +38,7 @@ import org.jboss.msc.service.ServiceName;
 public class ScheduledThreadPoolMetricsHandler extends ThreadPoolMetricsHandler {
 
     public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.ACTIVE_COUNT, PoolAttributeDefinitions.COMPLETED_TASK_COUNT,
-            PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.TASK_COUNT);
+            PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT, PoolAttributeDefinitions.TASK_COUNT, PoolAttributeDefinitions.QUEUE_SIZE);
 
     public ScheduledThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
         super(METRICS, serviceNameBase);
@@ -59,6 +58,8 @@ public class ScheduledThreadPoolMetricsHandler extends ThreadPoolMetricsHandler 
             context.getResult().set(pool.getLargestThreadCount());
         } else if (attributeName.equals(CommonAttributes.TASK_COUNT)) {
             context.getResult().set(pool.getTaskCount());
+        } else if (attributeName.equals(CommonAttributes.QUEUE_SIZE)) {
+            context.getResult().set(pool.getQueueSize());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
             throw ThreadsMessages.MESSAGES.unsupportedScheduledThreadPoolMetric(attributeName);
