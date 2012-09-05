@@ -51,7 +51,6 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     private static final PathElement RESOLVED_PATH = PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
 
     SimpleAttributeDefinition SHOW_MODEL_ALIAS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SHOW_MODEL, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
             .addFlag(AttributeAccess.Flag.ALIAS)
             .build();
 

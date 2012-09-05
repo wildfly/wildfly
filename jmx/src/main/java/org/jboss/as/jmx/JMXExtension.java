@@ -40,6 +40,7 @@ import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -143,6 +144,7 @@ public class JMXExtension implements Extension {
                 boolean showModel = model.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined();
                 ModelNode result = model.clone();
                 result.get(CommonAttributes.SHOW_MODEL).set(showModel);
+                result.remove(CommonAttributes.EXPOSE_MODEL);
                 return result;
             }
         });

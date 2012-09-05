@@ -195,6 +195,11 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
     }
 
     @Test
+    public void testAliasedAttributes() throws Exception {
+
+    }
+
+    @Test
     public void testAliasedResourceAndAttributeReadWriteFromCore() throws Exception {
         testAliasedResourceAndAttributeReadWrite(CORE, ALIASED);
     }
