@@ -55,7 +55,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -256,7 +255,11 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING, true, false,
             MeasurementUnit.NONE, JournalTypeValidator.INSTANCE, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    LiveConnectorRefAttribute LIVE_CONNECTOR_REF = LiveConnectorRefAttribute.INSTANCE;
+    SimpleAttributeDefinition LIVE_CONNECTOR_REF = create("live-connector-ref", ModelType.STRING)
+            .setAllowNull(true)
+            .setAttributeMarshaller(AttributeMarshallers.LIVE_CONNECTOR_REF_MARSHALLER)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
             .setDefaultValue(null)
@@ -449,7 +452,11 @@ public interface CommonAttributes {
             new ModelNode().set(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL), ModelType.LONG, true,
             MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SelectorAttribute SELECTOR = SelectorAttribute.SELECTOR;
+    SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)
+            .setAllowNull(true)
+            .setAttributeMarshaller(AttributeMarshallers.SELECTOR_MARSHALLER)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition SERVER_DUMP_INTERVAL = new SimpleAttributeDefinition("server-dump-interval",
             new ModelNode().set(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL), ModelType.LONG, true,

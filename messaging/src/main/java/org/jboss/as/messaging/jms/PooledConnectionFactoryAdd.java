@@ -66,7 +66,7 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, ConnectorAttribute.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName());
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, Common.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName());
 
         for(final AttributeDefinition attribute : getDefinitions(PooledConnectionFactoryDefinition.ATTRIBUTES)) {
             attribute.validateAndSet(operation, model);

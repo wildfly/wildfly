@@ -32,6 +32,7 @@ import static org.jboss.dmr.ModelType.STRING;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -40,9 +41,9 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.AttributeMarshallers;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingExtension;
-import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,8 +63,17 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition MODULE = create("module", STRING)
             .setAllowNull(true)
             .build();
-    public static final SimpleAttributeDefinition SOURCE_CONNECTION_FACTORY = new JNDIResourceAttributeDefinition("source-connection-factory", CommonAttributes.CONNECTION_FACTORY);
-    public static final SimpleAttributeDefinition SOURCE_DESTINATION = new JNDIResourceAttributeDefinition("source-destination", CommonAttributes.DESTINATION);
+
+    public static final SimpleAttributeDefinition SOURCE_CONNECTION_FACTORY = create("source-connection-factory", STRING)
+            .setXmlName(CommonAttributes.CONNECTION_FACTORY)
+            .setAttributeMarshaller(AttributeMarshallers.JNDI_RESOURCE_MARSHALLER)
+            .build();
+
+    public static final SimpleAttributeDefinition SOURCE_DESTINATION = create("source-destination", STRING)
+            .setXmlName(CommonAttributes.DESTINATION)
+            .setAttributeMarshaller(AttributeMarshallers.JNDI_RESOURCE_MARSHALLER)
+            .build();
+
     public static final SimpleAttributeDefinition SOURCE_USER = create("source-user", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -74,10 +84,22 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setXmlName("password")
             .build();
-    public static final SimpleAttributeDefinition SOURCE_CONTEXT = new JNDIContextAttributeDefinition("source-context", CONTEXT);
 
-    public static final SimpleAttributeDefinition TARGET_CONNECTION_FACTORY = new JNDIResourceAttributeDefinition("target-connection-factory", CommonAttributes.CONNECTION_FACTORY);
-    public static final SimpleAttributeDefinition TARGET_DESTINATION = new JNDIResourceAttributeDefinition("target-destination", CommonAttributes.DESTINATION);
+    public static final PropertiesAttributeDefinition SOURCE_CONTEXT = new PropertiesAttributeDefinition.Builder("source-context", true)
+            .setXmlName(CONTEXT)
+            .setAttributeMarshaller(AttributeMarshallers.JNDI_CONTEXT_MARSHALLER)
+            .build();
+
+    public static final SimpleAttributeDefinition TARGET_CONNECTION_FACTORY = create("target-connection-factory", STRING)
+            .setXmlName(CommonAttributes.CONNECTION_FACTORY)
+            .setAttributeMarshaller(AttributeMarshallers.JNDI_RESOURCE_MARSHALLER)
+            .build();
+
+    public static final SimpleAttributeDefinition TARGET_DESTINATION = create("target-destination", STRING)
+            .setXmlName(CommonAttributes.DESTINATION)
+            .setAttributeMarshaller(AttributeMarshallers.JNDI_RESOURCE_MARSHALLER)
+            .build();
+
     public static final SimpleAttributeDefinition TARGET_USER = create("target-user", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -88,7 +110,11 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setXmlName("password")
             .build();
-    public static final SimpleAttributeDefinition TARGET_CONTEXT = new JNDIContextAttributeDefinition("target-context", CONTEXT);
+
+    public static final PropertiesAttributeDefinition TARGET_CONTEXT = new PropertiesAttributeDefinition.Builder("target-context", true)
+            .setXmlName(CONTEXT)
+            .setAttributeMarshaller(AttributeMarshallers.JNDI_CONTEXT_MARSHALLER)
+            .build();
 
     public static final SimpleAttributeDefinition QUALITY_OF_SERVICE = create("quality-of-service", STRING)
             .setValidator(new EnumValidator<QualityOfServiceMode>(QualityOfServiceMode.class, false, false))
@@ -123,7 +149,7 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] JMS_BRIDGE_ATTRIBUTES = {
             MODULE,
-            SelectorAttribute.SELECTOR,
+            CommonAttributes.SELECTOR,
             QUALITY_OF_SERVICE,
             FAILURE_RETRY_INTERVAL, MAX_RETRIES,
             MAX_BATCH_SIZE, MAX_BATCH_TIME,

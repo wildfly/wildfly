@@ -56,7 +56,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.messaging.jms.ConnectorAttribute;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
@@ -663,7 +663,7 @@ public class MessagingDescriptions {
                 attr.addOperationParameterDescription(bundle, CommonAttributes.POOLED_CONNECTION_FACTORY, node);
             }
 
-            if (attr.getName().equals(ConnectorAttribute.CONNECTOR.getName())) {
+            if (attr.getName().equals(ConnectionFactoryAttributes.Common.CONNECTOR.getName())) {
                 final String propType = resource ? ATTRIBUTES : REQUEST_PROPERTIES;
                 node.get(propType, attr.getName(), VALUE_TYPE).set(ModelType.STRING);
             }

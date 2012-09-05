@@ -67,7 +67,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, ConnectorAttribute.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName());
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, Common.CONNECTOR.getName(), Common.DISCOVERY_GROUP_NAME.getName());
 
         for (final AttributeDefinition attribute : ConnectionFactoryDefinition.ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
