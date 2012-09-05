@@ -112,7 +112,11 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
 
         if (applyToRuntime) {
             final String setValue = value != null ? context.resolveExpressions(operation.require(VALUE)).asString() : null;
-            SecurityActions.setSystemProperty(name, setValue);
+            if (value != null) {
+                SecurityActions.setSystemProperty(name, setValue);
+            } else {
+                SecurityActions.clearSystemProperty(name);
+            }
             if (processEnvironment != null) {
                 processEnvironment.systemPropertyUpdated(name, setValue);
             }

@@ -60,7 +60,11 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     String setValue = value == null ? null : context.resolveExpressions(newValue).asString();
-                    SecurityActions.setSystemProperty(name, setValue);
+                    if (value != null) {
+                        SecurityActions.setSystemProperty(name, setValue);
+                    } else {
+                        SecurityActions.clearSystemProperty(name);
+                    }
                     if (processEnvironment != null) {
                         processEnvironment.systemPropertyUpdated(name, setValue);
                     }

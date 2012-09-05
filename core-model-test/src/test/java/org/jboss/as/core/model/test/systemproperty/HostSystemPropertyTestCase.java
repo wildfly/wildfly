@@ -19,11 +19,10 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.test.vault;
+package org.jboss.as.core.model.test.systemproperty;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
@@ -33,42 +32,51 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.dmr.ModelNode;
+
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class HostVaultTestCase extends AbstractVaultTest {
+public class HostSystemPropertyTestCase extends AbstractSystemPropertyTest {
+    final static PathAddress PARENT = PathAddress.pathAddress(PathElement.pathElement(HOST, "master"));
 
-    public HostVaultTestCase() {
-        super(PathAddress.pathAddress(PathElement.pathElement(HOST, "master"), PathElement.pathElement(CORE_SERVICE, VAULT)));
+    public HostSystemPropertyTestCase() {
+        super(false);
     }
 
-    @Override
-    protected KernelServices createEmptyRoot() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder()
-                .setModelInitializer(bootOpModelInitializer, null)
-                .build();
-        Assert.assertTrue(kernelServices.isSuccessfulBoot());
-        return kernelServices;
+    protected PathAddress getSystemPropertyAddress(String propName) {
+        return PARENT.append(PathElement.pathElement(SYSTEM_PROPERTY, propName));
     }
 
-    @Override
     protected KernelServicesBuilder createKernelServicesBuilder() {
         return createKernelServicesBuilder(ModelType.HOST);
     }
 
-    @Override
-    protected String getXmlResource() {
-        return "vault-host.xml";
+    protected KernelServices createEmptyRoot() throws Exception {
+        KernelServices kernelServices = createKernelServicesBuilder().setModelInitializer(bootOpModelInitializer, null).build();
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
+        return kernelServices;
+    }
+
+    protected ModelNode readSystemPropertiesParentModel(KernelServices kernelServices) {
+        ModelNode model = kernelServices.readWholeModel();
+        return ModelTestUtils.getSubModel(model, PARENT).get(SYSTEM_PROPERTY);
     }
 
     private ModelInitializer bootOpModelInitializer = new ModelInitializer() {
         @Override
         public void populateModel(Resource rootResource) {
             Resource host = Resource.Factory.create();
-            rootResource.registerChild(PathElement.pathElement(HOST, "master"), host);
+            rootResource.registerChild(PARENT.getElement(0), host);
         }
     };
+
+    @Override
+    protected String getXmlResource() {
+        return "host-systemproperties.xml";
+    }
 
 }

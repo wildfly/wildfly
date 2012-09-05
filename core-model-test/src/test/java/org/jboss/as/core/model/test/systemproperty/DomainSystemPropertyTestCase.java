@@ -19,56 +19,50 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.test.vault;
+package org.jboss.as.core.model.test.systemproperty;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.ModelType;
+import org.jboss.dmr.ModelNode;
+
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class HostVaultTestCase extends AbstractVaultTest {
+public class DomainSystemPropertyTestCase extends AbstractSystemPropertyTest {
 
-    public HostVaultTestCase() {
-        super(PathAddress.pathAddress(PathElement.pathElement(HOST, "master"), PathElement.pathElement(CORE_SERVICE, VAULT)));
+    public DomainSystemPropertyTestCase() {
+        super(false);
     }
 
-    @Override
+    protected PathAddress getSystemPropertyAddress(String propName) {
+        return PathAddress.pathAddress(PathElement.pathElement(SYSTEM_PROPERTY, propName));
+    }
+
+    protected KernelServicesBuilder createKernelServicesBuilder() {
+        return createKernelServicesBuilder(ModelType.DOMAIN);
+    }
+
     protected KernelServices createEmptyRoot() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder()
-                .setModelInitializer(bootOpModelInitializer, null)
-                .build();
+        KernelServices kernelServices = createKernelServicesBuilder().build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         return kernelServices;
     }
 
-    @Override
-    protected KernelServicesBuilder createKernelServicesBuilder() {
-        return createKernelServicesBuilder(ModelType.HOST);
+    protected ModelNode readSystemPropertiesParentModel(KernelServices kernelServices) {
+        ModelNode model = kernelServices.readWholeModel();
+        return model.get(SYSTEM_PROPERTY);
     }
 
     @Override
     protected String getXmlResource() {
-        return "vault-host.xml";
+        return "domain-systemproperties.xml";
     }
-
-    private ModelInitializer bootOpModelInitializer = new ModelInitializer() {
-        @Override
-        public void populateModel(Resource rootResource) {
-            Resource host = Resource.Factory.create();
-            rootResource.registerChild(PathElement.pathElement(HOST, "master"), host);
-        }
-    };
-
 }

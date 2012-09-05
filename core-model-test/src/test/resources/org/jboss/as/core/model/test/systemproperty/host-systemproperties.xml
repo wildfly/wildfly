@@ -1,5 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<host xmlns="urn:jboss:domain:1.4">
+
+<host name="master" xmlns="urn:jboss:domain:1.4">
+    <system-properties>
+        <property name="sys.prop.test.one" value="1"/>
+        <property name="sys.prop.test.two" value="2" boot-time="true"/>
+        <property name="sys.prop.test.three" value="3" boot-time="false"/>
+    </system-properties>
 
     <!--  The native interface is always required by the parser -->
     <management>
@@ -9,5 +15,5 @@
             </native-interface>
         </management-interfaces>
     </management>
-    
-</host>        
+
+</host>
