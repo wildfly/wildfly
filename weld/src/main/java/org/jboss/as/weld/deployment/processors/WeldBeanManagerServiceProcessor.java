@@ -28,9 +28,10 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.ServiceReferenceObjectFactory;
-import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.Attachments;
@@ -46,7 +47,9 @@ import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.as.weld.services.WeldService;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 
@@ -101,7 +104,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) || deploymentUnit.getName().endsWith(".jar")) {
             // bind the bean manager to JNDI
             final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-            bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName, dependencies);
+            bindBeanManager(serviceTarget, beanManagerServiceName, moduleContextServiceName, dependencies, phaseContext.getServiceRegistry());
         }
 
 
@@ -109,18 +112,18 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             if (component.getNamingMode() == ComponentNamingMode.CREATE) {
                 final ServiceName compContextServiceName = ContextNames.contextServiceNameOfComponent(moduleDescription.getApplicationName(), moduleDescription.getModuleName(), component.getComponentName());
-                bindBeanManager(serviceTarget, beanManagerServiceName, compContextServiceName, dependencies);
+                bindBeanManager(serviceTarget, beanManagerServiceName, compContextServiceName, dependencies, phaseContext.getServiceRegistry());
             }
         }
         deploymentUnit.addToAttachmentList(Attachments.SETUP_ACTIONS, new WeldContextSetup());
     }
 
-    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName, final Set<ServiceName> dependencies) {
+    private void bindBeanManager(ServiceTarget serviceTarget, ServiceName beanManagerServiceName, ServiceName contextServiceName, final Set<ServiceName> dependencies, final ServiceRegistry serviceRegistry) {
         final ServiceName beanManagerBindingServiceName = contextServiceName.append("BeanManager");
         dependencies.add(beanManagerBindingServiceName);
         BinderService beanManagerBindingService = new BinderService("BeanManager");
         serviceTarget.addService(beanManagerBindingServiceName, beanManagerBindingService)
-                .addInjection(beanManagerBindingService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(ServiceReferenceObjectFactory.createReference(beanManagerServiceName, ServiceReferenceObjectFactory.class))))
+                .addInjection(beanManagerBindingService.getManagedObjectInjector(), new BeanManagerManagedReferenceFactory(serviceRegistry, beanManagerServiceName))
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, beanManagerBindingService.getNamingStoreInjector())
                 .install();
     }
@@ -131,4 +134,24 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
     }
 
+    private static class BeanManagerManagedReferenceFactory implements ManagedReferenceFactory {
+        private final ServiceRegistry serviceRegistry;
+        private final ServiceName beanManagerBindingServiceName;
+
+        public BeanManagerManagedReferenceFactory(final ServiceRegistry serviceRegistry, final ServiceName beanManagerBindingServiceName) {
+            this.serviceRegistry = serviceRegistry;
+            this.beanManagerBindingServiceName = beanManagerBindingServiceName;
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            ServiceController<?> controller = serviceRegistry.getService(beanManagerBindingServiceName);
+            if(controller != null && controller.getState() == ServiceController.State.UP) {
+                return new ValueManagedReference(new ImmediateValue<Object>(controller.getValue()));
+            }
+            return null;
+        }
+
+        ;
+    }
 }
