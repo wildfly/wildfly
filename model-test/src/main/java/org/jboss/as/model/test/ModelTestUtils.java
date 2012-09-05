@@ -239,6 +239,16 @@ public class ModelTestUtils {
         Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
     }
 
+    public static ModelNode getSubModel(ModelNode model, PathElement pathElement) {
+        return model.get(pathElement.getKey(), pathElement.getValue());
+    }
+
+    public static ModelNode getSubModel(ModelNode model, PathAddress pathAddress) {
+        for (PathElement pathElement : pathAddress) {
+            model = getSubModel(model, pathElement);
+        }
+        return model;
+    }
 
     private static String removeNamespace(String xml) {
         int start = xml.indexOf(" xmlns=\"");

@@ -60,7 +60,9 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        vaultReader.destroyVault();
+        if (vaultReader != null) {
+            vaultReader.destroyVault();
+        }
     }
 
     @Override
