@@ -47,16 +47,16 @@ echo -e "\n\n===  Converting list of public API modules into list of groupID:art
 
 echo > $TARGET/groupIDs.tmp.txt
 while read -r MODULE ; do
-  echo "Artefacts for module $MODULE :"
-  GROUP_ID=`xsltproc --stringparam moduleName "$MODULE"  $DIRNAME/convertModuleNameToGroupID.xsl $PROJECT_ROOT_DIR/build/build.xml`
-  echo "  GroupID:ArtifactID = $GROUP_ID"
-  echo $GROUP_ID >> $TARGET/groupIDs.tmp.txt
+  echo "Artifacts for module '$MODULE':"
+  GROUP_IDS=`xsltproc --stringparam moduleName "$MODULE"  $DIRNAME/convertModuleNameToGroupID.xsl $PROJECT_ROOT_DIR/build/build.xml`
+  echo "$GROUP_IDS" | sed 's#.*#        \0#'
+  echo "$GROUP_IDS" >> $TARGET/groupIDs.tmp.txt
 done < $TARGET/modules.tmp2.txt
 cat $TARGET/groupIDs.tmp.txt | sort | uniq > $TARGET/groupIDs.tmp-sorted.txt
 
-###  Wrap it as includes for pom.xml.
+###  Wrap it as includes for pom.xml, removing empty lines first.
 echo -e "\n\n===  Wrapping list of groupID:artifactID into <include> tags.\n"
-cat $TARGET/groupIDs.tmp-sorted.txt | sed 's#.*#<include>\0</include>#'
+cat $TARGET/groupIDs.tmp-sorted.txt | sed '/^$/d' | sed 's#.*#<include>\0</include>#'
 
 
 
