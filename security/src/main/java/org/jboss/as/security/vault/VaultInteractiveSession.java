@@ -23,19 +23,6 @@ package org.jboss.as.security.vault;
 
 import java.io.Console;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
-
-import org.jboss.security.plugins.PBEUtils;
-import org.jboss.security.vault.SecurityVault;
-import org.jboss.security.vault.SecurityVaultException;
-import org.jboss.security.vault.SecurityVaultFactory;
-import org.picketbox.plugins.vault.PicketBoxSecurityVault;
 
 /**
  * An interactive session for {@link VaultTool}
@@ -44,12 +31,11 @@ import org.picketbox.plugins.vault.PicketBoxSecurityVault;
  */
 public class VaultInteractiveSession {
 
-    private String maskedPassword, salt, keystoreURL, encDir, keystoreAlias;
+    private String salt, keystoreURL, encDir, keystoreAlias;
     private int iterationCount = 0;
 
-    private byte[] handshakeKey;
-
-    private SecurityVault vault = null;
+    // vault non-interactive session
+    private VaultSession vaultNISession = null;
 
     public VaultInteractiveSession() {
     }
@@ -62,9 +48,9 @@ public class VaultInteractiveSession {
             System.exit(1);
         }
 
-        while (encDir == null || encDir.length() == 0 || !(encDir.endsWith("/") || encDir.endsWith("\\"))) {
+        while (encDir == null || encDir.length() == 0) {
             encDir = console
-                    .readLine("Enter directory to store encrypted files (end with either / or \\ based on Unix or Windows:");
+                    .readLine("Enter directory to store encrypted files:");
         }
 
         while (keystoreURL == null || keystoreURL.length() == 0) {
@@ -74,36 +60,28 @@ public class VaultInteractiveSession {
         char[] keystorePasswd = getSensitiveValue("Enter Keystore password");
 
         try {
-            maskedPassword = getMaskedPassword(console, new String(keystorePasswd));
-            System.out.println("                ");
-            System.out.println("Please make note of the following:");
-            System.out.println("********************************************");
-            System.out.println("Masked Password:" + maskedPassword);
-            System.out.println("salt:" + salt);
-            System.out.println("Iteration Count:" + iterationCount);
-            System.out.println("********************************************");
-            System.out.println("                ");
-        } catch (Exception e) {
-            System.out.println("Exception encountered:" + e.getLocalizedMessage());
-        }
+            while (salt == null || salt.length() != 8) {
+                salt = console.readLine("Enter 8 character salt:");
+            }
 
-        while (keystoreAlias == null || keystoreAlias.length() == 0) {
-            keystoreAlias = console.readLine("Enter Keystore Alias:");
-        }
+            String ic = console.readLine("Enter iteration count as a number (Eg: 44):");
+            iterationCount = Integer.parseInt(ic);
+            vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount);
 
-        try {
-            vault = SecurityVaultFactory.get();
-            System.out.println("Obtained Vault");
-            Map<String, Object> options = new HashMap<String, Object>();
-            options.putAll(getMap());
+            while (keystoreAlias == null || keystoreAlias.length() == 0) {
+                keystoreAlias = console.readLine("Enter Keystore Alias:");
+            }
+
             System.out.println("Initializing Vault");
-            vault.init(options);
+            vaultNISession.startVaultSession(keystoreAlias);
+            vaultNISession.vaultConfigurationDisplay();
+
             System.out.println("Vault is initialized and ready for use");
-            handshake();
             System.out.println("Handshake with Vault complete");
-            VaultInteraction vaultInteraction = new VaultInteraction(vault, handshakeKey);
+
+            VaultInteraction vaultInteraction = new VaultInteraction(vaultNISession);
             vaultInteraction.start();
-        } catch (SecurityVaultException e) {
+        } catch (Exception e) {
             System.out.println("Exception encountered:" + e.getLocalizedMessage());
         }
     }
@@ -127,45 +105,4 @@ public class VaultInteractiveSession {
         }
     }
 
-    private String getMaskedPassword(Console console, String passwd) throws Exception {
-        while (salt == null || salt.length() != 8) {
-            salt = console.readLine("Enter 8 character salt:");
-        }
-
-        String ic = console.readLine("Enter iteration count as a number (Eg: 44):");
-        iterationCount = Integer.parseInt(ic);
-
-        String algo = "PBEwithMD5andDES";
-
-        // Create the PBE secret key
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBEwithMD5andDES");
-
-        char[] password = "somearbitrarycrazystringthatdoesnotmatter".toCharArray();
-        PBEParameterSpec cipherSpec = new PBEParameterSpec(salt.getBytes(), iterationCount);
-        PBEKeySpec keySpec = new PBEKeySpec(password);
-        SecretKey cipherKey = factory.generateSecret(keySpec);
-
-        String maskedPass = PBEUtils.encode64(passwd.getBytes(), algo, cipherKey, cipherSpec);
-
-        return new String(PicketBoxSecurityVault.PASS_MASK_PREFIX) + maskedPass;
-    }
-
-    private Map<String, Object> getMap() {
-        Map<String, Object> options = new HashMap<String, Object>();
-        options.put(PicketBoxSecurityVault.KEYSTORE_URL, keystoreURL);
-        options.put(PicketBoxSecurityVault.KEYSTORE_PASSWORD, maskedPassword);
-        options.put(PicketBoxSecurityVault.KEYSTORE_ALIAS, keystoreAlias);
-        options.put(PicketBoxSecurityVault.SALT, salt);
-        options.put(PicketBoxSecurityVault.ITERATION_COUNT, "" + iterationCount);
-
-        options.put(PicketBoxSecurityVault.ENC_FILE_DIR, encDir);
-
-        return options;
-    }
-
-    private void handshake() throws SecurityVaultException {
-        Map<String, Object> handshakeOptions = new HashMap<String, Object>();
-        handshakeOptions.put(PicketBoxSecurityVault.PUBLIC_CERT, keystoreAlias);
-        handshakeKey = vault.handshake(handshakeOptions);
-    }
 }
