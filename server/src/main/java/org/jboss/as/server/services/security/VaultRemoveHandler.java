@@ -26,7 +26,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.VaultDescriptions;
+import org.jboss.as.server.controller.descriptions.VaultDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**

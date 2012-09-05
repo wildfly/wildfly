@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
 import java.util.EnumSet;
 
@@ -64,6 +63,7 @@ import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
@@ -87,9 +87,6 @@ import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.server.services.security.VaultAddHandler;
-import org.jboss.as.server.services.security.VaultRemoveHandler;
-import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -121,12 +118,7 @@ public class ServerControllerModelUtil {
         sysProps.registerReadWriteAttribute(VALUE, null, spvwah, AttributeAccess.Storage.CONFIGURATION);
 
         //vault
-        ManagementResourceRegistration vault = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
-        VaultAddHandler vah = new VaultAddHandler(vaultReader);
-        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, vah, vah, false);
-        VaultRemoveHandler vrh = new VaultRemoveHandler(vaultReader);
-        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, vrh, vrh, false);
-        VaultWriteAttributeHandler.INSTANCE.registerAttributes(vault);
+        root.registerSubModel(new VaultResourceDefinition(vaultReader));
 
         // Central Management
         // Start with the base /core-service=management MNR. The Resource for this is added by ServerService itself, so there is no add/remove op handlers

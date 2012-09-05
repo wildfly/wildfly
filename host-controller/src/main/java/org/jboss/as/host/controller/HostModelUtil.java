@@ -47,7 +47,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.EnumSet;
@@ -118,12 +117,10 @@ import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.server.services.security.VaultAddHandler;
-import org.jboss.as.server.services.security.VaultRemoveHandler;
-import org.jboss.as.server.services.security.VaultWriteAttributeHandler;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -252,12 +249,7 @@ public class HostModelUtil {
         // Core Services
 
         //vault
-        ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
-        VaultAddHandler vah = new VaultAddHandler(vaultReader);
-        vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, vah, vah, false);
-        VaultRemoveHandler vrh = new VaultRemoveHandler(vaultReader);
-        vault.registerOperationHandler(VaultRemoveHandler.OPERATION_NAME, vrh, vrh, false);
-        VaultWriteAttributeHandler.INSTANCE.registerAttributes(vault);
+        hostRegistration.registerSubModel(new VaultResourceDefinition(vaultReader));
 
         // Central Management
         ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);

@@ -164,14 +164,4 @@ public final class CommonProviders {
             return CommonDescriptions.getServiceContainerDescription(locale);
         }
     };
-
-    /**
-     * Provider for a resource that defines the core security vault.
-     */
-    public static final DescriptionProvider VAULT_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return VaultDescriptions.getVaultDescription(locale);
-        }
-    };
 }
