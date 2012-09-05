@@ -243,7 +243,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
-    public void testStandaloneOSGiOnlyXml() throws Exception {
+    public void testStandaloneOSGiXml() throws Exception {
         standaloneXmlTest(getGeneratedExampleConfigFile("standalone-osgi-only.xml"));
     }
 

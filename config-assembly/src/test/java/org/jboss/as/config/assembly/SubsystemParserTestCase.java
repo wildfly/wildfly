@@ -198,7 +198,7 @@ public class SubsystemParserTestCase {
             writer.close();
         }
 
-        System.out.println(stringWriter.getBuffer().toString());
+        //System.out.println(stringWriter.getBuffer().toString());
         return stringWriter.getBuffer().toString();
     }
 
