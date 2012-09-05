@@ -43,8 +43,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.messaging.jms.SelectorAttribute;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -147,7 +147,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
         final String targetUsername = resolveAttribute(JMSBridgeDefinition.TARGET_USER, context, model);
         final String targetPassword = resolveAttribute(JMSBridgeDefinition.TARGET_PASSWORD, context, model);
 
-        final String selector = resolveAttribute(SelectorAttribute.SELECTOR, context, model);
+        final String selector = resolveAttribute(CommonAttributes.SELECTOR, context, model);
         final long failureRetryInterval = JMSBridgeDefinition.FAILURE_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final int maxRetries = JMSBridgeDefinition.MAX_RETRIES.resolveModelAttribute(context, model).asInt();
         final QualityOfServiceMode qosMode = QualityOfServiceMode.valueOf( JMSBridgeDefinition.QUALITY_OF_SERVICE.resolveModelAttribute(context, model).asString());

@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * XML marshallers for messaging custom attributes.
@@ -60,6 +61,69 @@ public final class AttributeMarshallers {
             }
         }
     }
+
+    public static final AttributeMarshaller CONNECTORS_MARSHALLER = new AttributeMarshaller() {
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.hasDefined(Element.CONNECTOR.getLocalName())) {
+                writer.writeStartElement(Element.CONNECTORS.getLocalName());
+                for (Property connProp : resourceModel.get(Element.CONNECTOR.getLocalName()).asPropertyList()) {
+                    writer.writeStartElement(Element.CONNECTOR_REF.getLocalName());
+                    writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), connProp.getName());
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        };
+    };
+
+    public static final AttributeMarshaller SELECTOR_MARSHALLER = new AttributeMarshaller() {
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.hasDefined(attribute.getName())) {
+                String selector = resourceModel.get(attribute.getName()).asString();
+                writer.writeEmptyElement(Element.SELECTOR.getLocalName());
+                writer.writeAttribute(Attribute.STRING.getLocalName(), selector);
+            }
+        }
+    };
+
+    public static final AttributeMarshaller LIVE_CONNECTOR_REF_MARSHALLER = new AttributeMarshaller() {
+        @Override
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault,
+                XMLStreamWriter writer) throws XMLStreamException {
+            if (isMarshallable(attribute, resourceModel)) {
+                writer.writeStartElement(attribute.getXmlName());
+                writer.writeAttribute(Attribute.CONNECTOR_NAME.getLocalName(), resourceModel.get(attribute.getName()).asString());
+                writer.writeEndElement();
+            }
+        }
+    };
+
+    public static final AttributeMarshaller JNDI_CONTEXT_MARSHALLER = new AttributeMarshaller() {
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.hasDefined(attribute.getName())) {
+                ModelNode context = resourceModel.get(attribute.getName());
+
+                writer.writeStartElement(attribute.getXmlName());
+                for (Property property : context.asPropertyList()) {
+                    writer.writeStartElement(Element.PROPERTY.getLocalName());
+                    writer.writeAttribute(Attribute.KEY.getLocalName(), property.getName());
+                    writer.writeAttribute(Attribute.VALUE.getLocalName(), property.getValue().asString());
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        }
+    };
+
+    public static final AttributeMarshaller JNDI_RESOURCE_MARSHALLER = new AttributeMarshaller() {
+        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+            if (resourceModel.hasDefined(attribute.getName())) {
+                String name = resourceModel.get(attribute.getName()).asString();
+                writer.writeEmptyElement(attribute.getXmlName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), name);
+            }
+        }
+    };
 
     /**
      * XML marshaller for connector attribute to wrap a list of attributes in a optional XML element.

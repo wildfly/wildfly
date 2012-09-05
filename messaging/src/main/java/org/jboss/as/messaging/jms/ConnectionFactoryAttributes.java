@@ -29,7 +29,6 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PER_SECOND;
-import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.create;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -47,6 +46,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.AttributeMarshallers;
 import org.jboss.as.messaging.CommonAttributes;
@@ -112,6 +112,11 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(MILLISECONDS)
                 .build();
 
+        AttributeDefinition CONNECTOR = new SimpleMapAttributeDefinition.Builder(CommonAttributes.CONNECTOR, true)
+                .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
+                .setAttributeMarshaller(AttributeMarshallers.CONNECTORS_MARSHALLER)
+                .build();
+
         AttributeDefinition CONSUMER_WINDOW_SIZE = SimpleAttributeDefinitionBuilder.create("consumer-window-size", INT)
                 .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_WINDOW_SIZE))
                 .setMeasurementUnit(BYTES)
@@ -120,7 +125,7 @@ public interface ConnectionFactoryAttributes {
 
         SimpleAttributeDefinition DISCOVERY_GROUP_NAME =  SimpleAttributeDefinitionBuilder.create(CommonAttributes.DISCOVERY_GROUP_NAME, STRING)
                 .setAllowNull(true)
-                .setAlternatives(CONNECTOR)
+                .setAlternatives(CommonAttributes.CONNECTOR)
                 .setAttributeMarshaller(AttributeMarshallers.DISCOVERY_GROUP_MARSHALLER)
                 .setRestartAllServices()
                 .build();
@@ -225,7 +230,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         ConnectionFactoryAttribute[] ATTRIBUTES = {
-                create(ConnectorAttribute.CONNECTOR, null, false),
+                create(CONNECTOR, null, false),
                 create(ENTRIES, null, false),
 
                 create(AUTO_GROUP, "autoGroup", true),

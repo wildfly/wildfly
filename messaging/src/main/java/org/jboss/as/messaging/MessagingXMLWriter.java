@@ -46,7 +46,6 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
-import org.jboss.as.messaging.jms.ConnectorAttribute;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
@@ -227,6 +226,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         InVMTransportDefinition.SERVER_ID.marshallAsAttribute(value, writer);
         CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);
 
+        // TODO use a custom attribute marshaller
         if (value.hasDefined(PARAM)) {
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
@@ -406,6 +406,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         }
     }
 
+    // TODO use a custom attribute marshaller
     private static void writeFilter(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         if (node.hasDefined(CommonAttributes.FILTER.getName())) {
             writer.writeEmptyElement(CommonAttributes.FILTER.getXmlName());
@@ -438,6 +439,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 writer.writeStartElement(Element.SECURITY_SETTING.getLocalName());
                 writer.writeAttribute(Attribute.MATCH.getLocalName(), matchRoles.getName());
 
+                // TODO use a custom attribute marshaller
                 if (matchRoles.getValue().hasDefined(ROLE)) {
 
                     ArrayList<String> send = new ArrayList<String>();
@@ -552,6 +554,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 for (AttributeDefinition attribute : ConnectorServiceDefinition.ATTRIBUTES) {
                     attribute.marshallAsElement(property.getValue(), writer);
                 }
+                // TODO use a custom attribute marshaller
                 if (service.hasDefined(CommonAttributes.PARAM)) {
                     for (Property param : service.get(CommonAttributes.PARAM).asPropertyList()) {
                         writer.writeEmptyElement(Element.PARAM.getLocalName());
@@ -617,7 +620,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         // write the element for compatibility sake but it is deprecated
         Common.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(factory, writer);
 
-        ConnectorAttribute.CONNECTOR.marshallAsElement(factory, writer);
+        Common.CONNECTOR.marshallAsElement(factory, writer);
 
         JndiEntriesAttribute.CONNECTION_FACTORY.marshallAsElement(factory, writer);
 
