@@ -23,14 +23,20 @@
 package org.jboss.as.ee.naming;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * EE related attachments.
  *
  * @author John Bailey
+ * @author Eduardo Martins
  */
 public class Attachments {
+
     public static final AttachmentKey<ServiceName> APPLICATION_CONTEXT_CONFIG = AttachmentKey.create(ServiceName.class);
+    public static final AttachmentKey<AttachmentList<ServiceName>> APPLICATION_CONTEXT_CONFIG_DEPENDENCIES = AttachmentKey.createList(ServiceName.class);
     public static final AttachmentKey<ServiceName> MODULE_CONTEXT_CONFIG = AttachmentKey.create(ServiceName.class);
+    public static final AttachmentKey<AttachmentList<ServiceName>> MODULE_CONTEXT_CONFIG_DEPENDENCIES = AttachmentKey.createList(ServiceName.class);
+
 }
