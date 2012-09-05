@@ -179,18 +179,20 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         addPathProperty(command, "data", ServerEnvironment.SERVER_DATA_DIR, bootTimeProperties,
                 directoryGrouping, environment.getDomainDataDir(), serverDir);
 
-        File loggingConfig = new File(getAbsolutePath(environment.getDomainServersDir(), serverName, "data", "logging.properties"));
-        if (!loggingConfig.exists()) {
+        final File loggingConfig = new File(getAbsolutePath(environment.getDomainServersDir(), serverName, "data", "logging.properties"));
+        final String path;
+        if (loggingConfig.exists()) {
+            path = "file:" + loggingConfig.getAbsolutePath();
+        } else {
+            command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "boot.log"));
             final String fileName = SecurityActions.getSystemProperty("logging.configuration");
-            if (fileName.startsWith("file:")) {
-                loggingConfig = new File(fileName.substring(5));
+            if (fileName == null) {
+                path = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "logging.properties");
             } else {
-                loggingConfig = new File(fileName);
+                path = fileName;
             }
         }
-        if (loggingConfig.exists()) {
-            command.add("-Dlogging.configuration=file:" + loggingConfig.getAbsolutePath());
-        }
+        command.add(String.format("-Dlogging.configuration=%s", path));
 
         command.add("-jar");
         command.add(getAbsolutePath(environment.getHomeDir(), "jboss-modules.jar"));
