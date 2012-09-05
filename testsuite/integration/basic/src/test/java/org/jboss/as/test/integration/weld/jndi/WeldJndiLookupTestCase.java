@@ -65,4 +65,8 @@ public class WeldJndiLookupTestCase {
         Assert.assertEquals("WeldJndiLookupTestCase", ejb.getName());
     }
 
+    @Test
+    public void testBeanManagerResourceLookup() {
+        Assert.assertTrue( ejb.getBeanManager() instanceof BeanManager);
+    }
 }
