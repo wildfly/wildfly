@@ -19,6 +19,16 @@ Unlinking deployments and/or removing overlay content and/or removing an overlay
         [--server-group=server_group_name]
         [--deployment=deployment_name(,deployment_name)*]
         [--headers={operation_header (;operation_header)*}]
+        
+    If the remove command specifies only the name of the overlay, the overlay
+    will be removed including its content and deployment links (from all server groups
+    in the domain mode). If other arguments are specified, the overlay
+    will not be removed completely.
+    
+    If in the domain mode remove command contains only --name and --server-group,
+    all the links to the overlay will be removed from the specified server group.
+    
+    --content and --deployment target specific content and deployments.
 
 Adding content to an existing overlay
 
