@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.server.operations;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -31,8 +31,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.ProcessEnvironment;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -109,7 +111,7 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
     }
 
     public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getRemoveSystemPropertyOperation(locale);
+        return SystemPropertyDescriptions.getRemoveSystemPropertyOperation(locale);
     }
 
 }

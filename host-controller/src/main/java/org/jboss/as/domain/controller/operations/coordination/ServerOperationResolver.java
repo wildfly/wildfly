@@ -20,14 +20,14 @@ import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.SystemPropertyAddHandler;
+import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 

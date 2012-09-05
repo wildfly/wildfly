@@ -22,15 +22,6 @@
 
 package org.jboss.as.domain.controller.descriptions;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -57,6 +48,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
+import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
@@ -194,7 +194,7 @@ public class ServerGroupDescription {
 
     public static ModelNode getSystemPropertiesDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server-group.system-property"), true);
+        return SystemPropertyDescriptions.getSystemPropertyDescription(locale, bundle.getString("server-group.system-property"), true);
     }
 
 

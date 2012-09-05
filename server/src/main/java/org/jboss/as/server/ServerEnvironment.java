@@ -956,7 +956,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     }
 
     @Override
-    protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) throws OperationFailedException {
+    public boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) throws OperationFailedException {
         if (ILLEGAL_PROPERTIES.contains(propertyName)) {
             throw MESSAGES.systemPropertyNotManageable(propertyName);
         }
@@ -967,7 +967,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     }
 
     @Override
-    protected void systemPropertyUpdated(String propertyName, String propertyValue) {
+    public void systemPropertyUpdated(String propertyName, String propertyValue) {
         if (BOOT_PROPERTIES.contains(propertyName)) {
             if (BUNDLES_DIR.equals(propertyName)) {
                 configureBundlesDir(propertyValue, providedProperties);

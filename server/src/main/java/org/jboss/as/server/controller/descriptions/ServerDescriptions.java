@@ -78,10 +78,10 @@ public class ServerDescriptions {
 
     public static final ModelNode getSystemPropertyDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("server.system-property"), false);
+        return SystemPropertyDescriptions.getSystemPropertyDescription(locale, bundle.getString("server.system-property"), false);
     }
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
+    static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
@@ -144,5 +144,4 @@ public class ServerDescriptions {
         node.get(REPLY_PROPERTIES).setEmptyObject();
         return node;
     }
-
 }

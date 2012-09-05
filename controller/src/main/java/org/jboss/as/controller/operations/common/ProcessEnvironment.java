@@ -102,7 +102,7 @@ public abstract class ProcessEnvironment {
      *                                  {@code jboss.server.base.dir} after primordial boot is not allowed; the
      *                                  property can only be set from the command line
      */
-    protected abstract boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName,
+    public abstract boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName,
                                                                     String propertyValue,
                                                                     boolean bootTime) throws OperationFailedException;
 
@@ -115,7 +115,7 @@ public abstract class ProcessEnvironment {
      * @param propertyName  the name of the property. Cannot be {@code null}
      * @param propertyValue the value of the property. May be {@code null}
      */
-    protected abstract void systemPropertyUpdated(String propertyName, String propertyValue);
+    public abstract void systemPropertyUpdated(String propertyName, String propertyValue);
 
     protected static String resolveGUID(final String unresolvedName) {
 
