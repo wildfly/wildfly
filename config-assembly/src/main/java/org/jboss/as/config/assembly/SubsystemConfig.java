@@ -26,19 +26,24 @@ package org.jboss.as.config.assembly;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class SubsystemConfig {
-    final String subsystemName;
+    final String subsystem;
     final String supplement;
 
-    SubsystemConfig(String subsystemName, String supplement) {
-        this.subsystemName = subsystemName;
+    SubsystemConfig(String subsystem, String supplement) {
+        this.subsystem = subsystem;
         this.supplement = supplement;
     }
 
-    String getSubsystemFile() {
-        return subsystemName;
+    String getSubsystem() {
+        return subsystem;
     }
 
     String getSupplement() {
         return supplement;
+    }
+
+    @Override
+    public String toString() {
+        return "[subsystem=" + subsystem + ", supplement=" + supplement + "]";
     }
 }

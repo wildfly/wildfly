@@ -104,7 +104,7 @@ class ConfigurationAssembler {
             outboundSocketBindingsByGroup.put(groupName, outboundSocketBindings);
 
             for (SubsystemConfig subsystem : subsystems) {
-                final File subsystemFile = new File(baseDir, subsystem.getSubsystemFile());
+                final File subsystemFile = new File(baseDir, subsystem.getSubsystem());
                 if (!subsystemFile.exists()) {
                     throw new IllegalStateException("Could not find '" + subsystem + "' under the base directory '" + baseDir + "'");
                 }

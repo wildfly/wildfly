@@ -43,12 +43,14 @@ class ElementNode extends Node {
     private final Map<String, AttributeValue> attributes = new LinkedHashMap<String, AttributeValue>();
     private List<Node> children = new ArrayList<Node>();
 
+    ElementNode(final ElementNode parent, final String name) {
+        this(parent, name, parent.getNamespace());
+    }
+
     ElementNode(final ElementNode parent, final String name, final String namespace) {
         this.parent = parent;
         this.name = name;
-        this.namespace = namespace == null ?
-                namespace : namespace.isEmpty() ?
-                        null : namespace;
+        this.namespace = namespace == null ? namespace : namespace.isEmpty() ? null : namespace;
     }
 
     String getNamespace() {

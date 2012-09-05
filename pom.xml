@@ -286,6 +286,7 @@
     <modules>
         <module>build</module>
         <module>build-config</module>
+        <module>build-modular</module>
         <module>controller</module>
         <module>controller-client</module>
         <module>deployment-repository</module>

@@ -107,6 +107,11 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("standalone/configuration/standalone-full.xml");
     }
 
+    @Test
+    public void testStandaloneOSGi() throws Exception {
+        parseXml("docs/examples/configs/standalone-osgi-only.xml");
+    }
+
   //TODO Leave commented out until domain-osgi-only.xml and domain-jts.xml are definitely removed from the configuration
 //    @Test
 //    public void testDomainJTS() throws Exception {
@@ -126,11 +131,6 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneJTS() throws Exception {
         parseXml("docs/examples/configs/standalone-jts.xml");
-    }
-
-    @Test
-    public void testStandaloneOSGiOnly() throws Exception {
-        parseXml("docs/examples/configs/standalone-osgi-only.xml");
     }
 
     @Test

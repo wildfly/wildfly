@@ -45,25 +45,25 @@ public class SubsystemsParserTestCase {
         SubsystemConfig[] defaultConfig = config.get("default");
         Assert.assertNotNull(defaultConfig);
         Assert.assertEquals(2, defaultConfig.length);
-        Assert.assertEquals("simple-with-text-and-comments.xml", defaultConfig[0].getSubsystemFile());
+        Assert.assertEquals("simple-with-text-and-comments.xml", defaultConfig[0].getSubsystem());
         Assert.assertNull(defaultConfig[0].getSupplement());
-        Assert.assertEquals("empty-with-attributes.xml", defaultConfig[1].getSubsystemFile());
+        Assert.assertEquals("empty-with-attributes.xml", defaultConfig[1].getSubsystem());
         Assert.assertNull(defaultConfig[1].getSupplement());
 
         SubsystemConfig[] haConfig = config.get("ha");
         Assert.assertNotNull(haConfig);
         Assert.assertEquals(2, haConfig.length);
-        Assert.assertEquals("empty.xml", haConfig[0].getSubsystemFile());
+        Assert.assertEquals("empty.xml", haConfig[0].getSubsystem());
         Assert.assertNull(haConfig[0].getSupplement());
-        Assert.assertEquals("ha-only.xml", haConfig[1].getSubsystemFile());
+        Assert.assertEquals("ha-only.xml", haConfig[1].getSubsystem());
         Assert.assertEquals("hah!", haConfig[1].getSupplement());
 
         SubsystemConfig[] unnamed = config.get("");
         Assert.assertNotNull(unnamed);
         Assert.assertEquals(2, unnamed.length);
-        Assert.assertEquals("simple-with-text-and-comments.xml", unnamed[0].getSubsystemFile());
+        Assert.assertEquals("simple-with-text-and-comments.xml", unnamed[0].getSubsystem());
         Assert.assertNull(unnamed[0].getSupplement());
-        Assert.assertEquals("empty-with-attributes.xml", unnamed[1].getSubsystemFile());
+        Assert.assertEquals("empty-with-attributes.xml", unnamed[1].getSubsystem());
         Assert.assertNull(unnamed[1].getSupplement());
     }
 
