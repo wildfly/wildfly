@@ -221,6 +221,16 @@ public class ServiceBasedNamingStore implements NamingStore {
                 break;
             }
         }
+
+        // add items from the service registry which aren't already there from boundServices
+        for (ServiceName next: serviceRegistry.getServiceNames()) {
+            if (name.isParentOf(next) && !name.equals(next)) {
+                if (!children.contains(next)) {
+                    children.add(next);
+                }
+            }
+        }
+
         return children;
     }
 
