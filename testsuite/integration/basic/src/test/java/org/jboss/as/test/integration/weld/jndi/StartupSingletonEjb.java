@@ -21,8 +21,10 @@
  */
 package org.jboss.as.test.integration.weld.jndi;
 
+import javax.annotation.Resource;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
 /**
@@ -35,7 +37,17 @@ public class StartupSingletonEjb {
     @Inject
     private String appName;
 
+    @Resource(lookup="java:comp/BeanManager")
+    private BeanManager beanManager;
+
+
+
     public String getName() {
         return appName;
+    }
+
+    public BeanManager getBeanManager() {
+        return beanManager;
+
     }
 }
