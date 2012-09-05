@@ -527,8 +527,9 @@ public class DeployHandler extends DeploymentHandler {
                     throw new CommandFormatException("ERROR: script '" + script + "' not found.");
                 }
 
+                BufferedReader reader = null;
                 try {
-                    BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
+                    reader = new BufferedReader(new FileReader(scriptFile));
                     String line = reader.readLine();
                     while (!ctx.isTerminated() && line != null) {
                         ctx.handle(line);
@@ -540,6 +541,13 @@ public class DeployHandler extends DeploymentHandler {
                     throw new CommandFormatException("Failed to read the next command from " + scriptFile.getName() + ": " + e.getMessage(), e);
                 } catch (CommandLineException e) {
                     throw new CommandFormatException(e.getMessage(), e);
+                } finally {
+                    if(reader != null) {
+                        try {
+                            reader.close();
+                        } catch (IOException e) {
+                        }
+                    }
                 }
 
                 return ctx.getBatchManager().getActiveBatch().toRequest();

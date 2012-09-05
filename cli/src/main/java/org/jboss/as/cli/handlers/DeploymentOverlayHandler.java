@@ -55,6 +55,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     private final ArgumentWithValue action;
     private final ArgumentWithValue name;
     private final ArgumentWithValue content;
+    private final ArgumentWithValue serverGroup;
     private final ArgumentWithValue deployment;
 
     public DeploymentOverlayHandler(CommandContext ctx) {
@@ -170,6 +171,29 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         content.addRequiredPreceding(name);
         content.addCantAppearAfter(l);
 
+        serverGroup = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
+            @Override
+            public Collection<String> getAllCandidates(CommandContext ctx) {
+                return Util.getServerGroups(ctx.getModelControllerClient());
+            }}) , "--server-group") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                if(actionStr == null) {
+                    return false;
+                }
+                if("add".equals(actionStr) || "link".equals(actionStr)
+                        || "remove".equals(actionStr) || "list-deployments".equals(actionStr)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        serverGroup.addRequiredPreceding(name);
+
         deployment = new ArgumentWithValue(this, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
@@ -177,6 +201,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(client == null) {
                     return -1;
                 }
+                // TODO in domain mode it should consult the specified server group for deployments
                 final String actionStr = action.getValue(ctx.getParsedCommandLine());
                 final List<String> existing;
                 if("add".equals(actionStr) || "link".equals(actionStr)) {
@@ -187,10 +212,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                         if(nameStr == null) {
                             return -1;
                         }
-                        existing = loadLinks(client, nameStr);
-                        for(int i = 0; i < existing.size(); ++i) {
-                            existing.set(i, existing.get(i).substring(nameStr.length() + 1));
+                        final String sg = serverGroup.getValue(ctx.getParsedCommandLine());
+                        if(ctx.isDomainMode() && sg == null) {
+                            return -1;
                         }
+                        existing = loadLinkedDeployments(client, nameStr, sg);
                     } catch (CommandLineException e) {
                         return -1;
                     }
@@ -221,6 +247,12 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }, "--deployment") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(ctx.isDomainMode()) {
+                    if(serverGroup.isPresent(ctx.getParsedCommandLine())) {
+                        return super.canAppearNext(ctx);
+                    }
+                    return false;
+                }
                 final String actionStr = action.getValue(ctx.getParsedCommandLine());
                 if(actionStr == null) {
                     return false;
@@ -299,7 +331,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         if(name == null) {
             throw new CommandFormatException(this.name + " is missing value.");
         }
-        final List<String> content = loadLinks(client, name);
+        final String sg = serverGroup.getValue(ctx.getParsedCommandLine());
+        if(ctx.isDomainMode() && sg == null) {
+            throw new CommandFormatException(serverGroup.getFullName() + " is missing value.");
+        }
+        final List<String> content = loadLinkedDeployments(client, name, sg);
         if(l.isPresent(args)) {
             for(String contentPath : content) {
                 ctx.printLine(contentPath);
@@ -338,6 +374,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
         final String contentStr = content.getValue(args);
         final String deploymentStr = deployment.getValue(args);
+        final String sg = serverGroup.getValue(args);
 
         final ModelNode composite = new ModelNode();
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
@@ -347,24 +384,47 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         if(deploymentStr != null || contentStr == null) {
             // remove the overlay links
 
-            final List<String> overlays;
-            if(deploymentStr == null) {
-                overlays = loadLinks(client, name);
+            if(ctx.isDomainMode()) {
+                if(deploymentStr == null) {
+                    final List<String> sgNames = sg == null ? Util.getServerGroups(client) : Collections.singletonList(sg);
+                    // remove all
+                    for(String sgName : sgNames) {
+                        final List<String> deployments = loadLinkedDeployments(client, name, sgName);
+                        if(!deployments.isEmpty()) {
+                            addRemoveDeploymentSteps(name, sgName, deployments, steps);
+                            final ModelNode op = new ModelNode();
+                            final ModelNode addr = op.get(Util.ADDRESS);
+                            addr.add(Util.SERVER_GROUP, sgName);
+                            addr.add(Util.DEPLOYMENT_OVERLAY, name);
+                            op.get(Util.OPERATION).set(Util.REMOVE);
+                            steps.add(op);
+                        }
+                    }
+                } else {
+                    // in the domain mode, there must be a server group
+                    if(ctx.isDomainMode() && sg == null) {
+                        throw new CommandFormatException(serverGroup.getFullName() + " is missing.");
+                    }
+                    final List<String> deployments = Arrays.asList(deploymentStr.split(",+"));
+                    addRemoveDeploymentSteps(name, sg, deployments, steps);
+                }
             } else {
-                overlays = Arrays.asList(deploymentStr.split(",+"));
-            }
-
-            for(String overlay : overlays) {
-                final ModelNode op = new ModelNode();
-                final ModelNode addr = op.get(Util.ADDRESS);
-                addr.add(Util.DEPLOYMENT_OVERLAY, name);
-                addr.add(Util.DEPLOYMENT, overlay);
-                op.get(Util.OPERATION).set(Util.REMOVE);
-                steps.add(op);
+                final List<String> overlays;
+                if(deploymentStr == null) {
+                    // remove all
+                    overlays = loadLinkedDeployments(client, name, null);
+                } else {
+                    // in the domain mode, there must server group
+                    if(ctx.isDomainMode() && sg == null) {
+                        throw new CommandFormatException(serverGroup.getFullName() + " is missing.");
+                    }
+                    overlays = Arrays.asList(deploymentStr.split(",+"));
+                }
+                addRemoveDeploymentSteps(name, sg, overlays, steps);
             }
         }
 
-        if(contentStr != null || deploymentStr == null) {
+        if(contentStr != null || deploymentStr == null && sg == null) {
             // determine the content to be removed
 
             final List<String> contentList;
@@ -384,7 +444,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             }
         }
 
-        if(contentStr == null && deploymentStr == null) {
+        if(contentStr == null && deploymentStr == null && sg == null) {
             final ModelNode op = new ModelNode();
             op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, name);
             op.get(Util.OPERATION).set(Util.REMOVE);
@@ -401,22 +461,22 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
     }
 
-    protected List<String> loadContentFor(final ModelControllerClient client, final String name) throws CommandLineException {
+    protected List<String> loadContentFor(final ModelControllerClient client, final String overlay) throws CommandLineException {
         final List<String> contentList;
         final ModelNode op = new ModelNode();
-        op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, name);
+        op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, overlay);
         op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
         op.get(Util.CHILD_TYPE).set(Util.CONTENT);
         final ModelNode response;
         try {
             response = client.execute(op);
         } catch (IOException e) {
-            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name, e);
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay, e);
         }
 
         final ModelNode result = response.get(Util.RESULT);
         if(!result.isDefined()) {
-            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name + ": " + response);
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay + ": " + response);
         }
         contentList = new ArrayList<String>();
         for(ModelNode node : result.asList()) {
@@ -425,25 +485,32 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         return contentList;
     }
 
-    protected List<String> loadLinks(final ModelControllerClient client, String name) throws CommandLineException {
-        final List<String> contentList;
+    protected List<String> loadLinkedDeployments(final ModelControllerClient client, String overlay, String serverGroup) throws CommandLineException {
         final ModelNode op = new ModelNode();
         final ModelNode addr = op.get(Util.ADDRESS);
-        addr.add(Util.DEPLOYMENT_OVERLAY, name);
+        if(serverGroup != null) {
+            addr.add(Util.SERVER_GROUP, serverGroup);
+        }
+        addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
         op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
         op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
         final ModelNode response;
         try {
             response = client.execute(op);
         } catch (IOException e) {
-            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name, e);
+            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay, e);
         }
 
         final ModelNode result = response.get(Util.RESULT);
         if(!result.isDefined()) {
-            throw new CommandLineException("Failed to load the list of the existing content for overlay " + name + ": " + response);
+            final String descr = Util.getFailureDescription(response);
+            if(descr != null && descr.contains("JBAS014807")) {
+                // resource doesn't exist
+                return Collections.emptyList();
+            }
+            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
         }
-        contentList = new ArrayList<String>();
+        final List<String> contentList = new ArrayList<String>();
         for(ModelNode node : result.asList()) {
             contentList.add(node.asString());
         }
@@ -483,6 +550,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             contentPaths[i] = f;
         }
 
+        final String sg = serverGroup.getValue(args);
+        if(ctx.isDomainMode() && sg == null) {
+            throw new CommandFormatException(serverGroup.getFullName() + " is missing");
+        }
         final String deploymentsStr = deployment.getValue(args);
         final String[] deployments;
         if(deploymentsStr == null) {
@@ -563,15 +634,18 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             }
 
             if(deployments != null && deployments.length > 0) {
-                // link the deployments
-                for(String deployment : deployments) {
+                if(sg != null) {
+                    // here we don't need a separate check whether the overlay is linked
+                    // from the server group since it is created in the same op.
                     op = new ModelNode();
                     address = op.get(Util.ADDRESS);
+                    address.add(Util.SERVER_GROUP, sg);
                     address.add(Util.DEPLOYMENT_OVERLAY, name);
-                    address.add(Util.DEPLOYMENT, deployment);
                     op.get(Util.OPERATION).set(Util.ADD);
                     steps.add(op);
                 }
+                // link the deployments
+                addLinkDeploymentSteps(name, sg, deployments, steps);
             }
 
             try {
@@ -590,6 +664,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args, true);
         final String deploymentsStr = deployment.getValue(args, true);
+        final String sg = serverGroup.getValue(args);
+        if(ctx.isDomainMode() && sg == null) {
+            throw new CommandFormatException(serverGroup.getFullName() + " is missing value.");
+        }
         final String[] deployments = deploymentsStr.split(",+");
 
         if(deployments.length == 0) {
@@ -601,15 +679,17 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
 
-        // link the deployments
-        for(String deployment : deployments) {
+        if(sg != null && !Util.isValidPath(ctx.getModelControllerClient(), Util.SERVER_GROUP, sg, Util.DEPLOYMENT_OVERLAY, name)) {
             final ModelNode op = new ModelNode();
             final ModelNode address = op.get(Util.ADDRESS);
+            address.add(Util.SERVER_GROUP, sg);
             address.add(Util.DEPLOYMENT_OVERLAY, name);
-            address.add(Util.DEPLOYMENT, deployment);
             op.get(Util.OPERATION).set(Util.ADD);
             steps.add(op);
         }
+
+        // link the deployments
+        addLinkDeploymentSteps(name, sg, deployments, steps);
 
         try {
             final ModelNode result = ctx.getModelControllerClient().execute(composite);
@@ -739,6 +819,36 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             } catch (IOException e) {
                 throw new CommandFormatException("Failed to add overlay", e);
             }
+        }
+    }
+
+    protected void addLinkDeploymentSteps(final String overlayName, final String serverGroup, final String[] deployments,
+            final ModelNode steps) {
+        for(String deployment : deployments) {
+            final ModelNode op = new ModelNode();
+            final ModelNode address = op.get(Util.ADDRESS);
+            if(serverGroup != null) {
+                address.add(Util.SERVER_GROUP, serverGroup);
+            }
+            address.add(Util.DEPLOYMENT_OVERLAY, overlayName);
+            address.add(Util.DEPLOYMENT, deployment);
+            op.get(Util.OPERATION).set(Util.ADD);
+            steps.add(op);
+        }
+    }
+
+    protected void addRemoveDeploymentSteps(final String overlayName, String serverGroup,
+            final List<String> deployments, final ModelNode steps) {
+        for(String deploymentName : deployments) {
+            final ModelNode op = new ModelNode();
+            final ModelNode addr = op.get(Util.ADDRESS);
+            if(serverGroup != null) {
+                addr.add(Util.SERVER_GROUP, serverGroup);
+            }
+            addr.add(Util.DEPLOYMENT_OVERLAY, overlayName);
+            addr.add(Util.DEPLOYMENT, deploymentName);
+            op.get(Util.OPERATION).set(Util.REMOVE);
+            steps.add(op);
         }
     }
 }
