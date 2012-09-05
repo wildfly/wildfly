@@ -40,6 +40,7 @@ import static org.jboss.as.jmx.CommonAttributes.REMOTING_CONNECTOR;
 
 import java.util.Collections;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -103,8 +104,8 @@ public class JMXExtension implements Extension {
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JMXSubsystemRootResource());
         subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem.registerSubModel(ShowModelResourceResolved.INSTANCE);
-        subsystem.registerSubModel(ShowModelResourceExpression.INSTANCE);
+        subsystem.registerSubModel(ExposeModelResourceResolved.INSTANCE);
+        subsystem.registerSubModel(ExposeModelResourceExpression.INSTANCE);
         subsystem.registerSubModel(RemotingConnectorResource.INSTANCE);
         registration.registerXMLElementWriter(writer);
 
@@ -140,17 +141,20 @@ public class JMXExtension implements Extension {
         final TransformersSubRegistration transformers = registration.registerModelTransformers(ModelVersion.create(1, 0, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
             @Override
             protected ModelNode transformModel(TransformationContext context, ModelNode model) {
-                boolean showModel = model.get(CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED).isDefined();
+                boolean showModel = model.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).isDefined();
                 ModelNode result = model.clone();
                 result.get(CommonAttributes.SHOW_MODEL).set(showModel);
+                result.remove(CommonAttributes.EXPOSE_MODEL);
                 return result;
             }
         });
 
-        TransformersSubRegistration expressions = transformers.registerSubResource(ShowModelResourceExpression.INSTANCE.getPathElement());
+
+        TransformersSubRegistration expressions = transformers.registerSubResource(ExposeModelResourceExpression.INSTANCE.getPathElement());
+
         expressions.discardOperations(ADD, REMOVE, WRITE_ATTRIBUTE_OPERATION, READ_ATTRIBUTE_OPERATION);
 
-        TransformersSubRegistration resolved = transformers.registerSubResource(ShowModelResourceResolved.INSTANCE.getPathElement());
+        TransformersSubRegistration resolved = transformers.registerSubResource(ExposeModelResourceResolved.INSTANCE.getPathElement());
         resolved.discardOperations(WRITE_ATTRIBUTE_OPERATION);
         resolved.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
             @Override
@@ -279,7 +283,7 @@ public class JMXExtension implements Extension {
                         }
                         if (parseShowModelElement(reader)) {
                             //Add the show-model=>resolved part with the default domain name
-                            ModelNode op = createOperation(ADD, CommonAttributes.SHOW_MODEL, CommonAttributes.RESOLVED);
+                            ModelNode op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
                             //Use false here to keep total backwards compatibility
                             op.get(CommonAttributes.PROPER_PROPERTY_FORMAT).set(false);
                             list.add(op);
@@ -347,16 +351,16 @@ public class JMXExtension implements Extension {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
-                    case SHOW_RESOLVED_MODEL:
+                    case EXPOSE_RESOLVED_MODEL:
                         if (showResolvedModel) {
-                            throw ParseUtils.duplicateNamedElement(reader, Element.SHOW_RESOLVED_MODEL.getLocalName());
+                            throw ParseUtils.duplicateNamedElement(reader, Element.EXPOSE_RESOLVED_MODEL.getLocalName());
                         }
                         showResolvedModel = true;
                         list.add(parseShowModelElement(reader, CommonAttributes.RESOLVED));
                         break;
-                    case SHOW_EXPRESSION_MODEL:
+                    case EXPOSE_EXPRESSION_MODEL:
                         if (showExpressionModel) {
-                            throw ParseUtils.duplicateNamedElement(reader, Element.SHOW_EXPRESSION_MODEL.getLocalName());
+                            throw ParseUtils.duplicateNamedElement(reader, Element.EXPOSE_EXPRESSION_MODEL.getLocalName());
                         }
                         showExpressionModel = true;
                         list.add(parseShowModelElement(reader, CommonAttributes.EXPRESSION));
@@ -378,7 +382,7 @@ public class JMXExtension implements Extension {
 
         private ModelNode parseShowModelElement(XMLExtendedStreamReader reader, String showModelChild) throws XMLStreamException {
 
-            ModelNode op = createOperation(ADD, CommonAttributes.SHOW_MODEL, showModelChild);
+            ModelNode op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, showModelChild);
 
             String domainName = null;
             Boolean properPropertyFormat = null;
@@ -388,11 +392,11 @@ public class JMXExtension implements Extension {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                 case DOMAIN_NAME:
-                    ShowModelResource.getDomainNameAttribute(showModelChild).parseAndSetParameter(value, op, reader);
+                    ExposeModelResource.getDomainNameAttribute(showModelChild).parseAndSetParameter(value, op, reader);
                     break;
                 case PROPER_PROPETY_FORMAT:
                     if (showModelChild.equals(CommonAttributes.RESOLVED)) {
-                        ShowModelResourceResolved.PROPER_PROPERTY_FORMAT.parseAndSetParameter(value, op, reader);
+                        ExposeModelResourceResolved.PROPER_PROPERTY_FORMAT.parseAndSetParameter(value, op, reader);
                     } else {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
@@ -419,16 +423,16 @@ public class JMXExtension implements Extension {
             ModelNode node = context.getModelNode();
 
             context.startSubsystemElement(schemaVer.getUriString(), false);
-            if (node.hasDefined(CommonAttributes.SHOW_MODEL)) {
-                ModelNode showModel = node.get(CommonAttributes.SHOW_MODEL);
+            if (node.hasDefined(CommonAttributes.EXPOSE_MODEL)) {
+                ModelNode showModel = node.get(CommonAttributes.EXPOSE_MODEL);
                 if (showModel.hasDefined(CommonAttributes.RESOLVED)) {
-                    writer.writeEmptyElement(Element.SHOW_RESOLVED_MODEL.getLocalName());
-                    ShowModelResourceResolved.DOMAIN_NAME.marshallAsAttribute(showModel.get(CommonAttributes.RESOLVED), false, writer);
-                    ShowModelResourceResolved.PROPER_PROPERTY_FORMAT.marshallAsAttribute(showModel.get(CommonAttributes.RESOLVED), false, writer);
+                    writer.writeEmptyElement(Element.EXPOSE_RESOLVED_MODEL.getLocalName());
+                    ExposeModelResourceResolved.DOMAIN_NAME.marshallAsAttribute(showModel.get(CommonAttributes.RESOLVED), false, writer);
+                    ExposeModelResourceResolved.PROPER_PROPERTY_FORMAT.marshallAsAttribute(showModel.get(CommonAttributes.RESOLVED), false, writer);
                 }
                 if (showModel.hasDefined(CommonAttributes.EXPRESSION)) {
-                    writer.writeEmptyElement(Element.SHOW_EXPRESSION_MODEL.getLocalName());
-                    ShowModelResourceExpression.DOMAIN_NAME.marshallAsAttribute(showModel.get(CommonAttributes.EXPRESSION), false, writer);
+                    writer.writeEmptyElement(Element.EXPOSE_EXPRESSION_MODEL.getLocalName());
+                    ExposeModelResourceExpression.DOMAIN_NAME.marshallAsAttribute(showModel.get(CommonAttributes.EXPRESSION), false, writer);
                 }
             }
             if (node.hasDefined(CommonAttributes.REMOTING_CONNECTOR)) {

@@ -32,8 +32,8 @@
 
     <xs:complexType name="subsystem">
       <xs:sequence>
-         <xs:element name="show-resolved-model" type="resolvedModelType" minOccurs="0" maxOccurs="1"/>
-         <xs:element name="show-expression-model" type="expressionModelType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="expose-resolved-model" type="resolvedModelType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="expose-expression-model" type="expressionModelType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="remoting-connector" type="remotingConnectorRefType" minOccurs="0"/>
       </xs:sequence>
     </xs:complexType>

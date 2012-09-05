@@ -1160,8 +1160,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
         // Parse the subsystem xml and install into the controller
         String subsystemXml = "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">"
-                + "<show-resolved-model domain-name=\"jboss.resolved\"/>"
-                + "<show-expression-model/>"
+                + "<expose-resolved-model domain-name=\"jboss.resolved\"/>"
+                + "<expose-expression-model/>"
                 + "<remoting-connector/>" + "</subsystem>"
                 + additionalInitialization.getExtraXml();
         KernelServices services = super.installInController(additionalInitialization, subsystemXml);

@@ -266,7 +266,7 @@ public class GlobalOperationHandlers {
             final Set<String> attributeNames = registry != null ? registry.getAttributeNames(PathAddress.EMPTY_ADDRESS) : Collections.<String>emptySet();
             for (final String attributeName : attributeNames) {
                 final AttributeAccess access = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
-                if (access == null) {
+                if (access == null || access.getFlags().contains(AttributeAccess.Flag.ALIAS) && !aliases) {
                     continue;
                 } else {
                     final AttributeAccess.Storage storage = access.getStorageType();

@@ -66,6 +66,7 @@ import junit.framework.Assert;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -191,6 +192,11 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         result = executeForResult(op);
         Assert.assertTrue(result.isDefined());
         checkChildResourceDescription(result);
+    }
+
+    @Test
+    public void testAliasedAttributes() throws Exception {
+
     }
 
     @Test
@@ -391,9 +397,15 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
         writeAttribute("rw", "abc", other, MODEL);
         Assert.assertEquals("abc", readAttribute("rw", other, MODEL));
+        Assert.assertEquals("abc", readAttribute("rwa", other, MODEL));
+
+        writeAttribute("rwa", "123", other, MODEL);
+        Assert.assertEquals("123", readAttribute("rw", other, MODEL));
+        Assert.assertEquals("123", readAttribute("rwa", other, MODEL));
 
         undefineAttribute("rw", other, MODEL);
         Assert.assertNull(readAttribute("rw", other, MODEL));
+        Assert.assertNull(readAttribute("rwa", other, MODEL));
 
         writeAttribute("rw", "aliased", other, MODEL, CHILD, KID_ALIASED);
         Assert.assertEquals("aliased", readAttribute("rw", other, MODEL, CHILD, KID_MODEL));
@@ -478,6 +490,13 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         if (ro != null && rw != null) {
             Assert.assertEquals(ro, model.get("ro").asString());
             Assert.assertEquals(rw, model.get("rw").asString());
+            if (includeAlias) {
+                Assert.assertEquals(rw, model.get("rwa").asString());
+                Assert.assertEquals(ro, model.get("roa").asString());
+            } else {
+                Assert.assertFalse(model.hasDefined("rwa"));
+                Assert.assertFalse(model.hasDefined("roa"));
+            }
             if (rt != null) {
                 Assert.assertEquals(rt, model.get("rt").asString());
             }
@@ -499,10 +518,12 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
     private void checkReadResourceDescription(ModelNode resource, boolean aliasedChild) throws Exception {
         Assert.assertEquals("The test resource", resource.get(DESCRIPTION).asString());
-        Assert.assertEquals(3, resource.get(ATTRIBUTES).keys().size());
+        Assert.assertEquals(5, resource.get(ATTRIBUTES).keys().size());
         checkAttribute(resource.get(ATTRIBUTES, "ro"), "R-O attr", AttributeAccess.AccessType.READ_ONLY.toString(), AttributeAccess.Storage.CONFIGURATION.toString());
         checkAttribute(resource.get(ATTRIBUTES, "rw"), "R-W attr", AttributeAccess.AccessType.READ_WRITE.toString(), AttributeAccess.Storage.CONFIGURATION.toString());
         checkAttribute(resource.get(ATTRIBUTES, "rt"), "R-T attr", AttributeAccess.AccessType.READ_ONLY.toString(), AttributeAccess.Storage.RUNTIME.toString());
+        checkAttribute(resource.get(ATTRIBUTES, "roa"), "R-O alias", AttributeAccess.AccessType.READ_ONLY.toString(), AttributeAccess.Storage.CONFIGURATION.toString());
+        checkAttribute(resource.get(ATTRIBUTES, "rwa"), "R-W alias", AttributeAccess.AccessType.READ_WRITE.toString(), AttributeAccess.Storage.CONFIGURATION.toString());
 
         Assert.assertEquals(3, resource.get(OPERATIONS).keys().size());
         Assert.assertTrue(resource.get(OPERATIONS, ADD).isDefined());
@@ -680,6 +701,12 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
     private static SimpleAttributeDefinition READ_WRITE = new SimpleAttributeDefinition("rw", ModelType.STRING, true);
     private static SimpleAttributeDefinition READ_ONLY = new SimpleAttributeDefinition("ro", ModelType.STRING, false);
     private static SimpleAttributeDefinition RUNTIME = SimpleAttributeDefinitionBuilder.create("rt", ModelType.STRING, false).setStorageRuntime().build();
+    private static SimpleAttributeDefinition READ_WRITE_ALIAS = SimpleAttributeDefinitionBuilder.create("rwa", READ_WRITE)
+            .setFlags(AttributeAccess.Flag.ALIAS)
+            .build();
+    private static SimpleAttributeDefinition READ_ONLY_ALIAS = SimpleAttributeDefinitionBuilder.create("roa", READ_ONLY)
+            .setFlags(AttributeAccess.Flag.ALIAS)
+            .build();
 
     private class CoreResourceDefinition extends SimpleResourceDefinition {
 
@@ -692,6 +719,8 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
             resourceRegistration.registerReadWriteAttribute(READ_WRITE, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true));
             resourceRegistration.registerReadOnlyAttribute(READ_ONLY, null);
             resourceRegistration.registerReadOnlyAttribute(RUNTIME, new CoreRuntimeHandler());
+            resourceRegistration.registerReadWriteAttribute(READ_WRITE_ALIAS, TestAttributeAliasHandler.READ_WRITE_ALIAS, TestAttributeAliasHandler.READ_WRITE_ALIAS);
+            resourceRegistration.registerReadOnlyAttribute(READ_ONLY_ALIAS, TestAttributeAliasHandler.READ_ONLY_ALIAS);
         }
 
 
@@ -742,6 +771,8 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         strings.put("test.ro", "R-O attr");
         strings.put("test.rw", "R-W attr");
         strings.put("test.rt", "R-T attr");
+        strings.put("test.roa", "R-O alias");
+        strings.put("test.rwa", "R-W alias");
         strings.put("test.add", "Add test resource");
         strings.put("test.remove", "Remove test resource");
         strings.put("test.child", "Remove test resource");
@@ -837,4 +868,26 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         }
     }
 
+    private static class TestAttributeAliasHandler implements OperationStepHandler {
+        private final String targetAttribute;
+
+        static final TestAttributeAliasHandler READ_ONLY_ALIAS = new TestAttributeAliasHandler("ro");
+
+        static final TestAttributeAliasHandler READ_WRITE_ALIAS = new TestAttributeAliasHandler("rw");
+
+        public TestAttributeAliasHandler(String targetAttribute) {
+            this.targetAttribute = targetAttribute;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            OperationStepHandler step =  operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) ? GlobalOperationHandlers.WRITE_ATTRIBUTE : GlobalOperationHandlers.READ_ATTRIBUTE;
+            ModelNode aliasOp = operation.clone();
+            aliasOp.get(NAME).set(targetAttribute);
+            context.addStep(aliasOp, step, Stage.IMMEDIATE);
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }
+
+
+    }
 }

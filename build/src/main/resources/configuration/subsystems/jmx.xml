@@ -3,8 +3,8 @@
 <config default-supplement="default">
    <extension-module>org.jboss.as.jmx</extension-module>
    <subsystem xmlns="urn:jboss:domain:jmx:1.2">
-       <show-resolved-model/>
-       <show-expression-model/>
+       <expose-resolved-model/>
+       <expose-expression-model/>
        <?REMOTING-CONNECTOR?>
    </subsystem>
    <supplement name="default">

@@ -71,6 +71,9 @@ public class SimpleAttributeDefinitionBuilder extends AbstractAttributeDefinitio
                 .setAllowExpression(expressionAllowed);
     }
 
+    public static SimpleAttributeDefinitionBuilder create(final String attributeName, final SimpleAttributeDefinition basis) {
+        return new SimpleAttributeDefinitionBuilder(attributeName, basis);
+    }
 
     public SimpleAttributeDefinitionBuilder(final String attributeName, final ModelType type) {
         this(attributeName, type, false);
@@ -82,6 +85,10 @@ public class SimpleAttributeDefinitionBuilder extends AbstractAttributeDefinitio
 
     public SimpleAttributeDefinitionBuilder(final SimpleAttributeDefinition basis) {
         super(basis);
+    }
+
+    public SimpleAttributeDefinitionBuilder(final String attributeName, final SimpleAttributeDefinition basis) {
+        super(attributeName, basis);
     }
 
     public SimpleAttributeDefinition build() {
