@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -32,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -100,6 +104,16 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         ModelNode mainResult = mainServices.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
 
+        ModelNode successResult = new ModelNode();
+        successResult.get(OUTCOME).set(SUCCESS);
+        successResult.protect();
+        ModelNode failedResult = new ModelNode();
+        failedResult.get(OUTCOME).set(FAILED);
+        failedResult.protect();
+        ModelNode ignoreResult = new ModelNode();
+        ignoreResult.get(OUTCOME).set(IGNORED);
+        ignoreResult.protect();
+
         try {
             TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
             // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
@@ -108,6 +122,15 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         } catch (OperationFailedException e) {
             // OK
         }
+        // TODO replace try/catch above with the below once RejectExpressionValuesTransformer is fixed
+//        TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
+//        ModelNode transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
+//        assertEquals("success transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
+//        transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
+//        assertEquals("failed transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
+//        assertTrue("failed transformed with failure description", transformedResult.hasDefined(FAILURE_DESCRIPTION));
+//        transformedResult = transformedOperation.getResultTransformer().transformResult(ignoreResult);
+//        assertEquals("ignored result untransformed", IGNORED, transformedResult.get(OUTCOME).asString());
 
         operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
@@ -122,12 +145,13 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         mainResult = mainServices.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
 
-        try {
-            TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-            // use-auto-recovery has been added in version 1.2, it must fail for previous versions
-            fail("should reject the write-attribute operation,instead got " + transformedOperation.getTransformedOperation().toJSONString(true));
-        } catch (OperationFailedException e) {
-            // OK
-        }
+        TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
+        ModelNode transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
+        assertEquals("success transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
+        transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
+        assertEquals("failed transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
+        assertTrue("failed transformed with failure description", transformedResult.hasDefined(FAILURE_DESCRIPTION));
+        transformedResult = transformedOperation.getResultTransformer().transformResult(ignoreResult);
+        assertEquals("ignored result untransformed", IGNORED, transformedResult.get(OUTCOME).asString());
     }
 }
