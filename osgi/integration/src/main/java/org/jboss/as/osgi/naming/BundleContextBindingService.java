@@ -53,8 +53,7 @@ final class BundleContextBindingService {
             }
         };
         ServiceBuilder<?> builder = serviceTarget.addService(getBinderServiceName(), binderService);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
-        builder.addDependency(Services.FRAMEWORK_ACTIVE);
+        builder.addDependency(Services.FRAMEWORK_ACTIVE, BundleContext.class, new ManagedReferenceInjector<BundleContext>(binderService.getManagedObjectInjector()));
         builder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
             public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                 switch (transition) {

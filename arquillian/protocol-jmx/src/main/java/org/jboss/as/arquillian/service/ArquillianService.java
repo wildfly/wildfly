@@ -220,7 +220,7 @@ public class ArquillianService implements Service<ArquillianService> {
         private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             final ContextManagerBuilder builder = new ContextManagerBuilder();
             final DeploymentUnit depUnit = config.getDeploymentUnit();
-            final XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+            final XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
             final Module module = depUnit.getAttachment(Attachments.MODULE);
             if (bundle == null && module != null) {
                 builder.add(new TCCLSetupAction(module.getClassLoader()));

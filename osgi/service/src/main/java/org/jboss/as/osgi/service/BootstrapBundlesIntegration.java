@@ -24,7 +24,6 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.osgi.framework.IntegrationServices.BOOTSTRAP_BUNDLES;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,6 +37,7 @@ import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.as.server.ServerEnvironment;
@@ -48,14 +48,17 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.framework.BootstrapBundlesInstall;
 import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.StorageState;
 import org.jboss.osgi.framework.StorageStatePlugin;
@@ -82,12 +85,12 @@ import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.startlevel.StartLevel;
 
 /**
- * Integration point to auto install bundles at framework startup.
+ * An {@link IntegrationService} to install the configured capability bundles.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
+class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implements IntegrationService<Void> {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<StorageStatePlugin> injectedStorageProvider = new InjectedValue<StorageStatePlugin>();
@@ -103,23 +106,28 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         super(BOOTSTRAP_BUNDLES);
     }
 
+    ServiceController<Void> install(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
+        ServiceController<Void> controller = super.install(serviceTarget);
+        if (verificationHandler != null)
+            controller.addListener(Inheritance.ALL, verificationHandler);
+        return controller;
+    }
+
     @Override
     protected void addServiceDependencies(ServiceBuilder<Void> builder) {
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedServerEnvironment);
         builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, injectedPackageAdmin);
-        builder.addDependency(Services.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, injectedStorageProvider);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedSystemContext);
+        builder.addDependency(IntegrationService.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, injectedStorageProvider);
+        builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, injectedStartLevel);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
-        builder.addDependency(Services.FRAMEWORK_CREATE);
     }
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        ServiceController<?> serviceController = context.getController();
-        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        super.start(context);
 
         final BundleContext syscontext = injectedSystemContext.getValue();
         final List<Deployment> deployments = new ArrayList<Deployment>();

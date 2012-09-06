@@ -46,7 +46,7 @@ public class WabServletContextServiceProcessor implements DeploymentUnitProcesso
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
 
         if (activator != null && bundle != null) {
             registerServletContext(bundle.getBundleContext(), activator.getContext().getServletContext());

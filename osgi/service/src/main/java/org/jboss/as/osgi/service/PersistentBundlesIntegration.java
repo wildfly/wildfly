@@ -21,41 +21,49 @@
  */
 package org.jboss.as.osgi.service;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.osgi.framework.IntegrationServices.PERSISTENT_BUNDLES;
-
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceListener.Inheritance;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BootstrapBundlesInstall;
+import org.jboss.osgi.framework.IntegrationService;
 
 /**
- * A service that provides persistent bundles on framework startup.
+ * An {@link IntegrationService} that installs persistent bundles on framework startup.
  *
  * @author thomas.diesler@jboss.com
  * @since 12-Apr-2012
  */
-public class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> {
+class PersistentBundlesIntegration extends BootstrapBundlesInstall<Void> implements IntegrationService<Void> {
 
     PersistentBundlesIntegration() {
         super(PERSISTENT_BUNDLES);
+    }
+
+    ServiceController<Void> install(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
+        ServiceController<Void> controller = super.install(serviceTarget);
+        if (verificationHandler != null)
+            controller.addListener(Inheritance.ALL, verificationHandler);
+        return controller;
     }
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<Void> builder) {
         builder.addDependencies(InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE);
         builder.addDependencies(ModuleRegistrationTracker.MODULE_REGISTRATION_COMPLETE);
+        builder.addDependencies(IntegrationService.BOOTSTRAP_BUNDLES_COMPLETE);
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        ServiceController<?> serviceController = context.getController();
-        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+        super.start(context);
 
         // This actually does not install any bundle deployments
         // At server startup the persistet bundles are deployed like any other persistet deployment
