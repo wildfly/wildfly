@@ -1156,7 +1156,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(address);
-        op.get(CONTENT).get(HASH).set(content);
+        op.get(CONTENT).set(content);
         list.add(op);
 
     }
@@ -1593,7 +1593,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     final Set<String> overrides = overridesNode.keys();
                     for (final String override : overrides) {
                         final ModelNode overrideNode = overridesNode.get(override);
-                        final String content = HashUtil.bytesToHexString(overrideNode.require(CONTENT).require(HASH).asBytes());
+                        final String content = HashUtil.bytesToHexString(overrideNode.require(CONTENT).asBytes());
                         writer.writeStartElement(Element.CONTENT.getLocalName());
                         writeAttribute(writer, Attribute.PATH, override);
                         writeAttribute(writer, Attribute.CONTENT, content);

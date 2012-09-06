@@ -25,12 +25,14 @@ package org.jboss.as.server.deploymentoverlay;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
@@ -62,7 +64,7 @@ public class ReadContentHandler implements OperationStepHandler {
         for(final PathElement element : address) {
             resource = resource.getChild(element);
         }
-        byte[] content = resource.getModel().get(CONTENT).get(HASH).asBytes();
+        byte[] content = resource.getModel().get(CONTENT).asBytes();
         final VirtualFile file = contentRepository.getContent(content);
         try {
             context.getResult().set(readFile(file));
@@ -94,4 +96,5 @@ public class ReadContentHandler implements OperationStepHandler {
             }
         }
     }
+
 }

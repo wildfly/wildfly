@@ -559,7 +559,7 @@ public final class ManagedServerOperationsFactory {
                         }
                         addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT_OVERLAY, name), PathElement.pathElement(CONTENT, contentName));
                         addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
-                        addOp.get(CONTENT).set(contentDetails.get(CONTENT));
+                        addOp.get(CONTENT).get(HASH).set(contentDetails.get(CONTENT));
                         updates.add(addOp);
                     }
                 }

@@ -85,13 +85,15 @@ public class ContentAdd extends AbstractAddStepHandler {
         final String path = address.getLastElement().getValue();
         final String name = address.getElement(address.size() - 2).getValue();
         ModelNode content = operation.get(CONTENT);
+        final byte[] hash;
         if (content.hasDefined(HASH)) {
             managedContentValidator.validate(content);
-            byte[] hash = content.require(HASH).asBytes();
+            hash = content.require(HASH).asBytes();
             addFromHash(hash, name, path, context);
         } else {
-            addFromContentAdditionParameter(context, content);
+            hash = addFromContentAdditionParameter(context, content);
         }
+        operation.get(CONTENT).set(hash);
         super.populateModel(context, operation, resource);
     }
 
@@ -101,7 +103,7 @@ public class ContentAdd extends AbstractAddStepHandler {
         for (AttributeDefinition attr : ContentDefinition.attributes()) {
             attr.validateAndSet(operation, model);
         }
-        final byte[] hash = operation.get(CONTENT).get(HASH).asBytes();
+        final byte[] hash = operation.get(CONTENT).asBytes();
         if (remoteRepository != null) {
             remoteRepository.getDeploymentFiles(hash);
         }
@@ -116,7 +118,7 @@ public class ContentAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String path = address.getLastElement().getValue();
         final String name = address.getElement(address.size() - 2).getValue();
-        final byte[] content = model.get(ModelDescriptionConstants.CONTENT).get(HASH).asBytes();
+        final byte[] content = model.get(ModelDescriptionConstants.CONTENT).asBytes();
 
         installServices(context, verificationHandler, newControllers, name, path, content);
 
