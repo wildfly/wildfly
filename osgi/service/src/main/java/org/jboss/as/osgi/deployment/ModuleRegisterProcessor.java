@@ -61,7 +61,7 @@ public class ModuleRegisterProcessor implements DeploymentUnitProcessor {
             return;
 
         // Don't register Bundle deployments
-        if (depUnit.hasAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY))
+        if (depUnit.hasAttachment(OSGiConstants.BUNDLE_KEY))
             return;
 
         // Don't register private module deployments

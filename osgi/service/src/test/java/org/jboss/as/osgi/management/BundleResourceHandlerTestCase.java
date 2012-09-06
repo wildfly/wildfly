@@ -30,7 +30,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.osgi.management.BundleResourceHandler;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -225,12 +224,6 @@ public class BundleResourceHandlerTestCase {
         startLevelService = Mockito.mock(StartLevel.class);
         bundleContext = Mockito.mock(BundleContext.class);
 
-        Bundle systemBundle = Mockito.mock(Bundle.class);
-        Mockito.when(systemBundle.getBundleContext()).thenReturn(bundleContext);
-
-        ServiceController sbsc = Mockito.mock(ServiceController.class);
-        Mockito.when(sbsc.getValue()).thenReturn(systemBundle);
-
         ServiceController scsc = Mockito.mock(ServiceController.class);
         Mockito.when(scsc.getValue()).thenReturn(bundleContext);
 
@@ -238,8 +231,7 @@ public class BundleResourceHandlerTestCase {
         Mockito.when(slsc.getValue()).thenReturn(startLevelService);
 
         ServiceRegistry sr = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(sr.getService(Services.SYSTEM_CONTEXT)).thenReturn(scsc);
-        Mockito.when(sr.getService(Services.SYSTEM_BUNDLE)).thenReturn(sbsc);
+        Mockito.when(sr.getService(Services.FRAMEWORK_CREATE)).thenReturn(scsc);
         Mockito.when(sr.getService(Services.START_LEVEL)).thenReturn(slsc);
 
         contextResult = new ModelNode();

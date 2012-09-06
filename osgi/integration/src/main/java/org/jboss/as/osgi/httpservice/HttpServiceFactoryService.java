@@ -95,8 +95,7 @@ public final class HttpServiceFactoryService extends AbstractService<StandardCon
         builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(VIRTUAL_HOST), VirtualHost.class, service.injectedVirtualHost);
         builder.addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.injectedWebServer);
         builder.addDependency(DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
-        builder.addDependency(Services.FRAMEWORK_ACTIVE);
+        builder.addDependency(Services.FRAMEWORK_ACTIVE, BundleContext.class, service.injectedSystemContext);
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.PASSIVE);
         return builder.install();

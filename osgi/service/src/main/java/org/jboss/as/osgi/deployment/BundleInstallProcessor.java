@@ -37,7 +37,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.StorageState;
 import org.jboss.osgi.framework.StorageStatePlugin;
 import org.osgi.framework.BundleException;
@@ -72,7 +72,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             } catch (BundleException ex) {
                 throw new DeploymentUnitProcessingException(ex);
             }
-            phaseContext.addDeploymentDependency(serviceName, OSGiConstants.INSTALLED_BUNDLE_KEY);
+            phaseContext.addDeploymentDependency(serviceName, OSGiConstants.BUNDLE_KEY);
             depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
             depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
         }
@@ -89,7 +89,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
     }
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
-        StorageStatePlugin storageProvider = (StorageStatePlugin) phaseContext.getServiceRegistry().getRequiredService(Services.STORAGE_STATE_PLUGIN).getValue();
+        StorageStatePlugin storageProvider = (StorageStatePlugin) phaseContext.getServiceRegistry().getRequiredService(IntegrationService.STORAGE_STATE_PLUGIN).getValue();
         StorageState storageState = storageProvider.getByLocation(deployment.getLocation());
         if (storageState != null) {
             deployment.addAttachment(StorageState.class, storageState);
