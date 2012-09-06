@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
@@ -256,10 +257,11 @@ public class ModelTestUtils {
         if (node1.getType() == ModelType.OBJECT) {
             ModelNode model1 = ignoreUndefined ? trimUndefinedChildren(node1) : node1;
             ModelNode model2 = ignoreUndefined ? trimUndefinedChildren(node2) : node2;
-            final Set<String> keys1 = model1.keys();
-            final Set<String> keys2 = model2.keys();
+            final Set<String> keys1 = new TreeSet<String>(model1.keys());
+            final Set<String> keys2 = new TreeSet<String>(model2.keys());
 
-            Assert.assertEquals(node1 + "\n" + node2, keys1.size(), keys2.size());
+            // compare string representations of the keys to help see the difference
+            Assert.assertEquals(node1 + "\n" + node2, keys1.toString(), keys2.toString());
             Assert.assertTrue(keys1.containsAll(keys2));
 
             for (String key : keys1) {
