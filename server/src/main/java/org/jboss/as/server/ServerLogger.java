@@ -392,6 +392,12 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15968, value= "jboss-deployment-dependencies cannot be used in a sub deployment, it must be specified at ear level: %s")
     void deploymentDependenciesAreATopLevelElement(String name);
+
+    @LogMessage(level = Logger.Level.ERROR)
+    @Message(id = 15969, value = "No deployment overlay content with hash %s is available in the deployment content repository for deployment %s at location %s. Because this Host Controller is booting in ADMIN-ONLY mode, boot will be allowed to proceed to provide administrators an opportunity to correct this problem. If this Host Controller were not in ADMIN-ONLY mode this would be a fatal boot failure.")
+    void reportAdminOnlyMissingDeploymentOverlayContent(String contentHash, String deploymentName, String contentName);
+
+
     // NOTE
 
 }
