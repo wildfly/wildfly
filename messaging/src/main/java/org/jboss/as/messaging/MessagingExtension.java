@@ -24,7 +24,11 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -39,6 +43,9 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -56,6 +63,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -289,20 +297,40 @@ public class MessagingExtension implements Extension {
                 final ModelNode transformedOperation = operation.clone();
                 transformedOperation.remove(ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY.getName());
                 transformedOperation.remove(ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES.getName());
-               return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
+                return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
             }
         });
         pooledConnectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformer() {
             @Override
             public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                     throws OperationFailedException {
+
+                OperationResultTransformer resultTransformer = ORIGINAL_RESULT;
+                final List<String> found = new ArrayList<String>();
+
                 String[] unsupportedAttributes = {ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY.getName(), ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES.getName()};
                 for (String attrName : unsupportedAttributes) {
                     if (operation.require(NAME).asString().equals(attrName)) {
-                        throw MessagingMessages.MESSAGES.unsupportedAttributeInVersion(attrName, version_1_1_0);
+                        if (found.size() == 0) {
+                            // Transform the result into a failure if the op wasn't ignored
+                            resultTransformer = new OperationResultTransformer() {
+                                @Override
+                                public ModelNode transformResult(ModelNode result) {
+                                    ModelNode transformed = result;
+                                    if (!IGNORED.equals(result.get(OUTCOME).asString())) {
+                                        transformed = new ModelNode();
+                                        transformed.get(OUTCOME).set(FAILED);
+                                        transformed.get(FAILURE_DESCRIPTION).set(MessagingMessages.MESSAGES.unsupportedAttributeInVersion(found.toString(), version_1_1_0));
+                                    }
+                                    return transformed;
+                                }
+                            };
+                        }
+                        found.add(attrName);
                     }
                 }
-                return new TransformedOperation(operation, ORIGINAL_RESULT);
+
+                return new TransformedOperation(operation, resultTransformer);
             }
         });
     }
