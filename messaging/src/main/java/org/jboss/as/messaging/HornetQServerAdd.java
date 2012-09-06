@@ -229,7 +229,7 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Process acceptors and connectors
                 final Set<String> socketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processAcceptors(configuration, model, socketBindings);
+                TransportConfigOperationHandlers.processAcceptors(context, configuration, model, socketBindings);
 
                 for (final String socketBinding : socketBindings) {
                     final ServiceName socketName = SocketBinding.JBOSS_BINDING_NAME.append(socketBinding);
@@ -237,7 +237,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 }
 
                 final Set<String> outboundSocketBindings = new HashSet<String>();
-                TransportConfigOperationHandlers.processConnectors(configuration, model, outboundSocketBindings);
+                TransportConfigOperationHandlers.processConnectors(context, configuration, model, outboundSocketBindings);
                 for (final String outboundSocketBinding : outboundSocketBindings) {
                     final ServiceName outboundSocketName = OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketBinding);
                     // Optional dependency so it won't fail if the user used a ref to socket-binding instead of
