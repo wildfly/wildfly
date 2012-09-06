@@ -643,4 +643,7 @@ public interface ServerMessages {
 
     @Message(id = 18779, value = "No deployment overlay content with hash %s is available in the deployment content repository.")
     OperationFailedException noSuchDeploymentOverlayContent(String hash);
+
+    @Message(id = 18780, value = "Failed to read file %s")
+    OperationFailedException failedToLoadFile(VirtualFile file, @Cause IOException e);
 }

@@ -196,6 +196,7 @@ public class ModelDescriptionConstants {
     public static final String READ_CHILDREN_TYPES_OPERATION = "read-children-types";
     public static final String READ_CHILDREN_RESOURCES_OPERATION = "read-children-resources";
     public static final String READ_CONFIG_AS_XML_OPERATION = "read-config-as-xml";
+    public static final String READ_CONTENT = "read-content";
     public static final String READ_ONLY = "read-only";
     public static final String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
     public static final String READ_OPERATION_NAMES_OPERATION = "read-operation-names";
