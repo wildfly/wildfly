@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
@@ -33,6 +34,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
+import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -136,8 +141,8 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
         address = new ModelNode();
         address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
-        address.add("hornetq-server", "default");
-        address.add("pooled-connection-factory", "hornetq-ra-local");
+        address.add(HORNETQ_SERVER, "default");
+        address.add(POOLED_CONNECTION_FACTORY, "hornetq-ra-local");
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("use-auto-recovery");
         operation.get(VALUE).set("false");
@@ -153,5 +158,43 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         assertTrue("failed transformed with failure description", transformedResult.hasDefined(FAILURE_DESCRIPTION));
         transformedResult = transformedOperation.getResultTransformer().transformResult(ignoreResult);
         assertEquals("ignored result untransformed", IGNORED, transformedResult.get(OUTCOME).asString());
+    }
+
+    @Test
+    public void testRejectExpressionsForTransportParams() throws Exception {
+        String subsystemXml = readResource("subsystem_1_3.xml");
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+
+        // Add legacy subsystems
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1_0)
+            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, version_1_1_0);
+
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME);
+        address.add(HORNETQ_SERVER, "default");
+        address.add(REMOTE_CONNECTOR, "netty");
+        address.add(PARAM, "password");
+        operation.get(OP_ADDR).set(address);
+        operation.get(VALUE).set("${mypassword:default}");
+
+        ModelNode mainResult = mainServices.executeOperation(operation);
+        assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
+
+        try {
+            TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
+            fail("should reject the expression,instead got " + transformedOperation.getTransformedOperation().toJSONString(true));
+        } catch (OperationFailedException e) {
+            // OK
+        }
     }
 }
