@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -241,7 +242,16 @@ public class ServerOperationResolver {
     private Map<Set<ServerIdentity>, ModelNode> getDeploymentOverlayOperations(ModelNode operation,
                                                                                ModelNode host) {
         final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
-        return Collections.singletonMap(allServers, operation.clone());
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        ModelNode result = operation.clone();
+        if(address.size() ==2) {
+            if(address.getElement(1).getKey().equals(CONTENT)) {
+                final ModelNode content = new ModelNode();
+                content.get(HASH).set(operation.get(CONTENT));
+                result.get(CONTENT).set(content);
+            }
+        }
+        return Collections.singletonMap(allServers, result);
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerInterfaceOperations(ModelNode operation, PathAddress address,

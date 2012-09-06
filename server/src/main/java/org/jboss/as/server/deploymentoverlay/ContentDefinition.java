@@ -24,6 +24,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
@@ -35,11 +36,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 public class ContentDefinition extends SimpleResourceDefinition {
 
     static final ContentAttributeDefinition CONTENT =
-            new ContentAttributeDefinition(ModelDescriptionConstants.CONTENT, ModelType.OBJECT, false);
+            new ContentAttributeDefinition(ModelDescriptionConstants.CONTENT, ModelType.BYTES, false);
 
-    private final SimpleOperationDefinition readContent;
     private final ContentRepository contentRepository;
-
+    private final SimpleOperationDefinition readContent;
     private static final AttributeDefinition[] ATTRIBUTES = {CONTENT};
 
     public static AttributeDefinition[] attributes() {
@@ -51,8 +51,8 @@ public class ContentDefinition extends SimpleResourceDefinition {
                 CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY + "." + ModelDescriptionConstants.CONTENT, false),
                 new ContentAdd(contentRepository, remoteRepository),
                 ContentRemove.INSTANCE);
-        readContent = new SimpleOperationDefinition(ModelDescriptionConstants.READ_CONTENT, getResourceDescriptionResolver());
         this.contentRepository = contentRepository;
+        readContent = new SimpleOperationDefinition(READ_CONTENT, getResourceDescriptionResolver());
     }
 
     @Override
@@ -65,7 +65,8 @@ public class ContentDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(final ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(ModelDescriptionConstants.READ_CONTENT, new ReadContentHandler(contentRepository), getDescriptionProvider(resourceRegistration));
+        ReadContentHandler handler = new ReadContentHandler(contentRepository);
+        resourceRegistration.registerOperationHandler(readContent, handler);
     }
 
     public static final class ContentAttributeDefinition extends SimpleAttributeDefinition {
@@ -76,14 +77,6 @@ public class ContentDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        public ModelNode addResourceAttributeDescription(ModelNode resourceDescription, ResourceDescriptionResolver resolver,
-                                                         Locale locale, ResourceBundle bundle) {
-            final ModelNode result = super.addResourceAttributeDescription(resourceDescription, resolver, locale, bundle);
-            addAttributeValueTypeDescription(result, resolver, locale, bundle);
-            return result;
-        }
-
-        @Override
         public ModelNode addOperationParameterDescription(ModelNode resourceDescription, String operationName,
                                                           ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
             final ModelNode result = super.addOperationParameterDescription(resourceDescription, operationName, resolver, locale, bundle);
@@ -91,16 +84,10 @@ public class ContentDefinition extends SimpleResourceDefinition {
             return result;
         }
 
-        private void addAttributeValueTypeDescription(ModelNode result, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
-            final ModelNode valueType = getNoTextValueTypeDescription(result);
-            valueType.get(INPUT_STREAM_INDEX, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, HASH));
-            valueType.get(HASH, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, HASH));
-            valueType.get(BYTES, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, HASH));
-            valueType.get(URL, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, HASH));
-       }
 
         private void addOperationParameterValueTypeDescription(ModelNode result, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
             final ModelNode valueType = getNoTextValueTypeDescription(result);
+            result.get(TYPE).set(ModelType.OBJECT);
             valueType.get(INPUT_STREAM_INDEX, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, INPUT_STREAM_INDEX));
             valueType.get(HASH, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, HASH));
             valueType.get(BYTES, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, BYTES));
@@ -111,25 +98,25 @@ public class ContentDefinition extends SimpleResourceDefinition {
             final ModelNode valueType = parent.get(VALUE_TYPE);
             final ModelNode inputStreamIndex = valueType.get(INPUT_STREAM_INDEX);
             inputStreamIndex.get(TYPE).set(ModelType.INT);
-            inputStreamIndex.get(INPUT_STREAM_INDEX, DESCRIPTION);
-            inputStreamIndex.get(INPUT_STREAM_INDEX, REQUIRED).set(false);
-            inputStreamIndex.get(INPUT_STREAM_INDEX, MIN).set(0);
-            inputStreamIndex.get(INPUT_STREAM_INDEX, NILLABLE).set(true);
+            inputStreamIndex.get(DESCRIPTION);
+            inputStreamIndex.get(REQUIRED).set(false);
+            inputStreamIndex.get(MIN).set(0);
+            inputStreamIndex.get(NILLABLE).set(true);
 
             final ModelNode hash = valueType.get(HASH);
             hash.get(TYPE).set(ModelType.BYTES);
-            hash.get(HASH, DESCRIPTION);
-            hash.get(HASH, REQUIRED).set(false);
-            hash.get(HASH, MIN_LENGTH).set(20);
-            hash.get(HASH, MAX_LENGTH).set(20);
-            hash.get(HASH, NILLABLE).set(true);
+            hash.get(DESCRIPTION);
+            hash.get(REQUIRED).set(false);
+            hash.get(MIN_LENGTH).set(20);
+            hash.get(MAX_LENGTH).set(20);
+            hash.get(NILLABLE).set(true);
 
             final ModelNode bytes = valueType.get(BYTES);
             bytes.get(TYPE).set(ModelType.BYTES);
-            bytes.get(BYTES, DESCRIPTION);
-            bytes.get(BYTES, REQUIRED).set(false);
-            bytes.get(BYTES, MIN_LENGTH).set(1);
-            bytes.get(BYTES, NILLABLE).set(true);
+            bytes.get(DESCRIPTION);
+            bytes.get(REQUIRED).set(false);
+            bytes.get(MIN_LENGTH).set(1);
+            bytes.get(NILLABLE).set(true);
 
             final ModelNode url = valueType.get(URL);
             url.get(TYPE).set(ModelType.STRING);
