@@ -194,21 +194,17 @@ public class DeploymentOverlayTestCase {
 
 
         //add an override that will not be linked via a wildcard
-        op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES);
-        op.get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(getClass().getClassLoader().getResource("deploymentoverlay/override.xml")).getBytes());
-        ModelNode result = executeOnMaster(op);
-
         //add the content
         op = new ModelNode();
+        OperationBuilder builder = new OperationBuilder(op, true);
         ModelNode addr = new ModelNode();
         addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_OVERLAY);
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).get(HASH).set(result);
-        executeOnMaster(op);
+        op.get(ModelDescriptionConstants.CONTENT).get(INPUT_STREAM_INDEX).set(0);
+        builder.addInputStream(getClass().getClassLoader().getResourceAsStream("deploymentoverlay/override.xml"));
+        executeOnMaster(builder.build());
 
         //add the non-wildcard link to the server group
         op = new ModelNode();
@@ -235,25 +231,19 @@ public class DeploymentOverlayTestCase {
         executeOnMaster(op);
 
         op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES);
-        op.get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(getClass().getClassLoader().getResource( "deploymentoverlay/wildcard-override.xml")).getBytes());
-        result = executeOnMaster(op);
-
-        op = new ModelNode();
         addr = new ModelNode();
         addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_SERVER);
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).get(HASH).set(result);
+        op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(getClass().getClassLoader().getResource( "deploymentoverlay/wildcard-override.xml")).getBytes());
         executeOnMaster(op);
 
         op = new ModelNode();
         op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES);
         op.get(ModelDescriptionConstants.BYTES).set("new file".getBytes());
-        executeOnMaster(op);
+        final ModelNode result = executeOnMaster(op);
 
         op = new ModelNode();
         addr = new ModelNode();
