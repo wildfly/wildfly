@@ -46,8 +46,12 @@ if [ -z "$SHUTDOWN_WAIT" ]; then
   SHUTDOWN_WAIT=30
 fi
 
-if [ -z "$JBOSS_CONFIG" ]; then
-  JBOSS_CONFIG=domain.xml
+if [ -z "$JBOSS_DOMAIN_CONFIG" ]; then
+  JBOSS_DOMAIN_CONFIG=domain.xml
+fi
+
+if [ -z "$JBOSS_HOST_CONFIG" ]; then
+  JBOSS_HOST_CONFIG=host.xml
 fi
 
 JBOSS_SCRIPT=$JBOSS_HOME/bin/domain.sh
@@ -72,7 +76,7 @@ start() {
       echo -n "$prog is already running"
       failure
       echo
-      return 1 
+      return 1
     else
       rm -f $JBOSS_PIDFILE
     fi
@@ -87,9 +91,9 @@ start() {
 
   if [ ! -z "$JBOSS_USER" ]; then
     if [ -r /etc/rc.d/init.d/functions ]; then
-      daemon --user $JBOSS_USER LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT -c $JBOSS_CONFIG 2>&1 > $JBOSS_CONSOLE_LOG &
+      daemon --user $JBOSS_USER LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT --domain-config=$JBOSS_DOMAIN_CONFIG --host-config=$JBOSS_HOST_CONFIG 2>&1 > $JBOSS_CONSOLE_LOG &
     else
-      su - $JBOSS_USER -c "LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT -c $JBOSS_CONFIG" 2>&1 > $JBOSS_CONSOLE_LOG &
+      su - $JBOSS_USER -c "LAUNCH_JBOSS_IN_BACKGROUND=1 JBOSS_PIDFILE=$JBOSS_PIDFILE $JBOSS_SCRIPT --domain-config=$JBOSS_DOMAIN_CONFIG --host-config=$JBOSS_HOST_CONFIG" 2>&1 > $JBOSS_CONSOLE_LOG &
     fi
   fi
 
@@ -98,15 +102,15 @@ start() {
 
   until [ $count -gt $STARTUP_WAIT ]
   do
-    grep 'JBoss AS.*started in' $JBOSS_CONSOLE_LOG > /dev/null 
+    grep 'JBoss AS.*started in' $JBOSS_CONSOLE_LOG > /dev/null
     if [ $? -eq 0 ] ; then
       launched=true
       break
-    fi 
+    fi
     sleep 1
     let count=$count+1;
   done
-  
+
   success
   echo
   return 0
