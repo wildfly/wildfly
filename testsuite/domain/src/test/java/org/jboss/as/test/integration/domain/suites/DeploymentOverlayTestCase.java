@@ -57,6 +57,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
@@ -206,7 +207,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).set(result);
+        op.get(ModelDescriptionConstants.CONTENT).get(HASH).set(result);
         executeOnMaster(op);
 
         //add the non-wildcard link to the server group
@@ -245,7 +246,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).set(result);
+        op.get(ModelDescriptionConstants.CONTENT).get(HASH).set(result);
         executeOnMaster(op);
 
         op = new ModelNode();
@@ -260,7 +261,7 @@ public class DeploymentOverlayTestCase {
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/classes/wildcard-new-file");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).set(result);
+        op.get(ModelDescriptionConstants.CONTENT).get(HASH).set(result);
         executeOnMaster(op);
 /*
         //add the per server link
