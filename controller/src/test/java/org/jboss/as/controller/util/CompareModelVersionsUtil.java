@@ -21,6 +21,7 @@
 */
 package org.jboss.as.controller.util;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
@@ -32,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
@@ -226,6 +228,8 @@ public class CompareModelVersionsUtil {
 
             String id = "attribute '" + legacyEntry.getKey() + "'";
             compareAttributeOrOperationParameter(context, id, currentAttribute, legacyAttribute);
+            compareAccessType(context, id, currentAttribute, legacyAttribute);
+            compareStorage(context, id, currentAttribute, legacyAttribute);            
         }
     }
 
@@ -294,6 +298,18 @@ public class CompareModelVersionsUtil {
         boolean legacyNillable = legacy.get(EXPRESSIONS_ALLOWED).asBoolean(false);
         if (currentNillable != legacyNillable) {
             context.println("Different 'expressions-allowed' for " + id + ". Current: " + currentNillable + "; legacy: " + legacyNillable);
+        }
+    }
+
+    private void compareAccessType(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(ACCESS_TYPE).equals(legacy.get(ACCESS_TYPE))) {
+            context.println("Different 'access-type' for " + id + ". Current: " + current.get(ACCESS_TYPE) + "; legacy: " + legacy.get(ACCESS_TYPE));
+        }
+    }
+
+    private void compareStorage(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(STORAGE).equals(legacy.get(STORAGE))) {
+            context.println("Different 'storage' for " + id + ". Current: " + current.get(STORAGE) + "; legacy: " + legacy.get(STORAGE));
         }
     }
 
