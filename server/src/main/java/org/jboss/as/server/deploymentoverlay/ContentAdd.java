@@ -92,6 +92,9 @@ public class ContentAdd extends AbstractAddStepHandler {
             addFromHash(hash, name, path, context);
         } else {
             hash = addFromContentAdditionParameter(context, content);
+            if (remoteRepository != null) {
+                remoteRepository.getDeploymentFiles(hash);
+            }
         }
         operation.get(CONTENT).set(hash);
         super.populateModel(context, operation, resource);
@@ -104,9 +107,6 @@ public class ContentAdd extends AbstractAddStepHandler {
             attr.validateAndSet(operation, model);
         }
         final byte[] hash = operation.get(CONTENT).asBytes();
-        if (remoteRepository != null) {
-            remoteRepository.getDeploymentFiles(hash);
-        }
         if (!contentRepository.syncContent(hash)) {
             throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
         }
@@ -146,6 +146,9 @@ public class ContentAdd extends AbstractAddStepHandler {
     }
 
     byte[] addFromHash(byte[] hash, String deploymentOverlayName, final String contentName, final OperationContext context) throws OperationFailedException {
+        if(remoteRepository != null) {
+            remoteRepository.getDeploymentFiles(hash);
+        }
         if (!contentRepository.syncContent(hash)) {
             if (context.isBooting()) {
                 if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {

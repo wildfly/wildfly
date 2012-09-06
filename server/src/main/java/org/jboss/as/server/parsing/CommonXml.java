@@ -1156,7 +1156,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(address);
-        op.get(CONTENT).set(content);
+        op.get(CONTENT).get(HASH).set(content);
         list.add(op);
 
     }
