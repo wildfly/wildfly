@@ -441,7 +441,7 @@ public interface ServerMessages {
     @Message(id = 18716, value = "Could not create server base directory: %s")
     IllegalStateException couldNotCreateServerBaseDirectory(File file);
 
-    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuraiton file and restart.")
+    @Message(id = 18717, value = "No deployment content with hash %s is available in the deployment content repository for deployment '%s'. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment from the xml configuration file and restart.")
     OperationFailedException noSuchDeploymentContentAtBoot(String contentHash, String deploymentName);
 
     /** Label for DEBUG log listing of the server's system properties */
@@ -636,4 +636,11 @@ public interface ServerMessages {
 
     @Message(id = 18777, value = "Wildcard character * is only allowed at the beginning or end of the deployment name %s")
     OperationFailedException wildcardOnlyAllowedAtStartOrEnd(String str);
+
+
+    @Message(id = 18778, value = "No deployment overlay content with hash %s is available in the deployment content repository for deployment overlay '%s' at location %s. This is a fatal boot error. To correct the problem, either restart with the --admin-only switch set and use the CLI to install the missing content or remove it from the configuration, or remove the deployment overlay from the xml configuration file and restart.")
+    OperationFailedException noSuchDeploymentOverlayContentAtBoot(String contentHash, String deploymentOverlayName, String contentFile);
+
+    @Message(id = 18779, value = "No deployment overlay content with hash %s is available in the deployment content repository.")
+    OperationFailedException noSuchDeploymentOverlayContent(String hash);
 }
