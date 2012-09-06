@@ -53,7 +53,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -191,12 +190,6 @@ public class ServerGroupDescription {
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
-
-    public static ModelNode getSystemPropertiesDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return SystemPropertyDescriptions.getSystemPropertyDescription(locale, bundle.getString("server-group.system-property"), true);
-    }
-
 
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {

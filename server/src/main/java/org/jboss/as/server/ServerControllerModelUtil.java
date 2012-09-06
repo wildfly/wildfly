@@ -32,8 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.EnumSet;
 
@@ -47,7 +45,6 @@ import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -60,6 +57,7 @@ import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
@@ -75,9 +73,6 @@ import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
 import org.jboss.as.server.operations.DumpServicesHandler;
-import org.jboss.as.server.operations.SystemPropertyAddHandler;
-import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
-import org.jboss.as.server.operations.SystemPropertyValueWriteAttributeHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
@@ -109,13 +104,7 @@ public class ServerControllerModelUtil {
 
 
         // System Properties
-        ManagementResourceRegistration sysProps = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), ServerDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
-        SystemPropertyAddHandler spah = new SystemPropertyAddHandler(serverEnvironment, false);
-        sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, spah, spah, false);
-        SystemPropertyRemoveHandler sprh = new SystemPropertyRemoveHandler(serverEnvironment);
-        sysProps.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, sprh, sprh, false);
-        SystemPropertyValueWriteAttributeHandler spvwah = new SystemPropertyValueWriteAttributeHandler(serverEnvironment);
-        sysProps.registerReadWriteAttribute(VALUE, null, spvwah, AttributeAccess.Storage.CONFIGURATION);
+        root.registerSubModel(SystemPropertyResourceDefinition.createForStandaloneServer(serverEnvironment));
 
         //vault
         root.registerSubModel(new VaultResourceDefinition(vaultReader));

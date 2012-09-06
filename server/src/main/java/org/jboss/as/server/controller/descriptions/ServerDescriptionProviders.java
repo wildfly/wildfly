@@ -35,6 +35,7 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry
  *
  */
+@Deprecated
 public final class ServerDescriptionProviders {
 
     // Prevent instantiation
@@ -56,10 +57,4 @@ public final class ServerDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider SYSTEM_PROPERTIES_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ServerDescriptions.getSystemPropertyDescription(locale);
-        }
-    };
 }

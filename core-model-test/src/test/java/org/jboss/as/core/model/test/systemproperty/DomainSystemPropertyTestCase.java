@@ -46,12 +46,12 @@ public class DomainSystemPropertyTestCase extends AbstractSystemPropertyTest {
         return PathAddress.pathAddress(PathElement.pathElement(SYSTEM_PROPERTY, propName));
     }
 
-    protected KernelServicesBuilder createKernelServicesBuilder() {
+    protected KernelServicesBuilder createKernelServicesBuilder(boolean xml) {
         return createKernelServicesBuilder(ModelType.DOMAIN);
     }
 
     protected KernelServices createEmptyRoot() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder().build();
+        KernelServices kernelServices = createKernelServicesBuilder(false).build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         return kernelServices;
     }

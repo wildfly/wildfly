@@ -24,6 +24,7 @@ package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -37,13 +38,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
-
-    public static final SystemPropertyValueWriteAttributeHandler INSTANCE = new SystemPropertyValueWriteAttributeHandler(null);
+public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.AttributeDefinitionValidatingHandler {
 
     private final ProcessEnvironment processEnvironment;
 
-    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironment processEnvironment) {
+    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironment processEnvironment, AttributeDefinition valueAttribute) {
+        super(valueAttribute);
         this.processEnvironment = processEnvironment;
     }
 

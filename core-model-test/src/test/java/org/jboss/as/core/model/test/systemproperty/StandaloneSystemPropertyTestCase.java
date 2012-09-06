@@ -59,12 +59,12 @@ public class StandaloneSystemPropertyTestCase extends AbstractSystemPropertyTest
     }
 
 
-    protected KernelServicesBuilder createKernelServicesBuilder() {
+    protected KernelServicesBuilder createKernelServicesBuilder(boolean xml) {
         return createKernelServicesBuilder(ModelType.STANDALONE);
     }
 
     protected KernelServices createEmptyRoot() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder().build();
+        KernelServices kernelServices = createKernelServicesBuilder(false).build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         return kernelServices;
     }

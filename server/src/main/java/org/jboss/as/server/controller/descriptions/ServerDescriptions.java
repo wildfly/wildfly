@@ -50,9 +50,10 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@Deprecated
 public class ServerDescriptions {
 
-    private static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
@@ -76,12 +77,7 @@ public class ServerDescriptions {
                 ADMIN_ONLY, ModelType.BOOLEAN, true);
     }
 
-    public static final ModelNode getSystemPropertyDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return SystemPropertyDescriptions.getSystemPropertyDescription(locale, bundle.getString("server.system-property"), false);
-    }
-
-    static ResourceBundle getResourceBundle(Locale locale) {
+    public static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }

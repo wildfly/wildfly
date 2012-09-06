@@ -56,12 +56,12 @@ public class HostServerSystemPropertyTestCase extends AbstractSystemPropertyTest
         return SERVER_ONE_ADDRESS.append(PathElement.pathElement(SYSTEM_PROPERTY, propName));
     }
 
-    protected KernelServicesBuilder createKernelServicesBuilder() {
+    protected KernelServicesBuilder createKernelServicesBuilder(boolean xml) {
         return createKernelServicesBuilder(ModelType.HOST);
     }
 
     protected KernelServices createEmptyRoot() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder().setModelInitializer(bootOpModelInitializer, null).build();
+        KernelServices kernelServices = createKernelServicesBuilder(false).setModelInitializer(BOOT_OP_MODEL_INITIALIZER, null).build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         return kernelServices;
     }
@@ -71,7 +71,12 @@ public class HostServerSystemPropertyTestCase extends AbstractSystemPropertyTest
         return ModelTestUtils.getSubModel(model, SERVER_ONE_ADDRESS).get(SYSTEM_PROPERTY);
     }
 
-    private ModelInitializer bootOpModelInitializer = new ModelInitializer() {
+    @Override
+    protected String getXmlResource() {
+        return "host-server-systemproperties.xml";
+    }
+
+    private ModelInitializer BOOT_OP_MODEL_INITIALIZER = new ModelInitializer() {
         @Override
         public void populateModel(Resource rootResource) {
             Resource host = Resource.Factory.create();
@@ -80,10 +85,4 @@ public class HostServerSystemPropertyTestCase extends AbstractSystemPropertyTest
             host.registerChild(SERVER_TWO_ELEMENT, Resource.Factory.create());
         }
     };
-
-    @Override
-    protected String getXmlResource() {
-        return "host-server-systemproperties.xml";
-    }
-
 }

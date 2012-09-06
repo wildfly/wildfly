@@ -89,7 +89,6 @@ import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
-import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -337,11 +336,6 @@ public class HostRootDescription {
         root.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
-    }
-
-    public static ModelNode getSystemPropertiesDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return SystemPropertyDescriptions.getSystemPropertyDescription(locale, bundle.getString("host.system-property"), true);
     }
 
     public static ModelNode getLocalDomainControllerAdd(Locale locale) {

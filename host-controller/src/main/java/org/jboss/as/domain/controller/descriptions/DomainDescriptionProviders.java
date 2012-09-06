@@ -52,13 +52,6 @@ public final class DomainDescriptionProviders {
         }
     };
 
-    public static final DescriptionProvider SYSTEM_PROPERTY_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return DomainRootDescription.getSystemPropertiesDescription(locale);
-        }
-    };
-
     public static final DescriptionProvider PROFILE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -85,13 +78,6 @@ public final class DomainDescriptionProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return DeploymentDescription.getDeploymentDescription(locale, true, false, false);
-        }
-    };
-
-    public static final DescriptionProvider SERVER_GROUP_SYSTEM_PROPERTY_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ServerGroupDescription.getSystemPropertiesDescription(locale);
         }
     };
 }

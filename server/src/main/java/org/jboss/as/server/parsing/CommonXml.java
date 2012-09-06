@@ -98,6 +98,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
@@ -378,9 +379,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw unexpectedElement(reader);
             }
 
-            String name = null;
-            ModelNode value = null;
-            Boolean boottime = null;
+            boolean setName = false;
+            boolean setValue = false;
+            boolean setBoottime = false;
+            //Will set OP_ADDR after parsing the NAME attribute
+            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, new ModelNode());
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String val = reader.getAttributeValue(i);
@@ -391,24 +394,31 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
                     switch (attribute) {
                         case NAME: {
-                            if (name != null) {
+                            if (setName) {
                                 throw ParseUtils.duplicateAttribute(reader, NAME);
                             }
-                            name = val;
+                            setName = true;
+                            ModelNode addr = new ModelNode().set(address).add(SYSTEM_PROPERTY, val);
+                            op.get(OP_ADDR).set(addr);
                             break;
                         }
                         case VALUE: {
-                            if (value != null) {
+                            if (setValue) {
                                 throw ParseUtils.duplicateAttribute(reader, VALUE);
                             }
-                            value = ParseUtils.parsePossibleExpression(val);
+                            setValue = true;
+                            SystemPropertyResourceDefinition.VALUE.parseAndSetParameter(val, op, reader);
                             break;
                         }
                         case BOOT_TIME: {
                             if (standalone) {
                                 throw unexpectedAttribute(reader, i);
                             }
-                            boottime = Boolean.valueOf(val);
+                            if (setBoottime) {
+                                throw ParseUtils.duplicateAttribute(reader, BOOT_TIME);
+                            }
+                            setValue = true;
+                            SystemPropertyResourceDefinition.BOOT_TIME.parseAndSetParameter(val, op, reader);
                             break;
                         }
                         default: {
@@ -418,12 +428,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
             requireNoContent(reader);
-
-            ModelNode propAddr = new ModelNode().set(address).add(SYSTEM_PROPERTY, name);
-            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, propAddr);
-            op.get(VALUE).set(value);
-            if (boottime != null) {
-                op.get(BOOT_TIME).set(boottime.booleanValue());
+            if (!setName) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
             }
 
             updates.add(op);
@@ -1548,11 +1554,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writeAttribute(writer, Attribute.NAME, prop.getName());
                 ModelNode sysProp = prop.getValue();
-                if (sysProp.hasDefined(VALUE)) {
-                    writeAttribute(writer, Attribute.VALUE, sysProp.get(VALUE).asString());
-                }
-                if (!standalone && sysProp.hasDefined(BOOT_TIME) && !sysProp.get(BOOT_TIME).asBoolean()) {
-                    writeAttribute(writer, Attribute.BOOT_TIME, "false");
+                SystemPropertyResourceDefinition.VALUE.marshallAsAttribute(sysProp, writer);
+                if (!standalone) {
+                    SystemPropertyResourceDefinition.BOOT_TIME.marshallAsAttribute(sysProp, writer);
                 }
 
                 writer.writeEndElement();

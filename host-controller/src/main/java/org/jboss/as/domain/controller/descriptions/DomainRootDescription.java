@@ -66,7 +66,6 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -214,11 +213,6 @@ public class DomainRootDescription {
         root.get(DESCRIPTION).set(bundle.getString("domain.deployment.remove"));
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
-    }
-
-    public static ModelNode getSystemPropertiesDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return SystemPropertyDescriptions.getSystemPropertyDescription(locale, bundle.getString("domain.system-property"), true);
     }
 
     public static ModelNode getRestartServersOperation(Locale locale) {

@@ -45,6 +45,7 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
     static final String PROP_ONE = "sys.prop.test.one";
     static final String PROP_TWO = "sys.prop.test.two";
     static final String PROP_THREE = "sys.prop.test.three";
+    static final String PROP_FOUR = "sys.prop.test.four";
 
     final boolean standalone;
 
@@ -294,26 +295,29 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
             Assert.assertNull(System.getProperty(PROP_TWO));
         }
 
+        write = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, getSystemPropertyAddress(PROP_TWO));
+        write.get(NAME).set(BOOT_TIME);
+        write.get(VALUE); //Undefined
     }
 
     @Test
     public void testXml() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder()
+        KernelServices kernelServices = createKernelServicesBuilder(true)
                 .setXmlResource(getXmlResource())
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
         String xmlOriginal = ModelTestUtils.readResource(this.getClass(), getXmlResource());
         String marshalled = kernelServices.getPersistedSubsystemXml();
-        //TODO this is currently broken a bit
-        //ModelTestUtils.compareXml(xmlOriginal, marshalled);
+        ModelTestUtils.compareXml(xmlOriginal, marshalled);
 
         ModelNode props = readSystemPropertiesParentModel(kernelServices);
-        Assert.assertEquals(3, props.keys().size());
+        Assert.assertEquals(4, props.keys().size());
 
         Assert.assertEquals("1", props.get(PROP_ONE, VALUE).asString());
         Assert.assertEquals("2", props.get(PROP_TWO, VALUE).asString());
         Assert.assertEquals("3", props.get(PROP_THREE, VALUE).asString());
+        Assert.assertFalse(props.get(PROP_FOUR, VALUE).isDefined());
         if (!standalone) {
             Assert.assertTrue(props.get(PROP_ONE, BOOT_TIME).asBoolean());
             Assert.assertTrue(props.get(PROP_TWO, BOOT_TIME).asBoolean());
@@ -326,12 +330,11 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
             Assert.assertEquals("2", System.getProperty(PROP_TWO));
             Assert.assertEquals("3", System.getProperty(PROP_THREE));
         }
-
     }
 
     protected abstract PathAddress getSystemPropertyAddress(String propName);
 
-    protected abstract KernelServicesBuilder createKernelServicesBuilder();
+    protected abstract KernelServicesBuilder createKernelServicesBuilder(boolean xml);
 
     protected abstract KernelServices createEmptyRoot() throws Exception;
 
