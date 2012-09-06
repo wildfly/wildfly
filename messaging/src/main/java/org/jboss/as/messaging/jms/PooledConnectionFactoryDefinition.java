@@ -52,6 +52,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
+
     private static ConnectionFactoryAttribute[] concat(ConnectionFactoryAttribute[] common, ConnectionFactoryAttribute... specific) {
         int size = common.length + specific.length;
         ConnectionFactoryAttribute[] result = new ConnectionFactoryAttribute[size];
@@ -73,8 +75,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     private final boolean registerRuntimeOnly;
 
     public PooledConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY),
-                DESC);
+        super(PATH, DESC);
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
