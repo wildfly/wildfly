@@ -31,12 +31,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.transform.OperationResultTransformer.ORIGINAL_RESULT;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
@@ -282,13 +284,22 @@ public class MessagingExtension implements Extension {
             }
         });
 
+        RejectExpressionValuesTransformer rejectTransportParamExpressionTransformer = new RejectExpressionValuesTransformer(VALUE);
+        final String[] transports = { CommonAttributes.ACCEPTOR, CommonAttributes.REMOTE_ACCEPTOR, CommonAttributes.IN_VM_ACCEPTOR,
+                CommonAttributes.CONNECTOR, CommonAttributes.REMOTE_CONNECTOR, CommonAttributes.IN_VM_CONNECTOR };
+        for (String transport : transports) {
+            TransformersSubRegistration remoteConnector = server.registerSubResource(PathElement.pathElement(transport));
+            TransformersSubRegistration transportParam = remoteConnector.registerSubResource(PathElement.pathElement(PARAM));
+            transportParam.registerOperationTransformer(ADD, rejectTransportParamExpressionTransformer);
+            transportParam.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTransportParamExpressionTransformer.getWriteAttributeTransformer());
+        }
+
         RejectExpressionValuesTransformer rejectExpressionTransformer = new RejectExpressionValuesTransformer(PATH);
         for (final String path : MessagingPathHandlers.PATHS) {
             TransformersSubRegistration pathRegistration = server.registerSubResource(PathElement.pathElement(PATH, path), rejectExpressionTransformer, rejectExpressionTransformer);
             pathRegistration.registerOperationTransformer(ADD, rejectExpressionTransformer);
             pathRegistration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpressionTransformer.getWriteAttributeTransformer());
         }
-
         TransformersSubRegistration pooledConnectionFactory = server.registerSubResource(PooledConnectionFactoryDefinition.PATH);
         pooledConnectionFactory.registerOperationTransformer(ADD, new OperationTransformer() {
             @Override

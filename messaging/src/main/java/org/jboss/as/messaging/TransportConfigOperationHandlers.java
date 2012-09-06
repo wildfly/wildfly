@@ -52,6 +52,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -103,17 +104,19 @@ class TransportConfigOperationHandlers {
     /**
      * Process the acceptor information.
      *
+     * @param context       the operation context
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
      * @param bindings      the referenced socket bindings
+     * @throws OperationFailedException
      */
-    static void processAcceptors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
+    static void processAcceptors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
         final Map<String, TransportConfiguration> acceptors = new HashMap<String, TransportConfiguration>();
         if (params.hasDefined(ACCEPTOR)) {
             for (final Property property : params.get(ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = getParameters(config);
+                final Map<String, Object> parameters = getParameters(context, config);
                 final String clazz = config.get(FACTORY_CLASS.getName()).asString();
                 acceptors.put(acceptorName, new TransportConfiguration(clazz, parameters, acceptorName));
             }
@@ -122,7 +125,7 @@ class TransportConfigOperationHandlers {
             for (final Property property : params.get(REMOTE_ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = getParameters(config);
+                final Map<String, Object> parameters = getParameters(context, config);
                 final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
                 parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
@@ -133,7 +136,7 @@ class TransportConfigOperationHandlers {
             for (final Property property : params.get(IN_VM_ACCEPTOR).asPropertyList()) {
                 final String acceptorName = property.getName();
                 final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = getParameters(config);
+                final Map<String, Object> parameters = getParameters(context, config);
                 parameters.put(InVMTransportDefinition.SERVER_ID.getName(), config.get(InVMTransportDefinition.SERVER_ID.getName()).asInt());
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
             }
@@ -144,15 +147,22 @@ class TransportConfigOperationHandlers {
     /**
      * Get the parameters.
      *
+     * @param context the operation context
      * @param config the transport configuration
      * @return the extracted parameters
+     * @throws OperationFailedException if an expression can not be resolved
      */
-    static Map<String, Object> getParameters(final ModelNode config) {
+    static Map<String, Object> getParameters(final OperationContext context, final ModelNode config) throws OperationFailedException {
         final Map<String, Object> parameters = new HashMap<String, Object>();
         if (config.hasDefined(PARAM)) {
             for (final Property parameter : config.get(PARAM).asPropertyList()) {
-                parameters.put(parameter.getName(), parameter.getValue().get(ModelDescriptionConstants.VALUE).asString());
-            }
+                String name = parameter.getName();
+                // FIXME with https://issues.jboss.org/browse/AS7-5121, PARAM will be represented with an AttributeDefinition
+                // and expressions will be resolved automatically
+                ModelNode value =  parameter.getValue().get(ModelDescriptionConstants.VALUE);
+                ModelNode expression = ParseUtils.parsePossibleExpression(value.asString());
+                String resolvedValue = context.resolveExpressions(expression).asString();
+                parameters.put(name, resolvedValue);            }
         }
         return parameters;
     }
@@ -160,17 +170,19 @@ class TransportConfigOperationHandlers {
     /**
      * Process the connector information.
      *
+     * @param context       the operation context
      * @param configuration the hornetQ configuration
      * @param params        the detyped operation parameters
      * @param bindings      the referenced socket bindings
+     * @throws OperationFailedException
      */
-    static void processConnectors(final Configuration configuration, final ModelNode params, final Set<String> bindings) {
+    static void processConnectors(final OperationContext context, final Configuration configuration, final ModelNode params, final Set<String> bindings) throws OperationFailedException {
         final Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
         if (params.hasDefined(CONNECTOR)) {
             for (final Property property : params.get(CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = getParameters(config);
+                final Map<String, Object> parameters = getParameters(context, config);
                 final String clazz = config.get(FACTORY_CLASS.getName()).asString();
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
@@ -179,7 +191,7 @@ class TransportConfigOperationHandlers {
             for (final Property property : params.get(REMOTE_CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = getParameters(config);
+                final Map<String, Object> parameters = getParameters(context, config);
                 final String binding = config.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).asString();
                 parameters.put(RemoteTransportDefinition.SOCKET_BINDING.getName(), binding);
                 bindings.add(binding);
@@ -190,7 +202,7 @@ class TransportConfigOperationHandlers {
             for (final Property property : params.get(IN_VM_CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
-                final Map<String, Object> parameters = getParameters(config);
+                final Map<String, Object> parameters = getParameters(context, config);
                 parameters.put(InVMTransportDefinition.SERVER_ID.getName(), config.get(InVMTransportDefinition.SERVER_ID.getName()).asInt());
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
