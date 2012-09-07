@@ -40,7 +40,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.AbstractBundleRevisionAdaptor;
-import org.jboss.osgi.framework.IntegrationServices;
+import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundleRevision;
@@ -66,11 +66,11 @@ public class ModuleRegistrationTracker extends AbstractService<Void> {
 
     public ServiceController<Void> install(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
         ServiceBuilder<Void> builder = serviceTarget.addService(MODULE_REGISTRATION_COMPLETE, this);
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedSystemContext);
+        builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
-        builder.addDependency(IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE);
+        builder.addDependencies(IntegrationService.BOOTSTRAP_BUNDLES_COMPLETE);
         builder.addListener(verificationHandler);
-        builder.setInitialMode(Mode.PASSIVE);
+        builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
     }
 
@@ -94,6 +94,9 @@ public class ModuleRegistrationTracker extends AbstractService<Void> {
     }
 
     public synchronized void start(StartContext startContext) throws StartException {
+        ServiceController<?> serviceController = startContext.getController();
+        LOGGER.tracef("Starting: %s in mode %s", serviceController.getName(), serviceController.getMode());
+
         BundleContext syscontext = injectedSystemContext.getValue();
         XEnvironment env = injectedEnvironment.getValue();
         for (Registration reg : registrations.values()) {

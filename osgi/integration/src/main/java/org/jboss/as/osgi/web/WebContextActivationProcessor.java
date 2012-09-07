@@ -69,7 +69,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (activator != null && bundle != null) {
             // Start the context when the bundle will get started automatically
             Deployment deployment = bundle.adapt(Deployment.class);
@@ -86,7 +86,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         ContextActivator activator = depUnit.getAttachment(ContextActivator.ATTACHMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (activator != null && bundle != null) {
             bundle.adapt(Deployment.class).removeAttachment(ContextActivator.class);
         }
@@ -101,8 +101,7 @@ public class WebContextActivationProcessor implements DeploymentUnitProcessor {
         public static ServiceController<LifecycleInterceptor> addService(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
             WebContextLifecycleInterceptor service = new WebContextLifecycleInterceptor();
             ServiceBuilder<LifecycleInterceptor> builder = serviceTarget.addService(JBOSS_WEB_LIFECYCLE_INTERCEPTOR, service);
-            builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, service.injectedSystemContext);
-            builder.addDependency(Services.FRAMEWORK_ACTIVE);
+            builder.addDependency(Services.FRAMEWORK_ACTIVE, BundleContext.class, service.injectedSystemContext);
             builder.addListener(verificationHandler);
             builder.setInitialMode(Mode.PASSIVE);
             return builder.install();

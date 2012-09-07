@@ -23,15 +23,15 @@
 package org.jboss.as.osgi.deployment;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.Bundle;
@@ -45,24 +45,14 @@ import org.osgi.framework.BundleException;
  */
 public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
-    private final InitialDeploymentTracker deploymentTracker;
-
-    public BundleActivateProcessor(InitialDeploymentTracker deploymentTracker) {
-        this.deploymentTracker = deploymentTracker;
-    }
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
             try {
-                int options = Bundle.START_ACTIVATION_POLICY;
-                if (deploymentTracker.hasDeploymentName(depUnit.getName()) == false) {
-                    options |= Bundle.START_TRANSIENT;
-                }
-                bundle.start(options);
+                bundle.start(Bundle.START_ACTIVATION_POLICY);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
             } catch (BundleException ex) {
                 LOGGER.errorCannotStartBundle(ex, bundle);
@@ -73,9 +63,10 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (bundle != null && deployment.isAutoStart()) {
             try {
+                // Server shutdown should not modify the persistent start setting
                 bundle.stop(Bundle.STOP_TRANSIENT);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
             } catch (BundleException ex) {

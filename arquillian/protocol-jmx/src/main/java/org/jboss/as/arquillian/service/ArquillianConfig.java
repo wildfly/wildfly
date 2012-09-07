@@ -78,7 +78,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
         ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
-        builder.addDependency(DependencyType.OPTIONAL, Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
+        builder.addDependency(DependencyType.OPTIONAL, Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
         builder.addDependency(depController.getName());
         return builder;
     }
@@ -104,7 +104,7 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         if (testClasses.contains(className) == false)
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         Module module = depUnit.getAttachment(Attachments.MODULE);
         if (bundle == null && module == null)
             throw new IllegalStateException("Cannot determine deployment type: " + depUnit);

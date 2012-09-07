@@ -57,7 +57,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.INSTALLED_BUNDLE_KEY);
+        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
         if (bundle == null || !deployment.isAutoStart())
             return;
 
@@ -75,6 +75,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
         XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
         try {
+            LOGGER.debugf("Resolve: %s", depUnit.getName());
             resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
 
