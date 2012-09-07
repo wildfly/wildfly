@@ -43,9 +43,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.dmr.ModelNode;
-import org.jboss.threads.AsyncFuture;
 
 /**
  * Executes the first phase of a two phase operation on one or more remote, slave host controllers.
@@ -81,7 +81,11 @@ public class DomainSlaveHandler implements OperationStepHandler {
             // Create the proxy task
             final String host = entry.getKey();
             final TransformingProxyController proxyController = (TransformingProxyController) entry.getValue();
-            final HostControllerUpdateTask task = new HostControllerUpdateTask(host, operation.clone(), context, proxyController);
+            ModelNode op = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION);
+            if(op == null) {
+                op = operation;
+            }
+            final HostControllerUpdateTask task = new HostControllerUpdateTask(host, op.clone(), context, proxyController);
             // Execute the operation on the remote host
             final HostControllerUpdateTask.ExecutedHostRequest finalResult = task.execute(listener);
             finalResults.put(host, finalResult);

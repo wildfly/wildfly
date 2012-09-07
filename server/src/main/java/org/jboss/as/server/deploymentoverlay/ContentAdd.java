@@ -16,6 +16,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -92,24 +93,26 @@ public class ContentAdd extends AbstractAddStepHandler {
             addFromHash(hash, name, path, context);
         } else {
             hash = addFromContentAdditionParameter(context, content);
-            if (remoteRepository != null) {
-                remoteRepository.getDeploymentFiles(hash);
-            }
         }
+        final ModelNode slave = operation.clone();
+        slave.get(CONTENT).clear();
+        slave.get(CONTENT).get(HASH).set(hash);
+
+        operation.get(CONTENT).clear();
         operation.get(CONTENT).set(hash);
-        super.populateModel(context, operation, resource);
+        context.attach(OperationAttachments.SLAVE_SERVER_OPERATION, slave);
+
+        for (AttributeDefinition attr : ContentDefinition.attributes()) {
+            attr.validateAndSet(operation, resource.getModel());
+        }
+        if (!contentRepository.syncContent(hash)) {
+            throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
+        }
     }
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
-        for (AttributeDefinition attr : ContentDefinition.attributes()) {
-            attr.validateAndSet(operation, model);
-        }
-        final byte[] hash = operation.get(CONTENT).asBytes();
-        if (!contentRepository.syncContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
-        }
     }
 
 
@@ -179,8 +182,6 @@ public class ContentAdd extends AbstractAddStepHandler {
         } finally {
             StreamUtils.safeClose(in);
         }
-        contentItemNode.clear(); // AS7-1029
-        contentItemNode.get(HASH).set(hash);
         return hash;
     }
 
