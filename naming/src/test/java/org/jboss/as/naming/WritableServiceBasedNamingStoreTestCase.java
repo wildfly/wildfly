@@ -22,8 +22,10 @@
 
 package org.jboss.as.naming;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import javax.naming.Binding;
 import javax.naming.CompositeName;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
@@ -33,6 +35,7 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -192,5 +195,56 @@ public class WritableServiceBasedNamingStoreTestCase {
             fail("Should have failed with a read-only context exception");
         } catch (UnsupportedOperationException expected) {
         }
+    }
+
+    @Test
+    public void testListBindings() throws Exception {
+        final Name name = new CompositeName("top/test");
+        final Object value = new Object();
+        List<Binding> bindings = null;
+        Object result = null;
+        WritableServiceBasedNamingStore.pushOwner(container);
+        try {
+            store.bind(name, value);
+            result = store.lookup(new CompositeName("top/test"));
+            bindings = store.listBindings(new CompositeName("top"));
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
+        }
+        assertEquals(value, result);
+        assertNotNull(bindings);
+        assertEquals(1, bindings.size());
+        assertEquals(value, bindings.get(0).getObject());
+    }
+
+
+    @Test
+    public void testMultipleStoreListBindings() throws Exception {
+        final Name name = new CompositeName("top/test");
+        final Object value = new Object();
+        List<Binding> bindings = null;
+        Object result = null;
+        WritableServiceBasedNamingStore.pushOwner(container);
+        try {
+            store.bind(name, value);
+            result = store.lookup(new CompositeName("top/test"));
+            bindings = store.listBindings(new CompositeName("top"));
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
+        }
+        assertEquals(value, result);
+        assertNotNull(bindings);
+        assertEquals(1, bindings.size());
+        assertEquals(value, bindings.get(0).getObject());
+
+        // find via a different store
+        WritableServiceBasedNamingStore store2 = new WritableServiceBasedNamingStore(container, ContextNames.JAVA_CONTEXT_SERVICE_NAME);
+        result = store2.lookup(new CompositeName("top/test"));
+        bindings = store2.listBindings(new CompositeName("top"));
+
+        assertEquals(value, result);
+        assertNotNull(bindings);
+        assertEquals(1, bindings.size());
+        assertEquals(value, bindings.get(0).getObject());
     }
 }
