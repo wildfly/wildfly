@@ -37,6 +37,7 @@ import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.operation.ParsedCommandLine;
@@ -51,12 +52,24 @@ import org.jboss.dmr.ModelNode;
  */
 public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
+    private static final String ADD = "add";
+    private static final String LINK = "link";
+    private static final String LIST_CONTENT = "list-content";
+    private static final String LIST_LINKS = "list-links";
+    private static final String REDEPLOY_AFFECTED = "redeploy-affected";
+    private static final String REMOVE = "remove";
+    private static final String UPLOAD = "upload";
+
     private final ArgumentWithoutValue l;
     private final ArgumentWithValue action;
     private final ArgumentWithValue name;
     private final ArgumentWithValue content;
-    private final ArgumentWithValue serverGroup;
-    private final ArgumentWithValue deployment;
+    private final ArgumentWithValue serverGroups;
+    //private final ArgumentWithValue allServerGroups;
+    private final ArgumentWithoutValue allRelevantServerGroups;
+    private final ArgumentWithValue deployments;
+    //private final ArgumentWithValue wildcardDeployments;
+    //private final ArgumentWithValue redeployAffected;
 
     public DeploymentOverlayHandler(CommandContext ctx) {
         super("deployment-overlay", true);
@@ -65,7 +78,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 final String actionStr = action.getValue(ctx.getParsedCommandLine());
-                if(actionStr == null || "list-content".equals(actionStr) || "list-deployments".equals(actionStr)) {
+                if(actionStr == null || LIST_CONTENT.equals(actionStr) || LIST_LINKS.equals(actionStr)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
@@ -73,7 +86,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         };
 
         action = new ArgumentWithValue(this, new SimpleTabCompleter(
-                new String[]{"add", "link", "list-content", "list-deployments", "remove", "upload"}), 0, "--action");
+                new String[]{ADD, LINK, LIST_CONTENT, LIST_LINKS, REDEPLOY_AFFECTED, REMOVE, UPLOAD}), 0, "--action");
 
         name = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -109,7 +122,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 final String actionStr = action.getValue(ctx.getParsedCommandLine());
-                if ("add".equals(actionStr) || "upload".equals(actionStr)) {
+                if (ADD.equals(actionStr) || UPLOAD.equals(actionStr)) {
                     // TODO add support for quoted paths
                     int i = buffer.lastIndexOf(',');
                     i = buffer.indexOf('=', i + 1);
@@ -122,7 +135,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                         return -1;
                     }
                     return i + 1 + pathResult;
-                } else if("remove".equals(actionStr)) {
+                } else if(REMOVE.equals(actionStr)) {
                     final String nameStr = name.getValue(ctx.getParsedCommandLine());
                     if(nameStr == null) {
                         return -1;
@@ -162,7 +175,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(actionStr == null) {
                     return false;
                 }
-                if("add".equals(actionStr) || "upload".equals(actionStr) || "remove".equals(actionStr)) {
+                if(ADD.equals(actionStr) || UPLOAD.equals(actionStr) || REMOVE.equals(actionStr)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
@@ -171,11 +184,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         content.addRequiredPreceding(name);
         content.addCantAppearAfter(l);
 
-        serverGroup = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
+        serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
-            public Collection<String> getAllCandidates(CommandContext ctx) {
+            protected Collection<String> getAllCandidates(CommandContext ctx) {
                 return Util.getServerGroups(ctx.getModelControllerClient());
-            }}) , "--server-group") {
+            }} , "--server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(!ctx.isDomainMode()) {
@@ -185,34 +198,53 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(actionStr == null) {
                     return false;
                 }
-                if("add".equals(actionStr) || "link".equals(actionStr)
-                        || "remove".equals(actionStr) || "list-deployments".equals(actionStr)) {
+                if(ADD.equals(actionStr) || LINK.equals(actionStr)
+                        || REMOVE.equals(actionStr) || LIST_LINKS.equals(actionStr)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
             }
         };
-        serverGroup.addRequiredPreceding(name);
+        serverGroups.addRequiredPreceding(name);
 
-        deployment = new ArgumentWithValue(this, new CommandLineCompleter(){
+        allRelevantServerGroups = new ArgumentWithoutValue(this, "--all-relevant-server-groups") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(!ctx.isDomainMode()) {
+                    return false;
+                }
+                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+                if(actionStr == null) {
+                    return false;
+                }
+                if(REMOVE.equals(actionStr)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        allRelevantServerGroups.addRequiredPreceding(name);
+        allRelevantServerGroups.addCantAppearAfter(serverGroups);
+        serverGroups.addCantAppearAfter(allRelevantServerGroups);
+
+        deployments = new ArgumentWithValue(this, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
                 final ModelControllerClient client = ctx.getModelControllerClient();
                 if(client == null) {
                     return -1;
                 }
-                // TODO in domain mode it should consult the specified server group for deployments
-                final String actionStr = action.getValue(ctx.getParsedCommandLine());
+//                final String actionStr = action.getValue(ctx.getParsedCommandLine());
                 final List<String> existing;
-                if("add".equals(actionStr) || "link".equals(actionStr)) {
+//                if(ADD.equals(actionStr) || LINK.equals(actionStr)) {
                     existing = Util.getDeployments(client);
-                } else if("remove".equals(actionStr)) {
+/*                } else if(REMOVE.equals(actionStr)) {
                     try {
                         final String nameStr = name.getValue(ctx.getParsedCommandLine());
                         if(nameStr == null) {
                             return -1;
                         }
-                        final String sg = serverGroup.getValue(ctx.getParsedCommandLine());
+                        final String sg = serverGroups.getValue(ctx.getParsedCommandLine());
                         if(ctx.isDomainMode() && sg == null) {
                             return -1;
                         }
@@ -223,7 +255,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 } else {
                     return -1;
                 }
-
+*/
                 if(existing.isEmpty()) {
                     return buffer.length();
                 }
@@ -244,11 +276,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 }
                 return buffer.length() - chunk.length();
             }
-        }, "--deployment") {
+        }, "--deployments") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode()) {
-                    if(serverGroup.isPresent(ctx.getParsedCommandLine())) {
+                    if(serverGroups.isPresent(ctx.getParsedCommandLine())) {
                         return super.canAppearNext(ctx);
                     }
                     return false;
@@ -257,14 +289,14 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(actionStr == null) {
                     return false;
                 }
-                if("add".equals(actionStr) || "link".equals(actionStr) || "remove".equals(actionStr)) {
+                if(ADD.equals(actionStr) || LINK.equals(actionStr) || REMOVE.equals(actionStr)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
             }
         };
-        deployment.addRequiredPreceding(name);
-        deployment.addCantAppearAfter(l);
+        deployments.addRequiredPreceding(name);
+        deployments.addCantAppearAfter(l);
     }
 
     @Override
@@ -306,24 +338,24 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
 
         final String action = this.action.getValue(args, true);
-        if("add".equals(action)) {
+        if(ADD.equals(action)) {
             add(ctx);
-        } else if("remove".equals(action)) {
+        } else if(REMOVE.equals(action)) {
             remove(ctx);
-        } else if("upload".equals(action)) {
+        } else if(UPLOAD.equals(action)) {
             upload(ctx);
-        } else if("list-content".equals(action)) {
+        } else if(LIST_CONTENT.equals(action)) {
             listContent(ctx);
-        } else if("list-deployments".equals(action)) {
-            listDeployments(ctx);
-        } else if("link".equals(action)) {
+        } else if(LIST_LINKS.equals(action)) {
+            listLinks(ctx);
+        } else if(LINK.equals(action)) {
             link(ctx);
         } else {
             throw new CommandFormatException("Unrecognized action: '" + action + "'");
         }
     }
 
-    protected void listDeployments(CommandContext ctx) throws CommandLineException {
+    protected void listLinks(CommandContext ctx) throws CommandLineException {
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         final ParsedCommandLine args = ctx.getParsedCommandLine();
@@ -331,17 +363,28 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         if(name == null) {
             throw new CommandFormatException(this.name + " is missing value.");
         }
-        final String sg = serverGroup.getValue(ctx.getParsedCommandLine());
-        if(ctx.isDomainMode() && sg == null) {
-            throw new CommandFormatException(serverGroup.getFullName() + " is missing value.");
-        }
-        final List<String> content = loadLinkedDeployments(client, name, sg);
-        if(l.isPresent(args)) {
-            for(String contentPath : content) {
-                ctx.printLine(contentPath);
+        final String sg = serverGroups.getValue(ctx.getParsedCommandLine());
+        if(ctx.isDomainMode()) {
+            if(sg == null) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+            }
+            final String[] groups = sg.split(",+");
+            if(groups.length == 0) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+            }
+            for(String group : groups) {
+                ctx.printLine("SERVER GROUP: " + group + Util.LINE_SEPARATOR);
+                ctx.printColumns(loadLinkedDeployments(client, name, sg));
             }
         } else {
-            ctx.printColumns(content);
+            final List<String> content = loadLinkedDeployments(client, name, sg);
+            if (l.isPresent(args)) {
+                for (String contentPath : content) {
+                    ctx.printLine(contentPath);
+                }
+            } else {
+                ctx.printColumns(content);
+            }
         }
     }
 
@@ -373,8 +416,21 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             throw new CommandFormatException(this.name + " is missing value.");
         }
         final String contentStr = content.getValue(args);
-        final String deploymentStr = deployment.getValue(args);
-        final String sg = serverGroup.getValue(args);
+        final String deploymentStr = deployments.getValue(args);
+        final String sgStr = serverGroups.getValue(args);
+        final List<String> sg;
+        if(sgStr == null) {
+            if(allRelevantServerGroups.isPresent(args)) {
+                sg = Util.getServerGroups(client);
+            } else {
+                sg = null;
+            }
+        } else {
+            sg = Arrays.asList(sgStr.split(",+"));
+            if(sg.isEmpty()) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+            }
+        }
 
         final ModelNode composite = new ModelNode();
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
@@ -386,7 +442,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
             if(ctx.isDomainMode()) {
                 if(deploymentStr == null) {
-                    final List<String> sgNames = sg == null ? Util.getServerGroups(client) : Collections.singletonList(sg);
+                    final List<String> sgNames = sg == null ? Util.getServerGroups(client) : sg;
                     // remove all
                     for(String sgName : sgNames) {
                         final List<String> deployments = loadLinkedDeployments(client, name, sgName);
@@ -401,12 +457,13 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                         }
                     }
                 } else {
-                    // in the domain mode, there must be a server group
                     if(ctx.isDomainMode() && sg == null) {
-                        throw new CommandFormatException(serverGroup.getFullName() + " is missing.");
+                        throw new CommandFormatException(serverGroups.getFullName() + " or " + allRelevantServerGroups.getFullName() + " is required.");
                     }
                     final List<String> deployments = Arrays.asList(deploymentStr.split(",+"));
-                    addRemoveDeploymentSteps(name, sg, deployments, steps);
+                    for(String group : sg) {
+                        addRemoveDeploymentSteps(name, group, deployments, steps);
+                    }
                 }
             } else {
                 final List<String> overlays;
@@ -414,13 +471,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                     // remove all
                     overlays = loadLinkedDeployments(client, name, null);
                 } else {
-                    // in the domain mode, there must server group
-                    if(ctx.isDomainMode() && sg == null) {
-                        throw new CommandFormatException(serverGroup.getFullName() + " is missing.");
-                    }
                     overlays = Arrays.asList(deploymentStr.split(",+"));
                 }
-                addRemoveDeploymentSteps(name, sg, overlays, steps);
+                addRemoveDeploymentSteps(name, null, overlays, steps);
             }
         }
 
@@ -550,11 +603,21 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             contentPaths[i] = f;
         }
 
-        final String sg = serverGroup.getValue(args);
-        if(ctx.isDomainMode() && sg == null) {
-            throw new CommandFormatException(serverGroup.getFullName() + " is missing");
+        final String sgStr = serverGroups.getValue(args);
+        final String[] sg;
+        if(ctx.isDomainMode()) {
+            if(sgStr == null) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing.");
+            }
+            sg = sgStr.split(",+");
+            if(sg.length == 0) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+            }
+        } else {
+            sg = null;
         }
-        final String deploymentsStr = deployment.getValue(args);
+
+        final String deploymentsStr = deployments.getValue(args);
         final String[] deployments;
         if(deploymentsStr == null) {
             deployments = null;
@@ -597,15 +660,18 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(sg != null) {
                     // here we don't need a separate check whether the overlay is linked
                     // from the server group since it is created in the same op.
-                    op = new ModelNode();
-                    address = op.get(Util.ADDRESS);
-                    address.add(Util.SERVER_GROUP, sg);
-                    address.add(Util.DEPLOYMENT_OVERLAY, name);
-                    op.get(Util.OPERATION).set(Util.ADD);
-                    steps.add(op);
+                    for(String group : sg) {
+                        op = new ModelNode();
+                        address = op.get(Util.ADDRESS);
+                        address.add(Util.SERVER_GROUP, group);
+                        address.add(Util.DEPLOYMENT_OVERLAY, name);
+                        op.get(Util.OPERATION).set(Util.ADD);
+                        steps.add(op);
+                        addLinkDeploymentSteps(name, group, deployments, steps);
+                    }
+                } else {
+                    addLinkDeploymentSteps(name, null, deployments, steps);
                 }
-                // link the deployments
-                addLinkDeploymentSteps(name, sg, deployments, steps);
             }
 
             try {
@@ -623,15 +689,24 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         final String name = this.name.getValue(args, true);
-        final String deploymentsStr = deployment.getValue(args, true);
-        final String sg = serverGroup.getValue(args);
-        if(ctx.isDomainMode() && sg == null) {
-            throw new CommandFormatException(serverGroup.getFullName() + " is missing value.");
+        final String deploymentsStr = deployments.getValue(args, true);
+        final String sgStr = serverGroups.getValue(args);
+        final String[] sg;
+        if(ctx.isDomainMode()) {
+            if(sgStr == null) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+            }
+            sg = sgStr.split(",+");
+            if(sg.length == 0) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+            }
+        } else {
+            sg = null;
         }
         final String[] deployments = deploymentsStr.split(",+");
 
         if(deployments.length == 0) {
-            throw new CommandFormatException("Missing value for " + deployment.getFullName() + ": '" + deploymentsStr + "'");
+            throw new CommandFormatException("Missing value for " + this.deployments.getFullName() + ": '" + deploymentsStr + "'");
         }
 
         final ModelNode composite = new ModelNode();
@@ -639,17 +714,21 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
 
-        if(sg != null && !Util.isValidPath(ctx.getModelControllerClient(), Util.SERVER_GROUP, sg, Util.DEPLOYMENT_OVERLAY, name)) {
-            final ModelNode op = new ModelNode();
-            final ModelNode address = op.get(Util.ADDRESS);
-            address.add(Util.SERVER_GROUP, sg);
-            address.add(Util.DEPLOYMENT_OVERLAY, name);
-            op.get(Util.OPERATION).set(Util.ADD);
-            steps.add(op);
+        if(sg != null) {
+            for(String group : sg) {
+                if(!Util.isValidPath(ctx.getModelControllerClient(), Util.SERVER_GROUP, group, Util.DEPLOYMENT_OVERLAY, name)) {
+                    final ModelNode op = new ModelNode();
+                    final ModelNode address = op.get(Util.ADDRESS);
+                    address.add(Util.SERVER_GROUP, group);
+                    address.add(Util.DEPLOYMENT_OVERLAY, name);
+                    op.get(Util.OPERATION).set(Util.ADD);
+                    steps.add(op);
+                }
+                addLinkDeploymentSteps(name, group, deployments, steps);
+            }
+        } else {
+            addLinkDeploymentSteps(name, null, deployments, steps);
         }
-
-        // link the deployments
-        addLinkDeploymentSteps(name, sg, deployments, steps);
 
         try {
             final ModelNode result = ctx.getModelControllerClient().execute(composite);
@@ -697,9 +776,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             contentPaths[i] = f;
         }
 
-        final String deploymentsStr = deployment.getValue(args);
+        final String deploymentsStr = deployments.getValue(args);
         if(deploymentsStr != null) {
-            throw new CommandFormatException(deployment.getFullName() + " can't be used in combination with upload.");
+            throw new CommandFormatException(deployments.getFullName() + " can't be used in combination with upload.");
         }
 
         final ModelControllerClient client = ctx.getModelControllerClient();
