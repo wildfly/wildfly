@@ -47,7 +47,7 @@ interface ProcessMessages {
     String argUsage();
 
     /**
-     * Instructions for the {@link CommandLineArgument#BACKUP} command line argument.
+     * Instructions for the {@link CommandLineConstants#BACKUP_DC} command line argument.
      *
      * @return the message.
      */
@@ -55,7 +55,7 @@ interface ProcessMessages {
     String argBackup();
 
     /**
-     * Instructions for the {@link CommandLineArgument#CACHED_DC} command line argument.
+     * Instructions for the {@link CommandLineConstants#CACHED_DC} command line argument.
      *
      * @return the message.
      */
@@ -63,24 +63,32 @@ interface ProcessMessages {
     String argCachedDc();
 
     /**
-     * Instructions for the {@link CommandLineArgument#DOMAIN_CONFIG} and {@link CommandLineArgument#SHORT_DOMAIN_CONFIG} and {@link CommandLineConstants#LEGACY_SHORT_DOMAIN_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineConstants#DOMAIN_CONFIG} command line arguments.
      *
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Name of the domain configuration file to use (default is \"domain.xml\")")
+    @Message(id = Message.NONE, value = "Name of the domain configuration file to use (default is \"domain.xml\") (Same as -c)")
     String argDomainConfig();
 
     /**
-     * Instructions for the {@link CommandLineArgument#READ_ONLY_DOMAIN_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineConstants#SHORT_DOMAIN_CONFIG} command line arguments.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the domain configuration file to use (default is \"domain.xml\") (Same as --domain-config)")
+    String argShortDomainConfig();
+
+    /**
+     * Instructions for the {@link CommandLineConstants#READ_ONLY_DOMAIN_CONFIG} command line arguments.
      *
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the domain configuration file to use. This differs from '" + CommandLineConstants.DOMAIN_CONFIG + "', '" +
-     CommandLineConstants.SHORT_DOMAIN_CONFIG + "' and '" + CommandLineConstants.OLD_DOMAIN_CONFIG + "' in that the initial file is never persisted.")
+     CommandLineConstants.SHORT_DOMAIN_CONFIG + "' and '" + CommandLineConstants.OLD_DOMAIN_CONFIG + "' in that the initial file is never overwritten.")
     String argReadOnlyDomainConfig();
 
     /**
-     * Instructions for the {@link CommandLineArgument#SHORT_HELP} or {@link CommandLineArgument#HELP} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_HELP} or {@link CommandLineConstants#HELP} command line argument.
      *
      * @return the message.
      */
@@ -88,7 +96,7 @@ interface ProcessMessages {
     String argHelp();
 
     /**
-     * Instructions for the {@link CommandLineArgument#INTERPROCESS_HC_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineConstants#INTERPROCESS_HC_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -96,7 +104,7 @@ interface ProcessMessages {
     String argInterProcessHcAddress();
 
     /**
-     * Instructions for the {@link CommandLineArgument#INTERPROCESS_HC_PORT} command line argument.
+     * Instructions for the {@link CommandLineConstants#INTERPROCESS_HC_PORT} command line argument.
      *
      * @return the message.
      */
@@ -104,7 +112,7 @@ interface ProcessMessages {
     String argInterProcessHcPort();
 
     /**
-     * Instructions for the {@link CommandLineArgument#HOST_CONFIG} command line argument.
+     * Instructions for the {@link CommandLineConstants#HOST_CONFIG} command line argument.
      *
      * @return the message.
      */
@@ -112,15 +120,15 @@ interface ProcessMessages {
     String argHostConfig();
 
     /**
-     * Instructions for the {@link CommandLineArgument#READ_ONLY_HOST_CONFIG} command line argument.
+     * Instructions for the {@link CommandLineConstants#READ_ONLY_HOST_CONFIG} command line argument.
      *
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Name of the host configuration file to use. This differs from '" + CommandLineConstants.HOST_CONFIG + "' in that the initial file is never persisted.")
+    @Message(id = Message.NONE, value = "Name of the host configuration file to use. This differs from '" + CommandLineConstants.HOST_CONFIG + "' in that the initial file is never overwritten.")
     String argReadOnlyHostConfig();
 
     /**
-     * Instructions for the {@link CommandLineArgument#PC_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineConstants#PROCESS_CONTROLLER_BIND_ADDR} command line argument.
      *
      * @return the message.
      */
@@ -128,7 +136,7 @@ interface ProcessMessages {
     String argPcAddress();
 
     /**
-     * Instructions for the {@link CommandLineArgument#PC_PORT} command line argument.
+     * Instructions for the {@link CommandLineConstants#PROCESS_CONTROLLER_BIND_PORT} command line argument.
      *
      * @return the message.
      */
@@ -136,7 +144,7 @@ interface ProcessMessages {
     String argPcPort();
 
     /**
-     * Instructions for the {@link CommandLineArgument#SHORT_PROPERTIES} or {@link CommandLineArgument#PROPERTIES} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_PROPERTIES} or {@link CommandLineConstants#PROPERTIES} command line argument.
      *
      * @return the message.
      */
@@ -144,7 +152,7 @@ interface ProcessMessages {
     String argProperties();
 
     /**
-     * Instructions for the {@link CommandLineArgument#SYSTEM_PROPERTY} command line argument.
+     * Instructions for the {@link CommandLineConstants#SYS_PROP} command line argument.
      *
      * @return the message.
      */
@@ -152,7 +160,7 @@ interface ProcessMessages {
     String argSystem();
 
     /**
-     * Instructions for the {@link CommandLineArgument#SHORT_VERSION}, {@link CommandLineArgument#LEGACY_SHORT_VERSION} or {@link CommandLineArgument#VERSION} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_VERSION}, {@link CommandLineConstants#OLD_SHORT_VERSION} or {@link CommandLineConstants#VERSION} command line argument.
      *
      * @return the message.
      */
@@ -160,7 +168,7 @@ interface ProcessMessages {
     String argVersion();
 
     /**
-     * Instructions for the {@link CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineConstants#PUBLIC_BIND_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -168,7 +176,7 @@ interface ProcessMessages {
     String argPublicBindAddress();
 
     /**
-     * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.
+     * Instructions for the {@code -b<interface></interface>} command line argument.
      *
      * @return the message.
      */
@@ -176,7 +184,7 @@ interface ProcessMessages {
     String argInterfaceBindAddress();
 
     /**
-     * Instructions for the {@link CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineConstants#DEFAULT_MULTICAST_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -184,7 +192,7 @@ interface ProcessMessages {
     String argDefaultMulticastAddress();
 
     /**
-     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     * Instructions for the {@link CommandLineConstants#ADMIN_ONLY} command line argument.
      *
      * @return the message.
      */
@@ -192,7 +200,7 @@ interface ProcessMessages {
     String argAdminOnly();
 
     /**
-     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     * Instructions for the {@link CommandLineConstants#MASTER_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -200,7 +208,7 @@ interface ProcessMessages {
     String argMasterAddress();
 
     /**
-     * Instructions for the {@link CommandLineArgument#ADMIN_ONLY} command line argument.
+     * Instructions for the {@link CommandLineConstants#MASTER_PORT} command line argument.
      *
      * @return the message.
      */
@@ -208,7 +216,7 @@ interface ProcessMessages {
     String argMasterPort();
 
     /**
-     * Instructions for the {@link CommandLineArgument#INTERFACE_BIND_ADDRESS} command line argument.
+     * Error message indicating no value was provided for a command line argument.
      *
      * @param argument the name of the argument
      *

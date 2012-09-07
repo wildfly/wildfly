@@ -21,7 +21,7 @@ public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
         instructions.add(MESSAGES.argInterfaceBindAddress());
 
         addArguments(CommandLineConstants.SHORT_SERVER_CONFIG + " <config>", CommandLineConstants.SHORT_SERVER_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argServerConfig());
+        instructions.add(MESSAGES.argShortServerConfig());
 
         addArguments(CommandLineConstants.SYS_PROP + "<name>[=<value>]");
         instructions.add(MESSAGES.argSystem());

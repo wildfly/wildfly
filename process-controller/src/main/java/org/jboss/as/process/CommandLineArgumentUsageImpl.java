@@ -21,7 +21,7 @@ public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
         instructions.add(MESSAGES.argBackup());
 
         addArguments(CommandLineConstants.SHORT_DOMAIN_CONFIG + " <config>", CommandLineConstants.SHORT_DOMAIN_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argDomainConfig() + " (Same as --domain-config)");
+        instructions.add(MESSAGES.argShortDomainConfig());
 
         addArguments(CommandLineConstants.CACHED_DC);
         instructions.add(MESSAGES.argCachedDc());
@@ -30,12 +30,12 @@ public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
         instructions.add(MESSAGES.argSystem());
 
         addArguments(CommandLineConstants.DOMAIN_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argDomainConfig() + " (Same as -c)");
+        instructions.add(MESSAGES.argDomainConfig());
 
         addArguments(CommandLineConstants.SHORT_HELP, CommandLineConstants.HELP);
         instructions.add(MESSAGES.argHelp());
 
-        addArguments(CommandLineConstants.HOST_CONFIG);
+        addArguments(CommandLineConstants.HOST_CONFIG + "=<config>");
         instructions.add(MESSAGES.argHostConfig());
 
         addArguments(CommandLineConstants.INTERPROCESS_HC_ADDRESS + "=<address>");

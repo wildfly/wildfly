@@ -85,27 +85,33 @@ public interface ServerMessages {
     String argUsage();
 
     /**
-     * Instructions for the {@link CommandLineArgument#LEGACY_SHORT_SERVER_CONFIG} and {@link
-     * CommandLineArgument#SHORT_SERVER_CONFIG} and {@link CommandLineArgument#SERVER_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineConstants#SERVER_CONFIG} command line argument.
      *
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\")")
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\") (Same as -c)")
     String argServerConfig();
 
     /**
-     * Instructions for the {@link CommandLineArgument#READ_ONLY_SERVER_CONFIG} command line arguments.
+     * Instructions for the {@link CommandLineConstants#SHORT_SERVER_CONFIG} command line argument.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Name of the server configuration file to use (default is \"standalone.xml\") (Same as --server-config)")
+    String argShortServerConfig();
+
+    /**
+     * Instructions for the {@link CommandLineConstants#READ_ONLY_SERVER_CONFIG} command line arguments.
      *
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Name of the server configuration file to use. This differs from '" + CommandLineConstants.SERVER_CONFIG +
-            "', '" + CommandLineConstants.SHORT_SERVER_CONFIG + "' and '" + CommandLineConstants.OLD_SERVER_CONFIG + "' in that the original file is never persisted.")
+            "' and '" + CommandLineConstants.SHORT_SERVER_CONFIG + "' in that the original file is never overwritten.")
     String argReadOnlyServerConfig();
 
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_HELP} or {@link
-     * org.jboss.as.process.CommandLineArgument#HELP} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_HELP} or {@link CommandLineConstants#HELP} command line argument.
      *
      * @return the message.
      */
@@ -113,8 +119,7 @@ public interface ServerMessages {
     String argHelp();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_PROPERTIES} or {@link
-     * org.jboss.as.process.CommandLineArgument#PROPERTIES} command line argument.
+     * Instructions for the {@link CommandLineConstants#SHORT_PROPERTIES} or {@link CommandLineConstants#PROPERTIES} command line argument.
      *
      * @return the message.
      */
@@ -122,7 +127,7 @@ public interface ServerMessages {
     String argProperties();
 
     /**
-     * Instructions for the {@link org.jboss.as.server.CommandLineArgument#SECURITY_PROP} command line argument.
+     * Instructions for the {@link CommandLineConstants#SECURITY_PROP} command line argument.
      *
      * @return the message.
      */
@@ -130,7 +135,7 @@ public interface ServerMessages {
     String argSecurityProperty();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SYSTEM_PROPERTY} command line argument.
+     * Instructions for the {@link CommandLineConstants#SYS_PROP} command line argument.
      *
      * @return the message.
      */
@@ -138,8 +143,8 @@ public interface ServerMessages {
     String argSystem();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#SHORT_VERSION}, {@link
-     * org.jboss.as.process.CommandLineArgument#LEGACY_SHORT_VERSION} or {@link org.jboss.as.process.CommandLineArgument#VERSION}
+     * Instructions for the {@link CommandLineConstants#SHORT_VERSION}, {@link
+     * CommandLineConstants#OLD_SHORT_VERSION or {@link CommandLineConstants#VERSION}
      * command line argument.
      *
      * @return the message.
@@ -148,8 +153,7 @@ public interface ServerMessages {
     String argVersion();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#PUBLIC_BIND_ADDRESS} or {@link
-     * org.jboss.as.process.CommandLineArgument#LEGACY_PUBLIC_BIND_ADDRESS} command line argument.
+     * Instructions for the {@link CommandLineConstants#PUBLIC_BIND_ADDRESS} command line argument.
      *
      * @return the message.
      */
@@ -157,7 +161,7 @@ public interface ServerMessages {
     String argPublicBindAddress();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#INTERFACE_BIND_ADDRESS} command line
+     * Instructions for the {code -b<interface></interface>} command line
      * argument.
      *
      * @return the message.
@@ -166,7 +170,7 @@ public interface ServerMessages {
     String argInterfaceBindAddress();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#DEFAULT_MULTICAST_ADDRESS} command line
+     * Instructions for the {@link CommandLineConstants#DEFAULT_MULTICAST_ADDRESS} command line
      * argument.
      *
      * @return the message.
@@ -175,7 +179,7 @@ public interface ServerMessages {
     String argDefaultMulticastAddress();
 
     /**
-     * Instructions for the {@link org.jboss.as.process.CommandLineArgument#ADMIN_ONLY} command line argument.
+     * Instructions for the {@link CommandLineConstants#ADMIN_ONLY} command line argument.
      *
      * @return the message.
      */

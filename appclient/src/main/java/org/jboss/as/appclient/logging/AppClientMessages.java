@@ -28,6 +28,7 @@ import java.net.URL;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.Message;
@@ -55,7 +56,7 @@ public interface AppClientMessages {
     String argAppClientConfig();
 
     /**
-     * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#HELP} command line arguments.
+     * Instructions for the {@link CommandLineConstants#HELP} command line arguments.
      *
      * @return the instructions.
      */
@@ -63,7 +64,7 @@ public interface AppClientMessages {
     String argHelp();
 
     /**
-     * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#HOST} command line arguments.
+     * Instructions for the {@link CommandLineConstants#HOST} command line arguments.
      *
      * @return the instructions.
      */
@@ -71,7 +72,7 @@ public interface AppClientMessages {
     String argHost();
 
     /**
-     * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#CONNECTION_PROPERTIES} command line
+     * Instructions for the {@link CommandLineConstants#CONNECTION_PROPERTIES} command line
      * arguments.
      *
      * @return the instructions.
@@ -80,7 +81,7 @@ public interface AppClientMessages {
     String argConnectionProperties();
 
     /**
-     * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#PROPERTIES} command line
+     * Instructions for the {@link CommandLineConstants#PROPERTIES} command line
      * arguments.
      *
      * @return the instructions.
@@ -89,7 +90,7 @@ public interface AppClientMessages {
     String argProperties();
 
     /**
-     * Instructions for {@link org.jboss.as.appclient.subsystem.CommandLineArgument#SYS_PROP} command line argument.
+     * Instructions for {@link CommandLineConstants#SYS_PROP} command line argument.
      *
      * @return the instructions.
      */
@@ -97,8 +98,7 @@ public interface AppClientMessages {
     String argSystemProperty();
 
     /**
-     * Instructions for the usage of the
-     * {@link org.jboss.as.appclient.subsystem.CommandLineArgument command line arguments} instructions.
+     * Instructions for the usage of the command line arguments instructions.
      *
      * @return the instructions.
      */
@@ -106,7 +106,7 @@ public interface AppClientMessages {
     String argUsage();
 
     /**
-     * Instructions for {@link org.jboss.as.appclient.subsystem.CommandLineArgument#VERSION} command line argument.
+     * Instructions for {@link CommandLineConstants#VERSION} command line argument.
      *
      * @return the instructions.
      */
