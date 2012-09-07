@@ -16,6 +16,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
+import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyRemoveHandler;
@@ -164,9 +165,14 @@ public class ServerOperationResolver {
         ops.add(op);
     }
 
-    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode operation, PathAddress address) {
+    public Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode originalOperation, PathAddress address) {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-            HOST_CONTROLLER_LOGGER.tracef("Resolving %s", operation);
+            HOST_CONTROLLER_LOGGER.tracef("Resolving %s", originalOperation);
+        }
+
+        ModelNode operation = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION);
+        if(operation == null) {
+            operation = originalOperation;
         }
 
         Set<ModelNode> dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
@@ -242,16 +248,7 @@ public class ServerOperationResolver {
     private Map<Set<ServerIdentity>, ModelNode> getDeploymentOverlayOperations(ModelNode operation,
                                                                                ModelNode host) {
         final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        ModelNode result = operation.clone();
-        if(address.size() ==2) {
-            if(address.getElement(1).getKey().equals(CONTENT)) {
-                final ModelNode content = new ModelNode();
-                content.get(HASH).set(operation.get(CONTENT));
-                result.get(CONTENT).set(content);
-            }
-        }
-        return Collections.singletonMap(allServers, result);
+        return Collections.singletonMap(allServers, operation.clone());
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerInterfaceOperations(ModelNode operation, PathAddress address,

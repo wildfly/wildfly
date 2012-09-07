@@ -98,12 +98,14 @@ public class ContentAdd extends AbstractAddStepHandler {
         slave.get(CONTENT).clear();
         slave.get(CONTENT).get(HASH).set(hash);
 
-        operation.get(CONTENT).clear();
-        operation.get(CONTENT).set(hash);
         context.attach(OperationAttachments.SLAVE_SERVER_OPERATION, slave);
 
+
+        ModelNode modified = operation.clone();
+        modified.get(CONTENT).clone();
+        modified.get(CONTENT).set(hash);
         for (AttributeDefinition attr : ContentDefinition.attributes()) {
-            attr.validateAndSet(operation, resource.getModel());
+            attr.validateAndSet(modified, resource.getModel());
         }
         if (!contentRepository.syncContent(hash)) {
             throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
