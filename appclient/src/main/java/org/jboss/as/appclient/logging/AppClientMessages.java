@@ -77,7 +77,7 @@ public interface AppClientMessages {
      * @return the instructions.
      */
     @Message(id = Message.NONE, value = "Load ejb-client.properties file from the given url")
-    String connectionProperties();
+    String argConnectionProperties();
 
     /**
      * Instructions for the {@link org.jboss.as.appclient.subsystem.CommandLineArgument#PROPERTIES} command line
