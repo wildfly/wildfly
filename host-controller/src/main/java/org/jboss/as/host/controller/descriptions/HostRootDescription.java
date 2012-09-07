@@ -76,15 +76,10 @@ import static org.jboss.as.server.controller.descriptions.ServerDescriptionConst
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.registry.AttributeAccess.Flag;
-import org.jboss.as.host.controller.DirectoryGrouping;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
@@ -97,22 +92,18 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry
  */
+@Deprecated
 public class HostRootDescription {
 
     private static final String BLOCKING = "blocking";
 
-    public static final SimpleAttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING, true).
-            addFlag(Flag.RESTART_ALL_SERVICES).
-            setDefaultValue(DirectoryGrouping.defaultValue().toModelNode()).
-            setValidator(EnumValidator.create(DirectoryGrouping.class, true, false)).
-            build();
-
     private static final String RESOURCE_NAME = HostRootDescription.class.getPackage().getName() + ".LocalDescriptions";
 
+    @Deprecated
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return getResourceDescriptionResolver(keyPrefix, true);
     }
-
+    @Deprecated
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, HostRootDescription.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
@@ -215,7 +206,7 @@ public class HostRootDescription {
         root.get(ATTRIBUTES, MASTER, DESCRIPTION).set(bundle.getString("host.master"));
         root.get(ATTRIBUTES, MASTER, TYPE).set(ModelType.BOOLEAN);
 
-        DIRECTORY_GROUPING.addResourceAttributeDescription(bundle, "host", root);
+        HostResourceDefinition.DIRECTORY_GROUPING.addResourceAttributeDescription(bundle, "host", root);
 
         root.get(OPERATIONS).setEmptyObject();
 

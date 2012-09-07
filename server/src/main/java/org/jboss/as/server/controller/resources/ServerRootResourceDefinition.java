@@ -44,6 +44,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -162,6 +163,10 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     private static final EnumSet<Flag> runtimeOnlyFlag = EnumSet.of(Flag.RUNTIME_ONLY);
+    public static final AttributeDefinition RUNNING_MODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNNING_MODE, ModelType.STRING)
+            .setValidator(new EnumValidator(RunningMode.class, false, false))
+            .setStorageRuntime()
+            .build();
 
     private final boolean isDomain;
     private final ContentRepository contentRepository;
@@ -293,7 +298,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         resourceRegistration.registerReadOnlyAttribute(SERVER_STATE, new ProcessStateAttributeHandler(processState));
         resourceRegistration.registerReadOnlyAttribute(PROCESS_TYPE, ProcessTypeHandler.INSTANCE);
-        RunningModeReadHandler.createAndRegister(runningModeControl, resourceRegistration);
+        resourceRegistration.registerReadOnlyAttribute(RUNNING_MODE, new RunningModeReadHandler(runningModeControl));
+
 
         resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, ManagementVersionAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, ManagementVersionAttributeHandler.INSTANCE);

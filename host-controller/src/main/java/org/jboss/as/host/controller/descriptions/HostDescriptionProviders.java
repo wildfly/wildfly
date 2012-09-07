@@ -34,6 +34,7 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  *
  */
+@Deprecated
 public final class HostDescriptionProviders {
 
     // Prevent instantiation

@@ -23,6 +23,7 @@ package org.jboss.as.controller.descriptions.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
@@ -42,12 +43,21 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
+@Deprecated
 public class ManagementDescription {
 
     private static final String RESOURCE_NAME = ManagementDescription.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ManagementDescription.class.getClassLoader(), true, false);
+      public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder();
+        for (String kp : keyPrefix) {
+            if (prefix.length()>0){
+                prefix.append('.').append(kp);
+            }else{
+                prefix.append(kp);
+            }
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), ManagementDescription.class.getPackage().getName() + ".LocalDescriptions", ManagementDescription.class.getClassLoader(), true, false);
     }
 
     private static ResourceBundle getResourceBundle(Locale locale) {

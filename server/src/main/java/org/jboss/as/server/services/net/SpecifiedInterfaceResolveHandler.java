@@ -32,8 +32,8 @@ import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -48,7 +48,7 @@ import org.jboss.dmr.ModelType;
  */
 public class SpecifiedInterfaceResolveHandler implements OperationStepHandler, DescriptionProvider {
 
-    static final AttributeDefinition[] ATTRIBUTES = InterfaceDescription.ROOT_ATTRIBUTES;
+    static final AttributeDefinition[] ATTRIBUTES = InterfaceDefinition.ROOT_ATTRIBUTES;
 
     public static final String OPERATION_NAME = "resolve-internet-address";
 

@@ -52,7 +52,6 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -60,6 +59,7 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
@@ -153,7 +153,7 @@ public class ServerControllerUnitTestCase {
         {
             final ModelNode operation = base.clone();
             // operation.get("any-address").set(true);
-            populateCritieria(operation, Nesting.TOP, InterfaceDescription.LOOPBACK);
+            populateCritieria(operation, Nesting.TOP, InterfaceDefinition.LOOPBACK);
             executeForResult(client, operation);
         }
         {
@@ -210,16 +210,16 @@ public class ServerControllerUnitTestCase {
         operation.get(ModelDescriptionConstants.OP_ADDR).add("interface", "complex");
         // This won't be resolvable with the runtime layer enabled
         populateCritieria(operation, Nesting.TOP,
-                InterfaceDescription.LOOPBACK);
+                InterfaceDefinition.LOOPBACK);
         populateCritieria(operation.get("not"), Nesting.NOT,
-                InterfaceDescription.PUBLIC_ADDRESS,
-                InterfaceDescription.LINK_LOCAL_ADDRESS,
-                InterfaceDescription.SITE_LOCAL_ADDRESS,
-                InterfaceDescription.VIRTUAL,
-                InterfaceDescription.UP,
-                InterfaceDescription.MULTICAST,
-                InterfaceDescription.LOOPBACK_ADDRESS,
-                InterfaceDescription.POINT_TO_POINT);
+                InterfaceDefinition.PUBLIC_ADDRESS,
+                InterfaceDefinition.LINK_LOCAL_ADDRESS,
+                InterfaceDefinition.SITE_LOCAL_ADDRESS,
+                InterfaceDefinition.VIRTUAL,
+                InterfaceDefinition.UP,
+                InterfaceDefinition.MULTICAST,
+                InterfaceDefinition.LOOPBACK_ADDRESS,
+                InterfaceDefinition.POINT_TO_POINT);
         populateCritieria(operation.get("any"), Nesting.ANY);
 
         final ModelControllerClient client = controller.createClient(Executors.newCachedThreadPool());
@@ -229,7 +229,7 @@ public class ServerControllerUnitTestCase {
 
     protected void populateCritieria(final ModelNode model, final Nesting nesting, final AttributeDefinition...excluded) {
         Set<AttributeDefinition> excludedCriteria = new HashSet<AttributeDefinition>(Arrays.asList(excluded));
-        for(final AttributeDefinition def : InterfaceDescription.NESTED_ATTRIBUTES) {
+        for(final AttributeDefinition def : InterfaceDefinition.NESTED_ATTRIBUTES) {
 
             if (excludedCriteria.contains(def)) {
                 continue;
@@ -238,15 +238,15 @@ public class ServerControllerUnitTestCase {
             final ModelNode node = model.get(def.getName());
             if(def.getType() == ModelType.BOOLEAN) {
                 node.set(true);
-            } else if (def == InterfaceDescription.INET_ADDRESS || def == InterfaceDescription.LOOPBACK_ADDRESS) {
-                if (nesting == Nesting.ANY && def == InterfaceDescription.INET_ADDRESS) {
+            } else if (def == InterfaceDefinition.INET_ADDRESS || def == InterfaceDefinition.LOOPBACK_ADDRESS) {
+                if (nesting == Nesting.ANY && def == InterfaceDefinition.INET_ADDRESS) {
                     node.add("127.0.0.1");
-                } else if (nesting == Nesting.NOT && def == InterfaceDescription.INET_ADDRESS) {
+                } else if (nesting == Nesting.NOT && def == InterfaceDefinition.INET_ADDRESS) {
                     node.add("10.0.0.1");
                 } else {
                     node.set("127.0.0.1");
                 }
-            } else if (def == InterfaceDescription.NIC || def == InterfaceDescription.NIC_MATCH) {
+            } else if (def == InterfaceDefinition.NIC || def == InterfaceDefinition.NIC_MATCH) {
                 if (nesting == Nesting.ANY) {
                     node.add("lo");
                 } else if (nesting == Nesting.NOT) {
@@ -254,7 +254,7 @@ public class ServerControllerUnitTestCase {
                 } else {
                     node.set("lo");
                 }
-            } else if (def == InterfaceDescription.SUBNET_MATCH) {
+            } else if (def == InterfaceDefinition.SUBNET_MATCH) {
                 if (nesting == Nesting.ANY) {
                     node.add("127.0.0.1/24");
                 } else if (nesting == Nesting.NOT) {

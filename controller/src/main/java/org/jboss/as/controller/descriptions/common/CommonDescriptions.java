@@ -60,16 +60,36 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry
  */
+@Deprecated
 public class CommonDescriptions {
 
     private static final String RESOURCE_NAME = CommonDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
+    @Deprecated
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return getResourceDescriptionResolver(keyPrefix, true);
     }
 
+    @Deprecated
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, boolean useUnprefixedChildTypes) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, CommonDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
+        return getResourceDescriptionResolver(useUnprefixedChildTypes, keyPrefix);
+    }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        return getResourceDescriptionResolver(false, keyPrefix);
+    }
+
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(boolean useUnprefixedChildTypes, final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder();
+        for (String kp : keyPrefix) {
+            if (prefix.length() > 0) {
+                prefix.append('.').append(kp);
+            } else {
+                prefix.append(kp);
+            }
+        }
+
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, CommonDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
     public static ModelNode getNamespacePrefixAttribute(final Locale locale) {

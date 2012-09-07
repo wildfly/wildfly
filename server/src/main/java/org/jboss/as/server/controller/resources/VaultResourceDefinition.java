@@ -64,7 +64,10 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
     public static AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[] {CODE, VAULT_OPTIONS};
 
     public VaultResourceDefinition(AbstractVaultReader vaultReader) {
-        super(PathElement.pathElement(CORE_SERVICE, VAULT), ServerDescriptions.getResourceDescriptionResolver(VAULT), new VaultAddHandler(vaultReader), new VaultRemoveHandler(vaultReader));
+        super(PathElement.pathElement(CORE_SERVICE, VAULT),
+                ServerDescriptions.getResourceDescriptionResolver(VAULT),
+                new VaultAddHandler(vaultReader),
+                new VaultRemoveHandler(vaultReader));
     }
 
     @Override

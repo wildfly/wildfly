@@ -35,6 +35,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -46,7 +47,7 @@ import org.jboss.msc.service.ServiceController;
  */
 public class InterfaceAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
 
-    private static final AttributeDefinition[] ATTRIBUTES = InterfaceDescription.ROOT_ATTRIBUTES;
+    private static final AttributeDefinition[] ATTRIBUTES = InterfaceDefinition.ROOT_ATTRIBUTES;
     public static final String OPERATION_NAME = ADD;
 
     public static ModelNode getAddInterfaceOperation(ModelNode address, ModelNode criteria) {

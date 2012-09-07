@@ -55,8 +55,16 @@ public class ServerDescriptions {
 
     public static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder();
+        for (String kp : keyPrefix) {
+            if (prefix.length() > 0) {
+                prefix.append('.').append(kp);
+            } else {
+                prefix.append(kp);
+            }
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
     }
 
     private ServerDescriptions() {

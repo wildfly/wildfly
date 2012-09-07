@@ -33,6 +33,7 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry
  *
  */
+@Deprecated
 public final class CommonProviders {
 
     // Prevent instantiation
