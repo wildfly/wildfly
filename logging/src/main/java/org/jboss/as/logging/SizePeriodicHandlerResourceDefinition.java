@@ -36,17 +36,15 @@ import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
  */
 class SizePeriodicHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
-    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE);
-    // Add attributes are a combination of writable and read-only attributes
-    static final AttributeDefinition[] ADD_ATTRIBUTES = appendDefaultReadOnlyAttributes(WRITABLE_ATTRIBUTES);
+    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE);
 
     static final SizePeriodicHandlerResourceDefinition INSTANCE = new SizePeriodicHandlerResourceDefinition();
 
     private SizePeriodicHandlerResourceDefinition() {
         super(LoggingExtension.SIZE_ROTATING_HANDLER_PATH,
                 CommonAttributes.SIZE_ROTATING_FILE_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(SizeRotatingFileHandler.class, ADD_ATTRIBUTES, FILE, APPEND),
-                WRITABLE_ATTRIBUTES);
+                new HandlerOperations.HandlerAddOperationStepHandler(SizeRotatingFileHandler.class, ATTRIBUTES, FILE, APPEND),
+                ATTRIBUTES);
     }
 
 

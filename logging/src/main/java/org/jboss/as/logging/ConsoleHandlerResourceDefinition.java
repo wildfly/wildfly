@@ -33,14 +33,12 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
  */
 class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
 
-    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, TARGET);
-    // Add attributes are a combination of writable and read-only attributes
-    static final AttributeDefinition[] ADD_ATTRIBUTES = appendDefaultReadOnlyAttributes(WRITABLE_ATTRIBUTES);
+    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, TARGET);
 
     /**
      * Operation step handlers for {@link org.jboss.logmanager.handlers.ConsoleHandler}
      */
-    static final HandlerOperations.HandlerAddOperationStepHandler ADD_CONSOLE_HANDLER = new HandlerOperations.HandlerAddOperationStepHandler(ConsoleHandler.class, ADD_ATTRIBUTES);
+    static final HandlerOperations.HandlerAddOperationStepHandler ADD_CONSOLE_HANDLER = new HandlerOperations.HandlerAddOperationStepHandler(ConsoleHandler.class, ATTRIBUTES);
 
     static final ConsoleHandlerResourceDefinition INSTANCE = new ConsoleHandlerResourceDefinition();
 
@@ -48,7 +46,7 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
         super(LoggingExtension.CONSOLE_HANDLER_PATH,
                 CommonAttributes.CONSOLE_HANDLER,
                 ADD_CONSOLE_HANDLER,
-                WRITABLE_ATTRIBUTES);
+                ATTRIBUTES);
     }
 
 }

@@ -29,7 +29,7 @@ import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
-import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.LoggerOperations.ADD_HANDLER;
@@ -325,14 +325,14 @@ final class HandlerOperations {
     public static final HandlerUpdateOperationStepHandler ADD_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            NAME.validateAndSet(operation, model);
-            model.get(SUBHANDLERS.getName()).add(operation.get(NAME.getName()));
+            HANDLER_NAME.validateAndSet(operation, model);
+            model.get(SUBHANDLERS.getName()).add(operation.get(HANDLER_NAME.getName()));
         }
 
         @Override
         public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             // Get the handler name
-            final String handlerName = NAME.resolveModelAttribute(context, model).asString();
+            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, model).asString();
             if (name.equals(handlerName)) {
                 throw createOperationFailure(LoggingMessages.MESSAGES.cannotAddHandlerToSelf(configuration.getName()));
             }
@@ -354,8 +354,8 @@ final class HandlerOperations {
     public static final HandlerUpdateOperationStepHandler REMOVE_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            NAME.validateAndSet(operation, model);
-            final String handlerName = model.get(NAME.getName()).asString();
+            HANDLER_NAME.validateAndSet(operation, model);
+            final String handlerName = model.get(HANDLER_NAME.getName()).asString();
             // Create a new handler list for the model
             boolean found = false;
             final List<ModelNode> handlers = model.get(SUBHANDLERS.getName()).asList();
@@ -374,7 +374,7 @@ final class HandlerOperations {
 
         @Override
         public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
-            configuration.removeHandlerName(NAME.resolveModelAttribute(context, model).asString());
+            configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, model).asString());
         }
 
         @Override
@@ -482,7 +482,7 @@ final class HandlerOperations {
                 throw createOperationFailure(LoggingMessages.MESSAGES.cannotAddHandlerToSelf(configuration.getName()));
             }
             configuration.setHandlerNames(resolvedValue);
-        } else if (attribute.getName().equals(NAME.getName())) {
+        } else if (attribute.getName().equals(HANDLER_NAME.getName())) {
             // no-op just ignore the name attribute
         } else if (attribute.getName().equals(PROPERTIES.getName())) {
             if (model.hasDefined(PROPERTIES.getName())) {

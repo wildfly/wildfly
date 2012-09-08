@@ -61,7 +61,7 @@ import static org.jboss.as.logging.CommonAttributes.MAX_LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MIN_INCLUSIVE;
 import static org.jboss.as.logging.CommonAttributes.MIN_LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
-import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.NEW_LEVEL;
 import static org.jboss.as.logging.CommonAttributes.NOT;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
@@ -1118,7 +1118,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
             throws XMLStreamException {
         writer.writeStartElement(Element.CONSOLE_HANDLER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
@@ -1152,7 +1152,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     private void writeCustomHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
             throws XMLStreamException {
         writer.writeStartElement(Element.CUSTOM_HANDLER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         CLASS.marshallAsAttribute(node, writer);
         MODULE.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
@@ -1166,7 +1166,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writePeriodicRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
@@ -1186,7 +1186,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writeSizeRotatingFileHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
         writeLevel(writer, node);
         writeEncoding(writer, node);
@@ -1211,7 +1211,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
     private void writeAsynchHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.ASYNC_HANDLER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
+        writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         writeLevel(writer, node);
         writeFilter(writer, node);
         writeFormatter(writer, node);
