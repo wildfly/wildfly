@@ -21,18 +21,21 @@
  */
 package org.jboss.as.cmp.jdbc;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.sql.DataSource;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+
 import org.jboss.as.cmp.CmpLogger;
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.bridge.EntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
@@ -209,7 +212,6 @@ public final class JDBCStartCommand {
             final EntityBridge relatedEntity = cmrField.getRelatedEntity();
             if (relationMetaData.isTableMappingStyle() && manager.hasCreateTable(relatedEntity.getEntityName())) {
                 boolean relTableExisted = SQLUtil.tableExists(cmrField.getQualifiedTableName(), entity.getDataSource());
-
                 if (relTableExisted) {
                     if (relationMetaData.getAlterTable()) {
                         ArrayList oldNames = SQLUtil.getOldColumns(cmrField.getQualifiedTableName(), dataSource).getColumnNames();
@@ -259,8 +261,17 @@ public final class JDBCStartCommand {
                 // create the relation table
                 if (relationMetaData.isTableMappingStyle() && !relationMetaData.isTableCreated()) {
                     if (relationMetaData.getCreateTable()) {
-                        createTable(dataSource, cmrField.getQualifiedTableName(),
+                        if(!entityMetaData.getCreateTableIfNotExistsSupported()) {
+                            // sync on catalog (one per deployment unit) to ensure no conflict on other entities creating same relation table
+                            synchronized (manager.getCatalog()) {
+                                createTable(dataSource, cmrField.getQualifiedTableName(),
+                                        getRelationCreateTableSQL(cmrField, dataSource));
+                            }
+                        }
+                        else {
+                            createTable(dataSource, cmrField.getQualifiedTableName(),
                                 getRelationCreateTableSQL(cmrField, dataSource));
+                        }
                     } else {
                         log.debug("Relation table not created as requested: " + cmrField.getQualifiedTableName());
                     }
@@ -582,7 +593,9 @@ public final class JDBCStartCommand {
 
     private String getEntityCreateTableSQL(DataSource dataSource) {
         StringBuffer sql = new StringBuffer();
-        sql.append(SQLUtil.CREATE_TABLE).append(entity.getQualifiedTableName()).append(" (");
+        sql.append(entityMetaData.getCreateTableIfNotExistsSupported() ? SQLUtil.CREATE_TABLE_IF_NOT_EXISTS : SQLUtil.CREATE_TABLE)
+            .append(entity.getQualifiedTableName())
+            .append(" (");
 
         // add fields
         boolean comma = false;
@@ -753,10 +766,11 @@ public final class JDBCStartCommand {
         System.arraycopy(rightKeys, 0, fieldsArr, leftKeys.length, rightKeys.length);
 
         StringBuffer sql = new StringBuffer();
-        sql.append(SQLUtil.CREATE_TABLE).append(cmrField.getQualifiedTableName())
-                .append(" (")
-                        // add field declaration
-                .append(SQLUtil.getCreateTableColumnsClause(fieldsArr));
+        sql.append(entityMetaData.getCreateTableIfNotExistsSupported() ? SQLUtil.CREATE_TABLE_IF_NOT_EXISTS : SQLUtil.CREATE_TABLE)
+            .append(cmrField.getQualifiedTableName())
+            .append(" (")
+            // add field declaration
+            .append(SQLUtil.getCreateTableColumnsClause(fieldsArr));
 
         // add a pk constraint
         final JDBCRelationMetaData relationMetaData = cmrField.getMetaData().getRelationMetaData();
