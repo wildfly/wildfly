@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cmp.jdbc.metadata;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,8 +30,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedEntity;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedQuery;
@@ -112,6 +114,11 @@ public final class JDBCEntityMetaData {
      * Should we try and create the table when deployed?
      */
     private final boolean createTable;
+
+    /**
+     * indicates that CREATE TABLE IF NOT EXISTS should not be used when creating tables
+     */
+    private final boolean createTableIfNotExistsNotSupported;
 
     /**
      * Should we drop the table when undeployed?
@@ -259,6 +266,7 @@ public final class JDBCEntityMetaData {
         dataSourceMappingName = null;
         tableName = null;
         createTable = false;
+        createTableIfNotExistsNotSupported = false;
         removeTable = false;
         alterTable = false;
         readOnly = false;
@@ -360,6 +368,7 @@ public final class JDBCEntityMetaData {
         dataSourceName = null;
         dataSourceMappingName = null;
         createTable = false;
+        createTableIfNotExistsNotSupported = false;
         removeTable = false;
         alterTable = false;
         rowLocking = false;
@@ -417,6 +426,7 @@ public final class JDBCEntityMetaData {
         dataSourceMappingName = defaultValues.dataSourceMappingName;
         tableName = defaultValues.tableName;
         createTable = defaultValues.createTable;
+        createTableIfNotExistsNotSupported = defaultValues.createTableIfNotExistsNotSupported;
         removeTable = defaultValues.removeTable;
         alterTable = defaultValues.alterTable;
         tablePostCreateCmd.addAll(defaultValues.tablePostCreateCmd);
@@ -499,6 +509,12 @@ public final class JDBCEntityMetaData {
             createTable = parsed.getCreateTable();
         } else {
             createTable = defaultValues.getCreateTable();
+        }
+
+        if (parsed.getCreateTableIfNotExistsNotSupported() != null) {
+            createTableIfNotExistsNotSupported = parsed.getCreateTableIfNotExistsNotSupported();
+        } else {
+            createTableIfNotExistsNotSupported = defaultValues.getCreateTableIfNotExistsNotSupported();
         }
 
         // remove table?  If not provided, keep default.
@@ -920,6 +936,14 @@ public final class JDBCEntityMetaData {
      */
     public boolean getCreateTable() {
         return createTable;
+    }
+
+    /**
+     * Gets the flag, which indicates that CREATE TABLE IF NOT EXISTS should not be used when creating tables.
+     * @return
+     */
+    public boolean getCreateTableIfNotExistsNotSupported() {
+        return createTableIfNotExistsNotSupported;
     }
 
     /**

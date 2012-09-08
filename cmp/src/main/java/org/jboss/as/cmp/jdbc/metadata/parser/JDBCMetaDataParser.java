@@ -22,6 +22,8 @@
 
 package org.jboss.as.cmp.jdbc.metadata.parser;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +34,6 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.SQLUtil;
 import org.jboss.as.cmp.jdbc.metadata.JDBCApplicationMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldPropertyMetaData;
@@ -739,6 +740,10 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                 }
                 case CREATE_TABLE: {
                     metaData.createTable = Boolean.parseBoolean(getElementText(reader));
+                    break;
+                }
+                case CREATE_TABLE_IF_NOT_EXISTS_NOT_SUPPORTED: {
+                    metaData.createTableIfNotExistsNotSupported = Boolean.parseBoolean(getElementText(reader));
                     break;
                 }
                 case REMOVE_TABLE: {

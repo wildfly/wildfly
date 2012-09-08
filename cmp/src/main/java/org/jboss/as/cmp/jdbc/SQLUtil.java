@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cmp.jdbc;
 
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -29,11 +31,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.zip.CRC32;
+
 import javax.sql.DataSource;
 
 import org.jboss.as.cmp.CmpLogger;
 import org.jboss.as.cmp.CmpMessages;
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractCMRFieldBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCAbstractEntityBridge;
 import org.jboss.as.cmp.jdbc.bridge.JDBCEntityBridge;
@@ -68,6 +70,7 @@ public final class SQLUtil {
     public static final String ON = " ON ";
     public static final String NOT_EQUAL = "<>";
     public static final String CREATE_TABLE = "CREATE TABLE ";
+    public static final String CREATE_TABLE_IF_NOT_EXISTS = "CREATE TABLE IF NOT EXISTS ";
     public static final String DROP_TABLE = "DROP TABLE ";
     public static final String CREATE_INDEX = "CREATE INDEX ";
     public static final String NULL = "NULL";
