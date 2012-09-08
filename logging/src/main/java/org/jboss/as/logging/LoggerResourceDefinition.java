@@ -86,8 +86,8 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
         final ResourceDescriptionResolver resolver = getResourceDescriptionResolver();
 
         registration.registerOperationHandler(new SimpleOperationDefinition(CHANGE_LEVEL_OPERATION_NAME, resolver, CommonAttributes.LEVEL), LoggerOperations.CHANGE_LEVEL);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ADD_HANDLER_OPERATION_NAME, resolver, CommonAttributes.NAME), LoggerOperations.ADD_HANDLER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(REMOVE_HANDLER_OPERATION_NAME, resolver, CommonAttributes.NAME), LoggerOperations.REMOVE_HANDLER);
+        registration.registerOperationHandler(new SimpleOperationDefinition(ADD_HANDLER_OPERATION_NAME, resolver, CommonAttributes.HANDLER_NAME), LoggerOperations.ADD_HANDLER);
+        registration.registerOperationHandler(new SimpleOperationDefinition(REMOVE_HANDLER_OPERATION_NAME, resolver, CommonAttributes.HANDLER_NAME), LoggerOperations.REMOVE_HANDLER);
 
     }
 }

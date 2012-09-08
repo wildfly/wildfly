@@ -82,7 +82,7 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
         registration.registerOperationHandler(SET_ROOT_LOGGER_DEFINITION, RootLoggerResourceDefinition.ADD_ROOT_LOGGER);
         registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_REMOVE_OPERATION_NAME, getResourceDescriptionResolver()), LoggerOperations.REMOVE_LOGGER);
         registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.LEVEL), LoggerOperations.CHANGE_LEVEL);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.NAME), LoggerOperations.ADD_HANDLER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.NAME), LoggerOperations.REMOVE_HANDLER);
+        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.HANDLER_NAME), LoggerOperations.ADD_HANDLER);
+        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.HANDLER_NAME), LoggerOperations.REMOVE_HANDLER);
     }
 }

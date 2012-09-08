@@ -25,7 +25,7 @@ package org.jboss.as.logging;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
@@ -227,14 +227,14 @@ final class LoggerOperations {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            NAME.validateAndSet(operation, model);
-            model.get(HANDLERS.getName()).add(operation.get(NAME.getName()));
+            HANDLER_NAME.validateAndSet(operation, model);
+            model.get(HANDLERS.getName()).add(operation.get(HANDLER_NAME.getName()));
         }
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             // Get the handler name
-            final String handlerName = NAME.resolveModelAttribute(context, model).asString();
+            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, model).asString();
             final String loggerName = getLogManagerLoggerName(name);
             if (configuration.getHandlerNames().contains(handlerName)) {
                 throw createOperationFailure(LoggingMessages.MESSAGES.handlerAlreadyDefined(handlerName));
@@ -246,7 +246,7 @@ final class LoggerOperations {
         @Override
         public void performRollback(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
             // Get the handler name
-            final String handlerName = NAME.resolveModelAttribute(context, operation).asString();
+            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
             final String loggerName = getLogManagerLoggerName(name);
             if (configuration.getHandlerNames().contains(handlerName)) {
                 LoggingLogger.ROOT_LOGGER.tracef("Rolling back added handler '%s' to logger '%s' at '%s'", handlerName, getLogManagerLoggerName(loggerName), LoggingOperations.getAddress(operation));
@@ -262,8 +262,8 @@ final class LoggerOperations {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            NAME.validateAndSet(operation, model);
-            final String handlerName = model.get(NAME.getName()).asString();
+            HANDLER_NAME.validateAndSet(operation, model);
+            final String handlerName = model.get(HANDLER_NAME.getName()).asString();
             // Create a new handler list for the model
             boolean found = false;
             final List<ModelNode> handlers = model.get(HANDLERS.getName()).asList();
@@ -282,13 +282,13 @@ final class LoggerOperations {
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
-            configuration.removeHandlerName(NAME.resolveModelAttribute(context, model).asString());
+            configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, model).asString());
         }
 
         @Override
         public void performRollback(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
             // Get the handler name
-            final String handlerName = NAME.resolveModelAttribute(context, operation).asString();
+            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
             final String loggerName = getLogManagerLoggerName(name);
             if (!configuration.getHandlerNames().contains(handlerName)) {
                 LoggingLogger.ROOT_LOGGER.tracef("Rolling back removed handler '%s' to logger '%s' at '%s'", handlerName, getLogManagerLoggerName(loggerName), LoggingOperations.getAddress(operation));

@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -57,10 +58,6 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
             FILTER,
     };
 
-    static final AttributeDefinition[] DEFAULT_READ_ONLY_ATTRIBUTES = {
-            NAME
-    };
-
     private final LogHandlerWriteAttributeHandler writeHandler;
     private final AttributeDefinition[] writableAttributes;
     private final AttributeDefinition[] readOnlyAttributes;
@@ -68,7 +65,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     protected AbstractHandlerDefinition(final PathElement path, final String key,
                                         final LoggingOperations.LoggingAddOperationStepHandler addHandler,
                                         final AttributeDefinition... writableAttributes) {
-        this(path, key, addHandler, DEFAULT_READ_ONLY_ATTRIBUTES, writableAttributes);
+        this(path, key, addHandler, null, writableAttributes);
     }
 
     protected AbstractHandlerDefinition(final PathElement path, final String key,
@@ -89,9 +86,11 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition def : writableAttributes) {
             resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
-        for (AttributeDefinition def : readOnlyAttributes) {
-            resourceRegistration.registerReadOnlyAttribute(def, null);
-        }
+        if (readOnlyAttributes != null)
+            for (AttributeDefinition def : readOnlyAttributes) {
+                resourceRegistration.registerReadOnlyAttribute(def, null);
+            }
+        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
     }
 
     @Override
@@ -115,19 +114,6 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
      */
     static AttributeDefinition[] appendDefaultWritableAttributes(final AttributeDefinition... attributes) {
         return joinUnique(DEFAULT_WRITABLE_ATTRIBUTES, attributes);
-    }
-
-    /**
-     * Appends the default writable attributes with the attributes provided.
-     * <p/>
-     * Uniqueness is guaranteed on the returned array.
-     *
-     * @param attributes the attributes to add
-     *
-     * @return an array of the attributes
-     */
-    static AttributeDefinition[] appendDefaultReadOnlyAttributes(final AttributeDefinition... attributes) {
-        return joinUnique(DEFAULT_READ_ONLY_ATTRIBUTES, attributes);
     }
 
     /**

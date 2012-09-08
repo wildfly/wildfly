@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import org.jboss.as.controller.CaseParameterCorrector;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -99,6 +100,8 @@ public interface CommonAttributes {
             setAllowNull(true).
             build();
 
+    SimpleAttributeDefinition HANDLER_NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, true).build();
+
     // JUL doesn't allow for null levels. Use ALL as the default
     PropertyAttributeDefinition LEVEL = PropertyAttributeDefinition.Builder.of("level", ModelType.STRING, true).
             setCorrector(CaseParameterCorrector.TO_UPPER).
@@ -139,7 +142,9 @@ public interface CommonAttributes {
             setAllowExpression(false).
             build();
 
-    SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, true).build();
+    SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, true).
+            setDeprecated(ModelVersion.create(1, 2, 0)).
+            build();
 
     SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create("value", ModelType.STRING).build();
 
