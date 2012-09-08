@@ -37,6 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -109,6 +110,7 @@ final class SubsystemTestDelegate extends ModelTestDelegate {
 
     protected final String mainSubsystemName;
     private final Extension mainExtension;
+    private final Comparator<PathAddress> removeOrderComparator;
 
     /**
      * ExtensionRegistry we use just for registering parsers.
@@ -120,10 +122,20 @@ final class SubsystemTestDelegate extends ModelTestDelegate {
     private boolean addedExtraParsers;
     private XMLMapper xmlMapper;
 
-    SubsystemTestDelegate(final Class<?> testClass, final String mainSubsystemName, final Extension mainExtension) {
+    /**
+     * Creates a new delegate.
+     *
+     * @param testClass             the test class
+     * @param mainSubsystemName     the name of the subsystem
+     * @param mainExtension         the extension to test
+     * @param removeOrderComparator a comparator to sort addresses when removing the subsystem, {@code null} if order
+     *                              doesn't matter
+     */
+    SubsystemTestDelegate(final Class<?> testClass, final String mainSubsystemName, final Extension mainExtension, final Comparator<PathAddress> removeOrderComparator) {
         this.testClass = testClass;
         this.mainSubsystemName = mainSubsystemName;
         this.mainExtension = mainExtension;
+        this.removeOrderComparator = removeOrderComparator;
     }
 
     String getMainSubsystemName() {
@@ -319,6 +331,11 @@ final class SubsystemTestDelegate extends ModelTestDelegate {
         addresses.add(pathAddress);
 
         getAllChildAddressesForRemove(pathAddress, addresses, subsystemResource);
+
+        // If the remove order comparator is not null, then sort the addresses
+        if (removeOrderComparator != null) {
+            Collections.sort(addresses, removeOrderComparator);
+        }
 
         ModelNode composite = new ModelNode();
         composite.get(OP).set(CompositeOperationHandler.NAME);

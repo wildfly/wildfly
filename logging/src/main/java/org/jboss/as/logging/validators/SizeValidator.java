@@ -22,13 +22,14 @@
 
 package org.jboss.as.logging.validators;
 
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
+import static org.jboss.as.logging.Logging.createOperationFailure;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.logging.util.ModelParser;
+import org.jboss.as.logging.resolvers.SizeResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 /**
  * Date: 07.11.2011
@@ -51,11 +52,11 @@ public class SizeValidator extends ModelTypeValidator {
         if (value.isDefined()) {
             final String stringValue = value.asString();
             try {
-                ModelParser.parseSize(value);
+                SizeResolver.INSTANCE.parseSize(value);
             } catch (IllegalArgumentException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSize(stringValue)));
+                throw createOperationFailure(MESSAGES.invalidSize(stringValue));
             } catch (IllegalStateException e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidSize(stringValue)));
+                throw createOperationFailure(MESSAGES.invalidSize(stringValue));
             }
         }
     }

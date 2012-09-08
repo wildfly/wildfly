@@ -1,6 +1,7 @@
 package org.jboss.as.subsystem.test;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -36,8 +37,12 @@ public abstract class AbstractSubsystemTest {
     private final SubsystemTestDelegate delegate;
 
     protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension) {
+        this(mainSubsystemName, mainExtension, null);
+    }
+
+    protected AbstractSubsystemTest(final String mainSubsystemName, final Extension mainExtension, final Comparator<PathAddress> removeOrderComparator) {
         this.mainSubsystemName = mainSubsystemName;
-        this.delegate = new SubsystemTestDelegate(this.getClass(), mainSubsystemName, mainExtension);
+        this.delegate = new SubsystemTestDelegate(this.getClass(), mainSubsystemName, mainExtension, removeOrderComparator);
     }
 
     public String getMainSubsystemName() {
