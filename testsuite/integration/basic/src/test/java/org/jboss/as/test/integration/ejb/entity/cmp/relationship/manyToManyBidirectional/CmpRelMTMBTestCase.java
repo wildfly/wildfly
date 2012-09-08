@@ -36,16 +36,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(CmpTestRunner.class)
-public class ABTestCase extends AbstractCmpTest {
+public class CmpRelMTMBTestCase extends AbstractCmpTest {
 
-    static org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(ABTestCase.class);
+    static org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(CmpRelMTMBTestCase.class);
 
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "mtom-bi-cmp-relationship.jar");
-        jar.addPackage(ABTestCase.class.getPackage());
-        jar.addAsManifestResource(ABTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(ABTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
+        jar.addPackage(CmpRelMTMBTestCase.class.getPackage());
+        jar.addAsManifestResource(CmpRelMTMBTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addAsManifestResource(CmpRelMTMBTestCase.class.getPackage(), "jbosscmp-jdbc.xml", "jbosscmp-jdbc.xml");
         AbstractCmpTest.addDeploymentAssets(jar);
         return jar;
     }

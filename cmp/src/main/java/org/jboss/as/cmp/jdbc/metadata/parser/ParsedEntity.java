@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
 
 /**
@@ -37,6 +38,7 @@ public class ParsedEntity {
     String entityName;
     String tableName;
     Boolean createTable;
+    Boolean createTableIfNotExistsSupported;
     Boolean removeTable;
     Boolean alterTable;
     List<String> tablePostCreateCmd = new ArrayList<String>();
@@ -79,6 +81,10 @@ public class ParsedEntity {
 
     public Boolean getCreateTable() {
         return createTable;
+    }
+
+    public Boolean getCreateTableIfNotExistsSupported() {
+        return createTableIfNotExistsSupported;
     }
 
     public Boolean getRemoveTable() {
