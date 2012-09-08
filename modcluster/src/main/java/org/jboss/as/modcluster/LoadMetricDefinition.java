@@ -28,9 +28,9 @@ public class LoadMetricDefinition extends SimpleResourceDefinition {
             .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode(LoadMetric.DEFAULT_WEIGHT))
             .build();
-    static final SimpleAttributeDefinition CAPACITY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CAPACITY, ModelType.INT, true)
-            .setDefaultValue(new ModelNode(LoadMetric.DEFAULT_CAPACITY))
+    static final SimpleAttributeDefinition CAPACITY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CAPACITY, ModelType.DOUBLE, true)
             .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode(LoadMetric.DEFAULT_CAPACITY))
             .build();
     static final SimpleAttributeDefinition PROPERTY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROPERTY, ModelType.PROPERTY, true)
             .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
