@@ -6,21 +6,25 @@
 
 <jbosscmp-jdbc>
 
-   <defaults>
-      <create-table>true</create-table>
-      <remove-table>true</remove-table>
-      <pk-constraint>true</pk-constraint>
-      <read-ahead><strategy>on-find</strategy></read-ahead>
-   </defaults>
+	<defaults>
+		<create-table>true</create-table>
+		<create-table-if-not-exists-supported>true</create-table-if-not-exists-supported>
+		<remove-table>true</remove-table>
+		<pk-constraint>true</pk-constraint>
+		<read-ahead>
+			<strategy>on-find</strategy>
+		</read-ahead>
 
-   <relationships>
-      
-      <ejb-relation>
-         <ejb-relation-name>AB_ManyToMany_Bi</ejb-relation-name>
-         <relation-table-mapping>
-            <table-name>AB_ManyToManyBi</table-name>
-         </relation-table-mapping>
-      </ejb-relation>
-      
-   </relationships>
+	</defaults>
+
+	<relationships>
+
+		<ejb-relation>
+			<ejb-relation-name>AB_ManyToMany_Bi</ejb-relation-name>
+			<relation-table-mapping>
+				<table-name>AB_ManyToManyBi</table-name>
+			</relation-table-mapping>
+		</ejb-relation>
+
+	</relationships>
 </jbosscmp-jdbc>
