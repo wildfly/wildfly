@@ -285,7 +285,7 @@ public final class ManagedServerOperationsFactory {
         if (source.hasDefined(SYSTEM_PROPERTY)) {
             for (Property prop : source.get(SYSTEM_PROPERTY).asPropertyList()) {
                 ModelNode propResource = prop.getValue();
-                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean()) {
+                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean(false)) {
                     continue;
                 }
                 String val = propResource.hasDefined(VALUE) ? propResource.get(VALUE).asString() : null;

@@ -255,7 +255,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         if (source.hasDefined(SYSTEM_PROPERTY)) {
             for (Property prop : source.get(SYSTEM_PROPERTY).asPropertyList()) {
                 ModelNode propResource = prop.getValue();
-                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean()) {
+                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean(false)) { //TODO SystemPropertyResourceDefinition.BOOT_TIME.resolveModelAttribute
                     continue;
                 }
                 String val = propResource.hasDefined(VALUE) ? propResource.get(VALUE).asString() : null;
