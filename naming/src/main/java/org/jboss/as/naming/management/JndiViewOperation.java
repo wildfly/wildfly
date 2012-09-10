@@ -72,6 +72,14 @@ public class JndiViewOperation implements OperationStepHandler {
                         throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:jboss")));
                     }
 
+                    final ServiceController<?> exportedContextService = serviceRegistry.getService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME);
+                    final NamingStore exportedContextNamingStore = NamingStore.class.cast(exportedContextService.getValue());
+                    try {
+                        addEntries(contextsNode.get("java:jboss/exported"), new NamingContext(exportedContextNamingStore, null));
+                    } catch (NamingException e) {
+                        throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToReadContextEntries("java:jboss/exported")));
+                    }
+
                     final ServiceController<?> globalContextService = serviceRegistry.getService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
                     final NamingStore globalContextNamingStore = NamingStore.class.cast(globalContextService.getValue());
                     try {
