@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.ProcessEnvironment;
+import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
 
@@ -40,11 +40,11 @@ import org.jboss.dmr.ModelNode;
  */
 public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.AttributeDefinitionValidatingHandler {
 
-    private final ProcessEnvironment processEnvironment;
+    private final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
 
-    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironment processEnvironment, AttributeDefinition valueAttribute) {
+    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, AttributeDefinition valueAttribute) {
         super(valueAttribute);
-        this.processEnvironment = processEnvironment;
+        this.systemPropertyUpdater = systemPropertyUpdater;
     }
 
     protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
@@ -53,7 +53,7 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         final String value = newValue.isDefined() ? newValue.asString() : null;
-        final boolean applyToRuntime = processEnvironment != null && processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
+        final boolean applyToRuntime = systemPropertyUpdater != null && systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
@@ -65,8 +65,8 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
                     } else {
                         SecurityActions.clearSystemProperty(name);
                     }
-                    if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, setValue);
+                    if (systemPropertyUpdater != null) {
+                        systemPropertyUpdater.systemPropertyUpdated(name, setValue);
                     }
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         final String oldValue = currentValue.isDefined() ? context.resolveExpressions(currentValue).asString() : null;
@@ -75,8 +75,8 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
                         } else {
                             SecurityActions.clearSystemProperty(name);
                         }
-                        if (processEnvironment != null) {
-                            processEnvironment.systemPropertyUpdated(name, oldValue);
+                        if (systemPropertyUpdater != null) {
+                            systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
                         }
                     }
                 }

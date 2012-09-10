@@ -33,11 +33,13 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.ProcessEnvironment;
+import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentSystemPropertyUpdater;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
@@ -64,20 +66,20 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[] {VALUE, BOOT_TIME};
     static final AttributeDefinition[] SERVER_ATTRIBUTES = new AttributeDefinition[] {VALUE};
 
-    final ProcessEnvironment processEnvironment;
+    final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
     final boolean useBoottime;
 
-    private SystemPropertyResourceDefinition(Location location, ProcessEnvironment processEnvironment, boolean useBoottime) {
+    private SystemPropertyResourceDefinition(Location location, ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, boolean useBoottime) {
         super(PathElement.pathElement(SYSTEM_PROPERTY),
                 new ReplaceResourceNameResourceDescriptionResolver(location, SYSTEM_PROPERTY),
-                new SystemPropertyAddHandler(processEnvironment, useBoottime, useBoottime ? ALL_ATTRIBUTES : SERVER_ATTRIBUTES),
-                new SystemPropertyRemoveHandler(processEnvironment));
-        this.processEnvironment = processEnvironment;
+                new SystemPropertyAddHandler(systemPropertyUpdater, useBoottime, useBoottime ? ALL_ATTRIBUTES : SERVER_ATTRIBUTES),
+                new SystemPropertyRemoveHandler(systemPropertyUpdater));
+        this.systemPropertyUpdater = systemPropertyUpdater;
         this.useBoottime = useBoottime;
     }
 
-    public static SystemPropertyResourceDefinition createForStandaloneServer(ProcessEnvironment processEnvironment) {
-        return new SystemPropertyResourceDefinition(Location.STANDALONE, processEnvironment, false);
+    public static SystemPropertyResourceDefinition createForStandaloneServer(ServerEnvironment processEnvironment) {
+        return new SystemPropertyResourceDefinition(Location.STANDALONE, new ServerEnvironmentSystemPropertyUpdater(processEnvironment), false);
     }
 
     public static SystemPropertyResourceDefinition createForDomainOrHost(Location location) {
@@ -86,7 +88,7 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, new SystemPropertyValueWriteAttributeHandler(processEnvironment, VALUE));
+        resourceRegistration.registerReadWriteAttribute(VALUE, null, new SystemPropertyValueWriteAttributeHandler(systemPropertyUpdater, VALUE));
         if (useBoottime) {
             resourceRegistration.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.AttributeDefinitionValidatingHandler(BOOT_TIME));
         }

@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.ProcessEnvironment;
+import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
@@ -63,19 +63,19 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
     }
 
 
-    private final ProcessEnvironment processEnvironment;
+    private final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
     private final boolean useBoottime;
     private final AttributeDefinition[] attributes;
 
     /**
      * Create the SystemPropertyAddHandler
      *
-     * @param processEnvironment the local process environment, or {@code null} if interaction with the process
+     * @param systemPropertyUpdater the local process environment system property updater, or {@code null} if interaction with the process
      *                           environment is not required
      * @param useBoottime {@code true} if the system property resource should support the "boot-time" attribute
      */
-    public SystemPropertyAddHandler(ProcessEnvironment processEnvironment, boolean useBoottime, AttributeDefinition[] attributes) {
-        this.processEnvironment = processEnvironment;
+    public SystemPropertyAddHandler(ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, boolean useBoottime, AttributeDefinition[] attributes) {
+        this.systemPropertyUpdater = systemPropertyUpdater;
         this.useBoottime = useBoottime;
         this.attributes = attributes;
     }
@@ -90,7 +90,7 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         final String value = operation.hasDefined(VALUE) ? operation.get(VALUE).asString() : null;
-        final boolean applyToRuntime = processEnvironment != null && processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
+        final boolean applyToRuntime = systemPropertyUpdater != null && systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
@@ -100,8 +100,8 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
             } else {
                 SecurityActions.clearSystemProperty(name);
             }
-            if (processEnvironment != null) {
-                processEnvironment.systemPropertyUpdated(name, setValue);
+            if (systemPropertyUpdater != null) {
+                systemPropertyUpdater.systemPropertyUpdated(name, setValue);
             }
         } else if (reload) {
             context.reloadRequired();
@@ -113,10 +113,10 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
                 if (reload) {
                     context.revertReloadRequired();
                 }
-                if (processEnvironment != null) {
+                if (systemPropertyUpdater != null) {
                     SecurityActions.clearSystemProperty(name);
-                    if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, null);
+                    if (systemPropertyUpdater != null) {
+                        systemPropertyUpdater.systemPropertyUpdated(name, null);
                     }
                 }
             }
