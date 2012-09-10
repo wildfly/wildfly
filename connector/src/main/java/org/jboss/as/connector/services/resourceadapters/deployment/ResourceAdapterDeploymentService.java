@@ -22,11 +22,21 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+
+import java.io.File;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
+import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.AdminObject;
 import org.jboss.jca.common.api.metadata.ra.ConnectionDefinition;
@@ -46,15 +56,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.io.File;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * A ResourceAdapterDeploymentService.
@@ -98,6 +99,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         ClassLoader old = SecurityActions.getThreadContextClassLoader();
         try {
+            WritableServiceBasedNamingStore.pushOwner(container.subTarget());
             SecurityActions.setThreadContextClassLoader(module.getClassLoader());
             raDeployment = raDeployer.doDeploy();
         } catch (Throwable t) {
@@ -105,6 +107,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
         } finally {
             SecurityActions.setThreadContextClassLoader(old);
+            WritableServiceBasedNamingStore.popOwner();
         }
 
         value = new ResourceAdapterDeployment(raDeployment);
