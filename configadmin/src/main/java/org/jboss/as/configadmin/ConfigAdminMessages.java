@@ -38,5 +38,4 @@ import org.jboss.logging.Messages;
 public interface ConfigAdminMessages {
 
     ConfigAdminMessages MESSAGES = Messages.getBundle(ConfigAdminMessages.class);
-
 }

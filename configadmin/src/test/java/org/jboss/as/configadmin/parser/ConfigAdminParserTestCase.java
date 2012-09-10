@@ -21,18 +21,23 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import java.io.IOException;
+import java.util.List;
+
 import junit.framework.Assert;
+
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Test the {@link ConfigAdminParser}
@@ -42,7 +47,7 @@ import java.util.List;
  */
 public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
 
-    private static final String SUBSYSTEM_XML_1_0 =
+    private static final String SUBSYSTEM_XML_1_0_1 =
         "<subsystem xmlns='urn:jboss:domain:configadmin:1.0'>" +
         "  <!-- Some Comment -->" +
         "  <configuration pid='Pid1'>" +
@@ -59,7 +64,7 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return SUBSYSTEM_XML_1_0;
+        return SUBSYSTEM_XML_1_0_1;
     }
 
     @Test
@@ -82,7 +87,7 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_0);
+        KernelServices servicesA = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_0_1);
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
         describeOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
@@ -94,6 +99,40 @@ public class ConfigAdminParserTestCase extends AbstractSubsystemBaseTest {
         ModelNode modelB = servicesB.readWholeModel();
 
         compare(modelA, modelB);
+    }
+
+
+    @Test
+    public void testTransformers1_0_0() throws Exception {
+        ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXml(SUBSYSTEM_XML_1_0_1);
+        builder.createLegacyKernelServicesBuilder(null, oldVersion)
+                .setExtensionClassName(ConfigAdminExtension.class.getName())
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:7.1.2.Final");
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        Assert.assertNotNull(legacyServices);
+
+        //Should be fine the actual model did not change between 1.0.0 and 1.0.1
+        checkSubsystemModelTransformation(mainServices, oldVersion);
+
+
+        ModelNode op = Util.getEmptyOperation(ModelConstants.UPDATE, new ModelNode().add(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME).add(ModelConstants.CONFIGURATION, "Pid1"));
+        op.get(ModelConstants.ENTRIES).get("test123").set("testing123");
+        op.get(ModelConstants.ENTRIES).get("test456").set("testingabc");
+        mainServices.executeForResult(op);
+
+        TransformedOperation transformedOp  = mainServices.transformOperation(oldVersion, op);
+        checkResultAndGetContents(mainServices.executeOperation(oldVersion, transformedOp));
+
+        checkSubsystemModelTransformation(mainServices, oldVersion);
+        ModelNode pid1 = legacyServices.readWholeModel().get(ModelDescriptionConstants.SUBSYSTEM, ConfigAdminExtension.SUBSYSTEM_NAME, ModelConstants.CONFIGURATION, "Pid1");
+        Assert.assertTrue(pid1.hasDefined(ModelConstants.ENTRIES));
+        ModelNode entries = pid1.get(ModelConstants.ENTRIES);
+        Assert.assertEquals(2, entries.keys().size());
+        Assert.assertEquals("testing123", entries.get("test123").asString());
+        Assert.assertEquals("testingabc", entries.get("test456").asString());
     }
 
     private void assertOSGiSubsystemAddress(ModelNode address) {
