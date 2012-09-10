@@ -24,8 +24,8 @@
             <xs:element name="pop3-server" type="server-type" maxOccurs="1" minOccurs="0"/>
             <xs:element name="imap-server" type="server-type" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute name="jndi-name" use="required"/>
-        <xs:attribute name="debug" use="optional">
+        <xs:attribute name="jndi-name" use="required" type="xs:string" />
+        <xs:attribute name="debug" use="optional" type="xs:boolean">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
@@ -34,7 +34,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="from" use="optional">
+        <xs:attribute name="from" use="optional" type="xs:string" >
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
@@ -46,15 +46,15 @@
     </xs:complexType>
 
     <xs:complexType name="login-type" mixed="true">
-        <xs:attribute name="name"/>
-        <xs:attribute name="password"/>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="password" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="server-type" mixed="true">
         <xs:sequence>
             <xs:element name="login" type="login-type" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
-        <xs:attribute name="outbound-socket-binding-ref" use="required">
+        <xs:attribute name="outbound-socket-binding-ref" use="required" type="xs:string">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
@@ -64,7 +64,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="ssl" use="optional">
+        <xs:attribute name="ssl" use="optional" type="xs:boolean">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
@@ -73,7 +73,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="tls" use="optional">
+        <xs:attribute name="tls" use="optional" type="xs:boolean">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
