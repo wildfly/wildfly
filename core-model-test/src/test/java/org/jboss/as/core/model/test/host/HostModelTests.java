@@ -4,7 +4,7 @@ import junit.framework.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ public class HostModelTests extends AbstractCoreModelTest {
 
     @Test
     public void testDefaultHostXml() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder(ModelType.HOST)
+        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.HOST)
                 .setXmlResource("host.xml")
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());

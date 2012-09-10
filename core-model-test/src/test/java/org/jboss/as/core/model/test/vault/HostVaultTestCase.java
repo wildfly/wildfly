@@ -32,7 +32,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 
 /**
  *
@@ -55,7 +55,7 @@ public class HostVaultTestCase extends AbstractVaultTest {
 
     @Override
     protected KernelServicesBuilder createKernelServicesBuilder() {
-        return createKernelServicesBuilder(ModelType.HOST);
+        return createKernelServicesBuilder(TestModelType.HOST);
     }
 
     @Override

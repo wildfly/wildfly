@@ -101,6 +101,9 @@ public class DeploymentDescription {
             root.get(ATTRIBUTES, CONTENT, DESCRIPTION).set(bundle.getString("deployment.content"));
             root.get(ATTRIBUTES, CONTENT, REQUIRED).set(true);
             root.get(ATTRIBUTES, CONTENT, MIN_LENGTH).set(1);
+
+            //Not all of these should be here when the model is read
+
             root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, TYPE).set(ModelType.INT);
             root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, DESCRIPTION).set(bundle.getString("deployment.inputstream"));
             root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, REQUIRED).set(false);

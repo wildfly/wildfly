@@ -30,7 +30,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class HostModelJvmModelTestCase extends GlobalJvmModelTestCase {
     static final PathElement PARENT = PathElement.pathElement(HOST, "master");
 
     public HostModelJvmModelTestCase() {
-        super(ModelType.HOST);
+        super(TestModelType.HOST);
     }
 
 

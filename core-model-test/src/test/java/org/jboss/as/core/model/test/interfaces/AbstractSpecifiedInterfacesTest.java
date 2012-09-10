@@ -26,7 +26,7 @@ import junit.framework.Assert;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.junit.Test;
 
@@ -36,9 +36,9 @@ import org.junit.Test;
  */
 public abstract class AbstractSpecifiedInterfacesTest extends AbstractCoreModelTest {
 
-    private final ModelType type;
+    private final TestModelType type;
 
-    public AbstractSpecifiedInterfacesTest(ModelType type) {
+    public AbstractSpecifiedInterfacesTest(TestModelType type) {
         this.type = type;
     }
 

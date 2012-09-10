@@ -28,7 +28,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.dmr.ModelNode;
 
 
@@ -47,7 +47,7 @@ public class DomainSystemPropertyTestCase extends AbstractSystemPropertyTest {
     }
 
     protected KernelServicesBuilder createKernelServicesBuilder(boolean xml) {
-        return createKernelServicesBuilder(ModelType.DOMAIN);
+        return createKernelServicesBuilder(TestModelType.DOMAIN);
     }
 
     protected KernelServices createEmptyRoot() throws Exception {

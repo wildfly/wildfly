@@ -31,7 +31,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class SystemPropertyReferencesTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testSystemPropertyReferences() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder(ModelType.STANDALONE).build();
+        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.STANDALONE).build();
         Assert.assertNull(System.getProperty("test.one"));
         Assert.assertNull(System.getProperty("test.two"));
         Assert.assertNull(System.getProperty("test.referencing"));

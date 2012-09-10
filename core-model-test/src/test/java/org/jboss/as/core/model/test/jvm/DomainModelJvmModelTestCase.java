@@ -33,7 +33,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.ModelWriteSanitizer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class DomainModelJvmModelTestCase extends GlobalJvmModelTestCase {
     static final PathElement PARENT = PathElement.pathElement(SERVER_GROUP, "groupA");
 
     public DomainModelJvmModelTestCase() {
-        super(ModelType.DOMAIN);
+        super(TestModelType.DOMAIN);
     }
 
     @Test

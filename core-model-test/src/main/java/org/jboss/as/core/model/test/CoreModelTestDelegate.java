@@ -84,7 +84,7 @@ public class CoreModelTestDelegate {
     }
 
 
-    protected KernelServicesBuilder createKernelServicesBuilder(ModelType type) {
+    protected KernelServicesBuilder createKernelServicesBuilder(TestModelType type) {
         return new KernelServicesBuilderImpl(type);
     }
 
@@ -118,7 +118,7 @@ public class CoreModelTestDelegate {
     }
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
 
-        private final ModelType type;
+        private final TestModelType type;
         private final ModelTestBootOperationsBuilder bootOperationBuilder = new ModelTestBootOperationsBuilder(testClass, this);
         private final TestParser testParser;
         private ProcessType processType;
@@ -130,9 +130,9 @@ public class CoreModelTestDelegate {
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
 
 
-        public KernelServicesBuilderImpl(ModelType type) {
+        public KernelServicesBuilderImpl(TestModelType type) {
             this.type = type;
-            this.processType = type == ModelType.HOST || type == ModelType.DOMAIN ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
+            this.processType = type == TestModelType.HOST || type == TestModelType.DOMAIN ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
             runningMode = RunningMode.ADMIN_ONLY;
             testParser = TestParser.create(xmlMapper, type);
 

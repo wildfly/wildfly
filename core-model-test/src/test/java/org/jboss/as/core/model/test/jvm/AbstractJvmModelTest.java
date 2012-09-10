@@ -42,7 +42,7 @@ import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableAddHandler;
 import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableRemoveHandler;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -55,10 +55,10 @@ import org.junit.Test;
  */
 public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
 
-    private final ModelType type;
+    private final TestModelType type;
     private final boolean server;
 
-    protected AbstractJvmModelTest(ModelType type, boolean server) {
+    protected AbstractJvmModelTest(TestModelType type, boolean server) {
         this.type = type;
         this.server = server;
     }

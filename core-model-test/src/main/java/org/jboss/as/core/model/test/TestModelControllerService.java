@@ -23,7 +23,6 @@ package org.jboss.as.core.model.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -76,7 +75,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.vfs.VirtualFile;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  *
@@ -84,7 +83,8 @@ import org.jboss.vfs.VirtualFile;
  */
 class TestModelControllerService extends ModelTestModelControllerService {
 
-    private final ModelType type;
+    private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
+    private final TestModelType type;
     private final RunningModeControl runningModeControl;
     private final PathManagerService pathManagerService;
     private final ModelInitializer modelInitializer;
@@ -93,16 +93,16 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private volatile Initializer initializer;
 
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
-            ModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+            TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
         super(processType, runningModeControl, null, persister, validateOps, rootResourceDefinition, processState);
         this.type = type;
         this.runningModeControl = runningModeControl;
-        this.pathManagerService = type == ModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
+        this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
         this.modelInitializer = modelInitializer;
         this.rootResourceDefinition = rootResourceDefinition;
         this.processState = processState;
 
-        if (type == ModelType.STANDALONE) {
+        if (type == TestModelType.STANDALONE) {
             initializer = new ServerInitializer();
         }
     }
@@ -110,25 +110,30 @@ class TestModelControllerService extends ModelTestModelControllerService {
     @Deprecated
     //TODO remove this once host and domain are ported to resource definition
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
-            ModelType type, ModelInitializer modelInitializer, ControlledProcessState processState) {
+            TestModelType type, ModelInitializer modelInitializer, ControlledProcessState processState) {
         super(processType, runningModeControl, null, persister, validateOps, processState);
-        if (type == ModelType.STANDALONE) {
+        if (type == TestModelType.STANDALONE) {
             throw new IllegalStateException("Should not be called for standalone");
         }
         this.type = type;
         this.runningModeControl = runningModeControl;
-        this.pathManagerService = type == ModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
+        this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
         this.modelInitializer = modelInitializer;
         this.processState = processState;
         this.rootResourceDefinition = null;
     }
 
-    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, ModelType type, ModelInitializer modelInitializer) {
-        if (type == ModelType.STANDALONE) {
+    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, TestModelType type, ModelInitializer modelInitializer) {
+        if (type == TestModelType.STANDALONE) {
             return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(), new ControlledProcessState(true));
         }
         return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new ControlledProcessState(true));
     }
+
+    InjectedValue<ContentRepository> getContentRepositoryInjector(){
+        return injectedContentRepository;
+    }
+
 
     @Override
     public void start(StartContext context) throws StartException {
@@ -142,10 +147,10 @@ class TestModelControllerService extends ModelTestModelControllerService {
     protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         //See server HttpManagementAddHandler
         System.setProperty("jboss.as.test.disable.runtime", "1");
-        if (type == ModelType.STANDALONE) {
+        if (type == TestModelType.STANDALONE) {
             initializer.initCoreModel(rootResource, rootRegistration);
 
-        } else if (type == ModelType.HOST){
+        } else if (type == TestModelType.HOST){
             final String hostName = "master";
             final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
             final HostControllerEnvironment env = createHostControllerEnvironment();
@@ -172,14 +177,14 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     info,
                     null /*serverInventory*/,
                     null /*remoteFileRepository*/,
-                    createContentRepository(),
+                    injectedContentRepository.getValue(),
                     createDomainController(env, info),
                     extensionRegistry,
                     null /*vaultReader*/,
                     ignoredRegistry,
                     processState,
                     pathManagerService);
-        } else if (type == ModelType.DOMAIN){
+        } else if (type == TestModelType.DOMAIN){
             final HostControllerEnvironment env = createHostControllerEnvironment();
             final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
             final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
@@ -187,7 +192,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             DomainModelUtil.initializeMasterDomainRegistry(
                     rootRegistration,
                     new NullConfigurationPersister(),
-                    createContentRepository(),
+                    injectedContentRepository.getValue(),
                     createHostFileRepository(),
                     createDomainController(env, info),
                     new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl),
@@ -388,35 +393,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
         };
     }
 
-    private ContentRepository createContentRepository() {
-        return new ContentRepository() {
-
-            @Override
-            public void removeContent(byte[] hash) {
-            }
-
-            @Override
-            public boolean hasContent(byte[] hash) {
-                return false;
-            }
-
-            @Override
-            public VirtualFile getContent(byte[] hash) {
-                return null;
-            }
-
-            @Override
-            public byte[] addContent(InputStream stream) throws IOException {
-                return null;
-            }
-
-            @Override
-            public boolean syncContent(byte[] hash) {
-                return false;
-            }
-        };
-    }
-
     private void delete(File file) {
         if (file.isDirectory()) {
             for (File child : file.listFiles()) {
@@ -432,7 +408,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
     }
 
     private class ServerInitializer implements Initializer {
-        final ContentRepository contentRepository = createContentRepository();
         final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
         final ServerEnvironment environment = createStandaloneServerEnvironment();
         final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, runningModeControl);
@@ -441,7 +416,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         public void setRootResourceDefinitionDelegate() {
             rootResourceDefinition.setDelegate(new ServerRootResourceDefinition(
-                    contentRepository,
+                    injectedContentRepository.getValue(),
                     persister,
                     environment,
                     processState,
@@ -455,7 +430,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         @Override
         public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             //TODO - might have to add some more of these - let's see how it goes without
-            final ContentRepository contentRepository = createContentRepository();
+            final ContentRepository contentRepository = injectedContentRepository.getValue();
             final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
             final ServerEnvironment environment = createStandaloneServerEnvironment();
             final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, runningModeControl);

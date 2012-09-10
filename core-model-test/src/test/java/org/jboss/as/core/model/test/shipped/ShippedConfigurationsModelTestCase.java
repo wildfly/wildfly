@@ -30,7 +30,7 @@ import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.ModelWriteSanitizer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -43,7 +43,7 @@ public class ShippedConfigurationsModelTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testDomainXml() throws Exception {
-        testConfiguration(ModelType.DOMAIN, "domain.xml",
+        testConfiguration(TestModelType.DOMAIN, "domain.xml",
                 new ModelInitializer() {
                     public void populateModel(Resource rootResource) {
                         rootResource.registerChild(PathElement.pathElement(PROFILE, "full"), Resource.Factory.create());
@@ -60,15 +60,15 @@ public class ShippedConfigurationsModelTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testHostXml() throws Exception {
-        testConfiguration(ModelType.HOST, "host.xml", null, null);
+        testConfiguration(TestModelType.HOST, "host.xml", null, null);
     }
 
     @Test
     public void testStandaloneXml() throws Exception {
-        testConfiguration(ModelType.STANDALONE, "standalone.xml", null, null);
+        testConfiguration(TestModelType.STANDALONE, "standalone.xml", null, null);
     }
 
-    private void testConfiguration(ModelType type, String xmlResource, ModelInitializer initializer, ModelWriteSanitizer sanitizer) throws Exception {
+    private void testConfiguration(TestModelType type, String xmlResource, ModelInitializer initializer, ModelWriteSanitizer sanitizer) throws Exception {
         KernelServices kernelServices = createKernelServicesBuilder(type)
                 .setXmlResource(xmlResource)
                 .setModelInitializer(initializer, sanitizer)

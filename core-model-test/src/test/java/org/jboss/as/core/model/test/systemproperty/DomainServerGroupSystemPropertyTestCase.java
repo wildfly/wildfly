@@ -33,7 +33,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.ModelWriteSanitizer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
@@ -55,7 +55,7 @@ public class DomainServerGroupSystemPropertyTestCase extends AbstractSystemPrope
     }
 
     protected KernelServicesBuilder createKernelServicesBuilder(boolean xml) {
-        KernelServicesBuilder builder = createKernelServicesBuilder(ModelType.DOMAIN);
+        KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN);
         if (xml) {
             builder.setModelInitializer(XML_MODEL_INITIALIZER, XML_MODEL_WRITE_SANITIZER);
         }

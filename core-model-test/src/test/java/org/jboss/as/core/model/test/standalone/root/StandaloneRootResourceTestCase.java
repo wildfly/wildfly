@@ -43,7 +43,7 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.version.Version;
@@ -273,6 +273,6 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
     }
 
     private KernelServicesBuilder createKernelServicesBuilder() {
-        return super.createKernelServicesBuilder(ModelType.STANDALONE);
+        return super.createKernelServicesBuilder(TestModelType.STANDALONE);
     }
 }

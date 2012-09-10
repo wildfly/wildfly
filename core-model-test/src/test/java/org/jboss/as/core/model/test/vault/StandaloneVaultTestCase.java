@@ -29,7 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 
 /**
  *
@@ -48,7 +48,7 @@ public class StandaloneVaultTestCase extends AbstractVaultTest {
     }
 
     protected KernelServicesBuilder createKernelServicesBuilder() {
-        return super.createKernelServicesBuilder(ModelType.STANDALONE);
+        return super.createKernelServicesBuilder(TestModelType.STANDALONE);
     }
 
     @Override

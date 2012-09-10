@@ -21,7 +21,7 @@
 */
 package org.jboss.as.core.model.test;
 
-public enum ModelType {
+public enum TestModelType {
     STANDALONE,
     HOST,
     DOMAIN

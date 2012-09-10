@@ -21,7 +21,7 @@
 */
 package org.jboss.as.core.model.test.interfaces;
 
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 
 /**
  *
@@ -30,7 +30,7 @@ import org.jboss.as.core.model.test.ModelType;
 public class HostSpecifiedInterfacesTestCase extends AbstractSpecifiedInterfacesTest {
 
     public HostSpecifiedInterfacesTestCase() {
-        super(ModelType.HOST);
+        super(TestModelType.HOST);
     }
 
     @Override
