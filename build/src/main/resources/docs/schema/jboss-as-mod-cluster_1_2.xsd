@@ -143,10 +143,17 @@
                 <xs:documentation>sslKeyAlias The alias of the key holding the client certificates in the key store.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="password" type="xs:string" use="optional">
+        <xs:attribute name="keystore-password" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    sslKeyStorePassword/sslTrustStorePassword Password granting access to the key store and trust store.
+                    sslKeyStorePassword Password granting access to the key store and trust store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="truststore-password" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                   sslTrustStorePassword Password granting access to the key store and trust store.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -184,13 +191,6 @@
             <xs:annotation>
                 <xs:documentation>
                     sslCrlFile A file or URL to get the revocation list.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="ca-certificate-password">
-            <xs:annotation>
-                <xs:documentation>
-                    Password of trust store for JSE
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

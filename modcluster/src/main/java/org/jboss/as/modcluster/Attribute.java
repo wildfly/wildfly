@@ -77,6 +77,7 @@ enum Attribute {
     PROPERTY(CommonAttributes.PROPERTY),
     VALUE(CommonAttributes.VALUE),
     KEY_ALIAS(CommonAttributes.KEY_ALIAS),
+    @Deprecated
     PASSWORD(CommonAttributes.PASSWORD),
     CERTIFICATE_KEY_FILE(CommonAttributes.CERTIFICATE_KEY_FILE),
     CIPHER_SUITE(CommonAttributes.CIPHER_SUITE),

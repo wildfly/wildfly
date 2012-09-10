@@ -100,7 +100,7 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            KEY_ALIAS, PASSWORD, CERTIFICATE_KEY_FILE, CIPHER_SUITE, PROTOCOL, CA_CERTIFICATE_FILE, CA_REVOCATION_URL, TRUSTSTORE_PASSWORD, KEYSTORE_PASSWORD
+            KEY_ALIAS, CERTIFICATE_KEY_FILE, CIPHER_SUITE, PROTOCOL, CA_CERTIFICATE_FILE, CA_REVOCATION_URL, TRUSTSTORE_PASSWORD, KEYSTORE_PASSWORD
     };
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;

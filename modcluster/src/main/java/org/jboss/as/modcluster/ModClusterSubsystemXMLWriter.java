@@ -84,7 +84,6 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
     static void writeSSL(XMLExtendedStreamWriter writer, ModelNode sslConfig) throws XMLStreamException {
         writer.writeStartElement(Element.SSL.getLocalName());
         for (SimpleAttributeDefinition def : ModClusterSSLResourceDefinition.ATTRIBUTES) {
-            if (def.getName().equals(CommonAttributes.PASSWORD)) { continue; }
             def.marshallAsAttribute(sslConfig, false, writer);
         }
         writer.writeEndElement();

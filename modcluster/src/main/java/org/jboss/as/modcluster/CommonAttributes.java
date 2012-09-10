@@ -74,6 +74,7 @@ interface CommonAttributes {
     String VALUE = "value";
     String KEY_ALIAS = "key-alias";
     String KEYSTORE_PASSWORD = "keystore-password";
+    @Deprecated
     String PASSWORD = "password";
     String CERTIFICATE_KEY_FILE = "certificate-key-file";
     String CIPHER_SUITE = "cipher-suite";
