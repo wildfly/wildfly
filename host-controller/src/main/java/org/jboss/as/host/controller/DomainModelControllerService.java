@@ -58,6 +58,7 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -89,8 +90,8 @@ import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepo
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
 import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerService;
-import org.jboss.as.host.controller.mgmt.ServerToHostProtocolHandler;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
+import org.jboss.as.host.controller.mgmt.ServerToHostProtocolHandler;
 import org.jboss.as.host.controller.mgmt.SlaveHostPinger;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
@@ -160,6 +161,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final ControlledProcessState processState;
     private final IgnoredDomainResourceRegistry ignoredRegistry;
     private final PathManagerService pathManager;
+    private final ExpressionResolver expressionResolver;
 
     private volatile ServerInventory serverInventory;
 
@@ -182,9 +184,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
         IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
                 hostProxies, serverProxies, ignoredRegistry);
+        final ExpressionResolver expressionResolver = new RuntimeExpressionResolver(vaultReader);
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
-                ignoredRegistry, bootstrapListener, pathManager);
+                ignoredRegistry, bootstrapListener, pathManager, expressionResolver);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -203,7 +206,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final AbstractVaultReader vaultReader,
                                          final IgnoredDomainResourceRegistry ignoredRegistry,
                                          final BootstrapListener bootstrapListener,
-                                         final PathManagerService pathManager) {
+                                         final PathManagerService pathManager,
+                                         final ExpressionResolver expressionResolver) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
                 DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
@@ -222,6 +226,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.bootstrapListener = bootstrapListener;
         this.extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
         this.pathManager = pathManager;
+        this.expressionResolver = expressionResolver;
     }
 
     @Override
@@ -468,7 +473,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     public ModelNode execute(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step) {
                         return internalExecute(operation, handler, control, attachments, step);
                     }
-                }, this);
+                }, this, expressionResolver);
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
@@ -725,5 +730,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public ExtensionRegistry getExtensionRegistry() {
         return extensionRegistry;
+    }
+
+    @Override
+    public ExpressionResolver getExpressionResolver() {
+        return expressionResolver;
     }
 }

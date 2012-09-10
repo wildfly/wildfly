@@ -32,6 +32,7 @@ import java.util.Properties;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
@@ -379,6 +380,11 @@ class TestModelControllerService extends ModelTestModelControllerService {
             public RunningMode getCurrentRunningMode() {
                 return null;
             }
+
+            @Override
+            public ExpressionResolver getExpressionResolver() {
+                return null;
+            }
         };
     }
 
@@ -458,11 +464,11 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     contentRepository,
                     persister,
                     environment,
-                    null /*processState*/,
+                    processState,
                     runningModeControl,
-                    null /*vaultReader*/,
+                    vaultReader,
                     extensionRegistry,
-                    false /*parallelBoot*/,
+                    parallelBoot,
                     pathManagerService);
 
             //Add the same stuff as is added in ServerService.initModel()

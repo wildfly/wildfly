@@ -119,6 +119,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.security.vault.RuntimeVaultReader;
+import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
@@ -1140,6 +1141,11 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public ExtensionRegistry getExtensionRegistry() {
             return null;
+        }
+
+        @Override
+        public ExpressionResolver getExpressionResolver() {
+            return new RuntimeExpressionResolver(new MockVaultReader());
         }
     }
 

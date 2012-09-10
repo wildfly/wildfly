@@ -22,15 +22,13 @@
 
 package org.jboss.as.host.controller.mgmt;
 
-import org.jboss.as.domain.controller.DomainController;
-import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
-
 import java.security.AccessController;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
@@ -61,18 +59,21 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     private final InjectedValue<ServerInventory> serverInventory = new InjectedValue<ServerInventory>();
     private final ServerToHostProtocolHandler.OperationExecutor operationExecutor;
     private final DomainController domainController;
+    private final ExpressionResolver expressionResolver;
 
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("server-registration-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private volatile ExecutorService registrations;
 
-    ServerToHostOperationHandlerFactoryService(ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController) {
+    ServerToHostOperationHandlerFactoryService(ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController, ExpressionResolver expressionResolver) {
         this.executorService = executorService;
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
+        this.expressionResolver = expressionResolver;
     }
 
-    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController) {
-        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, operationExecutor, domainController);
+    public static void install(final ServiceTarget serviceTarget, final ServiceName serverInventoryName, ExecutorService executorService, ServerToHostProtocolHandler.OperationExecutor operationExecutor, DomainController domainController,
+            ExpressionResolver expressionResolver) {
+        final ServerToHostOperationHandlerFactoryService serverToHost = new ServerToHostOperationHandlerFactoryService(executorService, operationExecutor, domainController, expressionResolver);
         serviceTarget.addService(ServerToHostOperationHandlerFactoryService.SERVICE_NAME, serverToHost)
             .addDependency(serverInventoryName, ServerInventory.class, serverToHost.serverInventory)
             .install();
@@ -103,7 +104,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     @Override
     public HandleableCloseable.Key startReceiving(final Channel channel) {
         final ManagementChannelHandler channelHandler = new ManagementChannelHandler(channel, executorService);
-        final ServerToHostProtocolHandler registrationHandler = new ServerToHostProtocolHandler(serverInventory.getValue(), operationExecutor, domainController, channelHandler, registrations);
+        final ServerToHostProtocolHandler registrationHandler = new ServerToHostProtocolHandler(serverInventory.getValue(), operationExecutor, domainController, channelHandler, registrations, expressionResolver);
         channelHandler.addHandlerFactory(registrationHandler);
         channel.receiveMessage(channelHandler.getReceiver());
         return null;

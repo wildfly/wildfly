@@ -22,13 +22,7 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.transform.TransformationTarget;
-import org.jboss.as.controller.transform.TransformationTargetImpl;
-
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -54,7 +48,12 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
@@ -478,7 +477,7 @@ public class ServerInventoryImpl implements ServerInventory {
     private ManagedServer createManagedServer(final String serverName, final ModelNode domainModel) {
         final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
         final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
-        final ManagedServerBootCmdFactory combiner = new ManagedServerBootCmdFactory(serverName, domainModel, hostModel, environment);
+        final ManagedServerBootCmdFactory combiner = new ManagedServerBootCmdFactory(serverName, domainModel, hostModel, environment, domainController.getExpressionResolver());
         final ManagedServer.ManagedServerBootConfiguration configuration = combiner.createConfiguration();
         final ModelNode subsystems = resolveSubsystems(extensionRegistry);
         final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), ModelVersion.create(Version.MANAGEMENT_MAJOR_VERSION, Version.MANAGEMENT_MINOR_VERSION, Version.MANAGEMENT_MICRO_VERSION), subsystems, TransformationTarget.TransformationTargetType.SERVER);

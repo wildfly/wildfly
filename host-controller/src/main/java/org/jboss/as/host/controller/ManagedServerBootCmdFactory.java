@@ -21,7 +21,6 @@
  */
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
@@ -39,11 +38,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.host.controller.ManagedServer.ManagedServerBootConfiguration;
 import org.jboss.as.host.controller.model.jvm.JvmElement;
 import org.jboss.as.host.controller.model.jvm.JvmOptionsBuilderFactory;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -75,8 +77,9 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
     private final HostControllerEnvironment environment;
     private final boolean managementSubsystemEndpoint;
     private final ModelNode endpointConfig = new ModelNode();
+    private final ExpressionResolver expressionResolver;
 
-    ManagedServerBootCmdFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment) {
+    ManagedServerBootCmdFactory(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final HostControllerEnvironment environment, final ExpressionResolver expressionResolver) {
         this.serverName = serverName;
         this.domainModel = domainModel;
         this.hostModel = hostModel;
@@ -85,6 +88,7 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
 
         final String serverGroupName = serverModel.require(GROUP).asString();
         this.serverGroup = domainModel.require(SERVER_GROUP).require(serverGroupName);
+        this.expressionResolver = expressionResolver;
 
         String serverVMName = null;
         ModelNode serverVM = null;
@@ -255,8 +259,12 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         if (source.hasDefined(SYSTEM_PROPERTY)) {
             for (Property prop : source.get(SYSTEM_PROPERTY).asPropertyList()) {
                 ModelNode propResource = prop.getValue();
-                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean(false)) { //TODO SystemPropertyResourceDefinition.BOOT_TIME.resolveModelAttribute
-                    continue;
+                try {
+                    if (boottimeOnly && !SystemPropertyResourceDefinition.BOOT_TIME.resolveModelAttribute(expressionResolver, propResource).asBoolean()) {
+                        continue;
+                    }
+                } catch (OperationFailedException e) {
+                    throw new IllegalStateException(e);
                 }
                 String val = propResource.hasDefined(VALUE) ? propResource.get(VALUE).asString() : null;
                 props.put(prop.getName(), val);
