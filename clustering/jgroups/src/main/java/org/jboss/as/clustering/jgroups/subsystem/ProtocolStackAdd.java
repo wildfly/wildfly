@@ -179,7 +179,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         Transport transportConfig = new Transport(type);
         transportConfig.setShared(shared);
         transportConfig.setTopology(site, rack, machine);
-        initProtocolProperties(transport, transportConfig);
+        initProtocolProperties(context, transport, transportConfig);
 
         // set up the protocol stack Protocol objects
         ProtocolStack stackConfig = new ProtocolStack(name, transportConfig);
@@ -188,7 +188,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             ModelNode protocol = protocolProperty.getValue();
             final String protocolType = (resolvedValue = CommonAttributes.TYPE.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
             Protocol protocolConfig = new Protocol(protocolType);
-            initProtocolProperties(protocol, protocolConfig);
+            initProtocolProperties(context, protocol, protocolConfig);
             stackConfig.getProtocols().add(protocolConfig);
             final String protocolSocketBinding = (resolvedValue = CommonAttributes.SOCKET_BINDING.resolveModelAttribute(context, protocol)).isDefined() ? resolvedValue.asString() : null;
             protocolSocketBindings.add(new AbstractMap.SimpleImmutableEntry<Protocol, String>(protocolConfig, protocolSocketBinding));
@@ -257,7 +257,8 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         return builder.install();
     }
 
-    private void initProtocolProperties(ModelNode protocol, Protocol protocolConfig) {
+    private void initProtocolProperties(OperationContext context, ModelNode protocol, Protocol protocolConfig)
+            throws OperationFailedException {
 
         Map<String, String> properties = protocolConfig.getProperties();
         // properties are a child resource of protocol
@@ -268,9 +269,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
                 //       "relative-to" => {"value" => "fred"},
                 //   }
                 String propertyName = property.getName();
-                Property complexValue = property.getValue().asProperty();
-                String propertyValue = complexValue.getValue().asString();
-                properties.put(propertyName, propertyValue);
+                // get the value from the ModelNode {"value" => "fred"}
+                ModelNode propertyValue = null ;
+                propertyValue = CommonAttributes.VALUE.resolveModelAttribute(context, property.getValue());
+
+                properties.put(propertyName, propertyValue.asString());
             }
        }
     }

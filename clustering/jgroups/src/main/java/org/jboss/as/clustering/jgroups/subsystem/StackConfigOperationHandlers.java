@@ -23,7 +23,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -121,7 +120,7 @@ public class StackConfigOperationHandlers {
                         throw new OperationFailedException(new ModelNode().set("property " + property.getName() + " not defined"));
                     }
                     // set the value of the property
-                    param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
+                    CommonAttributes.VALUE.validateAndSet(value, param.getModel());
                 }
             }
             // This needs a reload
@@ -195,7 +194,7 @@ public class StackConfigOperationHandlers {
                         throw new OperationFailedException(new ModelNode().set("property " + property.getName() + " not defined"));
                     }
                     // set the value of the property
-                    param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
+                    CommonAttributes.VALUE.validateAndSet(value, param.getModel());
                 }
             }
             // This needs a reload
