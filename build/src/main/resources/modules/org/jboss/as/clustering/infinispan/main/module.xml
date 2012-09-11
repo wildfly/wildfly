@@ -36,8 +36,9 @@
         <module name="javax.transaction.api"/>
         <module name="net.jcip"/>
         <module name="org.infinispan"/>
-        <module name="org.infinispan.cachestore.jdbc"/>
-        <module name="org.infinispan.cachestore.remote" />
+        <module name="org.infinispan.cachestore.jdbc" optional="true"/>
+        <module name="org.infinispan.cachestore.remote" optional="true"/>
+        <module name="org.infinispan.hotrod.client" optional="true" export="true"/>
         <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.impl" services="import"/>
