@@ -214,10 +214,8 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
         if (enabled != null) {
             operation.get(ENABLED).set(enabled);
         }
-        //TODO Why is this needed?
         operation.get(CONTENT);
 
-        //PERSISTENT is not exposed to users, it is deployment scanner only - so don't try to validate the operation with PERSISTENT set
         kernelServices.validateOperation(operation);
 
         return operation;

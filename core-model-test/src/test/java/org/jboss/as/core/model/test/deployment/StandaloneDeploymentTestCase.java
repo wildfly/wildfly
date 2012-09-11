@@ -117,7 +117,6 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
         ModelNode bytes2 = getContentHashOnly(deployments.get("Test2"));
 
-        //TODO should another deployment with the same hash really be allowed to overwrite another one?
         Assert.assertEquals(bytes1, bytes2);
     }
 
@@ -150,7 +149,6 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
         ModelNode bytes2 = getContentHashOnly(deployments.get("Test2"));
 
-        //TODO should another deployment with the same hash really be allowed to overwrite another one?
         Assert.assertEquals(bytes1, bytes2);
     }
 
