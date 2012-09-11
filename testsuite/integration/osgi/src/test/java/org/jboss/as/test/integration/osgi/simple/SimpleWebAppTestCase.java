@@ -274,10 +274,8 @@ public class SimpleWebAppTestCase {
     public void testSimpleBundleWithJarExtension() throws Exception {
         String result = performCall("bundle-e", "simple", "Hello");
         Assert.assertEquals("Simple Servlet called with input=Hello", result);
-        // [TODO] Test resource access
-        // [AS7-5486] Cannot access resources from OSGi WebApp with *.jar extension
-        //result = performCall("bundle-e", "message.txt", null);
-        //Assert.assertEquals("Hello from Resource", result);
+        result = performCall("bundle-e", "message.txt", null);
+        Assert.assertEquals("Hello from Resource", result);
     }
 
     private String performCall(String pattern, String param) throws Exception {
