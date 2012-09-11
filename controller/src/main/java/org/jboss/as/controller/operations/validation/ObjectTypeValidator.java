@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.operations.validation;
 
-// import static org.jboss.as.clustering.ClusteringMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +50,7 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
         nodeValues = new ArrayList<ModelNode>(attributes.length);
         for (AttributeDefinition attribute : attributes) {
             allowedValues.put(attribute.getName(), attribute);
-            nodeValues.add(new ModelNode().set(attribute.getName()));
+            nodeValues.add(new ModelNode(attribute.getName()));
         }
     }
 
@@ -63,8 +62,6 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
                 if (allowedValues.containsKey(key)) {
                     allowedValues.get(key).getValidator().validateParameter(key, value.get(key));
                 } else {
-                    // create and pass a two parameter message about this error
-                    // throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidValueTypeKey(key, allowedValues.keySet())));
                     throw new OperationFailedException(new ModelNode().set("invalid type key"));
                 }
             }
@@ -82,6 +79,6 @@ public class ObjectTypeValidator extends ModelTypeValidator implements AllowedVa
             if (attr.getType() != ModelType.OBJECT)
                 result.add(attr.getType());
         }
-        return result.toArray(new ModelType[]{});
+        return result.toArray(new ModelType[result.size()]);
     }
 }
