@@ -14,7 +14,7 @@
 
     <packaging>pom</packaging>
 
-    <name>JBoss Java EE 6 Specification APIs with Hibernate</name>
+    <name>JBoss Java EE 6 Specification APIs with Hibernate 3</name>
     <description>Dependency Management for Java EE 6 Specification APIs with Hibernate 3 projects</description>
 
     <licenses>

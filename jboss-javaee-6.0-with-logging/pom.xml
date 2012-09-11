@@ -13,7 +13,7 @@
     <artifactId>jboss-javaee-6.0-with-logging</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Java EE 6 Specification APIs with Tools</name>
+    <name>JBoss Java EE 6 Specification APIs with Logging Tools</name>
     <description>Dependency Management for Java EE 6 Specification APIs with Logging Tools</description>
 
     <licenses>
