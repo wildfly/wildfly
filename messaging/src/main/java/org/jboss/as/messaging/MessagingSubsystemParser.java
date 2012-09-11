@@ -58,7 +58,6 @@ import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
@@ -1586,7 +1585,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     }
                     final String txType = reader.getAttributeValue(0);
                     if( txType != null) {
-                        connectionFactory.get(TRANSACTION).set(txType);
+                        connectionFactory.get(Pooled.TRANSACTION.getName()).set(txType);
                     }
                     ParseUtils.requireNoContent(reader);
                     break;

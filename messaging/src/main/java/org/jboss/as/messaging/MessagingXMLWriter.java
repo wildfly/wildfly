@@ -2,7 +2,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
-import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.BROADCAST_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
@@ -28,7 +27,6 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.CommonAttributes.VALUE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
@@ -84,7 +82,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
 
         if (node.hasDefined(JMS_BRIDGE)) {
             final ModelNode jmsBridges = node.get(JMS_BRIDGE);
-            boolean first = true;for (Property prop : jmsBridges.asPropertyList()) {
+            boolean first = true;
+            for (Property prop : jmsBridges.asPropertyList()) {
                 writeJmsBridge(writer, prop.getName(), prop.getValue());
                 if (!first) {
                     writeNewLine(writer);
@@ -109,59 +108,26 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         }
 
         final ModelNode paths = node.get(ModelDescriptionConstants.PATH);
-        if (paths.hasDefined(CommonAttributes.PAGING_DIRECTORY)) {
-            writeDirectory(writer, Element.PAGING_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-        if (paths.hasDefined(BINDINGS_DIRECTORY)) {
-            writeDirectory(writer, Element.BINDINGS_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-        if (paths.hasDefined(CommonAttributes.JOURNAL_DIRECTORY)) {
-            writeDirectory(writer, Element.JOURNAL_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
-        if (paths.hasDefined(CommonAttributes.LARGE_MESSAGES_DIRECTORY)) {
-            writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, node.get(ModelDescriptionConstants.PATH));
-        }
+        writeDirectory(writer, Element.PAGING_DIRECTORY, paths);
+        writeDirectory(writer, Element.BINDINGS_DIRECTORY, paths);
+        writeDirectory(writer, Element.JOURNAL_DIRECTORY, paths);
+        writeDirectory(writer, Element.LARGE_MESSAGES_DIRECTORY, paths);
+
         // New line after the simpler elements
         writeNewLine(writer);
 
         writeConnectors(writer, node);
-
         writeAcceptors(writer, node);
-
-        if (node.hasDefined(BROADCAST_GROUP)) {
-            writeBroadcastGroups(writer, node.get(BROADCAST_GROUP));
-        }
-        if (node.hasDefined(DISCOVERY_GROUP)) {
-            writeDiscoveryGroups(writer, node.get(DISCOVERY_GROUP));
-        }
-        if (node.hasDefined(DIVERT)) {
-            writeDiverts(writer, node.get(DIVERT));
-        }
-        if (node.hasDefined(CommonAttributes.QUEUE)) {
-            writeQueues(writer, node.get(CommonAttributes.QUEUE));
-        }
-        if (node.hasDefined(CommonAttributes.BRIDGE)) {
-            writeBridges(writer, node.get(CommonAttributes.BRIDGE));
-        }
-        if (node.hasDefined(CommonAttributes.CLUSTER_CONNECTION)) {
-            writeClusterConnections(writer, node.get(CommonAttributes.CLUSTER_CONNECTION));
-        }
-
-        if (node.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
-            writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
-        }
-
-        if (node.hasDefined(CommonAttributes.SECURITY_SETTING)) {
-            writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
-        }
-
-        if (node.hasDefined(ADDRESS_SETTING)) {
-            writeAddressSettings(writer, node.get(ADDRESS_SETTING));
-        }
-
-        if (node.hasDefined(CommonAttributes.CONNECTOR_SERVICE)) {
-            writeConnectorServices(writer, node.get(CommonAttributes.CONNECTOR_SERVICE));
-        }
+        writeBroadcastGroups(writer, node.get(BROADCAST_GROUP));
+        writeDiscoveryGroups(writer, node.get(DISCOVERY_GROUP));
+        writeDiverts(writer, node.get(DIVERT));
+        writeQueues(writer, node.get(CommonAttributes.QUEUE));
+        writeBridges(writer, node.get(CommonAttributes.BRIDGE));
+        writeClusterConnections(writer, node.get(CommonAttributes.CLUSTER_CONNECTION));
+        writeGroupingHandler(writer, node.get(GROUPING_HANDLER));
+        writeSecuritySettings(writer, node.get(CommonAttributes.SECURITY_SETTING));
+        writeAddressSettings(writer, node.get(ADDRESS_SETTING));
+        writeConnectorServices(writer, node.get(CommonAttributes.CONNECTOR_SERVICE));
 
         if (node.hasDefined(CONNECTION_FACTORY) || node.hasDefined(POOLED_CONNECTION_FACTORY)) {
             ModelNode cf = node.get(CONNECTION_FACTORY);
@@ -170,30 +136,22 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             boolean hasPcf = pcf.isDefined() && pcf.keys().size() > 0;
             if (hasCf || hasPcf) {
                 writer.writeStartElement(JMS_CONNECTION_FACTORIES);
-                if (hasCf) {
-                    writeConnectionFactories(writer, cf);
-                }
-                if (hasPcf) {
-                    writePooledConnectionFactories(writer, pcf);
-                }
+                writeConnectionFactories(writer, cf);
+                writePooledConnectionFactories(writer, pcf);
                 writer.writeEndElement();
                 writeNewLine(writer);
             }
         }
 
-        if (node.has(JMS_QUEUE) || node.has(JMS_TOPIC)) {
+        if (node.hasDefined(JMS_QUEUE) || node.hasDefined(JMS_TOPIC)) {
             ModelNode queue = node.get(JMS_QUEUE);
             ModelNode topic = node.get(JMS_TOPIC);
             boolean hasQueue = queue.isDefined() && queue.keys().size() > 0;
             boolean hasTopic = topic.isDefined() && topic.keys().size() > 0;
             if (hasQueue || hasTopic) {
                 writer.writeStartElement(JMS_DESTINATIONS);
-                if (hasQueue) {
-                    writeJmsQueues(writer, node.get(JMS_QUEUE));
-                }
-                if (hasTopic) {
-                    writeTopics(writer, node.get(JMS_TOPIC));
-                }
+                writeJmsQueues(writer, node.get(JMS_QUEUE));
+                writeTopics(writer, node.get(JMS_TOPIC));
                 writer.writeEndElement();
             }
         }
@@ -263,26 +221,24 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
         final ModelNode value = property.getValue();
 
-        if (value.hasDefined(RemoteTransportDefinition.SOCKET_BINDING.getName())) {
-            writeAttribute(writer, Attribute.SOCKET_BINDING, value.get(RemoteTransportDefinition.SOCKET_BINDING.getName()));
-        }
-        if (value.hasDefined(InVMTransportDefinition.SERVER_ID.getName())) {
-            writeAttribute(writer, Attribute.SERVER_ID, value.get(InVMTransportDefinition.SERVER_ID.getName()));
-        }
-
+        RemoteTransportDefinition.SOCKET_BINDING.marshallAsAttribute(value, writer);
+        InVMTransportDefinition.SERVER_ID.marshallAsAttribute(value, writer);
         CommonAttributes.FACTORY_CLASS.marshallAsElement(value, writer);
 
         if (value.hasDefined(PARAM)) {
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
                 writer.writeAttribute(Attribute.KEY.getLocalName(), parameter.getName());
-                writeAttribute(writer, Attribute.VALUE, parameter.getValue().get(VALUE.getName()));
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), parameter.getValue().get(VALUE.getName()).asString());
                 writer.writeEndElement();
             }
         }
     }
 
     private static void writeBroadcastGroups(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.BROADCAST_GROUPS.getLocalName());
@@ -300,6 +256,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeDiscoveryGroups(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.DISCOVERY_GROUPS.getLocalName());
@@ -317,6 +276,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeDiverts(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.DIVERTS.getLocalName());
@@ -338,6 +300,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.CORE_QUEUES.getLocalName());
@@ -357,6 +322,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeBridges(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.BRIDGES.getLocalName());
@@ -385,6 +353,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeClusterConnections(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.CLUSTER_CONNECTIONS.getLocalName());
@@ -426,7 +397,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeGroupingHandler(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-
+        if (!node.isDefined()) {
+            return;
+        }
         boolean wroteHandler = false;
         for (Property handler : node.asPropertyList()) {
             if (wroteHandler) {
@@ -454,7 +427,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
 
     private static void writeDirectory(final XMLExtendedStreamWriter writer, final Element element, final ModelNode node) throws XMLStreamException {
         final String localName = element.getLocalName();
-        if(node.has(localName)) {
+        if(node.hasDefined(localName)) {
             final String path = node.get(localName).has(PATH.getName()) ? node.get(localName, PATH.getName()).asString() : null;
             final String relativeTo = node.get(localName).hasDefined(RELATIVE_TO.getName()) ? node.get(localName, RELATIVE_TO.getName()).asString() : null;
             if(path != null || relativeTo != null) {
@@ -466,6 +439,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeSecuritySettings(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.SECURITY_SETTINGS.getLocalName());
@@ -545,6 +521,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeAddressSettings(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.ADDRESS_SETTINGS.getLocalName());
@@ -572,6 +551,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeConnectorServices(XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
+        if (!node.isDefined()) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             writer.writeStartElement(Element.CONNECTOR_SERVICES.getLocalName());
@@ -597,6 +579,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined() || node.keys().size() == 0) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             for (Property prop : properties) {
@@ -614,6 +599,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writePooledConnectionFactories(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined() || node.keys().size() == 0) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             for (Property prop : properties) {
@@ -708,18 +696,16 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             }
         }
 
-        if(factory.hasDefined(TRANSACTION)) {
-            writer.writeStartElement(Element.TRANSACTION.getLocalName());
-            writeTransactionTypeAttribute(writer, Element.MODE, factory.get(TRANSACTION));
-            writer.writeEndElement();
-        }
-
+        Pooled.TRANSACTION.marshallAsElement(factory, writer);
         Pooled.MIN_POOL_SIZE.marshallAsElement(factory, writer);
         Pooled.MAX_POOL_SIZE.marshallAsElement(factory, writer);
         Pooled.USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
     }
 
     private static void writeJmsQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined() || node.keys().size() == 0) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             for (Property prop : properties) {
@@ -738,6 +724,9 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     }
 
     private static void writeTopics(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        if (!node.isDefined() || node.keys().size() == 0) {
+            return;
+        }
         List<Property> properties = node.asPropertyList();
         if (!properties.isEmpty()) {
             for (Property prop : properties) {
@@ -784,14 +773,6 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         }
 
         writer.writeEndElement();
-    }
-
-    private static void writeTransactionTypeAttribute(final XMLExtendedStreamWriter writer, final Element attr, final ModelNode value) throws XMLStreamException {
-        writer.writeAttribute(attr.getLocalName(), value.asString());
-    }
-
-    private static void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
-        writer.writeAttribute(attr.getLocalName(), value.asString());
     }
 
     private static void writeNewLine(XMLExtendedStreamWriter writer) throws XMLStreamException {

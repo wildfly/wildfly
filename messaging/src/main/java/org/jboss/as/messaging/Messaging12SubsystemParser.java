@@ -11,7 +11,6 @@ import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
@@ -145,7 +144,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     }
                     final String txType = reader.getAttributeValue(0);
                     if( txType != null) {
-                        connectionFactory.get(TRANSACTION).set(txType);
+                        connectionFactory.get(Pooled.TRANSACTION.getName()).set(txType);
                     }
                     ParseUtils.requireNoContent(reader);
                     break;

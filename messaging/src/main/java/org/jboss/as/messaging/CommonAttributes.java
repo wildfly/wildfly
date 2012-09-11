@@ -40,6 +40,7 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 
 import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -50,7 +51,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -588,7 +588,6 @@ public interface CommonAttributes {
     String SUBSCRIPTION_COUNT = "subscription-count";
     String SUBSYSTEM = "subsystem";
     String TOPIC_ADDRESS = "topic-address";
-    String TRANSACTION = "transaction";
     String TYPE_ATTR_NAME = "type";
     String VERSION = "version";
     String XA = "xa";
