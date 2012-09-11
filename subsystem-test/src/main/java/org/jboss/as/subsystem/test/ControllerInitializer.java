@@ -77,6 +77,16 @@ public class ControllerInitializer {
     protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
     protected final Map<String, PathInfo> paths = new HashMap<String, PathInfo>();
     private volatile PathManagerService pathManager;
+    private volatile TestModelControllerService testModelControllerService;
+
+    /**
+     * Sets the controller being created. Internal use only.
+     *
+     * @param service the controller being created.
+     */
+    void setTestModelControllerService(TestModelControllerService service) {
+        this.testModelControllerService = service;
+    }
 
     void setPathManger(PathManagerService pathManager) {
         this.pathManager = pathManager;
@@ -208,7 +218,7 @@ public class ControllerInitializer {
             return;
         }
         rootResource.getModel().get(SYSTEM_PROPERTY);
-        ManagementResourceRegistration sysProps = rootRegistration.registerSubModel(SystemPropertyResourceDefinition.createForStandaloneServer(null));
+        ManagementResourceRegistration sysProps = rootRegistration.registerSubModel(SystemPropertyResourceDefinition.createForStandaloneServer(testModelControllerService.getServerEnvironment()));
     }
 
     /**
