@@ -27,6 +27,8 @@
                   <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
                   <param key="host" value="192.168.1.2"/>
                   <param key="port" value="5445"/>
+                  <param key="key-store-path" value="path/to/server.jks"/>
+                  <param key="key-store-password" value="${VAULT::server-key::key-store-password::sharedKey}"/>
                </connector>
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
