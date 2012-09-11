@@ -227,56 +227,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         allRelevantServerGroups.addCantAppearAfter(serverGroups);
         serverGroups.addCantAppearAfter(allRelevantServerGroups);
 
-        deployments = new ArgumentWithValue(this, new CommandLineCompleter(){
+        deployments = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
-            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-                final ModelControllerClient client = ctx.getModelControllerClient();
-                if(client == null) {
-                    return -1;
-                }
-//                final String actionStr = action.getValue(ctx.getParsedCommandLine());
-                final List<String> existing;
-//                if(ADD.equals(actionStr) || LINK.equals(actionStr)) {
-                    existing = Util.getDeployments(client);
-/*                } else if(REMOVE.equals(actionStr)) {
-                    try {
-                        final String nameStr = name.getValue(ctx.getParsedCommandLine());
-                        if(nameStr == null) {
-                            return -1;
-                        }
-                        final String sg = serverGroups.getValue(ctx.getParsedCommandLine());
-                        if(ctx.isDomainMode() && sg == null) {
-                            return -1;
-                        }
-                        existing = loadLinkedDeployments(client, nameStr, sg);
-                    } catch (CommandLineException e) {
-                        return -1;
-                    }
-                } else {
-                    return -1;
-                }
-*/
-                if(existing.isEmpty()) {
-                    return buffer.length();
-                }
-                candidates.addAll(existing);
-                if(buffer.isEmpty()) {
-                    return 0;
-                }
-                final String[] specified = buffer.split(",+");
-                candidates.removeAll(Arrays.asList(specified));
-                if(buffer.charAt(buffer.length() - 1) == ',') {
-                    return buffer.length();
-                }
-                final String chunk = specified[specified.length - 1];
-                for(int i = 0; i < candidates.size(); ++i) {
-                    if(!candidates.get(i).startsWith(chunk)) {
-                        candidates.remove(i);
-                    }
-                }
-                return buffer.length() - chunk.length();
-            }
-        }, "--deployments") {
+            protected Collection<String> getAllCandidates(CommandContext ctx) {
+                return Util.getDeployments(ctx.getModelControllerClient());
+            }}, "--deployments") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if(ctx.isDomainMode()) {
@@ -603,9 +558,17 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             contentPaths[i] = f;
         }
 
+        final String deploymentsStr = deployments.getValue(args);
+        final String[] deployments;
+        if(deploymentsStr == null) {
+            deployments = null;
+        } else {
+            deployments = deploymentsStr.split(",+");
+        }
+
         final String sgStr = serverGroups.getValue(args);
         final String[] sg;
-        if(ctx.isDomainMode()) {
+        if(deployments != null && ctx.isDomainMode()) {
             if(sgStr == null) {
                 throw new CommandFormatException(serverGroups.getFullName() + " is missing.");
             }
@@ -615,14 +578,6 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             }
         } else {
             sg = null;
-        }
-
-        final String deploymentsStr = deployments.getValue(args);
-        final String[] deployments;
-        if(deploymentsStr == null) {
-            deployments = null;
-        } else {
-            deployments = deploymentsStr.split(",+");
         }
 
         final ModelControllerClient client = ctx.getModelControllerClient();

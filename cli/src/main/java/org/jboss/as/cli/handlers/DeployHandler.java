@@ -29,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,6 +40,7 @@ import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -160,46 +162,10 @@ public class DeployHandler extends DeploymentHandler {
         allServerGroups.addCantAppearAfter(force);
         force.addCantAppearAfter(allServerGroups);
 
-        serverGroups = new ArgumentWithValue(this, new CommandLineCompleter() {
+        serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
-            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-                List<String> allGroups = Util.getServerGroups(ctx.getModelControllerClient());
-                if(buffer.isEmpty()) {
-                    candidates.addAll(allGroups);
-                    Collections.sort(candidates);
-                    return 0;
-                }
-
-                final String[] groups = buffer.split(",+");
-
-                final String chunk;
-                final int lastGroupIndex;
-                if(buffer.charAt(buffer.length() - 1) == ',') {
-                    lastGroupIndex = groups.length;
-                    chunk = null;
-                } else {
-                    lastGroupIndex = groups.length - 1;
-                    chunk = groups[groups.length - 1];
-                }
-
-                for(int i = 0; i < lastGroupIndex; ++i) {
-                    allGroups.remove(groups[i]);
-                }
-
-                final int result;
-                if(chunk == null) {
-                    candidates.addAll(allGroups);
-                    result = buffer.length();
-                } else {
-                    for(String group : allGroups) {
-                        if(group.startsWith(chunk)) {
-                            candidates.add(group);
-                        }
-                    }
-                    result = buffer.lastIndexOf(',') + 1;
-                }
-                Collections.sort(candidates);
-                return result;
+            protected Collection<String> getAllCandidates(CommandContext ctx) {
+                return Util.getServerGroups(ctx.getModelControllerClient());
             }}, "--server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
