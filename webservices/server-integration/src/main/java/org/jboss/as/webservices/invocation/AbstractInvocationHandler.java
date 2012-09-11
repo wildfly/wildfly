@@ -22,75 +22,74 @@
 package org.jboss.as.webservices.invocation;
 
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getMSCService;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Collection;
+
+import javax.management.MBeanException;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.ws.common.invocation.AbstractInvocationHandler;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.invocation.Invocation;
 
 /**
- * Invocation abstraction for both EJB3 and  EJB21 endpoints.
+ * Invocation abstraction for all endpoint types
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
+abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.AbstractInvocationHandler {
 
-   /** EJB component view name */
-   private ServiceName ejbComponentViewName;
-
-   /** EJB component view */
-   private volatile ComponentView ejbComponentView;
-   private volatile ManagedReference reference;
+   private ServiceName componentViewName;
+   private volatile ComponentView componentView;
+   protected volatile ManagedReference reference;
 
    /**
-    * Initializes EJB component name.
+    * Initializes component view name.
     *
     * @param endpoint web service endpoint
     */
    public void init(final Endpoint endpoint) {
-       ejbComponentViewName = (ServiceName) endpoint.getProperty(EJB_COMPONENT_VIEW_NAME);
-       if (ejbComponentViewName == null) throw MESSAGES.missingEjbComponentViewName();
+       componentViewName = (ServiceName) endpoint.getProperty(COMPONENT_VIEW_NAME);
    }
 
    /**
-    * Gets EJB container lazily.
+    * Gets endpoint container lazily.
     *
-    * @return EJB container
+    * @return endpoint container
     */
-   private ComponentView getComponentView() {
-       //we need to check both, otherwise it is possible for
-       //ejbComponentView to be initialized before reference
-      if (ejbComponentView == null || reference == null) {
+   protected ComponentView getComponentView() {
+       // we need to check both, otherwise it is possible for
+       // componentView to be initialized before reference
+      if (componentView == null || reference == null) {
          synchronized(this) {
-            if (ejbComponentView == null) {
-               ejbComponentView = getMSCService(ejbComponentViewName, ComponentView.class);
-               if (ejbComponentView == null) {
-                  throw MESSAGES.cannotFindEjbView(ejbComponentViewName);
+            if (componentView == null) {
+               componentView = getMSCService(componentViewName, ComponentView.class);
+               if (componentView == null) {
+                  throw MESSAGES.cannotFindComponentView(componentViewName);
                }
                 try {
-                    reference = ejbComponentView.createInstance();
+                    reference = componentView.createInstance();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
          }
       }
-      return ejbComponentView;
+      return componentView;
    }
 
    /**
-    * Invokes EJB endpoint.
+    * Invokes WS endpoint.
     *
-    * @param endpoint EJB endpoint
+    * @param endpoint WS endpoint
     * @param wsInvocation web service invocation
     * @throws Exception if any error occurs
     */
@@ -100,7 +99,7 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
          onBeforeInvocation(wsInvocation);
          // prepare invocation data
          final ComponentView componentView = getComponentView();
-         final Method method = getEJBMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
+         final Method method = getComponentViewMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
          final InterceptorContext context = new InterceptorContext();
          prepareForInvocation(context, wsInvocation);
          context.setMethod(method);
@@ -122,20 +121,41 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
       }
    }
 
+   protected void prepareForInvocation(final InterceptorContext context, final Invocation wsInvocation) {
+      // does nothing
+   }
+
    /**
-    * Translates SEI method to EJB view method.
+    * Translates SEI method to component view method.
     *
     * @param seiMethod SEI method
-    * @param viewMethods EJB view methods
-    * @return matching EJB view method
+    * @param viewMethods component view methods
+    * @return matching component view method
     */
-   private Method getEJBMethod(final Method seiMethod, final Collection<Method> viewMethods) {
+   protected Method getComponentViewMethod(final Method seiMethod, final Collection<Method> viewMethods) {
        for (final Method viewMethod : viewMethods) {
            if (matches(seiMethod, viewMethod)) {
                return viewMethod;
            }
        }
        throw new IllegalStateException();
+   }
+
+   protected void handleInvocationException(final Throwable t) throws Exception {
+      if (t instanceof MBeanException) {
+         throw ((MBeanException) t).getTargetException();
+      }
+      if (t instanceof Exception) {
+         if (t instanceof InvocationTargetException) {
+            throw (Exception) t;
+         } else {
+            throw new InvocationTargetException(t);
+         }
+      }
+      if (t instanceof Error) {
+         throw (Error) t;
+      }
+      throw new UndeclaredThrowableException(t);
    }
 
    /**
@@ -154,10 +174,6 @@ abstract class AbstractInvocationHandlerEJB extends AbstractInvocationHandler {
            if (!sourceParams[i].equals(targetParams[i])) return false;
        }
        return true;
-   }
-
-   protected void prepareForInvocation(final InterceptorContext context, final Invocation wsInvocation) {
-       // does nothing
    }
 
 }

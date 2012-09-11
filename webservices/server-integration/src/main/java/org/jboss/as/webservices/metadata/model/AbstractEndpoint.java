@@ -21,17 +21,22 @@
  */
 package org.jboss.as.webservices.metadata.model;
 
+import org.jboss.msc.service.ServiceName;
+
 /**
  * @author <a href="ropalka@redhat.com">Richard Opalka</a>
  */
-abstract class AbstractEndpoint {
+public abstract class AbstractEndpoint {
 
+    public static final String COMPONENT_VIEW_NAME = AbstractEndpoint.class.getPackage().getName() + "ComponentViewName";
     private final String name;
     private final String className;
+    private final ServiceName viewName;
 
-    protected AbstractEndpoint(final String name, final String className) {
+    protected AbstractEndpoint(final String name, final String className, final ServiceName viewName) {
         this.name = name;
         this.className = className;
+        this.viewName = viewName;
     }
 
     public final String getName() {
@@ -40,6 +45,10 @@ abstract class AbstractEndpoint {
 
     public final String getClassName() {
         return className;
+    }
+
+    public ServiceName getComponentViewName() {
+        return viewName;
     }
 
 }

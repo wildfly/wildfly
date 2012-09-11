@@ -50,6 +50,7 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
+import org.jboss.ws.common.invocation.InvocationHandlerJAXWS;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
@@ -57,6 +58,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.deployment.WSFServlet;
 import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.management.EndpointRegistryFactory;
@@ -116,10 +118,18 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
                 EndpointRegistryFactory factory = spiProvider.getSPI(EndpointRegistryFactory.class);
                 EndpointRegistry registry = factory.getEndpointRegistry();
                 for (final Endpoint endpoint : dep.getService().getEndpoints()) {
-                    registry.register(endpoint);
+                    if (!registry.isRegistered(endpoint.getName())) {
+                        registry.register(endpoint);
+                    }
                 }
             }
             // END workaround
+            // [JBWS-3441] hack - fallback JAXWS invocation handler for dynamically generated deployments
+            for (Endpoint ep : dep.getService().getEndpoints()) {
+                ep.setState(EndpointState.STOPPED);
+                ep.setInvocationHandler(new InvocationHandlerJAXWS());
+                ep.setState(EndpointState.STARTED);
+            }
         } finally {
             if (dep != null) {
                 dep.removeAttachment(ServiceTarget.class);

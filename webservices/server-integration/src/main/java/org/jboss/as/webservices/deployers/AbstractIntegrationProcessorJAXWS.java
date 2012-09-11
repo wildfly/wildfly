@@ -34,8 +34,13 @@ import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTA
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.ViewConfiguration;
+import org.jboss.as.ee.component.ViewConfigurator;
+import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -125,18 +130,29 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
 
     static ComponentDescription createComponentDescription(final DeploymentUnit unit, final String componentName, final String componentClassName, final String dependsOnEndpointClassName) {
         final EEModuleDescription moduleDescription = getRequiredAttachment(unit, EE_MODULE_DESCRIPTION);
-        ComponentDescription componentDescription = moduleDescription.getComponentByName(componentName);
-
-        if (componentDescription == null) {
-            // register WS component
-            componentDescription = new WSComponentDescription(componentName, componentClassName, moduleDescription, unit.getServiceName());
-            moduleDescription.addComponent(componentDescription);
-            // register WS dependency
-            final ServiceName endpointServiceName = EndpointService.getServiceName(unit, dependsOnEndpointClassName);
-            componentDescription.addDependency(endpointServiceName, ServiceBuilder.DependencyType.REQUIRED);
-        }
+        // JBoss WEB processors may install fake components for WS endpoints - removing them forcibly
+        moduleDescription.removeComponent(componentName, componentClassName);
+        // register WS component
+        ComponentDescription componentDescription = new WSComponentDescription(componentName, componentClassName, moduleDescription, unit.getServiceName());
+        moduleDescription.addComponent(componentDescription);
+        // register WS dependency
+        final ServiceName endpointServiceName = EndpointService.getServiceName(unit, dependsOnEndpointClassName);
+        componentDescription.addDependency(endpointServiceName, ServiceBuilder.DependencyType.REQUIRED);
 
         return componentDescription;
+    }
+
+    static ServiceName registerView(final ComponentDescription componentDescription, final String componentClassName) {
+        final ViewDescription pojoView = new ViewDescription(componentDescription, componentClassName);
+        componentDescription.getViews().add(pojoView);
+        pojoView.getConfigurators().add(new ViewConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
+                // add WS POJO component instance associating interceptor
+                configuration.addViewInterceptor(WSComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+            }
+        });
+        return pojoView.getServiceName();
     }
 
     static boolean isEjb3(final ClassInfo clazz) {

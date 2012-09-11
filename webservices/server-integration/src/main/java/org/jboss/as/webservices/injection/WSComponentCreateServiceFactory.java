@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.webservices.injection;
 
+import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.service.ServiceName;
+import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class WSComponentDescription extends ComponentDescription {
+final class WSComponentCreateServiceFactory implements ComponentCreateServiceFactory {
 
-    public WSComponentDescription(final String componentName, final String componentClassName,
-            final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
-        super(componentName, componentClassName, moduleDescription, deploymentUnitServiceName);
-        setExcludeDefaultInterceptors(true);
-    }
+    static final WSComponentCreateServiceFactory INSTANCE = new WSComponentCreateServiceFactory();
+
+    private WSComponentCreateServiceFactory() {}
 
     @Override
-    public ComponentConfiguration createConfiguration(final ClassIndex classIndex, final ClassLoader moduleClassLoader,
-            final ModuleLoader moduleLoader) {
-        final ComponentConfiguration cc = super.createConfiguration(classIndex, moduleClassLoader, moduleLoader);
-        cc.setComponentCreateServiceFactory(WSComponentCreateServiceFactory.INSTANCE);
-        return cc;
+    public BasicComponentCreateService constructService(final ComponentConfiguration configuration) {
+        return new WSComponentCreateService(configuration);
     }
-
 }

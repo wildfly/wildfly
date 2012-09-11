@@ -26,8 +26,8 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
+import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import java.util.LinkedList;
 import java.util.List;

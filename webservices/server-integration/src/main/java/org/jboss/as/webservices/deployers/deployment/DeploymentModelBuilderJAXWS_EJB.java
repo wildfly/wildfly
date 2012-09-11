@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
@@ -52,7 +52,7 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
             final String ejbEndpointClassName = ejbEndpoint.getClassName();
             ROOT_LOGGER.ejbClass(ejbEndpointClassName);
             final Endpoint ep = newHttpEndpoint(ejbEndpointClassName, ejbEndpointName, dep);
-            ep.setProperty(EJB_COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
+            ep.setProperty(COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
         }
     }
 

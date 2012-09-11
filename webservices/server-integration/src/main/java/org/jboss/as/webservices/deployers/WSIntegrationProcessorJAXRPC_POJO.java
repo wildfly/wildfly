@@ -84,7 +84,7 @@ public final class WSIntegrationProcessorJAXRPC_POJO implements DeploymentUnitPr
         final String endpointClassName = getEndpointClassName(servletMD);
         final String urlPattern = getUrlPattern(endpointName, jbossWebMD);
 
-        return new POJOEndpoint(endpointName, endpointClassName, urlPattern);
+        return new POJOEndpoint(endpointName, endpointClassName, null, urlPattern);
     }
 
     private static String getUrlPattern(final String servletName, final JBossWebMetaData jbossWebMD) {

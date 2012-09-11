@@ -22,6 +22,11 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
+import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
+import static org.jboss.as.webservices.webserviceref.WSRefUtils.translate;
+
 import java.lang.reflect.AccessibleObject;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -46,11 +51,6 @@ import org.jboss.metadata.javaee.spec.ServiceReferencesMetaData;
 import org.jboss.modules.Module;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
-
-import static org.jboss.as.ee.utils.InjectionUtils.getInjectionTarget;
-import static org.jboss.as.webservices.util.ASHelper.getWSRefRegistry;
-import static org.jboss.as.webservices.webserviceref.WSRefUtils.processAnnotatedElement;
-import static org.jboss.as.webservices.webserviceref.WSRefUtils.translate;
 
 /**
  * WebServiceRef DD processor.

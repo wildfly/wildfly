@@ -605,7 +605,7 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-mex"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-policy"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-rm"/>
-            <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-security"/>
+            <maven-resource group="org.apache.cxf" artifact="cxf-rt-ws-security" jandex="true"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-common"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-java2ws"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-validator"/>
