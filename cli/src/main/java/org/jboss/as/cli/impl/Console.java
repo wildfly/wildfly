@@ -134,8 +134,8 @@ public interface Console {
                     String[] newList = new String[list.size()];
                     list.toArray(newList);
                     try {
-                        console.pushToConsole(
-                                org.jboss.jreadline.util.Parser.formatCompletions(newList,
+                        console.pushToStdOut(
+                                org.jboss.jreadline.util.Parser.formatDisplayList(newList,
                                         console.getTerminalHeight(), console.getTerminalWidth()));
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -145,7 +145,7 @@ public interface Console {
                 @Override
                 public void print(String line) {
                     try {
-                        console.pushToConsole(line);
+                        console.pushToStdOut(line);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -154,7 +154,7 @@ public interface Console {
                 @Override
                 public void printNewLine() {
                     try {
-                        console.pushToConsole(Config.getLineSeparator());
+                        console.pushToStdOut(Config.getLineSeparator());
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -163,7 +163,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt) {
                     try {
-                        return console.read(prompt);
+                        return console.read(prompt).getBuffer();
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
@@ -173,7 +173,7 @@ public interface Console {
                 @Override
                 public String readLine(String prompt, Character mask) {
                     try {
-                        return console.read(prompt, mask);
+                        return console.read(prompt, mask).getBuffer();
                     } catch (IOException e) {
                         e.printStackTrace();
                         return null;
