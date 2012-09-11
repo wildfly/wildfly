@@ -151,8 +151,8 @@ public class SosInterpreter {
      * Location of the JBoss distribution.
      *
      * @return JBoss home location.  If not set the value of the <code>jboss.home.dir</code>
-     * System property is used.  If this value is not set, the current working directory,
-     * as specified by the <code>user.dir</code> System property is used.
+     *         System property is used.  If this value is not set, the current working directory,
+     *         as specified by the <code>user.dir</code> System property is used.
      */
     public String getJbossHomeDir() {
         if (jbossHomeDir == null) {
@@ -164,6 +164,7 @@ public class SosInterpreter {
 
     /**
      * Sets the root directory
+     *
      * @param jbossHomeDir
      * @throws IllegalArgumentException if <code>jbossHomeDir</code> is <code>null</code>.
      */

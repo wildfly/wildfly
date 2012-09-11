@@ -25,12 +25,11 @@ package org.jboss.as.jdr;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
-
-import java.util.Locale;
 
 /**
  * Operation handler for an end user request to generate a JDR report.
@@ -38,18 +37,19 @@ import java.util.Locale;
  * @author Brian Stansberry
  * @author Mike M. Clark
  */
-public class JdrReportRequestHandler implements OperationStepHandler, DescriptionProvider {
+public class JdrReportRequestHandler implements OperationStepHandler {
 
-    public static final String OPERATION_NAME = "generate-jdr-report";
+    private static final String OPERATION_NAME = "generate-jdr-report";
 
-    public static final JdrReportRequestHandler INSTANCE = new JdrReportRequestHandler();
+    static final JdrReportRequestHandler INSTANCE = new JdrReportRequestHandler();
 
+    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JdrReportExtension.getResourceDescriptionResolver())
+            .setReplyParameters(CommonAttributes.START_TIME, CommonAttributes.END_TIME, CommonAttributes.REPORT_LOCATION)
+            .setRuntimeOnly()
+            .build();
     private final ParametersValidator validator = new ParametersValidator();
 
     private JdrReportRequestHandler() {
-        // Example of registering validators
-//        validator.registerValidator("some-string", new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-//        validator.registerValidator("some-int", new IntRangeValidator(0, 10, true, false));
     }
 
     @Override
@@ -85,10 +85,5 @@ public class JdrReportRequestHandler implements OperationStepHandler, Descriptio
 
 
         context.completeStep();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JdrReportDescriptions.getJdrRequestDescription(locale);
     }
 }

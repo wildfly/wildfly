@@ -33,8 +33,7 @@ import java.util.Map;
  */
 enum Namespace {
     UNKNOWN(null), // must be first
-    JDR_1_0("urn:jboss:domain:jdr:1.0")
-    ;
+    JDR_1_0("urn:jboss:domain:jdr:1.0");
 
     /**
      * The current namespace version.
@@ -62,7 +61,7 @@ enum Namespace {
         final Map<String, Namespace> map = new HashMap<String, Namespace>();
         for (Namespace namespace : values()) {
             final String name = namespace.getUriString();
-            if (name != null) map.put(name, namespace);
+            if (name != null) { map.put(name, namespace); }
         }
         MAP = map;
     }

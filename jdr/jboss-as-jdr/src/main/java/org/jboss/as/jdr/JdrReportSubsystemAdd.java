@@ -22,55 +22,37 @@
 
 package org.jboss.as.jdr;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Adds the JDR subsystem.
  *
  * @author Brian Stansberry
  */
-public class JdrReportSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
-
-    public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
-
-    public static final JdrReportSubsystemAdd INSTANCE = new JdrReportSubsystemAdd();
-
-    private final ParametersValidator validator = new ParametersValidator();
+public class JdrReportSubsystemAdd extends AbstractAddStepHandler {
+    static final JdrReportSubsystemAdd INSTANCE = new JdrReportSubsystemAdd();
 
     private JdrReportSubsystemAdd() {
-        // Example of registering validators
-        // validator.registerValidator("some-string", new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-        // validator.registerValidator("some-int", new IntRangeValidator(0, 10, true, false));
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        validator.validate(operation);
         model.setEmptyObject();
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        // TODO if there is any configuration data, use it to configure runtime services
         newControllers.add(JdrReportService.addService(context.getServiceTarget(), verificationHandler));
 
-        // TODO add any other runtime services
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JdrReportDescriptions.getSubsystemAdd(locale);
-    }
+
 }

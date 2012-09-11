@@ -49,7 +49,7 @@ interface JdrMessages {
      * passed into a method.
      *
      * @param var method variable that was <code>null</code>
-     * @return  Exception describing the invalid parameter.
+     * @return Exception describing the invalid parameter.
      */
     @Message(id = 13151, value = "Parameter %s may not be null.")
     IllegalArgumentException varNull(String var);

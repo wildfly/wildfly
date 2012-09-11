@@ -22,29 +22,18 @@
 
 package org.jboss.as.jdr;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.EnumSet;
-import java.util.Locale;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Extension for triggering, requesting, generating and accessing JDR reports.
@@ -56,27 +45,31 @@ public class JdrReportExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "jdr";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
-    public void initialize(ExtensionContext context) {
-        final DescriptionProvider subsystemDescription = new DescriptionProvider() {
-            public ModelNode getModelDescription(Locale locale) {
-                return JdrReportDescriptions.getJdrSubsystemDescription(locale);
-            }
-        };
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
+    private static final String RESOURCE_NAME = JdrReportExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JdrReportExtension.class.getClassLoader(), true, false);
+    }
+
+    public void initialize(ExtensionContext context) {
         SubsystemRegistration subsystemRegistration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        ManagementResourceRegistration root = subsystemRegistration.registerSubsystemModel(subsystemDescription);
-        root.registerOperationHandler(JdrReportSubsystemAdd.OPERATION_NAME, JdrReportSubsystemAdd.INSTANCE, JdrReportSubsystemAdd.INSTANCE);
-        root.registerOperationHandler(DESCRIBE, JdrSubsystemDescribeHandler.INSTANCE,
-                JdrSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        root.registerOperationHandler(JdrReportSubsystemRemove.OPERATION_NAME, JdrReportSubsystemRemove.INSTANCE, JdrReportSubsystemRemove.INSTANCE);
+        ManagementResourceRegistration root = subsystemRegistration.registerSubsystemModel(JdrReportSubsystemDefinition.INSTANCE);
+        root.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            root.registerOperationHandler(JdrReportRequestHandler.OPERATION_NAME, JdrReportRequestHandler.INSTANCE, JdrReportRequestHandler.INSTANCE, EnumSet.of(Flag.RUNTIME_ONLY));
+            root.registerOperationHandler(JdrReportRequestHandler.DEFINITION, JdrReportRequestHandler.INSTANCE);
         }
         subsystemRegistration.registerXMLElementWriter(JdrReportSubsystemParser.INSTANCE);
     }
@@ -85,25 +78,4 @@ public class JdrReportExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), JdrReportSubsystemParser.INSTANCE);
     }
 
-    private static class JdrSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final JdrSubsystemDescribeHandler INSTANCE = new JdrSubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            ModelNode result = context.getResult();
-
-            result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));
-
-            // TODO if child resources are developed, add operations to create those
-
-            context.completeStep();
-        }
-
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-    }
-
-    private static ModelNode pathAddress(PathElement... elements) {
-        return PathAddress.pathAddress(elements).toModelNode();
-    }
 }
