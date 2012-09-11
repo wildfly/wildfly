@@ -21,15 +21,9 @@
  */
 package org.jboss.as.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
@@ -40,7 +34,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
@@ -58,14 +51,9 @@ import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.ServerDeploymentResourceDescription;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
-import org.jboss.as.server.deployment.DeploymentAddHandler;
-import org.jboss.as.server.deployment.DeploymentDeployHandler;
-import org.jboss.as.server.deployment.DeploymentRedeployHandler;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.as.server.deployment.DeploymentStatusHandler;
-import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deploymentoverlay.ContentDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDeploymentDefinition;
@@ -147,25 +135,7 @@ public class ServerControllerModelUtil {
         socketGroup.registerSubModel(LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
 
         // Deployments
-        ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
-
-        DeploymentAddHandler dah = DeploymentAddHandler.create(contentRepository, vaultReader);
-        deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah, false);
-        DeploymentRemoveHandler dremh = new DeploymentRemoveHandler(contentRepository, vaultReader);
-        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, dremh, dremh, false);
-        final DeploymentDeployHandler ddhu = new DeploymentDeployHandler(vaultReader);
-        deployments.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, ddhu, ddhu, false);
-        final DeploymentUndeployHandler duh = new DeploymentUndeployHandler(vaultReader);
-        deployments.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, duh, duh, false);
-        final DeploymentRedeployHandler drdh = new DeploymentRedeployHandler(vaultReader);
-        deployments.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, drdh, drdh, false);
-        deployments.registerMetric(DeploymentStatusHandler.ATTRIBUTE_NAME, DeploymentStatusHandler.INSTANCE);
-        //These are in the description
-        deployments.registerReadOnlyAttribute(CONTENT, null, Storage.CONFIGURATION);
-        deployments.registerReadOnlyAttribute(NAME, null, Storage.CONFIGURATION);
-        deployments.registerReadOnlyAttribute(RUNTIME_NAME, null, Storage.CONFIGURATION);
-        deployments.registerReadOnlyAttribute(ENABLED, null, Storage.CONFIGURATION);
-        deployments.registerReadOnlyAttribute(PERSISTENT, null, Storage.CONFIGURATION);
+        ManagementResourceRegistration deployments = root.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, vaultReader));
 
         //deployment overlays
         final ManagementResourceRegistration contentOverrides = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);

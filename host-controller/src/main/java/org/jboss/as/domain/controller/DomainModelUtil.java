@@ -24,10 +24,7 @@ package org.jboss.as.domain.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
@@ -50,7 +47,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -110,18 +106,12 @@ import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentAddHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentDeployHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRedeployHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentUndeployHandler;
+import org.jboss.as.domain.controller.resource.DomainDeploymentResourceDescription;
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -252,11 +242,6 @@ public class DomainModelUtil {
 
         // System Properties
         root.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.DOMAIN));
-//        ManagementResourceRegistration systemProperties = root.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SYSTEM_PROPERTY_PROVIDER);
-//        systemProperties.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
-//        systemProperties.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-//        systemProperties.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-//        systemProperties.registerReadWriteAttribute(BOOT_TIME, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
         final ManagementResourceRegistration interfaces = root.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.NAMED_INTERFACE_PROVIDER);
         interfaces.registerOperationHandler(ADD, InterfaceAddHandler.NAMED_INSTANCE, InterfaceAddHandler.NAMED_INSTANCE, false);
@@ -293,37 +278,14 @@ public class DomainModelUtil {
 
         ServerGroupDeploymentReplaceHandler sgdrh = new ServerGroupDeploymentReplaceHandler(fileRepository);
         serverGroups.registerOperationHandler(ServerGroupDeploymentReplaceHandler.OPERATION_NAME, sgdrh, sgdrh);
-        final ManagementResourceRegistration serverGroupDeployments = serverGroups.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.SERVER_GROUP_DEPLOYMENT);
-        ServerGroupDeploymentAddHandler sgdah = new ServerGroupDeploymentAddHandler(fileRepository);
-        serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentAddHandler.OPERATION_NAME, sgdah, sgdah);
-        serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentDeployHandler.OPERATION_NAME, ServerGroupDeploymentDeployHandler.INSTANCE, ServerGroupDeploymentDeployHandler.INSTANCE);
-        serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentRedeployHandler.OPERATION_NAME, ServerGroupDeploymentRedeployHandler.INSTANCE, ServerGroupDeploymentRedeployHandler.INSTANCE);
-        serverGroupDeployments.registerOperationHandler(ServerGroupDeploymentUndeployHandler.OPERATION_NAME, ServerGroupDeploymentUndeployHandler.INSTANCE, ServerGroupDeploymentUndeployHandler.INSTANCE);
-        serverGroupDeployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, ServerGroupDeploymentRemoveHandler.INSTANCE, ServerGroupDeploymentRemoveHandler.INSTANCE);
-        //These are defined in the description
-        serverGroupDeployments.registerReadOnlyAttribute(ENABLED, null, Storage.CONFIGURATION);
-        serverGroupDeployments.registerReadOnlyAttribute(NAME, null, Storage.CONFIGURATION);
-        serverGroupDeployments.registerReadOnlyAttribute(RUNTIME_NAME, null, Storage.CONFIGURATION);
+        serverGroups.registerSubModel(DomainDeploymentResourceDescription.createForServerGroup(contentRepo, fileRepository));
 
 
         // Server Group System Properties
         serverGroups.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.SERVER_GROUP));
-//        ManagementResourceRegistration serverGroupSystemProperties = serverGroups.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), DomainDescriptionProviders.SERVER_GROUP_SYSTEM_PROPERTY_PROVIDER);
-//        serverGroupSystemProperties.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
-//        serverGroupSystemProperties.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-//        serverGroupSystemProperties.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-//        serverGroupSystemProperties.registerReadWriteAttribute(BOOT_TIME, null, new ModelTypeValidatingHandler(ModelType.BOOLEAN), Storage.CONFIGURATION);
 
         // Root Deployments
-        final ManagementResourceRegistration deployments = root.registerSubModel(PathElement.pathElement(DEPLOYMENT), DomainDescriptionProviders.DEPLOYMENT_PROVIDER);
-        DeploymentAddHandler dah = isMaster ? new DeploymentAddHandler(contentRepo) : new DeploymentAddHandler();
-        deployments.registerOperationHandler(DeploymentAddHandler.OPERATION_NAME, dah, dah);
-        DeploymentRemoveHandler drh = isMaster ? DeploymentRemoveHandler.createForMaster(contentRepo) : DeploymentRemoveHandler.createForSlave(fileRepository);
-        deployments.registerOperationHandler(DeploymentRemoveHandler.OPERATION_NAME, drh, drh);
-        //These are defined in the description
-        deployments.registerReadOnlyAttribute(CONTENT, null, Storage.CONFIGURATION);
-        deployments.registerReadOnlyAttribute(NAME, null, Storage.CONFIGURATION);
-        deployments.registerReadOnlyAttribute(RUNTIME_NAME, null, Storage.CONFIGURATION);
+        root.registerSubModel(DomainDeploymentResourceDescription.createForDomainRoot(isMaster, contentRepo, fileRepository));
 
 
         //deployment overlays
