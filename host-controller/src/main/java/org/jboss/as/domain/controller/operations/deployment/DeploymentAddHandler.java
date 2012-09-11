@@ -49,7 +49,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.as.controller.operations.validation.ListValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -60,6 +59,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

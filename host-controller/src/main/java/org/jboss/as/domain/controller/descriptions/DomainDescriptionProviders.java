@@ -24,8 +24,8 @@ package org.jboss.as.domain.controller.descriptions;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
+import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
