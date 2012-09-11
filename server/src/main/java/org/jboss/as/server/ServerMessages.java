@@ -30,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
@@ -650,4 +651,17 @@ public interface ServerMessages {
 
     @Message(id = 18780, value = "Failed to read file %s")
     OperationFailedException failedToLoadFile(VirtualFile file, @Cause IOException e);
+
+    @Message(id = 18781, value = "Cannot have more than one of %s")
+    OperationFailedException cannotHaveMoreThanOneManagedContentItem(Set<String> managedAttributes);
+
+    @Message(id = 18782, value = "Unknown content item key: %s")
+    OperationFailedException unknownContentItemKey(String key);
+
+    @Message(id = 18783, value = "Cannot use %s when %s are used")
+    OperationFailedException cannotMixUnmanagedAndManagedContentItems(Set<String> usedManaged, Set<String> usedUnmanaged);
+
+    @Message(id = 18784, value = "Null '%s'")
+    OperationFailedException nullParameter(String name);
+
 }

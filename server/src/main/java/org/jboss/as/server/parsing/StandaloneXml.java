@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -43,7 +42,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -84,6 +82,7 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
+import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
@@ -1037,14 +1036,18 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
                     deploymentWritten = true;
                 }
-                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
-                boolean enabled = deployment.get(ENABLED).asBoolean();
+
+
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
-                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                if (!enabled) {
-                    writeAttribute(writer, Attribute.ENABLED, "false");
-                }
+              //final String runtimeName = deployment.get(RUNTIME_NAME).asString();
+                //writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+                DeploymentResourceDescription.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
+              //boolean enabled = deployment.get(ENABLED).asBoolean();
+//                if (!enabled) {
+//                    writeAttribute(writer, Attribute.ENABLED, "false");
+//                }
+                DeploymentResourceDescription.ENABLED.marshallAsAttribute(deployment, false, writer);
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);

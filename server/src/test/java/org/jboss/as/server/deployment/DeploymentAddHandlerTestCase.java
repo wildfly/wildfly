@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
@@ -79,6 +80,7 @@ public class DeploymentAddHandlerTestCase {
     public void testTooMuchContent() throws OperationFailedException {
         final DeploymentAddHandler handler = DeploymentAddHandler.create(contentRepository, null);
         final OperationContext context = Mockito.mock(OperationContext.class);
+        Mockito.when(context.createResource(PathAddress.EMPTY_ADDRESS)).thenReturn(Resource.Factory.create());
         final ModelNode operation = new ModelNode();
         //operation.get("address").setEmptyList().get(0).get("deployment").set("test.war");
         operation.get("address").get(0).setExpression("deployment", "test.war");

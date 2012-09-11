@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import java.util.Locale;
 

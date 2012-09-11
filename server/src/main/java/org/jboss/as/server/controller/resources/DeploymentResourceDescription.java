@@ -22,13 +22,22 @@
 package org.jboss.as.server.controller.resources;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.server.ServerMessages.MESSAGES;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -36,6 +45,7 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -53,11 +63,10 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
     public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1, false))
             .build();
-    public static final AttributeDefinition RUNTIME_NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNTIME_NAME, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition RUNTIME_NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNTIME_NAME, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .build();
-    public static final AttributeDefinition ENABLED = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ENABLED, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(false))
+    public static final SimpleAttributeDefinition ENABLED = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ENABLED, ModelType.BOOLEAN, false)
             .build();
     public static final AttributeDefinition PERSISTENT = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PERSISTENT, ModelType.BOOLEAN, false)
             .build();
@@ -66,16 +75,16 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
             .build();
 
     //Managed content attributes
-    private static final AttributeDefinition CONTENT_INPUT_STREAM_INDEX = createContentValueTypeAttribute(ModelDescriptionConstants.INPUT_STREAM_INDEX, ModelType.INT, new StringLengthValidator(1, true, true), true);
-    private static final AttributeDefinition CONTENT_HASH = createContentValueTypeAttribute(ModelDescriptionConstants.HASH, ModelType.BYTES, new HashValidator(true), false);
-    private static final AttributeDefinition CONTENT_BYTES = createContentValueTypeAttribute(ModelDescriptionConstants.BYTES, ModelType.BYTES, new ModelTypeValidator(ModelType.BYTES, true), false);
-    private static final AttributeDefinition CONTENT_URL = createContentValueTypeAttribute(ModelDescriptionConstants.URL, ModelType.STRING, new StringLengthValidator(1, true), false);
+    public static final AttributeDefinition CONTENT_INPUT_STREAM_INDEX = createContentValueTypeAttribute(ModelDescriptionConstants.INPUT_STREAM_INDEX, ModelType.INT, new StringLengthValidator(1, true), false);
+    public static final AttributeDefinition CONTENT_HASH = createContentValueTypeAttribute(ModelDescriptionConstants.HASH, ModelType.BYTES, new HashValidator(true), false);
+    public static final AttributeDefinition CONTENT_BYTES = createContentValueTypeAttribute(ModelDescriptionConstants.BYTES, ModelType.BYTES, new ModelTypeValidator(ModelType.BYTES, true), false);
+    public static final AttributeDefinition CONTENT_URL = createContentValueTypeAttribute(ModelDescriptionConstants.URL, ModelType.STRING, new StringLengthValidator(1, true), false);
     //Unmanaged content attributes
-    private static final AttributeDefinition CONTENT_PATH = createContentValueTypeAttribute(ModelDescriptionConstants.PATH, ModelType.STRING, new StringLengthValidator(1, true), false);
-    private static final AttributeDefinition CONTENT_RELATIVE_TO = createContentValueTypeAttribute(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, new StringLengthValidator(1, true), false);
-    private static final AttributeDefinition CONTENT_ARCHIVE = createContentValueTypeAttribute(ModelDescriptionConstants.ARCHIVE, ModelType.STRING, new StringLengthValidator(1, true), false);
+    public static final AttributeDefinition CONTENT_PATH = createContentValueTypeAttribute(ModelDescriptionConstants.PATH, ModelType.STRING, new StringLengthValidator(1, true), false);
+    public static final AttributeDefinition CONTENT_RELATIVE_TO = createContentValueTypeAttribute(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, new StringLengthValidator(1, true), false);
+    public static final AttributeDefinition CONTENT_ARCHIVE = createContentValueTypeAttribute(ModelDescriptionConstants.ARCHIVE, ModelType.STRING, new StringLengthValidator(1, true), false);
 
-    public static ObjectListAttributeDefinition CONTENT = ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+    public static final ObjectListAttributeDefinition CONTENT = ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
             ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
                     CONTENT_INPUT_STREAM_INDEX,
                     CONTENT_HASH,
@@ -83,14 +92,40 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
                     CONTENT_URL,
                     CONTENT_PATH,
                     CONTENT_RELATIVE_TO,
-                    CONTENT_ARCHIVE).build()).build();
+                    CONTENT_ARCHIVE)
+                    .setValidator(new ContentTypeValidator())
+                    .build())
+                .setMinSize(1)
+                .setMaxSize(1).build();
 
     private DeploymentResourceParent parent;
 
-    public static AttributeDefinition[] SERVER_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT, ENABLED, PERSISTENT, STATUS};
-    public static AttributeDefinition[] SERVER_GROUP_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, ENABLED};
-    public static AttributeDefinition[] DOMAIN_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT};
+    public static final AttributeDefinition[] SERVER_ADD_ATTRIBUTES = new AttributeDefinition[] { RUNTIME_NAME, CONTENT, ENABLED, PERSISTENT, STATUS};
+    public static final AttributeDefinition[] SERVER_ADD_GROUP_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, ENABLED};
+    public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT};
 
+    public static final Map<String, AttributeDefinition> MANAGED_CONTENT_ATTRIBUTES;
+    public static final Map<String, AttributeDefinition> UNMANAGED_CONTENT_ATTRIBUTES;
+    public static final Map<String, AttributeDefinition> ALL_CONTENT_ATTRIBUTES;
+    static {
+        Map<String, AttributeDefinition> managed = new HashMap<String, AttributeDefinition>();
+        managed.put(CONTENT_INPUT_STREAM_INDEX.getName(), CONTENT_INPUT_STREAM_INDEX);
+        managed.put(CONTENT_HASH.getName(), CONTENT_HASH);
+        managed.put(CONTENT_BYTES.getName(), CONTENT_BYTES);
+        managed.put(CONTENT_URL.getName(), CONTENT_URL);
+        MANAGED_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(managed);
+
+        Map<String, AttributeDefinition> unmanaged = new HashMap<String, AttributeDefinition>();
+        unmanaged.put(CONTENT_PATH.getName(), CONTENT_PATH);
+        unmanaged.put(CONTENT_RELATIVE_TO.getName(), CONTENT_RELATIVE_TO);
+        unmanaged.put(CONTENT_ARCHIVE.getName(), CONTENT_ARCHIVE);
+        UNMANAGED_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(unmanaged);
+
+        Map<String, AttributeDefinition> all = new HashMap<String, AttributeDefinition>();
+        all.putAll(managed);
+        all.putAll(unmanaged);
+        ALL_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(all);
+    }
 
     public DeploymentResourceDescription(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(PathElement.pathElement(DEPLOYMENT),
@@ -102,11 +137,10 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         for (AttributeDefinition attr : parent.getAttributes()) {
             if (attr.getName().equals(STATUS.getName())) {
                 resourceRegistration.registerMetric(attr, DeploymentStatusHandler.INSTANCE);
-            } else if (attr.getName().equals(NAME.getName())) {
-                resourceRegistration.registerReadOnlyAttribute(attr, ReadResourceNameOperationStepHandler.INSTANCE);
             } else {
                 resourceRegistration.registerReadOnlyAttribute(attr, null);
             }
@@ -127,9 +161,9 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
     }
 
     public static enum DeploymentResourceParent {
-        DOMAIN (DOMAIN_ATTRIBUTES),
-        SERVER_GROUP (SERVER_GROUP_ATTRIBUTES),
-        SERVER (SERVER_ATTRIBUTES);
+        DOMAIN (DOMAIN_ADD_ATTRIBUTES),
+        SERVER_GROUP (SERVER_ADD_GROUP_ATTRIBUTES),
+        SERVER (SERVER_ADD_ATTRIBUTES);
 
         final AttributeDefinition[] defs;
         private DeploymentResourceParent(AttributeDefinition[] defs) {
@@ -156,5 +190,54 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
             return 20L;
         }
     }
+
+    private static class ContentTypeValidator extends ParametersValidator {
+
+        @Override
+        public void validateParameter(String parameterName, ModelNode contentItemNode) throws OperationFailedException {
+
+            Set<String> managedNames = new HashSet<String>();
+            Set<String> unmanagedNames = new HashSet<String>();
+            for (String name : contentItemNode.keys()) {
+                if (contentItemNode.hasDefined(name)) {
+                    if (MANAGED_CONTENT_ATTRIBUTES.containsKey(name)) {
+                        managedNames.add(name);
+                    } else if (UNMANAGED_CONTENT_ATTRIBUTES.containsKey(name)) {
+                        unmanagedNames.add(name);
+                    } else {
+                        throw MESSAGES.unknownContentItemKey(name);
+                    }
+                }
+            }
+            if (managedNames.size() > 1) {
+                //TODO i18n
+                throw MESSAGES.cannotHaveMoreThanOneManagedContentItem(MANAGED_CONTENT_ATTRIBUTES.keySet());
+            }
+            if (unmanagedNames.size() > 0 && managedNames.size() > 0) {
+                throw MESSAGES.cannotMixUnmanagedAndManagedContentItems(managedNames, unmanagedNames);
+            }
+            if (unmanagedNames.size() > 0) {
+                if (!unmanagedNames.contains(CONTENT_ARCHIVE.getName())) {
+                    throw MESSAGES.nullParameter(CONTENT_ARCHIVE.getName());
+                }
+                if (!unmanagedNames.contains(CONTENT_PATH.getName())) {
+                    throw MESSAGES.nullParameter(CONTENT_PATH.getName());
+                }
+            }
+
+            for (String key : contentItemNode.keys()){
+
+                AttributeDefinition def = MANAGED_CONTENT_ATTRIBUTES.get(key);
+                if (def == null) {
+                    def = UNMANAGED_CONTENT_ATTRIBUTES.get(key);
+                }
+                if (def != null) {
+                    def.validateOperation(contentItemNode);
+                }
+            }
+        }
+
+    }
+
 
 }

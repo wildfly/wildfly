@@ -22,32 +22,30 @@
 package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_BYTES;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_INPUT_STREAM_INDEX;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_URL;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-abstract class AbstractDeploymentHandler {
-
-    protected static final List<String> CONTENT_ADDITION_PARAMETERS = Arrays.asList(INPUT_STREAM_INDEX, BYTES, URL);
+abstract class DeploymentHandlerUtils {
 
     protected static String asString(final ModelNode node, final String name) {
         return node.has(name) ? node.require(name).asString() : null;
@@ -77,21 +75,21 @@ abstract class AbstractDeploymentHandler {
 
     protected static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
-        if (operation.hasDefined(INPUT_STREAM_INDEX)) {
-            int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
+        if (operation.hasDefined(CONTENT_INPUT_STREAM_INDEX.getName())) {
+            int streamIndex = CONTENT_INPUT_STREAM_INDEX.resolveModelAttribute(context, operation).asInt();
             int maxIndex = context.getAttachmentStreamCount();
             if (streamIndex > maxIndex) {
-                throw ServerMessages.MESSAGES.invalidStreamIndex(INPUT_STREAM_INDEX, streamIndex, maxIndex);
+                throw ServerMessages.MESSAGES.invalidStreamIndex(CONTENT_INPUT_STREAM_INDEX.getName(), streamIndex, maxIndex);
             }
             in = context.getAttachmentStream(streamIndex);
-        } else if (operation.hasDefined(BYTES)) {
+        } else if (operation.hasDefined(CONTENT_BYTES.getName())) {
             try {
-                in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
+                in = new ByteArrayInputStream(CONTENT_BYTES.resolveModelAttribute(context, operation).asBytes());
             } catch (IllegalArgumentException iae) {
-                throw ServerMessages.MESSAGES.invalidStreamBytes(BYTES);
+                throw ServerMessages.MESSAGES.invalidStreamBytes(CONTENT_BYTES.getName());
             }
-        } else if (operation.hasDefined(URL)) {
-            final String urlSpec = operation.get(URL).asString();
+        } else if (operation.hasDefined(CONTENT_URL.getName())) {
+            final String urlSpec = CONTENT_URL.resolveModelAttribute(context, operation).asString();
             try {
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
@@ -115,7 +113,7 @@ abstract class AbstractDeploymentHandler {
      * @return {@code true} of the parameter is valid, otherwise {@code false}.
      */
     protected static boolean hasValidContentAdditionParameterDefined(ModelNode operation) {
-        for (String s : CONTENT_ADDITION_PARAMETERS) {
+        for (String s : DeploymentResourceDescription.MANAGED_CONTENT_ATTRIBUTES.keySet()) {
             if (operation.hasDefined(s)) {
                 return true;
             }

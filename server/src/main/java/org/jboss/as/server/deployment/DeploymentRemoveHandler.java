@@ -18,13 +18,12 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import java.util.List;
 import java.util.Locale;
@@ -77,10 +76,9 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     String deploymentUnitName = null;
 
-                    boolean enabled = !model.hasDefined(ENABLED) || model.get(ENABLED).asBoolean();
+                    boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
                     if (enabled) {
-                        final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-                        deploymentUnitName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
+                        deploymentUnitName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
                         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                         context.removeService(deploymentUnitServiceName);
                         context.removeService(deploymentUnitServiceName.append("contents"));
@@ -122,10 +120,10 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
 
     private void recoverServices(OperationContext context, ModelNode model, Resource deployment,
                                    ImmutableManagementResourceRegistration registration,
-                                   ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader) {
+                                   ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader) throws OperationFailedException {
         final String name = model.require(NAME).asString();
-        final String runtimeName = model.hasDefined(RUNTIME_NAME) ? model.get(RUNTIME_NAME).asString() : name;
-        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+        final String runtimeName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT.resolveModelAttribute(context, model));
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
         DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
     }

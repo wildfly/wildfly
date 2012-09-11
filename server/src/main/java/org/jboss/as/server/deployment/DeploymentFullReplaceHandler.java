@@ -32,13 +32,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
-import static org.jboss.as.server.ServerMessages.MESSAGES;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.createFailureException;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getInputStream;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.hasValidContentAdditionParameterDefined;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.validateOnePieceOfContent;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,9 +60,9 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
+import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -202,7 +200,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
 
     private static void removeContentAdditions(final ModelNode content) {
         for (final ModelNode contentItem : content.asList()) {
-            removeAttributes(contentItem, CONTENT_ADDITION_PARAMETERS);
+            removeAttributes(contentItem, DeploymentResourceDescription.ALL_CONTENT_ATTRIBUTES.keySet());
         }
     }
 

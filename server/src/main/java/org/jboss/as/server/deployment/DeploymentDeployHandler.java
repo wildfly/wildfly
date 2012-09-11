@@ -18,12 +18,12 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import java.util.Locale;
 
@@ -63,13 +63,13 @@ public class DeploymentDeployHandler implements OperationStepHandler, Descriptio
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
-        model.get(ENABLED).set(true);
+        model.get(ENABLED.getName()).set(true);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
-        final String runtimeName = model.require(RUNTIME_NAME).asString();
-        final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
+        final String runtimeName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT.resolveModelAttribute(context, model));
         DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contents);
 
         context.completeStep();
