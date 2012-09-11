@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.dmr;
 
-import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
@@ -37,6 +36,7 @@ import java.util.List;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;

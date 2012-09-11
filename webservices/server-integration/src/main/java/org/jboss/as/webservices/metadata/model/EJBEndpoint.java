@@ -32,26 +32,19 @@ import org.jboss.msc.service.ServiceName;
  */
 public final class EJBEndpoint extends AbstractEndpoint {
 
-   public static final String EJB_COMPONENT_VIEW_NAME = EJBEndpoint.class.getPackage().getName() + "EjbComponentViewName";
    private final SessionBeanComponentDescription ejbMD;
-   private final ServiceName viewName;
    private final Set<String> securityRoles;
    private final String authMethod;
    private final boolean secureWsdlAccess;
    private final String transportGuarantee;
 
    public EJBEndpoint(final SessionBeanComponentDescription ejbMD, final ServiceName viewName, final Set<String> securityRoles, final String authMethod, final boolean secureWsdlAccess, final String transportGuarantee) {
-       super(ejbMD.getComponentName(), ejbMD.getComponentClassName());
+       super(ejbMD.getComponentName(), ejbMD.getComponentClassName(), viewName);
        this.ejbMD = ejbMD;
-       this.viewName = viewName;
        this.securityRoles = securityRoles;
        this.authMethod = authMethod;
        this.secureWsdlAccess = secureWsdlAccess;
        this.transportGuarantee = transportGuarantee;
-   }
-
-   public ServiceName getComponentViewName() {
-       return viewName;
    }
 
    public ServiceName getContextServiceName() {

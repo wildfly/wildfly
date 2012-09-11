@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.dmr;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -43,8 +45,6 @@ import org.jboss.as.webservices.injection.WSHandlerChainAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationProcessor;
 import org.jboss.as.webservices.webserviceref.WSRefDDProcessor;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
-
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 /**
  * @author alessio.soldano@jboss.com

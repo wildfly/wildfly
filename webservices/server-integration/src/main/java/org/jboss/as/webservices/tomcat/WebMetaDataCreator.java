@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.tomcat;
 
+import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,8 +43,6 @@ import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.HttpEndpoint;
-
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>

@@ -94,11 +94,11 @@ public interface WSMessages {
     @Message(id = 15518, value = "No metrics available")
     String noMetricsAvailable();
 
-    @Message(id = 15519, value = "EJB component view name cannot be null")
-    IllegalStateException missingEjbComponentViewName();
+    @Message(id = 15519, value = "Component view name cannot be null")
+    IllegalStateException missingComponentViewName();
 
-    @Message(id = 15520, value = "Cannot find ejb view: %s")
-    IllegalStateException cannotFindEjbView(ServiceName viewName);
+    @Message(id = 15520, value = "Cannot find component view: %s")
+    IllegalStateException cannotFindComponentView(ServiceName viewName);
 
     @Message(id = 15521, value = "Null root url")
     IllegalArgumentException nullRootUrl();

@@ -73,7 +73,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
                 urlPattern = "/" + urlPattern;
             }
         }
-        jaxwsDeployment.addEndpoint(new POJOEndpoint(className, urlPattern));
+        jaxwsDeployment.addEndpoint(new POJOEndpoint(className, null, urlPattern));
     }
 
     @Override

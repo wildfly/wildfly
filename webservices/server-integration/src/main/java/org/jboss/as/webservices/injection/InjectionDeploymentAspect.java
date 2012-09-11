@@ -64,7 +64,6 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         private final InstanceProvider delegate;
         private final String endpointName;
         private final String endpointClass;
-        private final boolean isEjb3Endpoint;
         private final ServiceName componentPrefix;
         private static final String componentSuffix = "START";
         private final Map<String, Reference> cache = new HashMap<String, Reference>();
@@ -73,7 +72,6 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
             this.delegate = delegate;
             endpointName = endpoint.getShortName();
             endpointClass = endpoint.getTargetBeanName();
-            isEjb3Endpoint = WSHelper.isEjbEndpoint(endpoint);
             componentPrefix = unit.getServiceName().append("component");
         }
 
@@ -82,22 +80,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
             Reference instance = cache.get(className);
             if (instance != null) return instance;
 
-            if (className.equals(endpointClass)) {
-                // handle endpoint instantiation
-                if (!isEjb3Endpoint) {
-                    // only POJO endpoints have to be initialized. EJB3 endpoints are handled by the EJB3 subsystem.
-                    final ServiceName endpointComponentName = getEndpointComponentServiceName();
-                    final ServiceController<BasicComponent> endpointController = getComponentController(endpointComponentName);
-                    if (endpointController != null) {
-                        final BasicComponent endpointComponent = endpointController.getValue();
-                        final ComponentInstance endpointComponentInstance = endpointComponent.createInstance(delegate.getInstance(className).getValue());
-                        final Object endpointInstance = endpointComponentInstance.getInstance();
-                        // mark reference as initialized because JBoss server initialized it
-                        final Reference endpointReference = ReferenceFactory.newInitializedReference(endpointInstance);
-                        return cacheAndGet(endpointReference);
-                    }
-                }
-            } else {
+            if (!className.equals(endpointClass)) {
                 // handle JAXWS handler instantiation
                 final ServiceName handlerComponentName = getHandlerComponentServiceName(className);
                 final ServiceController<BasicComponent> handlerComponentController = getComponentController(handlerComponentName);
@@ -111,7 +94,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
                     return cacheAndGet(handlerReference);
                 }
             }
-            // fallback for EJB3 endpoints & system JAXWS handlers
+            // fallback for system JAXWS handlers
             final Reference fallbackInstance = delegate.getInstance(className);
             final Reference fallbackReference = ReferenceFactory.newUninitializedReference(fallbackInstance);
             return cacheAndGet(fallbackReference);
@@ -120,10 +103,6 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         private Reference cacheAndGet(final Reference instance) {
             cache.put(instance.getValue().getClass().getName(), instance);
             return instance;
-        }
-
-        private ServiceName getEndpointComponentServiceName() {
-            return componentPrefix.append(endpointName).append(componentSuffix);
         }
 
         private ServiceName getHandlerComponentServiceName(final String handlerClassName) {

@@ -147,6 +147,11 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         list.add(description);
     }
 
+    public void removeComponent(final String componentName, final String componentClassName) {
+        componentsByName.remove(componentName);
+        componentsByClassName.remove(componentClassName);
+    }
+
     /**
      * Returns the application name which can be the same as the module name, in the absence of a .ear top level
      * deployment

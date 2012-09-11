@@ -33,7 +33,7 @@ import org.jboss.wsf.spi.invocation.InvocationContext;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-final class InvocationHandlerEJB3 extends AbstractInvocationHandlerEJB {
+final class InvocationHandlerJAXWS extends AbstractInvocationHandler {
 
    @Override
    public void onBeforeInvocation(final Invocation invocation) {

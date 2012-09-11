@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.deployers.deployment;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.metadata.model.EJBEndpoint.EJB_COMPONENT_VIEW_NAME;
+import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJaxrpcEjbs;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXRPC;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXRPC_EJB21;
@@ -52,7 +52,7 @@ final class DeploymentModelBuilderJAXRPC_EJB extends AbstractDeploymentModelBuil
             final String ejbEndpointClassName = ejbEndpoint.getClassName();
             ROOT_LOGGER.ejbClass(ejbEndpointClassName);
             final Endpoint ep = newHttpEndpoint(ejbEndpointClassName, ejbEndpointName, dep);
-            ep.setProperty(EJB_COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
+            ep.setProperty(COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
         }
     }
 
