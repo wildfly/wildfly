@@ -3,10 +3,10 @@
                         excluded-contexts="a,b,c" auto-enable-contexts="true" stop-context-timeout="10" socket-timeout="20">
         <simple-load-provider factor="15"/>
         <dynamic-load-provider decay="2" history="10">
-            <load-metric capacity="1000" type="sessions" weight="2"/>
-            <load-metric capacity="512" type="send-traffic" weight="3"/>
-            <load-metric capacity="1024" type="receive-traffic"/>
-            <load-metric capacity="1000" type="requests"/>
+            <load-metric capacity="1000.0" type="sessions" weight="2"/>
+            <load-metric capacity="512.0" type="send-traffic" weight="3"/>
+            <load-metric capacity="1024.0" type="receive-traffic"/>
+            <load-metric capacity="1000.0" type="requests"/>
             <load-metric type="mem"/>
             <load-metric type="cpu"/>
             <load-metric type="heap"/>
