@@ -21,18 +21,17 @@
 */
 package org.jboss.as.subsystem.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,12 +40,14 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.OperationValidation;
 import org.jboss.as.model.test.StringConfigurationPersister;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.DeployerChainAddHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.ServerDeploymentResourceDescription;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.dmr.ModelNode;
+import org.jboss.vfs.VirtualFile;
 
 /**
  *
@@ -58,6 +59,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ControllerInitializer controllerInitializer;
     private final ExtensionRegistry extensionRegistry;
     private final RunningModeControl runningModeControl;
+    private final ContentRepository contentRepository = new MockContentRepository();
 
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
@@ -80,7 +82,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     protected void initExtraModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootResource.getModel().get(SUBSYSTEM);
 
-        ManagementResourceRegistration deployments = rootRegistration.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+        ManagementResourceRegistration deployments = rootRegistration.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, null));
 
         //Hack to be able to access the registry for the jmx facade
         rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
@@ -134,5 +136,32 @@ class TestModelControllerService extends ModelTestModelControllerService {
             props.put(ServerEnvironment.JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
 
             return new ServerEnvironment(null, props, new HashMap<String, String>(), "standalone.xml", null, LaunchType.STANDALONE, runningModeControl.getRunningMode(), null);
+    }
+
+    private static class MockContentRepository implements ContentRepository {
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
+            return null;
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            return null;
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public boolean syncContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+        }
     }
 }

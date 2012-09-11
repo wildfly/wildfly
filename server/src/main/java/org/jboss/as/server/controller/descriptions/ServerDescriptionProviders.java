@@ -40,13 +40,6 @@ public final class ServerDescriptionProviders {
     // Prevent instantiation
     private ServerDescriptionProviders() {}
 
-    public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return DeploymentDescription.getDeploymentDescription(locale, true, true, true);
-        }
-    };
 
     public static final DescriptionProvider SUBDEPLOYMENT_PROVIDER = new DescriptionProvider() {
 

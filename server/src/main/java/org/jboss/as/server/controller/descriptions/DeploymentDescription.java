@@ -29,7 +29,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
@@ -41,7 +40,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
@@ -49,10 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATUS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
@@ -73,103 +68,12 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@Deprecated
 public class DeploymentDescription {
 
     private static final String RESOURCE_NAME = DeploymentDescription.class.getPackage().getName() + ".LocalDescriptions";
 
     private DeploymentDescription() {
-    }
-
-    public static final ModelNode getDeploymentDescription(Locale locale, boolean includeEnabled, boolean includeContent, boolean includeRuntime) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("deployment"));
-        root.get(HEAD_COMMENT_ALLOWED).set(true);
-        root.get(TAIL_COMMENT_ALLOWED).set(false);
-        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
-        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, NAME, MIN_LENGTH).set(1);
-        root.get(ATTRIBUTES, NAME, NILLABLE).set(false);
-        root.get(ATTRIBUTES, RUNTIME_NAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, RUNTIME_NAME, DESCRIPTION).set(bundle.getString("deployment.runtime-name"));
-        root.get(ATTRIBUTES, RUNTIME_NAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, RUNTIME_NAME, MIN_LENGTH).set(1);
-        root.get(ATTRIBUTES, RUNTIME_NAME, NILLABLE).set(false);
-        if (includeContent) {
-            root.get(ATTRIBUTES, CONTENT, TYPE).set(ModelType.LIST);
-            root.get(ATTRIBUTES, CONTENT, DESCRIPTION).set(bundle.getString("deployment.content"));
-            root.get(ATTRIBUTES, CONTENT, REQUIRED).set(true);
-            root.get(ATTRIBUTES, CONTENT, MIN_LENGTH).set(1);
-
-            //Not all of these should be here when the model is read
-
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, TYPE).set(ModelType.INT);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, DESCRIPTION).set(bundle.getString("content.input-stream-index"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, REQUIRED).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, MIN).set(0);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, NILLABLE).set(true);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, HASH, TYPE).set(ModelType.BYTES);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, HASH, DESCRIPTION).set(bundle.getString("content.hash"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, HASH, REQUIRED).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, HASH, MIN_LENGTH).set(20);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, HASH, MAX_LENGTH).set(20);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, HASH, NILLABLE).set(true);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, BYTES, TYPE).set(ModelType.BYTES);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, BYTES, DESCRIPTION).set(bundle.getString("content.bytes"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, BYTES, REQUIRED).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, BYTES, MIN_LENGTH).set(1);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, BYTES, NILLABLE).set(true);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, URL, TYPE).set(ModelType.STRING);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, URL, DESCRIPTION).set(bundle.getString("content.url"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, URL, REQUIRED).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, URL, MIN_LENGTH).set(1);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, URL, NILLABLE).set(true);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("content.path"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, PATH, REQUIRED).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, PATH, MIN_LENGTH).set(1);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, PATH, NILLABLE).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("content.relative-to"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, RELATIVE_TO, MIN_LENGTH).set(1);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, RELATIVE_TO, NILLABLE).set(true);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, ARCHIVE, TYPE).set(ModelType.BOOLEAN);
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, ARCHIVE, DESCRIPTION).set(bundle.getString("content.archive"));
-            root.get(ATTRIBUTES, CONTENT, VALUE_TYPE, ARCHIVE, REQUIRED).set(false);
-        }
-        if (includeEnabled) {
-            root.get(ATTRIBUTES, ENABLED, TYPE).set(ModelType.BOOLEAN);
-            root.get(ATTRIBUTES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.enabled"));
-            root.get(ATTRIBUTES, ENABLED, REQUIRED).set(true);
-            if (includeContent) {
-                // includeEnabled && includeContent means this is for a server
-                root.get(ATTRIBUTES, PERSISTENT, TYPE).set(ModelType.BOOLEAN);
-                root.get(ATTRIBUTES, PERSISTENT, DESCRIPTION).set(bundle.getString("deployment.persistent"));
-                root.get(ATTRIBUTES, PERSISTENT, REQUIRED).set(true);
-
-                root.get(ATTRIBUTES, STATUS, TYPE).set(ModelType.STRING);
-                root.get(ATTRIBUTES, STATUS, DESCRIPTION).set(bundle.getString("deployment.status"));
-                root.get(ATTRIBUTES, STATUS, REQUIRED).set(false);
-            }
-        }
-
-        root.get(OPERATIONS);  // placeholder
-
-        if (includeRuntime) {
-            root.get(CHILDREN, SUBSYSTEM, DESCRIPTION).set(bundle.getString("deployment.subsystem"));
-            root.get(CHILDREN, SUBSYSTEM, MIN_OCCURS).set(0);
-            root.get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION);
-
-            root.get(CHILDREN, SUBDEPLOYMENT, DESCRIPTION).set(bundle.getString("deployment.subdeployment"));
-            root.get(CHILDREN, SUBDEPLOYMENT, MIN_OCCURS).set(0);
-            root.get(CHILDREN, SUBDEPLOYMENT, MODEL_DESCRIPTION);
-        } else {
-            root.get(CHILDREN).setEmptyObject();
-        }
-
-        return root;
     }
 
     public static ModelNode getSubDeploymentDescription(Locale locale) {
@@ -383,7 +287,6 @@ public class DeploymentDescription {
     }
 
     public static void main(String[] args) {
-        System.out.println(getDeploymentDescription(null, true, true, false));
         System.out.println(getAddDeploymentOperation(null, true));
         System.out.println(getDeployDeploymentOperation(null));
         System.out.println(getFullReplaceDeploymentOperation(null));
