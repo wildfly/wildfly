@@ -319,7 +319,7 @@ class CommandContextImpl implements CommandContext {
         if(consoleInput != null)
             Settings.getInstance().setInputStream(consoleInput);
         if(consoleOutput != null)
-            Settings.getInstance().setOutputStream(consoleOutput);
+            Settings.getInstance().setStdOut(consoleOutput);
 
         Settings.getInstance().setHistoryDisabled(!config.isHistoryEnabled());
         Settings.getInstance().setHistoryFile(new File(config.getHistoryFileDir(), config.getHistoryFileName()));
