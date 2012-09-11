@@ -22,20 +22,11 @@
 */
 package org.jboss.as.jdr;
 
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
 import java.io.IOException;
-import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-
-import junit.framework.Assert;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.dmr.ModelNode;
-import org.junit.Test;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 
 
 /**
@@ -44,48 +35,24 @@ import org.junit.Test;
  * @author Mike M. Clark
  */
 public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
-	
-	public JdrSubsystemTestCase() {
-		super(JdrReportExtension.SUBSYSTEM_NAME, new JdrReportExtension());
-	}
-	
-	@Test
-	public void testParseEmptySubsystem() throws Exception {
-		String subsystemXml = "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\"></subsystem>";
-		List<ModelNode> operations = super.parse(subsystemXml);
-		
-		// Should have just one operation (add)
-		Assert.assertEquals("Wrong number of operations encountered:", 1, operations.size());
-		
-		// Validate add operation content
-		ModelNode addOperation = operations.get(0);
-		Assert.assertEquals("Wrong operation encountered:", ModelDescriptionConstants.ADD,
-				addOperation.get(ModelDescriptionConstants.OP).asString());
-		
-		PathAddress address = PathAddress.pathAddress(addOperation.get(ModelDescriptionConstants.OP_ADDR));
-		Assert.assertEquals("Wrong path address size", 1, address.size());
-		
-		PathElement element = address.getElement(0);
-		Assert.assertEquals("Wrong address key", ModelDescriptionConstants.SUBSYSTEM, element.getKey());
-		Assert.assertEquals("Wrong address value", JdrReportExtension.SUBSYSTEM_NAME, element.getValue());
-	}
-	
-	@Test(expected=XMLStreamException.class)
-	public void testParseSubsystemWithBadChild() throws Exception {
-		String subsystemXml =
-            "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\"><invalid/></subsystem>";
-		super.parse(subsystemXml);
-	}
-	
-	@Test(expected=XMLStreamException.class)
-	public void testParseSubsystemWithBadAttribute() throws Exception {
-		String subsystemXml =
-            "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" attr=\"wrong\"/>";
-		super.parse(subsystemXml);
-	}
 
-	@Override
-	protected String getSubsystemXml() throws IOException {
-		return readResource("subsystem.xml");
-	}
+    public JdrSubsystemTestCase() {
+        super(JdrReportExtension.SUBSYSTEM_NAME, new JdrReportExtension());
+    }
+
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem.xml");
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+         return new AdditionalInitialization(){
+             @Override
+             protected RunningMode getRunningMode() {
+                 return RunningMode.NORMAL;
+             }
+         };
+    }
 }

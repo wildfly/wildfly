@@ -27,11 +27,11 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
 /**
- *  Wrapper for {@link org.jboss.as.controller.client.ModelControllerClient}
- *  used for easier jython consumption.
+ * Wrapper for {@link org.jboss.as.controller.client.ModelControllerClient}
+ * used for easier jython consumption.
  *
- *  @author Jesse Jaggars
- *  @author Mike M. Clark
+ * @author Jesse Jaggars
+ * @author Mike M. Clark
  */
 public class ModelControllerClientProxy {
 

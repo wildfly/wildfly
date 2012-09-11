@@ -102,8 +102,7 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
             if (code != 200) {
                 must_auth = true;
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
         }
 
         if (must_auth) {

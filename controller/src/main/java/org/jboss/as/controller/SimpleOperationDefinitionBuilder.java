@@ -45,6 +45,7 @@ public class SimpleOperationDefinitionBuilder {
     protected ModelType replyType;
     protected ModelType replyValueType;
     protected DeprecationData deprecationData = null;
+    protected AttributeDefinition[] replyParameters = new AttributeDefinition[0];
 
     public SimpleOperationDefinitionBuilder(String name, ResourceDescriptionResolver resolver) {
         this.name = name;
@@ -52,7 +53,7 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     public SimpleOperationDefinition build() {
-        return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, deprecationData, parameters);
+        return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
 
     public SimpleOperationDefinitionBuilder setEntryType(OperationEntry.EntryType entryType) {
@@ -64,6 +65,22 @@ public class SimpleOperationDefinitionBuilder {
         this.flags = flags;
         return this;
     }
+
+    public SimpleOperationDefinitionBuilder withFlag(OperationEntry.Flag flag) {
+        this.flags = EnumSet.of(flag);
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setRuntimeOnly() {
+        this.flags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setReadOnly() {
+        this.flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+        return this;
+    }
+
 
     public SimpleOperationDefinitionBuilder setParameters(AttributeDefinition... parameters) {
         this.parameters = parameters;
@@ -92,4 +109,8 @@ public class SimpleOperationDefinitionBuilder {
         return this;
     }
 
+    public SimpleOperationDefinitionBuilder setReplyParameters(AttributeDefinition... replyParameters) {
+        this.replyParameters = replyParameters;
+        return this;
+    }
 }

@@ -60,25 +60,28 @@ public class SimpleOperationDefinition extends OperationDefinition {
     }
 
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags, AttributeDefinition... parameters) {
-        super(name, entryType, flags, null, null, null, parameters);
+        super(name, entryType, flags, null, null, null, null, parameters);
         this.resolver = resolver;
     }
 
+
+
     SimpleOperationDefinition(final String name,
                                      final ResourceDescriptionResolver resolver,
-                                     OperationEntry.EntryType entryType,
+                                     final OperationEntry.EntryType entryType,
                                      final EnumSet<OperationEntry.Flag> flags,
                                      final ModelType replyType,
                                      final ModelType replyValueType,
                                      final DeprecationData deprecationData,
-                                     AttributeDefinition... parameters) {
-        super(name, entryType, flags, replyType, replyValueType, deprecationData, parameters);
+                                     final AttributeDefinition[] replyParameters,
+                                     final AttributeDefinition... parameters) {
+        super(name, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
         this.resolver = resolver;
     }
 
     @Override
     public DescriptionProvider getDescriptionProvider() {
-        return new DefaultOperationDescriptionProvider(getName(), resolver, replyType, replyValueType, deprecationData, parameters);
+        return new DefaultOperationDescriptionProvider(getName(), resolver, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
 
 }

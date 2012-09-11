@@ -22,17 +22,17 @@
 
 package org.jboss.as.jdr;
 
-import static org.jboss.as.jdr.JdrMessages.MESSAGES;
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
 import static java.io.File.separator;
+import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static org.jboss.as.jdr.JdrMessages.MESSAGES;
 
 import java.io.File;
 import java.io.FileFilter;
-import org.jboss.as.controller.client.ModelControllerClient;
 
-import org.python.core.adapter.ClassicPyObjectAdapter;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.python.core.PyObject;
 import org.python.core.PyString;
+import org.python.core.adapter.ClassicPyObjectAdapter;
 import org.python.util.PythonInterpreter;
 
 /**
@@ -51,8 +51,8 @@ public class SoSReport {
     private static final String SET_GLOBAL = "set_global_plugin_option";
 
     /**
-     * @param interpreter the jython interpreter instance to use
-     * @param pyLocation the full path to the jar containing sosreport
+     * @param interpreter  the jython interpreter instance to use
+     * @param pyLocation   the full path to the jar containing sosreport
      * @param jbossHomeDir the full path to JBOSS_HOME
      */
     public SoSReport(PythonInterpreter interpreter, String pyLocation, String jbossHomeDir) {
@@ -147,7 +147,7 @@ public class SoSReport {
     /**
      * Sets a configuration option for sosreport.
      *
-     * @param name the name of the option
+     * @param name  the name of the option
      * @param value the value of the option
      */
     public void setOption(String name, String value) {
@@ -166,7 +166,7 @@ public class SoSReport {
     /**
      * Sets a globally visible variable for use within sosreport.
      *
-     * @param name the name of the variable
+     * @param name  the name of the variable
      * @param value the value of the variable, must be adaptable by Jython
      */
     public void setGlobal(String name, Object value) {
@@ -190,10 +190,9 @@ public class SoSReport {
      *
      * @param controllerClient the ModelControllerClient instance to use
      * @throws IllegalArgumentException if <code>controllerClient</code> is <code>null</code>
-     *
      */
     public void setControllerClient(ModelControllerClient controllerClient) {
-        if (controllerClient == null ) {
+        if (controllerClient == null) {
             throw MESSAGES.varNull("controllerClient");
         }
         setGlobal("controller_client_proxy", new ModelControllerClientProxy(controllerClient));
@@ -203,7 +202,7 @@ public class SoSReport {
      * Sets the temporary directory for sosreport to use.
      *
      * @param tmpDir the path to the temporary directory to use
-     * */
+     */
     public void setTmpDir(String tmpDir) {
         setOption("--tmp-dir", tmpDir);
     }
@@ -212,7 +211,7 @@ public class SoSReport {
      * Sets the management api username for sosreport to use
      *
      * @param username the management api username to use
-     * */
+     */
     public void setUsername(String username) {
         setGlobal("as7_user", username);
     }
@@ -221,7 +220,7 @@ public class SoSReport {
      * Sets the management api password for sosreport to use
      *
      * @param password the management api password to use
-     * */
+     */
     public void setPassword(String password) {
         setGlobal("as7_pass", password);
     }
@@ -241,7 +240,7 @@ public class SoSReport {
      * contact.
      *
      * @param port the port to use
-     * */
+     */
     public void setPort(String port) {
         setGlobal("as7_port", port);
     }
@@ -250,7 +249,7 @@ public class SoSReport {
      * Sets JBOSS_HOME for sosreport to use
      *
      * @param homeDir the path to JBOSS_HOME
-     * */
+     */
     public void setHome(String homeDir) {
         setGlobal("as7_home", homeDir);
     }
@@ -260,7 +259,7 @@ public class SoSReport {
      * This is null in standalone mode
      *
      * @param hostControllerName the host controller name to use
-     * */
+     */
     public void setHostControllerName(String hostControllerName) {
         setGlobal("as7_host_controller_name", hostControllerName);
     }
@@ -270,7 +269,7 @@ public class SoSReport {
      * This is null in standalone mode
      *
      * @param serverName the server instance name to use
-     * */
+     */
     public void setServerName(String serverName) {
         setGlobal("as7_server_name", serverName);
     }

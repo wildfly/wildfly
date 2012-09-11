@@ -24,11 +24,11 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
-
-import java.util.EnumSet;
 
 /**
  * Defining characteristics of operation in a {@link org.jboss.as.controller.registry.Resource}
@@ -43,6 +43,8 @@ public abstract class OperationDefinition {
     protected final ModelType replyType;
     protected final ModelType replyValueType;
     protected final DeprecationData deprecationData;
+    protected final AttributeDefinition[] replyParameters;
+
 
     protected OperationDefinition(String name,
                                OperationEntry.EntryType entryType,
@@ -50,7 +52,9 @@ public abstract class OperationDefinition {
                                final ModelType replyType,
                                final ModelType replyValueType,
                                final DeprecationData deprecationData,
-                               AttributeDefinition... parameters) {
+                               AttributeDefinition[] replyParameters,
+                               AttributeDefinition[] parameters
+    ) {
         this.name = name;
         this.entryType = entryType;
         this.flags = flags;
@@ -58,6 +62,7 @@ public abstract class OperationDefinition {
         this.replyType = replyType;
         this.replyValueType = replyValueType;
         this.deprecationData = deprecationData;
+        this.replyParameters = replyParameters;
     }
 
     public String getName() {

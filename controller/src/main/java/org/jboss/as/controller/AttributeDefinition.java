@@ -415,7 +415,7 @@ public abstract class AttributeDefinition {
         return bundle.getString(bundleKey);
     }
 
-    protected ModelNode addDeprecatedInfo(final ModelNode model) {
+    public ModelNode addDeprecatedInfo(final ModelNode model) {
         if (deprecationData == null) { return null; }
         ModelNode deprecated = model.get(ModelDescriptionConstants.DEPRECATED);
         deprecated.get(ModelDescriptionConstants.SINCE).set(deprecationData.getSince().toString());
