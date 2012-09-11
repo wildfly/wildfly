@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2006, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,31 +21,23 @@
  */
 package org.jboss.as.test.smoke.osgi.bundleA;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import javax.jws.WebService;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.osgi.framework.BundleContext;
+import org.jboss.logging.Logger;
 
 /**
- * @author David Bosschaert
+ * A simple web service endpoint
+ *
+ * @author thomas.diesler@jboss.com
+ * @since 28-Aug-2012
  */
-@WebServlet(name = "TestServlet", urlPatterns = { "/test" })
-public class TestServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+@WebService(serviceName="EndpointService", portName="EndpointPort", targetNamespace="http://osgi.smoke.test.as.jboss.org", endpointInterface = "org.jboss.as.test.smoke.osgi.bundleA.Endpoint")
+public class EndpointImpl {
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        PrintWriter writer = resp.getWriter();
-        BundleContext ctxt = (BundleContext)
-                getServletContext().getAttribute("osgi-bundlecontext");
+   private static Logger log = Logger.getLogger(EndpointImpl.class);
 
-        writer.write("Servlet hosted in: " + ctxt.getBundle().getSymbolicName());
-        writer.close();
-    }
+   public String echo(String input) {
+      log.info("echo: " + input);
+      return input;
+   }
 }

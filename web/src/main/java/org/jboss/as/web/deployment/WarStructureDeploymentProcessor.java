@@ -95,8 +95,8 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         // other sub deployments should not have access to classes in the war module
         PrivateSubDeploymentMarker.mark(deploymentUnit);
 
-        // OSGi WebApp deployments (WAB) may use the deployment root
-        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST)) {
+        // OSGi WebApp deployments (WAB) may use the deployment root if they don't use WEB-INF/classes already
+        if (deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST) && !deploymentRoot.getChild(WEB_INF_CLASSES).exists()) {
             deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, deploymentResourceRoot);
         } else {
             // we do not want to index the resource root, only WEB-INF/classes and WEB-INF/lib

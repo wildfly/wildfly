@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.smoke.osgi.bundleA;
+package org.jboss.as.test.integration.osgi.webapp;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -41,47 +42,47 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 @WebServlet(name = "TestServletContext", urlPatterns = { "/testservletcontext" })
 public class TestServletContext extends HttpServlet {
-    private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        PrintWriter writer = resp.getWriter();
+        System.out.println("GET " + req);
 
         String testValue = "set on " + System.currentTimeMillis();
-        getServletContext().setAttribute(getClass().getName(), testValue);
+        PrintWriter writer = resp.getWriter();
+        ServletContext servletContext = getServletContext();
+        servletContext.setAttribute(getClass().getName(), testValue);
 
-        BundleContext ctxt = (BundleContext)
-                getServletContext().getAttribute("osgi-bundlecontext");
-
+        BundleContext bundleContext = (BundleContext) servletContext.getAttribute("osgi-bundlecontext");
+        if (bundleContext == null)
+            throw new RuntimeException("Error: BundleContext attribute not set on: " + servletContext);
 
         try {
-            Filter filter = ctxt.createFilter("(&(objectClass=" + ServletContext.class.getName() + ")" +
-            		"(osgi.web.symbolicname=" + ctxt.getBundle().getSymbolicName() + "))");
+            String symbolicName = bundleContext.getBundle().getSymbolicName();
+            Filter filter = bundleContext.createFilter("(&(objectClass=" + ServletContext.class.getName() + ")" + "(osgi.web.symbolicname=" + symbolicName + "))");
 
-            ServiceTracker st = new ServiceTracker(ctxt, filter, null);
-            st.open();
+            ServiceTracker tracker = new ServiceTracker(bundleContext, filter, null);
+            tracker.open();
 
-            ServletContext sc = (ServletContext) st.waitForService(2000);
-            ServiceReference sr = st.getServiceReference();
-
-            if (sc == null) {
-                writer.write("ServletContext service not found given filter: " + filter);
-                return;
-            }
+            ServletContext servletContextService = (ServletContext) tracker.waitForService(2000);
+            if (servletContextService == null)
+                throw new RuntimeException("ServletContext service not found given filter: " + filter);
 
             // Cannot test the ServletContext on equality, because it might be wrapped, so we'll test a value set in it instead
-            Object attrVal = sc.getAttribute(getClass().getName());
-            if (!testValue.equals(attrVal)) {
-                writer.write("Error: Servlet Context service not the same as the actual Servlet Context: " + attrVal);
-                return;
-            }
+            Object attrVal = servletContextService.getAttribute(getClass().getName());
+            if (!testValue.equals(attrVal))
+                throw new RuntimeException("Error: Servlet Context service not the same as the actual Servlet Context: " + attrVal);
 
-            writer.write("ServletContext: " + sr.getProperty("osgi.web.symbolicname") + "|" + sr.getProperty("osgi.web.contextpath"));
-            st.close();
-        } catch (Exception e) {
-            e.printStackTrace(writer);
+            ServiceReference sref = tracker.getServiceReference();
+            writer.write("ServletContext: " + sref.getProperty("osgi.web.symbolicname") + "|" + sref.getProperty("osgi.web.contextpath"));
+            tracker.close();
+        } catch (InvalidSyntaxException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             writer.close();
         }
     }
+
+    private static final long serialVersionUID = 1L;
 }

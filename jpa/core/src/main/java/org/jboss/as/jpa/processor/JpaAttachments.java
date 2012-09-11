@@ -21,19 +21,22 @@
  */
 package org.jboss.as.jpa.processor;
 
-import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.config.PersistenceProviderDeploymentHolder;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Stuart Douglas
+ * @author thomas.diesler@jboss.com
  */
-public class JpaAttachments {
+public final class JpaAttachments {
 
     public static final AttachmentKey<String> ADAPTOR_CLASS_NAME = AttachmentKey.create(String.class);
 
     public static final AttachmentKey<JPADeploymentSettings> DEPLOYMENT_SETTINGS_KEY = AttachmentKey.create(JPADeploymentSettings.class);
+
+    public static final AttachmentKey<ServiceName> PERSISTENCE_UNIT_SERVICE_KEY = AttachmentKey.create(ServiceName.class);
 
     /**
      * List<PersistenceUnitMetadataImpl> that represents the JPA persistent units
@@ -41,6 +44,5 @@ public class JpaAttachments {
     public static final AttachmentKey<PersistenceProviderDeploymentHolder> DEPLOYED_PERSISTENCE_PROVIDER = AttachmentKey.create(PersistenceProviderDeploymentHolder.class);
 
     private JpaAttachments() {
-
     }
 }

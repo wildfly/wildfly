@@ -37,11 +37,13 @@ import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
+import org.osgi.framework.Bundle;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
@@ -73,14 +75,15 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
+        BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
         XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
         try {
+            LOGGER.debugf("Resolve: %s", depUnit.getName());
             resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
 
             // Add a dependency on the Bundle RESOLVED service
-            ServiceName bundleInstall = brev.getBundle().adapt(ServiceName.class);
-            ServiceName bundleResolve = bundleInstall.getParent().append("RESOLVED");
+            ServiceName bundleResolve = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
             phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
 
             // Add a dependency on the Module service

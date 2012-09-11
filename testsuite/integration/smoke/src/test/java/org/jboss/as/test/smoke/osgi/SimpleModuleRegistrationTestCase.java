@@ -29,9 +29,9 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.test.smoke.osgi.bundleA.SimpleService;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XIdentityCapability;
@@ -75,7 +75,7 @@ public class SimpleModuleRegistrationTestCase {
             @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework");
+                builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework,org.jboss.as.osgi");
                 return builder.openStream();
             }
         });
@@ -132,11 +132,10 @@ public class SimpleModuleRegistrationTestCase {
     }
 
     private XEnvironment getEnvironment() {
-        return (XEnvironment) container.getService(Services.ENVIRONMENT).getValue();
+        return (XEnvironment) container.getRequiredService(Services.ENVIRONMENT).getValue();
     }
 
     private XResolver getResolver() {
-        ServiceName serviceName = ServiceName.JBOSS.append("osgi", "as", "resolver");
-        return (XResolver) container.getService(serviceName).getValue();
+        return (XResolver) container.getRequiredService(OSGiConstants.RESOLVER_SERVICE_NAME).getValue();
     }
 }

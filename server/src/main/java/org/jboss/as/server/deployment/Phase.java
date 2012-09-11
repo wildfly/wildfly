@@ -326,7 +326,6 @@ public enum Phase {
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
     public static final int DEPENDENCIES_JSF                            = 0x1800;
     public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1900;
-    public static final int DEPENDENCIES_WAB_SERVLETCONTEXTFACTORY      = 0x1980;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
@@ -457,7 +456,7 @@ public enum Phase {
     public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
     public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
     public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
-    public static final int INSTALL_WAB_SERVLETCONTEXT_SERVICE          = 0x2050;
+    public static final int INSTALL_PERSISTENCE_SERVICES                = 0x2060;
     public static final int INSTALL_DEPLOYMENT_COMPLETE_SERVICE         = 0x2100;
 
     // CLEANUP
