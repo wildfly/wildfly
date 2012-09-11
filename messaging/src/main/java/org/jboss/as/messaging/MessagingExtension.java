@@ -135,7 +135,7 @@ public class MessagingExtension implements Extension {
                 MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION,
                 MANAGEMENT_API_MICRO_VERSION);
-        subsystem.registerXMLElementWriter(Messaging13SubsystemParser.getInstance());
+        subsystem.registerXMLElementWriter(MessagingXMLWriter.INSTANCE);
 
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 

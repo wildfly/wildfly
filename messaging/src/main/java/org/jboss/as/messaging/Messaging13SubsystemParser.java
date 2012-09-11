@@ -32,12 +32,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
-import static org.jboss.as.messaging.Element.SOURCE;
-import static org.jboss.as.messaging.Element.TARGET;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -49,14 +46,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 
 /**
@@ -74,19 +68,6 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
     }
 
     protected Messaging13SubsystemParser() {
-    }
-
-    @Override
-    public Namespace getExpectedNamespace() {
-        return Namespace.MESSAGING_1_3;
-    }
-
-    @Override
-    protected void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory)
-            throws XMLStreamException {
-        super.writePooledConnectionFactoryAttributes(writer, name, factory);
-
-        Pooled.USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
@@ -377,69 +358,6 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                     throw ParseUtils.unexpectedElement(reader);
             }
         }
-    }
-
-    public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(getExpectedNamespace().getUriString(), false);
-        final ModelNode node = context.getModelNode();
-
-        if (node.hasDefined(HORNETQ_SERVER)) {
-            final ModelNode servers = node.get(HORNETQ_SERVER);
-            boolean first = true;
-            for (Property prop : servers.asPropertyList()) {
-                writeHornetQServer(writer, prop.getName(), prop.getValue());
-                if (!first) {
-                    writeNewLine(writer);
-                } else {
-                    first = false;
-                }
-            }
-        }
-
-        if (node.hasDefined(JMS_BRIDGE)) {
-            final ModelNode jmsBridges = node.get(JMS_BRIDGE);
-            boolean first = true;for (Property prop : jmsBridges.asPropertyList()) {
-                writeJmsBridge(writer, prop.getName(), prop.getValue());
-                if (!first) {
-                    writeNewLine(writer);
-                } else {
-                    first = false;
-                }
-            }
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeJmsBridge(XMLExtendedStreamWriter writer, String bridgeName, ModelNode value) throws XMLStreamException {
-        writer.writeStartElement(Element.JMS_BRIDGE.getLocalName());
-
-        if (!DEFAULT.equals(bridgeName)) {
-            writer.writeAttribute(Attribute.NAME.getLocalName(), bridgeName);
-        }
-
-        JMSBridgeDefinition.MODULE.marshallAsAttribute(value, writer);
-
-        writer.writeStartElement(SOURCE.getLocalName());
-        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_SOURCE_ATTRIBUTES) {
-            attr.marshallAsElement(value, writer);
-        }
-        writer.writeEndElement();
-
-        writer.writeStartElement(TARGET.getLocalName());
-        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_TARGET_ATTRIBUTES) {
-            attr.marshallAsElement(value, writer);
-        }
-        writer.writeEndElement();
-
-        for (AttributeDefinition attr : JMSBridgeDefinition.JMS_BRIDGE_ATTRIBUTES) {
-            if (attr == JMSBridgeDefinition.MODULE) {
-                // handled as a XML attribute
-                continue;
-            }
-            attr.marshallAsElement(value, writer);
-        }
-
-        writer.writeEndElement();
     }
 
     static void handleSingleAttribute(final XMLExtendedStreamReader reader, final Element element, final String modelName, String attributeName, final ModelNode node) throws XMLStreamException {

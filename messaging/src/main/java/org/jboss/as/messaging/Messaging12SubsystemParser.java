@@ -25,7 +25,6 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 
 public class Messaging12SubsystemParser extends MessagingSubsystemParser {
@@ -37,20 +36,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
     }
 
     protected Messaging12SubsystemParser() {
-    }
-
-    @Override
-    public Namespace getExpectedNamespace() {
-        return Namespace.MESSAGING_1_2;
-    }
-
-    @Override
-    protected void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory)
-            throws XMLStreamException {
-        super.writePooledConnectionFactoryAttributes(writer, name, factory);
-
-        Pooled.MIN_POOL_SIZE.marshallAsElement(factory, writer);
-        Pooled.MAX_POOL_SIZE.marshallAsElement(factory, writer);
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
