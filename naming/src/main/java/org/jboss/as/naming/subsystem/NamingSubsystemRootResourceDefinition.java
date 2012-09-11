@@ -22,19 +22,13 @@
 
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.naming.management.JndiViewOperation;
-import org.jboss.dmr.ModelNode;
 
 /**
  * {@link org.jboss.as.controller.ResourceDefinition} for the Naming subsystem's root management resource.
@@ -45,19 +39,7 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
 
     public static final NamingSubsystemRootResourceDefinition INSTANCE = new NamingSubsystemRootResourceDefinition();
 
-
-    static final DescriptionProvider JNDI_VIEW = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OPERATION_NAME).set(JndiViewOperation.OPERATION_NAME);
-            op.get(DESCRIPTION).set(bundle.getString("naming.jndi-view"));
-
-            return op;
-        }
-    };
+    static final OperationDefinition JNDI_VIEW = new SimpleOperationDefinition(JndiViewOperation.OPERATION_NAME, NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME));
 
     private NamingSubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME),
@@ -66,14 +48,5 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-    }
 
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(NamingExtension.RESOURCE_NAME, locale);
-    }
 }
