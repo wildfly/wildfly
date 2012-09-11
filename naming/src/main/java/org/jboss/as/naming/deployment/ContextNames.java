@@ -129,7 +129,12 @@ public class ContextNames {
             if (namespace.equals("global")) {
                 return new BindInfo(GLOBAL_CONTEXT_SERVICE_NAME, context.substring(12));
             } else if (namespace.equals("jboss")) {
-                return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, context.substring(11));
+                String rest = context.substring(i);
+                if(rest.startsWith("/exported/")) {
+                    return new BindInfo(EXPORTED_CONTEXT_SERVICE_NAME, context.substring(20));
+                } else {
+                    return new BindInfo(JBOSS_CONTEXT_SERVICE_NAME, context.substring(11));
+                }
             } else if (namespace.equals("app")) {
                 return new BindInfo(contextServiceNameOfApplication(app), context.substring(9));
             } else if (namespace.equals("module")) {
@@ -239,7 +244,9 @@ public class ContextNames {
 
         private String generateAbsoluteJndiName() {
             final StringBuffer sb = new StringBuffer();
-            if (this.parentContextServiceName.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)) {
+            if (this.parentContextServiceName.equals(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME)) {
+                sb.append("java:jboss/exported/");
+            } else if (this.parentContextServiceName.equals(ContextNames.JBOSS_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:jboss/");
             } else if (this.parentContextServiceName.equals(ContextNames.APPLICATION_CONTEXT_SERVICE_NAME)) {
                 sb.append("java:app/");
@@ -275,7 +282,10 @@ public class ContextNames {
             bindName = jndiName;
         }
         final ServiceName parentContextName;
-        if (bindName.startsWith("jboss/")) {
+        if(bindName.startsWith("jboss/exported/")) {
+            parentContextName = EXPORTED_CONTEXT_SERVICE_NAME;
+            bindName = bindName.substring(15);
+        } else if (bindName.startsWith("jboss/")) {
             parentContextName = JBOSS_CONTEXT_SERVICE_NAME;
             bindName = bindName.substring(6);
         } else if (bindName.startsWith("global/")) {
