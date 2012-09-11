@@ -384,37 +384,41 @@ public class Util {
         return result;
     }
 
-    public static List<String> getAllReferencingServerGroups(String deploymentName, ModelControllerClient client) {
-
-        List<String> serverGroups = getServerGroups(client);
+    public static List<String> getAllReferencingServerGroups(String deploymentName, ModelControllerClient client)
+            throws CommandLineException {
+        final List<String> serverGroups = getServerGroups(client);
         if(serverGroups.isEmpty()) {
             return Collections.emptyList();
         }
-
-        List<String> result = new ArrayList<String>();
+        final List<String> groupNames = new ArrayList<String>();
         for(String serverGroup : serverGroups) {
-            DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
-            ModelNode request;
-            try {
-                builder.setOperationName("read-children-names");
-                builder.addNode("server-group", serverGroup);
-                builder.addProperty("child-type", "deployment");
-                request = builder.buildRequest();
-            } catch (OperationFormatException e) {
-                throw new IllegalStateException("Failed to build operation", e);
-            }
+            final ModelNode request = new ModelNode();
+            request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
+            request.get(Util.ADDRESS).setEmptyList();
+            final ModelNode addr = request.get(Util.VALUE);
+            addr.add(Util.SERVER_GROUP, serverGroup);
+            addr.add(Util.DEPLOYMENT, deploymentName);
 
+            final ModelNode response;
             try {
-                ModelNode outcome = client.execute(request);
-                if (isSuccess(outcome)) {
-                    if(listContains(outcome, deploymentName)) {
-                        result.add(serverGroup);
-                    }
-                }
+                response = client.execute(request);
             } catch (Exception e) {
+                throw new CommandLineException("Failed to execute " + Util.VALIDATE_ADDRESS + " for " + request.get(Util.ADDRESS) , e);
+            }
+            if (response.has(Util.RESULT)) {
+                final ModelNode result = response.get(Util.RESULT);
+                if(result.has(Util.VALID)) {
+                    if(result.get(Util.VALID).asBoolean()) {
+                        groupNames.add(serverGroup);
+                    }
+                } else {
+                    throw new CommandLineException("Failed to validate address " + request.get(Util.ADDRESS) + ": " + response);
+                }
+            } else {
+                throw new CommandLineException(Util.getFailureDescription(response));
             }
         }
-        return result;
+        return groupNames;
     }
 
     public static List<String> getDeployments(ModelControllerClient client) {

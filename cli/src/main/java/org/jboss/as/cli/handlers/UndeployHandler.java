@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -127,54 +129,22 @@ public class UndeployHandler extends DeploymentHandler {
         };
         allRelevantServerGroups.addRequiredPreceding(name);
 
-        serverGroups = new ArgumentWithValue(this, new CommandLineCompleter() {
+        serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
-            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-
-                if(buffer.isEmpty()) {
-                    candidates.addAll(Util.getServerGroups(ctx.getModelControllerClient()));
-                    Collections.sort(candidates);
-                    return 0;
+            protected Collection<String> getAllCandidates(CommandContext ctx) {
+              final String deploymentName = name.getValue(ctx.getParsedCommandLine());
+              final List<String> allGroups;
+//              if(deploymentName == null) {
+//                  allGroups = Util.getServerGroups(ctx.getModelControllerClient());
+//              } else {
+                  try {
+                    allGroups = Util.getAllReferencingServerGroups(deploymentName, ctx.getModelControllerClient());
+                } catch (CommandLineException e) {
+                    e.printStackTrace();
+                    return Collections.emptyList();
                 }
-
-//                final String deploymentName = name.getValue(ctx.getParsedArguments());
-                final List<String> allGroups;
-//                if(deploymentName == null) {
-                    allGroups = Util.getServerGroups(ctx.getModelControllerClient());
-//                } else {
-//                    allGroups = Util.getAllReferencingServerGroups(deploymentName, ctx.getModelControllerClient());
-//                }
-
-                final String[] groups = buffer.split(",+");
-
-                final String chunk;
-                final int lastGroupIndex;
-                if(buffer.charAt(buffer.length() - 1) == ',') {
-                    lastGroupIndex = groups.length;
-                    chunk = null;
-                } else {
-                    lastGroupIndex = groups.length - 1;
-                    chunk = groups[groups.length - 1];
-                }
-
-                for(int i = 0; i < lastGroupIndex; ++i) {
-                    allGroups.remove(groups[i]);
-                }
-
-                final int result;
-                if(chunk == null) {
-                    candidates.addAll(allGroups);
-                    result = buffer.length();
-                } else {
-                    for(String group : allGroups) {
-                        if(group.startsWith(chunk)) {
-                            candidates.add(group);
-                        }
-                    }
-                    result = buffer.lastIndexOf(',') + 1;
-                }
-                Collections.sort(candidates);
-                return result;
+//              }
+                  return allGroups;
             }}, "--server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -396,7 +366,11 @@ public class UndeployHandler extends DeploymentHandler {
                     if(keepContent) {
                         serverGroups = Util.getAllEnabledServerGroups(deploymentName, client);
                     } else {
-                        serverGroups = Util.getAllReferencingServerGroups(deploymentName, client);
+                        try {
+                            serverGroups = Util.getAllReferencingServerGroups(deploymentName, client);
+                        } catch (CommandLineException e) {
+                            throw new CommandFormatException("Failed to retrieve all referencing server groups", e);
+                        }
                     }
                 } else {
                     if(serverGroupsStr == null) {
