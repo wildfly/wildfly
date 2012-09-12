@@ -22,6 +22,7 @@
                <capability name="javax.servlet.api"/>
                <capability name="javax.transaction.api"/>
                <capability name="javax.ws.rs.api"/>
+               <capability name="javax.xml.bind.api"/>
                <capability name="javax.xml.ws.api"/>
 	           <capability name="org.slf4j"/>
 	           <!-- bundles started in startlevel 1 -->

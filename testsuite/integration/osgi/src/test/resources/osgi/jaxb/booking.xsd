@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This is taken from 
+  
+  "Java-XML mapping made easy with JAXB 2.0"
+  http://www.javaworld.com/javaworld/jw-06-2006/jw-0626-jaxb.html
+  
+  $ xjc src/test/resources/xml/jaxb/booking.xsd -p org.jboss.test.osgi.example.xml.jaxb -d src/test/java
+ 
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="booking" type="courseBooking" />
+  <xsd:complexType name="courseBooking">
+    <xsd:sequence>
+      <xsd:element ref="company" />
+      <xsd:element ref="student" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+    <xsd:attribute name="courseReference" type="xsd:string" use="required" />
+    <xsd:attribute name="courseDate" type="xsd:date" use="required" />
+    <xsd:attribute name="invoiceReference" type="xsd:string" use="required" />
+    <xsd:attribute name="totalPrice" type="xsd:decimal" use="required" />
+  </xsd:complexType>
+  <xsd:element name="student" type="studentType" />
+  <xsd:complexType name="studentType">
+    <xsd:attribute name="firstName" type="xsd:string" use="required" />
+    <xsd:attribute name="surname" type="xsd:string" use="required" />
+  </xsd:complexType>
+  <xsd:element name="company" type="companyType" />
+  <xsd:complexType name="companyType">
+    <xsd:sequence>
+      <xsd:element name="address" />
+      <xsd:element ref="contact" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" />
+  </xsd:complexType>
+  <xsd:element name="contact" type="contactType" />
+  <xsd:complexType name="contactType">
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="telephone" type="xsd:string" use="required" />
+    <xsd:attribute name="email" type="xsd:string" use="required" />
+  </xsd:complexType>
+</xsd:schema>  
