@@ -13,10 +13,8 @@
     <!-- ********************************************************************************** -->
     <!-- *********************************** OSGi       *********************************** -->
     <!-- ********************************************************************************** -->
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-ts-integ-osgi</artifactId>
-    <version>7.2.0.Alpha1-SNAPSHOT</version>
 
+    <artifactId>jboss-as-ts-integ-osgi</artifactId>
     <name>JBoss Application Server Test Suite: Integration - OSGi</name>
 
     <properties>
@@ -25,6 +23,13 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
+	<dependencies>
+	    <dependency>
+	        <groupId>com.sun.xml.bind</groupId>
+	        <artifactId>jaxb-impl</artifactId>
+	    </dependency>
+	</dependencies>
+	
     <profiles>
 
         <profile>

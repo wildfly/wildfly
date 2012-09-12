@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<booking xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <company name="ACME Consulting">
+    <address>10 Coyote Avenue, Arizona, USA</address>
+    <contact name="Duke" email="duke@acme.com" telephone="1234567890" />
+  </company>
+  <student firstName="Jane" surname="Dow" />
+  <student firstName="John" surname="Doe" />
+</booking>  
