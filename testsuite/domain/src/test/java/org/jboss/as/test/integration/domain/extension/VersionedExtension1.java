@@ -24,10 +24,17 @@ package org.jboss.as.test.integration.domain.extension;
 
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
+
+import java.util.EnumSet;
 
 /**
  * Version 1 of an extension.
@@ -49,6 +56,13 @@ public class VersionedExtension1 extends VersionedExtensionCommon {
         final ManagementResourceRegistration registration = result.getResourceRegistration();
         // Register an element which is going to get renamed
         registration.registerSubModel(createResourceDefinition(ORIGINAL));
+        registration.registerOperationHandler("test", new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(true);
+                context.completeStep();
+            }
+        }, DESCRIPTION_PROVIDER, false, OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
         // No transformers for the first version of the model!
     }

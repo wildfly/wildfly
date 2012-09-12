@@ -290,7 +290,6 @@ interface HostControllerExecutionSupport {
                         serverNode.get(stepLabel).set(entry.getValue());
                     }
                 }
-
                 return result;
             }
 

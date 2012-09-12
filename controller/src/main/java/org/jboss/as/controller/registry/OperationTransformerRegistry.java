@@ -115,7 +115,7 @@ public class OperationTransformerRegistry {
             if(sub == null) {
                 return null;
             }
-            return sub.get(element.getValue());
+            return sub.get(element.getValue(), iterator);
         }
     }
 
@@ -251,6 +251,17 @@ public class OperationTransformerRegistry {
                 }
             }
             return entry;
+        }
+
+        OperationTransformerRegistry get(final String value, Iterator<PathElement> iterator) {
+            OperationTransformerRegistry entry = childrenUpdater.get(this, value);
+            if(entry == null) {
+                entry = childrenUpdater.get(this, "*");
+                if(entry == null) {
+                    return null;
+                }
+            }
+            return entry.resolveChild(iterator);
         }
 
         OperationTransformerRegistry create(final String value, final ResourceTransformerEntry resourceTransformer,final OperationTransformerEntry defaultTransformer) {

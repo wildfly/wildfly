@@ -59,7 +59,7 @@ class CompositeOperationTransformer implements OperationTransformer {
                 result = transformOperation(context, PathAddress.EMPTY_ADDRESS, step, false);
             } else {
                 final OperationTransformer transformer = target.resolveTransformer(stepAddress, operationName);
-                result = transformer.transformOperation(context, address, step);
+                result = transformer.transformOperation(context, stepAddress, step);
             }
             composite.get(STEPS).add(result.getTransformedOperation());
             steps.add(new Step(i, result));
@@ -82,8 +82,13 @@ class CompositeOperationTransformer implements OperationTransformer {
             for(final Step step : steps) {
                 final String id = "step-" + step.getStepCount();
                 final ModelNode stepResult = original.get(RESULT, id);
-                final OperationResultTransformer transformer = step.getResult();
-                result.get(id).set(transformer.transformResult(stepResult));
+                // Skip ignored steps
+                if(IGNORED.equals(stepResult.get(OUTCOME).asString())) {
+                    result.get(id).set(stepResult);
+                } else {
+                    final OperationResultTransformer transformer = step.getResult();
+                    result.get(id).set(transformer.transformResult(stepResult));
+                }
             }
             return response;
         }

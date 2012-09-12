@@ -92,6 +92,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
             final HostControllerUpdateTask task = new HostControllerUpdateTask(host, op.clone(), context, proxyController);
             // Execute the operation on the remote host
             final HostControllerUpdateTask.ExecutedHostRequest finalResult = task.execute(listener);
+            domainOperationContext.recordHostRequest(host, finalResult);
             finalResults.put(host, finalResult);
         }
 
@@ -181,8 +182,10 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
                     final String hostName = prepared.getOperation().getName();
                     try {
+                        final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
                         final ModelNode finalResult = prepared.getFinalResult().get();
-                        domainOperationContext.addHostControllerResult(hostName, finalResult);
+                        final ModelNode transformedResult = request.transformResult(finalResult);
+                        domainOperationContext.addHostControllerResult(hostName, transformedResult);
 
                         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
                             HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", hostName, finalResult);

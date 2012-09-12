@@ -235,9 +235,10 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
 
                 @Override
                 protected boolean execute(TransactionalProtocolClient.TransactionalOperationListener<ServerTaskExecutor.ServerOperation> listener, ServerIdentity server, ModelNode original) throws OperationFailedException {
-                    ProxyController proxy = hostProxies.get(server.getHostName());
+                    final String hostName = server.getHostName();
+                    ProxyController proxy = hostProxies.get(hostName);
                     if (proxy == null) {
-                        if (localHostName.equals(server.getHostName())) {
+                        if (localHostName.equals(hostName)) {
                             // Use our server proxies
                             proxy = serverProxies.get(server.getServerName());
                         }
@@ -250,7 +251,7 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
                     }
                     // Transform the server-results
                     final TransformingProxyController remoteProxyController = (TransformingProxyController) proxy;
-                    final OperationTransformer.TransformedOperation transformed = remoteProxyController.transformOperation(context, original);
+                    final OperationTransformer.TransformedOperation transformed = domainOperationContext.transformServerOperation(hostName, remoteProxyController, context, original);
                     final ModelNode transformedOperation = transformed.getTransformedOperation();
                     final OperationResultTransformer resultTransformer = transformed.getResultTransformer();
                     final TransactionalProtocolClient client = remoteProxyController.getProtocolClient();

@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
@@ -51,6 +52,8 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
+
+import java.util.EnumSet;
 
 /**
  * Version 2 of an extension.
@@ -85,6 +88,13 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         registration.registerSubModel(createResourceDefinition(NEW_ELEMENT));
         // Add the renamed model
         registration.registerSubModel(createResourceDefinition(RENAMED));
+        registration.registerOperationHandler("test", new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(true);
+                context.completeStep();
+            }
+        }, DESCRIPTION_PROVIDER, false, OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
         // Register the transformers
         final TransformersSubRegistration transformers =  subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), RESOURCE_TRANSFORMER);
@@ -92,6 +102,18 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         transformers.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpressions.getWriteAttributeTransformer());
         //
         transformers.registerOperationTransformer("update", new UpdateTransformer());
+        transformers.registerOperationTransformer("test", new OperationTransformer() {
+            @Override
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+                return new TransformedOperation(operation, new OperationResultTransformer() {
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        result.get(RESULT).set(false);
+                        return result;
+                    }
+                });
+            }
+        });
 
         // Discard the add/remove operation to the new element
         final TransformersSubRegistration newElement = transformers.registerSubResource(NEW_ELEMENT);
@@ -152,7 +174,9 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
             return new TransformedOperation(composite, new OperationResultTransformer() {
                 @Override
                 public ModelNode transformResult(final ModelNode result) {
-                    return result.get(RESULT, "step-2");
+                    final ModelNode transformed = result.clone();
+                    transformed.get(RESULT).set(result.get(RESULT, "step-2", RESULT));
+                    return transformed;
                 }
             });
         }
