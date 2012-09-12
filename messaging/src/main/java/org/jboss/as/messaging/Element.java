@@ -219,7 +219,7 @@ public enum Element {
    USE_AUTO_RECOVERY(Pooled.USE_AUTO_RECOVERY),
    USE_GLOBAL_POOLS(Common.USE_GLOBAL_POOLS),
    POOLED_CONNECTION_FACTORY(CommonAttributes.POOLED_CONNECTION_FACTORY),
-   TRANSACTION(CommonAttributes.TRANSACTION),
+   TRANSACTION(ConnectionFactoryAttributes.Pooled.TRANSACTION),
    MODE(CommonAttributes.MODE),
    INBOUND_CONFIG(CommonAttributes.INBOUND_CONFIG),
    USE_JNDI(Pooled.USE_JNDI),

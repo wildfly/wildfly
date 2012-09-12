@@ -36,11 +36,16 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.hornetq.api.core.client.HornetQClient;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.Element;
 import org.jboss.dmr.ModelNode;
 
 public interface ConnectionFactoryAttributes {
@@ -299,6 +304,15 @@ public interface ConnectionFactoryAttributes {
         SimpleAttributeDefinition TRANSACTION = SimpleAttributeDefinitionBuilder.create("transaction", STRING)
                 .setDefaultValue(new ModelNode().set("transaction"))
                 .setAllowNull(true)
+                .setAttributeMarshaller(new AttributeMarshaller() {
+                    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                        if (isMarshallable(attribute, resourceModel)) {
+                            writer.writeStartElement(attribute.getXmlName());
+                            writer.writeAttribute(Element.MODE.getLocalName(), resourceModel.get(attribute.getName()).asString());
+                            writer.writeEndElement();
+                        }
+                    };
+                })
                 .setRestartAllServices()
                 .build();
 

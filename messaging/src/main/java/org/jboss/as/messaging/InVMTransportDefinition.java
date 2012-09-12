@@ -25,9 +25,14 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.INT;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.dmr.ModelNode;
 
 /**
  * remote acceptor resource definition
@@ -36,7 +41,14 @@ import org.jboss.as.controller.SimpleResourceDefinition;
  */
 public class InVMTransportDefinition extends AbstractTransportDefinition {
 
-    public static final AttributeDefinition SERVER_ID = create("server-id", INT)
+    public static final SimpleAttributeDefinition SERVER_ID = create("server-id", INT)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if(isMarshallable(attribute, resourceModel)) {
+                        writer.writeAttribute(attribute.getXmlName(), resourceModel.get(attribute.getName()).asString());
+                    }
+                }
+            })
             .setRestartAllServices()
             .build();
 

@@ -11,7 +11,6 @@ import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
@@ -25,7 +24,6 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 
 public class Messaging12SubsystemParser extends MessagingSubsystemParser {
@@ -37,20 +35,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
     }
 
     protected Messaging12SubsystemParser() {
-    }
-
-    @Override
-    public Namespace getExpectedNamespace() {
-        return Namespace.MESSAGING_1_2;
-    }
-
-    @Override
-    protected void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory)
-            throws XMLStreamException {
-        super.writePooledConnectionFactoryAttributes(writer, name, factory);
-
-        Pooled.MIN_POOL_SIZE.marshallAsElement(factory, writer);
-        Pooled.MAX_POOL_SIZE.marshallAsElement(factory, writer);
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException
@@ -160,7 +144,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     }
                     final String txType = reader.getAttributeValue(0);
                     if( txType != null) {
-                        connectionFactory.get(TRANSACTION).set(txType);
+                        connectionFactory.get(Pooled.TRANSACTION.getName()).set(txType);
                     }
                     ParseUtils.requireNoContent(reader);
                     break;

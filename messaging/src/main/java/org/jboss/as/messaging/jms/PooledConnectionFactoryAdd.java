@@ -29,7 +29,6 @@ import static org.jboss.as.messaging.CommonAttributes.LOCAL;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_TX;
 import static org.jboss.as.messaging.CommonAttributes.NONE;
 import static org.jboss.as.messaging.CommonAttributes.NO_TX;
-import static org.jboss.as.messaging.CommonAttributes.TRANSACTION;
 import static org.jboss.as.messaging.CommonAttributes.XA_TX;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitions;
 
@@ -90,8 +89,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
         final int maxPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE.getName()).asInt();
 
         final String txSupport;
-        if(resolvedModel.hasDefined(TRANSACTION)) {
-            String txType = resolvedModel.get(TRANSACTION).asString();
+        if(resolvedModel.hasDefined(ConnectionFactoryAttributes.Pooled.TRANSACTION.getName())) {
+            String txType = resolvedModel.get(ConnectionFactoryAttributes.Pooled.TRANSACTION.getName()).asString();
             if(LOCAL.equals(txType)) {
                 txSupport = LOCAL_TX;
             } else if (NONE.equals(txType)) {
