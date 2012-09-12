@@ -26,8 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_RESULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -93,10 +95,20 @@ class HostControllerUpdateTask {
         final OperationAttachments operationAttachments = new DelegatingOperationAttachments(context);
         final SubsystemInfoOperationListener subsystemListener = new SubsystemInfoOperationListener(listener, proxyController.getTransformers());
         try {
+
             final OperationTransformer.TransformedOperation transformationResult = proxyController.transformOperation(context, operation);
             final ModelNode transformedOperation = transformationResult.getTransformedOperation();
             final ProxyOperation proxyOperation = new ProxyOperation(name, transformedOperation, messageHandler, operationAttachments);
             try {
+                // Make sure we preserve the operation headers like PrepareStepHandler.EXECUTE_FOR_COORDINATOR
+                if(transformedOperation != null) {
+                    transformedOperation.get(OPERATION_HEADERS).set(operation.get(OPERATION_HEADERS));
+                    // If the operation was transformed in any way
+                    if(operation != transformedOperation) {
+                        // push all operations (incl. read-only) to the servers
+                        transformedOperation.get(OPERATION_HEADERS, ServerOperationsResolverHandler.DOMAIN_PUSH_TO_SERVERS).set(true);
+                    }
+                }
                 final AsyncFuture<ModelNode> result = client.execute(subsystemListener, proxyOperation);
                 return new ExecutedHostRequest(result, transformationResult);
             } catch (IOException e) {
@@ -174,7 +186,25 @@ class HostControllerUpdateTask {
 
         @Override
         public ModelNode transformResult(ModelNode result) {
-            return resultTransformer.transformResult(result);
+
+            if(result.get(RESULT).has(DOMAIN_RESULTS)) {
+                final ModelNode domainResults = result.get(RESULT, DOMAIN_RESULTS);
+                if(domainResults.getType() == ModelType.STRING && IGNORED.equals(domainResults.asString())) {
+                    // Untransformed
+                    return result;
+                }
+                final ModelNode userResult = new ModelNode();
+                userResult.get(OUTCOME).set(result.get(OUTCOME));
+                userResult.get(RESULT).set(domainResults);
+                if(result.hasDefined(FAILURE_DESCRIPTION)) {
+                    userResult.get(FAILURE_DESCRIPTION).set(result.get(FAILURE_DESCRIPTION));
+                }                // Transform the result
+                final ModelNode transformed = resultTransformer.transformResult(userResult);
+                result.get(RESULT, DOMAIN_RESULTS).set(transformed.get(RESULT));
+                return result;
+            } else {
+                return resultTransformer.transformResult(result);
+            }
         }
 
         public void asyncCancel() {

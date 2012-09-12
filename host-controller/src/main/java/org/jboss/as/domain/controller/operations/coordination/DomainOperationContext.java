@@ -22,6 +22,9 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.TransformingProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -33,6 +36,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
@@ -49,6 +54,7 @@ public class DomainOperationContext {
     private final ModelNode coordinatorResult = new ModelNode();
     private final ConcurrentMap<String, ModelNode> hostControllerResults = new ConcurrentHashMap<String, ModelNode>();
     private final ConcurrentMap<ServerIdentity, ModelNode> serverResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
+    private final ConcurrentMap<String, HostControllerUpdateTask.ExecutedHostRequest> finalResultFutures = new ConcurrentHashMap<String, HostControllerUpdateTask.ExecutedHostRequest>();
 
     private final Map<String, Boolean> serverGroupStatuses = new ConcurrentHashMap<String, Boolean>();
     private volatile boolean completeRollback = true;
@@ -140,6 +146,29 @@ public class DomainOperationContext {
             }
         }
         return result;
+    }
+
+    /*
+     * Transform an operation for a server. This will also delegate to the host-controller result-transformer.
+     */
+    public OperationTransformer.TransformedOperation transformServerOperation(final String hostName, final TransformingProxyController remoteProxyController, final OperationContext context, final ModelNode original) throws OperationFailedException {
+        final OperationTransformer.TransformedOperation transformed = remoteProxyController.transformOperation(context, original);
+        final HostControllerUpdateTask.ExecutedHostRequest hostRequest = finalResultFutures.get(hostName);
+        if(hostRequest == null) {
+            // in case it's local hosts-controller
+            return transformed;
+        }
+        return new OperationTransformer.TransformedOperation(transformed.getTransformedOperation(), new OperationResultTransformer() {
+            @Override
+            public ModelNode transformResult(ModelNode result) {
+                final ModelNode step1 = transformed.transformResult(result);
+                return hostRequest.transformResult(step1);
+            }
+        });
+    }
+
+    protected void recordHostRequest(final String hostName, final HostControllerUpdateTask.ExecutedHostRequest request) {
+        finalResultFutures.put(hostName, request);
     }
 
     private String[] getTranslatedSteps(String serverName, ModelNode hostResults, String[] stepLabels) {

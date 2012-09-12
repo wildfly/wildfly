@@ -153,14 +153,12 @@ public abstract class ServerTaskExecutor {
 
         @Override
         public void operationPrepared(TransactionalProtocolClient.PreparedOperation<ServerOperation> prepared) {
-            System.out.println("prepared " + prepared.getPreparedResult());
-            super.operationPrepared(prepared);    //To change body of overridden methods use File | Settings | File Templates.
+            super.operationPrepared(prepared);
         }
 
         @Override
         public void operationComplete(ServerOperation operation, ModelNode result) {
-            System.out.println("completed " + result);
-            super.operationComplete(operation, result);    //To change body of overridden methods use File | Settings | File Templates.
+            super.operationComplete(operation, result);
         }
 
         @Override

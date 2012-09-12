@@ -79,6 +79,7 @@ public class OperationTransformationTestCase {
         subsystems.add("resource-adapters", "1.1");
     }
 
+    private final Resource resourceRoot = Resource.Factory.create();
     private final GlobalTransformerRegistry registry = new GlobalTransformerRegistry();
     private final ManagementResourceRegistration resourceRegistration = ManagementResourceRegistration.Factory.create(ROOT);
     private final OperationTransformer NOOP_TRANSFORMER = new OperationTransformer() {
@@ -87,22 +88,19 @@ public class OperationTransformationTestCase {
             return new TransformedOperation(new ModelNode(), OperationResultTransformer.ORIGINAL_RESULT);
         }
     };
-    private final Resource resourceRoot = Resource.Factory.create();
+    private final OperationTransformer OPERATION_TRANSFORMER = new OperationTransformer() {
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            final ModelNode transformed = operation.clone();
+            transformed.get("param1").set("value1");
+            return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    };
 
     @Before
     public void setUp() {
         registry.discardOperation(TEST_DISCARD, 1, 1, "discard");
-        final OperationTransformer transformer = new AbstractOperationTransformer() {
-
-            @Override
-            protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
-                final ModelNode transformed = operation.clone();
-                transformed.get("param1").set("value1");
-                return transformed;
-            }
-
-        };
-        registry.registerTransformer(TEST_NORMAL, 1, 2, "normal", transformer);
+        registry.registerTransformer(TEST_NORMAL, 1, 2, "normal", OPERATION_TRANSFORMER);
     }
 
     @Test
@@ -214,16 +212,30 @@ public class OperationTransformationTestCase {
 
         final ModelVersion subsystem = ModelVersion.create(1, 2);
         final TransformerRegistry registry = TransformerRegistry.Factory.create(null);
-        registry.registerSubsystemTransformers("test", subsystem, ResourceTransformer.DISCARD);
+        TransformersSubRegistration sub = registry.registerSubsystemTransformers("test", subsystem, ResourceTransformer.DISCARD);
+        sub.registerOperationTransformer("test", OPERATION_TRANSFORMER);
 
-        final TransformationTarget target = create(registry, ModelVersion.create(1, 2, 3));
-        target.addSubsystemVersion("test", subsystem);
+        final TransformationTarget host = create(registry, ModelVersion.create(1, 2, 3));
+        host.addSubsystemVersion("test", subsystem);
 
+        final PathAddress profile = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PROFILE, "test"));
+        final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, "test"), PathElement.pathElement(ModelDescriptionConstants.RUNNING_SERVER, "test"));
+        final PathAddress subsytemAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "test"));
+
+        final OperationTransformer profileTransformer = host.resolveTransformer(profile.append(subsytemAddress), "test");
+        Assert.assertEquals(profileTransformer, OPERATION_TRANSFORMER);
+
+        final OperationTransformer serverTransformer = host.resolveTransformer(serverAddress.append(subsytemAddress), "test");
+        Assert.assertEquals(serverTransformer, OPERATION_TRANSFORMER);
 
     }
 
     protected TransformationTarget create(final TransformerRegistry registry, ModelVersion version) {
-        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, TransformationTarget.TransformationTargetType.HOST);
+        return create(registry, version, TransformationTarget.TransformationTargetType.HOST);
+    }
+
+    protected TransformationTarget create(final TransformerRegistry registry, ModelVersion version, TransformationTarget.TransformationTargetType type) {
+        return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, type);
     }
 
     protected Resource transform(final TransformationTarget target, final Resource root) throws OperationFailedException {

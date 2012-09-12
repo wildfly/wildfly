@@ -150,12 +150,6 @@ public class OperationCoordinatorStepHandler {
         final String operationName =  operation.require(OP).asString();
 
         OperationStepHandler stepHandler = null;
-
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        if(localSlaveHandler.isResourceExcluded(address)) {
-            System.out.println("should be ignoring this stuff! " + operation);
-        }
-
         final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {
             stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);

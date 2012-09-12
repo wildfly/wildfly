@@ -30,17 +30,24 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
@@ -51,6 +58,7 @@ import static org.jboss.as.test.integration.domain.management.util.DomainTestUti
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForFailure;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.exists;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getHostAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getRunningServerAddress;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
@@ -138,15 +146,38 @@ public class OperationTransformationTestCase {
         update.get(OP).set("update");
         update.get(OP_ADDR).set(address.toModelNode());
 
-        System.out.println(client.execute(update));
+        //
+        final ModelNode updateResult = client.execute(update);
+        Assert.assertEquals(updateResult.toString(), updateResult.get(OUTCOME).asString(), SUCCESS);
+        // "result" => {"test-attribute" => "test"},
+        Assert.assertEquals("test", updateResult.get(RESULT, "test-attribute").asString());
+        // server-result
+        Assert.assertEquals("test", updateResult.get(SERVER_GROUPS, "main-server-group", HOST, "slave", "main-three", "response", RESULT, "test-attribute").asString());
+
+        //
+        final ModelNode write = new ModelNode();
+        write.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        write.get(OP_ADDR).set(address.toModelNode());
+        write.get(NAME).set("test-attribute");
+        write.get(VALUE).set("test123");
 
         //
         final ModelNode composite = new ModelNode();
         composite.get(OP).set(COMPOSITE);
         composite.get(OP_ADDR).setEmptyList();
-
         final ModelNode steps = composite.get(STEPS);
-        steps.add();
+
+        final ModelNode test = new ModelNode();
+        test.get(OP).set("test");
+        test.get(OP_ADDR).set(serverAddress);
+
+        steps.add(write);
+        steps.add(test);
+
+
+        final ModelNode compositeResult = client.execute(composite);
+        // server-result
+        Assert.assertEquals(false, compositeResult.get(SERVER_GROUPS, "main-server-group", HOST, "slave", "main-three", "response", RESULT, "step-2", RESULT).asBoolean());
 
         // Test expression replacement
         testPropertiesModel();
