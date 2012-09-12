@@ -23,10 +23,12 @@
 package org.jboss.as.jdr;
 
 import java.io.IOException;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Test;
 
 
 /**
@@ -40,6 +42,19 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
         super(JdrReportExtension.SUBSYSTEM_NAME, new JdrReportExtension());
     }
 
+    @Test(expected = XMLStreamException.class)
+    public void testParseSubsystemWithBadChild() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\"><invalid/></subsystem>";
+        super.parse(subsystemXml);
+    }
+
+    @Test(expected = XMLStreamException.class)
+    public void testParseSubsystemWithBadAttribute() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\" attr=\"wrong\"/>";
+        super.parse(subsystemXml);
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {
