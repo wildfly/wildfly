@@ -1473,7 +1473,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
            ModelNode cf = node.get(CONNECTION_FACTORY);
            ModelNode pcf = node.get(POOLED_CONNECTION_FACTORY);
            boolean hasCf = cf.isDefined() && cf.keys().size() > 0;
-           boolean hasPcf = cf.isDefined() && cf.keys().size() > 0;
+           boolean hasPcf = pcf.isDefined() && pcf.keys().size() > 0;
            if (hasCf || hasPcf) {
                writer.writeStartElement(JMS_CONNECTION_FACTORIES);
                if (hasCf) {
@@ -1483,7 +1483,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                    writePooledConnectionFactories(writer, pcf);
                }
                writer.writeEndElement();
-               writeNewLine(writer);
            }
         }
 
