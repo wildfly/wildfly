@@ -129,6 +129,7 @@ public final class TransformerRegistry {
         // The domain / host / servers
         final OperationTransformerRegistry root = domain.create(mgmtVersion, Collections.<PathAddress, ModelVersion>emptyMap());
         subsystem.mergeSubtree(root, PathAddress.pathAddress(PROFILE), subsystems);
+        subsystem.mergeSubtree(root, PathAddress.pathAddress(HOST, SERVER), subsystems);
         return root;
     }
 
@@ -165,8 +166,12 @@ public final class TransformerRegistry {
      */
     void addSubsystem(final OperationTransformerRegistry registry, final String name, final ModelVersion version) {
         final OperationTransformerRegistry profile = registry.getChild(PathAddress.pathAddress(PROFILE));
+        final OperationTransformerRegistry server = registry.getChild(PathAddress.pathAddress(HOST, SERVER));
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name));
         subsystem.mergeSubtree(profile, Collections.singletonMap(address, version));
+        if(server != null) {
+            subsystem.mergeSubtree(server, Collections.singletonMap(address, version));
+        }
     }
 
     public static Map<PathAddress, ModelVersion> resolveVersions(ExtensionRegistry extensionRegistry) {
