@@ -22,6 +22,49 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.modcluster.LoadMetricDefinition.CAPACITY;
+import static org.jboss.as.modcluster.LoadMetricDefinition.TYPE;
+import static org.jboss.as.modcluster.LoadMetricDefinition.WEIGHT;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.ADVERTISE;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.ADVERTISE_SECURITY_KEY;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.ADVERTISE_SOCKET;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.BALANCER;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.CONNECTOR;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.EXCLUDED_CONTEXTS;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.FLUSH_WAIT;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.LOAD_BALANCING_GROUP;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.MAX_ATTEMPTS;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.NODE_TIMEOUT;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.PING;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.PROXY_LIST;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.PROXY_URL;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.SMAX;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.SOCKET_TIMEOUT;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STOP_CONTEXT_TIMEOUT;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.TTL;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.WORKER_TIMEOUT;
+import static org.jboss.as.modcluster.ModClusterExtension.SSL_CONFIGURATION_PATH;
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CA_CERTIFICATE_FILE;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CA_REVOCATION_URL;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CERTIFICATE_KEY_FILE;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUITE;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEYSTORE_PASSWORD;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PASSWORD;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
+import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.TRUSTSTORE_PASSWORD;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.catalina.connector.Connector;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -47,25 +90,6 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.jboss.as.modcluster.LoadMetricDefinition.CAPACITY;
-import static org.jboss.as.modcluster.LoadMetricDefinition.TYPE;
-import static org.jboss.as.modcluster.LoadMetricDefinition.WEIGHT;
-import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.*;
-import static org.jboss.as.modcluster.ModClusterExtension.SSL_CONFIGURATION_PATH;
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CA_CERTIFICATE_FILE;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CA_REVOCATION_URL;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CERTIFICATE_KEY_FILE;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUITE;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PASSWORD;
-import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 /**
  * The managed subsystem add update.
@@ -134,12 +158,10 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             final ModelNode ssl = model.get(SSL_CONFIGURATION_PATH.getKeyValuePair());
             ModelNode keyAlias = KEY_ALIAS.resolveModelAttribute(context, ssl);
             ModelNode password = PASSWORD.resolveModelAttribute(context, ssl);
+            ModelNode keystorePassword = KEYSTORE_PASSWORD.resolveModelAttribute(context, ssl);
+            ModelNode truststorePassword = TRUSTSTORE_PASSWORD.resolveModelAttribute(context, ssl);
             if (keyAlias.isDefined()) {
                 config.setSslKeyAlias(keyAlias.asString());
-            }
-            if (password.isDefined()) {
-                config.setSslTrustStorePassword(password.asString());
-                config.setSslKeyStorePassword(password.asString());
             }
             if (ssl.hasDefined(CommonAttributes.CERTIFICATE_KEY_FILE)) {
                 config.setSslKeyStore(CERTIFICATE_KEY_FILE.resolveModelAttribute(context, ssl).asString());
@@ -155,6 +177,16 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             }
             if (ssl.hasDefined(CommonAttributes.CA_REVOCATION_URL)) {
                 config.setSslCrlFile(CA_REVOCATION_URL.resolveModelAttribute(context, ssl).asString());
+            }
+            if (truststorePassword.isDefined()) {
+                config.setSslTrustStorePassword(truststorePassword.asString());
+            } else if (password.isDefined()) {
+                config.setSslTrustStorePassword(password.asString());
+            }
+            if (keystorePassword.isDefined()) {
+                config.setSslKeyStorePassword(keystorePassword.asString());
+            } else if (password.isDefined()) {
+                config.setSslKeyStorePassword(password.asString());
             }
         }
         if (model.hasDefined(CommonAttributes.PROXY_LIST)) {

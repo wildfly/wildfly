@@ -151,6 +151,9 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
             switch (attribute) {
                 case KEY_ALIAS:
                 case PASSWORD:
+                    ModClusterSSLResourceDefinition.KEYSTORE_PASSWORD.parseAndSetParameter(value, ssl, reader);
+                    ModClusterSSLResourceDefinition.TRUSTSTORE_PASSWORD.parseAndSetParameter(value, ssl, reader);
+                    break;
                 case CERTIFICATE_KEY_FILE:
                 case CIPHER_SUITE:
                 case PROTOCOL:

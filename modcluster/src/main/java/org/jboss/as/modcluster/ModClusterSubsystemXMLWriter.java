@@ -21,15 +21,6 @@
  */
 package org.jboss.as.modcluster;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
-
 import static org.jboss.as.modcluster.CommonAttributes.CUSTOM_LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.DECAY;
 import static org.jboss.as.modcluster.CommonAttributes.HISTORY;
@@ -37,6 +28,15 @@ import static org.jboss.as.modcluster.CommonAttributes.LOAD_METRIC;
 import static org.jboss.as.modcluster.CommonAttributes.NAME;
 import static org.jboss.as.modcluster.CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR;
 import static org.jboss.as.modcluster.CommonAttributes.VALUE;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemMarshallingContext> {
     /**
