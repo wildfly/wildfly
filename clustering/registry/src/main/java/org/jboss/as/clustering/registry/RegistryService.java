@@ -157,7 +157,7 @@ public class RegistryService<K, V> implements Service<Registry<K, V>>, Registry<
         Operation<Void> operation = new Operation<Void>() {
             @Override
             public Void invoke(Cache<Address, Map.Entry<K, V>> cache) {
-                cache.removeAsync(getLocalAddress(cache));
+                cache.remove(getLocalAddress(cache));
                 return null;
             }
         };

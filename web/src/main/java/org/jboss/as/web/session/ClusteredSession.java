@@ -1262,7 +1262,9 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
             // SRV.10.6 (2.5) 11.6 (3.0) Propagate listener exceptions
             RuntimeException listenerException = null;
 
-            if (localCall) {
+            final boolean requireOwnershipLock = localCall && !localOnly;
+
+            if (requireOwnershipLock) {
                 try {
                     this.acquireSessionOwnership();
                 } catch (TimeoutException e) {
@@ -1340,7 +1342,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                 // We have completed expire of this session
                 setValid(false);
                 expiring = false;
-                if (localCall) {
+                if (requireOwnershipLock) {
                     this.relinquishSessionOwnership(true);
                 }
             }
