@@ -79,12 +79,12 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", false);
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         kernelServices.executeForFailure(op);
     }
 
@@ -93,11 +93,11 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createAddOperation(kernelServices, "Test2", false, content);
+        op = createAddOperation(kernelServices, "Test2",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         ModelNode deployments = getDeploymentParentResource(kernelServices);
@@ -157,14 +157,14 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getInputStreamIndexContent();
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         ModelNode hashA = checkSingleDeployment(kernelServices, "Test1", false);
         removeDeployment(kernelServices, "Test1");
         checkNoDeployments(kernelServices);
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode hashB = checkSingleDeployment(kernelServices, "Test1", false);
         removeDeployment(kernelServices, "Test1");
@@ -174,7 +174,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
         content = new ModelNode();
         content.get(HASH).set(hashA);
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         //This deployment does not actually exist, it was removed by the previous removeDeployment()
         //so if that becomes a problem, clean this part of the test up
@@ -185,7 +185,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         Assert.assertEquals(hashA, hashC);
 
         content = getFileUrl("Test1", 1, 2, 3, 4, 5);
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode hashD = checkSingleDeployment(kernelServices, "Test1", false);
         removeDeployment(kernelServices, "Test1");
@@ -199,7 +199,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode hash = checkSingleDeployment(kernelServices, "Test1", false);
 
@@ -227,11 +227,11 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         File file = writeToFile("Test-file1", 1, 2, 3, 4, 5);
         ModelNode content = new ModelNode();
         content.get(PATH).set(file.getAbsolutePath());
-        ModelNode op = createAddOperation(kernelServices, "Test1",false,  content);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  content);
         kernelServices.executeForFailure(op);
 
         content.get(ARCHIVE).set(true);
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file, deployedContent, true, true);
@@ -262,15 +262,15 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         File dir = file.getParentFile();
         ModelNode content = new ModelNode();
         content.get(RELATIVE_TO).set(dir.getAbsolutePath());
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  content);
         kernelServices.executeForFailure(op);
 
         content.get(ARCHIVE).set(false);
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         kernelServices.executeForFailure(op);
 
         content.get(PATH).set(file.getName());
-        op = createAddOperation(kernelServices, "Test1", false, content);
+        op = createAddOperation(kernelServices, "Test1",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file, deployedContent, false, false);
@@ -301,29 +301,31 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
         ModelNode badContent = new ModelNode();
         badContent.get(BYTES).set(1);
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, badContent);
+        ModelNode op = createAddOperation(kernelServices, "Test1",  badContent);
         kernelServices.executeForFailure(op);
 
         badContent = new ModelNode();
         badContent.get(URL).set(convertToByteArray(1, 2, 3, 4, 5));
-        op = createAddOperation(kernelServices, "Test1", false, badContent);
+        op = createAddOperation(kernelServices, "Test1",  badContent);
         kernelServices.executeForFailure(op);
 
         badContent = new ModelNode();
         badContent.get(BYTES).set(getByteContent(1, 2, 3, 4, 5).get(BYTES));
         badContent.get(URL).set(getFileUrl("Test1", 1, 2, 3, 4, 5).get(URL));
-        op = createAddOperation(kernelServices, "Test1", false, badContent);
+        op = createAddOperation(kernelServices, "Test1",  badContent);
         kernelServices.executeForFailure(op);
 
         badContent = new ModelNode();
         badContent.get(PATH).set(writeToFile("test-file1", 1, 2, 3, 4, 5).getAbsolutePath());
-        op = createAddOperation(kernelServices, "Test1", false, badContent);
+        op = createAddOperation(kernelServices, "Test1",  badContent);
+
         kernelServices.executeForFailure(op);
 
         badContent = new ModelNode();
         badContent.get(URL).set(getFileUrl("Test1", 1, 2, 3, 4, 5).get(URL));
+
         badContent.get(PATH).set(writeToFile("test-file2", 1, 2, 3, 4, 5).getAbsolutePath());
-        op = createAddOperation(kernelServices, "Test1", false, badContent);
+        op = createAddOperation(kernelServices, "Test1",  badContent);
         kernelServices.executeForFailure(op);
     }
 
@@ -332,7 +334,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getInputStreamIndexContent();
-        ModelNode op = createAddOperation(kernelServices, "Test1", true, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", null, true, true, content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         checkSingleDeployment(kernelServices, "Test1", true);
 
@@ -350,7 +352,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", false);
 
@@ -410,7 +412,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
         //Create the original deployment
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode originalHash = checkSingleDeployment(kernelServices, "Test1", false);
 
@@ -466,7 +468,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         //Create the original deployment
         ModelNode contentNode = new ModelNode();
         contentNode.get(PATH).set(file1.getAbsolutePath());
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, contentNode);
+        ModelNode op = createAddOperation(kernelServices, "Test1", contentNode);
         kernelServices.executeForFailure(op);
 
         contentNode.get(ARCHIVE).set(true);
@@ -512,11 +514,11 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op.get(TO_REPLACE).set("Test1");
         kernelServices.executeForFailure(op);
 
-        ModelTestUtils.checkOutcome(kernelServices.executeOperation(createAddOperation(kernelServices, "Test1", false, getByteContent(1, 2, 3, 4, 5))));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(createAddOperation(kernelServices, "Test1", getByteContent(1, 2, 3, 4, 5))));
         kernelServices.executeForFailure(op);
         removeDeployment(kernelServices, "Test1");
 
-        ModelTestUtils.checkOutcome(kernelServices.executeOperation(createAddOperation(kernelServices, "Test2", false, getByteContent(1, 2, 3, 4, 5))));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(createAddOperation(kernelServices, "Test2", getByteContent(1, 2, 3, 4, 5))));
         kernelServices.executeForFailure(op);
     }
 
@@ -525,10 +527,10 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         //Create the original deployments
-        ModelNode op = createAddOperation(kernelServices, "Test1", false, getByteContent(1, 2, 3, 4, 5));
+        ModelNode op = createAddOperation(kernelServices, "Test1", getByteContent(1, 2, 3, 4, 5));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
-        op = createAddOperation(kernelServices, "Test2", false, getByteContent(6, 7, 8, 9, 10));
+        op = createAddOperation(kernelServices, "Test2", getByteContent(6, 7, 8, 9, 10));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         //TODO replace with more sane checks once rebased
@@ -708,16 +710,18 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
     }
 
 
-    private ModelNode createAddOperation(KernelServices kernelServices, String name, boolean enabled,  ModelNode content) throws Exception {
-        return createAddOperation(kernelServices, name, null, enabled, null, content);
+    private ModelNode createAddOperation(KernelServices kernelServices, String name, ModelNode content) throws Exception {
+        return createAddOperation(kernelServices, name, null, null, null, content);
     }
 
-    private ModelNode createAddOperation(KernelServices kernelServices, String name, String runtimeName, boolean enabled, Boolean persistent, ModelNode content) throws Exception {
+    private ModelNode createAddOperation(KernelServices kernelServices, String name, String runtimeName, Boolean enabled, Boolean persistent, ModelNode content) throws Exception {
         ModelNode operation = Util.createOperation(DeploymentAddHandler.OPERATION_NAME, getPathAddress(name));
         if (runtimeName != null) {
             operation.get(RUNTIME_NAME).set(runtimeName);
         }
-        operation.get(ENABLED).set(enabled);
+        if (enabled != null) {
+            operation.get(ENABLED).set(enabled);
+        }
         operation.get(CONTENT).add(content);
 
         //PERSISTENT is not exposed to users, it is deployment scanner only - so don't try to validate the operation with PERSISTENT set

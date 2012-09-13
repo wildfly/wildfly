@@ -67,11 +67,11 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testCantHaveTwoSameDeploymentsWithSameName() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createAddOperation(kernelServices, "Test1", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", false);
 
-        op = createAddOperation(kernelServices, "Test1", false);
+        op = createAddOperation(kernelServices, "Test1");
         kernelServices.executeForFailure(op);
     }
 
@@ -79,10 +79,10 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testCanHaveTwoDeploymentsWithDifferentNames() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createAddOperation(kernelServices, "Test1", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
-        op = createAddOperation(kernelServices, "Test2", false);
+        op = createAddOperation(kernelServices, "Test2");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         ModelNode deployments = getDeploymentParentResource(kernelServices);
@@ -131,13 +131,13 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testAddRemoveManagedDeployments() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createAddOperation(kernelServices, "Test1", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         checkSingleDeployment(kernelServices, "Test1", false);
         removeDeployment(kernelServices, "Test1");
         checkNoDeployments(kernelServices);
 
-        op = createAddOperation(kernelServices, "Test1", false);
+        op = createAddOperation(kernelServices, "Test1");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", false);
         removeDeployment(kernelServices, "Test1");
@@ -148,7 +148,7 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testDeployManagedDeployment() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createAddOperation(kernelServices, "Test1", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", false);
 
@@ -170,7 +170,7 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testRedeploy() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createAddOperation(kernelServices, "Test1", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1");
         op.get(ENABLED).set(true);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         checkSingleDeployment(kernelServices, "Test1", true);
@@ -188,7 +188,7 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testCantWriteToAttributes() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createAddOperation(kernelServices, "Test1", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         checkSingleDeployment(kernelServices, "Test1", false);
 
@@ -202,16 +202,18 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
         kernelServices.executeForFailure(op);
     }
 
-    private ModelNode createAddOperation(KernelServices kernelServices, String name, boolean enabled) throws Exception {
-        return createOperation(kernelServices, name, null, enabled);
+    private ModelNode createAddOperation(KernelServices kernelServices, String name) throws Exception {
+        return createOperation(kernelServices, name, null, null);
     }
 
-    private ModelNode createOperation(KernelServices kernelServices, String name, String runtimeName, boolean enabled) throws Exception {
+    private ModelNode createOperation(KernelServices kernelServices, String name, String runtimeName, Boolean enabled) throws Exception {
         ModelNode operation = Util.createOperation(DeploymentAddHandler.OPERATION_NAME, getPathAddress(name));
         if (runtimeName != null) {
             operation.get(RUNTIME_NAME).set(runtimeName);
         }
-        operation.get(ENABLED).set(enabled);
+        if (enabled != null) {
+            operation.get(ENABLED).set(enabled);
+        }
         operation.get(CONTENT);
 
         kernelServices.validateOperation(operation);
