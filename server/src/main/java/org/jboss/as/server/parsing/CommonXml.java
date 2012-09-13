@@ -1606,7 +1606,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     Set<String> deploymentNames = deployments.keys();
                     if (deploymentNames.size() > 0) {
                         for (String deploymentName : deploymentNames) {
-                            final ModelNode depNode = deployments.get(uniqueName);
+                            final ModelNode depNode = deployments.get(deploymentName);
                             final boolean regEx = depNode.hasDefined(REGULAR_EXPRESSION) ? depNode.get(REGULAR_EXPRESSION).asBoolean() : false;
                             writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                             writeAttribute(writer, Attribute.NAME, deploymentName);
