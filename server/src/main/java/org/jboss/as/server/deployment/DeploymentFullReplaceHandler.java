@@ -62,7 +62,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
-import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -200,7 +200,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
 
     private static void removeContentAdditions(final ModelNode content) {
         for (final ModelNode contentItem : content.asList()) {
-            removeAttributes(contentItem, DeploymentResourceDescription.ALL_CONTENT_ATTRIBUTES.keySet());
+            removeAttributes(contentItem, DeploymentAttributes.ALL_CONTENT_ATTRIBUTES.keySet());
         }
     }
 

@@ -20,13 +20,15 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_ARCHIVE;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_HASH;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_PATH;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT_RELATIVE_TO;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.ENABLED;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ARCHIVE;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_PATH;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_RELATIVE_TO;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.PERSISTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_ADD_ATTRIBUTES;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.createFailureException;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getInputStream;
@@ -50,7 +52,6 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
-import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 
@@ -88,14 +89,14 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         //Persistent is hidden from CLI users so let's set this to true here if it is not defined
-        if (!operation.hasDefined(DeploymentResourceDescription.PERSISTENT.getName())) {
-            operation.get(DeploymentResourceDescription.PERSISTENT.getName()).set(true);
+        if (!operation.hasDefined(PERSISTENT.getName())) {
+            operation.get(PERSISTENT.getName()).set(true);
         }
 
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         ModelNode newModel = new ModelNode();
 
-        for (AttributeDefinition def : DeploymentResourceDescription.SERVER_ADD_ATTRIBUTES) {
+        for (AttributeDefinition def : SERVER_ADD_ATTRIBUTES) {
             if (!def.getName().equals(CONTENT.getName())) {
                 def.validateAndSet(operation, newModel);
             } else {

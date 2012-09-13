@@ -82,7 +82,7 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
-import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
@@ -1042,12 +1042,12 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                 writeAttribute(writer, Attribute.NAME, uniqueName);
               //final String runtimeName = deployment.get(RUNTIME_NAME).asString();
                 //writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                DeploymentResourceDescription.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
+                DeploymentAttributes.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
               //boolean enabled = deployment.get(ENABLED).asBoolean();
 //                if (!enabled) {
 //                    writeAttribute(writer, Attribute.ENABLED, "false");
 //                }
-                DeploymentResourceDescription.ENABLED.marshallAsAttribute(deployment, false, writer);
+                DeploymentAttributes.ENABLED.marshallAsAttribute(deployment, false, writer);
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);

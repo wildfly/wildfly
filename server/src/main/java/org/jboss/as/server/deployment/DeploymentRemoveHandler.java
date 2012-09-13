@@ -20,9 +20,9 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.ENABLED;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import java.util.List;

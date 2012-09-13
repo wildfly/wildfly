@@ -20,8 +20,8 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 

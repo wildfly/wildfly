@@ -19,8 +19,8 @@
 package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.ENABLED;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 
 import java.util.Locale;
 
@@ -33,7 +33,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
-
 /**
  * Handles undeployment from the runtime.
  *

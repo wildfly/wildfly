@@ -20,9 +20,9 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.CONTENT;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.ENABLED;
-import static org.jboss.as.server.controller.resources.DeploymentResourceDescription.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import java.util.Locale;
@@ -36,7 +36,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
-
 /**
  * Handles deployment into the runtime.
  *
