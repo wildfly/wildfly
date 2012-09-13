@@ -43,6 +43,7 @@ import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.as.ejb3.cache.Cacheable;
@@ -100,7 +101,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
 
         InjectedValue<Cache> cache = new InjectedValue<Cache>();
         InjectedValue<Registry.RegistryEntryProvider> provider = new InjectedValue<Registry.RegistryEntryProvider>();
-        target.addService(ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName), new RegistryService(cache, provider))
+        AsynchronousService.addService(target, ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName), new RegistryService(cache, provider))
                 .addDependency(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, Registry.RegistryEntryProvider.class, provider)
                 .addDependency(CacheService.getServiceName(this.cacheContainerName, this.clientMappingsCacheName), Cache.class, cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
