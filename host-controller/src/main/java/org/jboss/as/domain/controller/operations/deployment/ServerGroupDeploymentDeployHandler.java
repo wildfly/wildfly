@@ -18,13 +18,15 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+
 import java.util.Locale;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
@@ -53,7 +55,7 @@ public class ServerGroupDeploymentDeployHandler implements OperationStepHandler,
     }
 
     public void execute(OperationContext context, ModelNode operation) {
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(true);
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED.getName()).set(true);
         context.completeStep();
     }
 }

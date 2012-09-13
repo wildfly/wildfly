@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-abstract class DeploymentHandlerUtils {
+public abstract class DeploymentHandlerUtils {
 
     protected static String asString(final ModelNode node, final String name) {
         return node.has(name) ? node.require(name).asString() : null;
@@ -70,7 +70,7 @@ abstract class DeploymentHandlerUtils {
         return contents;
     }
 
-    protected static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
+    public static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
         InputStream in = null;
         if (operation.hasDefined(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.getName())) {
             int streamIndex = DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.resolveModelAttribute(context, operation).asInt();
@@ -109,7 +109,7 @@ abstract class DeploymentHandlerUtils {
      *
      * @return {@code true} of the parameter is valid, otherwise {@code false}.
      */
-    protected static boolean hasValidContentAdditionParameterDefined(ModelNode operation) {
+    public static boolean hasValidContentAdditionParameterDefined(ModelNode operation) {
         for (String s : DeploymentAttributes.MANAGED_CONTENT_ATTRIBUTES.keySet()) {
             if (operation.hasDefined(s)) {
                 return true;

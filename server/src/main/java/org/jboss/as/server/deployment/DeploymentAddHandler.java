@@ -94,7 +94,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        ModelNode newModel = new ModelNode();
+        ModelNode newModel = resource.getModel();
 
         for (AttributeDefinition def : SERVER_ADD_ATTRIBUTES) {
             if (!def.getName().equals(CONTENT.getName())) {
@@ -130,9 +130,6 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         newModel.get(CONTENT.getName()).set(content);
-
-        //final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        resource.getModel().set(newModel);
 
         if (ENABLED.resolveModelAttribute(context, newModel).asBoolean() && context.isNormalServer()) {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);

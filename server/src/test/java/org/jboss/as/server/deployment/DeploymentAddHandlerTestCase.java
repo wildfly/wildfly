@@ -94,6 +94,7 @@ public class DeploymentAddHandlerTestCase {
     public void testValidator() throws OperationFailedException {
         final DeploymentAddHandler handler = DeploymentAddHandler.create(contentRepository, null);
         final OperationContext context = Mockito.mock(OperationContext.class);
+        Mockito.when(context.createResource(PathAddress.EMPTY_ADDRESS)).thenReturn(Resource.Factory.create());
         final ModelNode operation = new ModelNode();
         operation.get("content").get(0).get("archive").set("wrong");
         try {

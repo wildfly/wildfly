@@ -140,16 +140,16 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         Assert.assertEquals(false, deployments.get("Test1", PERSISTENT).asBoolean());
         Assert.assertEquals("ONE", deployments.get("Test1", RUNTIME_NAME).asString());
         Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
-        ModelNode bytes1 = getContentHashOnly(deployments.get("Test1"));
+        ModelNode hash1 = getContentHashOnly(deployments.get("Test1"));
 
         Assert.assertEquals(true, deployments.get("Test2", ENABLED).asBoolean());
         Assert.assertEquals("Test2", deployments.get("Test2", NAME).asString());
         Assert.assertEquals(true, deployments.get("Test2", PERSISTENT).asBoolean());
         Assert.assertEquals("TWO", deployments.get("Test2", RUNTIME_NAME).asString());
         Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
-        ModelNode bytes2 = getContentHashOnly(deployments.get("Test2"));
+        ModelNode hash2 = getContentHashOnly(deployments.get("Test2"));
 
-        Assert.assertEquals(bytes1, bytes2);
+        Assert.assertEquals(hash1, hash2);
     }
 
     @Test
@@ -371,7 +371,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
     }
 
     @Test
-    public void testUploadContentHandlers() throws Exception {
+    public void testRootContentHandlers() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode operation = Util.createOperation(DeploymentUploadBytesHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
@@ -391,8 +391,6 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode hashStream = kernelServices.executeForResult(operation, new ByteArrayInputStream(convertToByteArray(1, 2, 3, 4, 5)));
         checkNoDeployments(kernelServices);
         Assert.assertEquals(hashBytes, hashStream);
-
-        //TODO DeploymentFullReplace
     }
 
     @Test
@@ -689,8 +687,6 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op.get(CONTENT).clear();
         op.get(CONTENT).add(managedContent);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
-
-
     }
 
     private ModelNode createList(ModelNode element) {
@@ -699,19 +695,16 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         return list;
     }
 
-
-
     private void checkUnmanagedContents(File file, ModelNode deployedContent, boolean archive, boolean absolute) {
         Assert.assertEquals(absolute ? 2 : 3, deployedContent.keys().size());
         if (absolute) {
             Assert.assertEquals(file.getAbsolutePath(), deployedContent.get(PATH).asString());
-            Assert.assertEquals(archive, deployedContent.get(ARCHIVE).asBoolean());
             Assert.assertFalse(deployedContent.get(RELATIVE_TO).isDefined());
         } else {
             Assert.assertEquals(file.getName(), deployedContent.get(PATH).asString());
             Assert.assertEquals(file.getParentFile().getAbsolutePath(), deployedContent.get(RELATIVE_TO).asString());
-            Assert.assertEquals(archive, deployedContent.get(ARCHIVE).asBoolean());
         }
+        Assert.assertEquals(archive, deployedContent.get(ARCHIVE).asBoolean());
     }
 
 
@@ -749,6 +742,16 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
     private ModelNode checkSingleDeployment(KernelServices kernelServices, String name, boolean deployed) throws Exception {
         ModelNode deployments = getDeploymentParentResource(kernelServices);
         Assert.assertEquals(1, deployments.keys().size());
+        return checkDeployment(deployments, name, deployed);
+    }
+
+    private ModelNode checkDeployment(KernelServices kernelServices, String name, boolean deployed) throws Exception {
+        ModelNode deployments = getDeploymentParentResource(kernelServices);
+        return checkDeployment(deployments, name, deployed);
+    }
+
+    private ModelNode checkDeployment(ModelNode deployments, String name, boolean deployed) throws Exception{
+        Assert.assertTrue(deployments.get(name).isDefined());
         Assert.assertEquals(deployed, deployments.get(name, ENABLED).asBoolean());
         Assert.assertEquals(name, deployments.get(name, NAME).asString());
         Assert.assertEquals(true, deployments.get(name, PERSISTENT).asBoolean());

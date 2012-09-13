@@ -122,11 +122,11 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createOperation(kernelServices, "Test1", "ONE", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", "ONE", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createOperation(kernelServices, "Test2", "TWO",  content);
+        op = createAddOperation(kernelServices, "Test2", "TWO",  content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         ModelNode deployments = getDeploymentParentResource(kernelServices);
@@ -273,6 +273,38 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
     }
 
     @Test
+    public void testBadContentType() throws Exception {
+        KernelServices kernelServices = createKernelServices();
+
+        ModelNode badContent = new ModelNode();
+        badContent.get(BYTES).set(1);
+        ModelNode op = createAddOperation(kernelServices, "Test1", null, badContent);
+        kernelServices.executeForFailure(op);
+
+        badContent = new ModelNode();
+        badContent.get(URL).set(convertToByteArray(1, 2, 3, 4, 5));
+        op = createAddOperation(kernelServices, "Test1", null, badContent);
+        kernelServices.executeForFailure(op);
+
+        badContent = new ModelNode();
+        badContent.get(BYTES).set(getByteContent(1, 2, 3, 4, 5).get(BYTES));
+        badContent.get(URL).set(getFileUrl("Test1", 1, 2, 3, 4, 5).get(URL));
+        op = createAddOperation(kernelServices, "Test1", null, badContent);
+        kernelServices.executeForFailure(op);
+
+        badContent = new ModelNode();
+        badContent.get(PATH).set(writeToFile(1, 2, 3, 4, 5).getAbsolutePath());
+        op = createAddOperation(kernelServices, "Test1", null, badContent);
+        kernelServices.executeForFailure(op);
+
+        badContent = new ModelNode();
+        badContent.get(URL).set(getFileUrl("Test1", 1, 2, 3, 4, 5).get(URL));
+        badContent.get(PATH).set(writeToFile(1, 2, 3, 4, 5).getAbsolutePath());
+        op = createAddOperation(kernelServices, "Test1", null, badContent);
+        kernelServices.executeForFailure(op);
+    }
+
+    @Test
     public void testCantWriteToAttributes() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
@@ -298,7 +330,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
     }
 
     @Test
-    public void testUploadContentHandlers() throws Exception {
+    public void testRootContentHandlers() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode operation = Util.createOperation(DeploymentUploadBytesHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
@@ -441,10 +473,10 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
 
 
     private ModelNode createOperation(KernelServices kernelServices, String name, ModelNode content) throws Exception {
-        return createOperation(kernelServices, name, null, content);
+        return createAddOperation(kernelServices, name, null, content);
     }
 
-    private ModelNode createOperation(KernelServices kernelServices, String name, String runtimeName, ModelNode content) throws Exception {
+    private ModelNode createAddOperation(KernelServices kernelServices, String name, String runtimeName, ModelNode content) throws Exception {
         ModelNode operation = Util.createOperation(DeploymentAddHandler.OPERATION_NAME, getPathAddress(name));
         if (runtimeName != null) {
             operation.get(RUNTIME_NAME).set(runtimeName);
