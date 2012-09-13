@@ -19,27 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.appclient.deployment;
+package org.jboss.as.ee.component.deployers;
 
-import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
-import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.ClassIndex;
-import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.metadata.appclient.spec.AppClientEnvironmentRefsGroupMetaData;
-import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
+import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Deployment descriptor that resolves interceptor methods defined in ejb-jar.xml that could not be resolved at
@@ -47,58 +43,34 @@ import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
  *
  * @author Stuart Douglas
  */
-public class ApplicationClientDescriptorMethodProcessor implements DeploymentUnitProcessor {
+public class DescriptorEnvironmentLifecycleMethodProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        final DeploymentReflectionIndex reflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
-        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
 
-        if (eeModuleDescription != null) {
-            for (final ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
-                if (component instanceof ApplicationClientComponentDescription) {
-                    try {
-                        handleApplicationClient((ApplicationClientComponentDescription) component, classIndex, reflectionIndex, deploymentUnit);
-
-                    } catch (ClassNotFoundException e) {
-                        throw MESSAGES.cannotLoadComponentClass(e);
-                    }
-                }
-            }
+        if (environment != null) {
+            handleMethods(environment, eeModuleDescription);
         }
-
-
     }
 
 
-    private void handleApplicationClient(final ApplicationClientComponentDescription component, final DeploymentClassIndex classIndex, final DeploymentReflectionIndex reflectionIndex, final DeploymentUnit deploymentUnit) throws ClassNotFoundException, DeploymentUnitProcessingException {
+    private void handleMethods(DeploymentDescriptorEnvironment env, EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
 
-        final ApplicationClientMetaData metaData = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_META_DATA);
-        if(metaData == null) {
-            return;
-        }
-        AppClientEnvironmentRefsGroupMetaData environment = metaData.getEnvironmentRefsGroupMetaData();
-        if(environment == null) {
-            return;
-        }
-        final ClassIndex componentClass = classIndex.classIndex(component.getComponentClassName());
+        final RemoteEnvironment environment = env.getEnvironment();
 
         // post-construct(s) of the interceptor configured (if any) in the deployment descriptor
         LifecycleCallbacksMetaData postConstructs = environment.getPostConstructs();
         if (postConstructs != null) {
             for (LifecycleCallbackMetaData postConstruct : postConstructs) {
+
                 final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
                 String methodName = postConstruct.getMethodName();
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPostConstruct(methodIdentifier);
-                if (postConstruct.getClassName() == null || postConstruct.getClassName().isEmpty()) {
-                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
-                    component.addInterceptorMethodOverride(className, builder.build());
-                } else {
-                    component.addInterceptorMethodOverride(postConstruct.getClassName(), builder.build());
-                }
+                eeModuleDescription.addInterceptorMethodOverride(postConstruct.getClassName(), builder.build());
             }
         }
 
@@ -110,12 +82,7 @@ public class ApplicationClientDescriptorMethodProcessor implements DeploymentUni
                 String methodName = preDestroy.getMethodName();
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPreDestroy(methodIdentifier);
-                if (preDestroy.getClassName() == null || preDestroy.getClassName().isEmpty()) {
-                    final String className = ClassReflectionIndexUtil.findRequiredMethod(reflectionIndex, componentClass.getModuleClass(), methodIdentifier).getDeclaringClass().getName();
-                    component.addInterceptorMethodOverride(className, builder.build());
-                } else {
-                    component.addInterceptorMethodOverride(preDestroy.getClassName(), builder.build());
-                }
+                eeModuleDescription.addInterceptorMethodOverride(preDestroy.getClassName(), builder.build());
             }
         }
     }
