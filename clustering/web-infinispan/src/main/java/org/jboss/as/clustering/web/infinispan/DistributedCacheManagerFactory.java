@@ -157,7 +157,7 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
     public Collection<ServiceController<?>> installServices(ServiceTarget target) {
         InjectedValue<Cache> cache = new InjectedValue<Cache>();
         InjectedValue<Registry.RegistryEntryProvider> providerValue = new InjectedValue<Registry.RegistryEntryProvider>();
-        ServiceController<?> controller = target.addService(JVM_ROUTE_REGISTRY_SERVICE_NAME, new RegistryService(cache, providerValue))
+        ServiceController<?> controller = AsynchronousService.addService(target, JVM_ROUTE_REGISTRY_SERVICE_NAME, new RegistryService(cache, providerValue))
                 .addDependency(CacheService.getServiceName(DEFAULT_CACHE_CONTAINER, null), Cache.class, cache)
                 .addDependency(DistributedCacheManagerFactoryService.JVM_ROUTE_REGISTRY_ENTRY_PROVIDER_SERVICE_NAME, Registry.RegistryEntryProvider.class, providerValue)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
