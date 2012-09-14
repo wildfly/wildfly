@@ -53,7 +53,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -152,15 +151,6 @@ public class ServerGroupDescription {
         root.get(OPERATION_NAME).set(REMOVE);
         root.get(DESCRIPTION).set(bundle.getString("server-group.remove"));
 
-        return root;
-    }
-
-    public static ModelNode getDeploymentRemoveOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("server-group.deployment.remove"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
     }
 

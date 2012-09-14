@@ -21,6 +21,7 @@
 */
 package org.jboss.as.server.controller.resources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.server.ServerMessages.MESSAGES;
 
 import java.util.Collections;
@@ -32,16 +33,22 @@ import java.util.Set;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.deployment.AbstractDeploymentUnitService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -51,6 +58,8 @@ import org.jboss.dmr.ModelType;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class DeploymentAttributes {
+
+    public static ResourceDescriptionResolver DEPLOYMENT_RESOLVER = ServerDescriptions.getResourceDescriptionResolver(DEPLOYMENT, false);
 
     //Top level attributes
     public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
@@ -69,13 +78,13 @@ public class DeploymentAttributes {
         .build();
 
     //Managed content value attributes
-    public static final AttributeDefinition CONTENT_INPUT_STREAM_INDEX =
+    public static final SimpleAttributeDefinition CONTENT_INPUT_STREAM_INDEX =
             createContentValueTypeAttribute(ModelDescriptionConstants.INPUT_STREAM_INDEX, ModelType.INT, new StringLengthValidator(1, true), false);
-    public static final AttributeDefinition CONTENT_HASH =
+    public static final SimpleAttributeDefinition CONTENT_HASH =
             createContentValueTypeAttribute(ModelDescriptionConstants.HASH, ModelType.BYTES, new HashValidator(true), false);
-    public static final AttributeDefinition CONTENT_BYTES =
+    public static final SimpleAttributeDefinition CONTENT_BYTES =
             createContentValueTypeAttribute(ModelDescriptionConstants.BYTES, ModelType.BYTES, new ModelTypeValidator(ModelType.BYTES, true), false);
-    public static final AttributeDefinition CONTENT_URL =
+    public static final SimpleAttributeDefinition CONTENT_URL =
             createContentValueTypeAttribute(ModelDescriptionConstants.URL, ModelType.STRING, new StringLengthValidator(1, true), false);
 
     //Unmanaged content value attributes
@@ -87,7 +96,7 @@ public class DeploymentAttributes {
             createContentValueTypeAttribute(ModelDescriptionConstants.ARCHIVE, ModelType.STRING, new StringLengthValidator(1, true), false);
 
     /** The content complex attribute */
-    public static final ObjectListAttributeDefinition CONTENT =
+    public static final ObjectListAttributeDefinition CONTENT_ALL =
                 ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
                     ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
                             CONTENT_INPUT_STREAM_INDEX,
@@ -102,15 +111,36 @@ public class DeploymentAttributes {
                     .setMinSize(1)
                     .setMaxSize(1)
                     .build();
+    public static final ObjectListAttributeDefinition CONTENT_RESOURCE =
+                ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+                    ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+                            CONTENT_HASH,
+                            CONTENT_PATH,
+                            CONTENT_RELATIVE_TO,
+                            CONTENT_ARCHIVE)
+                            .setValidator(new ContentTypeValidator())
+                            .build())
+                    .setMinSize(1)
+                    .setMaxSize(1)
+                    .build();
+
+    /** Attributes for server deployment resource */
+    public static final AttributeDefinition[] SERVER_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_RESOURCE, ENABLED, PERSISTENT, STATUS};
 
     /** Attributes for server deployment add */
-    public static final AttributeDefinition[] SERVER_ADD_ATTRIBUTES = new AttributeDefinition[] { RUNTIME_NAME, CONTENT, ENABLED, PERSISTENT, STATUS};
+    public static final AttributeDefinition[] SERVER_ADD_ATTRIBUTES = new AttributeDefinition[] { RUNTIME_NAME, CONTENT_ALL, ENABLED, PERSISTENT, STATUS};
 
     /** Attributes for server group deployment add */
-    public static final AttributeDefinition[] SERVER_ADD_GROUP_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, ENABLED};
+    public static final AttributeDefinition[] SERVER_GROUP_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, ENABLED};
+
+    /** Attributes for server group deployment add */
+    public static final AttributeDefinition[] SERVER_GROUP_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, ENABLED};
+
+    /** Attributes for domain deployment resource */
+    public static final AttributeDefinition[] DOMAIN_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_RESOURCE};
 
     /** Attributes for domain deployment add */
-    public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT};
+    public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT_ALL};
 
     /** Attributes indicating managed deployments in the content attribute */
     public static final Map<String, AttributeDefinition> MANAGED_CONTENT_ATTRIBUTES;
@@ -140,7 +170,60 @@ public class DeploymentAttributes {
         ALL_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(all);
     }
 
-    private static AttributeDefinition createContentValueTypeAttribute(String name, ModelType type, ParameterValidator validator, boolean allowExpression) {
+    public static OperationDefinition DEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.DEPLOY, DEPLOYMENT_RESOLVER);
+    public static OperationDefinition UNDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.UNDEPLOY, DEPLOYMENT_RESOLVER);
+    public static OperationDefinition REDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.REDEPLOY, DEPLOYMENT_RESOLVER);
+
+    /** Return type for the upload-deployment-xxx operaions */
+    public static SimpleAttributeDefinition UPLOAD_HASH_REPLY = SimpleAttributeDefinitionBuilder.create(CONTENT_HASH)
+            .setAllowNull(false)
+            .build();
+
+    //Upload deployment bytes definitions
+    public static AttributeDefinition BYTES_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_BYTES)
+            .setAllowNull(false)
+            .build();
+    public static OperationDefinition UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
+            .setParameters(BYTES_NOT_NULL)
+            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .build();
+    public static OperationDefinition DOMAIN_UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
+            .setParameters(BYTES_NOT_NULL)
+            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .build();
+
+    //Upload deployment url definitions
+    public static AttributeDefinition URL_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_URL)
+            .setAllowNull(false)
+            .build();
+    public static OperationDefinition UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
+            .setParameters(URL_NOT_NULL)
+            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .build();
+    public static OperationDefinition DOMAIN_UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
+            .setParameters(URL_NOT_NULL)
+            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .build();
+
+    //Upload deployment stream definition
+    public static AttributeDefinition INPUT_STREAM_INDEX_NOT_NULL = SimpleAttributeDefinitionBuilder.create(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX)
+            .setAllowNull(false)
+            .build();
+    public static Map<String, AttributeDefinition> UPLOAD_INPUT_STREAM_INDEX_ATTRIBUTES = Collections.singletonMap(INPUT_STREAM_INDEX_NOT_NULL.getName(), INPUT_STREAM_INDEX_NOT_NULL);
+    public static OperationDefinition UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
+            .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
+            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .build();
+    public static OperationDefinition DOMAIN_UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
+            .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
+            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .build();
+
+
+    private static SimpleAttributeDefinition createContentValueTypeAttribute(String name, ModelType type, ParameterValidator validator, boolean allowExpression) {
         SimpleAttributeDefinitionBuilder builder = SimpleAttributeDefinitionBuilder.create(name, type, true);
         if (validator != null) {
             builder.setValidator(validator);
@@ -211,4 +294,5 @@ public class DeploymentAttributes {
             }
         }
     }
+
 }

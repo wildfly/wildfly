@@ -20,7 +20,7 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ARCHIVE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_PATH;
@@ -97,7 +97,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         ModelNode newModel = resource.getModel();
 
         for (AttributeDefinition def : SERVER_ADD_ATTRIBUTES) {
-            if (!def.getName().equals(CONTENT.getName())) {
+            if (!def.getName().equals(CONTENT_ALL.getName())) {
                 def.validateAndSet(operation, newModel);
             } else {
                 //Handle content a bit differently to avoid two copies of the deployment content if bytes was used
@@ -106,7 +106,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        final ModelNode content = operation.require(CONTENT.getName());
+        final ModelNode content = operation.require(CONTENT_ALL.getName());
         ModelNode contentItemNode = content.require(0);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
@@ -129,7 +129,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             contentItem = addUnmanaged(contentItemNode);
         }
 
-        newModel.get(CONTENT.getName()).set(content);
+        newModel.get(CONTENT_ALL.getName()).set(content);
 
         if (ENABLED.resolveModelAttribute(context, newModel).asBoolean() && context.isNormalServer()) {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);

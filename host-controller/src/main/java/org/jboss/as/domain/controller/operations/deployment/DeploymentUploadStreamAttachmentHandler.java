@@ -23,15 +23,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPL
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.InputStream;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -40,31 +37,30 @@ import org.jboss.dmr.ModelNode;
 * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
 */
 public class DeploymentUploadStreamAttachmentHandler
-extends AbstractDeploymentUploadHandler
-implements DescriptionProvider {
+extends AbstractDeploymentUploadHandler {
 
     public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_STREAM;
 
-    private final ParametersValidator streamValidator = new ParametersValidator();
-
-    /** Constructor for a slave Host Controller */
-    public DeploymentUploadStreamAttachmentHandler() {
-        this(null);
-    }
 
     /**
-     * Constructor for a master Host Controller
+     * Constructor
      *
      * @param repository the master content repository. If {@code null} this handler will function as a slave hander would.
      */
-    public DeploymentUploadStreamAttachmentHandler(final ContentRepository repository) {
-        super(repository);
-        this.streamValidator.registerValidator(INPUT_STREAM_INDEX, new IntRangeValidator(0));
+    private DeploymentUploadStreamAttachmentHandler(final ContentRepository repository) {
+        super(repository, DeploymentAttributes.INPUT_STREAM_INDEX_NOT_NULL);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getUploadDeploymentStreamAttachmentOperation(locale);
+    public static void registerMaster(final ManagementResourceRegistration registration, final ContentRepository repository) {
+        new DeploymentUploadStreamAttachmentHandler(repository).register(registration);
+    }
+
+    public static void registerSlave(final ManagementResourceRegistration registration) {
+        new DeploymentUploadStreamAttachmentHandler(null).register(registration);
+    }
+
+    private void register(ManagementResourceRegistration registration) {
+        registration.registerOperationHandler(DeploymentAttributes.DOMAIN_UPLOAD_STREAM_ATTACHMENT_DEFINITION, this);
     }
 
     /**
@@ -72,8 +68,6 @@ implements DescriptionProvider {
      */
     @Override
     protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
-        streamValidator.validate(operation);
-
         int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
         int maxIndex = operationContext.getAttachmentStreamCount();
         if (streamIndex > maxIndex) {

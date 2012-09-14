@@ -53,11 +53,8 @@ public class ServerDeploymentResourceDescription extends DeploymentResourceDescr
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        final DeploymentDeployHandler ddhu = new DeploymentDeployHandler(vaultReader);
-        resourceRegistration.registerOperationHandler(DeploymentDeployHandler.OPERATION_NAME, ddhu, ddhu, false);
-        final DeploymentUndeployHandler duh = new DeploymentUndeployHandler(vaultReader);
-        resourceRegistration.registerOperationHandler(DeploymentUndeployHandler.OPERATION_NAME, duh, duh, false);
-        final DeploymentRedeployHandler drdh = new DeploymentRedeployHandler(vaultReader);
-        resourceRegistration.registerOperationHandler(DeploymentRedeployHandler.OPERATION_NAME, drdh, drdh, false);
+        resourceRegistration.registerOperationHandler(DeploymentAttributes.DEPLOY_DEFINITION, new DeploymentDeployHandler(vaultReader));
+        resourceRegistration.registerOperationHandler(DeploymentAttributes.UNDEPLOY_DEFINITION, new DeploymentUndeployHandler(vaultReader));
+        resourceRegistration.registerOperationHandler(DeploymentAttributes.REDEPLOY_DEFINITION, new DeploymentRedeployHandler(vaultReader));
     }
 }

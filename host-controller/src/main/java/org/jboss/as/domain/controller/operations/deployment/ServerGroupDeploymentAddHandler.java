@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_ADD_GROUP_ATTRIBUTES;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_GROUP_ADD_ATTRIBUTES;
 
 import java.util.Locale;
 
@@ -93,7 +93,7 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler, De
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode subModel = resource.getModel();
 
-        for (AttributeDefinition def : SERVER_ADD_GROUP_ATTRIBUTES) {
+        for (AttributeDefinition def : SERVER_GROUP_ADD_ATTRIBUTES) {
             def.validateAndSet(operation, subModel);
         }
         if (!RUNTIME_NAME.resolveModelAttribute(context, subModel).isDefined()) {

@@ -21,14 +21,10 @@ package org.jboss.as.domain.controller.operations.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentDeployHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerGroupDeploymentDeployHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = DEPLOY;
 
@@ -47,11 +43,6 @@ public class ServerGroupDeploymentDeployHandler implements OperationStepHandler,
     public static final ServerGroupDeploymentDeployHandler INSTANCE = new ServerGroupDeploymentDeployHandler();
 
     private ServerGroupDeploymentDeployHandler() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getDeployDeploymentOperation(locale);
     }
 
     public void execute(OperationContext context, ModelNode operation) {

@@ -24,13 +24,13 @@
 
 package org.jboss.as.controller;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
-
-import java.util.EnumSet;
 
 /**
  * Defining characteristics of operation in a {@link org.jboss.as.controller.registry.Resource}
@@ -41,8 +41,8 @@ import java.util.EnumSet;
  */
 public class SimpleOperationDefinition extends OperationDefinition {
 
-    private ResourceDescriptionResolver resolver;
-    private ResourceDescriptionResolver attributeResolver;
+    final ResourceDescriptionResolver resolver;
+    final ResourceDescriptionResolver attributeResolver;
 
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver) {
         this(name, resolver, EnumSet.noneOf(OperationEntry.Flag.class));
@@ -63,10 +63,8 @@ public class SimpleOperationDefinition extends OperationDefinition {
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags, AttributeDefinition... parameters) {
         super(name, entryType, flags, null, null, null, null, parameters);
         this.resolver = resolver;
+        this.attributeResolver = resolver;
     }
-
-
-
     SimpleOperationDefinition(final String name,
                                      final ResourceDescriptionResolver resolver,
                                      final ResourceDescriptionResolver attributeResolver,

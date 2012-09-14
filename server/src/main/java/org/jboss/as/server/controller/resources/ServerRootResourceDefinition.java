@@ -233,12 +233,9 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
                 ValidateAddressOperationHandler.INSTANCE, false, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
-        DeploymentUploadBytesHandler dubh = new DeploymentUploadBytesHandler(contentRepository);
-        resourceRegistration.registerOperationHandler(DeploymentUploadBytesHandler.OPERATION_NAME, dubh, dubh, false);
-        DeploymentUploadURLHandler duuh = new DeploymentUploadURLHandler(contentRepository);
-        resourceRegistration.registerOperationHandler(DeploymentUploadURLHandler.OPERATION_NAME, duuh, duuh, false);
-        DeploymentUploadStreamAttachmentHandler dush = new DeploymentUploadStreamAttachmentHandler(contentRepository);
-        resourceRegistration.registerOperationHandler(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, dush, dush, false);
+        DeploymentUploadBytesHandler.register(resourceRegistration, contentRepository);
+        DeploymentUploadURLHandler.register(resourceRegistration, contentRepository);
+        DeploymentUploadStreamAttachmentHandler.register(resourceRegistration, contentRepository);
 
         final DeploymentReplaceHandler drh = DeploymentReplaceHandler.create(contentRepository, vaultReader);
         resourceRegistration.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);

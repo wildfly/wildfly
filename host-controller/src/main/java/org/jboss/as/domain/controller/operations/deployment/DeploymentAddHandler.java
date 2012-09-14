@@ -21,7 +21,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.DOMAIN_ADD_ATTRIBUTES;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
@@ -84,7 +84,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         ModelNode newModel = resource.getModel();
 
         for (AttributeDefinition def : DOMAIN_ADD_ATTRIBUTES) {
-            if (!def.getName().equals(CONTENT.getName())) {
+            if (!def.getName().equals(CONTENT_ALL.getName())) {
                 def.validateAndSet(operation, newModel);
             } else {
                 //Handle content a bit differently to avoid two copies of the deployment content if bytes was used
@@ -93,7 +93,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        final ModelNode content = operation.require(CONTENT.getName());
+        final ModelNode content = operation.require(CONTENT_ALL.getName());
         ModelNode contentItemNode = content.require(0);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
@@ -147,7 +147,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         } else {
         }
 
-        newModel.get(CONTENT.getName()).set(content);
+        newModel.get(CONTENT_ALL.getName()).set(content);
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

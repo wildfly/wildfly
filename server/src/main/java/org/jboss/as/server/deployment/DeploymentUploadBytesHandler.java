@@ -18,22 +18,18 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Locale;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for the upload-deployment-bytes operation.
@@ -41,21 +37,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPL
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DeploymentUploadBytesHandler
-    extends AbstractDeploymentUploadHandler
-    implements DescriptionProvider {
+    extends AbstractDeploymentUploadHandler {
 
     public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_BYTES;
 
-    private final ParametersValidator bytesValidator = new ParametersValidator();
-
-    public DeploymentUploadBytesHandler(final ContentRepository repository) {
-        super(repository);
-        this.bytesValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES));
+    private DeploymentUploadBytesHandler(final ContentRepository repository, AttributeDefinition attribute) {
+        super(repository, attribute);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getUploadDeploymentBytesOperation(locale);
+    public static void register(final ManagementResourceRegistration registration, final ContentRepository repository) {
+        registration.registerOperationHandler(DeploymentAttributes.UPLOAD_BYTES_DEFINITION,
+                new DeploymentUploadBytesHandler(repository, DeploymentAttributes.BYTES_NOT_NULL));
     }
 
     /**
@@ -63,8 +55,7 @@ public class DeploymentUploadBytesHandler
      */
     @Override
     protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws OperationFailedException {
-        bytesValidator.validate(operation);
-        byte[] bytes = operation.get(BYTES).asBytes();
+        byte[] bytes = attribute.resolveModelAttribute(operationContext, operation).asBytes();
         return new ByteArrayInputStream(bytes);
     }
 
