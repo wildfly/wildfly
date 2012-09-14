@@ -59,6 +59,8 @@ import java.util.Set;
  */
 public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
 
+    public static final String FACES_ANNOTATIONS_SC_ATTR = JSFAnnotationProcessor.class.getName() + "FACES_ANNOTATIONS";
+
     private enum FacesAnnotation {
         FACES_COMPONENT(FacesComponent.class),
         FACES_CONVERTER(FacesConverter.class),
@@ -118,7 +120,7 @@ public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
                 }
             }
         }
-        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(JandexAnnotationProvider.FACES_ANNOTATIONS, instances));
+        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(FACES_ANNOTATIONS_SC_ATTR, instances));
     }
 
     public void undeploy(DeploymentUnit context) {
