@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -34,6 +35,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.jboss.as.cli.Util;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -56,24 +58,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.cleanFile;
 import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
 import static org.junit.Assert.assertEquals;
@@ -84,7 +81,7 @@ import static org.junit.Assert.assertEquals;
 public class DeploymentOverlayTestCase {
 
     public static final String TEST_OVERLAY = "test";
-    public static final String TEST_SERVER = "test-server";
+    public static final String TEST_WILDCARD = "test-server";
 
     private static final String TEST = "test.war";
     private static final String REPLACEMENT = "test.war.v2";
@@ -224,47 +221,60 @@ public class DeploymentOverlayTestCase {
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         executeOnMaster(op);
 
-        //add the deployment overlay that will be linked to a single server
+
+        //add the wildard link
+        final ModelNode composite = new ModelNode();
+        final OperationBuilder opBuilder = new OperationBuilder(composite, true);
+        composite.get(Util.OPERATION).set(Util.COMPOSITE);
+        composite.get(Util.ADDRESS).setEmptyList();
+        final ModelNode steps = composite.get(Util.STEPS);
+
+
         op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_SERVER);
+        op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
+        steps.add(op);
 
         op = new ModelNode();
         addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_SERVER);
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.BYTES).set(FileUtils.readFile(getClass().getClassLoader().getResource( "deploymentoverlay/wildcard-override.xml")).getBytes());
-        executeOnMaster(op);
 
-        op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP_ADDR).set(new ModelNode());
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES);
-        op.get(ModelDescriptionConstants.BYTES).set("new file".getBytes());
-        final ModelNode result = executeOnMaster(op);
+        steps.add(op);
 
         op = new ModelNode();
         addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_SERVER);
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
         addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/classes/wildcard-new-file");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).get(HASH).set(result);
-        executeOnMaster(op);
-/*
-        //add the per server link
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.HOST, "master");
-        addr.add(ModelDescriptionConstants.SERVER, "main-one" );
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY_LINK, TEST_SERVER);
+        op.get(ModelDescriptionConstants.CONTENT).get(ModelDescriptionConstants.INPUT_STREAM_INDEX).set(0);
+        opBuilder.addInputStream(new ByteArrayInputStream("new file".getBytes()));
+        steps.add(op);
+
+        //add the non-wildcard link to the server group
         op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.DEPLOYMENT).set("*.war");
-        op.get(ModelDescriptionConstants.DEPLOYMENT_OVERLAY).set(TEST_SERVER);
-        executeOnMaster(op);*/
+        steps.add(op);
+
+        op = new ModelNode();
+        addr = new ModelNode();
+        addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
+        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
+        addr.add(ModelDescriptionConstants.DEPLOYMENT, ".*\\.war");
+        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
+        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
+        op.get(ModelDescriptionConstants.REGULAR_EXPRESSION).set(true);
+        steps.add(op);
+
+        executeOnMaster(opBuilder.build());
     }
 
 
@@ -339,31 +349,6 @@ public class DeploymentOverlayTestCase {
         }
 
         return composite;
-    }
-
-    private static ModelNode createDeploymentReplaceOperation(ModelNode content, ModelNode... serverGroupAddressses) {
-        ModelNode composite = getEmptyOperation(COMPOSITE, ROOT_ADDRESS);
-        ModelNode steps = composite.get(STEPS);
-        ModelNode step1 = steps.add();
-        step1.set(getEmptyOperation(ADD, ROOT_REPLACEMENT_ADDRESS));
-        step1.get(RUNTIME_NAME).set(TEST);
-        step1.get(CONTENT).add(content);
-        for (ModelNode serverGroup : serverGroupAddressses) {
-            ModelNode sgr = steps.add();
-            sgr.set(getEmptyOperation(REPLACE_DEPLOYMENT, serverGroup));
-            sgr.get(ENABLED).set(true);
-            sgr.get(NAME).set(REPLACEMENT);
-            sgr.get(TO_REPLACE).set(TEST);
-        }
-
-        return composite;
-    }
-
-    private static ModelNode createDeploymentFullReplaceOperation(ModelNode content) {
-        ModelNode op = getEmptyOperation(FULL_REPLACE_DEPLOYMENT, ROOT_ADDRESS);
-        op.get(NAME).set(TEST);
-        op.get(CONTENT).add(content);
-        return op;
     }
 
     private static List<ModelNode> getDeploymentList(ModelNode address) throws IOException {

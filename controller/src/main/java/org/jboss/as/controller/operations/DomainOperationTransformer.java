@@ -22,21 +22,23 @@
 
 package org.jboss.as.controller.operations;
 
-import java.util.List;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.dmr.ModelNode;
 
 /**
+ * Class that is used to transform an operation before it is send to other servers in the domain.
+ *
+ * The main use case for this is replacing content addition parameters with a hash into the content
+ * repository.
+ *
+ *
  * @author Stuart Douglas
+ * @see OperationAttachments#SLAVE_SERVER_OPERATION_TRANSFORMERS
+ * @see  CompositeOperationAwareTransformer
+ *
  */
-public class OperationAttachments {
+public interface DomainOperationTransformer {
 
-
-    public static OperationContext.AttachmentKey<List<DomainOperationTransformer>> SLAVE_SERVER_OPERATION_TRANSFORMERS = OperationContext.AttachmentKey.create(List.class);
-
-
-    private OperationAttachments() {
-
-    }
+    ModelNode transform(final OperationContext context, final ModelNode operation);
 
 }

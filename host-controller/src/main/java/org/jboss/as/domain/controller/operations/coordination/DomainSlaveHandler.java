@@ -43,6 +43,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.dmr.ModelNode;
@@ -81,9 +82,12 @@ public class DomainSlaveHandler implements OperationStepHandler {
             // Create the proxy task
             final String host = entry.getKey();
             final TransformingProxyController proxyController = (TransformingProxyController) entry.getValue();
-            ModelNode op = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION);
-            if(op == null) {
-                op = operation;
+            List<DomainOperationTransformer> transformers = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS);
+            ModelNode op = operation;
+            if(transformers != null) {
+                for(final DomainOperationTransformer transformer : transformers) {
+                    op = transformer.transform(context, op);
+                }
             }
             final HostControllerUpdateTask task = new HostControllerUpdateTask(host, op.clone(), context, proxyController);
             // Execute the operation on the remote host

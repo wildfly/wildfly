@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.InterfaceDescription;
+import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
@@ -34,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
@@ -170,9 +171,12 @@ public class ServerOperationResolver {
             HOST_CONTROLLER_LOGGER.tracef("Resolving %s", originalOperation);
         }
 
-        ModelNode operation = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION);
-        if(operation == null) {
-            operation = originalOperation;
+        List<DomainOperationTransformer> transformers = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS);
+        ModelNode operation = originalOperation;
+        if(transformers != null) {
+            for(DomainOperationTransformer transformer : transformers) {
+                operation = transformer.transform(context, operation);
+            }
         }
 
         Set<ModelNode> dontPropagate = context.getAttachment(DONT_PROPAGATE_TO_SERVERS_ATTACHMENT);
