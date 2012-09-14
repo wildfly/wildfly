@@ -51,6 +51,7 @@ import javax.security.sasl.RealmChoiceCallback;
 import java.io.DataInput;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -62,6 +63,7 @@ import java.util.concurrent.ExecutorService;
 class HostControllerConnection extends FutureManagementChannel {
 
     private static final String SERVER_CHANNEL_TYPE = ManagementRemotingServices.SERVER_CHANNEL;
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     private final String userName;
     private final String serverProcessName;
@@ -321,7 +323,7 @@ class HostControllerConnection extends FutureManagementChannel {
                     ncb.setName(userName);
                 } else if (current instanceof PasswordCallback) {
                     PasswordCallback pcb = (PasswordCallback) current;
-                    pcb.setPassword(new String(authKey).toCharArray());
+                    pcb.setPassword(new String(authKey, UTF_8).toCharArray());
                 } else {
                     throw new UnsupportedCallbackException(current);
                 }
