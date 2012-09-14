@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -55,8 +56,10 @@ import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
+import org.jboss.as.server.deployment.DeploymentFullReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentRedeployHandler;
 import org.jboss.as.server.deployment.DeploymentRemoveHandler;
+import org.jboss.as.server.deployment.DeploymentReplaceHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
@@ -223,7 +226,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
     public void testUnmanagedDeploymentAbsolutePath() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        File file = writeToFile(1, 2, 3, 4, 5);
+        File file = writeToFile("Test-file1", 1, 2, 3, 4, 5);
         ModelNode content = new ModelNode();
         content.get(PATH).set(file.getAbsolutePath());
         ModelNode op = createOperation(kernelServices, "Test1", content);
@@ -233,20 +236,20 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op = createOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
-        checkUnmanagedContents(file, deployedContent, true);
+        checkUnmanagedContents(file, deployedContent, true, true);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
-        checkUnmanagedContents(file, deployedContent, true);
+        checkUnmanagedContents(file, deployedContent, true, true);
         op = Util.createOperation(DeploymentUndeployHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
-        checkUnmanagedContents(file, deployedContent, true);
+        checkUnmanagedContents(file, deployedContent, true, true);
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
-        checkUnmanagedContents(file, deployedContent, true);
+        checkUnmanagedContents(file, deployedContent, true, true);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
@@ -257,34 +260,37 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
     public void testUnmanagedDeploymentRelativePath() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        File file = writeToFile(1, 2, 3, 4, 5);
+        File file = writeToFile("Test-file1", 1, 2, 3, 4, 5);
         File dir = file.getParentFile();
         ModelNode content = new ModelNode();
-        content.get(PATH).set(file.getName());
         content.get(RELATIVE_TO).set(dir.getAbsolutePath());
         ModelNode op = createOperation(kernelServices, "Test1", content);
         kernelServices.executeForFailure(op);
 
         content.get(ARCHIVE).set(false);
         op = createOperation(kernelServices, "Test1", content);
+        kernelServices.executeForFailure(op);
+
+        content.get(PATH).set(file.getName());
+        op = createOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
-        checkUnmanagedContents(file, deployedContent, false);
+        checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
-        checkUnmanagedContents(file, deployedContent, false);
+        checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentUndeployHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
-        checkUnmanagedContents(file, deployedContent, false);
+        checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
-        checkUnmanagedContents(file, deployedContent, false);
+        checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
@@ -316,7 +322,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
         ModelNode op = createOperation(kernelServices, "Test1", content);
-        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", false);
 
         op = createWriteAttributeOperation(kernelServices, "Test1", NAME, new ModelNode("Whatever"));
@@ -345,7 +351,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         checkNoDeployments(kernelServices);
 
         operation = Util.createOperation(DeploymentUploadURLHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
-        File file = writeToFile(new int[] {1, 2, 3, 4, 5});
+        File file = writeToFile("Test-file1", new int[] {1, 2, 3, 4, 5});
         operation.get(URL).set(file.toURI().toURL().toString());
         ModelNode hashUrl = kernelServices.executeForResult(operation);
         checkNoDeployments(kernelServices);
@@ -358,6 +364,303 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         Assert.assertEquals(hashBytes, hashStream);
 
         //TODO DeploymentFullReplace
+    }
+
+    @Test
+    public void testDeploymentFullReplaceHandlerNoDeployment() throws Exception {
+        KernelServices kernelServices = createKernelServices();
+
+        //Now start replacing it
+        ModelNode op = Util.createOperation(DeploymentFullReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test1");
+        op.get(CONTENT).add(getByteContent(6, 7, 8, 9, 10));
+        kernelServices.executeForFailure(op);
+    }
+
+    @Test
+    public void testDeploymentFullReplaceHandlerManaged() throws Exception {
+        KernelServices kernelServices = createKernelServices();
+
+        //Create the original deployment
+        ModelNode content = getByteContent(1, 2, 3, 4, 5);
+        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        ModelNode originalHash = checkSingleDeployment(kernelServices, "Test1", false);
+
+        //Now start replacing it
+        op = Util.createOperation(DeploymentFullReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test1");
+        op.get(CONTENT).add(getByteContent(6, 7, 8, 9, 10));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        ModelNode newHash = checkSingleDeployment(kernelServices, "Test1", false);
+        Assert.assertFalse(originalHash.equals(newHash));
+
+        op = op.clone();
+        op.get(CONTENT).clear();
+        ModelNode hashContent = new ModelNode();
+        hashContent.get(HASH).set(newHash);
+        op.get(CONTENT).add(hashContent);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        Assert.assertEquals(newHash, checkSingleDeployment(kernelServices, "Test1", false));
+
+        op = op.clone();
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(getFileUrl("Test1", 1, 2, 3, 4, 5));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        Assert.assertEquals(originalHash, checkSingleDeployment(kernelServices, "Test1", false));
+
+        //Now deploy it
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"))));
+        Assert.assertEquals(originalHash, checkSingleDeployment(kernelServices, "Test1", true));
+
+        //Replace again with a runtime name
+        op = op.clone();
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(getInputStreamIndexContent());
+        op.get(RUNTIME_NAME).set("number1");
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {6, 7, 8, 9, 10})));
+        ModelNode deployments = getDeploymentParentResource(kernelServices);
+        Assert.assertEquals(1, deployments.keys().size());
+        Assert.assertEquals(true, deployments.get("Test1", ENABLED).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test1", PERSISTENT).asBoolean());
+        Assert.assertEquals("number1", deployments.get("Test1", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
+        Assert.assertEquals(newHash, getContentHashOnly(deployments.get("Test1")));
+    }
+
+    @Test
+    public void testDeploymentFullReplaceHandlerUnmanaged() throws Exception {
+        KernelServices kernelServices = createKernelServices();
+
+        File file1 = writeToFile("Testfile1", 1, 2, 3, 4, 5);
+        File file2 = writeToFile("Testfile2", 6, 7, 8, 9, 10);
+
+        //Create the original deployment
+        ModelNode contentNode = new ModelNode();
+        contentNode.get(PATH).set(file1.getAbsolutePath());
+        ModelNode op = createOperation(kernelServices, "Test1", contentNode);
+        kernelServices.executeForFailure(op);
+
+        contentNode.get(ARCHIVE).set(true);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(contentNode);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        ModelNode originalContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
+        checkUnmanagedContents(file1, originalContent, true, true);
+
+        op = Util.createOperation(DeploymentFullReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test1");
+        contentNode = new ModelNode();
+        contentNode.get(PATH).set(file2.getAbsolutePath());
+        contentNode.get(ARCHIVE).set(false);
+        kernelServices.executeForFailure(op);
+        op.get(CONTENT).add(contentNode);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        ModelNode currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
+        checkUnmanagedContents(file2, currentContent, false, true);
+
+        op = op.clone();
+        op.get(CONTENT).clear();
+        contentNode = new ModelNode();
+        contentNode.get(RELATIVE_TO).set(file1.getParentFile().getAbsolutePath());
+        contentNode.get(ARCHIVE).set(true);
+        op.get(CONTENT).add(contentNode);
+        kernelServices.executeForFailure(op);
+
+        contentNode.get(PATH).set(file1.getName());
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(contentNode);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+        currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
+        checkUnmanagedContents(file1, currentContent, true, false);
+    }
+
+    @Test
+    public void testDeploymentReplaceHandlerNoDeployment() throws Exception {
+        KernelServices kernelServices = createKernelServices();
+
+        ModelNode op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test2");
+        op.get(TO_REPLACE).set("Test1");
+        kernelServices.executeForFailure(op);
+
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(createOperation(kernelServices, "Test1", getByteContent(1, 2, 3, 4, 5))));
+        kernelServices.executeForFailure(op);
+        removeDeployment(kernelServices, "Test1");
+
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(createOperation(kernelServices, "Test2", getByteContent(1, 2, 3, 4, 5))));
+        kernelServices.executeForFailure(op);
+    }
+
+    @Test
+    public void testDeploymentReplaceHandler() throws Exception {
+        KernelServices kernelServices = createKernelServices();
+
+        //Create the original deployments
+        ModelNode op = createOperation(kernelServices, "Test1", getByteContent(1, 2, 3, 4, 5));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
+        op = createOperation(kernelServices, "Test2", getByteContent(6, 7, 8, 9, 10));
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
+        //TODO replace with more sane checks once rebased
+        ModelNode deployments = getDeploymentParentResource(kernelServices);
+        Assert.assertEquals(2, deployments.keys().size());
+        Assert.assertEquals(false, deployments.get("Test1", ENABLED).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test1", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test1"));
+        Assert.assertEquals(false, deployments.get("Test2", ENABLED).asBoolean());
+        Assert.assertEquals("Test2", deployments.get("Test2", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test2", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test2", deployments.get("Test2", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test2"));
+
+        op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test2");
+        op.get(TO_REPLACE).set("Test1");
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
+        //TODO replace with more sane checks once rebased
+        deployments = getDeploymentParentResource(kernelServices);
+        Assert.assertEquals(2, deployments.keys().size());
+        Assert.assertEquals(false, deployments.get("Test1", ENABLED).asBoolean());//now false
+        Assert.assertEquals("Test1", deployments.get("Test1", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test1", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test1"));
+        Assert.assertEquals(true, deployments.get("Test2", ENABLED).asBoolean());//now true
+        Assert.assertEquals("Test2", deployments.get("Test2", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test2", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test2", deployments.get("Test2", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test2"));
+
+        op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test2");
+        op.get(TO_REPLACE).set("Test1");
+        kernelServices.executeForFailure(op); //Should fail since 2 is already started
+        op.get(NAME).set("Test1");
+        op.get(TO_REPLACE).set("Test2");
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
+        //TODO replace with more sane checks once rebased
+        deployments = getDeploymentParentResource(kernelServices);
+        Assert.assertEquals(2, deployments.keys().size());
+        Assert.assertEquals(true, deployments.get("Test1", ENABLED).asBoolean());//now true
+        Assert.assertEquals("Test1", deployments.get("Test1", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test1", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test1"));
+        Assert.assertEquals(false, deployments.get("Test2", ENABLED).asBoolean());//now false
+        Assert.assertEquals("Test2", deployments.get("Test2", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test2", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test2", deployments.get("Test2", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
+        ModelNode hash1 = getContentHashOnly(deployments.get("Test2"));
+
+        removeDeployment(kernelServices, "Test2");
+
+        op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test2");
+        op.get(TO_REPLACE).set("Test1");
+        kernelServices.executeForFailure(op); //There is no 2
+
+        //Only supported managed is hash
+        op.get(CONTENT).add(getByteContent(1, 2, 3, 4, 5));
+        kernelServices.executeForFailure(op);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(getFileUrl("file1", 1, 2, 3, 4, 5));
+        kernelServices.executeForFailure(op);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(getInputStreamIndexContent());
+        kernelServices.executeForFailure(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5}));
+
+        ModelNode hashContent = new ModelNode();
+        hashContent.get(HASH).set(hash1);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(hashContent);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
+        //TODO replace with more sane checks once rebased
+        deployments = getDeploymentParentResource(kernelServices);
+        Assert.assertEquals(2, deployments.keys().size());
+        Assert.assertEquals(false, deployments.get("Test1", ENABLED).asBoolean());//now false
+        Assert.assertEquals("Test1", deployments.get("Test1", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test1", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test1"));
+        Assert.assertEquals(true, deployments.get("Test2", ENABLED).asBoolean());//now true
+        Assert.assertEquals("Test2", deployments.get("Test2", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test2", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test2", RUNTIME_NAME).asString()); //Runtime name gets overwritten
+        Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test2"));
+
+        removeDeployment(kernelServices, "Test1");
+
+        File file1 = writeToFile("test-file2", 5, 6, 7, 8, 9);
+        op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test1");
+        op.get(TO_REPLACE).set("Test2");
+        ModelNode managedContent = new ModelNode();
+        managedContent.get(PATH).set(file1.getAbsolutePath());
+        op.get(CONTENT).add(managedContent);
+        kernelServices.executeForFailure(op);
+        managedContent.get(ARCHIVE).set(true);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(managedContent);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
+        //TODO replace with more sane checks once rebased
+        deployments = getDeploymentParentResource(kernelServices);
+        Assert.assertEquals(2, deployments.keys().size());
+        Assert.assertEquals(true, deployments.get("Test1", ENABLED).asBoolean());//now true
+        Assert.assertEquals("Test1", deployments.get("Test1", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test1", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test1", RUNTIME_NAME).asString());
+        Assert.assertFalse(deployments.get("Test1", SUBDEPLOYMENT).isDefined());
+        ModelNode content1 = getContentOnly(deployments.get("Test1"));
+        checkUnmanagedContents(file1, content1, true, true);
+        Assert.assertEquals(false, deployments.get("Test2", ENABLED).asBoolean());//now false
+        Assert.assertEquals("Test2", deployments.get("Test2", NAME).asString());
+        Assert.assertEquals(true, deployments.get("Test2", PERSISTENT).asBoolean());
+        Assert.assertEquals("Test1", deployments.get("Test2", RUNTIME_NAME).asString()); //Runtime name gets overwritten
+        Assert.assertFalse(deployments.get("Test2", SUBDEPLOYMENT).isDefined());
+        getContentHashOnly(deployments.get("Test2"));
+
+        removeDeployment(kernelServices, "Test2");
+
+        File file2 = writeToFile("test-file1", 5, 6, 7, 8, 9);
+        op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        op.get(NAME).set("Test2");
+        op.get(TO_REPLACE).set("Test1");
+        managedContent = new ModelNode();
+        managedContent.get(RELATIVE_TO).set(file2.getParentFile().getAbsolutePath());
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(managedContent);
+        kernelServices.executeForFailure(op);
+        managedContent.get(ARCHIVE).set(true);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(managedContent);
+        kernelServices.executeForFailure(op);
+        managedContent.remove(ARCHIVE);
+        managedContent.get(PATH).set(file2.getName());
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(managedContent);
+        kernelServices.executeForFailure(op);
+        managedContent.get(ARCHIVE).set(false);
+        op.get(CONTENT).clear();
+        op.get(CONTENT).add(managedContent);
+        ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
+
 
     }
 
@@ -369,15 +672,16 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
 
 
-    private void checkUnmanagedContents(File file, ModelNode deployedContent, boolean absolute) {
+    private void checkUnmanagedContents(File file, ModelNode deployedContent, boolean archive, boolean absolute) {
         Assert.assertEquals(absolute ? 2 : 3, deployedContent.keys().size());
         if (absolute) {
             Assert.assertEquals(file.getAbsolutePath(), deployedContent.get(PATH).asString());
-            Assert.assertTrue(deployedContent.get(ARCHIVE).asBoolean());
+            Assert.assertEquals(archive, deployedContent.get(ARCHIVE).asBoolean());
+            Assert.assertFalse(deployedContent.get(RELATIVE_TO).isDefined());
         } else {
             Assert.assertEquals(file.getName(), deployedContent.get(PATH).asString());
             Assert.assertEquals(file.getParentFile().getAbsolutePath(), deployedContent.get(RELATIVE_TO).asString());
-            Assert.assertFalse(deployedContent.get(ARCHIVE).asBoolean());
+            Assert.assertEquals(archive, deployedContent.get(ARCHIVE).asBoolean());
         }
     }
 
@@ -452,14 +756,14 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
     }
 
     private ModelNode getFileUrl(String name, int...bytes) throws Exception {
-        File f = writeToFile(bytes);
+        File f = writeToFile(name, bytes);
         ModelNode model = new ModelNode();
         model.get(URL).set(f.toURI().toURL().toString());
         return model;
     }
 
-    private File writeToFile(int...bytes) throws IOException {
-        File file = new File("target/test-file");
+    private File writeToFile(String name, int...bytes) throws IOException {
+        File file = new File("target/" + name);
         file.delete();
         FileOutputStream fout = new FileOutputStream(file);
         try {

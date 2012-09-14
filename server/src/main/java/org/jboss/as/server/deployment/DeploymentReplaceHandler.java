@@ -28,10 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
-
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.DeploymentFileRepository;
-import org.jboss.as.server.ServerMessages;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 import java.util.Locale;
@@ -43,11 +39,14 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -135,6 +134,13 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
             final Resource deployResource = context.createResource(PathAddress.pathAddress(deployPath));
             deployNode = deployResource.getModel();
             deployNode.get(RUNTIME_NAME).set(runtimeName);
+
+            //TODO Remove these once converted to AD
+            deployNode.get(NAME).set(name);
+            //TODO Assumes this can only be set by client
+            deployNode.get(ModelDescriptionConstants.PERSISTENT).set(true);
+
+
             deployNode.get(CONTENT).set(content);
 
         } else {
