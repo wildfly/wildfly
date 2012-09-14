@@ -37,6 +37,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.filter.PathFilters;
 
 /**
+ * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  * @author Stuart Douglas
  */
 public class JSFDependencyProcessor implements DeploymentUnitProcessor {
@@ -45,6 +46,8 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     private static final ModuleIdentifier JSF_IMPL = ModuleIdentifier.create("com.sun.jsf-impl");
     private static final ModuleIdentifier JSF_API = ModuleIdentifier.create("javax.faces.api");
     private static final ModuleIdentifier JSF_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.jsf");
+    private static final ModuleIdentifier JSF_INJECTION = ModuleIdentifier.create("org.jboss.as.jsf-injection");
+    private static final ModuleIdentifier JSF_INJECTION_1_2 = ModuleIdentifier.create("org.jboss.as.jsf-injection", "1.2");
     private static final ModuleIdentifier JSF_1_2_IMPL = ModuleIdentifier.create("com.sun.jsf-impl", "1.2");
     private static final ModuleIdentifier JSF_1_2_API = ModuleIdentifier.create("javax.faces.api", "1.2");
     private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
@@ -78,6 +81,8 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true, false));
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
+
+        addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
     }
 
     @Override
@@ -106,5 +111,16 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         ModuleDependency jsf = new ModuleDependency(moduleLoader, jsfModule, false, false, false, false);
         jsf.addImportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(jsf);
+    }
+
+    private void addJSFInjection(String jsfVersion, ModuleSpecification moduleSpecification, ModuleLoader moduleLoader) {
+        if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
+
+        ModuleIdentifier jsfInjecitonModule = JSF_INJECTION;
+        if (jsfVersion.equals(JsfVersionMarker.JSF_1_2)) jsfInjecitonModule = JSF_INJECTION_1_2;
+
+        ModuleDependency jsfInjectionDependency = new ModuleDependency(moduleLoader, jsfInjecitonModule, false, true, true, false);
+
+        moduleSpecification.addSystemDependency(jsfInjectionDependency);
     }
 }

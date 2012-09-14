@@ -33,10 +33,16 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-jsf</artifactId>
+    <artifactId>jboss-as-jsf-parent</artifactId>
     <version>7.2.0.Alpha1-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-    <name>JBoss Application Server: JSF Integration</name>
+    <name>JBoss Application Server: JSF Integration Parent Module</name>
+
+    <modules>
+       <module>subsystem</module>
+       <module>injection</module>
+    </modules>
 
     <build>
         <plugins>
@@ -61,54 +67,4 @@
 
         </plugins>
     </build>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-controller</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-ee</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-server</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-subsystem-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.metadata</groupId>
-            <artifactId>jboss-metadata-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.servlet</groupId>
-            <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.spec.javax.faces</groupId>
-            <artifactId>jboss-jsf-api_2.1_spec</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-        </dependency>
-
-    </dependencies>
 </project>

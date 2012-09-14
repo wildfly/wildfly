@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jsf.deployment;
+package org.jboss.as.jsf.injection;
 
 import com.sun.faces.spi.AnnotationProvider;
 
@@ -28,6 +28,7 @@ import javax.servlet.ServletContext;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
+import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 
 /**
  * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a
@@ -36,14 +37,12 @@ import java.util.Set;
  * @author John Bailey
  */
 public class JandexAnnotationProvider extends AnnotationProvider {
-    static final String FACES_ANNOTATIONS = "FACES_ANNOTATIONS";
-
     private final Map<Class<? extends Annotation>, Set<Class<?>>> annotations;
 
     @SuppressWarnings("unchecked")
     public JandexAnnotationProvider(final ServletContext servletContext) {
         super(servletContext);
-        annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(FACES_ANNOTATIONS);
+        annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(JSFAnnotationProcessor.FACES_ANNOTATIONS_SC_ATTR);
     }
 
     // Note: The Mojarra 2.0 SPI specifies that this method takes Set<URL> as its argument.  The Mojarra 2.1 SPI
