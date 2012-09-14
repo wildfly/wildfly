@@ -237,4 +237,14 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 15016, value = "Initial deployment scan failed")
     void initialScanFailed(@Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15017, value = "Deployment %s was previously deployed by this scanner but has been undeployed by " +
+            "another management tool. Marker file %s is being added to record this fact.")
+    void scannerDeploymentUndeployedButNotByScanner(String deploymentName, File marker);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15018, value = "Deployment %s was previously deployed by this scanner but has been removed from the " +
+            "server deployment list by another management tool. Marker file %s is being added to record this fact.")
+    void scannerDeploymentRemovedButNotByScanner(String deploymentName, File marker);
 }
