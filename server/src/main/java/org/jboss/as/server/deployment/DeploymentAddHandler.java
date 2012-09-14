@@ -36,7 +36,6 @@ import static org.jboss.as.server.deployment.DeploymentHandlerUtils.hasValidCont
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
@@ -45,13 +44,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 

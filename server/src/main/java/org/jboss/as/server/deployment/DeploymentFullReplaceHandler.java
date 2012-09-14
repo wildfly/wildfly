@@ -100,7 +100,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final DeploymentHandlerUtil.ContentItem contentItem;
         ModelNode contentItemNode = content.require(0);
-        byte[] originalHash = contentItemNode.hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, contentItemNode).asBytes() : null;
+        byte[] originalHash = replaceNode.get(CONTENT).get(0).hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, replaceNode.get(CONTENT).get(0)).asBytes() : null;
         if (contentItemNode.hasDefined(CONTENT_HASH.getName())) {
             byte[] hash = CONTENT_HASH.resolveModelAttribute(context, contentItemNode).asBytes();
 
