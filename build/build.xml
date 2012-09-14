@@ -898,6 +898,14 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jsf" />
         </module-def>
 
+        <module-def name="org.jboss.as.jsf-injection">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jsf-injection" />
+        </module-def>
+
+        <module-def name="org.jboss.as.jsf-injection" slot="1.2">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-jsf-injection" />
+        </module-def>
+
         <module-def name="org.jboss.as.logging">
             <maven-resource group="org.jboss.as" artifact="jboss-as-logging"/>
         </module-def>
