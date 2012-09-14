@@ -104,25 +104,6 @@
                             </execution>
                         </executions>
                     </plugin>
-		            <plugin>
-		                <groupId>org.apache.maven.plugins</groupId>
-		                <artifactId>maven-antrun-plugin</artifactId>
-		                <inherited>false</inherited>
-		                <executions>
-		                    <execution>
-		                        <id>ts.smoke.copy-test-libs</id> <goals><goal>run</goal></goals>
-		                        <phase>test-compile</phase>
-		                        <configuration>
-		                            <target>
-		                                <property name="tests.output.dir"    value="${project.build.directory}"/>
-		                                <ant antfile="src/test/scripts/copy-test-libs.xml">
-		                                    <target name="copy-jars"/>
-		                                </ant>
-		                            </target>
-		                        </configuration>
-		                    </execution>
-		                </executions>
-		            </plugin>
                 </plugins>
             </build>
         </profile>

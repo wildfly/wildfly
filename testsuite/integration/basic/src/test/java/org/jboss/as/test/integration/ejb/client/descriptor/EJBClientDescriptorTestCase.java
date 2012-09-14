@@ -50,7 +50,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.osgi.framework.Bundle;
 
 /**
  * Tests that deployments containing a jboss-ejb-client.xml are processed correctly for EJB client context
@@ -70,7 +69,6 @@ public class EJBClientDescriptorTestCase {
     private static final String MODULE_NAME_ONE = "ejb-client-descriptor-test";
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
     private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
-    private static final String BUNDLE_NAME_ONE = "ejb-client-descriptor-bundle";
     private static final String JBOSS_EJB_CLIENT_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_2_xml";
 
 
@@ -113,22 +111,6 @@ public class EJBClientDescriptorTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME_ONE + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        return jar;
-    }
-
-    @Deployment(name = "good-client-config-bundle", testable = false, managed = false)
-    public static JavaArchive createGoodClientConfigBundle() throws Exception {
-        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, BUNDLE_NAME_ONE + ".jar");
-        jar.addPackage(EchoBean.class.getPackage());
-        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        jar.setManifest(new Asset() {
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(jar.getName());
-                builder.addBundleManifestVersion(2);
-                return builder.openStream();
-            }
-        });
         return jar;
     }
 
@@ -177,26 +159,6 @@ public class EJBClientDescriptorTestCase {
             Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
         } finally {
             deployer.undeploy("good-client-config");
-        }
-    }
-
-    /**
-     * Tests that a {@link Bundle} deployment containing jboss-ejb-client.xml with remoting EJB receivers configured, works as expected
-     * https://issues.jboss.org/browse/AS7-5009
-     */
-    @Test
-    public void testEJBClientContextConfigurationInOSGiBundle() throws Exception {
-        deployer.deploy("good-client-config-bundle");
-        try {
-            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + BUNDLE_NAME_ONE + "/" + DISTINCT_NAME
-                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
-            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-            final String msg = "Hello world from a EJB client descriptor test!!!";
-            final String echo = remoteEcho.echo(BUNDLE_NAME_ONE, msg);
-            logger.info("Received echo " + echo);
-            Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
-        } finally {
-            deployer.undeploy("good-client-config-bundle");
         }
     }
 

@@ -560,6 +560,11 @@
             <modules><module>integration</module></modules>
         </profile>
         <profile>
+            <id>integ-osgi.module.profile</id>
+            <activation><property><name>ts.osgi</name></property></activation>
+            <modules><module>integration</module></modules>
+        </profile>
+        <profile>
             <id>integ-xts.module.profile</id>
             <activation><property><name>ts.xts</name></property></activation>
             <modules><module>integration</module></modules>
