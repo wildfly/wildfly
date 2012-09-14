@@ -55,6 +55,7 @@
                 <module>basic</module>
                 <module>clust</module>
                 <module>iiop</module>
+                <module>osgi</module>
                 <module>xts</module>
                 <module>multinode</module>
                 <module>manualmode</module>
@@ -108,6 +109,15 @@
             <activation><property><name>ts.iiop</name></property></activation>
             <modules>
                 <module>iiop</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.osgi -->
+        <profile>
+            <id>ts.integ.group.osgi</id>
+            <activation><property><name>ts.osgi</name></property></activation>
+            <modules>
+                <module>osgi</module>
             </modules>
         </profile>
 

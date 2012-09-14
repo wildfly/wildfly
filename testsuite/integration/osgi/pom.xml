@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-ts-integ</artifactId>
+        <version>7.2.0.Alpha1-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- *********************************** OSGi       *********************************** -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-ts-integ-osgi</artifactId>
+    <version>7.2.0.Alpha1-SNAPSHOT</version>
+
+    <name>JBoss Application Server Test Suite: Integration - OSGi</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>osgi.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noOSGi</name>
+                </property>
+            </activation>
+
+            <properties>
+            </properties>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-clustering.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Configure OSGi server and client. -->
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/osgi-build.xml">
+                                            <target name="build-osgi"/>
+                                        </ant>
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/copy-test-libs.xml">
+                                            <target name="copy-jars"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!--
+                       Surefire test executions
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals><goal>test</goal></goals>
+                                <phase>none</phase>
+                            </execution>
+                            <!-- Multi node clustering tests. -->
+                            <execution>
+                                <id>tests-osgi.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/osgi/**/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>osgi</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
+    </profiles>
+</project>
