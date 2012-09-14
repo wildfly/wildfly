@@ -88,7 +88,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validator.validate(operation);
+        //TODO readd validation and attributes
 
         String name = operation.require(NAME).asString();
         String toReplace = operation.require(TO_REPLACE).asString();

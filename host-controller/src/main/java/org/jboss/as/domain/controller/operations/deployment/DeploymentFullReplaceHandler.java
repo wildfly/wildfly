@@ -18,6 +18,19 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
+import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -31,40 +44,12 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
 /**
  * Handles replacement in the runtime of one deployment by another.
@@ -78,17 +63,12 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     private final ContentRepository contentRepository;
     private final HostFileRepository fileRepository;
 
-    private final ParametersValidator validator = new ParametersValidator();
-    private final ParametersValidator unmanagedContentValidator = new ParametersValidator();
-    private final ParametersValidator managedContentValidator = new ParametersValidator();
-
     /**
      * Constructor for a master Host Controller
      */
     public DeploymentFullReplaceHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
         this.fileRepository = null;
-        init();
     }
 
     /**
@@ -97,35 +77,6 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     public DeploymentFullReplaceHandler(final HostFileRepository fileRepository) {
         this.contentRepository = null;
         this.fileRepository = fileRepository;
-        init();
-    }
-
-    private void init() {
-        this.validator.registerValidator(NAME, new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-        this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        // TODO: can we force enablement on replace?
-        //this.validator.registerValidator(ENABLED, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        final ParametersValidator contentValidator = new ParametersValidator();
-        // existing managed content
-        contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
-        // existing unmanaged content
-        contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        contentValidator.registerValidator(PATH, new StringLengthValidator(1, true));
-        contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
-        // content additions
-        contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
-        contentValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
-        contentValidator.registerValidator(URL, new StringLengthValidator(1, true));
-        this.validator.registerValidator(CONTENT, chain(new ListValidator(new ParametersOfValidator(contentValidator)),
-                new AbstractParameterValidator() {
-                    @Override
-                    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                        validateOnePieceOfContent(value);
-                    }
-                }));
-        this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
-        this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
-        this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
     }
 
     @Override
@@ -134,7 +85,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validator.validate(operation);
+
+        //TODO readd validation and define attributes
 
         String name = operation.require(NAME).asString();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
@@ -144,7 +96,6 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
-            managedContentValidator.validate(contentItemNode);
             hash = contentItemNode.require(HASH).asBytes();
             if (contentRepository != null) {
                 // We are the master DC. Validate that we actually have this content.
@@ -178,7 +129,6 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         } else {
             // Unmanaged content, the user is responsible for replication
             // Just validate the required attributes are present
-            unmanagedContentValidator.validate(contentItemNode);
         }
 
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);

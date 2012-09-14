@@ -85,6 +85,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        //TODO readd validation and define attributes
+
         final String name = operation.require(NAME).asString();
         final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
 
