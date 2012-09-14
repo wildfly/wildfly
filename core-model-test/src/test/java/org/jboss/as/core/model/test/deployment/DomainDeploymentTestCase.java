@@ -293,13 +293,13 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         kernelServices.executeForFailure(op);
 
         badContent = new ModelNode();
-        badContent.get(PATH).set(writeToFile(1, 2, 3, 4, 5).getAbsolutePath());
+        badContent.get(PATH).set(writeToFile("test-file1", 1, 2, 3, 4, 5).getAbsolutePath());
         op = createAddOperation(kernelServices, "Test1", null, badContent);
         kernelServices.executeForFailure(op);
 
         badContent = new ModelNode();
         badContent.get(URL).set(getFileUrl("Test1", 1, 2, 3, 4, 5).get(URL));
-        badContent.get(PATH).set(writeToFile(1, 2, 3, 4, 5).getAbsolutePath());
+        badContent.get(PATH).set(writeToFile("test-file2", 1, 2, 3, 4, 5).getAbsolutePath());
         op = createAddOperation(kernelServices, "Test1", null, badContent);
         kernelServices.executeForFailure(op);
     }

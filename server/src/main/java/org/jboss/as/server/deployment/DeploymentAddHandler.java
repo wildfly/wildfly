@@ -123,7 +123,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             contentItem = addFromContentAdditionParameter(context, contentItemNode);
             contentItemNode = new ModelNode();
             contentItemNode.get(CONTENT_HASH.getName()).set(contentItem.getHash());
-            content.setEmptyList();
+            content.clear();
             content.add(contentItemNode);
         } else {
             contentItem = addUnmanaged(contentItemNode);

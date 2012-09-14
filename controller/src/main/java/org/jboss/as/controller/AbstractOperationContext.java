@@ -69,9 +69,11 @@ abstract class AbstractOperationContext implements OperationContext {
     private final ProcessType processType;
     private final RunningMode runningMode;
 
-    // We only respect interruption on the way in; once we complete all steps and begin
+    // We only respect interruption on the way in; once we complete all steps
+    // and begin
     // returning, any calls that can throw InterruptedException are converted to
-    // an uninterruptible form. This is to ensure rollback changes are not interrupted
+    // an uninterruptible form. This is to ensure rollback changes are not
+    // interrupted
     boolean respectInterruption = true;
 
     Stage currentStage = Stage.MODEL;
@@ -83,14 +85,12 @@ abstract class AbstractOperationContext implements OperationContext {
     Step activeStep;
 
     enum ContextFlag {
-        ROLLBACK_ON_FAIL,
-        ALLOW_RESOURCE_SERVICE_RESTART,
+        ROLLBACK_ON_FAIL, ALLOW_RESOURCE_SERVICE_RESTART,
     }
 
-    AbstractOperationContext(final ProcessType processType,
-                             final RunningMode runningMode,
-                             final ModelController.OperationTransactionControl transactionControl,
-                             final ControlledProcessState processState, boolean booting) {
+    AbstractOperationContext(final ProcessType processType, final RunningMode runningMode,
+            final ModelController.OperationTransactionControl transactionControl, final ControlledProcessState processState,
+            boolean booting) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
@@ -99,7 +99,8 @@ abstract class AbstractOperationContext implements OperationContext {
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
             if (booting && stage == Stage.VERIFY) {
-                // Use a concurrent structure as the parallel boot threads will concurrently add steps
+                // Use a concurrent structure as the parallel boot threads will
+                // concurrently add steps
                 steps.put(stage, new LinkedBlockingDeque<Step>());
             } else {
                 steps.put(stage, new ArrayDeque<Step>());
@@ -119,13 +120,15 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     @Override
-    public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
+    public void addStep(final ModelNode operation, final OperationStepHandler step, final Stage stage)
+            throws IllegalArgumentException {
         final ModelNode response = activeStep == null ? new ModelNode().setEmptyObject() : activeStep.response;
         addStep(response, operation, null, step, stage);
     }
 
     @Override
-    public void addStep(final ModelNode response, final ModelNode operation, final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
+    public void addStep(final ModelNode response, final ModelNode operation, final OperationStepHandler step, final Stage stage)
+            throws IllegalArgumentException {
         addStep(response, operation, null, step, stage);
     }
 
@@ -135,18 +138,19 @@ abstract class AbstractOperationContext implements OperationContext {
         addStep(response, activeStep.operation, activeStep.address, step, stage, addFirst);
     }
 
-    void addStep(final ModelNode response, final ModelNode operation, final PathAddress address,
-                         final OperationStepHandler step, final Stage stage) throws IllegalArgumentException {
+    void addStep(final ModelNode response, final ModelNode operation, final PathAddress address, final OperationStepHandler step,
+            final Stage stage) throws IllegalArgumentException {
         addStep(response, operation, address, step, stage, false);
     }
 
     @Override
-    public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
+    public void addStep(ModelNode response, ModelNode operation, OperationStepHandler step, Stage stage, boolean addFirst)
+            throws IllegalArgumentException {
         addStep(response, operation, null, step, stage, addFirst);
     }
 
-    void addStep(final ModelNode response, final ModelNode operation, final PathAddress address,
-                         final OperationStepHandler step, final Stage stage, boolean addFirst) throws IllegalArgumentException {
+    void addStep(final ModelNode response, final ModelNode operation, final PathAddress address, final OperationStepHandler step,
+            final Stage stage, boolean addFirst) throws IllegalArgumentException {
         assert isControllingThread();
         if (response == null) {
             throw MESSAGES.nullVar("response");
@@ -174,7 +178,8 @@ abstract class AbstractOperationContext implements OperationContext {
         }
         if (!booting && activeStep != null) {
             // Added steps inherit the caller type of their parent
-            if (activeStep.operation.hasDefined(OPERATION_HEADERS) && activeStep.operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE)) {
+            if (activeStep.operation.hasDefined(OPERATION_HEADERS)
+                    && activeStep.operation.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE)) {
                 operation.get(OPERATION_HEADERS, CALLER_TYPE).set(activeStep.operation.get(OPERATION_HEADERS, CALLER_TYPE));
             }
         }
@@ -182,7 +187,7 @@ abstract class AbstractOperationContext implements OperationContext {
             steps.get(currentStage).addFirst(new Step(step, response, operation, address));
         } else {
             final Deque<Step> deque = steps.get(stage);
-            if(addFirst) {
+            if (addFirst) {
                 deque.addFirst(new Step(step, response, operation, address));
             } else {
                 deque.addLast(new Step(step, response, operation, address));
@@ -240,7 +245,8 @@ abstract class AbstractOperationContext implements OperationContext {
             throw MESSAGES.operationAlreadyComplete();
         }
 
-        // If previous steps have put us in a state where we shouldn't do any more, just stop
+        // If previous steps have put us in a state where we shouldn't do any
+        // more, just stop
         if (!canContinueProcessing()) {
             respectInterruption = false;
             return;
@@ -256,7 +262,8 @@ abstract class AbstractOperationContext implements OperationContext {
                 if (currentStage.hasNext()) {
                     currentStage = currentStage.next();
                     if (currentStage == Stage.VERIFY) {
-                        // a change was made to the runtime.  Thus, we must wait for stability before resuming in to verify.
+                        // a change was made to the runtime. Thus, we must wait
+                        // for stability before resuming in to verify.
                         try {
                             awaitModelControllerContainerMonitor();
                         } catch (InterruptedException e) {
@@ -293,9 +300,11 @@ abstract class AbstractOperationContext implements OperationContext {
                         return;
                     } else {
                         // A non-recursive step executed
-                        // See if it put us in a state where we shouldn't do any more
+                        // See if it put us in a state where we shouldn't do any
+                        // more
                         if (!canContinueProcessing()) {
-                            // We're done. Do the cleanup that would happen in executeStep's finally block
+                            // We're done. Do the cleanup that would happen in
+                            // executeStep's finally block
                             // if this was a recursive step
                             respectInterruption = false;
                             step.finalizeStep(toThrow);
@@ -310,7 +319,8 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         } while (currentStage != Stage.DONE);
 
-        // All steps are completed without triggering rollback; time for final processing
+        // All steps are completed without triggering rollback; time for final
+        // processing
 
         // Prepare persistence of any configuration changes
         ConfigurationPersister.PersistenceResource persistenceResource = null;
@@ -329,7 +339,8 @@ abstract class AbstractOperationContext implements OperationContext {
         }
 
         // Allow any containing TransactionControl to vote
-        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
+        final AtomicReference<ResultAction> ref = new AtomicReference<ResultAction>(
+                transactionControl == null ? ResultAction.KEEP : ResultAction.ROLLBACK);
         if (transactionControl != null) {
             if (MGMT_OP_LOGGER.isTraceEnabled()) {
                 MGMT_OP_LOGGER.trace("Prepared response is " + response);
@@ -357,6 +368,7 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     abstract void awaitModelControllerContainerMonitor() throws InterruptedException;
+
     abstract ConfigurationPersister.PersistenceResource createPersistenceResource() throws ConfigurationPersistenceException;
 
     private boolean canContinueProcessing() {
@@ -377,8 +389,8 @@ abstract class AbstractOperationContext implements OperationContext {
                 activeStep.response.get(ROLLED_BACK).set(true);
             }
             resultAction = ResultAction.ROLLBACK;
-        }
-        else if (activeStep != null && activeStep.response.hasDefined(FAILURE_DESCRIPTION) && (isRollbackOnRuntimeFailure() || currentStage == Stage.MODEL)) {
+        } else if (activeStep != null && activeStep.response.hasDefined(FAILURE_DESCRIPTION)
+                && (isRollbackOnRuntimeFailure() || currentStage == Stage.MODEL)) {
             activeStep.response.get(OUTCOME).set(FAILED);
             activeStep.response.get(ROLLED_BACK).set(true);
             resultAction = ResultAction.ROLLBACK;
@@ -400,20 +412,26 @@ abstract class AbstractOperationContext implements OperationContext {
                 }
 
             } catch (Throwable t) {
-                // Special handling for OperationClientException marker interface
-                if (! (t instanceof OperationClientException)) {
+                // Special handling for OperationClientException marker
+                // interface
+                if (!(t instanceof OperationClientException)) {
                     throw t;
                 } else if (currentStage != Stage.DONE) {
-                    // Handler threw OCE before calling completeStep(); that's equivalent to
-                    // a request that we set the failure description and call completeStep()
+                    // Handler threw OCE before calling completeStep(); that's
+                    // equivalent to
+                    // a request that we set the failure description and call
+                    // completeStep()
                     final ModelNode failDesc = OperationClientException.class.cast(t).getFailureDescription();
                     step.response.get(FAILURE_DESCRIPTION).set(failDesc);
                     if (isBooting()) {
                         // An OCE on boot needs to be logged as an ERROR
-                        MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                        MGMT_OP_LOGGER.operationFailed(step.operation.get(OP), step.operation.get(OP_ADDR),
+                                step.response.get(FAILURE_DESCRIPTION));
                     } else {
-                        // An OCE post-boot is a client-side mistake and is logged at DEBUG
-                        MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR), step.response.get(FAILURE_DESCRIPTION));
+                        // An OCE post-boot is a client-side mistake and is
+                        // logged at DEBUG
+                        MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR),
+                                step.response.get(FAILURE_DESCRIPTION));
                     }
                     completeStep();
                 } else {
@@ -424,16 +442,17 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         } catch (Throwable t) {
             if (t instanceof StackOverflowError) {
-                MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR), AbstractControllerService.BOOT_STACK_SIZE_PROPERTY,
-                        AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
+                MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR),
+                        AbstractControllerService.BOOT_STACK_SIZE_PROPERTY, AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
             } else {
                 MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR));
             }
             // If this block is entered, then the step failed
-            // The question is, did it fail before or after calling completeStep()?
+            // The question is, did it fail before or after calling
+            // completeStep()?
             if (currentStage != Stage.DONE) {
                 // It failed before, so consider the operation a failure.
-                if (! step.response.hasDefined(FAILURE_DESCRIPTION)) {
+                if (!step.response.hasDefined(FAILURE_DESCRIPTION)) {
                     step.response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationHandlerFailed(t.getLocalizedMessage()));
                 }
                 step.response.get(OUTCOME).set(FAILED);
@@ -442,7 +461,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     step.response.get(ROLLED_BACK).set(true);
                 }
             } else {
-                // It failed after!  Just return, ignore the failure
+                // It failed after! Just return, ignore the failure
                 report(MessageSeverity.WARN, MESSAGES.stepHandlerFailed(step.handler));
             }
         } finally {
@@ -459,11 +478,13 @@ abstract class AbstractOperationContext implements OperationContext {
                 // A non-recursive step executed
                 if (!hasMoreSteps()) {
                     // this step was the last registered step;
-                    // go ahead and shift back into recursive mode to wrap things up
+                    // go ahead and shift back into recursive mode to wrap
+                    // things up
                     completeStep();
                 } else {
                     // Let doCompleteStep carry on with subsequent steps.
-                    // If this step has failed in a way that will prevent subsequent steps running,
+                    // If this step has failed in a way that will prevent
+                    // subsequent steps running,
                     // and doCompleteStep will finalize this step.
                     // Otherwise, some subsequent step will finalize this step
                     finalize = false;
@@ -475,11 +496,13 @@ abstract class AbstractOperationContext implements OperationContext {
             toThrow = e;
         } finally {
             if (finalize) {
-                // We're on the way out on the recursive call path. Finish off this step.
+                // We're on the way out on the recursive call path. Finish off
+                // this step.
                 // Any throwable we caught will get rethrown by this call
                 step.finalizeStep(toThrow);
             } else {
-                // non-recursive steps get finished off by the succeeding recursive step
+                // non-recursive steps get finished off by the succeeding
+                // recursive step
                 // Throw on toThrow if it's not null; otherwise just return
                 throwThrowable(toThrow);
             }
@@ -499,12 +522,14 @@ abstract class AbstractOperationContext implements OperationContext {
     /**
      * Decide whether failure should trigger a rollback.
      *
-     * @param cause the cause of the failure, or {@code null} if failure is not the result of catching a throwable
+     * @param cause
+     *            the cause of the failure, or {@code null} if failure is not
+     *            the result of catching a throwable
      * @return the result action
      */
     private ResultAction getFailedResultAction(Throwable cause) {
-        if (currentStage == Stage.MODEL || cancelled || isRollbackOnRuntimeFailure()
-                || isRollbackOnly() || (cause != null && !(cause instanceof OperationFailedException))) {
+        if (currentStage == Stage.MODEL || cancelled || isRollbackOnRuntimeFailure() || isRollbackOnly()
+                || (cause != null && !(cause instanceof OperationFailedException))) {
             return ResultAction.ROLLBACK;
         }
         return ResultAction.KEEP;
@@ -570,8 +595,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     activeStep.response.remove(RESPONSE_HEADERS);
                 }
             }
-        }
-        else {
+        } else {
             revertRestartRequired();
         }
     }
@@ -604,7 +628,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
     @Override
     public final ModelNode getServerResults() {
-        if (processType != ProcessType.HOST_CONTROLLER ) {
+        if (processType != ProcessType.HOST_CONTROLLER) {
             throw MESSAGES.serverResultsAccessNotAllowed(ProcessType.HOST_CONTROLLER, processType);
         }
         return activeStep.response.get(SERVER_GROUPS);
@@ -637,20 +661,24 @@ abstract class AbstractOperationContext implements OperationContext {
         private RollbackHandler rollbackHandler;
         Step predecessor;
 
-        private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation, final PathAddress address) {
+        private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation,
+                final PathAddress address) {
             this.handler = handler;
             this.response = response;
             this.operation = operation;
             this.address = address == null ? PathAddress.pathAddress(operation.get(OP_ADDR)) : address;
-            // Create the outcome node early so it appears at the top of the response
+            // Create the outcome node early so it appears at the top of the
+            // response
             response.get(OUTCOME);
         }
 
         /**
-         * Perform any rollback needed to reverse this step (if this context is rolling back),
-         * and release any locks taken by this step.
+         * Perform any rollback needed to reverse this step (if this context is
+         * rolling back), and release any locks taken by this step.
          *
-         * @param toThrow  RuntimeException or Error to throw when done; may be {@code null}
+         * @param toThrow
+         *            RuntimeException or Error to throw when done; may be
+         *            {@code null}
          */
         private void finalizeStep(Throwable toThrow) {
             try {
@@ -697,13 +725,16 @@ abstract class AbstractOperationContext implements OperationContext {
                 handleRollback();
 
                 if (currentStage != null && currentStage != Stage.DONE) {
-                    // This is a failure because the next step failed to call completeStep().
-                    // Either an exception occurred beforehand, or the implementer screwed up.
+                    // This is a failure because the next step failed to call
+                    // completeStep().
+                    // Either an exception occurred beforehand, or the
+                    // implementer screwed up.
                     // If an exception occurred, then this will have no effect.
-                    // If the implementer screwed up, then we're essentially fixing the context state and treating
+                    // If the implementer screwed up, then we're essentially
+                    // fixing the context state and treating
                     // the overall operation as a failure.
                     currentStage = Stage.DONE;
-                    if (! response.hasDefined(FAILURE_DESCRIPTION)) {
+                    if (!response.hasDefined(FAILURE_DESCRIPTION)) {
                         response.get(FAILURE_DESCRIPTION).set(MESSAGES.operationHandlerFailedToComplete());
                     }
                     response.get(OUTCOME).set(cancelled ? CANCELLED : FAILED);
@@ -721,7 +752,8 @@ abstract class AbstractOperationContext implements OperationContext {
 
                 if (predecessor == null) {
                     // We're returning from the outermost completeStep()
-                    // Null out the current stage to disallow further access to the context
+                    // Null out the current stage to disallow further access to
+                    // the context
                     currentStage = null;
                 }
             }
@@ -740,9 +772,12 @@ abstract class AbstractOperationContext implements OperationContext {
                         }
                     }
                 } catch (Exception e) {
-                    report(MessageSeverity.ERROR, MESSAGES.stepHandlerFailedRollback(handler, operation.get(OP).asString(), address, e.getLocalizedMessage()));
+                    report(MessageSeverity.ERROR,
+                            MESSAGES.stepHandlerFailedRollback(handler, operation.get(OP).asString(), address,
+                                    e.getLocalizedMessage()));
                 } finally {
-                    // Clear the rollback handler so we never try and finalize this step again
+                    // Clear the rollback handler so we never try and finalize
+                    // this step again
                     rollbackHandler = null;
                 }
             }

@@ -21,13 +21,13 @@ package org.jboss.as.server.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import java.util.Locale;
@@ -145,14 +145,14 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
 
         } else {
             deployNode = context.readResourceForUpdate(PathAddress.pathAddress(deployPath)).getModel();
-            if (deployNode.get(ENABLED).asBoolean()) {
+            if (ENABLED.resolveModelAttribute(context, deployNode).asBoolean()) {
                 throw ServerMessages.MESSAGES.deploymentAlreadyStarted(toReplace);
             }
             runtimeName = deployNode.require(RUNTIME_NAME).asString();
         }
 
-        deployNode.get(ENABLED).set(true);
-        replaceNode.get(ENABLED).set(false);
+        deployNode.get(ENABLED.getName()).set(true);
+        replaceNode.get(ENABLED.getName()).set(false);
 
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
         DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, vaultReader, contents);
