@@ -258,7 +258,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
-        if(!args.hasProperties() || l.isPresent(args) && args.getPropertyNames().isEmpty() && args.getOtherProperties().size() == 1) {
+        if(!args.hasProperties() || l.isPresent(args) && args.getOtherProperties().isEmpty() && args.getPropertyNames().size() == 1) {
+            // list registered overlays
             final ModelNode op = new ModelNode();
             op.get(Util.ADDRESS).setEmptyList();
             op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
@@ -320,16 +321,25 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
         final String sg = serverGroups.getValue(ctx.getParsedCommandLine());
         if(ctx.isDomainMode()) {
+            final List<String> groups;
             if(sg == null) {
-                throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+                //throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
+                groups = Util.getServerGroups(client);
+            } else {
+                groups = Arrays.asList(sg.split(",+"));
             }
-            final String[] groups = sg.split(",+");
-            if(groups.length == 0) {
+            if(groups.size() == 0) {
                 throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
             }
             for(String group : groups) {
                 ctx.printLine("SERVER GROUP: " + group + Util.LINE_SEPARATOR);
-                ctx.printColumns(loadLinkedDeployments(client, name, sg));
+                final List<String> links = loadLinkedDeployments(client, name, group);
+                if(links.isEmpty()) {
+                    ctx.printLine("n/a");
+                } else {
+                    ctx.printColumns(links);
+                }
+                ctx.printLine("");
             }
         } else {
             final List<String> content = loadLinkedDeployments(client, name, sg);
@@ -558,15 +568,18 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             contentPaths[i] = f;
         }
 
+        final String sgStr = serverGroups.getValue(args);
         final String deploymentsStr = deployments.getValue(args);
         final String[] deployments;
         if(deploymentsStr == null) {
+            if(sgStr != null) {
+                throw new CommandFormatException(serverGroups.getFullName() + " is specified but " + this.deployments.getFullName() + " is not.");
+            }
             deployments = null;
         } else {
             deployments = deploymentsStr.split(",+");
         }
 
-        final String sgStr = serverGroups.getValue(args);
         final String[] sg;
         if(deployments != null && ctx.isDomainMode()) {
             if(sgStr == null) {
