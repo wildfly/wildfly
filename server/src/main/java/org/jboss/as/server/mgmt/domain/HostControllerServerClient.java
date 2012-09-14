@@ -28,6 +28,7 @@ import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ExecutorService;
@@ -86,6 +87,8 @@ import javax.security.sasl.RealmChoiceCallback;
  * @author Kabir Khan
  */
 public class HostControllerServerClient implements Service<HostControllerServerClient> {
+
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("host", "controller", "client");
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
@@ -357,7 +360,7 @@ public class HostControllerServerClient implements Service<HostControllerServerC
                     ncb.setName(userName);
                 } else if (current instanceof PasswordCallback) {
                     PasswordCallback pcb = (PasswordCallback) current;
-                    pcb.setPassword(new String(authKey).toCharArray());
+                    pcb.setPassword(new String(authKey, UTF_8).toCharArray());
                 } else {
                     throw new UnsupportedCallbackException(current);
                 }
