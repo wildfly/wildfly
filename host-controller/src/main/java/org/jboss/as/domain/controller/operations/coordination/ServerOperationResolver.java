@@ -16,12 +16,12 @@ import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
@@ -262,7 +262,7 @@ public class ServerOperationResolver {
         if (forDomain && hostModel.hasDefined(INTERFACE) && hostModel.get(INTERFACE).keys().contains(pathName)) {
             // Host will take precedence; ignore the domain
             result = Collections.emptyMap();
-        } else if (forDomain && ADD.equals(operation.get(OP).asString()) && InterfaceDescription.isOperationDefined(operation)) {
+        } else if (forDomain && ADD.equals(operation.get(OP).asString()) && InterfaceDefinition.isOperationDefined(operation)) {
             // don't create named interfaces
             result = Collections.emptyMap();
         } else if (hostModel.hasDefined(SERVER_CONFIG)) {

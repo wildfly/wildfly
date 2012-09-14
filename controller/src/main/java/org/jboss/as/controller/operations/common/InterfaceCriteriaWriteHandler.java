@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ResourceNameOperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -63,19 +64,7 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         }
     }
 
-    public void register(final ManagementResourceRegistration registration) {
-        for(final AttributeDefinition def : InterfaceDefinition.ROOT_ATTRIBUTES) {
-            registration.registerReadWriteAttribute(def, null, this);
-        }
-        registration.registerReadOnlyAttribute(InterfaceDefinition.NAME,new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-                context.getResult().set(address.getLastElement().getValue());
-                context.completeStep();
-            }
-        });
-    }
+
 
     private final boolean updateRuntime;
 

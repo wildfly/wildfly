@@ -22,16 +22,19 @@
 
 package org.jboss.as.server.services.net;
 
+import java.net.InetAddress;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
-
-import java.net.InetAddress;
 
 /**
  * {@code OperationStepHandler} for the runtime attributes of a network interface.
@@ -42,7 +45,9 @@ public class NetworkInterfaceRuntimeHandler implements OperationStepHandler {
 
     public static final OperationStepHandler INSTANCE = new NetworkInterfaceRuntimeHandler();
 
-    public static final String RESOLVED_ADDRESS = "resolved-address";
+    public static final SimpleAttributeDefinition RESOLVED_ADDRESS = new SimpleAttributeDefinitionBuilder("resolved-address", ModelType.STRING)
+            .setStorageRuntime()
+            .build();
 
     protected NetworkInterfaceRuntimeHandler() {
         //
@@ -61,7 +66,7 @@ public class NetworkInterfaceRuntimeHandler implements OperationStepHandler {
                     final NetworkInterfaceBinding binding = NetworkInterfaceBinding.class.cast(controller.getValue());
                     final InetAddress address = binding.getAddress();
                     final ModelNode result = new ModelNode();
-                    if(RESOLVED_ADDRESS.equals(attributeName)) {
+                    if(RESOLVED_ADDRESS.getName().equals(attributeName)) {
                         result.set(address.getHostAddress());
                     }
                     context.getResult().set(result);

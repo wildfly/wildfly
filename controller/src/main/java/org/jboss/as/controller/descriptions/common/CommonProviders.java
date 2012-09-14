@@ -40,43 +40,6 @@ public final class CommonProviders {
     private CommonProviders() {
     }
 
-    /**
-     * Provider for a sub-model that defines the management configuration.
-     */
-    public static final DescriptionProvider MANAGEMENT_WITH_INTERFACES_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ManagementDescription.getManagementDescriptionWithInterfaces(locale);
-        }
-    };
-
-
-    /**
-     * Provider for a sub-model that names an interface but doesn't require the address selection criteria.
-     */
-    public static final DescriptionProvider NAMED_INTERFACE_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getNamedInterfaceDescription(locale);
-        }
-    };
-
-    /**
-     * Provider for a sub-model that names an interface and specifies the criteria.
-     */
-    public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getSpecifiedInterfaceDescription(locale, false);
-        }
-    };
-
-    public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER_SERVER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getSpecifiedInterfaceDescription(locale, true);
-        }
-    };
 
     public static final DescriptionProvider READ_RESOURCE_PROVIDER = new DescriptionProvider() {
         @Override

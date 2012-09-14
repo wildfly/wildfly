@@ -23,7 +23,6 @@ package org.jboss.as.test.manualmode.parse;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -78,9 +77,8 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.Util;
@@ -94,6 +92,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.Transformers;
@@ -106,6 +105,7 @@ import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
+import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
@@ -768,7 +768,7 @@ public class ParseAndMarshalModelsTestCase {
                 hostRegistration.registerSubModel(new VaultResourceDefinition(new MockVaultReader()));
 
                 // Central Management
-                ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
+                ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreManagementDefinition.INSTANCE);
                 management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
                 management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
                 management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
@@ -787,10 +787,14 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(MOCK_PATH_MANAGER));
 
                 //interface
-                ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-                HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
-                interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
-                InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
+                ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(new InterfaceDefinition(
+                        HostSpecifiedInterfaceAddHandler.INSTANCE,
+                        HostSpecifiedInterfaceRemoveHandler.INSTANCE,
+                        true
+                ));
+                /*HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
+                interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);*/
+
 
                 //server configurations
                 hostRegistration.registerSubModel(new ServerConfigResourceDefinition(null, MOCK_PATH_MANAGER));

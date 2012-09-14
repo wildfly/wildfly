@@ -65,10 +65,10 @@ public class CommonDescriptions {
 
     private static final String RESOURCE_NAME = CommonDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    @Deprecated
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return getResourceDescriptionResolver(keyPrefix, true);
-    }
+   /* @Deprecated
+        public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+            return getResourceDescriptionResolver(keyPrefix, true);
+        }*/
 
     @Deprecated
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, boolean useUnprefixedChildTypes) {

@@ -68,6 +68,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
     // Common attributes
 
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
+            .setResourceOnly()
             .setValidator(new StringLengthValidator(1)).build();
 
     public static final SimpleAttributeDefinition DEFAULT_INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DEFAULT_INTERFACE, ModelType.STRING, false)
@@ -139,22 +140,6 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
             resourceRegistration.registerOperationHandler(SocketBindingGroupIncludeRemoveHandler.OPERATION_NAME, SocketBindingGroupIncludeRemoveHandler.INSTANCE, SocketBindingGroupIncludeRemoveHandler.INSTANCE);
         }
         */
-    }
-
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
-                                        OperationEntry.Flag... flags) {
-        DescriptionProvider provider = new DefaultResourceAddDescriptionProvider(registration, getResourceDescriptionResolver()) {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                // "name" is not an operation parameter
-                final ModelNode result = super.getModelDescription(locale);
-                if (result.get(ModelDescriptionConstants.REQUEST_PROPERTIES).hasDefined(NAME.getName())) {
-                    result.get(ModelDescriptionConstants.REQUEST_PROPERTIES).remove(NAME.getName());
-                }
-                return result;
-            }
-        };
-        registration.registerOperationHandler(ModelDescriptionConstants.ADD, handler, provider, getFlagsSet(flags));
     }
 
     public static void validateDefaultInterfaceReference(final OperationContext context, final ModelNode bindingGroup) throws OperationFailedException {

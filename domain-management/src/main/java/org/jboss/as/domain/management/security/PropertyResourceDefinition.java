@@ -26,7 +26,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -46,9 +46,11 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(true).setAllowExpression(true).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public PropertyResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.PROPERTY), ManagementDescription
-                .getResourceDescriptionResolver("core.management.security-realm.property"), new SecurityRealmChildAddHandler(
-                true, VALUE), new SecurityRealmChildRemoveHandler(true), OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
+        super(PathElement.pathElement(ModelDescriptionConstants.PROPERTY),
+                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.property"),
+                new SecurityRealmChildAddHandler(true, VALUE),
+                new SecurityRealmChildRemoveHandler(true),
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 

@@ -44,12 +44,11 @@ import java.util.Map;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
@@ -234,10 +233,13 @@ public class ControllerInitializer {
 
         rootResource.getModel().get(INTERFACE);
         rootResource.getModel().get(SOCKET_BINDING_GROUP);
-        ManagementResourceRegistration interfaces = rootRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-        interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, SpecifiedInterfaceAddHandler.INSTANCE, false);
-        interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, SpecifiedInterfaceRemoveHandler.INSTANCE, false);
-        InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
+        ManagementResourceRegistration interfaces = rootRegistration.registerSubModel(new InterfaceDefinition(
+                SpecifiedInterfaceAddHandler.INSTANCE,
+                SpecifiedInterfaceRemoveHandler.INSTANCE,
+                true
+        ));
+        /*interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);
+        interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, new DefaultResourceRemoveDescriptionProvider(CommonDescriptions.getResourceDescriptionResolver()), false);*/
 
         // Sockets
         ManagementResourceRegistration socketGroup = rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
@@ -289,11 +291,15 @@ public class ControllerInitializer {
         }
 
         //Add the interface
-        ModelNode criteria = new ModelNode();
+
+
+        /*ModelNode criteria = new ModelNode();
         criteria.get(INET_ADDRESS).set(bindAddress);
         ModelNode op = InterfaceAddHandler.getAddInterfaceOperation(
-                PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)).toModelNode(),
-                criteria);
+        PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)).toModelNode(),
+        criteria);*/
+        ModelNode op = Util.createAddOperation(PathAddress.pathAddress(PathElement.pathElement(INTERFACE, INTERFACE_NAME)));
+        op.get(INET_ADDRESS).set(bindAddress);
         ops.add(op);
 
         //Add the socket binding group

@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  */
 public class SnapshotDescriptions {
 
-    private static final String RESOURCE_NAME = InterfaceDescription.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = CommonDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ModelNode getSnapshotTakeModel(Locale locale) {
         ModelNode node = new ModelNode();
