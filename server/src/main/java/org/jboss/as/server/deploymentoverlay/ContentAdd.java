@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +17,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.CompositeOperationAwareTransformer;
+import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.as.controller.operations.validation.ListValidator;
@@ -85,7 +88,7 @@ public class ContentAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String path = address.getLastElement().getValue();
         final String name = address.getElement(address.size() - 2).getValue();
-        ModelNode content = operation.get(CONTENT);
+        final ModelNode content = operation.get(CONTENT);
         final byte[] hash;
         if (content.hasDefined(HASH)) {
             managedContentValidator.validate(content);
@@ -93,12 +96,18 @@ public class ContentAdd extends AbstractAddStepHandler {
             addFromHash(hash, name, path, context);
         } else {
             hash = addFromContentAdditionParameter(context, content);
-        }
-        final ModelNode slave = operation.clone();
-        slave.get(CONTENT).clear();
-        slave.get(CONTENT).get(HASH).set(hash);
 
-        context.attach(OperationAttachments.SLAVE_SERVER_OPERATION, slave);
+            final ModelNode slave = operation.clone();
+            slave.get(CONTENT).clear();
+            slave.get(CONTENT).get(HASH).set(hash);
+
+            List<DomainOperationTransformer> transformers = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS);
+            if(transformers == null) {
+                context.attach(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS, transformers = new ArrayList<DomainOperationTransformer>());
+            }
+            transformers.add(new CompositeOperationAwareTransformer(slave));
+        }
+
 
 
         ModelNode modified = operation.clone();

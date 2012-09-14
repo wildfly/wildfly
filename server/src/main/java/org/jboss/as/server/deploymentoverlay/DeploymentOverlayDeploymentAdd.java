@@ -49,7 +49,7 @@ public class DeploymentOverlayDeploymentAdd extends AbstractAddStepHandler {
     static void installServices(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final String deploymentOverlay, final boolean regularExpression, final DeploymentOverlayPriority priority) {
         final DeploymentOverlayLinkService service = new DeploymentOverlayLinkService(name, regularExpression, priority);
 
-        final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(name);
+        final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(deploymentOverlay).append(name);
         ServiceBuilder<DeploymentOverlayLinkService> builder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(DeploymentOverlayIndexService.SERVICE_NAME, DeploymentOverlayIndexService.class, service.getDeploymentOverlayIndexServiceInjectedValue())
                 .addDependency(DeploymentOverlayService.SERVICE_NAME.append(deploymentOverlay), DeploymentOverlayService.class, service.getDeploymentOverlayServiceInjectedValue());

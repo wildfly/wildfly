@@ -37,7 +37,8 @@ public class DeploymentOverlayDeploymentRemove extends AbstractRemoveStepHandler
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(name);
+        final String deploymentOverlay =address.getElement(address.size() - 2).getValue();
+        final ServiceName serviceName = DeploymentOverlayLinkService.SERVICE_NAME.append(deploymentOverlay).append(name);
         context.removeService(serviceName);
     }
 
