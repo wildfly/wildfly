@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
@@ -49,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
@@ -1377,6 +1379,77 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     }
 
+    /** AS7-784 */
+    @Test
+    public void testUndeployedExternally() throws Exception {
+        File f1 = createFile("undeployed" + FileSystemDeploymentService.DEPLOYED);
+        File f2 = new File(tmpDir, "undeployed" + FileSystemDeploymentService.UNDEPLOYED);
+        File f3 = createFile(new File(tmpDir, "nested"), "nested-undeployed" + FileSystemDeploymentService.DEPLOYED);
+        File f4 = new File(new File(tmpDir, "nested"), "nested-undeployed" + FileSystemDeploymentService.UNDEPLOYED);
+        File f5 = createFile("removed" + FileSystemDeploymentService.DEPLOYED);
+        File f6 = new File(tmpDir, "removed" + FileSystemDeploymentService.UNDEPLOYED);
+        File f7 = createFile(new File(tmpDir, "nested"), "nested-removed" + FileSystemDeploymentService.DEPLOYED);
+        File f8 = new File(new File(tmpDir, "nested"), "nested-removed" + FileSystemDeploymentService.UNDEPLOYED);
+
+        File undeployed = createFile("undeployed");
+        File nestedUndeployed = createFile(new File(tmpDir, "nested"), "nested-undeployed");
+
+        File removed = createFile("removed");
+        File nestedRemoved = createFile(new File(tmpDir, "nested"), "nested-removed");
+
+        // We expect 2 requests for children names due to subdir "nested"
+        MockServerController sc = new MockServerController("undeployed", "nested-undeployed", "removed", "nested-removed");
+//        sc.responses.add(sc.responses.get(0));
+        TesteeSet ts = createTestee(sc);
+
+        Assert.assertTrue(f1.exists());
+        Assert.assertFalse(f2.exists());
+        Assert.assertTrue(f3.exists());
+        Assert.assertFalse(f4.exists());
+        Assert.assertTrue(f5.exists());
+        Assert.assertFalse(f6.exists());
+        Assert.assertTrue(undeployed.exists());
+        Assert.assertTrue(nestedUndeployed.exists());
+        Assert.assertTrue(removed.exists());
+        Assert.assertTrue(nestedRemoved.exists());
+
+        // Simulate the CLI or console undeploying 2 deployments and removing 2
+        sc.deployed.remove("undeployed");
+        sc.deployed.remove("nested-undeployed");
+        sc.added.remove("removed");
+        sc.added.remove("nested-removed");
+        sc.deployed.remove("removed");
+        sc.deployed.remove("nested-removed");
+
+        ts.testee.scan();
+
+        Assert.assertFalse(f1.exists());
+        Assert.assertTrue(f2.exists());
+        Assert.assertFalse(f3.exists());
+        Assert.assertTrue(f4.exists());
+        Assert.assertFalse(f5.exists());
+        Assert.assertTrue(f6.exists());
+        Assert.assertTrue(undeployed.exists());
+        Assert.assertTrue(nestedUndeployed.exists());
+        Assert.assertTrue(removed.exists());
+        Assert.assertTrue(nestedRemoved.exists());
+        Assert.assertEquals(0, sc.deployed.size());
+
+        ts.testee.scan();
+
+        Assert.assertFalse(f1.exists());
+        Assert.assertTrue(f2.exists());
+        Assert.assertFalse(f3.exists());
+        Assert.assertTrue(f4.exists());
+        Assert.assertFalse(f5.exists());
+        Assert.assertTrue(f6.exists());
+        Assert.assertTrue(undeployed.exists());
+        Assert.assertTrue(nestedUndeployed.exists());
+        Assert.assertTrue(removed.exists());
+        Assert.assertTrue(nestedRemoved.exists());
+        Assert.assertEquals(0, sc.deployed.size());
+    }
+
     private TesteeSet createTestee(String... existingContent) throws OperationFailedException {
         return createTestee(new MockServerController(existingContent));
     }
@@ -1520,6 +1593,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         MockServerController(String... existingDeployments) {
             for (String dep : existingDeployments) {
                 added.put(dep, randomHash());
+                deployed.put(dep, added.get(dep));
             }
         }
 
@@ -1570,9 +1644,9 @@ public class FileSystemDeploymentServiceUnitTestCase {
             ModelNode content = new ModelNode();
             content.get(OUTCOME).set(SUCCESS);
             ModelNode result = content.get(RESULT);
-            result.setEmptyList();
+            result.setEmptyObject();
             for (String deployment : added.keySet()) {
-                result.add(deployment);
+                result.get(deployment, ENABLED).set(deployed.containsKey(deployment));
             }
             return content;
         }
@@ -1580,7 +1654,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         private ModelNode processOp(ModelNode op) {
 
             String opName = op.require(OP).asString();
-            if (READ_CHILDREN_NAMES_OPERATION.equals(opName)) {
+            if (READ_CHILDREN_RESOURCES_OPERATION.equals(opName)) {
                 return getDeploymentNamesResponse();
             }
             else if (COMPOSITE.equals(opName)) {

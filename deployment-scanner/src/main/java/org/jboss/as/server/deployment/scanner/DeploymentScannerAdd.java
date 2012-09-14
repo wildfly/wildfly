@@ -28,7 +28,7 @@ import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -281,8 +281,8 @@ class DeploymentScannerAdd implements OperationStepHandler {
         }
 
         @Override
-        public Set<String> getDeploymentNames() {
-            return Collections.emptySet();
+        public Map<String, Boolean> getDeploymentsStatus() {
+            return Collections.emptyMap();
         }
 
         @Override

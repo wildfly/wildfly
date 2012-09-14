@@ -24,12 +24,16 @@ package org.jboss.as.server.deployment.scanner;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -38,6 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
 * Default implementation of {@link DeploymentOperations}.
@@ -63,8 +68,8 @@ final class DefaultDeploymentOperations implements DeploymentOperations {
     }
 
     @Override
-    public Set<String> getDeploymentNames() {
-        final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_NAMES_OPERATION, new ModelNode());
+    public Map<String, Boolean> getDeploymentsStatus() {
+        final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, new ModelNode());
         op.get(CHILD_TYPE).set(DEPLOYMENT);
         ModelNode response;
         try {
@@ -73,14 +78,13 @@ final class DefaultDeploymentOperations implements DeploymentOperations {
             throw new RuntimeException(e);
         }
         final ModelNode result = response.get(RESULT);
-        final Set<String> deploymentNames = new HashSet<String>();
+        final Map<String, Boolean> deployments = new HashMap<String, Boolean>();
         if (result.isDefined()) {
-            final List<ModelNode> deploymentNodes = result.asList();
-            for (ModelNode node : deploymentNodes) {
-                deploymentNames.add(node.asString());
+            for (Property property : result.asPropertyList()) {
+                deployments.put(property.getName(), property.getValue().get(ENABLED).asBoolean(false));
             }
         }
-        return deploymentNames;
+        return deployments;
     }
 
     @Override
