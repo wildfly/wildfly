@@ -33,6 +33,7 @@ import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -73,6 +74,8 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  * @author Kabir Khan
  */
 public class ServerInventoryImpl implements ServerInventory {
+
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     /** The managed servers. */
     private final ConcurrentMap<String, ManagedServer> servers = new ConcurrentHashMap<String, ManagedServer>();
@@ -540,7 +543,7 @@ public class ServerInventoryImpl implements ServerInventory {
                     return;
                 }
 
-                final String password = new String(server.getAuthKey());
+                final String password = new String(server.getAuthKey(), UTF_8);
 
                 // Second Pass - Now iterate the Callback(s) requiring a response.
                 for (Callback current : toRespondTo) {
