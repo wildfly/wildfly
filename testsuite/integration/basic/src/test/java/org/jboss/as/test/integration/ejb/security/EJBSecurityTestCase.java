@@ -22,11 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
-import javax.ejb.EJBAccessException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,6 +31,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJBAccessException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -142,5 +142,42 @@ public class EJBSecurityTestCase {
         } catch (EJBAccessException ejbae) {
             // expected since only TestRole can call that method
         }
+    }
+
+    /**
+     * Tests that a bean which doesn't explicitly have a security domain configured, but still has EJB security related
+     * annotations on it, is still considered secured and the security annotations are honoured
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSecurityOnBeanInAbsenceOfExplicitSecurityDomain() throws Exception {
+        final Context ctx = new InitialContext();
+        // lookup the bean which doesn't explicitly have any security domain configured
+        final Restriction restrictedBean = (Restriction) ctx.lookup("java:module/" + BeanWithoutExplicitSecurityDomain.class.getSimpleName() + "!" + Restriction.class.getName());
+        try {
+            // try invoking a method annotated @DenyAll (expected to fail)
+            restrictedBean.restrictedMethod();
+            Assert.fail("Call to restrictedMethod() method was expected to fail");
+        } catch (EJBAccessException ejbae) {
+            // expected
+        }
+
+        // lookup the bean which doesn't explicitly have any security domain configured
+        final FullAccess fullAccessBean = (FullAccess) ctx.lookup("java:module/" + BeanWithoutExplicitSecurityDomain.class.getSimpleName() + "!" + FullAccess.class.getName());
+        // invoke a @PermitAll method
+        fullAccessBean.doAnything();
+
+        // lookup the bean which doesn't explicitly have any security domain configured
+        final BeanWithoutExplicitSecurityDomain specificRoleAccessBean = (BeanWithoutExplicitSecurityDomain) ctx.lookup("java:module/" + BeanWithoutExplicitSecurityDomain.class.getSimpleName() + "!" + BeanWithoutExplicitSecurityDomain.class.getName());
+        try {
+            // invoke a method which only a specific role can access.
+            // this is expected to fail since we haven't logged in as any user
+            specificRoleAccessBean.allowOnlyRoleTwoToAccess();
+            Assert.fail("Invocation was expected to fail since only a specific role was expected to be allowed to access the bean method");
+        } catch (EJBAccessException ejbae) {
+            // expected
+        }
+
     }
 }
