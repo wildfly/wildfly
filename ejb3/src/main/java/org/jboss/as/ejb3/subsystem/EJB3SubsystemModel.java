@@ -41,6 +41,7 @@ public interface EJB3SubsystemModel {
     String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
     String DEFAULT_DISTINCT_NAME = "default-distinct-name";
+    String DEFAULT_SECURITY_DOMAIN = "default-security-domain";
     String DEFAULT_MDB_INSTANCE_POOL = "default-mdb-instance-pool";
     String DEFAULT_RESOURCE_ADAPTER_NAME = "default-resource-adapter-name";
     String DEFAULT_SFSB_CACHE = "default-sfsb-cache";
