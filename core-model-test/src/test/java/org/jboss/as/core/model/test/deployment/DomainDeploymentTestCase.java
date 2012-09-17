@@ -76,12 +76,12 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1");
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createOperation(kernelServices, "Test1", content);
+        op = createAddOperation(kernelServices, "Test1", content);
         kernelServices.executeForFailure(op);
     }
 
@@ -90,11 +90,12 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createOperation(kernelServices, "Test2", content);
+        op = createAddOperation(kernelServices, "Test2", content);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         ModelNode deployments = getDeploymentParentResource(kernelServices);
@@ -154,14 +155,14 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getInputStreamIndexContent();
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         ModelNode hashA = checkSingleDeployment(kernelServices, "Test1");
         removeDeployment(kernelServices, "Test1");
         checkNoDeployments(kernelServices);
 
         content = getByteContent(1, 2, 3, 4, 5);
-        op = createOperation(kernelServices, "Test1", content);
+        op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode hashB = checkSingleDeployment(kernelServices, "Test1");
         removeDeployment(kernelServices, "Test1");
@@ -182,7 +183,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
 //        Assert.assertEquals(hashA, hashC);
 
         content = getFileUrl("Test1", 1, 2, 3, 4, 5);
-        op = createOperation(kernelServices, "Test1", content);
+        op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode hashD = checkSingleDeployment(kernelServices, "Test1");
         removeDeployment(kernelServices, "Test1");
@@ -196,7 +197,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode hash = checkSingleDeployment(kernelServices, "Test1");
 
@@ -211,11 +212,11 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         File file = writeToFile("test-file1", 1, 2, 3, 4, 5);
         ModelNode content = new ModelNode();
         content.get(PATH).set(file.getAbsolutePath());
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         kernelServices.executeForFailure(op);
 
         content.get(ARCHIVE).set(true);
-        op = createOperation(kernelServices, "Test1", content);
+        op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1");
         checkUnmanagedContents(file, deployedContent, true, true);
@@ -224,6 +225,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         kernelServices.executeForFailure(op);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -237,11 +239,11 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode content = new ModelNode();
         content.get(PATH).set(file.getName());
         content.get(RELATIVE_TO).set(dir.getAbsolutePath());
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         kernelServices.executeForFailure(op);
 
         content.get(ARCHIVE).set(false);
-        op = createOperation(kernelServices, "Test1", content);
+        op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1");
         checkUnmanagedContents(file, deployedContent, false, false);
@@ -250,6 +252,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         kernelServices.executeForFailure(op);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -259,7 +262,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getInputStreamIndexContent();
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         op.get(ENABLED).set(true);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         checkSingleDeployment(kernelServices, "Test1");
@@ -268,6 +271,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         kernelServices.executeForFailure(op);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -309,7 +313,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         KernelServices kernelServices = createKernelServices();
 
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 5})));
         checkSingleDeployment(kernelServices, "Test1");
 
@@ -335,18 +339,21 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
 
         ModelNode operation = Util.createOperation(DeploymentUploadBytesHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         operation.get(BYTES).set(convertToByteArray(new int[] {1, 2, 3, 4, 5}));
+        kernelServices.validateOperation(operation);
         ModelNode hashBytes = kernelServices.executeForResult(operation);
         checkNoDeployments(kernelServices);
 
         operation = Util.createOperation(DeploymentUploadURLHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         File file = writeToFile("test-file1", new int[] {1, 2, 3, 4, 5});
         operation.get(URL).set(file.toURI().toURL().toString());
+        kernelServices.validateOperation(operation);
         ModelNode hashUrl = kernelServices.executeForResult(operation);
         checkNoDeployments(kernelServices);
         Assert.assertEquals(hashBytes, hashUrl);
 
         operation = Util.createOperation(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         operation.get(INPUT_STREAM_INDEX).set(0);
+        //kernelServices.validateOperation(operation);
         ModelNode hashStream = kernelServices.executeForResult(operation, new ByteArrayInputStream(convertToByteArray(1, 2, 3, 4, 5)));
         checkNoDeployments(kernelServices);
         Assert.assertEquals(hashBytes, hashStream);
@@ -370,7 +377,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
 
         //Create the original deployment
         ModelNode content = getByteContent(1, 2, 3, 4, 5);
-        ModelNode op = createOperation(kernelServices, "Test1", content);
+        ModelNode op = createAddOperation(kernelServices, "Test1", content);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode originalHash = checkSingleDeployment(kernelServices, "Test1");
 
@@ -378,6 +385,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         op = Util.createOperation(DeploymentFullReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         op.get(NAME).set("Test1");
         op.get(CONTENT).add(getByteContent(6, 7, 8, 9, 10));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode newHash = checkSingleDeployment(kernelServices, "Test1");
         Assert.assertFalse(originalHash.equals(newHash));
@@ -387,12 +395,14 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode hashContent = new ModelNode();
         hashContent.get(HASH).set(newHash);
         op.get(CONTENT).add(hashContent);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(newHash, checkSingleDeployment(kernelServices, "Test1"));
 
         op = op.clone();
         op.get(CONTENT).clear();
         op.get(CONTENT).add(getFileUrl("Test1", 1, 2, 3, 4, 5));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(originalHash, checkSingleDeployment(kernelServices, "Test1"));
 
@@ -401,6 +411,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         op.get(CONTENT).clear();
         op.get(CONTENT).add(getInputStreamIndexContent());
         op.get(RUNTIME_NAME).set("number1");
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {6, 7, 8, 9, 10})));
         Assert.assertEquals(newHash, checkSingleDeployment(kernelServices, "Test1", "number1"));
     }
@@ -415,12 +426,13 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         //Create the original deployment
         ModelNode contentNode = new ModelNode();
         contentNode.get(PATH).set(file1.getAbsolutePath());
-        ModelNode op = createOperation(kernelServices, "Test1", contentNode);
+        ModelNode op = createAddOperation(kernelServices, "Test1", contentNode);
         kernelServices.executeForFailure(op);
 
         contentNode.get(ARCHIVE).set(true);
         op.get(CONTENT).clear();
         op.get(CONTENT).add(contentNode);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode originalContent = checkSingleUnmanagedDeployment(kernelServices, "Test1");
         checkUnmanagedContents(file1, originalContent, true, true);
@@ -432,6 +444,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         contentNode.get(ARCHIVE).set(false);
         kernelServices.executeForFailure(op);
         op.get(CONTENT).add(contentNode);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1");
         checkUnmanagedContents(file2, currentContent, false, true);
@@ -447,6 +460,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
         contentNode.get(PATH).set(file1.getName());
         op.get(CONTENT).clear();
         op.get(CONTENT).add(contentNode);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1");
         checkUnmanagedContents(file1, currentContent, true, false);
@@ -472,7 +486,7 @@ public class DomainDeploymentTestCase extends AbstractCoreModelTest {
     }
 
 
-    private ModelNode createOperation(KernelServices kernelServices, String name, ModelNode content) throws Exception {
+    private ModelNode createAddOperation(KernelServices kernelServices, String name, ModelNode content) throws Exception {
         return createAddOperation(kernelServices, name, null, content);
     }
 

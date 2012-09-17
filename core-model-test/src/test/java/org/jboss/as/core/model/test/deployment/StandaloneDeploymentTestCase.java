@@ -204,18 +204,22 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode hash = checkSingleDeployment(kernelServices, "Test1", false);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(hash, checkSingleDeployment(kernelServices, "Test1", true));
 
         op = Util.createOperation(DeploymentUndeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(hash, checkSingleDeployment(kernelServices, "Test1", false));
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(hash, checkSingleDeployment(kernelServices, "Test1", true));
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -237,19 +241,23 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         checkUnmanagedContents(file, deployedContent, true, true);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
         checkUnmanagedContents(file, deployedContent, true, true);
         op = Util.createOperation(DeploymentUndeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file, deployedContent, true, true);
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
         checkUnmanagedContents(file, deployedContent, true, true);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -276,21 +284,25 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
         checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentUndeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         deployedContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", true);
         checkUnmanagedContents(file, deployedContent, false, false);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -339,10 +351,12 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         checkSingleDeployment(kernelServices, "Test1", true);
 
         op = Util.createOperation(DeploymentRedeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", true);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -378,18 +392,21 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
         ModelNode operation = Util.createOperation(DeploymentUploadBytesHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         operation.get(BYTES).set(convertToByteArray(new int[] {1, 2, 3, 4, 5}));
+        kernelServices.validateOperation(operation);
         ModelNode hashBytes = kernelServices.executeForResult(operation);
         checkNoDeployments(kernelServices);
 
         operation = Util.createOperation(DeploymentUploadURLHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         File file = writeToFile("Test-file1", new int[] {1, 2, 3, 4, 5});
         operation.get(URL).set(file.toURI().toURL().toString());
+        kernelServices.validateOperation(operation);
         ModelNode hashUrl = kernelServices.executeForResult(operation);
         checkNoDeployments(kernelServices);
         Assert.assertEquals(hashBytes, hashUrl);
 
         operation = Util.createOperation(DeploymentUploadStreamAttachmentHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         operation.get(INPUT_STREAM_INDEX).set(0);
+        //kernelServices.validateOperation(operation);
         ModelNode hashStream = kernelServices.executeForResult(operation, new ByteArrayInputStream(convertToByteArray(1, 2, 3, 4, 5)));
         checkNoDeployments(kernelServices);
         Assert.assertEquals(hashBytes, hashStream);
@@ -404,6 +421,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op.get(NAME).set("Test1");
         op.get(CONTENT).add(getByteContent(6, 7, 8, 9, 10));
         kernelServices.executeForFailure(op);
+        kernelServices.validateOperation(op);
     }
 
     @Test
@@ -420,6 +438,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op = Util.createOperation(DeploymentFullReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         op.get(NAME).set("Test1");
         op.get(CONTENT).add(getByteContent(6, 7, 8, 9, 10));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode newHash = checkSingleDeployment(kernelServices, "Test1", false);
         Assert.assertFalse(originalHash.equals(newHash));
@@ -429,12 +448,14 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode hashContent = new ModelNode();
         hashContent.get(HASH).set(newHash);
         op.get(CONTENT).add(hashContent);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(newHash, checkSingleDeployment(kernelServices, "Test1", false));
 
         op = op.clone();
         op.get(CONTENT).clear();
         op.get(CONTENT).add(getFileUrl("Test1", 1, 2, 3, 4, 5));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(originalHash, checkSingleDeployment(kernelServices, "Test1", false));
 
@@ -447,6 +468,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op.get(CONTENT).clear();
         op.get(CONTENT).add(getInputStreamIndexContent());
         op.get(RUNTIME_NAME).set("number1");
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {6, 7, 8, 9, 10})));
         ModelNode deployments = getDeploymentParentResource(kernelServices);
         Assert.assertEquals(1, deployments.keys().size());
@@ -485,6 +507,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         contentNode.get(ARCHIVE).set(false);
         kernelServices.executeForFailure(op);
         op.get(CONTENT).add(contentNode);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file2, currentContent, false, true);
@@ -500,6 +523,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         contentNode.get(PATH).set(file1.getName());
         op.get(CONTENT).clear();
         op.get(CONTENT).add(contentNode);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file1, currentContent, true, false);
@@ -552,6 +576,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op = Util.createOperation(DeploymentReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         op.get(NAME).set("Test2");
         op.get(TO_REPLACE).set("Test1");
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         //TODO replace with more sane checks once rebased
@@ -576,6 +601,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         kernelServices.executeForFailure(op); //Should fail since 2 is already started
         op.get(NAME).set("Test1");
         op.get(TO_REPLACE).set("Test2");
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         //TODO replace with more sane checks once rebased
@@ -615,6 +641,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         hashContent.get(HASH).set(hash1);
         op.get(CONTENT).clear();
         op.get(CONTENT).add(hashContent);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         //TODO replace with more sane checks once rebased
@@ -646,6 +673,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         managedContent.get(ARCHIVE).set(true);
         op.get(CONTENT).clear();
         op.get(CONTENT).add(managedContent);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         //TODO replace with more sane checks once rebased
@@ -688,6 +716,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         managedContent.get(ARCHIVE).set(false);
         op.get(CONTENT).clear();
         op.get(CONTENT).add(managedContent);
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
     }
 
@@ -847,6 +876,7 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
 
     private void removeDeployment(KernelServices kernelServices, String name) {
         ModelNode remove = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress(name));
+        kernelServices.validateOperation(remove);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(remove));
     }
 

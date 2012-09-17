@@ -105,10 +105,10 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     public void testDeploymentWithDifferentEnabledRuntimeNameAndPersistentSettings() throws Exception {
         KernelServices kernelServices = createKernelServices();
 
-        ModelNode op = createOperation(kernelServices, "Test1", "ONE", false);
+        ModelNode op = createAddOperation(kernelServices, "Test1", "ONE", false);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
-        op = createOperation(kernelServices, "Test2", "TWO", true);
+        op = createAddOperation(kernelServices, "Test2", "TWO", true);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         ModelNode deployments = getDeploymentParentResource(kernelServices);
@@ -153,15 +153,19 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
         checkSingleDeployment(kernelServices, "Test1", false);
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         op = Util.createOperation(DeploymentUndeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         op = Util.createOperation(DeploymentDeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -176,10 +180,12 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
         checkSingleDeployment(kernelServices, "Test1", true);
 
         op = Util.createOperation(DeploymentRedeployHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkSingleDeployment(kernelServices, "Test1", true);
 
         op = Util.createOperation(DeploymentRemoveHandler.OPERATION_NAME, getPathAddress("Test1"));
+        kernelServices.validateOperation(op);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         checkNoDeployments(kernelServices);
     }
@@ -203,10 +209,10 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
     }
 
     private ModelNode createAddOperation(KernelServices kernelServices, String name) throws Exception {
-        return createOperation(kernelServices, name, null, null);
+        return createAddOperation(kernelServices, name, null, null);
     }
 
-    private ModelNode createOperation(KernelServices kernelServices, String name, String runtimeName, Boolean enabled) throws Exception {
+    private ModelNode createAddOperation(KernelServices kernelServices, String name, String runtimeName, Boolean enabled) throws Exception {
         ModelNode operation = Util.createOperation(DeploymentAddHandler.OPERATION_NAME, getPathAddress(name));
         if (runtimeName != null) {
             operation.get(RUNTIME_NAME).set(runtimeName);
