@@ -327,7 +327,7 @@ public class EJBClientAPIUsageTestCase {
         // invoke the asynchronous method
         final Future<String> futureEcho = echoRemote.asyncEcho(message, DELAY);
         final long end = System.currentTimeMillis();
-        logger.info("Asynchronous invocation returned a Future: " + futureEcho + " in " + (end - start) + " milli seconds");
+        logger.info("Asynchronous invocation returned a Future: " + futureEcho + " in " + (end - start) + " milliseconds");
         // test that the invocation did not act like a synchronous invocation and instead returned "immediately"
         Assert.assertFalse("Asynchronous invocation behaved like a synchronous invocation", (end - start) >= DELAY);
         Assert.assertNotNull("Future is null", futureEcho);
