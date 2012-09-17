@@ -279,7 +279,7 @@ public interface WebMessages {
     @Message(id = 18075, value = "Number of active sessions exceeds limit %s trying to create session %s")
     IllegalStateException tooManyActiveSessions(int limit, String id);
 
-    @Message(id = 18076, value = "Exception expiring or passivating sesion %s")
+    @Message(id = 18076, value = "Exception expiring or passivating session %s")
     String errorPassivatingSession(String id);
 
     @Message(id = 18077, value = "Failed to load session %s for passivation")
