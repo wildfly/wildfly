@@ -24,6 +24,10 @@
 
 <module xmlns="urn:jboss:module:1.1" name="org.osgi.core">
 
+    <properties>
+       <property name="jboss.api" value="preview"/>
+    </properties>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
