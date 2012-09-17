@@ -47,6 +47,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
 
     private final String operationName;
     private final ResourceDescriptionResolver descriptionResolver;
+    private final ResourceDescriptionResolver attributeDescriptionResolver;
     private final ModelType replyType;
     private final ModelType replyValueType;
     private final DeprecationData deprecationData;
@@ -80,11 +81,22 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final ModelType replyValueType,
                                                final DeprecationData deprecationData,
                                                final AttributeDefinition... parameters) {
-        this(operationName, descriptionResolver, replyType, replyValueType, deprecationData, null, parameters);
+        this(operationName, descriptionResolver, descriptionResolver, replyType, replyValueType, deprecationData, null, parameters);
     }
+
+   /* public DefaultOperationDescriptionProvider(final String operationName,
+                                               final ResourceDescriptionResolver descriptionResolver,
+                                               final ModelType replyType,
+                                               final ModelType replyValueType,
+                                               final DeprecationData deprecationData,
+                                               final AttributeDefinition[] replyParameters,
+                                               final AttributeDefinition... parameters) {
+        this(operationName,descriptionResolver,null,replyType,replyValueType,deprecationData,replyParameters,parameters);
+    }*/
 
     public DefaultOperationDescriptionProvider(final String operationName,
                                                final ResourceDescriptionResolver descriptionResolver,
+                                               final ResourceDescriptionResolver attributeDescriptionResolver,
                                                final ModelType replyType,
                                                final ModelType replyValueType,
                                                final DeprecationData deprecationData,
@@ -92,6 +104,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final AttributeDefinition... parameters) {
         this.operationName = operationName;
         this.descriptionResolver = descriptionResolver;
+        this.attributeDescriptionResolver = attributeDescriptionResolver;
         this.replyType = replyType;
         this.replyValueType = replyValueType;
         this.parameters = parameters;
@@ -135,24 +148,24 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             if (replyParameters.length == 1) {
                 AttributeDefinition ad = replyParameters[0];
                 ModelNode param = ad.getNoTextDescription(true);
-                final String description = descriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
+                final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
                 param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
                 reply.set(param);
                 ModelNode deprecated = ad.addDeprecatedInfo(result);
                 if (deprecated != null) {
-                    deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
+                    deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
                 }
             } else {
                 reply.get(TYPE).set(ModelType.OBJECT);
                 for (AttributeDefinition ad : replyParameters) {
 
                     final ModelNode param = ad.getNoTextDescription(true);
-                    final String description = descriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
+                    final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
                     param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
                     reply.get(VALUE_TYPE, ad.getName()).set(param);
                     ModelNode deprecated = ad.addDeprecatedInfo(result);
                     if (deprecated != null) {
-                        deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
+                        deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
                     }
                 }
             }

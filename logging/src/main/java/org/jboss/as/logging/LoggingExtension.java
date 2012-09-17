@@ -34,6 +34,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -59,6 +60,8 @@ public class LoggingExtension implements Extension {
     static final PathElement FILE_HANDLER_PATH = PathElement.pathElement(CommonAttributes.FILE_HANDLER);
     static final PathElement PERIODIC_HANDLER_PATH = PathElement.pathElement(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER);
     static final PathElement SIZE_ROTATING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
+
+    static final ResourceDescriptionResolver FILTER_ATTRIBUTE_RESOLVER = getResourceDescriptionResolver(CommonAttributes.HANDLER.getName());
 
     static final ContextClassLoaderLogContextSelector CONTEXT_SELECTOR = new ContextClassLoaderLogContextSelector();
 
@@ -112,8 +115,8 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.AUTOFLUSH.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.CLASS.getName(), "logging.custom-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ENCODING.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILE.getName(), null);
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER.getName(), null);
+            //COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILE.getName(), null);
+            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER.getName(), "logging.handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FORMATTER.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.HANDLERS.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.LEVEL.getName(), "logging.common");
@@ -136,7 +139,7 @@ public class LoggingExtension implements Extension {
 
         @Override
         public String getResourceAttributeDescription(final String attributeName, final Locale locale, final ResourceBundle bundle) {
-            if (COMMON_ATTRIBUTE_NAMES.containsKey(attributeName)) {
+            if (COMMON_ATTRIBUTE_NAMES.containsKey(attributeName.split("\\.")[0])) {
                 return bundle.getString(getBundleKey(attributeName));
             }
             return super.getResourceAttributeDescription(attributeName, locale, bundle);
@@ -172,7 +175,7 @@ public class LoggingExtension implements Extension {
         }
 
         private String getVariableBundleKey(final String name, final String... variable) {
-            final String prefix = COMMON_ATTRIBUTE_NAMES.get(name);
+            final String prefix = COMMON_ATTRIBUTE_NAMES.get(name.split("\\.")[0]);
             final StringBuilder sb;
             // Special handling for filter
             if (prefix == null) {

@@ -22,9 +22,12 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -39,7 +42,9 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
 
     public static final NamingSubsystemRootResourceDefinition INSTANCE = new NamingSubsystemRootResourceDefinition();
 
-    static final OperationDefinition JNDI_VIEW = new SimpleOperationDefinition(JndiViewOperation.OPERATION_NAME, NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME));
+    static final SimpleOperationDefinition JNDI_VIEW = new SimpleOperationDefinitionBuilder(JndiViewOperation.OPERATION_NAME, NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME))
+            .withFlag(OperationEntry.Flag.RUNTIME_ONLY)
+            .build();
 
     private NamingSubsystemRootResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, NamingExtension.SUBSYSTEM_NAME),

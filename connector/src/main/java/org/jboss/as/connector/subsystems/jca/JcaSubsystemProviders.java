@@ -21,23 +21,14 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
-import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
-import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 import java.util.Locale;
@@ -53,6 +44,24 @@ import org.jboss.dmr.ModelNode;
 class JcaSubsystemProviders {
 
     static final String RESOURCE_NAME = JcaSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+
+    static DescriptionProvider BEAN_VALIDATION_DESC = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            final ResourceBundle bundle = getResourceBundle(locale);
+
+            final ModelNode configPropertiesNode = new ModelNode();
+            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
+            configPropertiesNode.get(DESCRIPTION).set("jca." + Constants.BEAN_VALIDATION);
+
+            for (BeanValidationAdd.BeanValidationParameters parameter : BeanValidationAdd.BeanValidationParameters.values()) {
+                parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.bean-validation", configPropertiesNode);
+            }
+
+            return configPropertiesNode;
+        }
+    };
 
     static DescriptionProvider ADD_BEAN_VALIDATION_DESC = new DescriptionProvider() {
         @Override

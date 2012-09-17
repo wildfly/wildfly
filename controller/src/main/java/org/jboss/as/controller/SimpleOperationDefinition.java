@@ -42,6 +42,7 @@ import java.util.EnumSet;
 public class SimpleOperationDefinition extends OperationDefinition {
 
     private ResourceDescriptionResolver resolver;
+    private ResourceDescriptionResolver attributeResolver;
 
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver) {
         this(name, resolver, EnumSet.noneOf(OperationEntry.Flag.class));
@@ -68,6 +69,7 @@ public class SimpleOperationDefinition extends OperationDefinition {
 
     SimpleOperationDefinition(final String name,
                                      final ResourceDescriptionResolver resolver,
+                                     final ResourceDescriptionResolver attributeResolver,
                                      final OperationEntry.EntryType entryType,
                                      final EnumSet<OperationEntry.Flag> flags,
                                      final ModelType replyType,
@@ -77,11 +79,12 @@ public class SimpleOperationDefinition extends OperationDefinition {
                                      final AttributeDefinition... parameters) {
         super(name, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
         this.resolver = resolver;
+        this.attributeResolver = attributeResolver;
     }
 
     @Override
     public DescriptionProvider getDescriptionProvider() {
-        return new DefaultOperationDescriptionProvider(getName(), resolver, replyType, replyValueType, deprecationData, replyParameters, parameters);
+        return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
 
 }

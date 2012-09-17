@@ -38,6 +38,7 @@ import org.jboss.dmr.ModelType;
  */
 public class SimpleOperationDefinitionBuilder {
     private ResourceDescriptionResolver resolver;
+    private ResourceDescriptionResolver attributeResolver;
     protected String name;
     protected OperationEntry.EntryType entryType;
     protected EnumSet<OperationEntry.Flag> flags;
@@ -53,7 +54,10 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     public SimpleOperationDefinition build() {
-        return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
+        if (attributeResolver == null) {
+            attributeResolver = resolver;
+        }
+        return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
 
     public SimpleOperationDefinitionBuilder setEntryType(OperationEntry.EntryType entryType) {
@@ -111,6 +115,11 @@ public class SimpleOperationDefinitionBuilder {
 
     public SimpleOperationDefinitionBuilder setReplyParameters(AttributeDefinition... replyParameters) {
         this.replyParameters = replyParameters;
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder setAttributeResolver(ResourceDescriptionResolver resolver) {
+        this.attributeResolver = resolver;
         return this;
     }
 }

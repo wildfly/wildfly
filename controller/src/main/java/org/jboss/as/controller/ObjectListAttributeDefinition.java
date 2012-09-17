@@ -62,7 +62,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         final ModelNode attr = getNoTextDescription(false);
         attr.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES, getName()).set(attr);
-        addValueTypeDescription(result, prefix, bundle, false);
+        addValueTypeDescription(result, prefix, bundle, false,null,null);
         return result;
     }
 
@@ -71,24 +71,24 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         final ModelNode param = getNoTextDescription(true);
         param.get(ModelDescriptionConstants.DESCRIPTION).set(getAttributeTextDescription(bundle, prefix));
         final ModelNode result = operationDescription.get(ModelDescriptionConstants.REQUEST_PROPERTIES, getName()).set(param);
-        addValueTypeDescription(result, prefix, bundle, true);
+        addValueTypeDescription(result, prefix, bundle, true,null,null);
         return result;
     }
 
 
     @Override
     protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
-        addValueTypeDescription(node, valueType.getName(), bundle, false);
+        addValueTypeDescription(node, valueType.getName(), bundle, false,null,null);
     }
 
     @Override
     protected void addAttributeValueTypeDescription(final ModelNode node, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        addValueTypeDescription(node, getName(), bundle, false);
+        addValueTypeDescription(node, getName(), bundle, false,resolver,locale);
     }
 
     @Override
     protected void addOperationParameterValueTypeDescription(final ModelNode node, final String operationName, final ResourceDescriptionResolver resolver, final Locale locale, final ResourceBundle bundle) {
-        addValueTypeDescription(node, getName(), bundle, true);
+        addValueTypeDescription(node, getName(), bundle, true,resolver,locale);
     }
 
     @Override
@@ -102,7 +102,8 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         }
     }
 
-    protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle, boolean forOperation) {
+    protected void addValueTypeDescription(final ModelNode node, final String prefix, final ResourceBundle bundle,
+                                           boolean forOperation, final ResourceDescriptionResolver resolver, Locale locale) {
         node.get(ModelDescriptionConstants.DESCRIPTION); // placeholder
         node.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).set(valueType.isAllowExpression());
         if (forOperation) {
@@ -170,7 +171,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         }
 
 
-        valueType.addValueTypeDescription(node, prefix, bundle);
+        valueType.addValueTypeDescription(node, prefix, bundle,resolver,locale);
     }
 
 

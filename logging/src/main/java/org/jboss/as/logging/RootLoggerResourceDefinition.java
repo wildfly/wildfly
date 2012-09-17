@@ -29,7 +29,9 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
@@ -41,12 +43,36 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
     public static final String ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME = "change-root-log-level";
     public static final String ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME = "root-logger-assign-handler";
     public static final String ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME = "root-logger-unassign-handler";
+    static final ResourceDescriptionResolver ROOT_RESOLVER = LoggingExtension.getResourceDescriptionResolver(CommonAttributes.ROOT_LOGGER);
+
 
     static final AttributeDefinition[] ATTRIBUTES = {
             FILTER,
             LEVEL,
             HANDLERS
     };
+
+    static final SimpleOperationDefinition ROOT_LOGGER_REMOVE_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_REMOVE_OPERATION_NAME, ROOT_RESOLVER)
+            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
+            .build();
+    static final OperationDefinition ADD_ROOT_LOGGER_DEFINITION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_ADD_OPERATION_NAME, ROOT_RESOLVER)
+            .setParameters(ATTRIBUTES)
+            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
+            .build();
+    static final OperationDefinition CHANGE_LEVEL_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME, ROOT_RESOLVER)
+            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
+            .setParameters(CommonAttributes.LEVEL)
+            .build();
+
+    static final OperationDefinition ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .build();
+
+    static final OperationDefinition REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .build();
     /**
      * A step handler to add a logger.
      */
@@ -61,9 +87,8 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
 
     private RootLoggerResourceDefinition() {
         super(LoggingExtension.ROOT_LOGGER_PATH,
-                LoggingExtension.getResourceDescriptionResolver(CommonAttributes.ROOT_LOGGER),
+                ROOT_RESOLVER,
                 ADD_ROOT_LOGGER,
-                //todo REMOVE_ROOT_LOGGER maybe?
                 LoggerOperations.REMOVE_LOGGER);
     }
 
@@ -78,11 +103,11 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
 
-        final OperationDefinition SET_ROOT_LOGGER_DEFINITION = new SimpleOperationDefinition(ROOT_LOGGER_ADD_OPERATION_NAME, getResourceDescriptionResolver(), ATTRIBUTES);
-        registration.registerOperationHandler(SET_ROOT_LOGGER_DEFINITION, RootLoggerResourceDefinition.ADD_ROOT_LOGGER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_REMOVE_OPERATION_NAME, getResourceDescriptionResolver()), LoggerOperations.REMOVE_LOGGER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.LEVEL), LoggerOperations.CHANGE_LEVEL);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.HANDLER_NAME), LoggerOperations.ADD_HANDLER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.HANDLER_NAME), LoggerOperations.REMOVE_HANDLER);
+
+        registration.registerOperationHandler(ADD_ROOT_LOGGER_DEFINITION, RootLoggerResourceDefinition.ADD_ROOT_LOGGER);
+        registration.registerOperationHandler(ROOT_LOGGER_REMOVE_OPERATION, LoggerOperations.REMOVE_LOGGER);
+        registration.registerOperationHandler(CHANGE_LEVEL_OPERATION, LoggerOperations.CHANGE_LEVEL);
+        registration.registerOperationHandler(ADD_HANDLER_OPERATION, LoggerOperations.ADD_HANDLER);
+        registration.registerOperationHandler(REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
     }
 }
