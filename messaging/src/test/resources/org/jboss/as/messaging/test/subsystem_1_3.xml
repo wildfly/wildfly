@@ -279,7 +279,9 @@
                  <transaction mode="xa"/>
                  <min-pool-size>42</min-pool-size>
                  <max-pool-size>242</max-pool-size>
-                 <connectors>
+				 <initial-message-packet-size>9876</initial-message-packet-size>
+				 <initial-connect-attempts>5432</initial-connect-attempts>
+				 <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>
                  <entries>

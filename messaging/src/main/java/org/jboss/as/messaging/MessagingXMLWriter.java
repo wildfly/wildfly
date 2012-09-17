@@ -687,6 +687,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         Pooled.MIN_POOL_SIZE.marshallAsElement(factory, writer);
         Pooled.MAX_POOL_SIZE.marshallAsElement(factory, writer);
         Pooled.USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
+        Pooled.INITIAL_MESSAGE_PACKET_SIZE.marshallAsElement(factory, writer);
+        Pooled.INITIAL_CONNECT_ATTEMPTS.marshallAsElement(factory, writer);
     }
 
     private static void writeJmsQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
