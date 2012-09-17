@@ -60,7 +60,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements OperationStepHandler, DescriptionProvider {
+public class DeploymentAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -76,11 +76,6 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
 
     public static DeploymentAddHandler create(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         return new DeploymentAddHandler(contentRepository, vaultReader);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getAddDeploymentOperation(locale, true);
     }
 
     /**

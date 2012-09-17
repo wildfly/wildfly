@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.server.deployment.DeploymentStatusHandler;
 
 /**
@@ -64,6 +65,9 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
     protected DeploymentResourceParent getParent() {
         return parent;
     }
+
+    protected abstract void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler,
+            OperationEntry.Flag... flags);
 
     public static enum DeploymentResourceParent {
         DOMAIN (DeploymentAttributes.DOMAIN_RESOURCE_ATTRIBUTES, DeploymentAttributes.DOMAIN_ADD_ATTRIBUTES),

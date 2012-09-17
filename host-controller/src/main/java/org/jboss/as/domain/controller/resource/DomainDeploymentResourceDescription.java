@@ -21,8 +21,10 @@
 */
 package org.jboss.as.domain.controller.resource;
 
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentAddHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentRemoveHandler;
@@ -41,18 +43,22 @@ import org.jboss.as.server.controller.resources.DeploymentResourceDescription;
  */
 public class DomainDeploymentResourceDescription extends DeploymentResourceDescription {
 
-    private DomainDeploymentResourceDescription(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    private OperationDefinition addDefinition;
+    private DomainDeploymentResourceDescription(DeploymentResourceParent parent, OperationDefinition addDefinition, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(parent, addHandler, removeHandler);
+        this.addDefinition = addDefinition;
     }
 
     public static DomainDeploymentResourceDescription createForDomainRoot(boolean isMaster, ContentRepository contentRepository, HostFileRepository fileRepository) {
         return new DomainDeploymentResourceDescription(DeploymentResourceParent.DOMAIN,
+                DeploymentAttributes.DOMAIN_DEPLOYMENT_ADD_DEFINITION,
                 isMaster ? new DeploymentAddHandler(contentRepository) : new DeploymentAddHandler(),
                 isMaster ? DeploymentRemoveHandler.createForMaster(contentRepository) : DeploymentRemoveHandler.createForSlave(fileRepository));
     }
 
     public static DomainDeploymentResourceDescription createForServerGroup(ContentRepository contentRepository, HostFileRepository fileRepository) {
-        return new DomainDeploymentResourceDescription(DeploymentResourceParent.SERVER_GROUP, new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupRemoveHandler.INSTANCE);
+        return new DomainDeploymentResourceDescription(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
+                new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupRemoveHandler.INSTANCE);
     }
 
     @Override
@@ -65,5 +71,9 @@ public class DomainDeploymentResourceDescription extends DeploymentResourceDescr
         }
     }
 
+    @Override
+    protected void registerAddOperation(ManagementResourceRegistration registration, OperationStepHandler handler, Flag... flags) {
+        registration.registerOperationHandler(addDefinition, handler);
+    }
 
 }

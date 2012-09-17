@@ -23,6 +23,7 @@ package org.jboss.as.server.controller.resources;
 
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentAddHandler;
 import org.jboss.as.server.deployment.DeploymentDeployHandler;
@@ -56,5 +57,10 @@ public class ServerDeploymentResourceDescription extends DeploymentResourceDescr
         resourceRegistration.registerOperationHandler(DeploymentAttributes.DEPLOY_DEFINITION, new DeploymentDeployHandler(vaultReader));
         resourceRegistration.registerOperationHandler(DeploymentAttributes.UNDEPLOY_DEFINITION, new DeploymentUndeployHandler(vaultReader));
         resourceRegistration.registerOperationHandler(DeploymentAttributes.REDEPLOY_DEFINITION, new DeploymentRedeployHandler(vaultReader));
+    }
+
+    @Override
+    protected void registerAddOperation(ManagementResourceRegistration registration, OperationStepHandler handler, Flag... flags) {
+        registration.registerOperationHandler(DeploymentAttributes.SERVER_DEPLOYMENT_ADD_DEFINITION, handler);
     }
 }

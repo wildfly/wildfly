@@ -18,40 +18,18 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Model descriptions for deployment resources.
@@ -81,69 +59,6 @@ public class DeploymentDescription {
         return root;
     }
 
-
-
-    public static final ModelNode getAddDeploymentOperation(Locale locale, boolean includeEnabled) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(ADD);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.add"));
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, DESCRIPTION).set(bundle.getString("deployment.runtime-name"));
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, NILLABLE).set(true);
-        getDeploymentContentParamDescription(root, bundle);
-        if (includeEnabled) {
-            root.get(REQUEST_PROPERTIES, ENABLED, TYPE).set(ModelType.BOOLEAN);
-            root.get(REQUEST_PROPERTIES, ENABLED, DESCRIPTION).set(bundle.getString("deployment.enabled"));
-            root.get(REQUEST_PROPERTIES, ENABLED, REQUIRED).set(false);
-        }
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    private static void getDeploymentContentParamDescription(ModelNode root, ResourceBundle bundle) {
-        root.get(REQUEST_PROPERTIES, CONTENT, TYPE).set(ModelType.LIST);
-        root.get(REQUEST_PROPERTIES, CONTENT, DESCRIPTION).set(bundle.getString("deployment.content"));
-        root.get(REQUEST_PROPERTIES, CONTENT, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, CONTENT, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, TYPE).set(ModelType.INT);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, DESCRIPTION).set(bundle.getString("content.input-stream-index"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, MIN).set(0);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, INPUT_STREAM_INDEX, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, HASH, TYPE).set(ModelType.BYTES);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, HASH, DESCRIPTION).set(bundle.getString("content.hash"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, HASH, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, HASH, MIN_LENGTH).set(20);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, HASH, MAX_LENGTH).set(20);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, HASH, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, BYTES, TYPE).set(ModelType.BYTES);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, BYTES, DESCRIPTION).set(bundle.getString("content.bytes"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, BYTES, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, BYTES, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, BYTES, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, URL, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, URL, DESCRIPTION).set(bundle.getString("content.url"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, URL, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, URL, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, URL, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, PATH, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, PATH, DESCRIPTION).set(bundle.getString("content.path"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, PATH, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, PATH, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, PATH, NILLABLE).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, RELATIVE_TO, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, RELATIVE_TO, DESCRIPTION).set(bundle.getString("content.relative-to"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, RELATIVE_TO, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, RELATIVE_TO, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, RELATIVE_TO, NILLABLE).set(true);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, ARCHIVE, TYPE).set(ModelType.BOOLEAN);
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, ARCHIVE, DESCRIPTION).set(bundle.getString("content.archive"));
-        root.get(REQUEST_PROPERTIES, CONTENT, VALUE_TYPE, ARCHIVE, REQUIRED).set(false);
-    }
-
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
@@ -152,6 +67,5 @@ public class DeploymentDescription {
     }
 
     public static void main(String[] args) {
-        System.out.println(getAddDeploymentOperation(null, true));
     }
 }

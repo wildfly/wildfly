@@ -28,7 +28,6 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNT
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
@@ -37,12 +36,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.deployment.DeploymentHandlerUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -51,7 +48,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements OperationStepHandler, DescriptionProvider {
+public class DeploymentAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
 
@@ -69,11 +66,6 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
      */
     public DeploymentAddHandler(final ContentRepository contentRepository) {
         this.contentRepository = contentRepository;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getAddDeploymentOperation(locale, false);
     }
 
     /**

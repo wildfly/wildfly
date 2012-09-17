@@ -172,6 +172,20 @@ public class DeploymentAttributes {
     public static OperationDefinition UNDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.UNDEPLOY, DEPLOYMENT_RESOLVER);
     public static OperationDefinition REDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.REDEPLOY, DEPLOYMENT_RESOLVER);
 
+    /** Server add deployment definition */
+    public static OperationDefinition SERVER_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
+            .setParameters(new AttributeDefinition[] { RUNTIME_NAME, CONTENT_ALL, ENABLED, /*PERSISTENT,*/ STATUS}) // 'hide' the persistent attribute from users
+            .build();
+
+    /** Server group add deployment definition */
+    public static OperationDefinition SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
+            .setParameters(SERVER_GROUP_ADD_ATTRIBUTES)
+            .build();
+
+    public static OperationDefinition DOMAIN_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
+            .setParameters(DOMAIN_ADD_ATTRIBUTES)
+            .build();
+
     /** Return type for the upload-deployment-xxx operaions */
     private static SimpleAttributeDefinition UPLOAD_HASH_REPLY = SimpleAttributeDefinitionBuilder.create(CONTENT_HASH)
             .setAllowNull(false)
