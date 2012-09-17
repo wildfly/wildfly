@@ -22,10 +22,14 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_START_POLICY;
+
 import java.util.List;
 
 import javax.annotation.ManagedBean;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants.StartPolicy;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.DeploymentMarker;
@@ -41,6 +45,7 @@ import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
@@ -75,21 +80,15 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
+            StartPolicy startPolicy = getStartPolicy(depUnit);
             OSGiMetaData metadata = info.getOSGiMetadata();
-            deployment.setAutoStart(!metadata.isFragment());
-
-            // Set the start level and prevent autostart if greater than the Framw
-            AnnotationInstance slAware = getAnnotation(depUnit, "org.jboss.arquillian.osgi.StartLevelAware");
-            if (slAware != null) {
-                int startLevel = slAware.value("startLevel").asInt();
-                deployment.setStartLevel(startLevel);
-                deployment.setAutoStart(false);
-            }
+            deployment.setAutoStart(startPolicy == StartPolicy.AUTO && !metadata.isFragment());
 
             // Prevent autostart for marked deployments
             AnnotationInstance marker = getAnnotation(depUnit, DeploymentMarker.class.getName());
-            if (marker != null && !marker.value("autoStart").asBoolean()) {
-                deployment.setAutoStart(false);
+            if (deployment.isAutoStart() && marker != null) {
+                AnnotationValue value = marker.value("autoStart");
+                deployment.setAutoStart(Boolean.parseBoolean(value.asString()));
             }
         }
 
@@ -115,13 +114,13 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private AnnotationInstance getAnnotation(DeploymentUnit depUnit, String className) {
+    static AnnotationInstance getAnnotation(DeploymentUnit depUnit, String className) {
         CompositeIndex index = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         List<AnnotationInstance> annotations = index.getAnnotations(DotName.createSimple(className));
         return annotations.size() == 1 ? annotations.get(0) : null;
     }
 
-    private boolean allowAdditionalModuleDependencies(final DeploymentUnit depUnit) {
+    private boolean allowAdditionalModuleDependencies(DeploymentUnit depUnit) {
         boolean isWar = DeploymentTypeMarker.isType(DeploymentType.WAR, depUnit);
         boolean isEjb = EjbDeploymentMarker.isEjbDeployment(depUnit);
         boolean isCDI = getAnnotation(depUnit, ManagedBean.class.getName()) != null;
@@ -130,7 +129,20 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     @Override
-    public void undeploy(final DeploymentUnit depUnit) {
+    public void undeploy(DeploymentUnit depUnit) {
         depUnit.removeAttachment(OSGiConstants.DEPLOYMENT_KEY);
+    }
+
+    private DeploymentMetadata getDeploymentMetadata(final DeploymentUnit depUnit) {
+        DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+        if (metadata == null && depUnit.getParent() != null) {
+            metadata = depUnit.getParent().getAttachment(Attachments.DEPLOYMENT_METADATA);
+        }
+        return metadata;
+    }
+
+    private StartPolicy getStartPolicy(DeploymentUnit depUnit) {
+        DeploymentMetadata metadata = getDeploymentMetadata(depUnit);
+        return StartPolicy.parse((String) metadata.getUserdata().get(DEPLOYMENT_METADATA_START_POLICY));
     }
 }

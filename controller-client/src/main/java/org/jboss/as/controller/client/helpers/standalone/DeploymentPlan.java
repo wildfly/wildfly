@@ -25,6 +25,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+
 /**
  * Encapsulates a set of actions a {@link ServerDeploymentManager} should
  * take to update the set of deployment content available for deployment in the
@@ -66,6 +68,13 @@ public interface DeploymentPlan extends Serializable {
      *         <code>false</code> otherwise
      */
     boolean isShutdown();
+
+    /**
+     * Get the metadata associated with this deployment plan.
+     *
+     * @return The meta data.
+     */
+    DeploymentMetadata getMetadata();
 
     /**
      * Gets whether the deployment plan is organized around

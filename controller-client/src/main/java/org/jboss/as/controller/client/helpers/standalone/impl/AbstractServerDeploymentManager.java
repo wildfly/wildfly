@@ -34,6 +34,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REPLACE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_UNDEPLOY_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.client.helpers.ClientConstants.METADATA;
 import static org.jboss.as.controller.client.helpers.ClientConstants.NAME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OPERATION_HEADERS;
@@ -105,6 +106,10 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
                 builder.addInputStream(action.getContentStream());
                 //step.get(INPUT_STREAM_INDEX).set(stream++);
                 step.get(CONTENT).get(0).get(INPUT_STREAM_INDEX).set(stream++);
+                ModelNode metadataNode = plan.getMetadata().getModelNode();
+                if (metadataNode.isDefined()) {
+                    step.get(METADATA).set(metadataNode);
+                }
                 break;
             }
             case DEPLOY: {

@@ -156,7 +156,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                 deployments.add(dep);
             }
         } catch (Exception ex) {
-            throw MESSAGES.startFailedToProcessInitialCapabilites(ex);
+            throw MESSAGES.failedToProcessInitialCapabilites(ex);
         }
 
         // Install the bundles from the given locations
