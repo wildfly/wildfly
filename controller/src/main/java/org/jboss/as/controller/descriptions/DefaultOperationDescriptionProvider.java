@@ -132,16 +132,28 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             }
         }
         if (replyParameters != null && replyParameters.length > 0) {
-            reply.get(TYPE).set(ModelType.OBJECT);
-            for (AttributeDefinition ad : replyParameters) {
-
-                final ModelNode param = ad.getNoTextDescription(true);
+            if (replyParameters.length == 1) {
+                AttributeDefinition ad = replyParameters[0];
+                ModelNode param = ad.getNoTextDescription(true);
                 final String description = descriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
                 param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
-                reply.get(VALUE_TYPE, ad.getName()).set(param);
+                reply.set(param);
                 ModelNode deprecated = ad.addDeprecatedInfo(result);
                 if (deprecated != null) {
                     deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
+                }
+            } else {
+                reply.get(TYPE).set(ModelType.OBJECT);
+                for (AttributeDefinition ad : replyParameters) {
+
+                    final ModelNode param = ad.getNoTextDescription(true);
+                    final String description = descriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
+                    param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
+                    reply.get(VALUE_TYPE, ad.getName()).set(param);
+                    ModelNode deprecated = ad.addDeprecatedInfo(result);
+                    if (deprecated != null) {
+                        deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
+                    }
                 }
             }
         }

@@ -138,6 +138,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         node.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
                         break;
                     default:
@@ -150,6 +151,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         node.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
                         break;
                     default:
