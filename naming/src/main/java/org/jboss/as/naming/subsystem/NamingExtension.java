@@ -28,8 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.EnumSet;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -40,7 +38,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.naming.management.JndiViewOperation;
 import org.jboss.dmr.ModelNode;
@@ -85,7 +82,7 @@ public class NamingExtension implements Extension {
         registration.registerSubModel(RemoteNamingResourceDefinition.INSTANCE);
 
         if (context.isRuntimeOnlyRegistrationValid()) {
-            registration.registerOperationHandler(JndiViewOperation.OPERATION_NAME, JndiViewOperation.INSTANCE, NamingSubsystemRootResourceDefinition.JNDI_VIEW, false, EnumSet.of(Flag.RUNTIME_ONLY));
+            registration.registerOperationHandler(NamingSubsystemRootResourceDefinition.JNDI_VIEW, JndiViewOperation.INSTANCE, false);
         }
 
         subsystem.registerXMLElementWriter(NamingSubsystem13Parser.INSTANCE);

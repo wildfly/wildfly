@@ -21,35 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
-import org.jboss.as.threads.ThreadsParser;
-import org.jboss.as.threads.ThreadsServices;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.util.EnumSet;
-import java.util.List;
-
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
 import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
@@ -67,10 +38,39 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.as.connector.subsystems.resourceadapters.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.threads.BoundedQueueThreadPoolResourceDefinition;
+import org.jboss.as.threads.ThreadsParser;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -85,6 +85,19 @@ public class JcaExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    private static final String RESOURCE_NAME = JcaExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    protected static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM,SUBSYSTEM_NAME);
+    protected static final PathElement PATH_ARCHIVE_VALIDATION = PathElement.pathElement(ARCHIVE_VALIDATION, ARCHIVE_VALIDATION);
+
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+            StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+            for (String kp : keyPrefix) {
+                prefix.append('.').append(kp);
+            }
+            return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JcaExtension.class.getClassLoader(), true, false);
+        }
+
     @Override
     public void initialize(final ExtensionContext context) {
         ROOT_LOGGER.debugf("Initializing Connector Extension");
@@ -94,20 +107,11 @@ public class JcaExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, JcaSubsystemAdd.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_ADD_DESC, false);
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.SUBSYSTEM_REMOVE_DESC, false);
-
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemRootDefinition.INSTANCE);
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
-        final ManagementResourceRegistration archiveValidation =
-                registration.registerSubModel(PathElement.pathElement(ARCHIVE_VALIDATION, ARCHIVE_VALIDATION), JcaSubsystemProviders.ARCHIVE_VALIDATION_DESC);
-        archiveValidation.registerOperationHandler(ADD, ArchiveValidationAdd.INSTANCE, JcaSubsystemProviders.ADD_ARCHIVE_VALIDATION_DESC, false);
-        archiveValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_ARCHIVE_VALIDATION_DESC, false);
+        final ManagementResourceRegistration archiveValidation = registration.registerSubModel(JcaArchiveValidationDefinition.INSTANCE);
 
-        for (final ArchiveValidationAdd.ArchiveValidationParameters parameter : ArchiveValidationAdd.ArchiveValidationParameters.values()) {
-            archiveValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-        }
 
         final ManagementResourceRegistration beanValidation =
                 registration.registerSubModel(PathElement.pathElement(BEAN_VALIDATION, BEAN_VALIDATION), JcaSubsystemProviders.BEAN_VALIDATION_DESC);
@@ -115,7 +119,7 @@ public class JcaExtension implements Extension {
         beanValidation.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BEAN_VALIDATION_DESC, false);
 
         for (final BeanValidationAdd.BeanValidationParameters parameter : BeanValidationAdd.BeanValidationParameters.values()) {
-            beanValidation.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+            beanValidation.registerReadWriteAttribute(parameter.getAttribute(), null, JcaAttributeWriteHandler.INSTANCE);
         }
 
         final ManagementResourceRegistration cachedConnectionManager =
@@ -125,9 +129,9 @@ public class JcaExtension implements Extension {
 
         for (final CachedConnectionManagerAdd.CcmParameters parameter : CachedConnectionManagerAdd.CcmParameters.values()) {
             if (parameter != CachedConnectionManagerAdd.CcmParameters.INSTALL) {
-                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, JcaAttributeWriteHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
+                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute(), null, JcaAttributeWriteHandler.INSTANCE);
             } else {
-                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler(), AttributeAccess.Storage.CONFIGURATION);
+                cachedConnectionManager.registerReadWriteAttribute(parameter.getAttribute(), null, new ReloadRequiredWriteAttributeHandler());
             }
         }
 
@@ -137,7 +141,7 @@ public class JcaExtension implements Extension {
         workManager.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_WORKMANAGER_DESC, false);
 
         for (final WorkManagerAdd.WmParameters parameter : WorkManagerAdd.WmParameters.values()) {
-            workManager.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler(), AttributeAccess.Storage.CONFIGURATION);
+            workManager.registerReadWriteAttribute(parameter.getAttribute(), null, new ReloadRequiredWriteAttributeHandler());
         }
 
         workManager.registerSubModel(BoundedQueueThreadPoolResourceDefinition.create(WORKMANAGER_SHORT_RUNNING, ThreadsServices.STANDARD_THREAD_FACTORY_RESOLVER, ThreadsServices.STANDARD_HANDOFF_EXECUTOR_RESOLVER,
@@ -151,7 +155,7 @@ public class JcaExtension implements Extension {
         bootstrapContext.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, JcaSubsystemProviders.REMOVE_BOOTSTRAP_CONTEXT_DESC, false);
 
         for (final BootstrapContextAdd.BootstrapCtxParameters parameter : BootstrapContextAdd.BootstrapCtxParameters.values()) {
-            bootstrapContext.registerReadWriteAttribute(parameter.getAttribute().getName(), null, new ReloadRequiredWriteAttributeHandler(), AttributeAccess.Storage.CONFIGURATION);
+            bootstrapContext.registerReadWriteAttribute(parameter.getAttribute(), null, new ReloadRequiredWriteAttributeHandler());
         }
 
         subsystem.registerXMLElementWriter(ConnectorSubsystemParser.INSTANCE);
@@ -162,17 +166,6 @@ public class JcaExtension implements Extension {
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_0.getUriString(), ConnectorSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JCA_1_1.getUriString(), ConnectorSubsystemParser.INSTANCE);
-    }
-
-    private static ModelNode createEmptyAddOperation() {
-        final ModelNode address = new ModelNode();
-        address.add(ModelDescriptionConstants.SUBSYSTEM, JCA);
-        address.protect();
-
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
-        return subsystem;
     }
 
     static final class ConnectorSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -283,11 +276,6 @@ public class JcaExtension implements Extension {
                 }
             }
         }
-
-        private boolean has(ModelNode node, String name) {
-            return node.has(name) && node.get(name).isDefined();
-        }
-
 
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
@@ -639,12 +627,6 @@ public class JcaExtension implements Extension {
                     }
                 }
             }
-        }
-
-        public String rawElementText(XMLStreamReader reader) throws XMLStreamException {
-            String elementText = reader.getElementText();
-            elementText = elementText == null || elementText.trim().length() == 0 ? null : elementText.trim();
-            return elementText;
         }
 
         public String rawAttributeText(XMLStreamReader reader, String attributeName) {

@@ -21,23 +21,14 @@
  */
 package org.jboss.as.connector.subsystems.jca;
 
-import static org.jboss.as.connector.subsystems.jca.ArchiveValidationAdd.ArchiveValidationParameters;
-import static org.jboss.as.connector.subsystems.jca.Constants.ARCHIVE_VALIDATION;
-import static org.jboss.as.connector.subsystems.jca.Constants.BEAN_VALIDATION;
-import static org.jboss.as.connector.subsystems.jca.Constants.BOOTSTRAP_CONTEXT;
-import static org.jboss.as.connector.subsystems.jca.Constants.CACHED_CONNECTION_MANAGER;
-import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 
 import java.util.Locale;
@@ -53,107 +44,6 @@ import org.jboss.dmr.ModelNode;
 class JcaSubsystemProviders {
 
     static final String RESOURCE_NAME = JcaSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
-
-    static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode subsystem = new ModelNode();
-            subsystem.get(DESCRIPTION).set(bundle.getString("jca"));
-            subsystem.get(HEAD_COMMENT_ALLOWED).set(true);
-            subsystem.get(TAIL_COMMENT_ALLOWED).set(true);
-            subsystem.get(NAMESPACE).set(Namespace.JCA_1_1.getUriString());
-
-            subsystem.get(CHILDREN, ARCHIVE_VALIDATION , DESCRIPTION).set(bundle.getString("jca." + ARCHIVE_VALIDATION));
-            subsystem.get(CHILDREN, BEAN_VALIDATION , DESCRIPTION).set(bundle.getString("jca." + BEAN_VALIDATION));
-            subsystem.get(CHILDREN, BOOTSTRAP_CONTEXT , DESCRIPTION).set(bundle.getString("jca." + BOOTSTRAP_CONTEXT));
-            subsystem.get(CHILDREN, WORKMANAGER , DESCRIPTION).set(bundle.getString("jca." + WORKMANAGER));
-            subsystem.get(CHILDREN, CACHED_CONNECTION_MANAGER , DESCRIPTION).set(bundle.getString("jca." + CACHED_CONNECTION_MANAGER));
-
-
-            return subsystem;
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_ADD_DESC = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set("add");
-            operation.get(DESCRIPTION).set(bundle.getString("jca.add"));
-            operation.get(REQUEST_PROPERTIES).setEmptyObject();
-            operation.get(REPLY_PROPERTIES).setEmptyObject();
-
-            return operation;
-        }
-    };
-
-    static final DescriptionProvider SUBSYSTEM_REMOVE_DESC = new DescriptionProvider() {
-
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-
-            operation.get(OPERATION_NAME).set("remove");
-            operation.get(DESCRIPTION).set(bundle.getString("jca.remove"));
-            operation.get(REQUEST_PROPERTIES).setEmptyObject();
-            operation.get(REPLY_PROPERTIES).setEmptyObject();
-
-            return operation;
-        }
-
-    };
-
-    static DescriptionProvider ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode configPropertiesNode = new ModelNode();
-            configPropertiesNode.get(HEAD_COMMENT_ALLOWED).set(true);
-            configPropertiesNode.get(TAIL_COMMENT_ALLOWED).set(true);
-            configPropertiesNode.get(DESCRIPTION).set("jca." + ARCHIVE_VALIDATION);
-
-            for (ArchiveValidationParameters parameter : ArchiveValidationParameters.values()) {
-                parameter.getAttribute().addResourceAttributeDescription(bundle, "jca.archive-validation", configPropertiesNode);
-            }
-
-            return configPropertiesNode;
-        }
-    };
-
-    static DescriptionProvider ADD_ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-
-            final ModelNode op = new ModelNode();
-
-            op.get(DESCRIPTION).set(bundle.getString("jca.archive-validation.add"));
-            op.get(OPERATION_NAME).set(ADD);
-
-            for (ArchiveValidationParameters parameter : ArchiveValidationParameters.values()) {
-                parameter.getAttribute().addOperationParameterDescription(bundle, "jca.archive-validation", op);
-            }
-
-            return op;
-        }
-    };
-
-    static DescriptionProvider REMOVE_ARCHIVE_VALIDATION_DESC = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            final ResourceBundle bundle = getResourceBundle(locale);
-            final ModelNode operation = new ModelNode();
-            operation.get(OPERATION_NAME).set(REMOVE);
-            operation.get(DESCRIPTION).set(bundle.getString("jca.archive-validation.remove"));
-            return operation;
-        }
-    };
 
     static DescriptionProvider BEAN_VALIDATION_DESC = new DescriptionProvider() {
         @Override

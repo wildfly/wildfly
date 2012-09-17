@@ -153,7 +153,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param handler the operation handler
      * @param descriptionProvider the description provider for this operation
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+     @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider);
 
     /**
@@ -164,7 +166,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param descriptionProvider the description provider for this operation
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags);
 
     /**
@@ -175,7 +179,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param descriptionProvider the description provider for this operation
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited);
 
     /**
@@ -187,7 +193,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @param entryType the operation entry type
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType);
 
 
@@ -200,7 +208,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param inherited {@code true} if the operation is inherited to child nodes, {@code false} otherwise
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<OperationEntry.Flag> flags);
 
     /**
@@ -213,7 +223,9 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @param entryType the operation entry type
      * @param flags operational modifier flags for this operation (e.g. read-only)
      * @throws IllegalArgumentException if either parameter is {@code null}
+     * @deprecated use {@link #registerOperationHandler(org.jboss.as.controller.OperationDefinition, org.jboss.as.controller.OperationStepHandler)}
      */
+    @Deprecated
     void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags);
 
     /**
