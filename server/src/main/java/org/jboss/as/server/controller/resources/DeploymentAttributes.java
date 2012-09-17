@@ -174,7 +174,7 @@ public class DeploymentAttributes {
 
     /** Server add deployment definition */
     public static OperationDefinition SERVER_DEPLOYMENT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.ADD, DEPLOYMENT_RESOLVER)
-            .setParameters(new AttributeDefinition[] { RUNTIME_NAME, CONTENT_ALL, ENABLED, /*PERSISTENT,*/ STATUS}) // 'hide' the persistent attribute from users
+            .setParameters(new AttributeDefinition[] { RUNTIME_NAME, CONTENT_ALL, ENABLED, /*PERSISTENT,*/}) // 'hide' the persistent attribute from users
             .build();
 
     /** Server group add deployment definition */
