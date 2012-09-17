@@ -109,8 +109,8 @@ public final class ProcessControllerClient implements Closeable {
                         for (int i = 0; i < cnt; i++) {
                             final String processName = readUTFZBytes(dataStream);
                             final byte[] processAuthCode = new byte[16];
-                            final boolean processRunning = StreamUtils.readBoolean(dataStream);
                             readFully(dataStream, processAuthCode);
+                            final boolean processRunning = StreamUtils.readBoolean(dataStream);
                             inventory.put(processName, new ProcessInfo(processName, authCode, processRunning));
                         }
                         dataStream.close();
