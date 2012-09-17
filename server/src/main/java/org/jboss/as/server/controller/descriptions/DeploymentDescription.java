@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_LENGTH;
@@ -34,19 +33,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
@@ -107,50 +103,6 @@ public class DeploymentDescription {
         return root;
     }
 
-    public static final ModelNode getReplaceDeploymentOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(REPLACE_DEPLOYMENT);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.replace"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.replace.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
-        root.get(REQUEST_PROPERTIES, TO_REPLACE, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, TO_REPLACE, DESCRIPTION).set(bundle.getString("deployment.replace.to-replace"));
-        root.get(REQUEST_PROPERTIES, TO_REPLACE, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, TO_REPLACE, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, TO_REPLACE, NILLABLE).set(false);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, DESCRIPTION).set(bundle.getString("deployment.runtime-name"));
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, NILLABLE).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static final ModelNode getFullReplaceDeploymentOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(FULL_REPLACE_DEPLOYMENT);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.full-replace"));
-        root.get(REQUEST_PROPERTIES, NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAME, DESCRIPTION).set(bundle.getString("deployment.name"));
-        root.get(REQUEST_PROPERTIES, NAME, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, NAME, NILLABLE).set(false);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, DESCRIPTION).set(bundle.getString("deployment.runtime-name"));
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, REQUIRED).set(false);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, MIN_LENGTH).set(1);
-        root.get(REQUEST_PROPERTIES, RUNTIME_NAME, NILLABLE).set(false);
-        getDeploymentContentParamDescription(root, bundle);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
     private static void getDeploymentContentParamDescription(ModelNode root, ResourceBundle bundle) {
         root.get(REQUEST_PROPERTIES, CONTENT, TYPE).set(ModelType.LIST);
         root.get(REQUEST_PROPERTIES, CONTENT, DESCRIPTION).set(bundle.getString("deployment.content"));
@@ -201,7 +153,5 @@ public class DeploymentDescription {
 
     public static void main(String[] args) {
         System.out.println(getAddDeploymentOperation(null, true));
-        System.out.println(getFullReplaceDeploymentOperation(null));
-        System.out.println(getReplaceDeploymentOperation(null));
     }
 }

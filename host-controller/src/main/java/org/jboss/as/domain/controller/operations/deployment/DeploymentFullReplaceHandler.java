@@ -28,14 +28,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.getInputStream;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Locale;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultAction;
@@ -43,12 +41,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.as.server.deployment.DeploymentHandlerUtils;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -56,7 +54,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements OperationStepHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
@@ -79,22 +77,19 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         this.fileRepository = fileRepository;
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
-    }
-
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        //TODO readd validation and define attributes
+        for (AttributeDefinition def : DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
+            def.validateOperation(operation);
+        }
 
-        String name = operation.require(NAME).asString();
-        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+        String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
+        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(RUNTIME_NAME).resolveModelAttribute(context, operation).asString() : name;
         byte[] hash;
-        // clone it, so we can modify it to our own content
-        final ModelNode content = operation.require(CONTENT).clone();
+
+        ModelNode content = operation.require(CONTENT);
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        final ModelNode contentItemNode = content.require(0);
+        ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
             hash = contentItemNode.require(HASH).asBytes();
             if (contentRepository != null) {
@@ -107,13 +102,13 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
                 // Ensure the local repo has the files
                 fileRepository.getDeploymentFiles(hash);
             }
-        } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
+        } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
                 throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
             }
 
-            InputStream in = getInputStream(context, contentItemNode);
+            InputStream in = DeploymentHandlerUtils.getInputStream(context, contentItemNode);
             try {
                 try {
                     hash = contentRepository.addContent(in);
@@ -124,8 +119,11 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
             } finally {
                 StreamUtils.safeClose(in);
             }
-            contentItemNode.clear(); // AS7-1029
+            contentItemNode = new ModelNode();
             contentItemNode.get(HASH).set(hash);
+            content = new ModelNode();
+            content.add(contentItemNode);
+
         } else {
             // Unmanaged content, the user is responsible for replication
             // Just validate the required attributes are present

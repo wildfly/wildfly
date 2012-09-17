@@ -62,9 +62,10 @@ public class DeploymentAttributes {
     public static ResourceDescriptionResolver DEPLOYMENT_RESOLVER = ServerDescriptions.getResourceDescriptionResolver(DEPLOYMENT, false);
 
     //Top level attributes
-    public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
         .setValidator(new StringLengthValidator(1, false))
         .build();
+    public static final AttributeDefinition TO_REPLACE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.TO_REPLACE, NAME).build();
     public static final SimpleAttributeDefinition RUNTIME_NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNTIME_NAME, ModelType.STRING, true)
         .setValidator(new StringLengthValidator(1, true))
         .build();
@@ -111,6 +112,22 @@ public class DeploymentAttributes {
                     .setMinSize(1)
                     .setMaxSize(1)
                     .build();
+    public static final ObjectListAttributeDefinition CONTENT_ALL_NILLABLE =
+            ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+                ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+                        CONTENT_INPUT_STREAM_INDEX,
+                        CONTENT_HASH,
+                        CONTENT_BYTES,
+                        CONTENT_URL,
+                        CONTENT_PATH,
+                        CONTENT_RELATIVE_TO,
+                        CONTENT_ARCHIVE)
+                        .setValidator(new ContentTypeValidator())
+                        .build())
+                .setMinSize(1)
+                .setMaxSize(1)
+                .setAllowNull(true)
+                .build();
     public static final ObjectListAttributeDefinition CONTENT_RESOURCE =
                 ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
                     ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
@@ -143,39 +160,20 @@ public class DeploymentAttributes {
     public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT_ALL};
 
     /** Attributes indicating managed deployments in the content attribute */
-    public static final Map<String, AttributeDefinition> MANAGED_CONTENT_ATTRIBUTES;
+    public static final Map<String, AttributeDefinition> MANAGED_CONTENT_ATTRIBUTES = createAttributeMap(CONTENT_INPUT_STREAM_INDEX, CONTENT_HASH, CONTENT_BYTES, CONTENT_URL);
 
     /** Attributes indicating unmanaged deployments in the content attribute */
-    public static final Map<String, AttributeDefinition> UNMANAGED_CONTENT_ATTRIBUTES;
+    public static final Map<String, AttributeDefinition> UNMANAGED_CONTENT_ATTRIBUTES = createAttributeMap(CONTENT_PATH, CONTENT_RELATIVE_TO, CONTENT_ARCHIVE);
 
     /** All attributes of the content attribute */
-    public static final Map<String, AttributeDefinition> ALL_CONTENT_ATTRIBUTES;
-    static {
-        Map<String, AttributeDefinition> managed = new HashMap<String, AttributeDefinition>();
-        managed.put(CONTENT_INPUT_STREAM_INDEX.getName(), CONTENT_INPUT_STREAM_INDEX);
-        managed.put(CONTENT_HASH.getName(), CONTENT_HASH);
-        managed.put(CONTENT_BYTES.getName(), CONTENT_BYTES);
-        managed.put(CONTENT_URL.getName(), CONTENT_URL);
-        MANAGED_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(managed);
-
-        Map<String, AttributeDefinition> unmanaged = new HashMap<String, AttributeDefinition>();
-        unmanaged.put(CONTENT_PATH.getName(), CONTENT_PATH);
-        unmanaged.put(CONTENT_RELATIVE_TO.getName(), CONTENT_RELATIVE_TO);
-        unmanaged.put(CONTENT_ARCHIVE.getName(), CONTENT_ARCHIVE);
-        UNMANAGED_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(unmanaged);
-
-        Map<String, AttributeDefinition> all = new HashMap<String, AttributeDefinition>();
-        all.putAll(managed);
-        all.putAll(unmanaged);
-        ALL_CONTENT_ATTRIBUTES = Collections.unmodifiableMap(all);
-    }
+    public static final Map<String, AttributeDefinition> ALL_CONTENT_ATTRIBUTES = createAttributeMap(MANAGED_CONTENT_ATTRIBUTES, UNMANAGED_CONTENT_ATTRIBUTES);
 
     public static OperationDefinition DEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.DEPLOY, DEPLOYMENT_RESOLVER);
     public static OperationDefinition UNDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.UNDEPLOY, DEPLOYMENT_RESOLVER);
     public static OperationDefinition REDEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.REDEPLOY, DEPLOYMENT_RESOLVER);
 
     /** Return type for the upload-deployment-xxx operaions */
-    public static SimpleAttributeDefinition UPLOAD_HASH_REPLY = SimpleAttributeDefinitionBuilder.create(CONTENT_HASH)
+    private static SimpleAttributeDefinition UPLOAD_HASH_REPLY = SimpleAttributeDefinitionBuilder.create(CONTENT_HASH)
             .setAllowNull(false)
             .build();
 
@@ -185,11 +183,11 @@ public class DeploymentAttributes {
             .build();
     public static OperationDefinition UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
             .setParameters(BYTES_NOT_NULL)
-            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .setReplyParameters(UPLOAD_HASH_REPLY)
             .build();
     public static OperationDefinition DOMAIN_UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
             .setParameters(BYTES_NOT_NULL)
-            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
             .build();
 
@@ -199,11 +197,11 @@ public class DeploymentAttributes {
             .build();
     public static OperationDefinition UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
             .setParameters(URL_NOT_NULL)
-            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .setReplyParameters(UPLOAD_HASH_REPLY)
             .build();
     public static OperationDefinition DOMAIN_UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
             .setParameters(URL_NOT_NULL)
-            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
             .build();
 
@@ -214,14 +212,30 @@ public class DeploymentAttributes {
     public static Map<String, AttributeDefinition> UPLOAD_INPUT_STREAM_INDEX_ATTRIBUTES = Collections.singletonMap(INPUT_STREAM_INDEX_NOT_NULL.getName(), INPUT_STREAM_INDEX_NOT_NULL);
     public static OperationDefinition UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
-            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .setReplyParameters(UPLOAD_HASH_REPLY)
             .build();
     public static OperationDefinition DOMAIN_UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
-            .setReplyType(UPLOAD_HASH_REPLY.getType()) //TODO this misses some of the information
+            .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
             .build();
 
+    //Replace deployment definition
+    public static Map<String, AttributeDefinition> REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, TO_REPLACE, CONTENT_ALL_NILLABLE, RUNTIME_NAME);
+    public static OperationDefinition REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
+            .setParameters(REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
+            .build();
+
+    public static Map<String, AttributeDefinition> SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, TO_REPLACE, RUNTIME_NAME);
+    public static OperationDefinition SERVER_GROUP_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
+            .setParameters(SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
+            .build();
+
+    //Full replace deployment definition
+    public static Map<String, AttributeDefinition> FULL_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, RUNTIME_NAME, CONTENT_ALL_NILLABLE);
+    public static OperationDefinition FULL_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
+            .setParameters(FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
+             .build();
 
     private static SimpleAttributeDefinition createContentValueTypeAttribute(String name, ModelType type, ParameterValidator validator, boolean allowExpression) {
         SimpleAttributeDefinitionBuilder builder = SimpleAttributeDefinitionBuilder.create(name, type, true);
@@ -246,6 +260,22 @@ public class DeploymentAttributes {
         public Long getMax() {
             return 20L;
         }
+    }
+
+    private static Map<String, AttributeDefinition> createAttributeMap(AttributeDefinition...defs) {
+        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        for (AttributeDefinition def : defs) {
+            map.put(def.getName(), def);
+        }
+        return Collections.unmodifiableMap(map);
+    }
+
+    private static Map<String, AttributeDefinition> createAttributeMap(Map<String, AttributeDefinition>...maps) {
+        Map<String, AttributeDefinition> map = new HashMap<String, AttributeDefinition>();
+        for (Map<String, AttributeDefinition> other : maps) {
+            map.putAll(other);
+        }
+        return Collections.unmodifiableMap(map);
     }
 
     private static class ContentTypeValidator extends ParametersValidator {

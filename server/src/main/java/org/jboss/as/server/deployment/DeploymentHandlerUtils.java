@@ -70,23 +70,23 @@ public abstract class DeploymentHandlerUtils {
         return contents;
     }
 
-    public static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
+    public static InputStream getInputStream(OperationContext context, ModelNode contentItem) throws OperationFailedException {
         InputStream in = null;
-        if (operation.hasDefined(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.getName())) {
-            int streamIndex = DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.resolveModelAttribute(context, operation).asInt();
+        if (contentItem.hasDefined(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.getName())) {
+            int streamIndex = DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.resolveModelAttribute(context, contentItem).asInt();
             int maxIndex = context.getAttachmentStreamCount();
             if (streamIndex > maxIndex) {
                 throw ServerMessages.MESSAGES.invalidStreamIndex(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.getName(), streamIndex, maxIndex);
             }
             in = context.getAttachmentStream(streamIndex);
-        } else if (operation.hasDefined(DeploymentAttributes.CONTENT_BYTES.getName())) {
+        } else if (contentItem.hasDefined(DeploymentAttributes.CONTENT_BYTES.getName())) {
             try {
-                in = new ByteArrayInputStream(DeploymentAttributes.CONTENT_BYTES.resolveModelAttribute(context, operation).asBytes());
+                in = new ByteArrayInputStream(DeploymentAttributes.CONTENT_BYTES.resolveModelAttribute(context, contentItem).asBytes());
             } catch (IllegalArgumentException iae) {
                 throw ServerMessages.MESSAGES.invalidStreamBytes(DeploymentAttributes.CONTENT_BYTES.getName());
             }
-        } else if (operation.hasDefined(DeploymentAttributes.CONTENT_URL.getName())) {
-            final String urlSpec = DeploymentAttributes.CONTENT_URL.resolveModelAttribute(context, operation).asString();
+        } else if (contentItem.hasDefined(DeploymentAttributes.CONTENT_URL.getName())) {
+            final String urlSpec = DeploymentAttributes.CONTENT_URL.resolveModelAttribute(context, contentItem).asString();
             try {
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {

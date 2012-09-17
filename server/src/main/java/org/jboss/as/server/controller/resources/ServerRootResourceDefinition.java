@@ -236,11 +236,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         DeploymentUploadBytesHandler.register(resourceRegistration, contentRepository);
         DeploymentUploadURLHandler.register(resourceRegistration, contentRepository);
         DeploymentUploadStreamAttachmentHandler.register(resourceRegistration, contentRepository);
-
-        final DeploymentReplaceHandler drh = DeploymentReplaceHandler.create(contentRepository, vaultReader);
-        resourceRegistration.registerOperationHandler(DeploymentReplaceHandler.OPERATION_NAME, drh, drh, false);
-        DeploymentFullReplaceHandler dfrh = DeploymentFullReplaceHandler.create(contentRepository, vaultReader);
-        resourceRegistration.registerOperationHandler(DeploymentFullReplaceHandler.OPERATION_NAME, dfrh, dfrh, false);
+        resourceRegistration.registerOperationHandler(DeploymentAttributes.REPLACE_DEPLOYMENT_DEFINITION, DeploymentReplaceHandler.create(contentRepository, vaultReader));
+        resourceRegistration.registerOperationHandler(DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_DEFINITION, DeploymentFullReplaceHandler.create(contentRepository, vaultReader));
 
         if (!isDomain) {
             SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);

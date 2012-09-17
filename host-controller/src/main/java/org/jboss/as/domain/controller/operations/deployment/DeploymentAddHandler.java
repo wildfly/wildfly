@@ -93,7 +93,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        final ModelNode content = operation.require(CONTENT_ALL.getName());
+        ModelNode content = operation.require(CONTENT_ALL.getName());
         ModelNode contentItemNode = content.require(0);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
@@ -142,7 +142,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             }
             contentItemNode = new ModelNode();
             contentItemNode.get(CONTENT_HASH.getName()).set(hash);
-            content.clear();
+            content = new ModelNode();
             content.add(contentItemNode);
         } else {
         }

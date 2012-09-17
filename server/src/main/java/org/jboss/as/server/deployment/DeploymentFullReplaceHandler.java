@@ -36,8 +36,8 @@ import static org.jboss.as.server.deployment.DeploymentHandlerUtils.hasValidCont
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Locale;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultAction;
@@ -45,12 +45,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
@@ -60,7 +58,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentFullReplaceHandler implements OperationStepHandler, DescriptionProvider {
+public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = FULL_REPLACE_DEPLOYMENT;
 
@@ -78,16 +76,13 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
         return new DeploymentFullReplaceHandler(contentRepository, vaultReader);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getFullReplaceDeploymentOperation(locale);
-    }
-
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        //TODO readd validation and define attributes
+        for (AttributeDefinition def : DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
+            def.validateOperation(operation);
+        }
 
-        final String name = operation.require(NAME).asString();
+        String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
         final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
 
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
