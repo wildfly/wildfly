@@ -52,7 +52,7 @@ public class InterceptedEchoBean implements EchoRemote {
     @Asynchronous
     @Override
     public Future<String> asyncEcho(String message, long delayInMilliSec) {
-        logger.info("Going to delay the echo of \"" + message + "\" for " + delayInMilliSec + " milli seconds");
+        logger.info("Going to delay the echo of \"" + message + "\" for " + delayInMilliSec + " milliseconds");
         try {
             Thread.sleep(delayInMilliSec);
         } catch (InterruptedException e) {

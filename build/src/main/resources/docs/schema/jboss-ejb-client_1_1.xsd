@@ -158,7 +158,7 @@
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The timeout in milli seconds while creating a connection for the nodes in the cluster
+                    The timeout in milliseconds while creating a connection for the nodes in the cluster
                 </documentation>
             </annotation>
         </xsd:attribute>
@@ -225,7 +225,7 @@
         <xsd:attribute name="connect-timeout" type="xsd:long" use="optional">
             <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                 <documentation>
-                    The timeout in milli seconds while creating a connection for the node
+                    The timeout in milliseconds while creating a connection for the node
                 </documentation>
             </annotation>
         </xsd:attribute>
