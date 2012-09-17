@@ -376,7 +376,7 @@ public class TimerImpl implements Timer {
     }
 
     /**
-     * Returns the interval (in milli seconds), between timeouts, of this timer.
+     * Returns the interval (in milliseconds), between timeouts, of this timer.
      *
      * @return
      */

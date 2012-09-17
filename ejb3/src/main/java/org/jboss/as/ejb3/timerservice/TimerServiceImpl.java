@@ -404,7 +404,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
      * @param initialExpiration The {@link java.util.Date} at which the first timeout should occur.
      *                          <p>If the date is in the past, then the timeout is triggered immediately
      *                          when the timer moves to {@link TimerState#ACTIVE}</p>
-     * @param intervalDuration  The interval (in milli seconds) between consecutive timeouts for the newly created timer.
+     * @param intervalDuration  The interval (in milliseconds) between consecutive timeouts for the newly created timer.
      *                          <p>Cannot be a negative value. A value of 0 indicates a single timeout action</p>
      * @param info              {@link java.io.Serializable} info that will be made available through the newly created timer's {@link javax.ejb.Timer#getInfo()} method
      * @param persistent        True if the newly created timer has to be persistent
@@ -823,13 +823,13 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             final Task task = new Task(timerTask);
             if (intervalDuration > 0) {
                 ROOT_LOGGER.debug("Scheduling timer " + timer + " at fixed rate, starting at " + delay
-                        + " milli seconds from now with repeated interval=" + intervalDuration);
+                        + " milliseconds from now with repeated interval=" + intervalDuration);
                 // schedule the task
                 this.timerInjectedValue.getValue().scheduleAtFixedRate(task, delay, intervalDuration);
                 // maintain it in timerservice for future use (like cancellation)
                 this.scheduledTimerFutures.put(timer.getId(), task);
             } else {
-                ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milli seconds from now");
+                ROOT_LOGGER.debug("Scheduling a single action timer " + timer + " starting at " + delay + " milliseconds from now");
                 // schedule the task
                 this.timerInjectedValue.getValue().schedule(task, delay);
                 // maintain it in timerservice for future use (like cancellation)
