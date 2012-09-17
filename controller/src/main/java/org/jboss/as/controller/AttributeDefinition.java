@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -459,6 +460,7 @@ public abstract class AttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         result.get(ModelDescriptionConstants.MIN_LENGTH).set(min);
                         break;
                     default:
@@ -471,6 +473,7 @@ public abstract class AttributeDefinition {
                     case STRING:
                     case LIST:
                     case OBJECT:
+                    case BYTES:
                         result.get(ModelDescriptionConstants.MAX_LENGTH).set(max);
                         break;
                     default:
