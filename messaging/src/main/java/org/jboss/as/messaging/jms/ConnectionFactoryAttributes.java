@@ -40,6 +40,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -216,7 +218,7 @@ public interface ConnectionFactoryAttributes {
                 create(CommonAttributes.CALL_TIMEOUT, "callTimeout", true),
                 create(CLIENT_FAILURE_CHECK_PERIOD, "clientFailureCheckPeriod", true),
                 create(CommonAttributes.CLIENT_ID, "clientID", true),
-                create(COMPRESS_LARGE_MESSAGES, "compressLargeMessage", false), // FIXME HORNETQ-948
+                create(COMPRESS_LARGE_MESSAGES, "compressLargeMessage", true),
                 create(CONFIRMATION_WINDOW_SIZE, "confirmationWindowSize", true),
                 create(CONNECTION_LOAD_BALANCING_CLASS_NAME, "connectionLoadBalancingPolicyClassName", true),
                 create(CONNECTION_TTL, "connectionTTL", true),
@@ -263,6 +265,18 @@ public interface ConnectionFactoryAttributes {
         String USE_JNDI_PROP_NAME = "useJNDI";
         String SETUP_ATTEMPTS_PROP_NAME = "setupAttempts";
         String SETUP_INTERVAL_PROP_NAME = "setupInterval";
+
+        SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
+                .setAllowNull(true)
+                .setDefaultValue(new ModelNode(HornetQClient.INITIAL_CONNECT_ATTEMPTS))
+                .setRestartAllServices()
+                .build();
+
+        SimpleAttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = SimpleAttributeDefinitionBuilder.create("initial-message-packet-size", INT)
+                .setAllowNull(true)
+                .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_INITIAL_MESSAGE_PACKET_SIZE))
+                .setRestartAllServices()
+                .build();
 
         SimpleAttributeDefinition JNDI_PARAMS = SimpleAttributeDefinitionBuilder.create("jndi-params", STRING)
                 .setAllowNull(true)
@@ -338,6 +352,8 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         ConnectionFactoryAttribute[] ATTRIBUTES = {
+                create(INITIAL_CONNECT_ATTEMPTS, "initialConnectAttempts", true),
+                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
                 create(JNDI_PARAMS, "jndiParams", true),
                 create(MAX_POOL_SIZE, null, false),
                 create(MIN_POOL_SIZE, null, false),

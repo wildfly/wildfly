@@ -35,10 +35,8 @@ public class PooledConnectionFactoryAttributesTestCase {
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.CONNECTOR_CLASSNAME);
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.TRANSACTION_MANAGER_LOCATOR_CLASS);
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add(PooledConnectionFactoryService.TRANSACTION_MANAGER_LOCATOR_METHOD);
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("compressLargeMessage");
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("initialConnectAttempts");
-        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("initialMessagePacketSize");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("managedConnectionFactory");
+        // these 2 props will *not* be supported since AS7 relies on vaulted passwords + expressions instead
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("passwordCodec");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("useMaskedPassword");
 

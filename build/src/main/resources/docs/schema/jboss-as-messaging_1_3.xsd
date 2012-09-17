@@ -752,6 +752,8 @@
          <xs:element name="min-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="max-pool-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="use-auto-recovery" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="initial-message-packet-size" type="xs:int" maxOccurs="1" minOccurs="0" />
+         <xs:element name="initial-connect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
          <!-- ============================================================== -->
          <!-- end of JMS pooled-connection-factoryType specific elements     -->
 
@@ -777,6 +779,7 @@
          <xs:element name="client-failure-check-period" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="connection-ttl" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="call-timeout" type="xs:long" maxOccurs="1" minOccurs="0" />
+         <xs:element name="compress-large-messages" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="consumer-max-rate" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="confirmation-window-size" type="xs:int" maxOccurs="1" minOccurs="0" />

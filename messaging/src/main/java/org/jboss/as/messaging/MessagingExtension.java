@@ -70,7 +70,8 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
@@ -252,8 +253,10 @@ public class MessagingExtension implements Extension {
                     for (Property server : oldModel.get(HORNETQ_SERVER).asPropertyList()) {
                         if (server.getValue().hasDefined(POOLED_CONNECTION_FACTORY)) {
                             for (Property pooledConnectionFactory : server.getValue().get(POOLED_CONNECTION_FACTORY).asPropertyList()) {
-                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY.getName());
-                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES.getName());
+                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Pooled.INITIAL_CONNECT_ATTEMPTS.getName());
+                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName());
+                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Pooled.USE_AUTO_RECOVERY.getName());
+                                oldModel.get(HORNETQ_SERVER, server.getName(), POOLED_CONNECTION_FACTORY, pooledConnectionFactory.getName()).remove(Common.COMPRESS_LARGE_MESSAGES.getName());
                             }
                         }
                         if (server.getValue().hasDefined(CONNECTION_FACTORY)) {
@@ -306,8 +309,10 @@ public class MessagingExtension implements Extension {
             public TransformedOperation transformOperation(final TransformationContext context, final PathAddress address, final ModelNode operation)
                     throws OperationFailedException {
                 final ModelNode transformedOperation = operation.clone();
-                transformedOperation.remove(ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY.getName());
-                transformedOperation.remove(ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES.getName());
+                transformedOperation.remove(Pooled.INITIAL_CONNECT_ATTEMPTS.getName());
+                transformedOperation.remove(Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName());
+                transformedOperation.remove(Pooled.USE_AUTO_RECOVERY.getName());
+                transformedOperation.remove(Common.COMPRESS_LARGE_MESSAGES.getName());
                 return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
             }
         });
@@ -319,7 +324,11 @@ public class MessagingExtension implements Extension {
                 OperationResultTransformer resultTransformer = ORIGINAL_RESULT;
                 final List<String> found = new ArrayList<String>();
 
-                String[] unsupportedAttributes = {ConnectionFactoryAttributes.Pooled.USE_AUTO_RECOVERY.getName(), ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES.getName()};
+                String[] unsupportedAttributes = {
+                        Pooled.INITIAL_CONNECT_ATTEMPTS.getName(),
+                        Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName(),
+                        Pooled.USE_AUTO_RECOVERY.getName(),
+                        Common.COMPRESS_LARGE_MESSAGES.getName()};
                 for (String attrName : unsupportedAttributes) {
                     if (operation.require(NAME).asString().equals(attrName)) {
                         if (found.size() == 0) {
