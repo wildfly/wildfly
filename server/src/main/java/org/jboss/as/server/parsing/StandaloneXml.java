@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.METADATA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
@@ -99,6 +100,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
@@ -352,7 +354,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED, Element.PROPERTIES));
             element = nextElement(reader, namespace);
         }
 
@@ -1047,6 +1049,17 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);
+                }
+                ModelNode metadataNode = deployment.get(METADATA);
+                if (metadataNode.isDefined()) {
+                    writer.writeStartElement(Element.PROPERTIES.getLocalName());
+                    for (Property childItem : metadataNode.asPropertyList()) {
+                        writer.writeStartElement(Element.PROPERTY.getLocalName());
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), childItem.getName());
+                        writer.writeAttribute(Attribute.VALUE.getLocalName(), childItem.getValue().asString());
+                        writer.writeEndElement();
+                    }
+                    writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }

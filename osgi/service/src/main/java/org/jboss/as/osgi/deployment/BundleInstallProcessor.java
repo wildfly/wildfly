@@ -61,8 +61,8 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         if (deployment == null)
             return;
 

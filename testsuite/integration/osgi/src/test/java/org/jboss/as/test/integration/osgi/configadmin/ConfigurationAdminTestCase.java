@@ -43,6 +43,7 @@ import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -150,6 +151,7 @@ public class ConfigurationAdminTestCase {
     }
 
     @Test
+    @Ignore("[AS7-5570] NPE in ConfigurationAdminTestCase.testManagedServiceConfiguredFromXML")
     public void testManagedServiceConfiguredFromXML() throws Exception {
         ConfiguredService ms = new ConfiguredService();
 

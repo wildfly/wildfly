@@ -66,7 +66,7 @@ public interface OSGiMessages {
     DeploymentUnitProcessingException cannotParseOSGiMetadata(@Cause Throwable th, VirtualFile file);
 
     @Message(id = 11955, value = "Failed to process initial capabilities")
-    StartException startFailedToProcessInitialCapabilites(@Cause Throwable th);
+    StartException failedToProcessInitialCapabilites(@Cause Throwable th);
 
     @Message(id = 11956, value = "Failed to create Framework services")
     StartException startFailedToCreateFrameworkServices(@Cause Throwable th);
@@ -103,4 +103,7 @@ public interface OSGiMessages {
 
     @Message(id = 11967, value = "HttpService mapping already exists: %s")
     String aliasMappingAlreadyExists(String alias);
+
+    @Message(id = 11968, value = "Cannot start bundle: %s")
+    DeploymentUnitProcessingException cannotStartBundle(@Cause Throwable cause, Bundle bundle);
 }

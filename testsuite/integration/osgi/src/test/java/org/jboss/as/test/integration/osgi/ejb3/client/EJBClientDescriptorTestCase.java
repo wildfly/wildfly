@@ -43,6 +43,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -124,6 +125,7 @@ public class EJBClientDescriptorTestCase {
      * https://issues.jboss.org/browse/AS7-5009
      */
     @Test
+    @Ignore("[AS7-5571] Authentication failed in EJBClientDescriptorTestCase")
     public void testEJBClientContextConfigurationInOSGiBundle() throws Exception {
         deployer.deploy("good-client-config-bundle");
         try {

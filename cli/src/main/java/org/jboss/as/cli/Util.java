@@ -87,6 +87,7 @@ public class Util {
     public static final String MAX_FAILED_SERVERS = "max-failed-servers";
     public static final String MAX_FAILURE_PERCENTAGE = "max-failure-percentage";
     public static final String MAX_OCCURS = "max-occurs";
+    public static final String METADATA = "metadata";
     public static final String MIN_OCCURS = "min-occurs";
     public static final String MODULE_SLOT = "module-slot";
     public static final String NAME = "name";
@@ -130,6 +131,8 @@ public class Util {
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";
+    public static final String START_POLICY = "start.policy";
+    public static final String START_POLICY_DEFERRED = "deferred";
     public static final String STATUS = "status";
     public static final String STEP_1 = "step-1";
     public static final String STEP_2 = "step-2";
