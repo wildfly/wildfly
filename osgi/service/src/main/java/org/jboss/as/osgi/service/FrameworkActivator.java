@@ -46,7 +46,7 @@ import org.jboss.osgi.framework.Services;
  * #2 activate through the console - Configured capabilities should get installed/resolved/started
  * #3 restart. deploy a bundle through the console - Bundle should get started after capabilities
  * #4 restart with persistent bundle - Persistent bundle should get started after capabilities
- * #5 boot with activation=eager - Persistent bundle should get started after capabilities\
+ * #5 boot with activation=eager - Persistent bundle should get started after capabilities
  * #6 remove persistent bundle
  * #7 restart with activation=eager - Configured capabilities should get installed/resolved/started
  *
