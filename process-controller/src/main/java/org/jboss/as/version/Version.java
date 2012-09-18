@@ -47,10 +47,16 @@ public class Version {
         } catch (Exception e) {
         }
 
-        String version = "Unknown", code = version;
+        String version = null, code = version;
         if (manifest != null) {
             version = manifest.getMainAttributes().getValue("JBossAS-Release-Version");
             code = manifest.getMainAttributes().getValue("JBossAS-Release-Codename");
+        }
+        if (version == null) {
+            version = "Unknown";
+        }
+        if (code == null) {
+            code = "Unknown";
         }
 
         AS_VERSION = version;
