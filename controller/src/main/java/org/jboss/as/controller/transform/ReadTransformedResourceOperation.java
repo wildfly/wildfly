@@ -52,7 +52,7 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         Map<PathAddress,ModelVersion> subsystemVersions = new HashMap<PathAddress, ModelVersion>();
         subsystemVersions.put(PathAddress.EMPTY_ADDRESS.append(ModelDescriptionConstants.SUBSYSTEM,subsystem),version);
 
-        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(1, 0, 0),subsystemVersions , TransformationTarget.TransformationTargetType.SERVER);
+        final TransformationTarget target = TransformationTargetImpl.create(transformerRegistry, ModelVersion.create(1, 0, 0),subsystemVersions , null, TransformationTarget.TransformationTargetType.SERVER);
         final Transformers transformers = Transformers.Factory.create(target);
         final ResourceTransformationContext ctx = Transformers.Factory.getTransformationContext(target, context);
 
