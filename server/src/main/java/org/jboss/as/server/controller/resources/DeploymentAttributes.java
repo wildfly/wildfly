@@ -311,7 +311,6 @@ public class DeploymentAttributes {
                 }
             }
             if (managedNames.size() > 1) {
-                //TODO i18n
                 throw MESSAGES.cannotHaveMoreThanOneManagedContentItem(MANAGED_CONTENT_ATTRIBUTES.keySet());
             }
             if (unmanagedNames.size() > 0 && managedNames.size() > 0) {
