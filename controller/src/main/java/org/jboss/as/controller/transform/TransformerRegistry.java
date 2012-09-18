@@ -160,7 +160,16 @@ public final class TransformerRegistry {
         subsystem.mergeSubtree(profile, Collections.singletonMap(address, version));
     }
 
-    static Map<PathAddress, ModelVersion> resolveVersions(final ModelNode subsystems) {
+    public static Map<PathAddress, ModelVersion> resolveVersions(ExtensionRegistry extensionRegistry) {
+
+        final ModelNode subsystems = new ModelNode();
+        for (final String extension : extensionRegistry.getExtensionModuleNames()) {
+            extensionRegistry.recordSubsystemVersions(extension, subsystems);
+        }
+        return resolveVersions(subsystems);
+    }
+
+    public static Map<PathAddress, ModelVersion> resolveVersions(final ModelNode subsystems) {
         final PathAddress base = PathAddress.EMPTY_ADDRESS;
         final Map<PathAddress, ModelVersion> versions = new HashMap<PathAddress, ModelVersion>();
         for(final Property property : subsystems.asPropertyList()) {
