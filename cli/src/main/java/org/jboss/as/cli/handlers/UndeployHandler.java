@@ -138,7 +138,7 @@ public class UndeployHandler extends DeploymentHandler {
 //                  allGroups = Util.getServerGroups(ctx.getModelControllerClient());
 //              } else {
                   try {
-                    allGroups = Util.getAllReferencingServerGroups(deploymentName, ctx.getModelControllerClient());
+                    allGroups = Util.getServerGroupsReferencingDeployment(deploymentName, ctx.getModelControllerClient());
                 } catch (CommandLineException e) {
                     e.printStackTrace();
                     return Collections.emptyList();
@@ -367,7 +367,7 @@ public class UndeployHandler extends DeploymentHandler {
                         serverGroups = Util.getAllEnabledServerGroups(deploymentName, client);
                     } else {
                         try {
-                            serverGroups = Util.getAllReferencingServerGroups(deploymentName, client);
+                            serverGroups = Util.getServerGroupsReferencingDeployment(deploymentName, client);
                         } catch (CommandLineException e) {
                             throw new CommandFormatException("Failed to retrieve all referencing server groups", e);
                         }
