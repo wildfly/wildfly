@@ -42,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -254,7 +255,7 @@ public class CompareModelVersionsUtil {
             String id = "attribute '" + legacyEntry.getKey() + "'";
             compareAttributeOrOperationParameter(context, id, currentAttribute, legacyAttribute);
             compareAccessType(context, id, currentAttribute, legacyAttribute);
-            compareStorage(context, id, currentAttribute, legacyAttribute);            
+            compareStorage(context, id, currentAttribute, legacyAttribute);
         }
     }
 
@@ -284,9 +285,10 @@ public class CompareModelVersionsUtil {
 
             ModelNode legacyReply = legacyOperation.get(REPLY_PROPERTIES);
             ModelNode currentReply = currentOperation.get(REPLY_PROPERTIES);
-            if (!currentReply.equals(legacyReply)) {
-                context.println("Different 'reply-properties' for operation '" + operationName + "'. Current: " + currentReply + "; legacy: " + legacyReply);
-            }
+            compareAttributeOrOperationParameter(context, "'reply-properties' for operation '" + operationName + "'", currentReply, legacyReply);
+//            if (!currentReply.equals(legacyReply)) {
+//                context.println("Different 'reply-properties' for operation '" + operationName + "'. Current: " + currentReply + "; legacy: " + legacyReply);
+//            }
         }
     }
 
@@ -305,8 +307,25 @@ public class CompareModelVersionsUtil {
     }
 
     private void compareValueType(CompareContext context, String id, ModelNode current, ModelNode legacy) {
-        if (!current.get(VALUE_TYPE).equals(legacy.get(VALUE_TYPE))) {
-            context.println("Different 'value-type' for " + id + ". Current: " + current.get(VALUE_TYPE) + "; legacy: " + legacy.get(VALUE_TYPE));
+        ModelNode currentValueType = current.get(VALUE_TYPE);
+        ModelNode legacyValueType = legacy.get(VALUE_TYPE);
+        if (!currentValueType.isDefined() && !legacyValueType.isDefined()) {
+            return;
+        }
+        if (isType(legacyValueType) || isType(currentValueType)) {
+            if (!currentValueType.equals(legacyValueType)) {
+                context.println("Different 'value-type' for " + id + ". Current: " + current.get(VALUE_TYPE) + "; legacy: " + legacy.get(VALUE_TYPE));
+            }
+        } else {
+            Map<String, ModelNode> legacyValueTypes =  createMapIndexedByKey(legacyValueType);
+            Map<String, ModelNode> currentValueTypes = createMapIndexedByKey(currentValueType);
+
+            compareKeySetsAndRemoveMissing(context, "value-type for " + id, currentValueTypes, legacyValueTypes);
+            for (Map.Entry<String, ModelNode> entry : currentValueTypes.entrySet()) {
+                ModelNode currentEntry = entry.getValue();
+                ModelNode legacyEntry = legacyValueTypes.get(entry.getKey());
+                compareAttributeOrOperationParameter(context, "value-type key '" + entry.getKey() + "' for " + id, currentEntry, legacyEntry);
+            }
         }
     }
 
@@ -336,6 +355,29 @@ public class CompareModelVersionsUtil {
         if (!current.get(STORAGE).equals(legacy.get(STORAGE))) {
             context.println("Different 'storage' for " + id + ". Current: " + current.get(STORAGE) + "; legacy: " + legacy.get(STORAGE));
         }
+    }
+
+    private boolean isType(ModelNode node) {
+        if (!node.isDefined()) {
+            return false;
+        }
+        try {
+            node.asType();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private Map<String, ModelNode> createMapIndexedByKey(ModelNode node){
+        Map<String, ModelNode> map = new HashMap<String, ModelNode>();
+        if (!node.isDefined()) {
+            return map;
+        }
+        for (Property prop : node.asPropertyList()) {
+            map.put(prop.getName(), prop.getValue());
+        }
+        return map;
     }
 
     private void compareChildren(CompareContext context) {
