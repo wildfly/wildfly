@@ -23,21 +23,20 @@ package org.jboss.as.controller.util;
 
 import java.io.File;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Grabs the full resource description of a running instance and writes it out to {@code target/standalone-resource-definition-running.dmr}.
+ * Grabs the full domain resource description of a running domain instance and writes it out to {@code target/domain-resource-definition-running.dmr}.
  * If this is for a released version so that it can be used for comparisons in the future, this file should be copied to
  * {@code src/test/resources/legacy-models} and {@code running} replaced with the real version of the running server, e.g.
- * {@code src/test/resources/legacy-models/standalone-resource-definition-7.1.2.Final}.
+ * {@code src/test/resources/legacy-models/domain-resource-definition-7.1.2.Final}.
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DumpResourceDefinitionUtil {
+public class DumpDomainResourceDefinitionUtil {
 
     public static void main(String[] args) throws Exception {
-        ModelNode resourceDefinition = Tools.getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
-        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.STANDALONE.toString().toLowerCase() +
+        ModelNode resourceDefinition = Tools.getCurrentRunningDomainResourceDefinition();
+        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.DOMAIN.toString().toLowerCase() +
         		"-resource-definition-running.dmr"));
     }
 }
