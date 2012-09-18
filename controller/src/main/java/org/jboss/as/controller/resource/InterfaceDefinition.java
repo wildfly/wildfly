@@ -1,20 +1,28 @@
 package org.jboss.as.controller.resource;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.Set;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
@@ -22,6 +30,7 @@ import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -114,16 +123,16 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
             NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, SUBNET_MATCH, UP, VIRTUAL
     };
 
-    /*public static final AttributeDefinition NOT = InterfaceDescription.createNestedComplexType("not");
-public static final AttributeDefinition ANY = InterfaceDescription.createNestedComplexType("any");*/
+    public static final AttributeDefinition NOT = createNestedComplexType("not");
+    public static final AttributeDefinition ANY = createNestedComplexType("any");
 
-    public static final ObjectTypeAttributeDefinition NOT = new ObjectTypeAttributeDefinition.Builder("not", NESTED_ATTRIBUTES)
+    /*public static final ObjectTypeAttributeDefinition NOT = new ObjectTypeAttributeDefinition.Builder("not", NESTED_ATTRIBUTES)
             .setAllowNull(true)
             .build();
 
     public static final ObjectTypeAttributeDefinition ANY = new ObjectTypeAttributeDefinition.Builder("any", NESTED_ATTRIBUTES)
             .setAllowNull(true)
-            .build();
+            .build();*/
 
 
     /**
@@ -193,4 +202,137 @@ public static final AttributeDefinition ANY = InterfaceDescription.createNestedC
         }
         registration.registerReadOnlyAttribute(InterfaceDefinition.NAME, ResourceNameOperationStepHandler.INSTANCE);
     }
+
+    @Deprecated
+    private static AttributeDefinition createNestedComplexType(final String name) {
+        return new AttributeDefinition(name, name, null, ModelType.OBJECT, true, false, MeasurementUnit.NONE, createNestedParamValidator(), ALTERNATIVES_ANY, null, AttributeAccess.Flag.RESTART_ALL_SERVICES) {
+
+            @Override
+            public ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix, final ModelNode resourceDescription) {
+                final ModelNode result = super.addResourceAttributeDescription(bundle, prefix, resourceDescription);
+                addNestedDescriptions(result, prefix, bundle);
+                return result;
+            }
+
+            @Override
+            public ModelNode addOperationParameterDescription(ResourceBundle bundle, String prefix, ModelNode operationDescription) {
+                final ModelNode result = super.addOperationParameterDescription(bundle, prefix, operationDescription);
+                addNestedDescriptions(result, prefix, bundle);
+                return result;
+            }
+
+            @Override
+            public ModelNode addResourceAttributeDescription(ModelNode resourceDescription, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+                ModelNode result = super.addResourceAttributeDescription(resourceDescription, resolver, locale, bundle);
+                for (final AttributeDefinition def : NESTED_ATTRIBUTES) {
+                    result.get(VALUE_TYPE, def.getName(), ModelDescriptionConstants.DESCRIPTION).set(resolver.getResourceAttributeDescription(def.getName(), locale, bundle));
+                }
+                return result;
+            }
+
+            @Override
+            public ModelNode addOperationParameterDescription(ModelNode resourceDescription, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+                ModelNode result = super.addOperationParameterDescription(resourceDescription, operationName, resolver, locale, bundle);
+                for (final AttributeDefinition def : NESTED_ATTRIBUTES) {
+                    result.get(VALUE_TYPE, def.getName(), ModelDescriptionConstants.DESCRIPTION).set(resolver.getOperationParameterDescription(operationName, def.getName(), locale, bundle));
+                }
+                return result;
+            }
+
+            void addNestedDescriptions(final ModelNode result, final String prefix, final ResourceBundle bundle) {
+                for (final AttributeDefinition def : NESTED_ATTRIBUTES) {
+                    final String bundleKey = prefix == null ? def.getName() : (prefix + "." + def.getName());
+                    result.get(VALUE_TYPE, def.getName(), ModelDescriptionConstants.DESCRIPTION).set(bundle.getString(bundleKey));
+                }
+            }
+
+            @Override
+            public ModelNode getNoTextDescription(boolean forOperation) {
+                final ModelNode model = super.getNoTextDescription(forOperation);
+                final ModelNode valueType = model.get(VALUE_TYPE);
+                for (final AttributeDefinition def : NESTED_ATTRIBUTES) {
+                    final AttributeDefinition current;
+                    if (NESTED_LIST_ATTRIBUTES.contains(def)) {
+                        current = wrapAsList(def);
+                    } else {
+                        current = def;
+                    }
+                    final ModelNode m = current.getNoTextDescription(forOperation);
+                    m.remove(ALTERNATIVES);
+                    valueType.get(current.getName()).set(m);
+                }
+                return model;
+            }
+        };
+
+    }
+
+    /**
+     * Wrap a simple attribute def as list.
+     *
+     * @param def the attribute definition
+     * @return the list attribute def
+     */
+    @Deprecated
+    private static ListAttributeDefinition wrapAsList(final AttributeDefinition def) {
+        final ListAttributeDefinition list = new ListAttributeDefinition(def.getName(), true, def.getValidator()) {
+
+            @Override
+            public ModelNode getNoTextDescription(boolean forOperation) {
+                final ModelNode model = super.getNoTextDescription(forOperation);
+                setValueType(model);
+                return model;
+            }
+
+            @Override
+            protected void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle) {
+                setValueType(node);
+            }
+
+            @Override
+            public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                throw new RuntimeException();
+            }
+
+            @Override
+            protected void addAttributeValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+                setValueType(node);
+            }
+
+            @Override
+            protected void addOperationParameterValueTypeDescription(ModelNode node, String operationName, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {
+                setValueType(node);
+            }
+
+            private void setValueType(ModelNode node) {
+                node.get(ModelDescriptionConstants.VALUE_TYPE).set(ModelType.STRING);
+            }
+        };
+        return list;
+    }
+
+    @Deprecated
+    static ParameterValidator createNestedParamValidator() {
+        return new ModelTypeValidator(ModelType.OBJECT, true, false, true) {
+            @Override
+            public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
+                super.validateParameter(parameterName, value);
+
+                for (final AttributeDefinition def : NESTED_ATTRIBUTES) {
+                    final String name = def.getName();
+                    if (value.hasDefined(name)) {
+                        final ModelNode v = value.get(name);
+                        if (NESTED_LIST_ATTRIBUTES.contains(def)) {
+                            if (ModelType.LIST != v.getType()) {
+                                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(v.getType())));
+                            }
+                        } else {
+                            def.getValidator().validateParameter(name, v);
+                        }
+                    }
+                }
+            }
+        };
+    }
+
 }

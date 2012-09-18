@@ -230,7 +230,6 @@ public class HostModelUtil {
         hostRegistration.registerSubModel(new VaultResourceDefinition(vaultReader));
 
         // Central Management
-        //ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
         ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreServiceResourceDefinition.INSTANCE);
         management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
@@ -256,18 +255,11 @@ public class HostModelUtil {
         hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
 
         //interface
-        //ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
         ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(new InterfaceDefinition(
                 new HostSpecifiedInterfaceAddHandler(),
                 new HostSpecifiedInterfaceRemoveHandler(),
                 true
         ));
-        /*HostSpecifiedInterfaceAddHandler hsiah = ;
-        interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);
-        HostSpecifiedInterfaceRemoveHandler sirh =
-        interfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, sirh, new DefaultResourceRemoveDescriptionProvider(CommonDescriptions.getResourceDescriptionResolver()), false);
-        //InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
-        */
         interfaces.registerOperationHandler(SpecifiedInterfaceResolveHandler.DEFINITION, SpecifiedInterfaceResolveHandler.INSTANCE);
 
         //server configurations
