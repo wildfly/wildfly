@@ -26,8 +26,8 @@ import java.util.Collection;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.ClusteringApiMessages;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 import org.jgroups.Address;
 

@@ -25,10 +25,10 @@ package org.jboss.as.repository;
 import static org.jboss.logging.Logger.Level.INFO;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * The reserved message id's as per http://community.jboss.org/wiki/LoggingIds are: 14900 - 14999

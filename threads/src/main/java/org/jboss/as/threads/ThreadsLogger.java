@@ -25,10 +25,10 @@ package org.jboss.as.threads;
 import java.math.BigDecimal;
 
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * This module is using message IDs in the range 12400-12499. This file is using the subset 12400-12449 for

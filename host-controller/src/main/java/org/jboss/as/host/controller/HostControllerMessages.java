@@ -36,11 +36,11 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Cause;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.logging.Param;
+import org.jboss.logging.annotations.Param;
 
 /**
  * This module is using message IDs in the range 10800-10999. This file is using the subset 10940-10999 for host
