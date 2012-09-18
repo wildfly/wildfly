@@ -2,8 +2,8 @@ package org.jboss.as.jaxr;
 
 import javax.xml.registry.JAXRException;
 
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**

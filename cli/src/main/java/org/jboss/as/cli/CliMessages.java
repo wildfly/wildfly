@@ -22,7 +22,7 @@
 
 package org.jboss.as.cli;
 
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**

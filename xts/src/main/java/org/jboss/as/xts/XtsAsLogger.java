@@ -24,7 +24,7 @@ package org.jboss.as.xts;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.MessageLogger;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * Date: 05.11.2011

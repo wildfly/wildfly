@@ -23,8 +23,8 @@
 package org.jboss.as.ee.deployment.spi;
 
 import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 import javax.enterprise.deploy.shared.CommandType;
