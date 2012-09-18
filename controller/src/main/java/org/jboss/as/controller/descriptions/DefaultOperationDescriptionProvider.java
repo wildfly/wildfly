@@ -117,6 +117,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
         ModelNode result = new ModelNode();
 
         final ResourceBundle bundle = descriptionResolver.getResourceBundle(locale);
+        final ResourceBundle attributeBundle = attributeDescriptionResolver.getResourceBundle(locale);
         result.get(OPERATION_NAME).set(operationName);
         result.get(DESCRIPTION).set(descriptionResolver.getOperationDescription(operationName, locale, bundle));
 
@@ -124,7 +125,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
 
         if (parameters != null) {
             for (AttributeDefinition definition : parameters) {
-                definition.addOperationParameterDescription(result, operationName, descriptionResolver, locale, bundle);
+                definition.addOperationParameterDescription(result, operationName, attributeDescriptionResolver, locale, attributeBundle);
             }
         }
 
@@ -148,12 +149,12 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             if (replyParameters.length == 1) {
                 AttributeDefinition ad = replyParameters[0];
                 ModelNode param = ad.getNoTextDescription(true);
-                final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
+                final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, attributeBundle);
                 param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
                 reply.set(param);
                 ModelNode deprecated = ad.addDeprecatedInfo(result);
                 if (deprecated != null) {
-                    deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
+                    deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, attributeBundle));
                 }
             } else {
                 reply.get(TYPE).set(ModelType.OBJECT);
@@ -165,7 +166,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                     reply.get(VALUE_TYPE, ad.getName()).set(param);
                     ModelNode deprecated = ad.addDeprecatedInfo(result);
                     if (deprecated != null) {
-                        deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, bundle));
+                        deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, attributeBundle));
                     }
                 }
             }

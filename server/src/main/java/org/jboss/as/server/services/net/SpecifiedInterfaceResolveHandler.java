@@ -19,6 +19,7 @@
 package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
@@ -56,9 +58,10 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
     private static final String OPERATION_NAME = "resolve-internet-address";
 
     public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME,
-            ServerDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.INTERFACE))
+            ServerDescriptions.getResourceDescriptionResolver(INTERFACE))
             .setParameters(ATTRIBUTES)
             .setReplyType(ModelType.STRING)
+            .setAttributeResolver(CommonDescriptions.getResourceDescriptionResolver(INTERFACE))
             .withFlags(EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY))
             .build();
 
