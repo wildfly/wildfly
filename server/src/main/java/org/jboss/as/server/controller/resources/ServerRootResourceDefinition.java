@@ -113,12 +113,13 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     private static final ParameterValidator NOT_NULL_STRING_LENGTH_ONE_VALIDATOR = new StringLengthValidator(1, false, false);
 
     public static final AttributeDefinition NAMESPACES = new SimpleMapAttributeDefinition.Builder(
-                new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.NAMESPACES, true).build()
+                new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.NAMESPACES, false)
+                .build()
             )
             .build();
 
     public static final AttributeDefinition SCHEMA_LOCATIONS = new SimpleMapAttributeDefinition.Builder(
-            new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.SCHEMA_LOCATIONS, true).build()
+            new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.SCHEMA_LOCATIONS, false).build()
             )
             .build();
 

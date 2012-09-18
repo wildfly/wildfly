@@ -79,14 +79,15 @@ public class DeploymentAddHandler implements OperationStepHandler {
      * {@inheritDoc}
      */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode newModel = resource.getModel();
 
-        //Persistent is hidden from CLI users so let's set this to true here if it is not defined
         if (!operation.hasDefined(PERSISTENT.getName())) {
             operation.get(PERSISTENT.getName()).set(true);
         }
 
-        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        ModelNode newModel = resource.getModel();
+        //Persistent is hidden from CLI users so let's set this to true here if it is not defined
+        PERSISTENT.validateAndSet(operation, newModel);
 
         for (AttributeDefinition def : SERVER_ADD_ATTRIBUTES) {
             if (!def.getName().equals(CONTENT_ALL.getName())) {

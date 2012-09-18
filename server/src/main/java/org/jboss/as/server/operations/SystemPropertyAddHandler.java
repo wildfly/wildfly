@@ -19,9 +19,9 @@
 package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.BOOT_TIME;
+import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.VALUE;
 
 import java.util.Locale;
 
@@ -52,12 +52,12 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
     public static ModelNode getOperation(ModelNode address, String value, Boolean boottime) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         if (value == null) {
-            op.get(VALUE).set(new ModelNode());
+            op.get(VALUE.getName()).set(new ModelNode());
         } else {
-            op.get(VALUE).set(value);
+            op.get(VALUE.getName()).set(value);
         }
         if (boottime != null) {
-            op.get(BOOT_TIME).set(boottime);
+            op.get(BOOT_TIME.getName()).set(boottime);
         }
         return op;
     }
@@ -89,12 +89,12 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
         }
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-        final String value = operation.hasDefined(VALUE) ? operation.get(VALUE).asString() : null;
+        final String value = operation.hasDefined(VALUE.getName()) ? operation.get(VALUE.getName()).asString() : null;
         final boolean applyToRuntime = systemPropertyUpdater != null && systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
-            final String setValue = value != null ? context.resolveExpressions(operation.require(VALUE)).asString() : null;
+            final String setValue = value != null ? VALUE.resolveModelAttribute(context, operation).asString() : null;
             if (setValue != null) {
                 SecurityActions.setSystemProperty(name, setValue);
             } else {
