@@ -416,7 +416,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                 hostControllerInfo,
                                 environment.getProductConfig(),
                                 hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
-                                remoteFileRepository);
+                                remoteFileRepository,
+                                ignoredRegistry);
                         MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
                         //Registers us with the master and gets down the master copy of the domain model to our DC
                         //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
