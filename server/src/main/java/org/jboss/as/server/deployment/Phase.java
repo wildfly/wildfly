@@ -281,6 +281,7 @@ public enum Phase {
     public static final int PARSE_EAR_MESSAGE_DESTINATIONS              = 0x3D00;
     public static final int PARSE_DSXML_DEPLOYMENT                      = 0x3E00;
     public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x3F00;
+    public static final int PARSE_DESCRIPTOR_LIFECYCLE_METHOD_RESOLUTION = 0x4000;
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EJB                            = 0x0000;
@@ -375,7 +376,6 @@ public enum Phase {
     public static final int POST_MODULE_LOCAL_HOME                      = 0x1E00;
     public static final int POST_MODULE_APPLICATION_CLIENT_MANIFEST     = 0x1F00;
     public static final int POST_MODULE_APPLICATION_CLIENT_ACTIVE       = 0x2000;
-    public static final int POST_MODULE_APP_CLIENT_METHOD_RESOLUTION    = 0x2020;
     public static final int POST_MODULE_EJB_ORB_BIND                    = 0x2100;
     public static final int POST_MODULE_CMP_PARSE                       = 0x2300;
     public static final int POST_MODULE_CMP_ENTITY_METADATA             = 0x2400;
