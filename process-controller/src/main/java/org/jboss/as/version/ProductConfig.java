@@ -77,6 +77,13 @@ public class ProductConfig implements Serializable {
         this.consoleSlot = consoleSlot;
     }
 
+    /** Solely for use in unit testing */
+    public ProductConfig(final String productName, final String productVersion, final String consoleSlot) {
+        this.name = productName;
+        this.version = productVersion;
+        this.consoleSlot = consoleSlot;
+    }
+
     public String getProductName() {
         return name;
     }

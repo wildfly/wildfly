@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller.mgmt;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -84,8 +85,10 @@ public class HostInfo implements TransformationTarget.IgnoredTransformationRegis
         if(productVersion != null) {
             info.get(PRODUCT_VERSION).set(productVersion);
         }
-        ModelNode ignoredModel = Resource.Tools.readModel(ignoredResourceRegistry.getRootResource());
-        info.get(IGNORED_RESOURCES).set(ignoredModel);
+        ModelNode ignoredModel = ignoredResourceRegistry.getIgnoredResourcesAsModel();
+        if (ignoredModel.hasDefined(IGNORED_RESOURCE_TYPE)) {
+            info.get(IGNORED_RESOURCES).set(ignoredModel.require(IGNORED_RESOURCE_TYPE));
+        }
         return info;
     }
 
