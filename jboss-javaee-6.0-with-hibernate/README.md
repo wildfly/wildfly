@@ -15,7 +15,7 @@ To use the BOM, import into your dependency management:
 	    <dependency>
 	       <groupId>org.jboss.bom</groupId>
                <artifactId>jboss-javaee-6.0-with-hibernate</artifactId>
-               <version>1.0.1.CR5</version>
+               <version>1.0.1-SNAPSHOT</version>
                <type>pom</type>
                <scope>import</scope>
             </dependency>
