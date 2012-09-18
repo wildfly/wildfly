@@ -23,6 +23,7 @@ package org.jboss.as.cli.impl;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
@@ -55,9 +56,10 @@ public abstract class CommaSeparatedCompleter implements CommandLineCompleter {
             return buffer.length();
         }
         final String chunk = specified[specified.length - 1];
-        for(int i = 0; i < candidates.size(); ++i) {
-            if(!candidates.get(i).startsWith(chunk)) {
-                candidates.remove(i);
+        final Iterator<String> iterator = candidates.iterator();
+        while(iterator.hasNext()) {
+            if(!iterator.next().startsWith(chunk)) {
+                iterator.remove();
             }
         }
         return buffer.length() - chunk.length();

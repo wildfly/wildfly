@@ -384,7 +384,7 @@ public class Util {
         return result;
     }
 
-    public static List<String> getAllReferencingServerGroups(String deploymentName, ModelControllerClient client)
+    public static List<String> getServerGroupsReferencingDeployment(String deploymentName, ModelControllerClient client)
             throws CommandLineException {
         final List<String> serverGroups = getServerGroups(client);
         if(serverGroups.isEmpty()) {
@@ -398,6 +398,43 @@ public class Util {
             final ModelNode addr = request.get(Util.VALUE);
             addr.add(Util.SERVER_GROUP, serverGroup);
             addr.add(Util.DEPLOYMENT, deploymentName);
+
+            final ModelNode response;
+            try {
+                response = client.execute(request);
+            } catch (Exception e) {
+                throw new CommandLineException("Failed to execute " + Util.VALIDATE_ADDRESS + " for " + request.get(Util.ADDRESS) , e);
+            }
+            if (response.has(Util.RESULT)) {
+                final ModelNode result = response.get(Util.RESULT);
+                if(result.has(Util.VALID)) {
+                    if(result.get(Util.VALID).asBoolean()) {
+                        groupNames.add(serverGroup);
+                    }
+                } else {
+                    throw new CommandLineException("Failed to validate address " + request.get(Util.ADDRESS) + ": " + response);
+                }
+            } else {
+                throw new CommandLineException(Util.getFailureDescription(response));
+            }
+        }
+        return groupNames;
+    }
+
+    public static List<String> getServerGroupsReferencingOverlay(String overlayName, ModelControllerClient client)
+            throws CommandLineException {
+        final List<String> serverGroups = getServerGroups(client);
+        if(serverGroups.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<String> groupNames = new ArrayList<String>();
+        for(String serverGroup : serverGroups) {
+            final ModelNode request = new ModelNode();
+            request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
+            request.get(Util.ADDRESS).setEmptyList();
+            final ModelNode addr = request.get(Util.VALUE);
+            addr.add(Util.SERVER_GROUP, serverGroup);
+            addr.add(Util.DEPLOYMENT_OVERLAY, overlayName);
 
             final ModelNode response;
             try {
