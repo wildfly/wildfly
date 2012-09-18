@@ -368,7 +368,6 @@
                                         <parameter><name>publicIPAddress</name>        <value>${node0}</value></parameter>
 
                                         <parameter><name>udpMcastAddress</name>        <value>${mcast}</value></parameter>
-                                        <parameter><name>diagnosticsMcastAddress</name><value>${mcast}</value></parameter>
                                         <parameter><name>mpingMcastAddress</name>      <value>${mcast}</value></parameter>
                                         <parameter><name>modclusterMcastAddress</name> <value>${mcast}</value></parameter>
                                     </parameters>
