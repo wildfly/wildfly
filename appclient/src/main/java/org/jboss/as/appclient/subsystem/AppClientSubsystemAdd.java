@@ -29,7 +29,7 @@ import java.util.List;
 import org.jboss.as.appclient.deployment.ActiveApplicationClientProcessor;
 import org.jboss.as.appclient.deployment.AppClientJBossAllParser;
 import org.jboss.as.appclient.deployment.ApplicationClientDependencyProcessor;
-import org.jboss.as.appclient.deployment.ApplicationClientDescriptorMethodProcessor;
+import org.jboss.as.ee.component.deployers.DescriptorEnvironmentLifecycleMethodProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientManifestProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientParsingDeploymentProcessor;
 import org.jboss.as.appclient.deployment.ApplicationClientStartProcessor;
@@ -93,7 +93,6 @@ class AppClientSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_APP_CLIENT_XML, new ApplicationClientParsingDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_MANIFEST, new ApplicationClientManifestProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APPLICATION_CLIENT_ACTIVE, new ActiveApplicationClientProcessor(deployment));
-                processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_APP_CLIENT_METHOD_RESOLUTION, new ApplicationClientDescriptorMethodProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_APPLICATION_CLIENT, new ApplicationClientDependencyProcessor());
                 processorTarget.addDeploymentProcessor(Constants.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_APPLICATION_CLIENT, new ApplicationClientStartProcessor(hostUrl, connectionPropertiesUrl, parameters.toArray(EMPTY_STRING)));
 

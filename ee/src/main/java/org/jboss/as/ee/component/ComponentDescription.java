@@ -739,7 +739,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
                 @Override
                 public void handle(final Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
 
-                    final InterceptorClassDescription interceptorConfig = mergeInterceptorConfig(clazz, classDescription, description, metadataComplete);
+                    final InterceptorClassDescription interceptorConfig = InterceptorClassDescription.merge(mergeInterceptorConfig(clazz, classDescription, description, metadataComplete), moduleDescription.getInterceptorClassOverride(clazz.getName()));
 
                     handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true);
                     handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
