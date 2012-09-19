@@ -566,8 +566,9 @@ public final class ManagedServerOperationsFactory {
                 if (serverGroup.hasDefined(DEPLOYMENT_OVERLAY)) {
                     final ModelNode groupOverlay = serverGroup.get(DEPLOYMENT_OVERLAY).asObject();
                     if (groupOverlay.has(name)) {
-                        List<Property> deployments = groupOverlay.get(name).asPropertyList();
-                        for (Property content : deployments) {
+                        ModelNode deploymentsNode = groupOverlay.get(name);
+                        if(deploymentsNode.has(DEPLOYMENT)) {
+                        for (Property content : deploymentsNode.get(DEPLOYMENT).asPropertyList()) {
                             final String deploymentName = content.getName();
                             final ModelNode deploymentDetails = content.getValue();
                             boolean regEx = deploymentDetails.hasDefined(REGULAR_EXPRESSION) ? deploymentDetails.require(REGULAR_EXPRESSION).asBoolean() : false;
@@ -576,6 +577,7 @@ public final class ManagedServerOperationsFactory {
                             addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
                             addOp.get(REGULAR_EXPRESSION).set(regEx);
                             updates.add(addOp);
+                        }
                         }
                     }
                 }
