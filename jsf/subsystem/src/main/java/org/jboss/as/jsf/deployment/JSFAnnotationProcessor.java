@@ -59,7 +59,7 @@ import java.util.Set;
  */
 public class JSFAnnotationProcessor implements DeploymentUnitProcessor {
 
-    public static final String FACES_ANNOTATIONS_SC_ATTR = JSFAnnotationProcessor.class.getName() + "FACES_ANNOTATIONS";
+    public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
 
     private enum FacesAnnotation {
         FACES_COMPONENT(FacesComponent.class),

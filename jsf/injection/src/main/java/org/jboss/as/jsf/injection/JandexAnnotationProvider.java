@@ -39,10 +39,15 @@ import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 public class JandexAnnotationProvider extends AnnotationProvider {
     private final Map<Class<? extends Annotation>, Set<Class<?>>> annotations;
 
+    /**
+     * @see JSFAnnotationProcessor#FACES_ANNOTATIONS_SC_ATTR
+     */
+    public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
+
     @SuppressWarnings("unchecked")
     public JandexAnnotationProvider(final ServletContext servletContext) {
         super(servletContext);
-        annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(JSFAnnotationProcessor.FACES_ANNOTATIONS_SC_ATTR);
+        annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(FACES_ANNOTATIONS_SC_ATTR);
     }
 
     // Note: The Mojarra 2.0 SPI specifies that this method takes Set<URL> as its argument.  The Mojarra 2.1 SPI
