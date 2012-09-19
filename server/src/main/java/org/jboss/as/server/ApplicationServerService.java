@@ -36,6 +36,7 @@ import java.util.TreeSet;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.patching.PatchInfoService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepositoryService;
@@ -43,6 +44,7 @@ import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.security.AbstractVaultReader;
+import org.jboss.as.version.Version;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -162,6 +164,11 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         //Add server path manager service
         ServerPathManagerService serverPathManagerService = new ServerPathManagerService();
         ServerPathManagerService.addService(serviceTarget, serverPathManagerService, serverEnvironment);
+
+        // Install the patch service
+        serviceTarget.addService(PatchInfoService.NAME, new PatchInfoService(Version.AS_VERSION, serverEnvironment.getHomeDir()))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
         // BES 2011/06/11 -- moved this to AbstractControllerService.start()
 //        processState.setRunning();

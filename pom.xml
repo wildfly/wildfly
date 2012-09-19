@@ -304,6 +304,7 @@
         <module>io</module>
         <module>jmx</module>
         <module>network</module>
+        <module>patching</module>
         <module>platform-mbean</module>
         <module>process-controller</module>
         <module>protocol</module>
@@ -1149,6 +1150,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-pojo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-patching</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

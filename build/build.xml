@@ -174,6 +174,7 @@
     <target name="modules-minimalistic">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
+        <copy file="${org.jboss.as:jboss-as-patching:jar:loader}" tofile="${output.dir}/loader.jar"/>
 
         <!--
           ~ Minimalistic list of modules to assemble.
@@ -231,6 +232,10 @@
 
         <module-def name="org.jboss.as.network">
             <maven-resource group="org.wildfly" artifact="wildfly-network"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.patching">
+            <maven-resource group="org.wildfly" artifact="wildfly-patching"/>
         </module-def>
 
         <module-def name="org.jboss.as.platform-mbean">
