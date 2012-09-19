@@ -64,7 +64,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
             final StringConfigurationPersister persister, boolean validateOps) {
-        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE, new ControlledProcessState(true));
+        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;

@@ -90,9 +90,9 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private volatile boolean bootSuccess;
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-                           final StringConfigurationPersister persister, OperationValidation validateOps, ControlledProcessState processState) {
+                           final StringConfigurationPersister persister, OperationValidation validateOps, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
-                processState == null ? new ControlledProcessState(true) : processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+                processState == null ? new ControlledProcessState(true) : processState, rootDescriptionProvider, null, ExpressionResolver.DEFAULT);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
         this.validateOps = validateOps;
@@ -239,7 +239,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
         }
     }
 
-    static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
+    public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode model = new ModelNode();

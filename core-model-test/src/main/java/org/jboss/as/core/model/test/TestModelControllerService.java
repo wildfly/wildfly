@@ -37,6 +37,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -49,12 +50,14 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
+import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.HostModelUtil.HostModelRegistrar;
 import org.jboss.as.host.controller.HostPathManagerService;
 import org.jboss.as.host.controller.HostRunningModeControl;
+import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -110,8 +113,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
     @Deprecated
     //TODO remove this once host and domain are ported to resource definition
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
-            TestModelType type, ModelInitializer modelInitializer, ControlledProcessState processState) {
-        super(processType, runningModeControl, null, persister, validateOps, processState);
+            TestModelType type, ModelInitializer modelInitializer, DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
+        super(processType, runningModeControl, null, persister, validateOps, rootDescriptionProvider, processState);
         if (type == TestModelType.STANDALONE) {
             throw new IllegalStateException("Should not be called for standalone");
         }
@@ -127,7 +130,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
         if (type == TestModelType.STANDALONE) {
             return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(), new ControlledProcessState(true));
         }
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new ControlledProcessState(true));
+        DescriptionProvider root = type == TestModelType.HOST ? HostDescriptionProviders.HOST_ROOT_PROVIDER : DomainDescriptionProviders.ROOT_PROVIDER;
+        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, root, new ControlledProcessState(true));
     }
 
     InjectedValue<ContentRepository> getContentRepositoryInjector(){

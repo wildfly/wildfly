@@ -48,6 +48,12 @@ public interface KernelServicesBuilder {
     KernelServicesBuilder setDontValidateOperations();
 
 
+    /**
+     * By default this validates the full model minus what is set up by {@link KnownIssuesValidationConfiguration}
+     *
+     * @param validationConfiguration the validation configuration, set to {@code null} to turn off model validation configuration
+     * @return this builder
+     */
     KernelServicesBuilder setModelValidationConfiguration(ValidationConfiguration validationConfiguration);
 
 

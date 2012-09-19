@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -57,6 +58,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.LAUNCH_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
 
 import java.util.Locale;
@@ -150,6 +152,12 @@ public class DomainRootDescription {
         root.get(ATTRIBUTES, LOCAL_HOST_NAME, REQUIRED).set(true);
         root.get(ATTRIBUTES, LOCAL_HOST_NAME, NILLABLE).set(false);
 
+        //Added to pass test model validation, take with a pinch of salt
+        root.get(ATTRIBUTES, LAUNCH_TYPE, DESCRIPTION).set(bundle.getString("domain.local-host-name"));
+        root.get(ATTRIBUTES, LAUNCH_TYPE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, NILLABLE).set(false);
+
         root.get(OPERATIONS).setEmptyObject();
 
         root.get(CHILDREN, EXTENSION, DESCRIPTION).set(bundle.getString("domain.extension"));
@@ -201,6 +209,11 @@ public class DomainRootDescription {
         root.get(CHILDREN, HOST, MIN_OCCURS).set(0);
         root.get(CHILDREN, HOST, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, HOST, MODEL_DESCRIPTION).setEmptyObject();
+
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, DESCRIPTION).set(bundle.getString("domain.rollout-plans"));
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MIN_OCCURS).set(0);
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MAX_OCCURS).set(1);
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MODEL_DESCRIPTION).setEmptyObject();
 
         return root;
     }

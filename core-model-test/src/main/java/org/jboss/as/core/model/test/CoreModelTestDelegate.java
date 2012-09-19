@@ -102,6 +102,8 @@ public class CoreModelTestDelegate {
         }
         ModelNode model = result.get(RESULT);
 
+        KnownIssuesValidationConfiguration.trimDescription(model);
+
         ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(PathAddress.EMPTY_ADDRESS.toModelNode(), model, validationConfiguration);
         List<ValidationFailure> validationMessages = validator.validateResources();
         if (validationMessages.size() > 0) {
@@ -126,7 +128,7 @@ public class CoreModelTestDelegate {
         private ModelInitializer modelInitializer;
         //TODO set this to EXIT_ON_VALIDATION_ERROR once model is fixed
         private OperationValidation validateOperations = OperationValidation.LOG_VALIDATION_ERRORS;
-        private ValidationConfiguration validationConfiguration = new ValidationConfiguration();
+        private ValidationConfiguration validationConfiguration;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
 
 
@@ -135,7 +137,7 @@ public class CoreModelTestDelegate {
             this.processType = type == TestModelType.HOST || type == TestModelType.DOMAIN ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
             runningMode = RunningMode.ADMIN_ONLY;
             testParser = TestParser.create(xmlMapper, type);
-
+            validationConfiguration = KnownIssuesValidationConfiguration.create(type);
         }
 
         public KernelServicesBuilder setDontValidateOperations() {

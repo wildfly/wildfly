@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
@@ -46,6 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -207,6 +209,17 @@ public class DomainModelUtil {
         root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
         root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
+
+        //Added to pass Model validation
+        root.registerReadOnlyAttribute(RELEASE_VERSION, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(RELEASE_CODENAME, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(PRODUCT_NAME, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(PRODUCT_VERSION, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(NAMESPACES, null, Storage.CONFIGURATION);
+        root.registerReadOnlyAttribute(SCHEMA_LOCATIONS, null, Storage.CONFIGURATION);
 
         if (isMaster) {
             DeploymentUploadURLHandler.registerMaster(root, contentRepo);

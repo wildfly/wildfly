@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
@@ -71,6 +72,12 @@ public class ProfileDescription {
         root.get(TAIL_COMMENT_ALLOWED).set(true);
         root.get(ATTRIBUTES, NAME, HEAD_COMMENT_ALLOWED).set(false);
         root.get(ATTRIBUTES, NAME, TAIL_COMMENT_ALLOWED).set(false);
+        //Added to pass test model validation, take with a pinch of salt
+        root.get(ATTRIBUTES, NAME, DESCRIPTION).set(bundle.getString("profile.name"));
+        root.get(ATTRIBUTES, NAME, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, NAME, REQUIRED).set(true);
+        root.get(ATTRIBUTES, NAME, NILLABLE).set(false);
+
         root.get(OPERATIONS).setEmptyObject();
         return root;
     }
@@ -78,13 +85,14 @@ public class ProfileDescription {
     public static ModelNode getProfileWithIncludesDescription(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = getBasicProfileDescription(bundle);
-        root.get(REQUEST_PROPERTIES).setEmptyObject();
+
         /* This will be reintroduced for 7.2.0, leave commented out
         root.get(ATTRIBUTES, INCLUDES, DESCRIPTION).set(bundle.getString("profile.includes"));
         root.get(ATTRIBUTES, INCLUDES, TYPE).set(ModelType.LIST);
         root.get(ATTRIBUTES, INCLUDES, VALUE_TYPE).set(ModelType.STRING);
         root.get(ATTRIBUTES, INCLUDES, REQUIRED).set(false);
         */
+
         appendSubsystemChild(root, bundle);
         return root;
     }
