@@ -38,6 +38,7 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.jmx"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
