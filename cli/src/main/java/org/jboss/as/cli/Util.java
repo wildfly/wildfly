@@ -63,6 +63,7 @@ public class Util {
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONTENT = "content";
+    public static final String CORE_SERVICE = "core-service";
     public static final String DATASOURCES = "datasources";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";

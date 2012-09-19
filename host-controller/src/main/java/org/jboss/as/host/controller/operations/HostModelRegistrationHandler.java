@@ -22,27 +22,17 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_ENVIRONMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
@@ -101,7 +91,7 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
         final String hostName = operation.require(NAME).asString();
 
         // Set up the host model registrations
-        ManagementResourceRegistration rootRegistration = context.getResourceRegistrationForUpdate();
+        final ManagementResourceRegistration rootRegistration = context.getResourceRegistrationForUpdate();
         hostModelRegistrar.registerHostModel(hostName, rootRegistration);
 
         final PathAddress hostAddress =  PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
@@ -159,18 +149,18 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
             }
         }
 
-        root.get(NAME);
-        root.get(NAMESPACES).setEmptyList();
-        root.get(SCHEMA_LOCATIONS).setEmptyList();
-        root.get(EXTENSION);
-        root.get(SYSTEM_PROPERTY);
-        root.get(PATH);
-        root.get(CORE_SERVICE);
-        root.get(SERVER_CONFIG);
-        root.get(DOMAIN_CONTROLLER);
-        root.get(INTERFACE);
-        root.get(JVM);
-        root.get(RUNNING_SERVER);
+//        root.get(NAME);
+//        root.get(NAMESPACES).setEmptyList();
+//        root.get(SCHEMA_LOCATIONS).setEmptyList();
+//        root.get(EXTENSION);
+//        root.get(SYSTEM_PROPERTY);
+//        root.get(PATH);
+//        root.get(CORE_SERVICE);
+//        root.get(SERVER_CONFIG);
+//        root.get(DOMAIN_CONTROLLER);
+//        root.get(INTERFACE);
+//        root.get(JVM);
+//        root.get(RUNNING_SERVER);
     }
 
 }

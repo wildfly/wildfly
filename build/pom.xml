@@ -1808,6 +1808,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-patching</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.yaml</groupId>
                     <artifactId>snakeyaml</artifactId>
                 </dependency>

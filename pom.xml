@@ -309,6 +309,7 @@
         <module>management-client-content</module>
         <module>jmx</module>
         <module>network</module>
+        <module>patching</module>
         <module>platform-mbean</module>
         <module>process-controller</module>
         <module>protocol</module>
@@ -1301,6 +1302,12 @@
                 <artifactId>jboss-as-testsuite-shared</artifactId>
                 <version>${project.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-patching</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- External Dependencies -->

@@ -233,6 +233,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 new ContainerStateMonitor(container, serviceController),
                 configurationPersister, processType, runningModeControl, prepareStep,
                 processState, executorService, expressionResolver, authorizer, auditLogger);
+
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 
@@ -273,6 +274,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
      *          if the configuration failed to be loaded
      */
     protected void boot(final BootContext context) throws ConfigurationPersistenceException {
+        runPerformControllerInitialization(context);
         boot(configurationPersister.load(), false);
         finishBoot();
     }
@@ -329,6 +331,14 @@ public abstract class AbstractControllerService implements Service<ModelControll
 
     protected void setConfigurationPersister(final ConfigurationPersister persister) {
         this.configurationPersister = persister;
+    }
+
+    protected void runPerformControllerInitialization(BootContext context) {
+        performControllerInitialization(context.getServiceTarget(), controller.getRootResource(), controller.getRootRegistration());
+    }
+
+    protected void performControllerInitialization(ServiceTarget target, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        //
     }
 
     protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);

@@ -225,6 +225,12 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-network"/>
         </module-def>
 
+        <module-def name="org.jboss.as.patching">
+            <maven-resource group="org.wildfly" artifact="wildfly-patching"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.patching.cli" />
+
         <module-def name="org.jboss.as.platform-mbean">
             <maven-resource group="org.jboss.as" artifact="jboss-as-platform-mbean"/>
         </module-def>

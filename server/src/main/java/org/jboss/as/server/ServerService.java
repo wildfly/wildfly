@@ -26,7 +26,9 @@ import java.io.File;
 import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -37,6 +39,7 @@ import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -242,6 +245,9 @@ public final class ServerService extends AbstractControllerService {
             serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX,
                     new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
+            // Initialize controller extensions
+            runPerformControllerInitialization(context);
+
             final DeploymentOverlayIndexService deploymentOverlayIndexService = new DeploymentOverlayIndexService();
             context.getServiceTarget().addService(DeploymentOverlayIndexService.SERVICE_NAME, deploymentOverlayIndexService).install();
 
@@ -359,6 +365,16 @@ public final class ServerService extends AbstractControllerService {
 
         // Platform MBeans
         rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());
+    }
+
+    @Override
+    protected void performControllerInitialization(ServiceTarget target, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        final ServiceLoader<ModelControllerServiceInitialization> sl = ServiceLoader.load(ModelControllerServiceInitialization.class);
+        final Iterator<ModelControllerServiceInitialization> iterator = sl.iterator();
+        while(iterator.hasNext()) {
+            final ModelControllerServiceInitialization init = iterator.next();
+            init.initializeStandalone(target, rootRegistration, rootResource);
+        }
     }
 
     /** Temporary replacement for QueuelessThreadPoolService */

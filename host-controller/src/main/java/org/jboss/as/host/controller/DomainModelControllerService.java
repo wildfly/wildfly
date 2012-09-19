@@ -22,6 +22,7 @@
 
 package org.jboss.as.host.controller;
 
+import org.jboss.as.controller.ModelControllerServiceInitialization;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -477,6 +478,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         ok = true;
                     }
 
+                    // Run the initialization
+                    runPerformControllerInitialization(context);
+
                     if (ok) {
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                                 new MasterDomainControllerOperationHandlerService(this, new HostControllerRegistrationHandler.OperationExecutor() {
@@ -546,6 +550,23 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 ROOT_LOGGER.unsuccessfulBoot();
                 System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
             }
+        }
+    }
+
+    @Override
+    protected void performControllerInitialization(ServiceTarget target, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        //
+        final ServiceLoader<ModelControllerServiceInitialization> sl = ServiceLoader.load(ModelControllerServiceInitialization.class);
+        final Iterator<ModelControllerServiceInitialization> iterator = sl.iterator();
+        while(iterator.hasNext()) {
+            final String hostName = hostControllerInfo.getLocalHostName();
+            final PathElement host = PathElement.pathElement(HOST, hostName);
+            final ManagementResourceRegistration hostRegistration = rootRegistration.getSubModel(PathAddress.EMPTY_ADDRESS.append(host));
+            final Resource hostResource = rootResource.getChild(host);
+
+            final ModelControllerServiceInitialization init = iterator.next();
+            init.initializeHost(target, hostRegistration, hostResource);
+            init.initializeDomain(target, rootRegistration, rootResource);
         }
     }
 

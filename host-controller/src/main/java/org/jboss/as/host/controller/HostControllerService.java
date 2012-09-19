@@ -45,6 +45,8 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.jboss.as.threads.ThreadFactoryService;
+import org.jboss.as.server.Services;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
@@ -56,6 +58,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.JBossThreadFactory;
 
@@ -91,7 +96,8 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         processState.setStarting();
 
-        String prettyVersion = environment.getProductConfig().getPrettyVersionString();
+        final ProductConfig config = environment.getProductConfig();
+        final String prettyVersion = config.getPrettyVersionString();
         AS_ROOT_LOGGER.serverStarting(prettyVersion);
         if (CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
@@ -142,6 +148,12 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
         // Install required path services. (Only install those identified as required)
         HostPathManagerService hostPathManagerService = new HostPathManagerService();
         HostPathManagerService.addService(serviceTarget, hostPathManagerService, environment);
+
+        // Add product config service
+        final Value<ProductConfig> productConfigValue = new ImmediateValue<ProductConfig>(config);
+        serviceTarget.addService(Services.JBOSS_PRODUCT_CONFIG_SERVICE, new ValueService<ProductConfig>(productConfigValue))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
 
         DomainModelControllerService.addService(serviceTarget, environment, runningModeControl, processState, bootstrapListener, hostPathManagerService);
     }

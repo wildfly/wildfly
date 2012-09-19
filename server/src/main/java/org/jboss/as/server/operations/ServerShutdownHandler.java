@@ -65,23 +65,31 @@ public class ServerShutdownHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final boolean restart = RESTART.resolveModelAttribute(context, operation).asBoolean();
+        // Acquire the controller lock to prevent new write ops and wait until current ones are done
+        context.acquireControllerLock();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 // Even though we don't read from the service registry, we have a reference to a
                 // service-fronted 'processState' so tell the controller we are modifying a service
                 context.getServiceRegistry(true);
-                processState.setStopping();
-                final Thread thread = new Thread(new Runnable() {
-                    public void run() {
-                        System.exit(restart ? ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT : ExitCodes.NORMAL);
+                context.completeStep(new OperationContext.ResultHandler() {
+                    @Override
+                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                        if(resultAction == OperationContext.ResultAction.KEEP) {
+                            processState.setStopping();
+                            final Thread thread = new Thread(new Runnable() {
+                                public void run() {
+                                    System.exit(restart ? ExitCodes.RESTART_PROCESS_FROM_STARTUP_SCRIPT : ExitCodes.NORMAL);
+                                }
+                            });
+                            // The intention is that this shutdown is graceful, and so the client gets a reply.
+                            // At the time of writing we did not yet have graceful shutdown.
+                            thread.setName("Management Triggered Shutdown");
+                            thread.start();
+                        }
                     }
                 });
-                // The intention is that this shutdown is graceful, and so the client gets a reply.
-                // At the time of writing we did not yet have graceful shutdown.
-                thread.setName("Management Triggered Shutdown");
-                thread.start();
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 
