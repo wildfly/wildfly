@@ -22,24 +22,6 @@
 
 package org.jboss.as.test.integration.ejb.security.callerprincipal;
 
-import java.security.Principal;
-
-import javax.ejb.EJBHome;
-import javax.jms.DeliveryMode;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.QueueSession;
-import javax.jms.Session;
-import javax.jms.TemporaryQueue;
-import javax.jms.TextMessage;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -63,15 +45,27 @@ import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.util.Base64;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.util.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import javax.ejb.EJBHome;
+import javax.jms.DeliveryMode;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
+import javax.jms.QueueConnection;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.QueueSession;
+import javax.jms.Session;
+import javax.jms.TemporaryQueue;
+import javax.jms.TextMessage;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 /**
  * The Bean Provider can invoke the getCallerPrincipal and isCallerInRole methods only
@@ -225,26 +219,6 @@ public class GetCallerPrincipalTestCase {
         client.setSimple("user1", "password1");
         client.login();
         return client;
-    }
-
-
-    /*
-     * Tests
-     */
-    @Test
-    public void testUnauthenticatedNoSecurityDomain() throws Exception {
-        try {
-            ISLSBWithoutSecurityDomain bean = (ISLSBWithoutSecurityDomain) initialContext.lookup("ejb:/callerprincipal-test//" + SLSBWithoutSecurityDomain.class.getSimpleName() + "!" + ISLSBWithoutSecurityDomain.class.getName());
-            final Principal principal = bean.getCallerPrincipal();
-            assertNotNull("EJB 3.1 FR 17.6.5 The container must never return a null from the getCallerPrincipal method.",
-                    principal);
-            assertEquals(ANONYMOUS, principal.getName());
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            log.error(e.getStackTrace());
-            fail("EJB 3.1 FR 17.6.5 The EJB container must provide the caller’s security context information during the execution of a business method ("
-                    + e.getMessage() + ")");
-        }
     }
 
     @Test
