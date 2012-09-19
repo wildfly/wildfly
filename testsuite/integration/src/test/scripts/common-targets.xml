@@ -123,13 +123,11 @@
         <attribute name="config.dir.name" default="standalone/configuration"/>
         <attribute name="node"              default="${node0}"/>
         <attribute name="mcast"             default="${mcast}"/>
-        <attribute name="mcast.jgroupsDiag" default="${mcast.jgroupsDiag}"/>
-        <attribute name="mcast.modcluster"  default="${mcast.modcluster}"/>
 
         <sequential>
             <echo message="    ===  Changing IP addresses for config @{name} ===  "/>
                 <echo>   node: @{node}</echo>
-                <echo>   ant.mcast: @{ant.mcast}</echo>
+                <echo>   mcast: @{mcast}</echo>
 
             <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
 
@@ -149,9 +147,9 @@
                 <param name="publicIPAddress"     expression="@{node}"/>
                 
                 <param name="udpMcastAddress"         expression="@{mcast}"/>
-                <param name="diagnosticsMcastAddress" expression="@{mcast.jgroupsDiag}"/>
+                <param name="diagnosticsMcastAddress" expression="@{mcast}"/>
                 <param name="mpingMcastAddress"       expression="@{mcast}"/>
-                <param name="modclusterMcastAddress"  expression="@{mcast.modcluster}"/>
+                <param name="modclusterMcastAddress"  expression="@{mcast}"/>
             </xslt>
 
             <!-- Move processed files back. -->
