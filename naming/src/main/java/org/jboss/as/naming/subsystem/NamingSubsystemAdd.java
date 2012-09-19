@@ -96,6 +96,14 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addListener(verificationHandler)
                 .install());
 
+        // Setup remote naming store
+        //we always install the naming store, but we don't install the server unless it has been explicitly enabled
+        final ServiceBasedNamingStore remoteExposedNamingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.EXPORTED_CONTEXT_SERVICE_NAME);
+        newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService(remoteExposedNamingStore))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(verificationHandler)
+                .install());
+
         NamespaceContextSelector.setDefault(new NamespaceContextSelector() {
             public Context getContext(String identifier) {
                 final NamingStore namingStore;
@@ -103,6 +111,8 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     namingStore = globalNamingStore;
                 } else if (identifier.equals("jboss")) {
                     namingStore = jbossNamingStore;
+                } else if (identifier.equals("jboss/exported")) {
+                    namingStore = remoteExposedNamingStore;
                 } else {
                     namingStore = null;
                 }
@@ -125,14 +135,6 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 javax.naming.spi.InitialContextFactoryBuilder.class, InitialContextFactoryBuilder.class, verificationHandler));
 
         newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
-
-        // Setup remote naming store
-        //we always install the naming store, but we don't install the server unless it has been explicitly enabled
-        final ServiceBasedNamingStore remoteExposedNamingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.EXPORTED_CONTEXT_SERVICE_NAME);
-        newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService(remoteExposedNamingStore))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(verificationHandler)
-                .install());
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
