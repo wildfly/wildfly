@@ -51,7 +51,7 @@ final class StartStopService extends AbstractService {
             SarLogger.ROOT_LOGGER.tracef("Starting Service: %s", context.getController().getName());
         }
         try {
-            invokeLifecycleMethod(startMethod);
+            invokeLifecycleMethod(startMethod, context);
         } catch (final Exception e) {
             throw SarMessages.MESSAGES.failedExecutingLegacyMethod(e, "start()");
         }
@@ -63,7 +63,7 @@ final class StartStopService extends AbstractService {
             SarLogger.ROOT_LOGGER.tracef("Stopping Service: %s", context.getController().getName());
         }
         try {
-            invokeLifecycleMethod(stopMethod);
+            invokeLifecycleMethod(stopMethod, context);
         } catch (final Exception e) {
             SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod(e, "stop()");
         }
