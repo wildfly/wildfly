@@ -126,7 +126,7 @@ public class CoreModelTestDelegate {
         private ModelInitializer modelInitializer;
         //TODO set this to EXIT_ON_VALIDATION_ERROR once model is fixed
         private OperationValidation validateOperations = OperationValidation.LOG_VALIDATION_ERRORS;
-        private ValidationConfiguration validationConfiguration;
+        private ValidationConfiguration validationConfiguration = new ValidationConfiguration();
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
 
 
