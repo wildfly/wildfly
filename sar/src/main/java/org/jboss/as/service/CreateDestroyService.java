@@ -29,7 +29,7 @@ final class CreateDestroyService extends AbstractService {
             SarLogger.ROOT_LOGGER.tracef("Creating Service: %s", context.getController().getName());
         }
         try {
-            invokeLifecycleMethod(createMethod);
+            invokeLifecycleMethod(createMethod, context);
         } catch (final Exception e) {
             throw SarMessages.MESSAGES.failedExecutingLegacyMethod(e, "create()");
         }
@@ -41,7 +41,7 @@ final class CreateDestroyService extends AbstractService {
             SarLogger.ROOT_LOGGER.tracef("Destroying Service: %s", context.getController().getName());
         }
         try {
-            invokeLifecycleMethod(destroyMethod);
+            invokeLifecycleMethod(destroyMethod, context);
         } catch (final Exception e) {
             SarLogger.ROOT_LOGGER.failedExecutingLegacyMethod(e, "create()");
         }
