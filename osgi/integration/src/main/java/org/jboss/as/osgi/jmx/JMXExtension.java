@@ -26,8 +26,10 @@ import javax.management.MBeanServer;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.IntegrationService;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -41,8 +43,10 @@ public class JMXExtension extends AbstractSubsystemExtension {
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
 
     @Override
-    public void configureSystemServiceDependencies(ServiceBuilder<?> builder) {
-        builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, injectedMBeanServer);
+    public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
+        if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
+            builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, injectedMBeanServer);
+        }
     }
 
     @Override

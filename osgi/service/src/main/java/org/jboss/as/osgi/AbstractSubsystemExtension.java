@@ -29,6 +29,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.osgi.framework.BundleContext;
@@ -46,7 +47,7 @@ public abstract class AbstractSubsystemExtension implements SubsystemExtension {
     }
 
     @Override
-    public void configureSystemServiceDependencies(ServiceBuilder<?> builder) {
+    public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
     }
 
     @Override

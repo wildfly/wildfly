@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,43 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.osgi.web;
 
+package org.jboss.as.osgi.deployment;
+
+import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.web.ext.WebContextFactory;
-import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.metadata.OSGiMetaData;
+import org.osgi.framework.BundleActivator;
 
 /**
- * This DUP adds a custom WebContextFactory attachment to the DeploymentUnit which is used by JBoss Web.
- * Later we can call back into the custom WebContextFactory to set the OSGi BundleContext in the
- * ServletContext.
+ * Create a {@link ComponentDescription} for the {@link BundleActivator}
  *
- * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
+ * @since 02-Sep-2012
  */
-public class WabServletContextFactoryProcessor implements DeploymentUnitProcessor {
+public class OSGiComponentParseProcessor implements DeploymentUnitProcessor {
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
+        if (metadata == null || metadata.getBundleActivator() == null)
+            return;
 
-        XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
-        if (bundle != null) {
-            WabServletContextFactory wscf = new WabServletContextFactory();
-            depUnit.putAttachment(WebContextFactory.ATTACHMENT, wscf);
-            bundle.getBundleRevision().addAttachment(WabServletContextFactory.class, wscf);
-        }
+        String componentClass = metadata.getBundleActivator();
+        String componentName = BundleActivator.class.getSimpleName();
+        EEModuleDescription moduleDescription = depUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
+        ComponentDescription componentDescription = new ComponentDescription(componentName, componentClass, moduleDescription, depUnit.getServiceName());
+        moduleDescription.addComponent(componentDescription);
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        context.removeAttachment(WebContextFactory.ATTACHMENT);
-
-        XBundle bundle = context.getAttachment(OSGiConstants.BUNDLE_KEY);
-        if (bundle != null) {
-            bundle.getBundleRevision().removeAttachment(WabServletContextFactory.class);
-        }
     }
 }

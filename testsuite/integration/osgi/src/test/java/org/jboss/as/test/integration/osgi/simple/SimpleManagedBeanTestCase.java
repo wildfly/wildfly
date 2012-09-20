@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.ManagedBean;
 
 import junit.framework.Assert;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -59,6 +60,8 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Tests CDI deployments with OSGi metadata
@@ -113,7 +116,7 @@ public class SimpleManagedBeanTestCase {
                 builder.addBundleSymbolicName(COMPLEX_CDI_JAR);
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(PaymentProvider.class);
-                builder.addImportPackages(ManagedBean.class);
+                builder.addImportPackages(BundleContext.class, ServiceTracker.class, ManagedBean.class);
                 return builder.openStream();
             }
         });
