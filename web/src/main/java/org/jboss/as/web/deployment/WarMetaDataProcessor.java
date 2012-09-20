@@ -46,6 +46,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -103,7 +104,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         Map<String, VirtualFile> scis = new HashMap<String, VirtualFile>();
         boolean fragmentFound = false;
         Map<String, WebFragmentMetaData> webFragments = warMetaData.getWebFragmentsMetaData();
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 jarsSet.add(resourceRoot.getRootName());
