@@ -39,7 +39,7 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final DeploymentClassIndex module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
+        final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.CLASS_INDEX);
         final Collection<ComponentDescription> componentConfigurations = eeModuleDescription.getComponentDescriptions();
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
@@ -47,12 +47,12 @@ public class InterceptorAnnotationProcessor implements DeploymentUnitProcessor {
         if (MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {
             return;
         }
-        if (componentConfigurations == null || componentConfigurations.isEmpty()) {
+        if (classIndex == null || componentConfigurations == null || componentConfigurations.isEmpty()) {
             return;
         }
 
         for (final ComponentDescription description : componentConfigurations) {
-            processComponentConfig(applicationClasses, module, deploymentReflectionIndex, description);
+            processComponentConfig(applicationClasses, classIndex, deploymentReflectionIndex, description);
         }
     }
 

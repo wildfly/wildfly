@@ -28,8 +28,10 @@ import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.osgi.framework.IntegrationService;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -44,9 +46,11 @@ public class TransactionsExtension extends AbstractSubsystemExtension {
     private final InjectedValue<UserTransaction> injectedUserTransaction = new InjectedValue<UserTransaction>();
 
     @Override
-    public void configureSystemServiceDependencies(ServiceBuilder<?> builder) {
-        builder.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, injectedTransactionManager);
-        builder.addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, injectedUserTransaction);
+    public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
+        if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
+            builder.addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, injectedTransactionManager);
+            builder.addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, injectedUserTransaction);
+        }
     }
 
     @Override

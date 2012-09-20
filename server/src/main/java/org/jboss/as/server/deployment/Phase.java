@@ -188,6 +188,7 @@ public enum Phase {
     public static final int STRUCTURE_MOUNT                             = 0x0200;
     public static final int STRUCTURE_MANIFEST                          = 0x0300;
     public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0400;
+    public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
     public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
     public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
     public static final int STRUCTURE_JDBC_DRIVER                       = 0x0600;
@@ -255,11 +256,12 @@ public enum Phase {
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
+    public static final int PARSE_OSGI_COMPONENTS                       = 0x2010;
     public static final int PARSE_WEBSERVICES_CONTEXT_INJECTION         = 0x2040;
     public static final int PARSE_WEBSERVICES_XML                       = 0x2050;
     public static final int PARSE_JBOSS_WEBSERVICES_XML                 = 0x2051;
     public static final int PARSE_JAXWS_EJB_INTEGRATION                 = 0x2052;
-    public static final int PARSE_JAXRPC_POJO_INTEGRATION                = 0x2053;
+    public static final int PARSE_JAXRPC_POJO_INTEGRATION               = 0x2053;
     public static final int PARSE_JAXRPC_EJB_INTEGRATION                = 0x2054;
     public static final int PARSE_JAXWS_HANDLER_CHAIN_ANNOTATION        = 0x2055;
     public static final int PARSE_WS_JMS_INTEGRATION                    = 0x2056;
@@ -327,7 +329,6 @@ public enum Phase {
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
     public static final int DEPENDENCIES_JSF                            = 0x1800;
     public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1900;
-    public static final int DEPENDENCIES_WAB_SERVLETCONTEXTFACTORY      = 0x1980;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
@@ -458,6 +459,7 @@ public enum Phase {
     public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
     public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
     public static final int INSTALL_WAB_SERVLETCONTEXT_SERVICE          = 0x2050;
+    public static final int INSTALL_PERSISTENCE_SERVICES                = 0x2060;
     public static final int INSTALL_DEPLOYMENT_COMPLETE_SERVICE         = 0x2100;
 
     // CLEANUP

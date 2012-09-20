@@ -103,4 +103,7 @@ public interface OSGiMessages {
 
     @Message(id = 11967, value = "HttpService mapping already exists: %s")
     String aliasMappingAlreadyExists(String alias);
+
+    @Message(id = 11968, value = "Cannot start bundle: %s")
+    StartException cannotStartBundle(@Cause Throwable cause, Bundle bundle);
 }

@@ -43,8 +43,12 @@ import org.osgi.util.tracker.ServiceTracker;
 @ManagedBean
 public class ComplexManagedBean {
 
+    private BundleContext context;
+
     @Resource
-    BundleContext context;
+    public void setContext(BundleContext context) {
+        this.context = context;
+    }
 
     private List<PaymentProvider> providers = new ArrayList<PaymentProvider>();
 
