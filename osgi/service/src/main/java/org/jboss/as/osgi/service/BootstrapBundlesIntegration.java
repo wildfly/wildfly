@@ -138,7 +138,9 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                 throw MESSAGES.illegalStateCannotFindBundleDir(bundlesDir);
 
             final List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
-            configcaps.add(new OSGiCapability("org.osgi.enterprise", null));
+            for (String capspec : SystemPackagesIntegration.DEFAULT_CAPABILITIES) {
+                configcaps.add(new OSGiCapability(capspec, null));
+            }
             configcaps.addAll(injectedSubsystemState.getValue().getCapabilities());
             Iterator<OSGiCapability> iterator = configcaps.iterator();
             while (iterator.hasNext()) {
