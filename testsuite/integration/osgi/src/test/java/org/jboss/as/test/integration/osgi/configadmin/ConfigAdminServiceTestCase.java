@@ -42,6 +42,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.configadmin.service.ConfigAdminListener;
 import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfiguredService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -70,9 +71,8 @@ public class ConfigAdminServiceTestCase {
 
     @Deployment
     public static Archive<?> deployment() {
-
         return ShrinkWrap.create(JavaArchive.class, "configadmin.jar")
-                .addPackage(ConfiguredService.class.getPackage())
+                .addClasses(ConfiguredService.class)
                 .addAsManifestResource(new StringAsset(
                         "Manifest-Version: 1.0\n" +
                         "Dependencies: org.jboss.as.configadmin,javax.inject.api\n"

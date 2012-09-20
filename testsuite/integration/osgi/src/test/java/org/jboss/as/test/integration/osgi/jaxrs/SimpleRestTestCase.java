@@ -19,16 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.osgi.jaxws;
+package org.jboss.as.test.integration.osgi.jaxrs;
+
+import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
-import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Application;
 
 import junit.framework.Assert;
 
@@ -37,8 +37,8 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.osgi.jaxws.bundle.Endpoint;
-import org.jboss.as.test.integration.osgi.jaxws.bundle.EndpointImpl;
+import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.osgi.jaxrs.bundle.SimpleResource;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -49,16 +49,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Test web service endpoint functionality
+ * Test simple OSGi REST deployment
  *
  * @author thomas.diesler@jboss.com
- * @since 28-Aug-2011
+ * @since 30-Aug-2012
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-public class SimpleWebServiceTestCase {
+public class SimpleRestTestCase {
 
-    static final String SIMPLE_WAR = "simple.war";
+    private static final String SIMPLE_WAR = "simple.war";
     static final String BUNDLE_A_WAR = "bundle-a.war";
     static final String BUNDLE_B_WAR = "bundle-b.war";
     static final String BUNDLE_C_WAB = "bundle-c.wab";
@@ -67,23 +67,25 @@ public class SimpleWebServiceTestCase {
     private URL targetURL;
 
     @Deployment(name = SIMPLE_WAR, testable = false)
-    public static Archive<?> getSimpleWar() {
-        final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
-        archive.addClasses(Endpoint.class, EndpointImpl.class);
+    public static Archive<?> getSimpleWar(){
+        final WebArchive archive = create(WebArchive.class, SIMPLE_WAR);
+        archive.addClasses(SimpleResource.class);
+        archive.setWebXML(SimpleResource.class.getPackage(), "rest-web.xml");
         return archive;
     }
 
     @Deployment(name = BUNDLE_A_WAR, testable = false)
     public static Archive<?> getSimpleWarAsBundle() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
-        archive.addClasses(Endpoint.class, EndpointImpl.class);
+        archive.addClasses(SimpleResource.class);
+        archive.setWebXML(SimpleResource.class.getPackage(), "rest-web.xml");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(WebService.class, SOAPBinding.class);
+                builder.addImportPackages(Produces.class, Application.class);
                 builder.addBundleClasspath("WEB-INF/classes");
                 return builder.openStream();
             }
@@ -94,14 +96,15 @@ public class SimpleWebServiceTestCase {
     @Deployment(name = BUNDLE_B_WAR, testable = false)
     public static Archive<?> getBundleWithWarExtension() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B_WAR);
-        archive.addClasses(Endpoint.class, EndpointImpl.class);
+        archive.addClasses(SimpleResource.class);
+        archive.addAsResource(SimpleResource.class.getPackage(), "rest-web.xml", "WEB-INF/web.xml");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(WebService.class, SOAPBinding.class);
+                builder.addImportPackages(Produces.class, Application.class);
                 return builder.openStream();
             }
         });
@@ -111,14 +114,15 @@ public class SimpleWebServiceTestCase {
     @Deployment(name = BUNDLE_C_WAB, testable = false)
     public static Archive<?> getBundleWithWabExtension() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
-        archive.addClasses(Endpoint.class, EndpointImpl.class);
+        archive.addClasses(SimpleResource.class);
+        archive.addAsResource(SimpleResource.class.getPackage(), "rest-web.xml", "WEB-INF/web.xml");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(WebService.class, SOAPBinding.class);
+                builder.addImportPackages(Produces.class, Application.class);
                 return builder.openStream();
             }
         });
@@ -128,48 +132,33 @@ public class SimpleWebServiceTestCase {
     @Test
     @OperateOnDeployment(SIMPLE_WAR)
     public void testSimpleWar() throws Exception {
-        QName serviceName = new QName("http://osgi.smoke.test.as.jboss.org", "EndpointService");
-        Service service = Service.create(getWsdl(), serviceName);
-        Endpoint port = service.getPort(Endpoint.class);
-        Assert.assertEquals("Foo", port.echo("Foo"));
+        Assert.assertEquals("Hello World!", performCall(null));
     }
 
     @Test
     @OperateOnDeployment(BUNDLE_A_WAR)
     public void testSimpleWarAsBundle() throws Exception {
-        QName serviceName = new QName("http://osgi.smoke.test.as.jboss.org", "EndpointService");
-        Service service = Service.create(getWsdl(), serviceName);
-        Endpoint port = service.getPort(Endpoint.class);
-        Assert.assertEquals("Foo", port.echo("Foo"));
+        Assert.assertEquals("Hello World!", performCall(null));
     }
 
     @Test
     @OperateOnDeployment(BUNDLE_B_WAR)
     public void testBundleWithWarExtension() throws Exception {
-        QName serviceName = new QName("http://osgi.smoke.test.as.jboss.org", "EndpointService");
-        Service service = Service.create(getWsdl(), serviceName);
-        Endpoint port = service.getPort(Endpoint.class);
-        Assert.assertEquals("Foo", port.echo("Foo"));
+        Assert.assertEquals("Hello World!", performCall(null));
     }
 
     @Test
     @OperateOnDeployment(BUNDLE_C_WAB)
     public void testBundleWithWabExtension() throws Exception {
-        QName serviceName = new QName("http://osgi.smoke.test.as.jboss.org", "EndpointService");
-        Service service = Service.create(getWsdl("bundle-c"), serviceName);
-        Endpoint port = service.getPort(Endpoint.class);
-        Assert.assertEquals("Foo", port.echo("Foo"));
+        Assert.assertEquals("Hello World!", performCall("bundle-c"));
     }
 
-    private URL getWsdl() throws MalformedURLException {
-        return getWsdl(null);
-    }
-
-    private URL getWsdl(String contextPath) throws MalformedURLException {
+    private String performCall(String context) throws Exception {
         String urlspec = targetURL.toExternalForm();
-        if (targetURL.getPath().isEmpty() && contextPath != null) {
-            urlspec += "/" + contextPath + "/";
+        if (targetURL.getPath().isEmpty() && context != null) {
+            urlspec += "/" + context + "/";
         }
-        return new URL(urlspec + "EndpointService?wsdl");
+        URL url = new URL(urlspec + "helloworld");
+        return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
     }
 }

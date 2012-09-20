@@ -35,11 +35,11 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.osgi.ejb3.bundle.SimpleStatelessSessionBean;
 import org.jboss.as.test.integration.osgi.xservice.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.osgi.spi.ManifestBuilder;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -79,6 +79,7 @@ public class StatelessBeanIntegrationTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivator(TargetBundleActivator.class);
                 builder.addImportPackages(BundleActivator.class, Logger.class, Module.class, InitialContext.class);
+                builder.addExportPackages(Echo.class);
                 return builder.openStream();
             }
         });
@@ -98,7 +99,7 @@ public class StatelessBeanIntegrationTestCase {
     public void testStatelessBean() throws Exception {
         deployer.deploy(EJB3_DEPLOYMENT_NAME);
         try {
-            String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!org.jboss.as.test.integration.osgi.ejb3.SimpleStatelessSessionBean";
+            String jndiname = "java:global/ejb3-osgi/SimpleStatelessSessionBean!org.jboss.as.test.integration.osgi.ejb3.bundle.SimpleStatelessSessionBean";
             Echo service = (Echo) new InitialContext().lookup(jndiname);
             assertNotNull("StatelessBean not null", service);
             assertEquals("ejb3-osgi-target", service.echo(BUNDLE_SYMBOLICNAME));
@@ -114,8 +115,10 @@ public class StatelessBeanIntegrationTestCase {
         archive.addClass(SimpleStatelessSessionBean.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                builder.addManifestHeader("Dependencies", "org.osgi.core,deployment.ejb3-osgi-target");
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(Bundle.class, Echo.class);
                 return builder.openStream();
             }
         });

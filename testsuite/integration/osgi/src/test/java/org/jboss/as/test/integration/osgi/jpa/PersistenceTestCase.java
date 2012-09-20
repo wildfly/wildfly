@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.InputStream;
 
 import javax.inject.Inject;
+
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,6 +34,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
+import org.jboss.as.test.integration.osgi.jpa.bundle.Employee;
 import org.jboss.as.test.osgi.OSGiFrameworkUtils;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -134,7 +136,7 @@ public class PersistenceTestCase {
     @Deployment(name = BUNDLE_A_JAR, managed = false, testable = false)
     public static Archive<?> getPersistenceBundle() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A_JAR);
-        archive.addAsResource(PersistenceTestCase.class.getPackage(), "persistence-a.xml", "META-INF/persistence.xml");
+        archive.addAsResource(Employee.class.getPackage(), "persistence-a.xml", "META-INF/persistence.xml");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {

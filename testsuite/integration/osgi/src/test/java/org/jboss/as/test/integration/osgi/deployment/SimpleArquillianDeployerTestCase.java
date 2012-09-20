@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.integration.osgi.classloading;
+package org.jboss.as.test.integration.osgi.deployment;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
@@ -24,29 +27,28 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.osgi.classloading.bundle.LoggingActivator;
+import org.jboss.as.test.integration.osgi.deployment.bundle.SimpleActivator;
+import org.jboss.as.test.integration.osgi.deployment.bundle.SimpleService;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.log.LogService;
-import org.osgi.util.tracker.ServiceTracker;
 
 /**
- * Test dynamic import of the {@link LogService}
+ * Test the arquillian callback to a client provided archive and its deployment through the deployer API.
  *
  * @author thomas.diesler@jboss.com
+ * @since 09-Sep-2010
  */
 @RunWith(Arquillian.class)
-public class LogServiceDynamicImportTestCase {
+public class SimpleArquillianDeployerTestCase {
 
-    private static final String BUNDLE_A = "bundleA";
+    private static final String DEPLOYMENT_NAME = "arquillian-deployer-test-bundle";
 
     @ArquillianResource
     public Deployer deployer;
@@ -56,7 +58,7 @@ public class LogServiceDynamicImportTestCase {
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dynamic-logservice");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-arquillian-deployer");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -70,32 +72,36 @@ public class LogServiceDynamicImportTestCase {
     }
 
     @Test
-    public void testBundle() throws Exception {
+    public void testClientDeploymentAsArchive() throws Exception {
 
-        InputStream input = deployer.getDeployment(BUNDLE_A);
-        Bundle bundle = context.installBundle(BUNDLE_A, input);
-        try {
-            Assert.assertEquals(Bundle.INSTALLED, bundle.getState());
-            bundle.start();
-            Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
-        } finally {
-            bundle.uninstall();
-        }
+        InputStream input = deployer.getDeployment(DEPLOYMENT_NAME);
+        Bundle bundle = context.installBundle(DEPLOYMENT_NAME, input);
+        assertNotNull("Bundle found", bundle);
+
+        // Start the bundle
+        bundle.start();
+        assertEquals(Bundle.ACTIVE, bundle.getState());
+
+        // Stop the bundle
+        bundle.stop();
+        assertEquals(Bundle.RESOLVED, bundle.getState());
+
+        bundle.uninstall();
+        assertEquals(Bundle.UNINSTALLED, bundle.getState());
     }
 
-    @Deployment(name = BUNDLE_A, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_NAME, managed = false, testable = false)
     public static JavaArchive getTestArchive() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
-        archive.addClasses(LoggingActivator.class);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT_NAME);
+        archive.addClasses(SimpleActivator.class, SimpleService.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(LoggingActivator.class);
-                builder.addImportPackages(BundleActivator.class, ServiceTracker.class);
-                builder.addDynamicImportPackages(LogService.class.getPackage().getName());
+                builder.addBundleActivator(SimpleActivator.class);
+                builder.addImportPackages(BundleActivator.class);
                 return builder.openStream();
             }
         });
