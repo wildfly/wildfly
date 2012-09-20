@@ -40,6 +40,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.CommaSeparatedCompleter;
+import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
@@ -163,19 +164,7 @@ public class UndeployHandler extends DeploymentHandler {
         keepContent.addRequiredPreceding(name);
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
-        path = new ArgumentWithValue(this, pathCompleter, "--path") {
-            @Override
-            public String getValue(ParsedCommandLine args) {
-                String value = super.getValue(args);
-                if(value != null) {
-                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
-                        value = value.substring(1, value.length() - 1);
-                    }
-                    value = pathCompleter.translatePath(value);
-                }
-                return value;
-            }
-        };
+        path = new FileSystemPathArgument(this, pathCompleter, "--path");
         path.addCantAppearAfter(l);
 
         script = new ArgumentWithValue(this, "--script");

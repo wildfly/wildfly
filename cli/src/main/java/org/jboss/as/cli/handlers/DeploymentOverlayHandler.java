@@ -29,8 +29,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -46,6 +48,7 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  *
@@ -71,6 +74,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     private final ArgumentWithValue deployments;
     private final ArgumentWithValue wildcards;
     //private final ArgumentWithValue redeployAffected;
+
+    private final FilenameTabCompleter pathCompleter;
 
     public DeploymentOverlayHandler(CommandContext ctx) {
         super("deployment-overlay", true);
@@ -118,7 +123,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             }}), "--name");
         name.addRequiredPreceding(action);
 
-        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
+        pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         content = new ArgumentWithValue(this, new CommandLineCompleter(){
             @Override
             public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
@@ -383,9 +388,114 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             listLinks(ctx);
         } else if(LINK.equals(action)) {
             link(ctx);
+        } else if(REDEPLOY_AFFECTED.equals(action)) {
+            redeployAffected(ctx);
         } else {
             throw new CommandFormatException("Unrecognized action: '" + action + "'");
         }
+    }
+
+    protected void redeployAffected(CommandContext ctx) throws CommandLineException {
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
+        assertNotPresent(serverGroups, args);
+        assertNotPresent(allServerGroups, args);
+        assertNotPresent(allRelevantServerGroups, args);
+        assertNotPresent(content, args);
+        assertNotPresent(deployments, args);
+        assertNotPresent(wildcards, args);
+
+        final String overlay = name.getValue(args, true);
+        final ModelControllerClient client = ctx.getModelControllerClient();
+
+        final ModelNode redeployOp = new ModelNode();
+        redeployOp.get(Util.OPERATION).set(Util.COMPOSITE);
+        redeployOp.get(Util.ADDRESS).setEmptyList();
+        final ModelNode steps = redeployOp.get(Util.STEPS);
+
+        if(ctx.isDomainMode()) {
+            throw new CommandFormatException("redeploy-affected in domain mode is not yet supported.");
+        } else {
+            final List<String> remainingDeployments = Util.getDeployments(client);
+            if(remainingDeployments.isEmpty()) {
+                return;
+            }
+
+            final ModelNode op = new ModelNode();
+            final ModelNode addr = op.get(Util.ADDRESS);
+//            if(serverGroup != null) {
+//                addr.add(Util.SERVER_GROUP, serverGroup);
+//            }
+            addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
+            op.get(Util.OPERATION).set(Util.READ_CHILDREN_RESOURCES);
+            op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
+            final ModelNode response;
+            try {
+                response = client.execute(op);
+            } catch (IOException e) {
+                throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay, e);
+            }
+
+            final ModelNode result = response.get(Util.RESULT);
+            if(!result.isDefined()) {
+                final String descr = Util.getFailureDescription(response);
+                if(descr != null && descr.contains("JBAS014807")) {
+                    // resource doesn't exist
+                    throw new CommandLineException("Overlay " + overlay + " is not linked to any deployment.");
+                }
+                throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
+            }
+            final List<Property> links = result.asPropertyList();
+            if(links.isEmpty()) {
+                return;
+            }
+
+            for(Property link : links) {
+                final String linkName = link.getName();
+                final boolean regexp;
+                final ModelNode linkValue = link.getValue();
+                if(linkValue.has(Util.REGULAR_EXPRESSION)) {
+                    regexp = linkValue.get(Util.REGULAR_EXPRESSION).asBoolean();
+                } else {
+                    regexp = false;
+                }
+                if(regexp) {
+                    final Pattern pattern = Pattern.compile(Util.wildcardToJavaRegex(linkName));
+                    final Iterator<String> i = remainingDeployments.iterator();
+                    while(i.hasNext()) {
+                        final String deployment = i.next();
+                        if(pattern.matcher(deployment).matches()) {
+                            i.remove();
+                            final ModelNode step = new ModelNode();
+                            step.get(Util.ADDRESS).add(Util.DEPLOYMENT, deployment);
+                            step.get(Util.OPERATION).set(Util.REDEPLOY);
+                            steps.add(step);
+                        }
+                    }
+                } else {
+                    if(remainingDeployments.remove(linkName)) {
+                        final ModelNode step = new ModelNode();
+                        step.get(Util.ADDRESS).add(Util.DEPLOYMENT, linkName);
+                        step.get(Util.OPERATION).set(Util.REDEPLOY);
+                        steps.add(step);
+                    }
+                }
+            }
+        }
+
+        if(steps.asList().isEmpty()) {
+            return;
+        }
+
+        try {
+            ctx.printLine("redeploy request: " + redeployOp);
+            final ModelNode result = client.execute(redeployOp);
+            if (!Util.isSuccess(result)) {
+                throw new CommandFormatException(Util.getFailureDescription(result));
+            }
+        } catch (IOException e) {
+            throw new CommandFormatException("Failed to redeploy affected deployments", e);
+        }
+
     }
 
     protected void listLinks(CommandContext ctx) throws CommandLineException {
@@ -464,14 +574,21 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         assertNotPresent(allServerGroups, args);
-        assertNotPresent(wildcards, args);
 
         final String name = this.name.getValue(args, true);
         if(name == null) {
             throw new CommandFormatException(this.name + " is missing value.");
         }
         final String contentStr = content.getValue(args);
-        final String deploymentStr = deployments.getValue(args);
+        String deploymentStr = deployments.getValue(args);
+        final String wildcardsStr = wildcards.getValue(args);
+        if(wildcardsStr != null) {
+            if(deploymentStr == null) {
+                deploymentStr = wildcardsStr;
+            } else {
+                deploymentStr += ',' + wildcardsStr;
+            }
+        }
         final String sgStr = serverGroups.getValue(args);
         final List<String> sg;
         if(sgStr == null) {
@@ -651,10 +768,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             if(contentNames[i].length() == 0) {
                 throw new CommandFormatException("The archive path is missing for the content '" + pair + "'");
             }
-            final String path = pair.substring(equalsIndex + 1);
+            String path = pair.substring(equalsIndex + 1);
             if(path.length() == 0) {
                 throw new CommandFormatException("The filesystem paths is missing for the content '" + pair + "'");
             }
+            path = pathCompleter.translatePath(path);
             final File f = new File(path);
             if(!f.exists()) {
                 throw new CommandFormatException("Content file doesn't exist " + f.getAbsolutePath());
@@ -814,10 +932,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             if(contentNames[i].length() == 0) {
                 throw new CommandFormatException("The archive path is missing for the content '" + pair + "'");
             }
-            final String path = pair.substring(equalsIndex + 1);
+            String path = pair.substring(equalsIndex + 1);
             if(path.length() == 0) {
                 throw new CommandFormatException("The filesystem paths is missing for the content '" + pair + "'");
             }
+            path = pathCompleter.translatePath(path);
             final File f = new File(path);
             if(!f.exists()) {
                 throw new CommandFormatException("Content file doesn't exist " + f.getAbsolutePath());
