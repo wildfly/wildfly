@@ -59,16 +59,14 @@ public class SimpleRunAsClientTestCase {
     private static final String SYMBOLIC_NAME = "test-bundle";
 
     @ArquillianResource
-    public Deployer deployer;
+    Deployer deployer;
 
     @ArquillianResource
     ManagementClient managementClient;
 
     @Deployment
     public static Archive<?> getDeployment() {
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        archive.addClass(SimpleRunAsClientTestCase.class);
-        return archive;
+        return ShrinkWrap.create(JavaArchive.class, "dummy.jar");
     }
 
     @Test

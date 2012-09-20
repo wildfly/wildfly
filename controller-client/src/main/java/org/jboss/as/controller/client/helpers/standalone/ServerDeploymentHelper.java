@@ -39,15 +39,34 @@ public class ServerDeploymentHelper {
         this.deploymentManager = deploymentManager;
     }
 
-    public String deploy(String name, InputStream input) throws ServerDeploymentException {
-        String runtimeName;
+    public String deploy(String runtimeName, InputStream input) throws ServerDeploymentException {
         ServerDeploymentActionResult actionResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(name, input).andDeploy();
+            builder = builder.add(runtimeName, input).andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction action = builder.getLastAction();
-            runtimeName = action.getDeploymentUnitUniqueName();
+            Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
+            ServerDeploymentPlanResult planResult = future.get();
+            actionResult = planResult.getDeploymentActionResult(action.getId());
+        } catch (Exception ex) {
+            throw new ServerDeploymentException(ex);
+        }
+        if (actionResult.getDeploymentException() != null)
+            throw new ServerDeploymentException(actionResult);
+        return runtimeName;
+    }
+
+    public String replace(String runtimeName, String replaceName, InputStream input, boolean removeUndeployed) throws ServerDeploymentException {
+        ServerDeploymentActionResult actionResult;
+        try {
+            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+            builder = builder.add(runtimeName, input).andReplace(replaceName);
+            if (removeUndeployed) {
+                builder = ((ReplaceDeploymentPlanBuilder)builder).andRemoveUndeployed();
+            }
+            DeploymentPlan plan = builder.build();
+            DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
             ServerDeploymentPlanResult planResult = future.get();
             actionResult = planResult.getDeploymentActionResult(action.getId());
