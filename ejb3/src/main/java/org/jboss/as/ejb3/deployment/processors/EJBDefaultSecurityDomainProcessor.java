@@ -36,12 +36,8 @@ import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 
 /**
  * A {@link DeploymentUnitProcessor} which looks for {@link EJBComponentDescription}s in the deployment
- * unit and sets the default security domain name, that's configured at the EJB subsystem level, to each of the EJB
- * component descriptions
- * <p/>
- * Note that this processor is expected to run *before* the annotation and deployment descriptor parsers for
- * the security domain configuration are run on the deployment. That way, those processors can override this
- * default global value that's set by this processor on the EJB components
+ * unit and sets the default security domain name, that's configured at the EJB subsystem level,
+ * {@link EJBComponentDescription#setDefaultSecurityDomain(String) to each of the EJB component descriptions}.
  *
  * @author Jaikiran Pai
  */
@@ -66,7 +62,7 @@ public class EJBDefaultSecurityDomainProcessor implements DeploymentUnitProcesso
         }
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription instanceof EJBComponentDescription) {
-                ((EJBComponentDescription) componentDescription).setSecurityDomain(this.defaultSecurityDomainName);
+                ((EJBComponentDescription) componentDescription).setDefaultSecurityDomain(this.defaultSecurityDomainName);
             }
         }
     }
