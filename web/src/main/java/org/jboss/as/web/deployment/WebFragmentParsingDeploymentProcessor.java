@@ -40,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
@@ -68,7 +69,7 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
             webFragments = new HashMap<String, WebFragmentMetaData>();
             warMetaData.setWebFragmentsMetaData(webFragments);
         }
-        List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
+        List<ResourceRoot> resourceRoots = DeploymentUtils.allResourceRoots(deploymentUnit);
         for (ResourceRoot resourceRoot : resourceRoots) {
             if (resourceRoot.getRoot().getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
                 VirtualFile webFragment = resourceRoot.getRoot().getChild(WEB_FRAGMENT_XML);
