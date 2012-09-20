@@ -39,8 +39,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.configadmin.ConfigAdminManagementOperations;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import org.jboss.as.test.integration.osgi.configadmin.bundle.TestBundleActivator;
-import org.jboss.as.test.integration.osgi.configadmin.bundle.TestBundleActivator2;
+import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfigAdminActivator;
+import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfigAdminActivator2;
 import org.jboss.as.test.osgi.OSGiManagementOperations;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -70,7 +70,7 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
     @Deployment(name = "test-config-admin", testable = false)
     public static JavaArchive createConfigAdminBundle() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-config-admin");
-        archive.addClasses(TestBundleActivator.class);
+        archive.addClasses(ConfigAdminActivator.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -78,7 +78,7 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleVersion(new Version(1, 0, 0));
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(TestBundleActivator.class);
+                builder.addBundleActivator(ConfigAdminActivator.class);
                 builder.addImportPackages(BundleActivator.class, ConfigurationAdmin.class);
                 return builder.openStream();
             }
@@ -89,14 +89,14 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
     @Deployment(name = "test-config-admin2", testable = false)
     public static JavaArchive createTestBundle2() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "test-config-admin2");
-        archive.addClasses(TestBundleActivator2.class);
+        archive.addClasses(ConfigAdminActivator2.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivator(TestBundleActivator2.class);
+                builder.addBundleActivator(ConfigAdminActivator2.class);
                 builder.addImportPackages(BundleActivator.class, ConfigurationAdmin.class, ServiceTracker.class);
                 return builder.openStream();
             }
@@ -119,7 +119,7 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
         File f = File.createTempFile("ConfigAdminManagementTest", ".tmp");
 
         try {
-            String configName = TestBundleActivator.class.getName();
+            String configName = ConfigAdminActivator.class.getName();
             Map<String, String> entries = new HashMap<String, String>();
             entries.put("file", f.getAbsolutePath());
             entries.put("value", "initial");
@@ -156,7 +156,7 @@ public class ConfigAdminManagementTestCase extends AbstractCliTestBase {
      */
     @Test
     public void testConfigAdminWriteFromBundle() throws Exception {
-        String pid = TestBundleActivator2.class.getName();
+        String pid = ConfigAdminActivator2.class.getName();
         assertFalse("Precondition", ConfigAdminManagementOperations.listConfigurations(getControllerClient()).contains(pid));
 
         long bundleId = OSGiManagementOperations.getBundleId(getControllerClient(), "test-config-admin2", new Version(0, 0, 0));
