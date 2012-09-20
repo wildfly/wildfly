@@ -30,6 +30,39 @@ package org.jboss.as.osgi.service;
  */
 interface SystemPackagesIntegration  {
 
+    String[] DEFAULT_SYSTEM_MODULES = new String[] {
+        "javax.api",
+        "javax.inject.api",
+        "org.apache.xerces",
+        "org.jboss.as.configadmin",
+        "org.jboss.as.controller-client",
+        "org.jboss.as.osgi",
+        "org.jboss.logging",
+        "org.jboss.modules",
+        "org.jboss.msc",
+        "org.jboss.osgi.framework",
+        "org.jboss.osgi.repository",
+        "org.jboss.osgi.resolver"
+    };
+
+    String[] DEFAULT_INTEGRATION_PACKAGES = new String[] {
+        "javax.inject",
+        "org.apache.xerces.jaxp",
+        "org.jboss.as.configadmin.service",
+        "org.jboss.as.controller.client",
+        "org.jboss.as.controller.client.helpers",
+        "org.jboss.as.controller.client.helpers.domain",
+        "org.jboss.as.controller.client.helpers.standalone",
+        "org.jboss.logging;version=3.1.0",
+        "org.jboss.osgi.repository;version=1.0",
+        "org.osgi.service.repository;version=1.0"
+    };
+
+    String[] DEFAULT_CAPABILITIES = new String[] {
+        "org.osgi.enterprise",
+        "javax.annotation.api"
+    };
+
     // Keep in sync with module javax.api
     String[] JAVAX_API_PACKAGES = new String[] {
         "javax.accessibility",

@@ -103,15 +103,15 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, verificationHandler);
         final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
 
-        // Create the framework activator
-        FrameworkActivator.create(serviceTarget, activation == Activation.LAZY);
-
         // Collect the subsystem extensions
         final List<SubsystemExtension> extensions = new ArrayList<SubsystemExtension>();
         final Iterator<SubsystemExtension> services = ServiceLoader.load(SubsystemExtension.class, getClass().getClassLoader()).iterator();
         while(services.hasNext()) {
             extensions.add(services.next());
         }
+
+        // Create the framework activator
+        FrameworkActivator.create(serviceTarget, activation == Activation.LAZY);
 
         context.addStep(new OperationStepHandler() {
             @Override

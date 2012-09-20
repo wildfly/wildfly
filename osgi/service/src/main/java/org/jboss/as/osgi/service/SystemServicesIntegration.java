@@ -24,9 +24,6 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
-import static org.jboss.osgi.repository.XRepository.MODULE_IDENTITY_NAMESPACE;
-
-import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.Dictionary;
 import java.util.HashSet;
@@ -40,33 +37,26 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.SubsystemExtension;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.SystemServicesPlugin;
-import org.jboss.osgi.repository.RepositoryStorage;
-import org.jboss.osgi.repository.RepositoryStorageException;
-import org.jboss.osgi.repository.RepositoryStorageFactory;
 import org.jboss.osgi.repository.XRepository;
-import org.jboss.osgi.repository.XRepositoryBuilder;
-import org.jboss.osgi.repository.core.FileBasedRepositoryStorage;
-import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -77,10 +67,10 @@ import org.osgi.framework.BundleContext;
  */
 final class SystemServicesIntegration implements Service<SystemServicesPlugin>, SystemServicesPlugin, IntegrationService<SystemServicesPlugin> {
 
-    private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<BundleContext> injectedBundleContext = new InjectedValue<BundleContext>();
+    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
     private ServiceContainer serviceContainer;
@@ -98,16 +88,15 @@ final class SystemServicesIntegration implements Service<SystemServicesPlugin>, 
 
     @Override
     public ServiceController<SystemServicesPlugin> install(ServiceTarget serviceTarget) {
-        ServiceBuilder<SystemServicesPlugin> builder = serviceTarget.addService(getServiceName(), this);
+        ServiceBuilder<SystemServicesPlugin> builder = serviceTarget.addService(SYSTEM_SERVICES_PLUGIN, this);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedModelController);
-        builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedServerEnvironment);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
-        builder.addDependency(Services.FRAMEWORK_CREATE);
+        builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
 
         // Subsystem extension dependencies
         for(SubsystemExtension extension : extensions) {
-            extension.configureSystemServiceDependencies(builder);
+            extension.configureServiceDependencies(SYSTEM_SERVICES_PLUGIN, builder);
         }
 
         builder.setInitialMode(Mode.ON_DEMAND);
@@ -166,30 +155,6 @@ final class SystemServicesIntegration implements Service<SystemServicesPlugin>, 
         ModelController modelController = injectedModelController.getValue();
         ModelControllerClient client = modelController.createClient(controllerThreadExecutor);
         syscontext.registerService(ModelControllerClient.class.getName(), client, null);
-
-        // Register the {@link XRepository} service
-        final ServerEnvironment serverenv = injectedServerEnvironment.getValue();
-        final File storageDir = new File(serverenv.getServerDataDir().getPath() + File.separator + "repository");
-        RepositoryStorageFactory factory = new RepositoryStorageFactory() {
-            @Override
-            public RepositoryStorage create(XRepository repository) {
-                return new FileBasedRepositoryStorage(repository, storageDir) {
-                    @Override
-                    public XResource addResource(XResource res) throws RepositoryStorageException {
-                        // Do not add modules to repository storage
-                        if (res.getCapabilities(MODULE_IDENTITY_NAMESPACE).isEmpty()) {
-                            return super.addResource(res);
-                        } else {
-                            return res;
-                        }
-                    }
-                };
-            }
-        };
-        XRepositoryBuilder builder = XRepositoryBuilder.create(syscontext);
-        builder.addRepository(new ModuleIdentityRepository(serverenv));
-        builder.addRepositoryStorage(factory);
-        builder.addDefaultRepositories();
 
         // Register the {@link ServiceContainer} as OSGi service
         syscontext.registerService(ServiceContainer.class.getName(), serviceContainer, null);
