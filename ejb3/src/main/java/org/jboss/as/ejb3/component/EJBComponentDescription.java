@@ -113,6 +113,11 @@ public abstract class EJBComponentDescription extends ComponentDescription {
     private String securityDomain;
 
     /**
+     * The default security domain to use if no explicit security domain is configured for this bean
+     */
+    private String defaultSecurityDomain;
+
+    /**
      * The @DeclareRoles (a.k.a security-role-ref) for the bean
      */
     private final Set<String> declaredRoles = new HashSet<String>();
@@ -532,8 +537,31 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.securityDomain = securityDomain;
     }
 
+    public void setDefaultSecurityDomain(final String defaultSecurityDomain) {
+        this.defaultSecurityDomain = defaultSecurityDomain;
+    }
+
+    /**
+     * Returns the security domain that is applicable for this bean. In the absence of any explicit
+     * configuration of a security domain for this bean, this method returns the default security domain
+     * (if any) that's configured for all beans in the EJB3 subsystem
+     * @return
+     */
     public String getSecurityDomain() {
+        if (this.securityDomain == null) {
+            return this.defaultSecurityDomain;
+        }
         return this.securityDomain;
+    }
+
+    /**
+     * Returns true if this bean has been explicitly configured with a security domain via the
+     * {@link org.jboss.ejb3.annotation.SecurityDomain} annotation or via the jboss-ejb3.xml deployment descriptor.
+     * Else returns false.
+     * @return
+     */
+    public boolean isExplicitSecurityDomainConfigured() {
+        return this.securityDomain != null;
     }
 
     public SecurityRolesMetaData getSecurityRoles() {
