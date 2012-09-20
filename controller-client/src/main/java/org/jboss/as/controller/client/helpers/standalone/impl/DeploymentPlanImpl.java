@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.protocol.StreamUtils;
@@ -43,14 +44,16 @@ public class DeploymentPlanImpl implements DeploymentPlan {
     private static final long serialVersionUID = -119621318892470668L;
     private final UUID uuid = UUID.randomUUID();
     private final List<DeploymentActionImpl> deploymentActions = new ArrayList<DeploymentActionImpl>();
+    private final DeploymentMetadata metadata;
     private final boolean globalRollback;
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
 
-    DeploymentPlanImpl(List<DeploymentActionImpl> actions, boolean globalRollback, boolean shutdown, long gracefulTimeout) {
+    DeploymentPlanImpl(List<DeploymentActionImpl> actions, DeploymentMetadata userdata, boolean globalRollback, boolean shutdown, long gracefulTimeout) {
         if (actions == null)
             throw MESSAGES.nullVar("actions");
         this.deploymentActions.addAll(actions);
+        this.metadata = userdata;
         this.globalRollback = globalRollback;
         this.shutdown = shutdown;
         this.gracefulShutdownPeriod = gracefulTimeout;
@@ -84,6 +87,11 @@ public class DeploymentPlanImpl implements DeploymentPlan {
     @Override
     public boolean isShutdown() {
         return shutdown;
+    }
+
+    @Override
+    public DeploymentMetadata getMetadata() {
+        return metadata;
     }
 
     /**

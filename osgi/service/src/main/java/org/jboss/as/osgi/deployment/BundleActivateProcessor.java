@@ -55,7 +55,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
                 bundle.start(Bundle.START_ACTIVATION_POLICY);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
             } catch (BundleException ex) {
-                LOGGER.errorCannotStartBundle(ex, bundle);
+                throw MESSAGES.cannotStartBundle(ex, bundle);
             }
         }
     }

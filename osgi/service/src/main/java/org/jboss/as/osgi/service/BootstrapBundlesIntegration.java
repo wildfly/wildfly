@@ -38,6 +38,7 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.as.server.ServerEnvironment;
@@ -77,7 +78,6 @@ import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.osgi.vfs.AbstractVFS;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -100,6 +100,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     private final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
+    private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
     private File bundlesDir;
 
     BootstrapBundlesIntegration() {
@@ -116,7 +117,8 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     @Override
     protected void addServiceDependencies(ServiceBuilder<Void> builder) {
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedServerEnvironment);
-        builder.addDependency(SubsystemState.SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
+        builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
+        builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, injectedPackageAdmin);
         builder.addDependency(IntegrationService.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, injectedStorageProvider);
@@ -138,7 +140,9 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                 throw MESSAGES.illegalStateCannotFindBundleDir(bundlesDir);
 
             final List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
-            configcaps.add(new OSGiCapability("org.osgi.enterprise", null));
+            for (String capspec : SystemPackagesIntegration.DEFAULT_CAPABILITIES) {
+                configcaps.add(new OSGiCapability(capspec, null));
+            }
             configcaps.addAll(injectedSubsystemState.getValue().getCapabilities());
             Iterator<OSGiCapability> iterator = configcaps.iterator();
             while (iterator.hasNext()) {
@@ -152,7 +156,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                 deployments.add(dep);
             }
         } catch (Exception ex) {
-            throw MESSAGES.startFailedToProcessInitialCapabilites(ex);
+            throw MESSAGES.failedToProcessInitialCapabilites(ex);
         }
 
         // Install the bundles from the given locations
@@ -223,8 +227,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
         // Try the identifier as MavenCoordinates
         else if (isValidMavenIdentifier(identifier)) {
             LOGGER.tracef("Installing initial maven capability: %s", identifier);
-            ServiceReference sref = context.getServiceReference(XRepository.class.getName());
-            XRepository repository = (XRepository) context.getService(sref);
+            XRepository repository = injectedRepository.getValue();
             MavenCoordinates mavenId = MavenCoordinates.parse(identifier);
             Requirement req = XRequirementBuilder.create(mavenId).getRequirement();
             Collection<Capability> caps = repository.findProviders(req);

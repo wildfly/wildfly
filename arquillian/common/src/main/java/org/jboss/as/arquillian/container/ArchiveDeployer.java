@@ -18,6 +18,7 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -43,11 +44,15 @@ public class ArchiveDeployer {
     }
 
     public String deploy(Archive<?> archive) throws DeploymentException {
-        return deployInternal(archive);
+        return deployInternal(archive, null);
     }
 
-    public String deploy(String name, InputStream input) throws DeploymentException {
-        return deployInternal(name, input);
+    public String deploy(Archive<?> archive, Map<String, Object> userdata) throws DeploymentException {
+        return deployInternal(archive, userdata);
+    }
+
+    public String deploy(String name, InputStream input, Map<String, Object> userdata) throws DeploymentException {
+        return deployInternal(name, input, userdata);
     }
 
     public void undeploy(String runtimeName) throws DeploymentException {
@@ -58,10 +63,10 @@ public class ArchiveDeployer {
         }
     }
 
-    private String deployInternal(Archive<?> archive) throws DeploymentException {
+    private String deployInternal(Archive<?> archive, Map<String, Object> metadata) throws DeploymentException {
         final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
         try {
-            return deployInternal(archive.getName(), input);
+            return deployInternal(archive.getName(), input, metadata);
         } finally {
             if (input != null)
                 try {
@@ -72,12 +77,12 @@ public class ArchiveDeployer {
         }
     }
 
-    private String deployInternal(String name, InputStream input) throws DeploymentException {
+    private String deployInternal(String name, InputStream input, Map<String, Object> userdata) throws DeploymentException {
         try {
-            return deployer.deploy(name, input);
+            return deployer.deploy(name, input, userdata);
         } catch (Exception ex) {
             Throwable rootCause = ex.getCause();
-            while (null != rootCause && rootCause.getCause() != null) {
+            while (rootCause != null && rootCause.getCause() != null) {
                 rootCause = rootCause.getCause();
             }
             throw new DeploymentException("Cannot deploy: " + name, rootCause);

@@ -24,19 +24,18 @@ package org.jboss.as.controller.operations;
 
 import java.util.List;
 
-import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.AttachmentKey;
+import org.jboss.as.controller.client.DeploymentMetadata;
 
 /**
  * @author Stuart Douglas
  */
 public class OperationAttachments {
 
-
-    public static OperationContext.AttachmentKey<List<DomainOperationTransformer>> SLAVE_SERVER_OPERATION_TRANSFORMERS = OperationContext.AttachmentKey.create(List.class);
-
+    public static final AttachmentKey<List<DomainOperationTransformer>> SLAVE_SERVER_OPERATION_TRANSFORMERS = AttachmentKey.create(List.class);
+    public static final AttachmentKey<DeploymentMetadata> DEPLOYMENT_METADATA = AttachmentKey.create(DeploymentMetadata.class);
 
     private OperationAttachments() {
-
     }
 
 }

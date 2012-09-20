@@ -17,6 +17,7 @@
 package org.jboss.as.controller.client.helpers.standalone;
 
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -39,15 +40,50 @@ public class ServerDeploymentHelper {
         this.deploymentManager = deploymentManager;
     }
 
-    public String deploy(String name, InputStream input) throws ServerDeploymentException {
-        String runtimeName;
+    public String deploy(String runtimeName, InputStream input) throws ServerDeploymentException {
+        return this.deploy(runtimeName, input, null);
+    }
+
+    public String deploy(String runtimeName, InputStream input, Map<String, Object> userdata) throws ServerDeploymentException {
+        return this.deploy(runtimeName, input, userdata, true);
+    }
+
+    public String deploy(String runtimeName, InputStream input, boolean start) throws ServerDeploymentException {
+        return this.deploy(runtimeName, input, null, start);
+    }
+
+    public String deploy(String runtimeName, InputStream input, Map<String, Object> userdata, boolean start) throws ServerDeploymentException {
         ServerDeploymentActionResult actionResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(name, input).andDeploy();
+            AddDeploymentPlanBuilder addBuilder = builder.add(runtimeName, input).addMetadata(userdata);
+            if (start == false) {
+                addBuilder = addBuilder.andNoStart();
+            }
+            builder = addBuilder.andDeploy();
             DeploymentPlan plan = builder.build();
             DeploymentAction action = builder.getLastAction();
-            runtimeName = action.getDeploymentUnitUniqueName();
+            Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
+            ServerDeploymentPlanResult planResult = future.get();
+            actionResult = planResult.getDeploymentActionResult(action.getId());
+        } catch (Exception ex) {
+            throw new ServerDeploymentException(ex);
+        }
+        if (actionResult.getDeploymentException() != null)
+            throw new ServerDeploymentException(actionResult);
+        return runtimeName;
+    }
+
+    public String replace(String runtimeName, String replaceName, InputStream input, boolean removeUndeployed) throws ServerDeploymentException {
+        ServerDeploymentActionResult actionResult;
+        try {
+            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
+            builder = builder.add(runtimeName, input).andReplace(replaceName);
+            if (removeUndeployed) {
+                builder = ((ReplaceDeploymentPlanBuilder)builder).andRemoveUndeployed();
+            }
+            DeploymentPlan plan = builder.build();
+            DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);
             ServerDeploymentPlanResult planResult = future.get();
             actionResult = planResult.getDeploymentActionResult(action.getId());
