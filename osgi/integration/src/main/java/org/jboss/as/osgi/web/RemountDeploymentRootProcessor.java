@@ -37,7 +37,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.MountExplodedMarker;
 import org.jboss.as.server.deployment.MountType;
-import org.jboss.as.server.deployment.module.ManifestAttachmentProcessor;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -80,9 +79,6 @@ public class RemountDeploymentRootProcessor implements DeploymentUnitProcessor {
         Closeable handle = resourceRoot.getMountHandle();
         VFSUtils.safeClose(handle);
 
-        depUnit.removeAttachment(Attachments.MANIFEST);
-        depUnit.removeAttachment(Attachments.OSGI_MANIFEST);
-
         VirtualFile deploymentContents = depUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS);
         DeploymentMountProvider deploymentMountProvider = depUnit.getAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY);
         VirtualFile deploymentRoot = VFS.getChild("content/" + deploymentName);
@@ -97,12 +93,10 @@ public class RemountDeploymentRootProcessor implements DeploymentUnitProcessor {
         }
 
         resourceRoot = new ResourceRoot(deploymentRoot, mountHandle);
+        resourceRoot.putAttachment(Attachments.MANIFEST, manifest);
         ModuleRootMarker.mark(resourceRoot);
-        depUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
 
-        manifest = ManifestAttachmentProcessor.getManifest(resourceRoot);
-        depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
-        depUnit.putAttachment(Attachments.MANIFEST, manifest);
+        depUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
     }
 
     public void undeploy(final DeploymentUnit depUnit) {
