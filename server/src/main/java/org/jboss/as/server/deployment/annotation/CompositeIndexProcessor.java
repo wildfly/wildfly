@@ -26,6 +26,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -79,7 +80,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
+        final Set<ResourceRoot> allResourceRoots = new LinkedHashSet<ResourceRoot>();
         final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);
         for (ResourceRoot resourceRoot : resourceRoots) {
             // do not add child sub deployments to the composite index
@@ -97,7 +98,6 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         allResourceRoots.addAll(handleClassPathItems(deploymentUnit));
 
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-
         if (ModuleRootMarker.isModuleRoot(deploymentRoot)) {
             allResourceRoots.add(deploymentRoot);
         }
