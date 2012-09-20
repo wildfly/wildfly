@@ -44,7 +44,9 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.core.model.test.KnownIssuesValidationConfiguration;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
+import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.as.threads.ThreadsExtension;
@@ -69,11 +71,11 @@ public class ValidateModelTestCase {
 
         removeSubsystems(description);
 
-        KnownIssuesValidationConfiguration.trimDescription(description);
+        ValidationConfiguration config = KnownIssuesValidationConfiguration.createAndFixupModel(TestModelType.STANDALONE, description);
 
         System.out.println(description);
 
-        ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(new ModelNode().setEmptyList(), description, KnownIssuesValidationConfiguration.createForStandalone());
+        ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(new ModelNode().setEmptyList(), description, config);
         List<ValidationFailure> failures = validator.validateResources();
 
         if (failures.size() > 0) {

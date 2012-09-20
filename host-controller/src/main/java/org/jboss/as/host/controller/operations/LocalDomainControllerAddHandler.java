@@ -126,15 +126,6 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
                 contentRepository, fileRepository, domainController, extensionRegistry, pathManager);
     }
 
-
-    //Done by DomainModelControllerService
-//    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-//                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-//        final ModelNode hostModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-//        final ServiceTarget serviceTarget = context.getServiceTarget();
-//        newControllers.addAll(installLocalDomainController(hostModel, serviceTarget, false, verificationHandler));
-//    }
-
     @Override
     public ModelNode getModelDescription(final Locale locale) {
         return HostRootDescription.getLocalDomainControllerAdd(locale);

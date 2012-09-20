@@ -21,6 +21,8 @@
 */
 package org.jboss.as.core.model.test.shipped;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import junit.framework.Assert;
 
@@ -60,7 +62,15 @@ public class ShippedConfigurationsModelTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testHostXml() throws Exception {
-        testConfiguration(TestModelType.HOST, "host.xml", null, null);
+        testConfiguration(TestModelType.HOST, "host.xml", null, new ModelWriteSanitizer() {
+            @Override
+            public ModelNode sanitize(ModelNode model) {
+                //The write-local-domain-controller operation gets removed on boot by TestModelControllerService
+                //so add that resource here since we're using that from the xml
+                model.get(DOMAIN_CONTROLLER, LOCAL).setEmptyObject();
+                return model;
+            }
+        });
     }
 
     @Test
@@ -69,15 +79,16 @@ public class ShippedConfigurationsModelTestCase extends AbstractCoreModelTest {
     }
 
     private void testConfiguration(TestModelType type, String xmlResource, ModelInitializer initializer, ModelWriteSanitizer sanitizer) throws Exception {
+
         KernelServices kernelServices = createKernelServicesBuilder(type)
                 .setXmlResource(xmlResource)
+                .validateDescription()
                 .setModelInitializer(initializer, sanitizer)
                 .build();
-            Assert.assertTrue(kernelServices.isSuccessfulBoot());
+        Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
-            String marshalled = kernelServices.getPersistedSubsystemXml();
-            ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), xmlResource), marshalled);
-
+        String marshalled = kernelServices.getPersistedSubsystemXml();
+        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), xmlResource), marshalled);
     }
 
 }

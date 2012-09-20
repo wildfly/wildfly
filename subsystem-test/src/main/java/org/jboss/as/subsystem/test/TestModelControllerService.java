@@ -113,29 +113,29 @@ class TestModelControllerService extends ModelTestModelControllerService {
     }
 
     ServerEnvironment getServerEnvironment() {
-            Properties props = new Properties();
-            File home = new File("target/jbossas");
-            delete(home);
-            home.mkdir();
-            props.put(ServerEnvironment.HOME_DIR, home.getAbsolutePath());
+        Properties props = new Properties();
+        File home = new File("target/jbossas");
+        delete(home);
+        home.mkdir();
+        props.put(ServerEnvironment.HOME_DIR, home.getAbsolutePath());
 
-            File standalone = new File(home, "standalone");
-            standalone.mkdir();
-            props.put(ServerEnvironment.SERVER_BASE_DIR, standalone.getAbsolutePath());
+        File standalone = new File(home, "standalone");
+        standalone.mkdir();
+        props.put(ServerEnvironment.SERVER_BASE_DIR, standalone.getAbsolutePath());
 
-            File configuration = new File(standalone, "configuration");
-            configuration.mkdir();
-            props.put(ServerEnvironment.SERVER_CONFIG_DIR, configuration.getAbsolutePath());
+        File configuration = new File(standalone, "configuration");
+        configuration.mkdir();
+        props.put(ServerEnvironment.SERVER_CONFIG_DIR, configuration.getAbsolutePath());
 
-            File xml = new File(configuration, "standalone.xml");
-            try {
-                xml.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            props.put(ServerEnvironment.JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
+        File xml = new File(configuration, "standalone.xml");
+        try {
+            xml.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        props.put(ServerEnvironment.JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
 
-            return new ServerEnvironment(null, props, new HashMap<String, String>(), "standalone.xml", null, LaunchType.STANDALONE, runningModeControl.getRunningMode(), null);
+        return new ServerEnvironment(null, props, new HashMap<String, String>(), "standalone.xml", null, LaunchType.STANDALONE, runningModeControl.getRunningMode(), null);
     }
 
     private static class MockContentRepository implements ContentRepository {

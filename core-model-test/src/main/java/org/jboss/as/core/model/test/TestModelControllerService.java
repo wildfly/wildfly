@@ -21,11 +21,14 @@
 */
 package org.jboss.as.core.model.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -57,8 +60,8 @@ import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.HostModelUtil.HostModelRegistrar;
 import org.jboss.as.host.controller.HostPathManagerService;
 import org.jboss.as.host.controller.HostRunningModeControl;
-import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.OperationValidation;
@@ -107,6 +110,18 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         if (type == TestModelType.STANDALONE) {
             initializer = new ServerInitializer();
+        } else if (type == TestModelType.HOST) {
+            //Remove the write-local-domain-controller operation since we already simulate that here
+            for (Iterator<ModelNode> it = persister.getBootOperations().iterator() ; it.hasNext() ; ) {
+                ModelNode op = it.next();
+                if (op.get(OP).asString().equals("write-local-domain-controller")) {
+                    System.out.println("WARNING: Test framework is removing the 'write-local-domain-controller' operation. If you are comparing xml results use a " +
+                             "ModelWriteSanitizer to add the \"domain-controller\" => {\"local\" => {}} part (See ShippedConfigurationsModelTestCase.testHostXml() for an example)");
+                    it.remove();
+                    break;
+                }
+            }
+            initializer = new HostInitializer();
         }
     }
 
@@ -115,8 +130,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
             TestModelType type, ModelInitializer modelInitializer, DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
         super(processType, runningModeControl, null, persister, validateOps, rootDescriptionProvider, processState);
-        if (type == TestModelType.STANDALONE) {
-            throw new IllegalStateException("Should not be called for standalone");
+        if (type == TestModelType.STANDALONE || type == TestModelType.HOST) {
+            throw new IllegalStateException("Should not be called for standalone or host");
         }
         this.type = type;
         this.runningModeControl = runningModeControl;
@@ -127,11 +142,10 @@ class TestModelControllerService extends ModelTestModelControllerService {
     }
 
     static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, TestModelType type, ModelInitializer modelInitializer) {
-        if (type == TestModelType.STANDALONE) {
-            return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(), new ControlledProcessState(true));
+        if (type == TestModelType.DOMAIN) {
+            return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, DomainDescriptionProviders.ROOT_PROVIDER, new ControlledProcessState(true));
         }
-        DescriptionProvider root = type == TestModelType.HOST ? HostDescriptionProviders.HOST_ROOT_PROVIDER : DomainDescriptionProviders.ROOT_PROVIDER;
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, root, new ControlledProcessState(true));
+        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(), new ControlledProcessState(true));
     }
 
     InjectedValue<ContentRepository> getContentRepositoryInjector(){
@@ -155,39 +169,40 @@ class TestModelControllerService extends ModelTestModelControllerService {
             initializer.initCoreModel(rootResource, rootRegistration);
 
         } else if (type == TestModelType.HOST){
-            final String hostName = "master";
-            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
-            final HostControllerEnvironment env = createHostControllerEnvironment();
-            final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
-            final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
-            final HostControllerConfigurationPersister persister = new HostControllerConfigurationPersister(env, info, Executors.newCachedThreadPool(), extensionRegistry);
-            HostModelUtil.createRootRegistry(
-                    rootRegistration,
-                    env,
-                    ignoredRegistry,
-                    new HostModelRegistrar() {
-                        @Override
-                        public void registerHostModel(String hostName, ManagementResourceRegistration root) {
-                        }
-                    });
-
-            HostModelUtil.createHostRegistry(
-                    hostName,
-                    rootRegistration,
-                    persister,
-                    env,
-                    (HostRunningModeControl)runningModeControl,
-                    createHostFileRepository(),
-                    info,
-                    null /*serverInventory*/,
-                    null /*remoteFileRepository*/,
-                    injectedContentRepository.getValue(),
-                    createDomainController(env, info),
-                    extensionRegistry,
-                    null /*vaultReader*/,
-                    ignoredRegistry,
-                    processState,
-                    pathManagerService);
+            initializer.initCoreModel(rootResource, rootRegistration);
+//            final String hostName = "master";
+//            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
+//            final HostControllerEnvironment env = createHostControllerEnvironment();
+//            final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
+//            final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
+//            final HostControllerConfigurationPersister persister = new HostControllerConfigurationPersister(env, info, Executors.newCachedThreadPool(), extensionRegistry);
+//            HostModelUtil.createRootRegistry(
+//                    rootRegistration,
+//                    env,
+//                    ignoredRegistry,
+//                    new HostModelRegistrar() {
+//                        @Override
+//                        public void registerHostModel(String hostName, ManagementResourceRegistration rootRegistration) {
+//                        }
+//                    });
+//
+//            HostModelUtil.createHostRegistry(
+//                    hostName,
+//                    rootRegistration,
+//                    persister,
+//                    env,
+//                    (HostRunningModeControl)runningModeControl,
+//                    createHostFileRepository(),
+//                    info,
+//                    null /*serverInventory*/,
+//                    null /*remoteFileRepository*/,
+//                    injectedContentRepository.getValue(),
+//                    createDomainController(env, info),
+//                    extensionRegistry,
+//                    null /*vaultReader*/,
+//                    ignoredRegistry,
+//                    processState,
+//                    pathManagerService);
         } else if (type == TestModelType.DOMAIN){
             final HostControllerEnvironment env = createHostControllerEnvironment();
             final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
@@ -456,5 +471,70 @@ class TestModelControllerService extends ModelTestModelControllerService {
             rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
             pathManagerService.addPathManagerResources(rootResource);
         }
+    }
+
+    private class HostInitializer implements Initializer {
+        final String hostName = "master";
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
+        final HostControllerEnvironment env = createHostControllerEnvironment();
+        final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
+        final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
+        final HostControllerConfigurationPersister persister = new HostControllerConfigurationPersister(env, info, Executors.newCachedThreadPool(), extensionRegistry);
+        final HostFileRepository hostFileRepository = createHostFileRepository();
+        final DomainController domainController = createDomainController(env, info);
+
+        @Override
+        public void setRootResourceDefinitionDelegate() {
+            rootResourceDefinition.setDelegate(
+                    new HostResourceDefinition(
+                            hostName,
+                            persister,
+                            env,
+                            (HostRunningModeControl)runningModeControl,
+                            hostFileRepository,
+                            info,
+                            null /*serverInventory*/,
+                            null /*remoteFileRepository*/,
+                            injectedContentRepository.getValue(),
+                            domainController,
+                            extensionRegistry,
+                            null /*vaultReader*/,
+                            ignoredRegistry,
+                            processState,
+                            pathManagerService));
+        }
+
+        @Override
+        public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+            HostModelUtil.createRootRegistry(
+                    rootRegistration,
+                    env,
+                    ignoredRegistry,
+                    new HostModelRegistrar() {
+                        @Override
+                        public void registerHostModel(String hostName, ManagementResourceRegistration rootRegistration) {
+                        }
+                    });
+
+            HostModelUtil.createHostRegistry(
+                    hostName,
+                    rootRegistration,
+                    persister,
+                    env,
+                    (HostRunningModeControl)runningModeControl,
+                    hostFileRepository,
+                    info,
+                    null /*serverInventory*/,
+                    null /*remoteFileRepository*/,
+                    injectedContentRepository.getValue(),
+                    domainController,
+                    extensionRegistry,
+                    null /*vaultReader*/,
+                    ignoredRegistry,
+                    processState,
+                    pathManagerService);
+
+        }
+
     }
 }

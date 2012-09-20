@@ -82,6 +82,7 @@ import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.dmr.ModelNode;
@@ -342,6 +343,20 @@ public class HostRootDescription {
         return result;
     }
 
+
+    public static ModelNode getLocalDomainControllerRemove(Locale locale) {
+        final ResourceBundle bundle = getResourceBundle(locale);
+
+        final ModelNode result = new ModelNode();
+
+        result.get(OPERATION_NAME).set(LocalDomainControllerRemoveHandler.OPERATION_NAME);
+        result.get(DESCRIPTION).set(bundle.getString("host.domain-controller.local.remove"));
+
+        result.get(REQUEST_PROPERTIES).setEmptyObject();
+        result.get(REPLY_PROPERTIES).setEmptyObject();
+        return result;
+    }
+
     public static ModelNode getRemoteDomainControllerAdd(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
@@ -355,7 +370,7 @@ public class HostRootDescription {
         result.get(REQUEST_PROPERTIES, HOST, REQUIRED).set(true);
         result.get(REQUEST_PROPERTIES, HOST, EXPRESSIONS_ALLOWED).set(true);
         result.get(REQUEST_PROPERTIES, HOST, MIN_LENGTH).set(1);
-        result.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.STRING);
+        result.get(REQUEST_PROPERTIES, PORT, TYPE).set(ModelType.INT);
         result.get(REQUEST_PROPERTIES, PORT, DESCRIPTION).set(bundle.getString("host.domain-controller.remote.port"));
         result.get(REQUEST_PROPERTIES, PORT, REQUIRED).set(true);
         result.get(REQUEST_PROPERTIES, PORT, EXPRESSIONS_ALLOWED).set(true);

@@ -4,17 +4,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 
 import java.util.EnumSet;
 
-import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
@@ -23,12 +24,24 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.DirectoryGrouping;
+import org.jboss.as.host.controller.HostControllerConfigurationPersister;
+import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
+import org.jboss.as.host.controller.HostRunningModeControl;
+import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
+import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
+import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
+import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -123,8 +136,27 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(false)
             .build();
 
-    public HostResourceDefinition(String hostName) {
+    private final HostControllerEnvironment environment;
+    private final HostRunningModeControl runningModeControl;
+    private final ControlledProcessState processState;
+
+    public HostResourceDefinition(final String hostName,
+            final HostControllerConfigurationPersister configurationPersister,
+            final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
+            final HostFileRepository localFileRepository,
+            final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
+            final HostFileRepository remoteFileRepository,
+            final ContentRepository contentRepository,
+            final DomainController domainController,
+            final ExtensionRegistry extensionRegistry,
+            final AbstractVaultReader vaultReader,
+            final IgnoredDomainResourceRegistry ignoredRegistry,
+            final ControlledProcessState processState,
+            final PathManagerService pathManager) {
         super(PathElement.pathElement(HOST, hostName), HostModelUtil.getResourceDescriptionResolver());
+        this.environment = environment;
+        this.runningModeControl = runningModeControl;
+        this.processState = processState;
     }
 
     @Override
@@ -143,6 +175,10 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         hostRegistration.registerReadOnlyAttribute(DOMAIN_CONTROLLER, null);
         hostRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.NAMESPACES, null);
         hostRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.SCHEMA_LOCATIONS, null);
+        hostRegistration.registerReadWriteAttribute(HostResourceDefinition.NAME, environment.getProcessNameReadHandler(), environment.getProcessNameWriteHandler());
+        hostRegistration.registerReadOnlyAttribute(HostResourceDefinition.HOST_STATE, new ProcessStateAttributeHandler(processState));
+        hostRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.RUNNING_MODE, new RunningModeReadHandler(runningModeControl));
+
 
     }
 

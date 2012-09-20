@@ -38,7 +38,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
-import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
@@ -81,11 +80,9 @@ import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
-import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 
@@ -154,19 +151,37 @@ public class HostModelUtil {
                                           final PathManagerService pathManager) {
         // Add of the host itself
         //ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST, hostName), HostDescriptionProviders.HOST_ROOT_PROVIDER);
-        ManagementResourceRegistration hostRegistration = root.registerSubModel(new HostResourceDefinition(hostName));
+        ManagementResourceRegistration hostRegistration = root.registerSubModel(
+                new HostResourceDefinition(hostName, configurationPersister,
+                        environment, runningModeControl, localFileRepository,
+                        hostControllerInfo, serverInventory, remoteFileRepository,
+                        contentRepository, domainController, extensionRegistry,
+                        vaultReader, ignoredRegistry, processState, pathManager));
 
+        createHostRegistry(hostName, root, hostRegistration, configurationPersister, environment, runningModeControl, localFileRepository, hostControllerInfo,
+                serverInventory, remoteFileRepository, contentRepository, domainController, extensionRegistry, vaultReader, ignoredRegistry, processState, pathManager);
+    }
+
+    public static void createHostRegistry(final String hostName,
+            final ManagementResourceRegistration rootRegistration,
+            final ManagementResourceRegistration hostRegistration, final HostControllerConfigurationPersister configurationPersister,
+            final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
+            final HostFileRepository localFileRepository,
+            final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
+            final HostFileRepository remoteFileRepository,
+            final ContentRepository contentRepository,
+            final DomainController domainController,
+            final ExtensionRegistry extensionRegistry,
+            final AbstractVaultReader vaultReader,
+            final IgnoredDomainResourceRegistry ignoredRegistry,
+            final ControlledProcessState processState,
+            final PathManagerService pathManager) {
         // Global operations
         EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
 
         // Host root resource operations
         XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
         hostRegistration.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, flags);
-
-
-        hostRegistration.registerReadWriteAttribute(HostResourceDefinition.NAME, environment.getProcessNameReadHandler(), environment.getProcessNameWriteHandler());
-        hostRegistration.registerReadOnlyAttribute(HostResourceDefinition.HOST_STATE, new ProcessStateAttributeHandler(processState));
-        hostRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.RUNNING_MODE, new RunningModeReadHandler(runningModeControl));
 
 
         StartServersHandler ssh = new StartServersHandler(environment, serverInventory, runningModeControl);
@@ -186,11 +201,11 @@ public class HostModelUtil {
         ValidateOperationHandler validateOperationHandler = hostControllerInfo.isMasterDomainController() ? ValidateOperationHandler.INSTANCE : ValidateOperationHandler.SLAVE_HC_INSTANCE;
         hostRegistration.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, validateOperationHandler, validateOperationHandler, false, EntryType.PRIVATE, EnumSet.of(Flag.READ_ONLY));
 
-        LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,
+        LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(rootRegistration, hostControllerInfo,
                 configurationPersister, localFileRepository, contentRepository, domainController, extensionRegistry, pathManager);
         hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
-        RemoteDomainControllerAddHandler remoteDcAddHandler = new RemoteDomainControllerAddHandler(root, hostControllerInfo,
+        RemoteDomainControllerAddHandler remoteDcAddHandler = new RemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo,
                 configurationPersister, contentRepository, remoteFileRepository, extensionRegistry, ignoredRegistry, pathManager);
         hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         hostRegistration.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);
