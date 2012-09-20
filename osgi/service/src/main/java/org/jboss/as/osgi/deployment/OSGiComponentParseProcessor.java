@@ -51,8 +51,10 @@ public class OSGiComponentParseProcessor implements DeploymentUnitProcessor {
         String componentClass = metadata.getBundleActivator();
         String componentName = BundleActivator.class.getSimpleName();
         EEModuleDescription moduleDescription = depUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        ComponentDescription componentDescription = new ComponentDescription(componentName, componentClass, moduleDescription, depUnit.getServiceName());
-        moduleDescription.addComponent(componentDescription);
+        if (moduleDescription != null) {
+            ComponentDescription componentDescription = new ComponentDescription(componentName, componentClass, moduleDescription, depUnit.getServiceName());
+            moduleDescription.addComponent(componentDescription);
+        }
     }
 
     @Override
