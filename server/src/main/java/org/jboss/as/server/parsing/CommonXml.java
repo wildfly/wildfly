@@ -417,7 +417,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             if (setBoottime) {
                                 throw ParseUtils.duplicateAttribute(reader, BOOT_TIME);
                             }
-                            setValue = true;
+                            setBoottime = true;
                             SystemPropertyResourceDefinition.BOOT_TIME.parseAndSetParameter(val, op, reader);
                             break;
                         }

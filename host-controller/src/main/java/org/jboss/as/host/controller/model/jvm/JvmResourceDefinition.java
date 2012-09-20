@@ -28,7 +28,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
 
 /**
  *
@@ -44,7 +44,7 @@ public class JvmResourceDefinition extends SimpleResourceDefinition {
 
     protected JvmResourceDefinition(boolean server) {
         super(PathElement.pathElement(ModelDescriptionConstants.JVM),
-                new StandardResourceDescriptionResolver("jvm", HostDescriptionProviders.class.getPackage().getName() + ".LocalDescriptions", HostDescriptionProviders.class.getClassLoader(), true, false),
+                new StandardResourceDescriptionResolver("jvm", HostEnvironmentResourceDescription.class.getPackage().getName() + ".LocalDescriptions", HostEnvironmentResourceDescription.class.getClassLoader(), true, false),
                 new JVMAddHandler(JvmAttributes.getAttributes(server)),
                 JVMRemoveHandler.INSTANCE);
         this.server = server;

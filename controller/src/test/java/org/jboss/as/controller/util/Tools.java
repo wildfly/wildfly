@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -150,10 +151,12 @@ public class Tools {
 
     static ModelNode getCurrentRunningDomainResourceDefinition() throws Exception {
         ModelNode node = getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
-        node.get(CHILDREN).require(PROFILE);
+        ModelNode profile = node.get(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).require("*");
         node.get(CHILDREN).require(HOST);
-        node.require(CHILDREN).remove(PROFILE);
         node.require(CHILDREN).remove(HOST);
+
+        //Get rid of the profile children. Subsystems are handled for the standalone model
+        profile.get(CHILDREN).setEmptyList();
         return node;
     }
 

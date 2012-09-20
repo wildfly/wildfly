@@ -59,50 +59,41 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition PRODUCT_NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PRODUCT_NAME, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
 
     static final SimpleAttributeDefinition RELEASE_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELEASE_VERSION, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
 
     static final SimpleAttributeDefinition RELEASE_CODENAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELEASE_CODENAME, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition PRODUCT_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PRODUCT_VERSION, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition MANAGEMENT_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION, ModelType.INT)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition MANAGEMENT_MINOR_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION, ModelType.INT)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition MANAGEMENT_MICRO_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION, ModelType.INT)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     static final SimpleAttributeDefinition PROCESS_STATE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROCESS_STATE, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
 
     public static final SimpleAttributeDefinition HOST_STATE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST_STATE, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     public static final SimpleAttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING, true).
             addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES).
@@ -111,16 +102,13 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             build();
     public static final SimpleAttributeDefinition MASTER = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.MASTER, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
-            .setStorageRuntime()
             .build();
 
     public static final SimpleAttributeDefinition REMOTE_DC_HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING)
             .setAllowNull(false)
             .setMinSize(1)
-            .setStorageRuntime()
             .build();
     public static final SimpleAttributeDefinition REMOTE_DC_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.INT)
-            .setStorageRuntime()
             .build();
 
     public static final ObjectTypeAttributeDefinition DC_LOCAL = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.LOCAL)
@@ -132,7 +120,6 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)
-            .setStorageRuntime()
             .setAllowNull(false)
             .build();
 

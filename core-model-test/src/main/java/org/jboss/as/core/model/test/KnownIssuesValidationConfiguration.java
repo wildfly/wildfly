@@ -193,10 +193,6 @@ public class KnownIssuesValidationConfiguration extends ValidationConfiguration 
             }
             node.set(ModelType.STRING);
         }
-        node = find(description, CHILDREN, HOST, MODEL_DESCRIPTION, "*", ATTRIBUTES, DOMAIN_CONTROLLER, VALUE_TYPE, LOCAL, TYPE);
-        if (node != null) {
-            node.set(ModelType.STRING);
-        }
     }
 
     private static void remove(ModelNode description, String remove, String...parentKeys) {

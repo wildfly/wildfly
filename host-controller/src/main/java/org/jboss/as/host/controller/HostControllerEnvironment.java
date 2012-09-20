@@ -703,14 +703,14 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     @Override
-    public boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
+    protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) {
         // Currently any system-property in host.xml should not be applied to the HC runtime. This method
         // should not be invoked.
         throw MESSAGES.hostControllerSystemPropertyUpdateNotSupported();
     }
 
     @Override
-    public void systemPropertyUpdated(String propertyName, String propertyValue) {
+    protected void systemPropertyUpdated(String propertyName, String propertyValue) {
         // no-op
     }
 

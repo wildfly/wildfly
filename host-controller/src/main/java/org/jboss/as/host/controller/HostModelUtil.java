@@ -58,7 +58,7 @@ import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHan
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
-import org.jboss.as.host.controller.descriptions.HostControllerResourceDescription;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.host.CoreServiceResourceDefinition;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
@@ -105,7 +105,7 @@ public class HostModelUtil {
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), HostControllerResourceDescription.class.getPackage().getName() + ".LocalDescriptions", HostModelUtil.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(prefix.toString(), HostEnvironmentResourceDescription.class.getPackage().getName() + ".LocalDescriptions", HostModelUtil.class.getClassLoader(), true, false);
     }
 
 
@@ -246,7 +246,7 @@ public class HostModelUtil {
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(hostRegistration);
 
         //host-environment
-        hostRegistration.registerSubModel(HostControllerResourceDescription.of(environment));
+        hostRegistration.registerSubModel(HostEnvironmentResourceDescription.of(environment));
 
 
         // Jvms

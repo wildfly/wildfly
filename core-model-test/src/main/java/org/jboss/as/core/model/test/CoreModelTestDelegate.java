@@ -110,7 +110,7 @@ public class CoreModelTestDelegate {
             model = model.require("children").require("host").require("model-description").require("master");
         }
 
-        System.out.println(model);
+        //System.out.println(model);
 
         ValidationConfiguration config = KnownIssuesValidationConfiguration.createAndFixupModel(type, model);
 

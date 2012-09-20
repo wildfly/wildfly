@@ -33,7 +33,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
  */
 final class JVMDescriptions {
 
-    private static final String RESOURCE_NAME = HostDescriptionProviders.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = HostEnvironmentResourceDescription.class.getPackage().getName() + ".LocalDescriptions";
 
     static ModelNode getOptionAddOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);

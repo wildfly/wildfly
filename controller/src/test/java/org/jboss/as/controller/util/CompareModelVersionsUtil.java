@@ -90,7 +90,7 @@ public class CompareModelVersionsUtil {
 
         String version = System.getProperty("jboss.as.compare.version", null);
         String diff = System.getProperty("jboss.as.compare.different.versions", null);
-        String type = System.getProperty("jboss.as.comare.type", null);
+        String type = System.getProperty("jboss.as.compare.type", null);
 
         if (version == null) {
             System.out.print("Enter legacy AS version: ");
