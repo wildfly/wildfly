@@ -44,7 +44,7 @@ import org.jboss.as.cli.handlers.FilenameTabCompleter;
 import org.jboss.as.cli.handlers.WindowsFilenameTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.impl.FileSystemPathArgument;
 
 /**
  *
@@ -93,19 +93,7 @@ public class BatchHandler extends CommandHandlerWithHelp {
         name.setExclusive(true);
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
-        file = new ArgumentWithValue(this, pathCompleter, "--file") {
-            @Override
-            public String getValue(ParsedCommandLine args) {
-                String value = super.getValue(args);
-                if(value != null) {
-                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
-                        value = value.substring(1, value.length() - 1);
-                    }
-                    value = pathCompleter.translatePath(value);
-                }
-                return value;
-            }
-        };
+        file = new FileSystemPathArgument(this, pathCompleter, "--file");
         file.setExclusive(true);
     }
 
