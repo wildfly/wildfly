@@ -31,7 +31,9 @@ import java.util.Map;
 
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+import javax.persistence.PersistenceContexts;
 import javax.persistence.PersistenceUnit;
+import javax.persistence.PersistenceUnits;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 
 import org.jboss.as.ee.component.Attachments;
@@ -73,7 +75,9 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
 
 
     private static final DotName PERSISTENCE_CONTEXT_ANNOTATION_NAME = DotName.createSimple(PersistenceContext.class.getName());
+    private static final DotName PERSISTENCE_CONTEXTS_ANNOTATION_NAME =  DotName.createSimple(PersistenceContexts.class.getName());
     private static final DotName PERSISTENCE_UNIT_ANNOTATION_NAME = DotName.createSimple(PersistenceUnit.class.getName());
+    private static final DotName PERSISTENCE_UNITS_ANNOTATION_NAME = DotName.createSimple(PersistenceUnits.class.getName());
 
     private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
     private static final String ENTITY_MANAGERFACTORY_CLASS = "javax.persistence.EntityManagerFactory";
@@ -90,13 +94,23 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         // create binding and injection configurations out of the @PersistenceContext annotations
         this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceContexts, applicationClasses);
 
+        // @PersistenceContexts
+        List<AnnotationInstance> collectionPersistenceContexts = index.getAnnotations(PERSISTENCE_CONTEXTS_ANNOTATION_NAME);
+        // create binding and injection configurations out of the @PersistenceContext annotations
+        processPersistenceAnnotations(deploymentUnit, eeModuleDescription, collectionPersistenceContexts, applicationClasses);
+
+        // @PersistenceUnits
+        List<AnnotationInstance> collectionPersistenceunits = index.getAnnotations(PERSISTENCE_UNITS_ANNOTATION_NAME);
+        processPersistenceAnnotations(deploymentUnit, eeModuleDescription, collectionPersistenceunits, applicationClasses);
+
         // @PersistenceUnit
         List<AnnotationInstance> persistenceUnits = index.getAnnotations(PERSISTENCE_UNIT_ANNOTATION_NAME);
         // create binding and injection configurations out of the @PersistenceUnit annotations
         this.processPersistenceAnnotations(deploymentUnit, eeModuleDescription, persistenceUnits, applicationClasses);
 
         // if we found any @PersistenceContext or @PersistenceUnit annotations then mark this as a JPA deployment
-        if (!persistenceContexts.isEmpty() || !persistenceUnits.isEmpty()) {
+        if (!persistenceContexts.isEmpty() || !persistenceUnits.isEmpty() ||
+                !collectionPersistenceContexts.isEmpty() || !collectionPersistenceunits.isEmpty()) {
             JPADeploymentMarker.mark(deploymentUnit);
         }
     }
@@ -110,7 +124,7 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         DeploymentUnitProcessingException {
 
         for (AnnotationInstance annotation : persistenceContexts) {
-            ClassInfo declaringClass = null;
+            ClassInfo declaringClass;
             final AnnotationTarget annotationTarget = annotation.target();
             if (annotationTarget instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) annotationTarget;
@@ -203,16 +217,69 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
                               final EEModuleClassDescription eeModuleClassDescription) throws
         DeploymentUnitProcessingException {
 
-        final AnnotationValue nameValue = annotation.value("name");
-        if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.classLevelAnnotationParameterRequired(annotation.name().toString(), "name");
-        }
-        final String name = nameValue.asString();
-        String type = getClassLevelInjectionType(annotation);
-        InjectionSource bindingSource = this.getBindingSource(deploymentUnit, annotation, type, eeModuleClassDescription);
-        if (bindingSource != null) {
-            final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, bindingSource);
-            eeModuleClassDescription.getBindingConfigurations().add(bindingConfiguration);
+        bindClassSources(deploymentUnit, annotation, eeModuleClassDescription);
+    }
+
+    private void bindClassSources(final DeploymentUnit deploymentUnit, final AnnotationInstance annotation, final EEModuleClassDescription classDescription)
+        throws DeploymentUnitProcessingException {
+
+        // handle PersistenceContext and PersistenceUnit annotations
+        if (isPersistenceContext(annotation) ||
+                isPersistenceUnit(annotation)) {
+            String injectionTypeName = getClassLevelInjectionType(annotation);
+            InjectionSource injectionSource = getBindingSource(deploymentUnit, annotation, injectionTypeName, classDescription);
+            if (injectionSource != null) {
+                final AnnotationValue nameValue = annotation.value("name");
+                if (nameValue == null || nameValue.asString().isEmpty()) {
+                    throw MESSAGES.classLevelAnnotationParameterRequired(annotation.name().toString(), "name");
+                }
+                final String name = nameValue.asString();
+
+                final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, injectionSource);
+                classDescription.getBindingConfigurations().add(bindingConfiguration);
+            }
+        } else if (isPersistenceUnits(annotation)) {
+            // handle PersistenceUnits (array of PersistenceUnit)
+            AnnotationValue containedPersistenceUnits = annotation.value("value");
+            AnnotationInstance[] arrayPersistenceUnits;
+            if (containedPersistenceUnits != null &&
+                (arrayPersistenceUnits = containedPersistenceUnits.asNestedArray()) != null) {
+                for (int source = 0; source < arrayPersistenceUnits.length; source++) {
+                    String injectionTypeName = getClassLevelInjectionType(arrayPersistenceUnits[source]);
+                    InjectionSource injectionSource = getBindingSource(deploymentUnit, arrayPersistenceUnits[source], injectionTypeName, classDescription);
+                    if (injectionSource != null) {
+                        final AnnotationValue nameValue = arrayPersistenceUnits[source].value("name");
+                        if (nameValue == null || nameValue.asString().isEmpty()) {
+                            throw MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceUnits[source].name().toString(), "name");
+                        }
+                        final String name = nameValue.asString();
+
+                        final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, injectionSource);
+                        classDescription.getBindingConfigurations().add(bindingConfiguration);
+                    }
+                }
+            }
+        } else if (isPersistenceContexts(annotation)) {
+            // handle PersistenceContexts (array of PersistenceContext)
+            AnnotationValue containedPersistenceContexts = annotation.value("value");
+            AnnotationInstance[] arrayPersistenceContexts;
+            if (containedPersistenceContexts != null &&
+                (arrayPersistenceContexts = containedPersistenceContexts.asNestedArray()) != null) {
+                for (int source = 0; source < arrayPersistenceContexts.length; source++) {
+                    String injectionTypeName = getClassLevelInjectionType(arrayPersistenceContexts[source]);
+                    InjectionSource injectionSource = getBindingSource(deploymentUnit, arrayPersistenceContexts[source], injectionTypeName, classDescription);
+                    if (injectionSource != null) {
+                        final AnnotationValue nameValue = arrayPersistenceContexts[source].value("name");
+                        if (nameValue == null || nameValue.asString().isEmpty()) {
+                            throw MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceContexts[source].name().toString(), "name");
+                        }
+                        final String name = nameValue.asString();
+
+                        final BindingConfiguration bindingConfiguration = new BindingConfiguration(name, injectionSource);
+                        classDescription.getBindingConfigurations().add(bindingConfiguration);
+                    }
+                }
+            }
         }
     }
 
@@ -251,15 +318,20 @@ public class JPAAnnotationParseProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private boolean isExtendedPersistenceContext(final AnnotationInstance annotation) {
-        AnnotationValue value = annotation.value("type");
-        return annotation.name().local().equals("PersistenceContext") &&
-            (value != null && PersistenceContextType.EXTENDED.name().equals(value.asString()));
-
-    }
-
     private boolean isPersistenceContext(final AnnotationInstance annotation) {
         return annotation.name().local().equals("PersistenceContext");
+    }
+
+    private boolean isPersistenceUnit(final AnnotationInstance annotation) {
+        return annotation.name().local().equals("PersistenceUnit");
+    }
+
+    private boolean isPersistenceContexts(final AnnotationInstance annotation) {
+        return annotation.name().local().equals("PersistenceContexts");
+    }
+
+    private boolean isPersistenceUnits(final AnnotationInstance annotation) {
+        return annotation.name().local().equals("PersistenceUnits");
     }
 
     /**
