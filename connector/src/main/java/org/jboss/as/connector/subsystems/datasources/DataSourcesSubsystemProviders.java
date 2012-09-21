@@ -38,6 +38,7 @@ import java.util.ResourceBundle;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
@@ -498,6 +499,13 @@ class DataSourcesSubsystemProviders {
             node.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), REQUIRED).set(false);
             node.get(ATTRIBUTES, DRIVER_CLASS_NAME.getName(), NILLABLE).set(true);
 
+            node.get(ATTRIBUTES, DRIVER_DATASOURCE_CLASS_NAME.getName(), DESCRIPTION).set(
+                    bundle.getString("installed-drivers.datasource-class-name"));
+            node.get(ATTRIBUTES, DRIVER_DATASOURCE_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
+            node.get(ATTRIBUTES, DRIVER_DATASOURCE_CLASS_NAME.getName(), REQUIRED).set(false);
+            node.get(ATTRIBUTES, DRIVER_DATASOURCE_CLASS_NAME.getName(), NILLABLE).set(true);
+
+
             node.get(ATTRIBUTES, XADATASOURCECLASS.getName(), DESCRIPTION).set(
                     bundle.getString("installed-drivers.xa-datasource-class-name"));
             node.get(ATTRIBUTES, XADATASOURCECLASS.getName(), TYPE).set(ModelType.STRING);
@@ -547,9 +555,12 @@ class DataSourcesSubsystemProviders {
             operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-class"));
             operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_DATASOURCE_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
+            operation.get(REQUEST_PROPERTIES, DRIVER_DATASOURCE_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-datasource-class-name"));
+            operation.get(REQUEST_PROPERTIES, DRIVER_DATASOURCE_CLASS_NAME.getName(), REQUIRED).set(false);
             operation.get(REQUEST_PROPERTIES, DRIVER_XA_DATASOURCE_CLASS_NAME.getName(), TYPE).set(ModelType.STRING);
             operation.get(REQUEST_PROPERTIES, DRIVER_XA_DATASOURCE_CLASS_NAME.getName(), DESCRIPTION).set(bundle.getString("installed-drivers.driver-xa-datasource-class-name"));
-            operation.get(REQUEST_PROPERTIES, DRIVER_CLASS_NAME.getName(), REQUIRED).set(false);
+            operation.get(REQUEST_PROPERTIES, DRIVER_XA_DATASOURCE_CLASS_NAME.getName(), REQUIRED).set(false);
             operation.get(REQUEST_PROPERTIES, DRIVER_MAJOR_VERSION.getName(), DESCRIPTION).set(
                     bundle.getString("installed-drivers.major-version"));
             operation.get(REQUEST_PROPERTIES, DRIVER_MAJOR_VERSION.getName(), TYPE).set(ModelType.INT);
