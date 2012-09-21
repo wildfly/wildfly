@@ -22,6 +22,7 @@
 package org.jboss.as.controller.util;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
@@ -229,7 +230,7 @@ public class CompareModelVersionsUtil {
             String id = "attribute '" + legacyEntry.getKey() + "'";
             compareAttributeOrOperationParameter(context, id, currentAttribute, legacyAttribute);
             compareAccessType(context, id, currentAttribute, legacyAttribute);
-            compareStorage(context, id, currentAttribute, legacyAttribute);            
+            compareStorage(context, id, currentAttribute, legacyAttribute);
         }
     }
 
@@ -270,6 +271,7 @@ public class CompareModelVersionsUtil {
         compareValueType(context, id, current, legacy);
         compareNillable(context, id, current, legacy);
         compareExpressionsAllowed(context, id, current, legacy);
+        compareAlternatives(context, id, current, legacy);
         //TODO compare anything else?
     }
 
@@ -310,6 +312,12 @@ public class CompareModelVersionsUtil {
     private void compareStorage(CompareContext context, String id, ModelNode current, ModelNode legacy) {
         if (!current.get(STORAGE).equals(legacy.get(STORAGE))) {
             context.println("Different 'storage' for " + id + ". Current: " + current.get(STORAGE) + "; legacy: " + legacy.get(STORAGE));
+        }
+    }
+
+    private void compareAlternatives(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(ALTERNATIVES).equals(legacy.get(ALTERNATIVES))) {
+            context.println("Different 'alternatives' for " + id + ". Current: " + current.get(ALTERNATIVES) + "; legacy: " + legacy.get(ALTERNATIVES));
         }
     }
 
