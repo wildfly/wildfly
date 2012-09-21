@@ -88,6 +88,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getModuleContextInjector());
         phaseContext.addDependency(moduleContextServiceName, NamingStore.class, selector.getCompContextInjector());
         phaseContext.addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getJbossContextInjector());
+        phaseContext.addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getExportedContextInjector());
         phaseContext.addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, selector.getGlobalContextInjector());
 
         moduleDescription.setNamespaceContextSelector(selector);

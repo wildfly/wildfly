@@ -219,6 +219,9 @@ public class InitialContext extends NamingContext {
                 if (theRest.startsWith("/")) {
                     namespace = null;
                     remaining = getNameParser(theRest).parse(theRest);
+                } else if (theRest.equals("jboss") && name.size() > 1 && name.get(1).equals("exported")) {
+                    namespace = "jboss/exported";
+                    remaining = name.getSuffix(2);
                 } else {
                     namespace = theRest;
                     remaining = name.getSuffix(1);
