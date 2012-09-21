@@ -28,7 +28,6 @@ import javax.annotation.ManagedBean;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.osgi.DeploymentMarker;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.service.BundleInstallIntegration;
 import org.jboss.as.server.deployment.Attachments;
@@ -87,7 +86,7 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
             }
 
             // Prevent autostart for marked deployments
-            AnnotationInstance marker = getAnnotation(depUnit, DeploymentMarker.class.getName());
+            AnnotationInstance marker = getAnnotation(depUnit, "org.jboss.as.arquillian.api.DeploymentMarker");
             if (marker != null && !marker.value("autoStart").asBoolean()) {
                 deployment.setAutoStart(false);
             }

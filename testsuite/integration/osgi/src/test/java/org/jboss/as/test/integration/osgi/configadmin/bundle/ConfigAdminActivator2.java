@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.osgi.configadmin.bundle;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import org.jboss.as.osgi.DeploymentMarker;
+import org.jboss.as.arquillian.api.DeploymentMarker;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;

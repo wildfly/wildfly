@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since 10-Jul-2012
  */
 @SuppressWarnings("serial")
-@WebServlet(name="SimpleBeanServlet", urlPatterns={"/simple"})
+@WebServlet(name="SimpleBeanServlet", urlPatterns={"/servlet"})
 public class SimpleBeanServlet extends HttpServlet {
 
     @Resource

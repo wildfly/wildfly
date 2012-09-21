@@ -38,7 +38,7 @@ import org.osgi.framework.BundleContext;
  * @since 10-Jul-2012
  */
 @SuppressWarnings("serial")
-@WebServlet(name="SimpleServlet", urlPatterns={"/simple"})
+@WebServlet(name="SimpleServlet", urlPatterns={"/servlet"})
 public class SimpleServlet extends HttpServlet {
 
     @Resource

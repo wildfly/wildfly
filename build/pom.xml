@@ -787,6 +787,7 @@
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-cli</artifactId>
                     <classifier>client</classifier>
+                    <scope>provided</scope>
                 </dependency>
 
                 <dependency>

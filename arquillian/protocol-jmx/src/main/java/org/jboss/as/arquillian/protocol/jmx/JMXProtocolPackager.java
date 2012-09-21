@@ -179,7 +179,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
                     StringBuilder builder = new StringBuilder();
                     builder.append("org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,");
                     builder.append("org.jboss.arquillian.osgi,org.jboss.arquillian.test.api,");
-                    builder.append("org.jboss.as.osgi,");
+                    builder.append("org.jboss.as.arquillian.api,org.jboss.as.arquillian.container,org.jboss.as.osgi,");
                     builder.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
                     builder.append("org.junit,org.junit.runner");
                     props.setProperty(Constants.EXPORT_PACKAGE, builder.toString());

@@ -27,7 +27,7 @@ import java.io.OutputStream;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import org.jboss.as.osgi.DeploymentMarker;
+import org.jboss.as.arquillian.api.DeploymentMarker;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
