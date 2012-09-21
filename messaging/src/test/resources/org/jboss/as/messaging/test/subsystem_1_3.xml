@@ -172,6 +172,15 @@
                         <connector-ref>netty</connector-ref>
                     </static-connectors>
                 </cluster-connection>
+                <!--  it is valid to have a cluster connection without
+                      a static-connector or discovery-group-ref when the node
+                      must accept connections from other cluster nodes but
+                      not connect to any other nodes.
+                 -->
+                <cluster-connection name="cc5">
+                    <address>cc3-address</address>
+                    <connector-ref>netty</connector-ref>
+                </cluster-connection>
             </cluster-connections>
             <grouping-handler name="grouping-handler">
                 <type>LOCAL</type>

@@ -62,7 +62,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
 
         model.setEmptyObject();
 
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), DISCOVERY_GROUP_NAME.getName());
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), DISCOVERY_GROUP_NAME.getName(), false);
 
         for (final AttributeDefinition attributeDefinition : BridgeDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
