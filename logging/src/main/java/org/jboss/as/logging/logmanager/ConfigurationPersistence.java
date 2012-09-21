@@ -216,7 +216,7 @@ public final class ConfigurationPersistence implements Configurator {
                 final Set<String> implicitErrorManagers = new HashSet<String>();
                 final List<String> loggerNames = config.getLoggerNames();
                 writePropertyComment(out, "Additional loggers to configure (the root logger is always configured)");
-                out.printf("loggers=%s%n", toCsvString(loggerNames));
+                writeProperty(out, "loggers", toCsvString(loggerNames));
                 final LoggerConfiguration rootLogger = config.getLoggerConfiguration("");
                 writeLoggerConfiguration(out, rootLogger, implicitHandlers);
                 // Remove the root loggers
@@ -229,7 +229,8 @@ public final class ConfigurationPersistence implements Configurator {
                 explicitHandlerNames.removeAll(implicitHandlers);
                 if (!explicitHandlerNames.isEmpty()) {
                     writePropertyComment(out, "Additional handlers to configure");
-                    out.printf("handlers=%s%n%n", toCsvString(explicitHandlerNames));
+                    writeProperty(out, "handlers", toCsvString(explicitHandlerNames));
+                    out.println();
                 }
                 for (String handlerName : allHandlerNames) {
                     writeHandlerConfiguration(out, config.getHandlerConfiguration(handlerName), implicitHandlers, implicitFormatters, implicitErrorManagers);
@@ -237,7 +238,8 @@ public final class ConfigurationPersistence implements Configurator {
                 final List<String> allFilterNames = config.getFilterNames();
                 if (!allFilterNames.isEmpty()) {
                     writePropertyComment(out, "Additional filters to configure");
-                    out.printf("filters=%s%n%n", toCsvString(allFilterNames));
+                    writeProperty(out, "filters", toCsvString(allFilterNames));
+                    out.println();
                 }
                 for (String filterName : allFilterNames) {
                     writeFilterConfiguration(out, config.getFilterConfiguration(filterName));
@@ -247,7 +249,8 @@ public final class ConfigurationPersistence implements Configurator {
                 explicitFormatterNames.removeAll(implicitFormatters);
                 if (!explicitFormatterNames.isEmpty()) {
                     writePropertyComment(out, "Additional formatters to configure");
-                    out.printf("formatters=%s%n%n", toCsvString(explicitFormatterNames));
+                    writeProperty(out, "formatters", toCsvString(explicitFormatterNames));
+                    out.println();
                 }
                 for (String formatterName : allFormatterNames) {
                     writeFormatterConfiguration(out, config.getFormatterConfiguration(formatterName));
@@ -257,7 +260,8 @@ public final class ConfigurationPersistence implements Configurator {
                 explicitErrorManagerNames.removeAll(implicitErrorManagers);
                 if (!explicitErrorManagerNames.isEmpty()) {
                     writePropertyComment(out, "Additional errorManagers to configure");
-                    out.printf("errorManagers=%s%n%n", toCsvString(explicitErrorManagerNames));
+                    writeProperty(out, "errorManagers", toCsvString(explicitErrorManagerNames));
+                    out.println();
                 }
                 for (String errorManagerName : allErrorManagerNames) {
                     writeErrorManagerConfiguration(out, config.getErrorManagerConfiguration(errorManagerName));
@@ -287,7 +291,7 @@ public final class ConfigurationPersistence implements Configurator {
             }
             final Boolean useParentHandlers = logger.getUseParentHandlers();
             if (useParentHandlers != null) {
-                writeProperty(out, prefix, "useParentHandlers", useParentHandlers);
+                writeProperty(out, prefix, "useParentHandlers", useParentHandlers.toString());
             }
             final List<String> handlerNames = logger.getHandlerNames();
             if (!handlerNames.isEmpty()) {
@@ -313,7 +317,7 @@ public final class ConfigurationPersistence implements Configurator {
             final String name = handler.getName();
             final String prefix = "handler." + name + ".";
             final String className = handler.getClassName();
-            out.printf("handler.%s=%s%n", name, className);
+            writeProperty(out, "handler.", name, className);
             final String moduleName = handler.getModuleName();
             if (moduleName != null) {
                 writeProperty(out, prefix, "module", moduleName);
@@ -406,16 +410,29 @@ public final class ConfigurationPersistence implements Configurator {
      * Writes a property to the print stream.
      *
      * @param out    the print stream to write to.
+     * @param name   the name of the property.
+     * @param value  the value of the property.
+     */
+    private static void writeProperty(final PrintStream out, final String name, final String value) throws IOException {
+        writeProperty(out, null, name, value);
+    }
+
+    /**
+     * Writes a property to the print stream.
+     *
+     * @param out    the print stream to write to.
      * @param prefix the prefix for the name or {@code null} to use no prefix.
      * @param name   the name of the property.
      * @param value  the value of the property.
      */
-    private static void writeProperty(final PrintStream out, final String prefix, final String name, final Object value) {
+    private static void writeProperty(final PrintStream out, final String prefix, final String name, final String value) throws IOException {
         if (prefix == null) {
-            out.printf("%s=%s%n", name, value);
+            writeKey(out, name);
         } else {
-            out.printf("%s%s=%s%n", prefix, name, value);
+            writeKey(out, String.format("%s%s", prefix, name));
         }
+        writeValue(out, value);
+        out.println();
     }
 
     /**
@@ -426,22 +443,22 @@ public final class ConfigurationPersistence implements Configurator {
      * @param prefix               the prefix for the name or {@code null} to use no prefix.
      * @param propertyConfigurable the configuration to extract the property value from.
      */
-    private static void writeProperties(final PrintStream out, final String prefix, final PropertyConfigurable propertyConfigurable) {
+    private static void writeProperties(final PrintStream out, final String prefix, final PropertyConfigurable propertyConfigurable) throws IOException {
         final List<String> names = propertyConfigurable.getPropertyNames();
         if (!names.isEmpty()) {
             final List<String> ctorProps = propertyConfigurable.getConstructorProperties();
             if (prefix == null) {
-                out.printf("properties=%s%n", toCsvString(names));
+                writeProperty(out, "properties", toCsvString(names));
                 if (!ctorProps.isEmpty()) {
-                    out.printf("constructorProperties=%s%n", toCsvString(ctorProps));
+                    writeProperty(out, "constructorProperties", toCsvString(ctorProps));
                 }
                 for (String name : names) {
-                    writeProperty(out, null, name, propertyConfigurable.getPropertyValueString(name));
+                    writeProperty(out, name, propertyConfigurable.getPropertyValueString(name));
                 }
             } else {
-                out.printf("%sproperties=%s%n", prefix, toCsvString(names));
+                writeProperty(out, prefix, "properties", toCsvString(names));
                 if (!ctorProps.isEmpty()) {
-                    out.printf("%sconstructorProperties=%s%n", prefix, toCsvString(ctorProps));
+                    writeProperty(out, prefix, "constructorProperties", toCsvString(ctorProps));
                 }
                 for (String name : names) {
                     writeProperty(out, prefix, name, propertyConfigurable.getPropertyValueString(name));
@@ -661,6 +678,49 @@ public final class ConfigurationPersistence implements Configurator {
 
     private static List<String> getStringCsvList(final Properties properties, final String key) {
         return new ArrayList<String>(Arrays.asList(getStringCsvArray(properties, key)));
+    }
+
+    private static void writeValue(final PrintStream out, final String value) throws IOException {
+        writeSanitized(out, value, false);
+    }
+
+    private static void writeKey(final PrintStream out, final String key) throws IOException {
+        writeSanitized(out, key, true);
+        out.append('=');
+    }
+
+    private static void writeSanitized(final Appendable out, final String string, final boolean escapeSpaces) throws IOException {
+        for (int x = 0; x < string.length(); x++) {
+            final char c = string.charAt(x);
+            switch (c) {
+                case ' ' :
+                    if (x == 0 || escapeSpaces)
+                        out.append('\\');
+                    out.append(c);
+                    break;
+                case '\t':
+                    out.append('\\').append('t');
+                    break;
+                case '\n':
+                    out.append('\\').append('n');
+                    break;
+                case '\r':
+                    out.append('\\').append('r');
+                    break;
+                case '\f':
+                    out.append('\\').append('f');
+                    break;
+                case '\\':
+                case '=':
+                case ':':
+                case '#':
+                case '!':
+                    out.append('\\').append(c);
+                    break;
+                default:
+                    out.append(c);
+            }
+        }
     }
 
     private static void safeClose(final Closeable closeable) {
