@@ -162,7 +162,6 @@ public abstract class ModelTestModelControllerService extends AbstractController
             error = new Exception(t);
         } finally {
             postBoot();
-            latch.countDown();
         }
         return false;
     }
@@ -171,6 +170,12 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     protected void postBoot() {
+    }
+
+    @Override
+    protected void bootThreadDone() {
+        super.bootThreadDone();
+        latch.countDown();
     }
 
     @Override

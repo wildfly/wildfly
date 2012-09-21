@@ -197,6 +197,8 @@ public abstract class AbstractControllerService implements Service<ModelControll
                     } else {
                         ROOT_LOGGER.errorBootingContainer(t);
                     }
+                } finally {
+                    bootThreadDone();
                 }
 
             }
@@ -227,6 +229,10 @@ public abstract class AbstractControllerService implements Service<ModelControll
     protected void finishBoot() throws ConfigurationPersistenceException {
         controller.finishBoot();
         configurationPersister.successfulBoot();
+    }
+
+    protected void bootThreadDone() {
+
     }
 
     public void stop(final StopContext context) {
