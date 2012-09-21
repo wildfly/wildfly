@@ -75,25 +75,24 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .setMinSize(1)
             .build();
     static final SimpleAttributeDefinition MANAGEMENT_MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION, ModelType.INT)
-            .setAllowNull(true)
             .setMinSize(1)
             .build();
     static final SimpleAttributeDefinition MANAGEMENT_MINOR_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION, ModelType.INT)
-            .setAllowNull(true)
             .setMinSize(1)
             .build();
     static final SimpleAttributeDefinition MANAGEMENT_MICRO_VERSION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION, ModelType.INT)
-            .setAllowNull(true)
             .setMinSize(1)
             .build();
-    static final SimpleAttributeDefinition PROCESS_STATE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROCESS_STATE, ModelType.STRING)
+    //This is just there for bw compatibility, it had no read handler before this change
+    static final SimpleAttributeDefinition SERVER_STATE = new SimpleAttributeDefinitionBuilder("server-state", ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
+            .setStorageRuntime()
             .build();
 
     public static final SimpleAttributeDefinition HOST_STATE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST_STATE, ModelType.STRING)
-            .setAllowNull(true)
             .setMinSize(1)
+            .setStorageRuntime()
             .build();
     public static final SimpleAttributeDefinition DIRECTORY_GROUPING = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DIRECTORY_GROUPING, ModelType.STRING, true).
             addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES).
@@ -108,7 +107,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(false)
             .setMinSize(1)
             .build();
-    public static final SimpleAttributeDefinition REMOTE_DC_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.INT)
+    public static final SimpleAttributeDefinition REMOTE_DC_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT)
             .build();
 
     public static final ObjectTypeAttributeDefinition DC_LOCAL = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.LOCAL)
@@ -151,7 +150,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         super.registerAttributes(hostRegistration);
         hostRegistration.registerReadWriteAttribute(DIRECTORY_GROUPING, null, new ReloadRequiredWriteAttributeHandler(DIRECTORY_GROUPING));
         hostRegistration.registerReadOnlyAttribute(PRODUCT_NAME, null);
-        hostRegistration.registerReadOnlyAttribute(PROCESS_STATE, null);
+        hostRegistration.registerReadOnlyAttribute(SERVER_STATE, null);
         hostRegistration.registerReadOnlyAttribute(RELEASE_VERSION, null);
         hostRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, null);
         hostRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, null);
