@@ -11,7 +11,7 @@ import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
  * Time: 9:06 AM
  */
 public class CreateQueueSetupTask implements ServerSetupTask {
-    
+
     public static final String QUEUE1_NAME = "myAwesomeQueue";
     public static final String QUEUE1_JNDI_NAME = "queue/myAwesomeQueue";
     public static final String QUEUE2_NAME = "myAwesomeQueue2";
