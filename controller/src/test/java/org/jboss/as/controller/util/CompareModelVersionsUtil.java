@@ -22,6 +22,7 @@
 package org.jboss.as.controller.util;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
@@ -297,6 +298,7 @@ public class CompareModelVersionsUtil {
         compareValueType(context, id, current, legacy);
         compareNillable(context, id, current, legacy);
         compareExpressionsAllowed(context, id, current, legacy);
+        compareAlternatives(context, id, current, legacy);
         //TODO compare anything else?
     }
 
@@ -378,6 +380,12 @@ public class CompareModelVersionsUtil {
             map.put(prop.getName(), prop.getValue());
         }
         return map;
+    }
+
+    private void compareAlternatives(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(ALTERNATIVES).equals(legacy.get(ALTERNATIVES))) {
+            context.println("Different 'alternatives' for " + id + ". Current: " + current.get(ALTERNATIVES) + "; legacy: " + legacy.get(ALTERNATIVES));
+        }
     }
 
     private void compareChildren(CompareContext context) {
