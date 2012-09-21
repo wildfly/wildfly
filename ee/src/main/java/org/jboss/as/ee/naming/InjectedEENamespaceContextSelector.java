@@ -44,6 +44,7 @@ public final class InjectedEENamespaceContextSelector extends NamespaceContextSe
     private final InjectedValue<NamingStore> appContext = new InjectedValue<NamingStore>();
     private final InjectedValue<NamingStore> moduleContext = new InjectedValue<NamingStore>();
     private final InjectedValue<NamingStore> compContext = new InjectedValue<NamingStore>();
+    private final InjectedValue<NamingStore> exportedContext = new InjectedValue<NamingStore>();
 
     public InjectedEENamespaceContextSelector() {
     }
@@ -68,6 +69,10 @@ public final class InjectedEENamespaceContextSelector extends NamespaceContextSe
         return globalContext;
     }
 
+    public Injector<NamingStore> getExportedContextInjector() {
+        return exportedContext;
+    }
+
     private NamingStore getNamingStore(final String identifier) {
         if (identifier.equals("jboss")) {
             return jbossContext.getOptionalValue();
@@ -79,6 +84,8 @@ public final class InjectedEENamespaceContextSelector extends NamespaceContextSe
             return moduleContext.getOptionalValue();
         } else if (identifier.equals("comp")) {
             return compContext.getOptionalValue();
+        } else if (identifier.equals("jboss/exported")) {
+            return exportedContext.getOptionalValue();
         } else {
             return null;
         }
