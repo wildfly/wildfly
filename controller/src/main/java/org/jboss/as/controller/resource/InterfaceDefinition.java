@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -53,7 +54,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
 
 
     public static final AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING)
-            .setStorageRuntime()
+            .setResourceOnly()
             .build();
     public static final AttributeDefinition ANY_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_ADDRESS, ModelType.BOOLEAN)
             .setAllowExpression(false).setAllowNull(true).setRestartAllServices()
