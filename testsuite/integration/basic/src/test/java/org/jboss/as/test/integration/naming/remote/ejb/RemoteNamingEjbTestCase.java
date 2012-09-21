@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
+import static org.junit.Assert.*;
+
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Properties;
@@ -31,6 +33,7 @@ import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -44,9 +47,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author John Bailey, Ondrej Chaloupka
@@ -63,7 +63,7 @@ public class RemoteNamingEjbTestCase {
     @Deployment
     public static Archive<?> deploy() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
-        jar.addClasses(Remote.class, Bean.class, Singleton.class, StatefulBean.class);
+        jar.addClasses(Remote.class, BinderRemote.class, Bean.class, Singleton.class, StatefulBean.class);
         return jar;
     }
 
@@ -89,7 +89,7 @@ public class RemoteNamingEjbTestCase {
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
-            remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + Remote.class.getName());
+            remote  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             assertNotNull(remote);
             assertEquals("Echo: test", remote.echo("test"));
 
@@ -99,7 +99,7 @@ public class RemoteNamingEjbTestCase {
 
             final Set<String> expected = new HashSet<String>();
             expected.add(Bean.class.getSimpleName() + "!" + Remote.class.getName());
-            expected.add(Singleton.class.getSimpleName() + "!" + Remote.class.getName());
+            expected.add(Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
             expected.add(StatefulBean.class.getSimpleName() + "!" + Remote.class.getName());
 
             NamingEnumeration<NameClassPair> e = ctx.list("test");
@@ -116,6 +116,76 @@ public class RemoteNamingEjbTestCase {
         } finally {
             ctx.close();
             Thread.currentThread().setContextClassLoader(current);
+        }
+    }
+
+    @Test
+    public void testDeploymentBinding() throws Exception {
+        final InitialContext ctx = getRemoteContext();
+        BinderRemote binder = null;
+        try {
+
+            try {
+                ctx.lookup("some/entry");
+                fail("expected exception");
+            } catch (NameNotFoundException e) {
+                // expected
+            }
+
+            // test binding
+            binder  = (BinderRemote) ctx.lookup(ARCHIVE_NAME + "/" + Singleton.class.getSimpleName() + "!" + BinderRemote.class.getName());
+            assertNotNull(binder);
+
+            binder.bind();
+
+            assertEquals("Test", ctx.lookup("some/entry"));
+
+            NamingEnumeration<Binding> bindings = ctx.listBindings("some");
+            assertTrue(bindings.hasMore());
+            assertEquals("Test", bindings.next().getObject());
+            assertFalse(bindings.hasMore());
+
+
+            // test rebinding
+            binder.rebind();
+
+            assertEquals("Test2", ctx.lookup("some/entry"));
+
+            bindings = ctx.listBindings("some");
+            assertTrue(bindings.hasMore());
+            assertEquals("Test2", bindings.next().getObject());
+            assertFalse(bindings.hasMore());
+
+
+            // test unbinding
+            binder.unbind();
+
+            try {
+                ctx.lookup("some/entry");
+                fail("expected exception");
+            } catch (NameNotFoundException e) {
+                // expected
+            }
+
+
+            // test rebinding when it doesn't already exist
+            binder.rebind();
+
+            assertEquals("Test2", ctx.lookup("some/entry"));
+
+            bindings = ctx.listBindings("some");
+            assertTrue(bindings.hasMore());
+            assertEquals("Test2", bindings.next().getObject());
+            assertFalse(bindings.hasMore());
+        } finally {
+            // clean up in case any JNDI bindings were left around
+            try {
+                if (binder != null)
+                    binder.unbind();
+            } catch (Exception e) {
+                // expected
+            }
+            ctx.close();
         }
     }
 }
