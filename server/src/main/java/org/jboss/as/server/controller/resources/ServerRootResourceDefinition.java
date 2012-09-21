@@ -150,6 +150,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition PROFILE_NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PROFILE_NAME, ModelType.STRING, false)
             .setValidator(NOT_NULL_STRING_LENGTH_ONE_VALIDATOR)
             .build();
+    public static final SimpleAttributeDefinition NULL_PROFILE_NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PROFILE_NAME, ModelType.STRING, true)
+            .build();
     public static final SimpleAttributeDefinition SERVER_STATE = SimpleAttributeDefinitionBuilder.create(ServerDescriptionConstants.PROCESS_STATE, ModelType.STRING)
             .setStorageRuntime()
             .setValidator(NOT_NULL_STRING_LENGTH_ONE_VALIDATOR)
@@ -287,6 +289,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
                 resourceRegistration.registerReadWriteAttribute(PROFILE_NAME, null, new StringLengthValidatingHandler(1));
             } else {
                 resourceRegistration.registerReadWriteAttribute(NAME, serverEnvironment.getProcessNameReadHandler(), serverEnvironment.getProcessNameWriteHandler());
+                // The legacy "undefined" profile-name
+                resourceRegistration.registerReadOnlyAttribute(NULL_PROFILE_NAME, null);
             }
             resourceRegistration.registerReadOnlyAttribute(LAUNCH_TYPE, new LaunchTypeHandler(serverEnvironment.getLaunchType()));
         }
