@@ -33,6 +33,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -45,6 +46,7 @@ public class DumpServicesHandler implements OperationStepHandler {
     private static final String OPERATION_NAME = "dump-services";
     public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver())
             .setRuntimeOnly()
+            .setReplyType(ModelType.STRING)
             .build();
     public static final DumpServicesHandler INSTANCE = new DumpServicesHandler();
 
