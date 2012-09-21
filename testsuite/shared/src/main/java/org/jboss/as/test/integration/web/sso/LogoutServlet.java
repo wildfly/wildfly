@@ -32,7 +32,7 @@ import javax.servlet.http.HttpSession;
 /**
  * A servlet that logs out a user by invalidating any current session and then
  * redirects the user to the welcome page.
- * 
+ *
  * @author Brian Stansberry
  */
 public class LogoutServlet extends HttpServlet {
