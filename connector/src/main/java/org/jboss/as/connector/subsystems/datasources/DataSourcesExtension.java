@@ -201,7 +201,7 @@ public class DataSourcesExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -235,6 +235,7 @@ public class DataSourcesExtension implements Extension {
         jdbcDrivers.registerOperationHandler(REMOVE, JdbcDriverRemove.INSTANCE, REMOVE_JDBC_DRIVER_DESC, false);
         jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_MAJOR_VERSION, null);
         jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_MINOR_VERSION, null);
+        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_DATASOURCE_CLASS_NAME, null);
         jdbcDrivers.registerReadOnlyAttribute(Constants.XADATASOURCECLASS, null);
         jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_CLASS_NAME, null);
         jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_NAME, null);
