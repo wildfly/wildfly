@@ -102,8 +102,9 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
         ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
         StorageStatePlugin storageProvider = (StorageStatePlugin) serviceRegistry.getRequiredService(IntegrationService.STORAGE_STATE_PLUGIN).getValue();
-        StorageState storageState = storageProvider.getByLocation(deployment.getLocation());
+        StorageState storageState = storageProvider.getStorageState(deployment.getLocation());
         if (storageState != null) {
+            deployment.setAutoStart(storageState.isPersistentlyStarted());
             deployment.addAttachment(StorageState.class, storageState);
         }
     }

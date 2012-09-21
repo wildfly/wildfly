@@ -44,6 +44,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.IntegrationService;
 import org.osgi.framework.BundleContext;
@@ -83,29 +84,33 @@ public class NamingExtension extends AbstractSubsystemExtension {
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
         if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
-            builder.addDependency(NamingService.SERVICE_NAME, NamingStore.class, injectedNamingStore);
+            builder.addDependency(DependencyType.OPTIONAL, NamingService.SERVICE_NAME, NamingStore.class, injectedNamingStore);
         }
     }
 
     @Override
     public void startSystemServices(StartContext startContext, BundleContext systemContext) {
+        NamingStore namingStore = injectedNamingStore.getOptionalValue();
+        if (namingStore != null) {
+            // Register the {@link InitialContextFactoryBuilder} service
+            String[] classes = new String[] {javax.naming.spi.InitialContextFactoryBuilder.class.getName(), InitialContextFactoryBuilder.class.getName()};
+            systemContext.registerService(classes, new InitialContextFactoryBuilder(), null);
 
-        // Register the {@link InitialContextFactoryBuilder} service
-        String[] classes = new String[] {javax.naming.spi.InitialContextFactoryBuilder.class.getName(), InitialContextFactoryBuilder.class.getName()};
-        systemContext.registerService(classes, new InitialContextFactoryBuilder(), null);
-
-        // Register the JNDI service listener
-        jndiServiceListener = new JNDIServiceListener(systemContext);
-        try {
-            String filter = "(" + Constants.OBJECTCLASS + "=" + ObjectFactory.class.getName() + ")";
-            systemContext.addServiceListener(jndiServiceListener, filter);
-        } catch (InvalidSyntaxException e) {
-            // ignore
+            // Register the JNDI service listener
+            jndiServiceListener = new JNDIServiceListener(systemContext);
+            try {
+                String filter = "(" + Constants.OBJECTCLASS + "=" + ObjectFactory.class.getName() + ")";
+                systemContext.addServiceListener(jndiServiceListener, filter);
+            } catch (InvalidSyntaxException e) {
+                // ignore
+            }
         }
     }
 
     @Override
     public void stopSystemServices(StopContext stopContext, BundleContext systemContext) {
-        systemContext.removeServiceListener(jndiServiceListener);
+        if (jndiServiceListener != null) {
+            systemContext.removeServiceListener(jndiServiceListener);
+        }
     }
 }
