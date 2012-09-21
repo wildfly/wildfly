@@ -84,7 +84,7 @@ public interface OSGiMessages {
     IllegalArgumentException illegalArgumentCannotObtainBundleResource(String name);
 
     @Message(id = 11961, value = "Cannot resolve capability: %s")
-    StartException startFailedCannotResolveInitialCapability(@Cause Throwable th, String identifier);
+    StartException cannotResolveInitialCapability(@Cause Throwable th, String identifier);
 
     @Message(id = 11962, value = "Illegal repository base location: %s")
     IllegalStateException illegalStateArtifactBaseLocation(File dir);

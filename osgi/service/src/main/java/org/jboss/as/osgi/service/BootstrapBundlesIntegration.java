@@ -179,7 +179,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                     ModuleLoader moduleLoader = Module.getBootModuleLoader();
                     module = moduleLoader.loadModule(moduleId);
                 } catch (ModuleLoadException ex) {
-                    throw MESSAGES.startFailedCannotResolveInitialCapability(ex, identifier);
+                    throw MESSAGES.cannotResolveInitialCapability(ex, identifier);
                 }
                 if (module != null) {
                     final OSGiMetaData metadata = getModuleMetadata(module);
@@ -209,7 +209,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
         String identifier = osgicap.getIdentifier();
         Integer level = osgicap.getStartLevel();
 
-        Deployment result = null;
+        Deployment deployment = null;
 
         // Try the identifier as ModuleIdentifier
         if (isValidModuleIdentifier(identifier)) {
@@ -220,7 +220,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
             if (bundleFile != null) {
                 LOGGER.tracef("Installing initial bundle capability: %s", identifier);
                 URL bundleURL = bundleFile.toURI().toURL();
-                result = getDeploymentFromURL(bundleURL, identifier, level);
+                deployment = getDeploymentFromURL(bundleURL, identifier, level);
             }
         }
 
@@ -235,14 +235,14 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                 XResource resource = (XResource) caps.iterator().next().getResource();
                 XCapability ccap = (XCapability) resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE).get(0);
                 URL bundleURL = new URL((String) ccap.getAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE));
-                result = getDeploymentFromURL(bundleURL, identifier, level);
+                deployment = getDeploymentFromURL(bundleURL, identifier, level);
             }
         }
 
-        if (result == null)
-            throw MESSAGES.startFailedCannotResolveInitialCapability(null, identifier);
+        if (deployment == null)
+            throw MESSAGES.cannotResolveInitialCapability(null, identifier);
 
-        return result;
+        return deployment;
     }
 
     private boolean isValidModuleIdentifier(String identifier) {
@@ -266,15 +266,14 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     private Deployment getDeploymentFromURL(URL bundleURL, String location, Integer level) throws Exception {
         BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.toVirtualFile(bundleURL), location);
         Deployment dep = DeploymentFactory.createDeployment(info);
-        if (level != null) {
+        int startlevel = level != null ? level.intValue() : 0;
+        if (startlevel > 0) {
             dep.setStartLevel(level.intValue());
             dep.setAutoStart(true);
         }
         StorageStatePlugin storageProvider = injectedStorageProvider.getValue();
-        StorageState storageState = storageProvider.getByLocation(dep.getLocation());
-        if (storageState != null) {
-            dep.addAttachment(StorageState.class, storageState);
-        }
+        StorageState storageState = storageProvider.createStorageState(location, startlevel, null);
+        dep.addAttachment(StorageState.class, storageState);
         return dep;
     }
 
