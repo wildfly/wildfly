@@ -34,6 +34,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -51,6 +52,14 @@ public abstract class AbstractSystemPropertyTest extends AbstractCoreModelTest {
 
     public AbstractSystemPropertyTest(boolean standalone) {
         this.standalone = standalone;
+    }
+
+    @Before
+    public void clearAllProperties() {
+        System.clearProperty(PROP_ONE);
+        System.clearProperty(PROP_TWO);
+        System.clearProperty(PROP_THREE);
+        System.clearProperty(PROP_FOUR);
     }
 
     @Test
