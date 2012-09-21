@@ -32,11 +32,11 @@ import org.jboss.logging.Logger;
 
 /**
  * A simple session bean for testing declarative security.
- * 
+ *
  * @author Scott.Stark@jboss.org
  */
 public class StatelessSessionBean implements SessionBean {
-    
+
     private static final long serialVersionUID = -4565135285688543978L;
 
     static Logger log = Logger.getLogger(StatelessSessionBean.class);
@@ -63,18 +63,18 @@ public class StatelessSessionBean implements SessionBean {
         log.debug("setSessionContext() called");
         sessionContext = context;
     }
-    
+
     public String echo(String arg) {
         log.debug("echo, arg=" + arg);
         Principal p = sessionContext.getCallerPrincipal();
         log.debug("echo, callerPrincipal=" + p);
         return p.getName();
     }
-    
+
     public void noop() {
         log.debug("noop");
     }
-    
+
     public ReturnData getData() {
         ReturnData data = new ReturnData();
         data.data = "TheReturnData";

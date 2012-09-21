@@ -41,7 +41,7 @@ import org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocalHom
 /**
  * A servlet that accesses an EJB and tests whether the call argument is
  * serialized.
- * 
+ *
  * @author Scott.Stark@jboss.org
  * @author
  */
