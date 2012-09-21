@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -41,9 +44,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A base class for controller services.
@@ -98,6 +98,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     private final ProcessType processType;
     private final RunningModeControl runningModeControl;
     private final DescriptionProvider rootDescriptionProvider;
+    private final ResourceDefinition rootResourceDefinition;
     private final ControlledProcessState processState;
     private final OperationStepHandler prepareStep;
     private final InjectedValue<ExecutorService> injectedExecutorService = new InjectedValue<ExecutorService>();
@@ -120,16 +121,43 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
+        assert rootDescriptionProvider != null : "Null root description provider";
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.configurationPersister = configurationPersister;
         this.rootDescriptionProvider = rootDescriptionProvider;
+        this.rootResourceDefinition = null;
+        this.processState = processState;
+        this.prepareStep = prepareStep;
+        this.expressionResolver = expressionResolver != null ? expressionResolver : ExpressionResolver.DEFAULT;
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param processType             the type of process being controlled
+     * @param runningModeControl      the controller of the process' running mode
+     * @param configurationPersister  the configuration persister
+     * @param processState            the controlled process state
+     * @param rootResourceDefinition  the root resource definition
+     * @param prepareStep             the prepare step to prepend to operation execution
+     * @param expressionResolver      the expression resolver
+     */
+    protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
+                                        final ConfigurationPersister configurationPersister,
+                                        final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
+                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
+        assert rootResourceDefinition != null : "Null root resource definition";
+        this.processType = processType;
+        this.runningModeControl = runningModeControl;
+        this.configurationPersister = configurationPersister;
+        this.rootDescriptionProvider = null;
+        this.rootResourceDefinition = rootResourceDefinition;
         this.processState = processState;
         this.prepareStep = prepareStep;
         this.expressionResolver = expressionResolver != null ? expressionResolver : ExpressionResolver.DEFAULT;
 
     }
-
 
     public void start(final StartContext context) throws StartException {
 
@@ -140,8 +168,9 @@ public abstract class AbstractControllerService implements Service<ModelControll
         final ServiceContainer container = serviceController.getServiceContainer();
         final ServiceTarget target = context.getChildTarget();
         final ExecutorService executorService = injectedExecutorService.getOptionalValue();
+        ManagementResourceRegistration rootResourceRegistration = rootDescriptionProvider != null ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider) : ManagementResourceRegistration.Factory.create(rootResourceDefinition);
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
-                ManagementResourceRegistration.Factory.create(rootDescriptionProvider),
+                rootResourceRegistration,
                 new ContainerStateMonitor(container, serviceController),
                 configurationPersister, processType, runningModeControl, prepareStep,
                 processState, executorService, expressionResolver);
@@ -168,6 +197,8 @@ public abstract class AbstractControllerService implements Service<ModelControll
                     } else {
                         ROOT_LOGGER.errorBootingContainer(t);
                     }
+                } finally {
+                    bootThreadDone();
                 }
 
             }
@@ -200,6 +231,10 @@ public abstract class AbstractControllerService implements Service<ModelControll
         configurationPersister.successfulBoot();
     }
 
+    protected void bootThreadDone() {
+
+    }
+
     public void stop(final StopContext context) {
         controller = null;
     }
@@ -221,4 +256,6 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
+
+
 }

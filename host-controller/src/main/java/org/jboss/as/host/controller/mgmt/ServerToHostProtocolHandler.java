@@ -22,6 +22,21 @@
 
 package org.jboss.as.host.controller.mgmt;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.host.controller.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
+import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
+
+import java.io.DataInput;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.concurrent.Executor;
+
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
@@ -31,17 +46,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
-import static org.jboss.as.host.controller.HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER;
 import org.jboss.as.host.controller.ManagedServerOperationsFactory;
 import org.jboss.as.host.controller.ServerInventory;
-import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -64,12 +72,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageOutputStream;
 
-import java.io.DataInput;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.concurrent.Executor;
-
 /**
  * Handler responsible for the server to host-controller protocol.
  *
@@ -90,16 +92,19 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
     private final ManagementChannelHandler channelHandler;
     private final DeploymentFileRepository deploymentFileRepository;
     private final Executor registrations;
+    private final ExpressionResolver expressionResolver;
 
     private volatile String serverProcessName;
 
-    ServerToHostProtocolHandler(ServerInventory serverInventory, OperationExecutor operationExecutor, DomainController domainController, ManagementChannelHandler channelHandler, Executor registrations) {
+    ServerToHostProtocolHandler(ServerInventory serverInventory, OperationExecutor operationExecutor, DomainController domainController, ManagementChannelHandler channelHandler, Executor registrations,
+            ExpressionResolver expressionResolver) {
         this.serverInventory = serverInventory;
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
         this.channelHandler = channelHandler;
         this.registrations = registrations;
         this.deploymentFileRepository = domainController.getLocalFileRepository();
+        this.expressionResolver = expressionResolver;
     }
 
     @Override
@@ -197,7 +202,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
             // Create the boot updates
             final String hostControllerName = domainController.getLocalHostInfo().getLocalHostName();
             final ModelNode hostModel = domainModel.require(HOST).require(hostControllerName);
-            final ModelNode updates = ManagedServerOperationsFactory.createBootUpdates(serverName, domainModel, hostModel, domainController);
+            final ModelNode updates = ManagedServerOperationsFactory.createBootUpdates(serverName, domainModel, hostModel, domainController, expressionResolver);
             // Register the remote communication
             final ProxyController controller = serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
             try {

@@ -22,17 +22,10 @@
 
 package org.jboss.as.server.services.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
-
-import java.util.EnumSet;
-
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,31 +34,18 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class VaultWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
-
-    public static final VaultWriteAttributeHandler INSTANCE = new VaultWriteAttributeHandler();
-
-    private VaultWriteAttributeHandler() {
+    public VaultWriteAttributeHandler(AttributeDefinition...attributes) {
+        super(attributes);
     }
 
-    public void registerAttributes(ManagementResourceRegistration registry) {
-        registry.registerReadWriteAttribute(CODE, null, this, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
 
-        registry.registerReadWriteAttribute(VAULT_OPTIONS, null, this, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
-    }
 
     @Override
-    protected void validateUnresolvedValue(String name, ModelNode value) throws OperationFailedException {
-
-        if (CODE.equals(name)) {
-            VaultAddHandler.codeValidator.validateParameter(VALUE, value);
-        } else if (VAULT_OPTIONS.equals(name)) {
-            VaultAddHandler.optionsValidator.validateParameter(VALUE, value);
-        } else {
-            // Bug! Someone added the attribute to the set but did not implement
-            throw ServerMessages.MESSAGES.attributeValidationUnimplemented(name);
-        }
-
+    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        super.execute(context, operation);
     }
+
+
 
     @Override
     protected void validateResolvedValue(String name, ModelNode value) throws OperationFailedException {

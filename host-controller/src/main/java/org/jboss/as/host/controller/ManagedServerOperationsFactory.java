@@ -22,12 +22,9 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
@@ -66,24 +63,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
-
-import org.jboss.as.controller.extension.ExtensionAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.controller.services.path.PathAddHandler;
-import org.jboss.as.domain.controller.DomainController;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.services.net.BindingGroupAddHandler;
-import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
-import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 import java.io.File;
 import java.util.AbstractList;
@@ -94,6 +74,28 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.controller.ExpressionResolver;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.extension.ExtensionAddHandler;
+import org.jboss.as.controller.operations.common.InterfaceAddHandler;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.SocketBindingAddHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.services.path.PathAddHandler;
+import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.operations.SystemPropertyAddHandler;
+import org.jboss.as.server.services.net.BindingGroupAddHandler;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingAddHandler;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingAddHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Factory creating a the boot operations for a {@linkplain ManagedServer}.
@@ -120,7 +122,7 @@ public final class ManagedServerOperationsFactory {
      * @param domainController the domain controller
      * @return the list of boot operations
      */
-    public static ModelNode createBootUpdates(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController) {
+    public static ModelNode createBootUpdates(final String serverName, final ModelNode domainModel, final ModelNode hostModel, final DomainController domainController, final ExpressionResolver expressionResolver) {
         final ManagedServerOperationsFactory factory = new ManagedServerOperationsFactory(serverName, domainModel, hostModel, domainController);
         return factory.getBootUpdates();
     }
@@ -285,8 +287,12 @@ public final class ManagedServerOperationsFactory {
         if (source.hasDefined(SYSTEM_PROPERTY)) {
             for (Property prop : source.get(SYSTEM_PROPERTY).asPropertyList()) {
                 ModelNode propResource = prop.getValue();
-                if (boottimeOnly && !propResource.get(BOOT_TIME).asBoolean()) {
-                    continue;
+                try {
+                    if (boottimeOnly && !SystemPropertyResourceDefinition.BOOT_TIME.resolveModelAttribute(domainController.getExpressionResolver(), propResource).asBoolean()) {
+                        continue;
+                    }
+                } catch (OperationFailedException e) {
+                    throw new IllegalStateException(e);
                 }
                 String val = propResource.hasDefined(VALUE) ? propResource.get(VALUE).asString() : null;
                 props.put(prop.getName(), val);

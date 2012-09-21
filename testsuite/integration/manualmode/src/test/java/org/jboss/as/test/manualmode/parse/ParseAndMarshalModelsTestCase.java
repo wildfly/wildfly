@@ -21,28 +21,15 @@
 */
 package org.jboss.as.test.manualmode.parse;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CPU_AFFINITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRIORITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -87,14 +74,10 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.InterfaceAddHandler;
-import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
-import org.jboss.as.controller.operations.common.SystemPropertyValueWriteAttributeHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
@@ -106,6 +89,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.Transformers;
@@ -115,14 +99,13 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
-import org.jboss.as.host.controller.descriptions.HostDescriptionProviders;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
+import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
-import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
@@ -132,10 +115,12 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.security.vault.RuntimeVaultReader;
+import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.ServerControllerModelUtil;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.parsing.StandaloneXml;
-import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
-import org.jboss.as.server.services.security.VaultAddHandler;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -719,7 +704,6 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                ServerControllerModelUtil.updateCoreModel(model, null);
                 ServerControllerModelUtil.initOperations(rootRegistration, new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
             }
         });
@@ -763,7 +747,11 @@ public class ParseAndMarshalModelsTestCase {
                 final LocalHostControllerInfoImpl hostControllerInfo = new LocalHostControllerInfoImpl(new ControlledProcessState(false), "master");
 
                 // Add of the host itself
-                ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), HostDescriptionProviders.HOST_ROOT_PROVIDER);
+                ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST), new DescriptionProvider() {
+                    public ModelNode getModelDescription(Locale locale) {
+                        return new ModelNode();
+                    }
+                });
 
                 // Other root resource operations
                 XmlMarshallingHandler xmh = new XmlMarshallingHandler(persister);
@@ -774,16 +762,13 @@ public class ParseAndMarshalModelsTestCase {
                 hostRegistration.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, AttributeAccess.Storage.RUNTIME);
 
                 // System Properties
-                ManagementResourceRegistration sysProps = hostRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SYSTEM_PROPERTIES_PROVIDER);
-                sysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
+                ManagementResourceRegistration sysProps = hostRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.HOST));
 
                 //vault
-                ManagementResourceRegistration vault = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, VAULT), CommonProviders.VAULT_PROVIDER);
-                VaultAddHandler vah = new VaultAddHandler(new MockVaultReader());
-                vault.registerOperationHandler(VaultAddHandler.OPERATION_NAME, vah, vah, false);
+                hostRegistration.registerSubModel(new VaultResourceDefinition(new MockVaultReader()));
 
                 // Central Management
-                ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
+                ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreManagementDefinition.INSTANCE);
                 management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
                 management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
                 management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
@@ -802,10 +787,14 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration paths = hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(MOCK_PATH_MANAGER));
 
                 //interface
-                ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-                HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
-                interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, hsiah, false);
-                InterfaceCriteriaWriteHandler.UPDATE_RUNTIME.register(interfaces);
+                ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(new InterfaceDefinition(
+                        HostSpecifiedInterfaceAddHandler.INSTANCE,
+                        HostSpecifiedInterfaceRemoveHandler.INSTANCE,
+                        true
+                ));
+                /*HostSpecifiedInterfaceAddHandler hsiah = new HostSpecifiedInterfaceAddHandler();
+                interfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, hsiah, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);*/
+
 
                 //server configurations
                 hostRegistration.registerSubModel(new ServerConfigResourceDefinition(null, MOCK_PATH_MANAGER));
@@ -1156,6 +1145,11 @@ public class ParseAndMarshalModelsTestCase {
         @Override
         public ExtensionRegistry getExtensionRegistry() {
             return null;
+        }
+
+        @Override
+        public ExpressionResolver getExpressionResolver() {
+            return new RuntimeExpressionResolver(new MockVaultReader());
         }
     }
 

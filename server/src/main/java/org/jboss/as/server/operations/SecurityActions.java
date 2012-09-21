@@ -30,6 +30,24 @@ import java.security.PrivilegedAction;
  */
 class SecurityActions {
 
+    static String setSystemProperty(final String key, final String value) throws SecurityException {
+
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+            public String run() {
+                return System.setProperty(key, value);
+            }
+        });
+    }
+
+    static String clearSystemProperty(final String key) throws SecurityException {
+
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+            public String run() {
+                return System.clearProperty(key);
+            }
+        });
+    }
+
     static String getSystemProperty(final String name) {
         if (System.getSecurityManager() == null) {
             return System.getProperty(name);

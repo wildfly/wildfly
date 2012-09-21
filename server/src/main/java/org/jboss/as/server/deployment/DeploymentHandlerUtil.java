@@ -23,7 +23,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 

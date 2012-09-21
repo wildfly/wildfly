@@ -33,49 +33,13 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry
  *
  */
+@Deprecated
 public final class CommonProviders {
 
     // Prevent instantiation
     private CommonProviders() {
     }
 
-    /**
-     * Provider for a sub-model that defines the management configuration.
-     */
-    public static final DescriptionProvider MANAGEMENT_WITH_INTERFACES_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return ManagementDescription.getManagementDescriptionWithInterfaces(locale);
-        }
-    };
-
-
-    /**
-     * Provider for a sub-model that names an interface but doesn't require the address selection criteria.
-     */
-    public static final DescriptionProvider NAMED_INTERFACE_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getNamedInterfaceDescription(locale);
-        }
-    };
-
-    /**
-     * Provider for a sub-model that names an interface and specifies the criteria.
-     */
-    public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getSpecifiedInterfaceDescription(locale, false);
-        }
-    };
-
-    public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER_SERVER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(final Locale locale) {
-            return InterfaceDescription.getSpecifiedInterfaceDescription(locale, true);
-        }
-    };
 
     public static final DescriptionProvider READ_RESOURCE_PROVIDER = new DescriptionProvider() {
         @Override
@@ -162,16 +126,6 @@ public final class CommonProviders {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
             return CommonDescriptions.getServiceContainerDescription(locale);
-        }
-    };
-
-    /**
-     * Provider for a resource that defines the core security vault.
-     */
-    public static final DescriptionProvider VAULT_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return VaultDescriptions.getVaultDescription(locale);
         }
     };
 }

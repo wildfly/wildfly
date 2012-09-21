@@ -57,11 +57,5 @@ public class RunningModeReadHandler implements OperationStepHandler {
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    public static void createAndRegister(final RunningModeControl runningModeControl, final ManagementResourceRegistration resourceRegistration) {
-        AttributeDefinition def = SimpleAttributeDefinitionBuilder.create(RUNNING_MODE, ModelType.STRING)
-            .setValidator(new EnumValidator(RunningMode.class, false, false))
-                .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
-        resourceRegistration.registerReadOnlyAttribute(def, new RunningModeReadHandler(runningModeControl));
-    }
 }

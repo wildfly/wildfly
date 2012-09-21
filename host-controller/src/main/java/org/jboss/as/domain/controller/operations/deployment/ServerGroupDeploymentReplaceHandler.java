@@ -18,15 +18,6 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import java.util.Locale;
-import java.util.NoSuchElementException;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -35,12 +26,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+
+import java.util.NoSuchElementException;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,7 +46,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = REPLACE_DEPLOYMENT;
 
@@ -57,27 +55,20 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
     }
 
     private final HostFileRepository fileRepository;
-    private final ParametersValidator validator = new ParametersValidator();
 
     public ServerGroupDeploymentReplaceHandler(final HostFileRepository fileRepository) {
         if (fileRepository == null) {
             throw MESSAGES.nullVar("fileRepository");
         }
         this.fileRepository = fileRepository;
-        this.validator.registerValidator(NAME, new StringLengthValidator(1));
-        this.validator.registerValidator(TO_REPLACE, new StringLengthValidator(1));
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getReplaceDeploymentOperation(locale);
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validator.validate(operation);
-
-        String name = operation.require(NAME).asString();
-        String toReplace = operation.require(TO_REPLACE).asString();
+        for (AttributeDefinition def : DeploymentAttributes.SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
+            def.validateOperation(operation);
+        }
+        String name = DeploymentAttributes.SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
+        String toReplace = DeploymentAttributes.SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.get(TO_REPLACE).resolveModelAttribute(context, operation).asString();
 
         if (name.equals(toReplace)) {
             throw operationFailed(MESSAGES.cannotUseSameValueForParameters(OPERATION_NAME, NAME, TO_REPLACE,
@@ -122,6 +113,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
             if(deploymentResource.getModel().get(ENABLED).asBoolean()) {
                 throw operationFailed(MESSAGES.deploymentAlreadyStarted(toReplace));
             }
+            deploymentResource.getModel().get(ENABLED).set(true);
         }
         //
         replaceResource.getModel().get(ENABLED).set(false);

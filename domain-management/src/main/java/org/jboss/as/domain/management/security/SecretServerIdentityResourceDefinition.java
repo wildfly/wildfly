@@ -46,7 +46,7 @@ public class SecretServerIdentityResourceDefinition extends SimpleResourceDefini
 
     public SecretServerIdentityResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SERVER_IDENTITY, ModelDescriptionConstants.SECRET),
-                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.server-identity.secret"),
+                CommonDescriptions.getResourceDescriptionResolver("core", "management", "security-realm", "server-identity", "secret"),
                 new SecurityRealmChildAddHandler(false, VALUE), new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

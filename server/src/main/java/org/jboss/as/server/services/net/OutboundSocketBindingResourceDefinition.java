@@ -58,7 +58,7 @@ public abstract class OutboundSocketBindingResourceDefinition extends SimpleReso
     public static final SimpleAttributeDefinition FIXED_SOURCE_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.FIXED_SOURCE_PORT, ModelType.BOOLEAN, true)
             .setAllowExpression(true).setDefaultValue(new ModelNode().set(false)).build();
 
-
+    public static final SimpleAttributeDefinition[] ATTRIBUTES = {SOURCE_PORT,SOURCE_INTERFACE,FIXED_SOURCE_PORT};
     private final boolean remoteDestination;
 
     protected OutboundSocketBindingResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
@@ -70,11 +70,8 @@ public abstract class OutboundSocketBindingResourceDefinition extends SimpleReso
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
 
-        resourceRegistration.registerReadWriteAttribute(SOURCE_PORT, null, new OutboundSocketBindingWriteHandler(SOURCE_PORT.getValidator(),
-                new IntRangeValidator(0, 65535, true, false), remoteDestination));
-        resourceRegistration.registerReadWriteAttribute(SOURCE_INTERFACE, null, new OutboundSocketBindingWriteHandler(SOURCE_INTERFACE.getValidator(),
-                new StringLengthValidator(1, Integer.MAX_VALUE, true, false), remoteDestination));
-        resourceRegistration.registerReadWriteAttribute(FIXED_SOURCE_PORT, null, new OutboundSocketBindingWriteHandler(new ModelTypeValidator(ModelType.BOOLEAN, true, true),
-                new ModelTypeValidator(ModelType.BOOLEAN, true, false), remoteDestination));
+        for (SimpleAttributeDefinition ad:ATTRIBUTES){
+            resourceRegistration.registerReadWriteAttribute(ad, null, new OutboundSocketBindingWriteHandler(ad, false));
+        }
     }
 }

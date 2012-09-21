@@ -18,22 +18,20 @@
  */
 package org.jboss.as.server.deployment;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
-import org.jboss.dmr.ModelNode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.dmr.ModelNode;
 
 /**
 * Handler for the upload-deployment-stream operation.
@@ -41,21 +39,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPL
 * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
 */
 public class DeploymentUploadStreamAttachmentHandler
-    extends AbstractDeploymentUploadHandler
-    implements DescriptionProvider {
+    extends AbstractDeploymentUploadHandler {
 
     public static final String OPERATION_NAME = UPLOAD_DEPLOYMENT_STREAM;
 
-    private final ParametersValidator streamValidator = new ParametersValidator();
-
-    public DeploymentUploadStreamAttachmentHandler(final ContentRepository repository) {
-        super(repository);
-        this.streamValidator.registerValidator(INPUT_STREAM_INDEX, new IntRangeValidator(0));
+    private DeploymentUploadStreamAttachmentHandler(final ContentRepository repository, final AttributeDefinition attribute) {
+        super(repository, attribute);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getUploadDeploymentStreamAttachmentOperation(locale);
+    public static void register(final ManagementResourceRegistration registration, final ContentRepository repository) {
+        registration.registerOperationHandler(DeploymentAttributes.UPLOAD_STREAM_ATTACHMENT_DEFINITION,
+                new DeploymentUploadStreamAttachmentHandler(repository, DeploymentAttributes.INPUT_STREAM_INDEX_NOT_NULL));
     }
 
     /**
@@ -63,8 +57,6 @@ public class DeploymentUploadStreamAttachmentHandler
      */
     @Override
     protected InputStream getContentInputStream(OperationContext operationContext, ModelNode operation) throws IOException, OperationFailedException {
-        // Validate the operation
-        streamValidator.validate(operation);
         // Get the attached stream
         final int streamIndex = operation.require(INPUT_STREAM_INDEX).asInt();
         final InputStream in = operationContext.getAttachmentStream(streamIndex);

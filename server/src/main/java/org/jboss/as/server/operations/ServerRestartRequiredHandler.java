@@ -27,7 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.controller.descriptions.ServerRootDescription;
+import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -52,6 +52,6 @@ public class ServerRestartRequiredHandler implements OperationStepHandler, Descr
     }
 
     public ModelNode getModelDescription(final Locale locale) {
-        return ServerRootDescription.getRestartRequiredDescription(locale);
+        return ServerDescriptions.getRestartRequiredDescription(locale);
     }
 }

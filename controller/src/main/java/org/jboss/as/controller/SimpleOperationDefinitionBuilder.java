@@ -53,6 +53,7 @@ public class SimpleOperationDefinitionBuilder {
         this.resolver = resolver;
     }
 
+
     public SimpleOperationDefinition build() {
         if (attributeResolver == null) {
             attributeResolver = resolver;

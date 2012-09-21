@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.server.operations;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -31,8 +31,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -52,14 +54,14 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
         return op;
     }
 
-    private final ProcessEnvironment processEnvironment;
+    private final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
 
     /**
      * Create the SystemPropertyRemoveHandler
      * @param processEnvironment the process environment to use to validate changes. May be {@code null}
      */
-    public SystemPropertyRemoveHandler(ProcessEnvironment processEnvironment) {
-        this.processEnvironment = processEnvironment;
+    public SystemPropertyRemoveHandler(ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater) {
+        this.systemPropertyUpdater = systemPropertyUpdater;
     }
 
     @Override
@@ -71,8 +73,8 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         final String oldValue = model.hasDefined(VALUE) ? model.get(VALUE).asString() : null;
 
-        final boolean applyToRuntime = processEnvironment != null &&
-                processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, oldValue, context.isBooting());
+        final boolean applyToRuntime = systemPropertyUpdater != null &&
+                systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, oldValue, context.isBooting());
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
@@ -80,15 +82,15 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                     SecurityActions.clearSystemProperty(name);
-                    if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, null);
+                    if (systemPropertyUpdater != null) {
+                        systemPropertyUpdater.systemPropertyUpdated(name, null);
                     }
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             SecurityActions.setSystemProperty(name, oldValue);
-                            if (processEnvironment != null) {
-                                processEnvironment.systemPropertyUpdated(name, oldValue);
+                            if (systemPropertyUpdater != null) {
+                                systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
                             }
                         }
                     });
@@ -109,7 +111,7 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
     }
 
     public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getRemoveSystemPropertyOperation(locale);
+        return SystemPropertyDescriptions.getRemoveSystemPropertyOperation(locale);
     }
 
 }

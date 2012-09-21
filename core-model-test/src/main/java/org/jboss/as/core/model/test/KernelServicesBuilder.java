@@ -29,7 +29,6 @@ import javax.xml.stream.XMLStreamException;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,7 +47,13 @@ public interface KernelServicesBuilder {
     KernelServicesBuilder setDontValidateOperations();
 
 
-    KernelServicesBuilder setModelValidationConfiguration(ValidationConfiguration validationConfiguration);
+    /**
+     * By default the description is not validated. Call this to validates the full model description minus what is set up by {@link KnownIssuesValidationConfiguration}
+     *
+     * @param validationConfiguration the validation configuration, set to {@code null} to turn off model validation configuration
+     * @return this builder
+     */
+    KernelServicesBuilder validateDescription();
 
 
     /**

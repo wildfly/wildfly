@@ -21,6 +21,7 @@
 */
 package org.jboss.as.core.model.test;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,10 +35,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.model.test.ModelTestKernelServices;
-import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.OperationValidation;
 import org.jboss.as.model.test.StringConfigurationPersister;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -60,17 +61,25 @@ public class KernelServices extends ModelTestKernelServices {
     }
 
     static KernelServices create(ProcessType processType, RunningMode runningMode, OperationValidation validateOperations,
-            List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, ModelType type, ModelInitializer modelInitializer) throws Exception {
+            List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer) throws Exception {
 
         //TODO initialize the path manager service like we do for subsystems?
 
-        //Initialize the controller
+        //Create the controller
         ServiceContainer container = ServiceContainer.Factory.create("test" + counter.incrementAndGet());
         ServiceTarget target = container.subTarget();
+
+        //Initialize the content repository
+        File repositoryFile = new File("target/deployment-repository");
+        deleteFile(repositoryFile);
+        ContentRepository.Factory.addService(target, repositoryFile);
+
+        //Initialize the controller
         StringConfigurationPersister persister = new StringConfigurationPersister(bootOperations, testParser);
-        RunningModeControl runningModeControl = type == ModelType.HOST ? new HostRunningModeControl(runningMode, RestartMode.HC_ONLY) : new RunningModeControl(runningMode);
-        ModelTestModelControllerService svc = new TestModelControllerService(processType, runningModeControl, persister, validateOperations, type, modelInitializer);
+        RunningModeControl runningModeControl = type == TestModelType.HOST ? new HostRunningModeControl(runningMode, RestartMode.HC_ONLY) : new RunningModeControl(runningMode);
+        TestModelControllerService svc = TestModelControllerService.create(processType, runningModeControl, persister, validateOperations, type, modelInitializer);
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
+        builder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, svc.getContentRepositoryInjector());
         builder.install();
 
         //sharedState = svc.state;
@@ -84,5 +93,12 @@ public class KernelServices extends ModelTestKernelServices {
         return kernelServices;
     }
 
-
+    private static void deleteFile(File file) {
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                deleteFile(child);
+            }
+        }
+        file.delete();
+    }
 }

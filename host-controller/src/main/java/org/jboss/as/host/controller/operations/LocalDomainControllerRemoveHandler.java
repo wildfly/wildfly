@@ -19,6 +19,8 @@
 package org.jboss.as.host.controller.operations;
 
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
@@ -26,8 +28,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -57,6 +59,6 @@ public class LocalDomainControllerRemoveHandler implements OperationStepHandler,
     @Override
     public ModelNode getModelDescription(final Locale locale) {
         // TODO - Add the ModelDescription
-        return new ModelNode();
+        return HostRootDescription.getLocalDomainControllerRemove(locale);
     }
 }

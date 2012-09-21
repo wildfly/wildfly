@@ -18,98 +18,56 @@
  */
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ARCHIVE;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_PATH;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_RELATIVE_TO;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.PERSISTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_ADD_ATTRIBUTES;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.createFailureException;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getInputStream;
+import static org.jboss.as.server.deployment.DeploymentHandlerUtils.hasValidContentAdditionParameterDefined;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.controller.operations.validation.ChainedParameterValidator.chain;
-import static org.jboss.as.server.ServerMessages.MESSAGES;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.asString;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFailureException;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
-import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
 
 /**
  * Handles addition of a deployment to the model.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentAddHandler implements OperationStepHandler, DescriptionProvider {
+public class DeploymentAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
 
     protected final ContentRepository contentRepository;
 
-    protected final ParametersValidator validator = new ParametersValidator();
-    protected final ParametersValidator unmanagedContentValidator = new ParametersValidator();
-    protected final ParametersValidator managedContentValidator = new ParametersValidator();
     private final AbstractVaultReader vaultReader;
 
     protected DeploymentAddHandler(final ContentRepository contentRepository, final AbstractVaultReader vaultReader) {
         assert contentRepository != null : "Null contentRepository";
         this.contentRepository = contentRepository;
-        this.validator.registerValidator(RUNTIME_NAME, new StringLengthValidator(1, Integer.MAX_VALUE, true, false));
-        this.validator.registerValidator(ENABLED, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        final ParametersValidator contentValidator = new ParametersValidator();
-        // existing managed content
-        contentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES, true));
-        // existing unmanaged content
-        contentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        contentValidator.registerValidator(PATH, new StringLengthValidator(1, true));
-        contentValidator.registerValidator(RELATIVE_TO, new ModelTypeValidator(ModelType.STRING, true));
-        // content additions
-        contentValidator.registerValidator(INPUT_STREAM_INDEX, new ModelTypeValidator(ModelType.INT, true));
-        contentValidator.registerValidator(BYTES, new ModelTypeValidator(ModelType.BYTES, true));
-        contentValidator.registerValidator(URL, new StringLengthValidator(1, true));
-        this.validator.registerValidator(CONTENT, chain(new ListValidator(new ParametersOfValidator(contentValidator)),
-                new AbstractParameterValidator() {
-                    @Override
-                    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                        validateOnePieceOfContent(value);
-                    }
-                }));
-        this.managedContentValidator.registerValidator(HASH, new ModelTypeValidator(ModelType.BYTES));
-        this.unmanagedContentValidator.registerValidator(ARCHIVE, new ModelTypeValidator(ModelType.BOOLEAN));
-        this.unmanagedContentValidator.registerValidator(PATH, new StringLengthValidator(1));
         this.vaultReader = vaultReader;
     }
 
@@ -117,47 +75,56 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         return new DeploymentAddHandler(contentRepository, vaultReader);
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return DeploymentDescription.getAddDeploymentOperation(locale, true);
-    }
-
     /**
      * {@inheritDoc}
      */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validator.validate(operation);
+        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
+        ModelNode newModel = resource.getModel();
+
+        if (!operation.hasDefined(PERSISTENT.getName())) {
+            operation.get(PERSISTENT.getName()).set(true);
+        }
+
+        //Persistent is hidden from CLI users so let's set this to true here if it is not defined
+        PERSISTENT.validateAndSet(operation, newModel);
+
+        for (AttributeDefinition def : SERVER_ADD_ATTRIBUTES) {
+            if (!def.getName().equals(CONTENT_ALL.getName())) {
+                def.validateAndSet(operation, newModel);
+            } else {
+                //Handle content a bit differently to avoid two copies of the deployment content if bytes was used
+                def.validateOperation(operation);
+            }
+        }
+
+        // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
+        ModelNode content = operation.require(CONTENT_ALL.getName());
+        ModelNode contentItemNode = content.require(0);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
-        final String runtimeName = operation.hasDefined(RUNTIME_NAME) ? operation.get(RUNTIME_NAME).asString() : name;
+        final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
+        newModel.get(RUNTIME_NAME.getName()).set(runtimeName);
 
-        // clone it, so we can modify it to our own content
-        final ModelNode content = operation.require(CONTENT).clone();
-        // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final DeploymentHandlerUtil.ContentItem contentItem;
-        final ModelNode contentItemNode = content.require(0);
-        if (contentItemNode.hasDefined(HASH)) {
-            managedContentValidator.validate(contentItemNode);
-            byte[] hash = contentItemNode.require(HASH).asBytes();
+        if (contentItemNode.hasDefined(CONTENT_HASH.getName())) {
+            byte[] hash = contentItemNode.require(CONTENT_HASH.getName()).asBytes();
             contentItem = addFromHash(hash, name, context);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             contentItem = addFromContentAdditionParameter(context, contentItemNode);
+            contentItemNode = new ModelNode();
+            contentItemNode.get(CONTENT_HASH.getName()).set(contentItem.getHash());
+            content = new ModelNode();
+            content.add(contentItemNode);
         } else {
             contentItem = addUnmanaged(contentItemNode);
         }
 
-        final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-        ModelNode subModel = resource.getModel();
-        subModel.get(NAME).set(name);
-        subModel.get(RUNTIME_NAME).set(runtimeName);
-        // content is a clone
-        subModel.get(CONTENT).set(content);
-        subModel.get(ENABLED).set(operation.has(ENABLED) && operation.get(ENABLED).asBoolean()); // TODO consider starting
-        subModel.get(PERSISTENT).set(!operation.hasDefined(PERSISTENT) || operation.get(PERSISTENT).asBoolean());
+        newModel.get(CONTENT_ALL.getName()).set(content);
 
-        if (subModel.get(ENABLED).asBoolean() && context.isNormalServer()) {
+        if (ENABLED.resolveModelAttribute(context, newModel).asBoolean() && context.isNormalServer()) {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
         }
 
@@ -195,17 +162,13 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         } finally {
             StreamUtils.safeClose(in);
         }
-        contentItemNode.clear(); // AS7-1029
-        contentItemNode.get(HASH).set(hash);
-        // TODO: remove the content addition stuff?
         return new DeploymentHandlerUtil.ContentItem(hash);
     }
 
     DeploymentHandlerUtil.ContentItem addUnmanaged(ModelNode contentItemNode) throws OperationFailedException {
-        unmanagedContentValidator.validate(contentItemNode);
-        final String path = contentItemNode.require(PATH).asString();
-        final String relativeTo = asString(contentItemNode, RELATIVE_TO);
-        final boolean archive = contentItemNode.require(ARCHIVE).asBoolean();
+        final String path = contentItemNode.require(CONTENT_PATH.getName()).asString();
+        final String relativeTo = asString(contentItemNode, CONTENT_RELATIVE_TO.getName());
+        final boolean archive = contentItemNode.require(CONTENT_ARCHIVE.getName()).asBoolean();
         return new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
     }
 

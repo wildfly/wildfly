@@ -23,6 +23,7 @@ package org.jboss.as.controller.util;
 
 import java.io.File;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,7 +36,8 @@ import org.jboss.dmr.ModelNode;
 public class DumpResourceDefinitionUtil {
 
     public static void main(String[] args) throws Exception {
-        ModelNode resourceDefinition = Tools.getCurrentRunningResourceDefinition();
-        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/standalone-resource-definition-running.dmr"));
+        ModelNode resourceDefinition = Tools.getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
+        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.STANDALONE.toString().toLowerCase() +
+        		"-resource-definition-running.dmr"));
     }
 }

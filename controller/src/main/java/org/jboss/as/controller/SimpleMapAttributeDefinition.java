@@ -29,6 +29,7 @@ import static org.jboss.as.controller.parsing.Element.PROPERTY;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -56,13 +57,13 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
      */
     @Deprecated
     public SimpleMapAttributeDefinition(final String name, final String xmlName, boolean allowNull, boolean expressionAllowed) {
-        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, false, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        super(name, xmlName, allowNull, expressionAllowed, 0, Integer.MAX_VALUE, null, new ModelTypeValidator(ModelType.STRING, allowNull, expressionAllowed), null, null, null, false, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
-                                         final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                         final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
                                          final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly,final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);
+        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,deprecated, flags);
     }
 
     @Override
@@ -125,7 +126,7 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             if (attributeMarshaller == null) {
                 attributeMarshaller = new MapAttributeMarshaller();
             }
-            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, validator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, validator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
     }
 }

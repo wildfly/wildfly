@@ -58,7 +58,7 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof AnyInterfaceCriteria == false) {
+        if (!(o instanceof AnyInterfaceCriteria)) {
             return false;
         }
         return criteria.equals(((AnyInterfaceCriteria)o).criteria);

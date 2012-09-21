@@ -22,8 +22,10 @@
 
 package org.jboss.as.controller;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -35,6 +37,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
@@ -65,9 +68,9 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
     }
 
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
-                                  final int minSize, final int maxSize, final ParameterValidator elementValidator,
-                                  final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, null, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
+            final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.elementValidator = elementValidator;
     }
 
@@ -198,4 +201,30 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
     public void marshallAsElement(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
         attributeMarshaller.marshallAsElement(this, resourceModel, marshallDefault, writer);
     }
+    public static ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {
+        public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
+            if (newValue.isDefined()) {
+                if (newValue.getType() == ModelType.LIST) {
+                    int listSize = newValue.asList().size();
+                    List<Property> propertyList = newValue.asPropertyList();
+                    if (propertyList.size() == 0) {
+                        //The list cannot be converted to a map
+                        if (listSize == 0) {
+                            return new ModelNode();
+                        }
+                        if (listSize > 0) {
+                            //It is a list of simple values, so just return the original
+                            return newValue;
+                        }
+                    }
+                    ModelNode corrected = new ModelNode();
+                    for (Property p : newValue.asPropertyList()) {
+                        corrected.get(p.getName()).set(p.getValue());
+                    }
+                    return corrected;
+                }
+            }
+            return newValue;
+        }
+    };
 }

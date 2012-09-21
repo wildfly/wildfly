@@ -65,12 +65,10 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final OperationDefinition ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
-            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
             .setParameters(CommonAttributes.HANDLER_NAME)
             .build();
 
     static final OperationDefinition REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
-            .setAttributeResolver(LoggingExtension.FILTER_ATTRIBUTE_RESOLVER)
             .setParameters(CommonAttributes.HANDLER_NAME)
             .build();
     /**

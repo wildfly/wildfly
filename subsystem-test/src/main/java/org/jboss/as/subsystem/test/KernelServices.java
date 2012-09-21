@@ -84,7 +84,7 @@ public class KernelServices extends ModelTestKernelServices {
         StringConfigurationPersister persister = new StringConfigurationPersister(allOps, testParser);
         controllerExtensionRegistry.setWriterRegistry(persister);
         controllerExtensionRegistry.setPathManager(pathManager);
-        ModelTestModelControllerService svc = new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
+        ModelTestModelControllerService svc = TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
                 persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();

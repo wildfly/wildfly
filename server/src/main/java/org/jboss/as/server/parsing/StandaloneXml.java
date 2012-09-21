@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -43,7 +42,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -84,6 +82,8 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -158,7 +158,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         parseNamespaces(reader, address, list);
 
-        String serverName = null;
+        ModelNode serverName = null;
 
         // attributes
         final int count = reader.getAttributeCount();
@@ -169,7 +169,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = value;
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
                             break;
                         }
                         default:
@@ -264,7 +264,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         parseNamespaces(reader, address, list);
 
-        String serverName = null;
+        ModelNode serverName = null;
 
         // attributes
         final int count = reader.getAttributeCount();
@@ -275,7 +275,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case NAME: {
-                            serverName = value;
+                            serverName = ServerRootResourceDefinition.NAME.parse(value, reader.getLocation());
                             break;
                         }
                         default:
@@ -938,8 +938,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
-    private void setServerName(final ModelNode address, final List<ModelNode> operationList, final String value) {
-        if (value != null && value.length() > 0) {
+    private void setServerName(final ModelNode address, final List<ModelNode> operationList, final ModelNode value) {
+        if (value != null && value.isDefined() && value.asString().length() > 0) {
             final ModelNode update = Util.getWriteAttributeOperation(address, NAME, value);
             operationList.add(update);
         }
@@ -953,7 +953,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeStartElement(Element.SERVER.getLocalName());
 
         if (modelNode.hasDefined(NAME)) {
-            writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
+            ServerRootResourceDefinition.NAME.marshallAsAttribute(modelNode, false, writer);
         }
 
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
@@ -1036,14 +1036,18 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
                     writer.writeStartElement(Element.DEPLOYMENTS.getLocalName());
                     deploymentWritten = true;
                 }
-                final String runtimeName = deployment.get(RUNTIME_NAME).asString();
-                boolean enabled = deployment.get(ENABLED).asBoolean();
+
+
                 writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                 writeAttribute(writer, Attribute.NAME, uniqueName);
-                writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
-                if (!enabled) {
-                    writeAttribute(writer, Attribute.ENABLED, "false");
-                }
+              //final String runtimeName = deployment.get(RUNTIME_NAME).asString();
+                //writeAttribute(writer, Attribute.RUNTIME_NAME, runtimeName);
+                DeploymentAttributes.RUNTIME_NAME.marshallAsAttribute(deployment, writer);
+              //boolean enabled = deployment.get(ENABLED).asBoolean();
+//                if (!enabled) {
+//                    writeAttribute(writer, Attribute.ENABLED, "false");
+//                }
+                DeploymentAttributes.ENABLED.marshallAsAttribute(deployment, false, writer);
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);

@@ -20,17 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.domain.controller.descriptions;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.server.deployment.DeploymentRemoveHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
@@ -42,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -68,7 +58,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.LAUNCH_TYPE;
 import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Model description for the domain root.
@@ -151,6 +152,12 @@ public class DomainRootDescription {
         root.get(ATTRIBUTES, LOCAL_HOST_NAME, REQUIRED).set(true);
         root.get(ATTRIBUTES, LOCAL_HOST_NAME, NILLABLE).set(false);
 
+        //Added to pass test model validation, take with a pinch of salt
+        root.get(ATTRIBUTES, LAUNCH_TYPE, DESCRIPTION).set(bundle.getString("domain.local-host-name"));
+        root.get(ATTRIBUTES, LAUNCH_TYPE, TYPE).set(ModelType.STRING);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, REQUIRED).set(true);
+        root.get(ATTRIBUTES, LAUNCH_TYPE, NILLABLE).set(false);
+
         root.get(OPERATIONS).setEmptyObject();
 
         root.get(CHILDREN, EXTENSION, DESCRIPTION).set(bundle.getString("domain.extension"));
@@ -203,21 +210,12 @@ public class DomainRootDescription {
         root.get(CHILDREN, HOST, MAX_OCCURS).set(Integer.MAX_VALUE);
         root.get(CHILDREN, HOST, MODEL_DESCRIPTION).setEmptyObject();
 
-        return root;
-    }
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, DESCRIPTION).set(bundle.getString("domain.rollout-plans"));
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MIN_OCCURS).set(0);
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MAX_OCCURS).set(1);
+        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MODEL_DESCRIPTION).setEmptyObject();
 
-    public static ModelNode getDeploymentRemoveOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DeploymentRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("domain.deployment.remove"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
-    }
-
-    public static ModelNode getSystemPropertiesDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSystemPropertyDescription(locale, bundle.getString("domain.system-property"), true);
     }
 
     public static ModelNode getRestartServersOperation(Locale locale) {

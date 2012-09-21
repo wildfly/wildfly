@@ -21,13 +21,17 @@
 */
 package org.jboss.as.subsystem.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -36,10 +40,14 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.OperationValidation;
 import org.jboss.as.model.test.StringConfigurationPersister;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.DeployerChainAddHandler;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironment.LaunchType;
+import org.jboss.as.server.controller.resources.ServerDeploymentResourceDescription;
 import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.dmr.ModelNode;
+import org.jboss.vfs.VirtualFile;
 
 /**
  *
@@ -50,26 +58,37 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final AdditionalInitialization additionalInit;
     private final ControllerInitializer controllerInitializer;
     private final ExtensionRegistry extensionRegistry;
+    private final RunningModeControl runningModeControl;
+    private final ContentRepository contentRepository = new MockContentRepository();
+
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
-            final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
+            final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
             final StringConfigurationPersister persister, boolean validateOps) {
-        super(additionalInit.getProcessType(), new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE);
+        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;
         this.extensionRegistry = extensionRegistry;
+        this.runningModeControl = runningModeControl;
+    }
+
+    static TestModelControllerService create(final Extension mainExtension, final ControllerInitializer controllerInitializer,
+            final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
+            final StringConfigurationPersister persister, boolean validateOps) {
+        return new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry, persister, validateOps);
     }
 
     @Override
     protected void initExtraModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         rootResource.getModel().get(SUBSYSTEM);
 
-        ManagementResourceRegistration deployments = rootRegistration.registerSubModel(PathElement.pathElement(DEPLOYMENT), ServerDescriptionProviders.DEPLOYMENT_PROVIDER);
+        ManagementResourceRegistration deployments = rootRegistration.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, null));
 
         //Hack to be able to access the registry for the jmx facade
         rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
+        controllerInitializer.setTestModelControllerService(this);
         controllerInitializer.initializeModel(rootResource, rootRegistration);
         additionalInit.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
 
@@ -82,5 +101,67 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     protected void postBoot() {
         DeployerChainAddHandler.INSTANCE.clearDeployerMap();
+    }
+
+    private void delete(File file) {
+        if (file.isDirectory()) {
+            for (File child : file.listFiles()) {
+                delete(child);
+            }
+        }
+        file.delete();
+    }
+
+    ServerEnvironment getServerEnvironment() {
+        Properties props = new Properties();
+        File home = new File("target/jbossas");
+        delete(home);
+        home.mkdir();
+        props.put(ServerEnvironment.HOME_DIR, home.getAbsolutePath());
+
+        File standalone = new File(home, "standalone");
+        standalone.mkdir();
+        props.put(ServerEnvironment.SERVER_BASE_DIR, standalone.getAbsolutePath());
+
+        File configuration = new File(standalone, "configuration");
+        configuration.mkdir();
+        props.put(ServerEnvironment.SERVER_CONFIG_DIR, configuration.getAbsolutePath());
+
+        File xml = new File(configuration, "standalone.xml");
+        try {
+            xml.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        props.put(ServerEnvironment.JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
+
+        return new ServerEnvironment(null, props, new HashMap<String, String>(), "standalone.xml", null, LaunchType.STANDALONE, runningModeControl.getRunningMode(), null);
+    }
+
+    private static class MockContentRepository implements ContentRepository {
+
+        @Override
+        public byte[] addContent(InputStream stream) throws IOException {
+            return null;
+        }
+
+        @Override
+        public VirtualFile getContent(byte[] hash) {
+            return null;
+        }
+
+        @Override
+        public boolean hasContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public boolean syncContent(byte[] hash) {
+            return false;
+        }
+
+        @Override
+        public void removeContent(byte[] hash) {
+        }
     }
 }

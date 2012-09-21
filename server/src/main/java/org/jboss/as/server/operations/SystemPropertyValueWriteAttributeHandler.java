@@ -20,14 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.dmr.ModelNode;
 
@@ -36,14 +38,13 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHandlers.AttributeDefinitionValidatingHandler {
 
-    public static final SystemPropertyValueWriteAttributeHandler INSTANCE = new SystemPropertyValueWriteAttributeHandler(null);
+    private final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
 
-    private final ProcessEnvironment processEnvironment;
-
-    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironment processEnvironment) {
-        this.processEnvironment = processEnvironment;
+    public SystemPropertyValueWriteAttributeHandler(ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, AttributeDefinition valueAttribute) {
+        super(valueAttribute);
+        this.systemPropertyUpdater = systemPropertyUpdater;
     }
 
     protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
@@ -52,16 +53,20 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         final String value = newValue.isDefined() ? newValue.asString() : null;
-        final boolean applyToRuntime = processEnvironment != null && processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
+        final boolean applyToRuntime = systemPropertyUpdater != null && systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     String setValue = value == null ? null : context.resolveExpressions(newValue).asString();
-                    SecurityActions.setSystemProperty(name, setValue);
-                    if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, setValue);
+                    if (value != null) {
+                        SecurityActions.setSystemProperty(name, setValue);
+                    } else {
+                        SecurityActions.clearSystemProperty(name);
+                    }
+                    if (systemPropertyUpdater != null) {
+                        systemPropertyUpdater.systemPropertyUpdated(name, setValue);
                     }
                     if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
                         final String oldValue = currentValue.isDefined() ? context.resolveExpressions(currentValue).asString() : null;
@@ -70,8 +75,8 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
                         } else {
                             SecurityActions.clearSystemProperty(name);
                         }
-                        if (processEnvironment != null) {
-                            processEnvironment.systemPropertyUpdated(name, oldValue);
+                        if (systemPropertyUpdater != null) {
+                            systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
                         }
                     }
                 }

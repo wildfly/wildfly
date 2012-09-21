@@ -19,9 +19,13 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.test;
+package org.jboss.as.controller.util;
 
-public enum ModelType {
+/**
+ *
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ */
+public enum ResourceType {
     STANDALONE,
     HOST,
     DOMAIN

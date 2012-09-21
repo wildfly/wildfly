@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<server xmlns="urn:jboss:domain:1.4">
+
+    <vault code="somevault">
+        <vault-option name="xyz" value="zxc"/>
+        <vault-option name="abc" value="def"/>
+    </vault>
+    
+</server>        

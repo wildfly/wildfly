@@ -69,7 +69,7 @@ public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefiniti
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
     ExtensionSubsystemResourceDefinition() {
-        super(PathElement.pathElement(SUBSYSTEM), CommonDescriptions.getResourceDescriptionResolver(EXTENSION + "." + SUBSYSTEM));
+        super(PathElement.pathElement(SUBSYSTEM), CommonDescriptions.getResourceDescriptionResolver(EXTENSION, SUBSYSTEM));
     }
 
     @Override

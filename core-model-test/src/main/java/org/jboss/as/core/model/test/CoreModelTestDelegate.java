@@ -84,11 +84,11 @@ public class CoreModelTestDelegate {
     }
 
 
-    protected KernelServicesBuilder createKernelServicesBuilder(ModelType type) {
+    protected KernelServicesBuilder createKernelServicesBuilder(TestModelType type) {
         return new KernelServicesBuilderImpl(type);
     }
 
-    private void validateDescriptionProviders(ValidationConfiguration validationConfiguration, ModelTestKernelServices kernelServices) {
+    private void validateDescriptionProviders(TestModelType type, ModelTestKernelServices kernelServices) {
         ModelNode op = new ModelNode();
         op.get(OP).set("read-resource-description");
         op.get(OP_ADDR).setEmptyList();
@@ -102,7 +102,19 @@ public class CoreModelTestDelegate {
         }
         ModelNode model = result.get(RESULT);
 
-        ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(PathAddress.EMPTY_ADDRESS.toModelNode(), model, validationConfiguration);
+        if (type == TestModelType.HOST) {
+            //TODO (1)
+            //Big big hack to get around the fact that the tests install the host description twice
+            //we're only interested in the host model anyway
+            //See KnownIssuesValidator.createHostPlatformMBeanAddress
+            model = model.require("children").require("host").require("model-description").require("master");
+        }
+
+        //System.out.println(model);
+
+        ValidationConfiguration config = KnownIssuesValidationConfiguration.createAndFixupModel(type, model);
+
+        ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(PathAddress.EMPTY_ADDRESS.toModelNode(), model, config);
         List<ValidationFailure> validationMessages = validator.validateResources();
         if (validationMessages.size() > 0) {
             final StringBuilder builder = new StringBuilder("VALIDATION ERRORS IN MODEL:");
@@ -111,14 +123,12 @@ public class CoreModelTestDelegate {
                 builder.append("\n");
 
             }
-            if (validationConfiguration != null) {
-                Assert.fail("Failed due to validation errors in the model. Please fix :-) " + builder.toString());
-            }
+            Assert.fail("Failed due to validation errors in the model. Please fix :-) " + builder.toString());
         }
     }
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
 
-        private final ModelType type;
+        private final TestModelType type;
         private final ModelTestBootOperationsBuilder bootOperationBuilder = new ModelTestBootOperationsBuilder(testClass, this);
         private final TestParser testParser;
         private ProcessType processType;
@@ -126,16 +136,15 @@ public class CoreModelTestDelegate {
         private ModelInitializer modelInitializer;
         //TODO set this to EXIT_ON_VALIDATION_ERROR once model is fixed
         private OperationValidation validateOperations = OperationValidation.LOG_VALIDATION_ERRORS;
-        private ValidationConfiguration validationConfiguration;
+        private boolean validateDescription;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
 
 
-        public KernelServicesBuilderImpl(ModelType type) {
+        public KernelServicesBuilderImpl(TestModelType type) {
             this.type = type;
-            this.processType = type == ModelType.HOST || type == ModelType.DOMAIN ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
+            this.processType = type == TestModelType.HOST || type == TestModelType.DOMAIN ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
             runningMode = RunningMode.ADMIN_ONLY;
             testParser = TestParser.create(xmlMapper, type);
-
         }
 
         public KernelServicesBuilder setDontValidateOperations() {
@@ -144,8 +153,8 @@ public class CoreModelTestDelegate {
             return this;
         }
 
-        public KernelServicesBuilder setModelValidationConfiguration(ValidationConfiguration validationConfiguration) {
-            this.validationConfiguration = validationConfiguration;
+        public KernelServicesBuilder validateDescription() {
+            this.validateDescription = true;
             return this;
         }
 
@@ -181,7 +190,10 @@ public class CoreModelTestDelegate {
             KernelServices kernelServices = KernelServices.create(processType, runningMode, validateOperations, bootOperations, testParser, null, type, modelInitializer);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
-            validateDescriptionProviders(validationConfiguration, kernelServices);
+            if (validateDescription) {
+                validateDescriptionProviders(type, kernelServices);
+            }
+
 
             ModelTestUtils.validateModelDescriptions(PathAddress.EMPTY_ADDRESS, kernelServices.getRootRegistration());
 

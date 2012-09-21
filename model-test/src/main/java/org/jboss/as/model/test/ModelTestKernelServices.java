@@ -24,6 +24,7 @@ package org.jboss.as.model.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -31,9 +32,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
@@ -44,6 +49,9 @@ import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -119,7 +127,7 @@ public class ModelTestKernelServices {
     }
 
     /**
-     * Reads the whole model from the model controller
+     * Reads the whole model from the model controller without aliases or runtime attributes/resources
      *
      * @return the whole model
      */
@@ -128,15 +136,30 @@ public class ModelTestKernelServices {
     }
 
     /**
-     * Reads the whole model from the model controller
+     * Reads the whole model from the model controller without runtime attributes/resources
      *
+     * @param includeAliases whether to include aliases
      * @return the whole model
      */
     public ModelNode readWholeModel(boolean includeAliases) {
+        return readWholeModel(includeAliases, false);
+    }
+
+    /**
+     * Reads the whole model from the model controller
+     *
+     * @param includeAliases whether to include aliases
+     * @param includeRuntime whether to include runtime attributes/resources
+     * @return the whole model
+     */
+    public ModelNode readWholeModel(boolean includeAliases, boolean includeRuntime) {
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         op.get(RECURSIVE).set(true);
+        if (includeRuntime) {
+            op.get(INCLUDE_RUNTIME).set(true);
+        }
         if (includeAliases) {
             op.get(INCLUDE_ALIASES).set(true);
         }
@@ -158,16 +181,35 @@ public class ModelTestKernelServices {
      * Execute an operation in the model controller
      *
      * @param operation the operation to execute
+     * @param inputStream Input Streams for the operation
      * @return the whole result of the operation
      */
-    public ModelNode executeOperation(ModelNode operation) {
-        return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
+    public ModelNode executeOperation(ModelNode operation, InputStream...inputStreams) {
+        if (inputStreams.length == 0) {
+            return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
+        } else {
+            ExecutorService executor = Executors.newCachedThreadPool();
+            try {
+                ModelControllerClient client = controller.createClient(executor);
+                OperationBuilder builder = OperationBuilder.create(operation);
+                for (InputStream in : inputStreams) {
+                    builder.addInputStream(in);
+                }
+                Operation op = builder.build();
+
+                try {
+                    return client.execute(op);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } finally {
+                executor.shutdownNow();
+            }
+        }
     }
 
-
-
-    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = executeOperation(operation);
+    public ModelNode executeForResult(ModelNode operation, InputStream...inputStreams) throws OperationFailedException {
+        ModelNode rsp = executeOperation(operation, inputStreams);
         if (FAILED.equals(rsp.get(OUTCOME).asString())) {
             throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
         }
@@ -182,9 +224,9 @@ public class ModelTestKernelServices {
      * @param operation the operation to execute
      * @return the result of the operation
      */
-    public void executeForFailure(ModelNode operation) {
+    public void executeForFailure(ModelNode operation, InputStream...inputStreams) {
         try {
-            executeForResult(operation);
+            executeForResult(operation, inputStreams);
             Assert.fail("Should have given error");
         } catch (OperationFailedException expected) {
         }
@@ -245,5 +287,4 @@ public class ModelTestKernelServices {
     protected void addLegacyKernelService(ModelVersion modelVersion, ModelTestKernelServices legacyServices) {
         this.legacyServices.put(modelVersion, legacyServices);
     }
-
 }

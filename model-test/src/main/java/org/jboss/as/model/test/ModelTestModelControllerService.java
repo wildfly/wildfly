@@ -54,13 +54,16 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.Resource;
@@ -87,9 +90,19 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private volatile boolean bootSuccess;
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-                           final StringConfigurationPersister persister, OperationValidation validateOps) {
+                           final StringConfigurationPersister persister, OperationValidation validateOps, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
-                new ControlledProcessState(true), DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+                processState == null ? new ControlledProcessState(true) : processState, rootDescriptionProvider, null, ExpressionResolver.DEFAULT);
+        this.persister = persister;
+        this.transformerRegistry = transformerRegistry;
+        this.validateOps = validateOps;
+    }
+
+    protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
+            final StringConfigurationPersister persister, final OperationValidation validateOps, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+        super(processType, runningModeControl, persister,
+                processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
+                ExpressionResolver.DEFAULT);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
         this.validateOps = validateOps;
@@ -149,7 +162,6 @@ public abstract class ModelTestModelControllerService extends AbstractController
             error = new Exception(t);
         } finally {
             postBoot();
-            latch.countDown();
         }
         return false;
     }
@@ -158,6 +170,12 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     protected void postBoot() {
+    }
+
+    @Override
+    protected void bootThreadDone() {
+        super.bootThreadDone();
+        latch.countDown();
     }
 
     @Override
@@ -226,7 +244,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
         }
     }
 
-    static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
+    public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             ModelNode model = new ModelNode();
@@ -234,4 +252,38 @@ public abstract class ModelTestModelControllerService extends AbstractController
             return model;
         }
     };
+
+    public static class DelegatingResourceDefinition implements ResourceDefinition {
+        private volatile ResourceDefinition delegate;
+
+        public void setDelegate(ResourceDefinition delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerOperations(resourceRegistration);
+        }
+
+        @Override
+        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerChildren(resourceRegistration);
+        }
+
+        @Override
+        public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerAttributes(resourceRegistration);
+        }
+
+        @Override
+        public PathElement getPathElement() {
+            return delegate.getPathElement();
+        }
+
+        @Override
+        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+            return delegate.getDescriptionProvider(resourceRegistration);
+        }
+    };
+
 }

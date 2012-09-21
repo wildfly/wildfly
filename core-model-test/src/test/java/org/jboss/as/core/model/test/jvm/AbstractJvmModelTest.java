@@ -38,14 +38,14 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableAddHandler;
 import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableRemoveHandler;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -55,10 +55,10 @@ import org.junit.Test;
  */
 public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
 
-    private final ModelType type;
+    private final TestModelType type;
     private final boolean server;
 
-    protected AbstractJvmModelTest(ModelType type, boolean server) {
+    protected AbstractJvmModelTest(TestModelType type, boolean server) {
         this.type = type;
         this.server = server;
     }
@@ -391,11 +391,7 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
     protected ModelNode getJvmResource(KernelServices kernelServices) throws Exception {
         ModelNode model = kernelServices.readWholeModel(true);
         PathAddress addr = PathAddress.pathAddress(getPathAddress("test"));
-        for (PathElement element : addr) {
-            model = model.require(element.getKey());
-            model = model.require(element.getValue());
-        }
-        return model;
+        return ModelTestUtils.getSubModel(model, addr);
     }
 
     protected void checkFullJvm(ModelNode full) {

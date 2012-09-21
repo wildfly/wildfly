@@ -16,26 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.jboss.as.controller.operations.common;
+package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.BOOT_TIME;
+import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.VALUE;
 
 import java.util.Locale;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Operation handler for adding domain/host and server system properties.
@@ -46,9 +45,6 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
 
     public static final String OPERATION_NAME = ADD;
 
-    public static final SystemPropertyAddHandler INSTANCE_WITH_BOOTTIME = new SystemPropertyAddHandler(null, true);
-    public static final SystemPropertyAddHandler INSTANCE_WITHOUT_BOOTTIME = new SystemPropertyAddHandler(null, false);
-
     public static ModelNode getOperation(ModelNode address, String value) {
         return getOperation(address, value, null);
     }
@@ -56,63 +52,56 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
     public static ModelNode getOperation(ModelNode address, String value, Boolean boottime) {
         ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
         if (value == null) {
-            op.get(VALUE).set(new ModelNode());
+            op.get(VALUE.getName()).set(new ModelNode());
         } else {
-            op.get(VALUE).set(value);
+            op.get(VALUE.getName()).set(value);
         }
         if (boottime != null) {
-            op.get(BOOT_TIME).set(boottime);
+            op.get(BOOT_TIME.getName()).set(boottime);
         }
         return op;
     }
 
 
-    private final ParametersValidator validator = new ParametersValidator();
-    private final ProcessEnvironment processEnvironment;
+    private final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
     private final boolean useBoottime;
+    private final AttributeDefinition[] attributes;
 
     /**
      * Create the SystemPropertyAddHandler
      *
-     * @param processEnvironment the local process environment, or {@code null} if interaction with the process
+     * @param systemPropertyUpdater the local process environment system property updater, or {@code null} if interaction with the process
      *                           environment is not required
      * @param useBoottime {@code true} if the system property resource should support the "boot-time" attribute
      */
-    public SystemPropertyAddHandler(ProcessEnvironment processEnvironment, boolean useBoottime) {
-        this.processEnvironment = processEnvironment;
+    public SystemPropertyAddHandler(ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, boolean useBoottime, AttributeDefinition[] attributes) {
+        this.systemPropertyUpdater = systemPropertyUpdater;
         this.useBoottime = useBoottime;
-        validator.registerValidator(VALUE, new StringLengthValidator(0, true, true));
-        if (useBoottime) {
-            validator.registerValidator(BOOT_TIME, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        }
+        this.attributes = attributes;
     }
 
+
     @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validator.validate(operation);
+    public void execute(final OperationContext context, final ModelNode operation) throws  OperationFailedException {
+        final ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
+        for (AttributeDefinition attr : attributes) {
+            attr.validateAndSet(operation, model);
+        }
 
         final String name = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
-        final String value = operation.hasDefined(VALUE) ? operation.get(VALUE).asString() : null;
-
-        final boolean applyToRuntime = processEnvironment != null && processEnvironment.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
+        final String value = operation.hasDefined(VALUE.getName()) ? operation.get(VALUE.getName()).asString() : null;
+        final boolean applyToRuntime = systemPropertyUpdater != null && systemPropertyUpdater.isRuntimeSystemPropertyUpdateAllowed(name, value, context.isBooting());
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
-        final ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
-        if (value == null) {
-            model.get(VALUE).set(new ModelNode());
-        } else {
-            model.get(VALUE).set(value);
-        }
-        if (useBoottime) {
-            boolean boottime = !operation.hasDefined(BOOT_TIME) || operation.get(BOOT_TIME).asBoolean();
-            model.get(BOOT_TIME).set(boottime);
-        }
-
         if (applyToRuntime) {
-            final String setValue = value != null ? context.resolveExpressions(operation.require(VALUE)).asString() : null;
-            SecurityActions.setSystemProperty(name, setValue);
-            if (processEnvironment != null) {
-                processEnvironment.systemPropertyUpdated(name, setValue);
+            final String setValue = value != null ? VALUE.resolveModelAttribute(context, operation).asString() : null;
+            if (setValue != null) {
+                SecurityActions.setSystemProperty(name, setValue);
+            } else {
+                SecurityActions.clearSystemProperty(name);
+            }
+            if (systemPropertyUpdater != null) {
+                systemPropertyUpdater.systemPropertyUpdated(name, setValue);
             }
         } else if (reload) {
             context.reloadRequired();
@@ -124,21 +113,17 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
                 if (reload) {
                     context.revertReloadRequired();
                 }
-                if (processEnvironment != null) {
+                if (systemPropertyUpdater != null) {
                     SecurityActions.clearSystemProperty(name);
-                    if (processEnvironment != null) {
-                        processEnvironment.systemPropertyUpdated(name, null);
+                    if (systemPropertyUpdater != null) {
+                        systemPropertyUpdater.systemPropertyUpdated(name, null);
                     }
                 }
             }
         });
     }
 
-    protected boolean requiresRuntimeVerification() {
-        return false;
-    }
-
     public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getAddSystemPropertyOperation(locale, useBoottime);
+        return SystemPropertyDescriptions.getAddSystemPropertyOperation(locale, useBoottime);
     }
 }

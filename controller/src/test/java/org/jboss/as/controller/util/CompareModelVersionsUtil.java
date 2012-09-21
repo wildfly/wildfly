@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -41,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -88,12 +90,30 @@ public class CompareModelVersionsUtil {
 
         String version = System.getProperty("jboss.as.compare.version", null);
         String diff = System.getProperty("jboss.as.compare.different.versions", null);
+        String type = System.getProperty("jboss.as.compare.type", null);
 
         if (version == null) {
             System.out.print("Enter legacy AS version: ");
             version = readInput(null);
         }
         System.out.println("Using target model: " + version);
+
+        if (type == null) {
+            System.out.print("Enter type [S](standalone)/H(host)/D(domain):");
+            type = readInput("S");
+        }
+        final ResourceType resourceType;
+        if (ResourceType.STANDALONE.toString().startsWith(type.toUpperCase())) {
+            resourceType = ResourceType.STANDALONE;
+        } else if (ResourceType.HOST.toString().startsWith(type.toUpperCase())) {
+            resourceType = ResourceType.HOST;
+        }  else if (ResourceType.DOMAIN.toString().startsWith(type.toUpperCase())) {
+            resourceType = ResourceType.DOMAIN;
+        } else {
+            throw new IllegalArgumentException("Could not determine type for: '" + type + "'");
+        }
+
+
 
         if (diff == null) {
             System.out.print("Report on differences in the model when the management versions are different? y/[n]: ");
@@ -110,13 +130,12 @@ public class CompareModelVersionsUtil {
             throw new IllegalArgumentException("Please enter 'y' or 'n'");
         }
 
-
         System.out.println("Loading legacy model versions for " + version + "....");
         ModelNode legacyModelVersions = Tools.loadModelNodeFromFile(new File("target/test-classes/legacy-models/standalone-model-versions-" + version + ".dmr"));
         System.out.println("Loaded legacy model versions");
 
         System.out.println("Loading legacy resource descriptions for " + version + "....");
-        ModelNode legacyResourceDefinitions = Tools.loadModelNodeFromFile(new File("target/test-classes/legacy-models/standalone-resource-definition-" + version + ".dmr"));
+        ModelNode legacyResourceDefinitions = Tools.loadModelNodeFromFile(new File("target/test-classes/legacy-models/" + resourceType.toString().toLowerCase() + "-resource-definition-" + version + ".dmr"));
         System.out.println("Loaded legacy resource descriptions");
 
         System.out.println("Loading model versions for currently running server...");
@@ -124,7 +143,14 @@ public class CompareModelVersionsUtil {
         System.out.println("Loaded current model versions");
 
         System.out.println("Loading resource descriptions for currently running server...");
-        ModelNode currentResourceDefinitions = Tools.getCurrentRunningResourceDefinition();
+        final ModelNode currentResourceDefinitions;
+        if (resourceType == ResourceType.STANDALONE) {
+            currentResourceDefinitions = Tools.getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
+        } else if (resourceType == ResourceType.DOMAIN) {
+            currentResourceDefinitions = Tools.getCurrentRunningDomainResourceDefinition();
+        } else {
+            currentResourceDefinitions = Tools.getCurrentRunningResourceDefinition(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")));
+        }
         System.out.println("Loaded current resource descriptions");
 
         CompareModelVersionsUtil compareModelVersionsUtil = new CompareModelVersionsUtil(compareDifferentVersions, version, legacyModelVersions, legacyResourceDefinitions, currentModelVersions, currentResourceDefinitions);
@@ -229,7 +255,7 @@ public class CompareModelVersionsUtil {
             String id = "attribute '" + legacyEntry.getKey() + "'";
             compareAttributeOrOperationParameter(context, id, currentAttribute, legacyAttribute);
             compareAccessType(context, id, currentAttribute, legacyAttribute);
-            compareStorage(context, id, currentAttribute, legacyAttribute);            
+            compareStorage(context, id, currentAttribute, legacyAttribute);
         }
     }
 
@@ -259,9 +285,10 @@ public class CompareModelVersionsUtil {
 
             ModelNode legacyReply = legacyOperation.get(REPLY_PROPERTIES);
             ModelNode currentReply = currentOperation.get(REPLY_PROPERTIES);
-            if (!currentReply.equals(legacyReply)) {
-                context.println("Different 'reply-properties' for operation '" + operationName + "'. Current: " + currentReply + "; legacy: " + legacyReply);
-            }
+            compareAttributeOrOperationParameter(context, "'reply-properties' for operation '" + operationName + "'", currentReply, legacyReply);
+//            if (!currentReply.equals(legacyReply)) {
+//                context.println("Different 'reply-properties' for operation '" + operationName + "'. Current: " + currentReply + "; legacy: " + legacyReply);
+//            }
         }
     }
 
@@ -280,8 +307,25 @@ public class CompareModelVersionsUtil {
     }
 
     private void compareValueType(CompareContext context, String id, ModelNode current, ModelNode legacy) {
-        if (!current.get(VALUE_TYPE).equals(legacy.get(VALUE_TYPE))) {
-            context.println("Different 'value-type' for " + id + ". Current: " + current.get(VALUE_TYPE) + "; legacy: " + legacy.get(VALUE_TYPE));
+        ModelNode currentValueType = current.get(VALUE_TYPE);
+        ModelNode legacyValueType = legacy.get(VALUE_TYPE);
+        if (!currentValueType.isDefined() && !legacyValueType.isDefined()) {
+            return;
+        }
+        if (isType(legacyValueType) || isType(currentValueType)) {
+            if (!currentValueType.equals(legacyValueType)) {
+                context.println("Different 'value-type' for " + id + ". Current: " + current.get(VALUE_TYPE) + "; legacy: " + legacy.get(VALUE_TYPE));
+            }
+        } else {
+            Map<String, ModelNode> legacyValueTypes =  createMapIndexedByKey(legacyValueType);
+            Map<String, ModelNode> currentValueTypes = createMapIndexedByKey(currentValueType);
+
+            compareKeySetsAndRemoveMissing(context, "value-type for " + id, currentValueTypes, legacyValueTypes);
+            for (Map.Entry<String, ModelNode> entry : currentValueTypes.entrySet()) {
+                ModelNode currentEntry = entry.getValue();
+                ModelNode legacyEntry = legacyValueTypes.get(entry.getKey());
+                compareAttributeOrOperationParameter(context, "value-type key '" + entry.getKey() + "' for " + id, currentEntry, legacyEntry);
+            }
         }
     }
 
@@ -313,6 +357,29 @@ public class CompareModelVersionsUtil {
         }
     }
 
+    private boolean isType(ModelNode node) {
+        if (!node.isDefined()) {
+            return false;
+        }
+        try {
+            node.asType();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private Map<String, ModelNode> createMapIndexedByKey(ModelNode node){
+        Map<String, ModelNode> map = new HashMap<String, ModelNode>();
+        if (!node.isDefined()) {
+            return map;
+        }
+        for (Property prop : node.asPropertyList()) {
+            map.put(prop.getName(), prop.getValue());
+        }
+        return map;
+    }
+
     private void compareChildren(CompareContext context) {
         Set<String> legacyChildTypes = context.getLegacyDefinition().getChildTypes();
         Set<String> currentChildTypes = context.getCurrentDefinition().getChildTypes();
@@ -330,12 +397,18 @@ public class CompareModelVersionsUtil {
                 ModelNode legacyChildDescription = legacyChildEntry.getValue();
                 ModelNode currentChildDescription = currentChildren.get(name);
 
-                CompareContext childContext = new CompareContext(
-                        context.getRootAddress(),
-                        context.getPathAddress().append(PathElement.pathElement(type, name)),
-                        context.isCore(),
-                        new ResourceDefinition(currentChildDescription, currentModelVersions),
-                        new ResourceDefinition(legacyChildDescription, legacyModelVersions));
+                CompareContext childContext;
+                try {
+                    childContext = new CompareContext(
+                            context.getRootAddress(),
+                            context.getPathAddress().append(PathElement.pathElement(type, name)),
+                            context.isCore(),
+                            new ResourceDefinition(currentChildDescription, currentModelVersions),
+                            new ResourceDefinition(legacyChildDescription, legacyModelVersions));
+                } catch (RuntimeException e) {
+                    System.out.println(context.getPathAddress() + " + " + type + "=" + name);
+                    throw e;
+                }
                 compareModel(childContext);
             }
         }

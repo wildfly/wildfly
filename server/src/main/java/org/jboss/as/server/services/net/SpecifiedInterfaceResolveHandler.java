@@ -19,21 +19,27 @@
 package org.jboss.as.server.services.net;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.EnumSet;
 import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -46,11 +52,18 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class SpecifiedInterfaceResolveHandler implements OperationStepHandler, DescriptionProvider {
+public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
 
-    static final AttributeDefinition[] ATTRIBUTES = InterfaceDescription.ROOT_ATTRIBUTES;
+    static final AttributeDefinition[] ATTRIBUTES = InterfaceDefinition.ROOT_ATTRIBUTES;
+    private static final String OPERATION_NAME = "resolve-internet-address";
 
-    public static final String OPERATION_NAME = "resolve-internet-address";
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME,
+            ServerDescriptions.getResourceDescriptionResolver(INTERFACE))
+            .setParameters(ATTRIBUTES)
+            .setReplyType(ModelType.STRING)
+            .setAttributeResolver(CommonDescriptions.getResourceDescriptionResolver(INTERFACE))
+            .withFlags(EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY))
+            .build();
 
     public static final SpecifiedInterfaceResolveHandler INSTANCE = new SpecifiedInterfaceResolveHandler();
 
@@ -100,15 +113,4 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler, D
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-
-        final ResourceDescriptionResolver resolver = ServerDescriptions.getResourceDescriptionResolver("interface");
-        final DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME, resolver, ModelType.STRING);
-        final ModelNode result = delegate.getModelDescription(locale);
-        // Hack. Re-use some existing description. TODO check if adding ATTRIBUTES to delegate will do the job
-        final ModelNode toMerge = SpecifiedInterfaceAddHandler.INSTANCE.getModelDescription(locale);
-        result.get(ModelDescriptionConstants.REQUEST_PROPERTIES).set(toMerge.get(ModelDescriptionConstants.REQUEST_PROPERTIES));
-        return  result;
-    }
 }

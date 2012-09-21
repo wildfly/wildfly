@@ -19,12 +19,24 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.model.test;
+package org.jboss.as.controller.util;
+
+import java.io.File;
+
+import org.jboss.dmr.ModelNode;
 
 /**
- *
+ * Grabs the full domain resource description of a running domain instance and writes it out to {@code target/domain-resource-definition-running.dmr}.
+ * If this is for a released version so that it can be used for comparisons in the future, this file should be copied to
+ * {@code src/test/resources/legacy-models} and {@code running} replaced with the real version of the running server, e.g.
+ * {@code src/test/resources/legacy-models/domain-resource-definition-7.1.2.Final}.
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ModelTestDelegate {
+public class DumpDomainResourceDefinitionUtil {
 
+    public static void main(String[] args) throws Exception {
+        ModelNode resourceDefinition = Tools.getCurrentRunningDomainResourceDefinition();
+        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.DOMAIN.toString().toLowerCase() +
+        		"-resource-definition-running.dmr"));
+    }
 }

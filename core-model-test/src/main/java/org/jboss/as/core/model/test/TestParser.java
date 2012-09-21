@@ -47,29 +47,29 @@ import org.jboss.staxmapper.XMLMapper;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class TestParser implements ModelTestParser {
-    private final ModelType type;
+    private final TestModelType type;
     private final XMLElementReader<List<ModelNode>> reader;
     private final XMLElementWriter<ModelMarshallingContext> writer;
     private volatile ModelWriteSanitizer writeSanitizer;
 
-    public TestParser(ModelType type, XMLElementReader<List<ModelNode>> reader, XMLElementWriter<ModelMarshallingContext> writer) {
+    public TestParser(TestModelType type, XMLElementReader<List<ModelNode>> reader, XMLElementWriter<ModelMarshallingContext> writer) {
         this.type = type;
         this.reader = reader;
         this.writer = writer;
     }
 
-    static TestParser create(XMLMapper xmlMapper, ModelType type) {
+    static TestParser create(XMLMapper xmlMapper, TestModelType type) {
         TestParser testParser;
         String root;
-        if (type == ModelType.STANDALONE) {
+        if (type == TestModelType.STANDALONE) {
             StandaloneXml standaloneXml = new StandaloneXml(null, Executors.newCachedThreadPool(), null);
             testParser = new TestParser(type, standaloneXml, standaloneXml);
             root = "server";
-        } else if (type == ModelType.DOMAIN) {
+        } else if (type == TestModelType.DOMAIN) {
             DomainXml domainXml = new DomainXml(null, Executors.newCachedThreadPool(), null);
             testParser = new TestParser(type, domainXml, domainXml);
             root = "domain";
-        } else if (type == ModelType.HOST) {
+        } else if (type == TestModelType.HOST) {
             HostXml hostXml = new HostXml("master");
             testParser = new TestParser(type, hostXml, hostXml);
             root = "host";
@@ -100,7 +100,7 @@ public class TestParser implements ModelTestParser {
 
     private ModelMarshallingContext wrapPossibleHost(final ModelMarshallingContext context) {
 
-        if (type == ModelType.HOST) {
+        if (type == TestModelType.HOST) {
             return new ModelMarshallingContext() {
 
                 @Override

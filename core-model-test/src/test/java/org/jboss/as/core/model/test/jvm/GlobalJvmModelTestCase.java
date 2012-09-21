@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.core.model.test.KernelServices;
-import org.jboss.as.core.model.test.ModelType;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ import org.junit.Test;
  */
 public abstract class GlobalJvmModelTestCase extends AbstractJvmModelTest {
 
-    public GlobalJvmModelTestCase(ModelType type) {
+    public GlobalJvmModelTestCase(TestModelType type) {
         super(type, false);
     }
 

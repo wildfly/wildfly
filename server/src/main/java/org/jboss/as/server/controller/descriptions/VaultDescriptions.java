@@ -19,15 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.controller.descriptions.common;
+package org.jboss.as.server.controller.descriptions;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -50,27 +46,6 @@ import org.jboss.dmr.ModelType;
 public class VaultDescriptions {
     private static final String RESOURCE_NAME = VaultDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static ModelNode getVaultDescription(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode node = new ModelNode();
-        node.get(DESCRIPTION).set(bundle.getString("vault"));
-
-        node.get(ATTRIBUTES, Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("vault.code"));
-        node.get(ATTRIBUTES, Attribute.CODE.getLocalName(), TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, Attribute.CODE.getLocalName(), NILLABLE).set(true);
-
-        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, DESCRIPTION).set(bundle.getString("vault.options"));
-        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, TYPE).set(ModelType.OBJECT);
-        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, VALUE_TYPE).set(ModelType.STRING);
-        node.get(ATTRIBUTES, ModelDescriptionConstants.VAULT_OPTIONS, NILLABLE).set(true);
-
-        node.get(OPERATIONS); // placeholder
-
-        node.get(CHILDREN).setEmptyObject();
-
-        return node;
-    }
-
     public static ModelNode getVaultAddDescription(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode node = new ModelNode();
@@ -80,7 +55,7 @@ public class VaultDescriptions {
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), DESCRIPTION).set(bundle.getString("vault.code"));
         node.get(REQUEST_PROPERTIES, Attribute.CODE.getLocalName(), REQUIRED).set(false);
 
-        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, DESCRIPTION).set(bundle.getString("vault.options"));
+        node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, DESCRIPTION).set(bundle.getString("vault.vault-options"));
         node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, TYPE).set(ModelType.OBJECT);
         node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, VALUE_TYPE).set(ModelType.STRING);
         node.get(REQUEST_PROPERTIES, ModelDescriptionConstants.VAULT_OPTIONS, REQUIRED).set(false);

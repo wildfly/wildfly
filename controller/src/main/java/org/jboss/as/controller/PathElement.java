@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
 import java.util.regex.Pattern;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * An element of a path specification for matching operations with addresses.

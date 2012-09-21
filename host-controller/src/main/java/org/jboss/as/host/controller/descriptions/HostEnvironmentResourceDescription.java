@@ -49,7 +49,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Kabir Khan
  */
-public class HostControllerResourceDescription extends SimpleResourceDefinition {
+public class HostEnvironmentResourceDescription extends SimpleResourceDefinition {
     public static final PathElement RESOURCE_PATH = PathElement.pathElement(CORE_SERVICE, HOST_ENVIRONMENT);
 
     private static final AttributeDefinition PROCESS_CONTROLLER_ADDRESS = createAttributeDefinition("process-controller-address");
@@ -107,7 +107,7 @@ public class HostControllerResourceDescription extends SimpleResourceDefinition 
      *
      * @param environment the environment the resource is based on.
      */
-    private HostControllerResourceDescription(final HostControllerEnvironment environment) {
+    private HostEnvironmentResourceDescription(final HostControllerEnvironment environment) {
         super(RESOURCE_PATH, HostRootDescription.getResourceDescriptionResolver("host.env"));
         osh = new HostEnvironmentReadHandler(environment);
     }
@@ -119,8 +119,8 @@ public class HostControllerResourceDescription extends SimpleResourceDefinition 
      *
      * @return a new server environment resource description.
      */
-    public static HostControllerResourceDescription of(final HostControllerEnvironment environment) {
-        return new HostControllerResourceDescription(environment);
+    public static HostEnvironmentResourceDescription of(final HostControllerEnvironment environment) {
+        return new HostEnvironmentResourceDescription(environment);
     }
 
     private static AttributeDefinition createAttributeDefinition(String name) {

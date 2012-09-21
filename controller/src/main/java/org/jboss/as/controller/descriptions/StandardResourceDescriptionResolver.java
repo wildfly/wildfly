@@ -270,12 +270,16 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
     private String getVariableBundleKey(String[] fixed, String... variable) {
         StringBuilder sb = new StringBuilder(keyPrefix);
         for (String arg : fixed) {
-            sb.append('.');
+            if (sb.length() > 0) {
+                sb.append('.');
+            }
             sb.append(arg);
         }
         if (variable != null) {
             for (String arg : variable) {
-                sb.append('.');
+                if (sb.length() > 0) {
+                    sb.append('.');
+                }
                 sb.append(arg);
             }
         }

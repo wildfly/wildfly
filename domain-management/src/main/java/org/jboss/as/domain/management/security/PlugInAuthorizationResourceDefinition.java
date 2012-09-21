@@ -23,7 +23,7 @@
 package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 
@@ -36,7 +36,7 @@ public class PlugInAuthorizationResourceDefinition extends AbstractPlugInAuthRes
 
     public PlugInAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.PLUG_IN),
-                ManagementDescription.getResourceDescriptionResolver("core.management.security-realm.authorization.plug-in"),
+                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.authorization.plug-in"),
                 new SecurityRealmChildAddHandler(true, NAME), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

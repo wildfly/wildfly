@@ -21,16 +21,21 @@
 */
 package org.jboss.as.controller.util;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
@@ -126,14 +131,15 @@ public class Tools {
         }
     }
 
-    static ModelNode getCurrentRunningResourceDefinition() throws Exception {
+    static ModelNode getCurrentRunningResourceDefinition(PathAddress pathAddress) throws Exception {
         ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
         try {
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
-            op.get(OP_ADDR).setEmptyList();
+            op.get(OP_ADDR).set(pathAddress.toModelNode());
             op.get(RECURSIVE).set(true);
             op.get(OPERATIONS).set(true);
+            op.get(PROXIES).set(false);
             op.get(INHERITED).set(false);
 
             return Tools.getAndCheckResult(client.execute(op));
@@ -141,6 +147,17 @@ public class Tools {
         } finally {
             IoUtils.safeClose(client);
         }
+    }
+
+    static ModelNode getCurrentRunningDomainResourceDefinition() throws Exception {
+        ModelNode node = getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
+        ModelNode profile = node.get(CHILDREN).require(PROFILE).require(MODEL_DESCRIPTION).require("*");
+        node.get(CHILDREN).require(HOST);
+        node.require(CHILDREN).remove(HOST);
+
+        //Get rid of the profile children. Subsystems are handled for the standalone model
+        profile.get(CHILDREN).setEmptyList();
+        return node;
     }
 
     static int readVersion(ModelNode node, String name) {

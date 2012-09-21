@@ -22,21 +22,23 @@
 
 package org.jboss.as.server.services.net;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import java.net.UnknownHostException;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import java.net.UnknownHostException;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 /**
  * A write attribute handler for handling updates to attributes of a client socket binding.
@@ -48,15 +50,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
  *
  * @author Jaikiran Pai
  */
-class OutboundSocketBindingWriteHandler extends WriteAttributeHandlers.WriteAttributeOperationHandler {
+class OutboundSocketBindingWriteHandler extends WriteAttributeHandlers.AttributeDefinitionValidatingHandler {
 
     private final ParameterValidator resolvedValueValidator;
     private final boolean remoteDestination;
 
-    OutboundSocketBindingWriteHandler(ParameterValidator valueValidator, ParameterValidator resolvedValueValidator,
+    OutboundSocketBindingWriteHandler(final AttributeDefinition attribute,
                                       final boolean remoteDestination) {
-        super(valueValidator);
-        this.resolvedValueValidator = resolvedValueValidator;
+        super(attribute);
+        if (attribute.getValidator() == null) {
+            resolvedValueValidator = new ModelTypeValidator(attribute.getType());
+        } else {
+            this.resolvedValueValidator = attribute.getValidator();
+        }
         this.remoteDestination = remoteDestination;
     }
 

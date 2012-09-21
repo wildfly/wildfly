@@ -27,7 +27,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.ManagementDescription;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -44,9 +44,11 @@ public class TruststoreAuthenticationResourceDefinition extends SimpleResourceDe
 
     public TruststoreAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.TRUSTSTORE),
-                ManagementDescription.getResourceDescriptionResolver("core.management.security-realm.authentication.truststore"),
-                new SecurityRealmChildAddHandler(true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
-                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.authentication.truststore"),
+                new SecurityRealmChildAddHandler(true, ATTRIBUTE_DEFINITIONS),
+                new SecurityRealmChildRemoveHandler(true),
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
     @Override

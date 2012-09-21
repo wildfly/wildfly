@@ -39,8 +39,8 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
@@ -55,11 +55,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
@@ -204,7 +202,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         if (modelNode.hasDefined(SERVER_CONFIG)) {
             writer.writeStartElement(Element.SERVERS.getLocalName());
             // Write the directory grouping
-            HostRootDescription.DIRECTORY_GROUPING.marshallAsAttribute(modelNode, writer);
+            HostResourceDefinition.DIRECTORY_GROUPING.marshallAsAttribute(modelNode, writer);
             writeServers(writer, modelNode.get(SERVER_CONFIG));
             writeNewLine(writer);
             writer.writeEndElement();
