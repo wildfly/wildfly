@@ -319,12 +319,16 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
             }
         }
 
-        checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
+        checkClusterConnectionConstraints(reader, seen);
 
         if(!required.isEmpty()) {
             missingRequired(reader, required);
         }
 
         updates.add(clusterConnectionAdd);
+    }
+
+    protected void checkClusterConnectionConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        checkOnlyOneOfElements(reader, seen, Element.STATIC_CONNECTORS, Element.DISCOVERY_GROUP_REF);
     }
 }

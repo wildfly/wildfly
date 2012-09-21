@@ -42,10 +42,10 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
         context.completeStep();
     }
 
-    public static void checkAlternatives(ModelNode operation, String attr1, String attr2) throws OperationFailedException {
+    public static void checkAlternatives(ModelNode operation, String attr1, String attr2, boolean acceptNone) throws OperationFailedException {
         boolean hasAttr1 = operation.hasDefined(attr1);
         boolean hasAttr2 = operation.hasDefined(attr2);
-        if (!hasAttr1 && !hasAttr2) {
+        if (!hasAttr1 && !hasAttr2 && !acceptNone) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidOperationParameters(attr1, attr2)));
         } else if (hasAttr1 && hasAttr2) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotIncludeOperationParameters(attr1, attr2)));

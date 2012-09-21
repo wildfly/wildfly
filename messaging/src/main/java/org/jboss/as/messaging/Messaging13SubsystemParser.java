@@ -33,6 +33,9 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.Element.DISCOVERY_GROUP_REF;
+import static org.jboss.as.messaging.Element.STATIC_CONNECTORS;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -67,6 +70,15 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
     }
 
     protected Messaging13SubsystemParser() {
+    }
+
+    @Override
+    protected void checkClusterConnectionConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
+        // AS7-5598 relax constraints on the cluster-connection to accept one without static-connectors or discovery-group-ref
+        // howver it is still not valid to have both
+        if (seen.contains(STATIC_CONNECTORS) && seen.contains(DISCOVERY_GROUP_REF)) {
+            throw new XMLStreamException(MESSAGES.onlyOneRequired(STATIC_CONNECTORS.getLocalName(), DISCOVERY_GROUP_REF.getLocalName()), reader.getLocation());
+        }
     }
 
     protected ModelNode createConnectionFactory(XMLExtendedStreamReader reader, ModelNode connectionFactory, boolean pooled) throws XMLStreamException

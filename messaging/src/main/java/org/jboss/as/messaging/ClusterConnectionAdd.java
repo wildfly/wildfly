@@ -60,7 +60,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
 
         model.setEmptyObject();
 
-        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), (DISCOVERY_GROUP_NAME.getName()));
+        AlternativeAttributeCheckHandler.checkAlternatives(operation, CONNECTOR_REFS.getName(), (DISCOVERY_GROUP_NAME.getName()), true);
 
         for (final AttributeDefinition attributeDefinition : ClusterConnectionDefinition.ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);

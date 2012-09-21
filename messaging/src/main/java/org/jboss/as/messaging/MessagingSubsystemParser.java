@@ -1625,7 +1625,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     /**
      * Check one and only one of the 2 elements has been defined
      */
-    protected void checkOnlyOneOfElements(XMLExtendedStreamReader reader, Set<Element> seen, Element element1, Element element2) throws XMLStreamException {
+    protected static void checkOnlyOneOfElements(XMLExtendedStreamReader reader, Set<Element> seen, Element element1, Element element2) throws XMLStreamException {
         if (!seen.contains(element1) && !seen.contains(element2)) {
             throw new XMLStreamException(MESSAGES.required(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
         }
