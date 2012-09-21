@@ -21,20 +21,21 @@
  */
 package org.jboss.as.test.integration.osgi.resource;
 
-import java.net.URL;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.resource.bundle.SimpleBeanServlet;
 import org.jboss.as.test.integration.osgi.resource.bundle.SimpleManagedBean;
 import org.jboss.as.test.integration.osgi.resource.bundle.SimpleServlet;
+import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -49,7 +50,6 @@ import org.junit.runner.RunWith;
  * @author thomas.diesler@jboss.com
  * @since 10-Jul-2012
  */
-@RunAsClient
 @RunWith(Arquillian.class)
 public class BundleContextInjectionTestCase {
 
@@ -61,7 +61,23 @@ public class BundleContextInjectionTestCase {
     private static final String MANAGED_BEAN_JAR = "managed-beans.jar";
 
     @ArquillianResource
-    URL targetURL;
+    ManagementClient managementClient;
+
+    @Deployment
+    public static Archive<?> testDeployment() {
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "osgi-bundlecontext-test");
+        jar.addClasses(HttpRequest.class);
+        jar.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(jar.getName());
+                builder.addBundleManifestVersion(2);
+                return builder.openStream();
+            }
+        });
+        return jar;
+    }
 
     @Deployment(name = WEBAPP_WAR, testable = false)
     public static Archive<?> getSimpleWar() {
@@ -92,33 +108,25 @@ public class BundleContextInjectionTestCase {
     }
 
     @Test
-    @OperateOnDeployment(WEBAPP_WAR)
     public void testSimpleWar() throws Exception {
-        String result = performCall("simple", null);
+        String result = performCall("/webapp/servlet");
         Assert.assertEquals("system.bundle:0.0.0", result);
     }
 
     @Test
-    @OperateOnDeployment(SUB_WEBAPP_EAR)
     public void testSimpleEar() throws Exception {
-        String result = performCall("simple", null);
+        String result = performCall("/sub-webapp/servlet");
         Assert.assertEquals("system.bundle:0.0.0", result);
     }
 
     @Test
-    @OperateOnDeployment(MANAGED_BEAN_EAR)
     public void testManagedBeanEar() throws Exception {
-        String result = performCall("simple", null);
+        String result = performCall("/managed-webapp/servlet");
         Assert.assertEquals("system.bundle:0.0.0", result);
     }
 
-    private String performCall(String pattern, String param) throws Exception {
-        return performCall(null,  pattern, param);
-    }
-
-    private String performCall(String context, String pattern, String param) throws Exception {
-        String urlspec = targetURL.toExternalForm();
-        URL url = new URL(urlspec + pattern + "?input=" + param);
-        return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
+    private String performCall(String path) throws Exception {
+        String urlspec = managementClient.getWebUri() + path;
+        return HttpRequest.get(urlspec, 5, TimeUnit.SECONDS);
     }
 }

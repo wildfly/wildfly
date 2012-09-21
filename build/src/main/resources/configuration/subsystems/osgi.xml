@@ -15,22 +15,22 @@
 	       </properties>
       </replacement>
       <replacement placeholder="CAPABILITIES">
-	       <capabilities>
-	           <!-- modules registered with the OSGi layer on startup -->
-               <capability name="javax.jws.api"/>
-               <capability name="javax.persistence.api"/>
-               <capability name="javax.servlet.api"/>
-               <capability name="javax.transaction.api"/>
-               <capability name="javax.ws.rs.api"/>
-               <capability name="javax.xml.bind.api"/>
-               <capability name="javax.xml.ws.api"/>
-	           <capability name="org.slf4j"/>
-	           <!-- bundles started in startlevel 1 -->
-	           <capability name="org.apache.felix.log" startlevel="1"/>
-	           <capability name="org.jboss.osgi.logging" startlevel="1"/>
-	           <capability name="org.apache.felix.configadmin" startlevel="1"/>
-	           <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-	       </capabilities>
+		<capabilities>
+			<!-- modules registered with the OSGi layer on startup -->
+			<capability name="javax.jws.api"/>
+			<capability name="javax.persistence.api"/>
+			<capability name="javax.servlet.api"/>
+			<capability name="javax.transaction.api"/>
+			<capability name="javax.ws.rs.api"/>
+			<capability name="javax.xml.bind.api"/>
+			<capability name="javax.xml.ws.api"/>
+			<capability name="org.slf4j"/>
+			<!-- bundles started in startlevel 1 -->
+			<capability name="org.apache.felix.log" startlevel="1"/>
+			<capability name="org.jboss.osgi.logging" startlevel="1"/>
+			<capability name="org.apache.felix.configadmin" startlevel="1"/>
+			<capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
+		</capabilities>
       </replacement>
    </supplement>
    <supplement name="osgi-only-example">

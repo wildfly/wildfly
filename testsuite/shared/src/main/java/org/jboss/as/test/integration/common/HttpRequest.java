@@ -42,6 +42,7 @@ import org.jboss.util.Base64;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class HttpRequest {
+
     private static String execute(final Callable<String> task, final long timeout, final TimeUnit unit) throws TimeoutException, IOException {
         final ExecutorService executor = Executors.newSingleThreadExecutor();
         final Future<String> result = executor.submit(task);

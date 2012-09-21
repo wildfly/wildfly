@@ -26,13 +26,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.projectodd.stilts.stomplet.Stomplet;
 
-
-/**
- * The BundleActivator for a simple {@link Stomplet) deployment.
- *
- * @author thomas.diesler@jboss.com
- * @since 07-Sep-2011
- */
 public class SimpleStompletActivator implements BundleActivator {
 
     @Override

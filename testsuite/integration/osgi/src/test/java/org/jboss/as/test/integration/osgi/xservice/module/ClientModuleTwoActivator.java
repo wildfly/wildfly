@@ -22,7 +22,7 @@
 
 package org.jboss.as.test.integration.osgi.xservice.module;
 
-import org.jboss.as.test.integration.osgi.xservice.api.Echo;
+import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;

@@ -30,10 +30,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.jboss.as.test.integration.osgi.bundleA.Echo;
+import org.jboss.as.test.integration.osgi.api.Echo;
 
 @SuppressWarnings("serial")
-@WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/servlet" })
 public class SimpleServlet extends HttpServlet {
 
     private volatile Echo echo;

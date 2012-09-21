@@ -21,36 +21,28 @@
  */
 package org.jboss.as.test.integration.osgi.jpa;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.InputStream;
 
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.DeploymentPlanBuilder;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.integration.osgi.jpa.bundle.Employee;
-import org.jboss.as.test.osgi.OSGiFrameworkUtils;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
- * Test OSGi Persistence deployments
+ * Test simple OSGi Persistence deployment
  *
  * @author thomas.diesler@jboss.com
  * @since 31-Aug-2012
@@ -58,26 +50,24 @@ import org.osgi.service.packageadmin.PackageAdmin;
 @RunWith(Arquillian.class)
 public class PersistenceTestCase {
 
-    static final String BUNDLE_A_JAR = "bundle-a.jar";
-
-    @ArquillianResource
-    public Deployer deployer;
-
     @Inject
-    public BundleContext context;
+    public Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "jpa-test-bundle");
-        archive.addClasses(OSGiFrameworkUtils.class);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-jpa-bundle");
+        archive.addClasses(Employee.class, FrameworkUtils.class);
+        archive.addAsResource(Employee.class.getPackage(), "simple-persistence.xml", "META-INF/persistence.xml");
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(ServerDeploymentHelper.class, ModelControllerClient.class, DeploymentPlanBuilder.class);
-                builder.addImportPackages(PackageAdmin.class);
+                // The Meta-Persistence header may include zero or more comma-separated jar-paths.
+                // Each a path to a Persistence Descriptor resource in the bundle.
+                builder.addManifestHeader("Meta-Persistence", "");
+                builder.addImportPackages(EntityManagerFactory.class, ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -85,68 +75,30 @@ public class PersistenceTestCase {
     }
 
     @Test
-    @Ignore("[AS7-3694] Allow management client to associate metadata with DeploymentUnit")
-    public void testExplicitStart() throws Exception {
-
-        InputStream input = deployer.getDeployment(BUNDLE_A_JAR);
-        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
-        String runtimeName = server.deploy(BUNDLE_A_JAR, input);
+    public void testEntityManagerFactoryService() throws Exception {
+        EntityManagerFactory emf = null;
         try {
-            Bundle bundle = OSGiFrameworkUtils.getDeployedBundle(context, runtimeName, null);
-            assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
+            emf = FrameworkUtils.waitForService(bundle.getBundleContext(), EntityManagerFactory.class);
+            Assert.assertNotNull("EntityManagerFactory not null", emf);
 
-            bundle.start();
-            assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+            Employee emp = new Employee();
+            emp.setId(100);
+            emp.setAddress("Sesame Street");
+            emp.setName("Kermit");
 
-            /*
-            EntityManagerFactory emf = null;
-            try {
-                emf = OSGiFrameworkUtils.waitForService(bundle.getBundleContext(), EntityManagerFactory.class);
-                Assert.assertNotNull("EntityManagerFactory not null", emf);
+            EntityManager em = emf.createEntityManager();
+            em.persist(emp);
 
-                Employee emp = new Employee();
-                emp.setId(100);
-                emp.setAddress("Sesame Street");
-                emp.setName("Kermit");
+            emp = em.find(Employee.class, 100);
+            Assert.assertNotNull("Employee not null", emp);
 
-                EntityManager em = emf.createEntityManager();
-                em.persist(emp);
+            em.remove(emp);
 
-                emp = em.find(Employee.class, 100);
-                Assert.assertNotNull("Employee not null", emp);
-
-                em.remove(emp);
-
-            } finally {
-                if (emf != null) {
-                    emf.close();
-                }
-            }
-            */
         } finally {
-            server.undeploy(runtimeName);
+            if (emf != null) {
+                emf.close();
+            }
         }
     }
 
-    private ModelControllerClient getModelControllerClient() {
-        ServiceReference sref = context.getServiceReference(ModelControllerClient.class.getName());
-        return (ModelControllerClient) context.getService(sref);
-    }
-
-    @Deployment(name = BUNDLE_A_JAR, managed = false, testable = false)
-    public static Archive<?> getPersistenceBundle() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A_JAR);
-        archive.addAsResource(Employee.class.getPackage(), "persistence-a.xml", "META-INF/persistence.xml");
-        archive.setManifest(new Asset() {
-            @Override
-            public InputStream openStream() {
-                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
-                builder.addBundleSymbolicName(archive.getName());
-                builder.addBundleManifestVersion(2);
-                builder.addManifestHeader("Meta-Persistence", "");
-                return builder.openStream();
-            }
-        });
-        return archive;
-    }
 }

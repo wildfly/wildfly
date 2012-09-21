@@ -27,7 +27,7 @@ import javax.annotation.Resource;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
-import org.jboss.as.test.integration.osgi.xservice.api.Echo;
+import org.jboss.as.test.integration.osgi.api.Echo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
