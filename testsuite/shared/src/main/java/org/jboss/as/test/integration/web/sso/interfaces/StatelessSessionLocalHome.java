@@ -26,9 +26,9 @@ import javax.ejb.EJBLocalHome;
 
 /**
  * A trivial local SessionBean home interface.
- * 
+ *
  * @author Scott.Stark@jboss.org
  */
 public interface StatelessSessionLocalHome extends EJBLocalHome {
-    public StatelessSessionLocal create() throws CreateException;
+    StatelessSessionLocal create() throws CreateException;
 }

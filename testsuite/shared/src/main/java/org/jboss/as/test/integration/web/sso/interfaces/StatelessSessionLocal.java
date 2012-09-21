@@ -27,15 +27,15 @@ import javax.ejb.EJBLocalObject;
 
 /**
  * A trivial SessionBean local interface.
- * 
+ *
  * @author Scott.Stark@jboss.org
  */
 public interface StatelessSessionLocal extends EJBLocalObject {
 
     /** A method that returns its arg */
-    public String echo(String arg) throws RemoteException;
-    
+    String echo(String arg) throws RemoteException;
+
     /** A method that does nothing. It is used to test call optimization. */
-    public void noop();
+    void noop();
 
 }
