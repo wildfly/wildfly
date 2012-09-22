@@ -182,6 +182,7 @@ public interface OperationContext extends ExpressionResolver {
      * </p>
      *
      * @return the operation result action to take
+     *
      */
     ResultAction completeStep();
 
@@ -769,6 +770,25 @@ public interface OperationContext extends ExpressionResolver {
                 // no-op
             }
         };
+
+        /**
+         * A {@link RollbackHandler} that calls {@link OperationContext#revertReloadRequired()}. Intended for use by
+         * operation step handlers call {@link OperationContext#reloadRequired()} and perform no other actions
+         * that need to be rolled back.
+         */
+        RollbackHandler REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER = new RollbackHandler() {
+            /**
+             * Does nothing.
+             *
+             * @param context  ignored
+             * @param operation ignored
+             */
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                context.revertReloadRequired();
+            }
+        };
+
 
         /**
          * Callback to an {@link OperationStepHandler} indicating that the overall operation is being
