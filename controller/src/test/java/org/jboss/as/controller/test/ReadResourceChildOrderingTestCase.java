@@ -91,7 +91,7 @@ public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBas
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     createModel(context, model);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, new DescriptionProvider() {
             @Override

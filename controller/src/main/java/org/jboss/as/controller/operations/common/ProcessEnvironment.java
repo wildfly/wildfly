@@ -180,7 +180,7 @@ public abstract class ProcessEnvironment {
                 context.getResult().set(ProcessEnvironment.this.getProcessName());
             }
 
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 }

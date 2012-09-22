@@ -114,6 +114,7 @@ class PathWriteAttributeHandler extends WriteAttributeHandlers.WriteAttributeOpe
                 }
             }, Stage.RUNTIME);
         }
-        context.completeStep();
+
+        context.stepCompleted();
     }
 }

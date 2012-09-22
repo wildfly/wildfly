@@ -100,7 +100,8 @@ public abstract class ProcessReloadHandler<T extends RunningModeControl> impleme
                 }
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+
+        context.stepCompleted();
     }
 
     /** {@inheritDoc} */

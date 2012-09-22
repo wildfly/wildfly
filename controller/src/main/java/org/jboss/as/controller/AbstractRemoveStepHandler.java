@@ -64,7 +64,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     protected void performRemove(OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {

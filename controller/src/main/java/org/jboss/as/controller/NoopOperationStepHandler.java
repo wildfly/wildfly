@@ -56,6 +56,6 @@ public class NoopOperationStepHandler implements OperationStepHandler {
         if (setResult) {
             context.getResult();
         }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 }

@@ -74,7 +74,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 context.getFailureDescription().set(MESSAGES.operationCancelled());
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 return;
             }
         }
@@ -126,7 +126,7 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
         for (ServiceController<?> controller : set) {
             controller.removeListener(this);
         }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     public synchronized void listenerAdded(final ServiceController<?> controller) {

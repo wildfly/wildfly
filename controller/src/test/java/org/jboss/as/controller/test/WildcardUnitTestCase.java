@@ -111,7 +111,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
 
                     createModel(context, model);
 
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, NULL);
 
@@ -137,7 +137,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
                 context.getResult().set(descriptionProvider.getModelDescription(null));
             }
 
-            context.completeStep();
+            context.stepCompleted();
         }
 
     }

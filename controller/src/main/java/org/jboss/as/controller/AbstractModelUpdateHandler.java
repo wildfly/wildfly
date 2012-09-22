@@ -52,14 +52,16 @@ public abstract class AbstractModelUpdateHandler implements OperationStepHandler
                     if(requiresRuntimeVerification()) {
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
                     }
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        rollbackRuntime(context, operation, model, controllers);
-                    }
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            rollbackRuntime(context, operation, model, controllers);
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     /**

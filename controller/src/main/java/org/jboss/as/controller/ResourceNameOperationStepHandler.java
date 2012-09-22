@@ -48,6 +48,6 @@ public class ResourceNameOperationStepHandler implements OperationStepHandler {
 
         context.getResult().set(name);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 }

@@ -116,7 +116,7 @@ public class WriteAttributeHandlers {
         protected void modelChanged(final OperationContext context, final ModelNode operation, final String attributeName,
                                     final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 

@@ -56,7 +56,7 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
     public void execute(final OperationContext context, final ModelNode operation) {
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         final List<ModelNode> list = operation.get(STEPS).asList();
-        ModelNode responseMap = context.getResult().setEmptyObject();
+        final ModelNode responseMap = context.getResult().setEmptyObject();
         Map<String, OperationStepHandler> stepHandlerMap = new HashMap<String, OperationStepHandler>();
         final int size = list.size();
         // Validate all needed handlers are available.
@@ -70,7 +70,7 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
             OperationStepHandler stepHandler = registry.getOperationHandler(stepAddress, stepOpName);
             if (stepHandler == null) {
                 context.getFailureDescription().set(MESSAGES.noHandler(stepOpName, stepAddress));
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 return;
             }
             stepHandlerMap.put(stepName, stepHandler);
@@ -82,20 +82,23 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
             context.addStep(responseMap.get(stepName).setEmptyObject(), subOperation, stepHandlerMap.get(stepName), OperationContext.Stage.IMMEDIATE);
         }
 
-        if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-            final ModelNode failureMsg = new ModelNode();
-            for (int i = 0; i < size; i++) {
-                String stepName = "step-" + (i+1);
-                ModelNode stepResponse = responseMap.get(stepName);
-                if (stepResponse.hasDefined(FAILURE_DESCRIPTION)) {
-                    failureMsg.get(MESSAGES.compositeOperationFailed(), MESSAGES.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                final ModelNode failureMsg = new ModelNode();
+                for (int i = 0; i < size; i++) {
+                    String stepName = "step-" + (i+1);
+                    ModelNode stepResponse = responseMap.get(stepName);
+                    if (stepResponse.hasDefined(FAILURE_DESCRIPTION)) {
+                        failureMsg.get(MESSAGES.compositeOperationFailed(), MESSAGES.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
+                    }
                 }
+                if (!failureMsg.isDefined()) {
+                    failureMsg.set(MESSAGES.compositeOperationRolledBack());
+                }
+                context.getFailureDescription().set(failureMsg);
             }
-            if (!failureMsg.isDefined()) {
-                failureMsg.set(MESSAGES.compositeOperationRolledBack());
-            }
-            context.getFailureDescription().set(failureMsg);
-        }
+        });
     }
 
     @Override

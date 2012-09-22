@@ -75,7 +75,7 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final ModelNode result = context.getResult();
         describe(resource, address, result, context.getResourceRegistration());
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected void describe(final Resource resource, final ModelNode address, ModelNode result, final ImmutableManagementResourceRegistration registration) {

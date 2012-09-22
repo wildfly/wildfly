@@ -127,7 +127,7 @@ public class ProxyStepHandler implements OperationStepHandler {
             if (finalResult.hasDefined(RESPONSE_HEADERS)) {
                 context.getResponseHeaders().set(finalResult.get(RESPONSE_HEADERS));
             }
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } else {
 
             completeRemoteTransaction(context, operation, txRef, preparedResultRef, finalResultRef);
@@ -153,6 +153,7 @@ public class ProxyStepHandler implements OperationStepHandler {
             }
 
             OperationContext.ResultAction resultAction = context.completeStep();
+
             ModelController.OperationTransaction tx = txRef.get();
             try {
                 if (resultAction == OperationContext.ResultAction.KEEP) {

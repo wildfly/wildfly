@@ -50,7 +50,7 @@ public class SnapshotTakeHandler implements OperationStepHandler, DescriptionPro
         try {
             String name = persister.snapshot();
             context.getResult().set(name);
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (ConfigurationPersistenceException e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
         }

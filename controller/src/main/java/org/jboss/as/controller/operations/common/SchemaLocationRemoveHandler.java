@@ -90,7 +90,7 @@ public class SchemaLocationRemoveHandler implements OperationStepHandler, Descri
             throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaNotFound(uri)));
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override
