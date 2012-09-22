@@ -124,12 +124,12 @@ public class InfinispanDescriptions {
         container.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MIN_OCCURS).set(0);
         container.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
         container.get(CHILDREN, ModelKeys.INVALIDATION_CACHE, MODEL_DESCRIPTION);
-        // information about its child "local-cache"
+        // information about its child "replicated-cache"
         container.get(CHILDREN, ModelKeys.REPLICATED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".replicated-cache"));
         container.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MIN_OCCURS).set(0);
         container.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
         container.get(CHILDREN, ModelKeys.REPLICATED_CACHE, MODEL_DESCRIPTION);
-        // information about its child "local-cache"
+        // information about its child "distributed-cache"
         container.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, DESCRIPTION).set(resources.getString(keyPrefix + ".distributed-cache"));
         container.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MIN_OCCURS).set(0);
         container.get(CHILDREN, ModelKeys.DISTRIBUTED_CACHE, MAX_OCCURS).set(Integer.MAX_VALUE);
@@ -169,6 +169,11 @@ public class InfinispanDescriptions {
         return op;
     }
 
+    static ModelNode getCacheContainerClearCachesCommandDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription("clear-caches", resources, "infinispan.container.clear-caches");
+        return op;
+    }
 
     // local caches
     static ModelNode getLocalCacheDescription(Locale locale) {
