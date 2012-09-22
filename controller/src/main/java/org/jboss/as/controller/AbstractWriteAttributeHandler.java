@@ -110,32 +110,35 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : newValue.resolve();
+                    final ModelNode resolvedValue = attributeDefinition != null ? attributeDefinition.resolveModelAttribute(context, submodel) : newValue.resolve();
                     validateResolvedValue(attributeName, newValue);
-                    HandbackHolder<T> handback = new HandbackHolder<T>();
-                    boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
+                    final HandbackHolder<T> handback = new HandbackHolder<T>();
+                    final boolean restartRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
                     if (restartRequired) {
                         context.reloadRequired();
                     }
 
-                    if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-                        ModelNode valueToRestore = currentValue.resolve();
-                        try {
-                            revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue, handback.handback);
-                        } catch (Exception e) {
-                            MGMT_OP_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
-                                    operation.require(ModelDescriptionConstants.OP).asString(),
-                                    PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            ModelNode valueToRestore = currentValue.resolve();
+                            try {
+                                revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue, handback.handback);
+                            } catch (Exception e) {
+                                MGMT_OP_LOGGER.errorRevertingOperation(e, getClass().getSimpleName(),
+                                        operation.require(ModelDescriptionConstants.OP).asString(),
+                                        PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+                            }
+                            if (restartRequired) {
+                                context.revertReloadRequired();
+                            }
                         }
-                        if (restartRequired) {
-                            context.revertReloadRequired();
-                        }
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
 

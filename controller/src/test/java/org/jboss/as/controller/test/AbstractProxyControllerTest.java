@@ -633,7 +633,7 @@ public abstract class AbstractProxyControllerTest {
                     mainModel.get("profile", "profileA").get(NAME).set("Profile A");
 
                     AbstractControllerTestBase.createModel(context, mainModel);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, new DescriptionProvider() {
                 @Override
@@ -697,7 +697,7 @@ public abstract class AbstractProxyControllerTest {
                     new OperationStepHandler() {
                         @Override
                         public void execute(OperationContext context, ModelNode operation) {
-                            context.completeStep();
+                            context.stepCompleted();
                         }
                     },
                     new DescriptionProvider() {
@@ -721,7 +721,7 @@ public abstract class AbstractProxyControllerTest {
                     proxyModel.get("serverchild", "svrA", "child", "childA", "value").set("childValue");
 
                     AbstractControllerTestBase.createModel(context, proxyModel);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, new DescriptionProvider() {
                 @Override

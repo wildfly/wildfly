@@ -81,7 +81,7 @@ public class ExtensionAddHandler implements OperationStepHandler {
             }
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     void initializeExtension(String module) throws OperationFailedException {

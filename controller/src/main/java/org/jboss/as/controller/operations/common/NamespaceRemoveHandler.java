@@ -91,7 +91,7 @@ public class NamespaceRemoveHandler implements OperationStepHandler, Description
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.namespaceNotFound(prefix)));
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

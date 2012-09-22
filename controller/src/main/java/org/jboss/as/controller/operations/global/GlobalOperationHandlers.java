@@ -296,7 +296,7 @@ public class GlobalOperationHandlers {
                     }
                 }
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
 
         /**
@@ -414,7 +414,7 @@ public class GlobalOperationHandlers {
                 }
             }
 
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 
@@ -465,7 +465,7 @@ public class GlobalOperationHandlers {
                     }
                 }
                 // Complete the step for the unregistered attribute case
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             } else if (attributeAccess.getReadHandler() == null) {
                 // We know the attribute name is legit as it's in the registry, so this case is simpler
                 if (subModel.hasDefined(attributeName) || !defaults) {
@@ -483,7 +483,7 @@ public class GlobalOperationHandlers {
                     }
                 }
                 // Complete the step for the "registered attribute but default read handler" case
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             } else {
                 OperationStepHandler handler = attributeAccess.getReadHandler();
                 ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
@@ -582,7 +582,7 @@ public class GlobalOperationHandlers {
                 result.add(childName);
             }
 
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 
@@ -656,7 +656,8 @@ public class GlobalOperationHandlers {
                 resources.put(childPath, rrRsp);
                 context.addStep(rrRsp, readOp, handler, OperationContext.Stage.IMMEDIATE);
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+            context.stepCompleted();
         }
     }
 
@@ -706,11 +707,11 @@ public class GlobalOperationHandlers {
                         }
                     }
 
-                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.VERIFY);
 
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 
@@ -727,7 +728,7 @@ public class GlobalOperationHandlers {
             for (final String key : childTypes) {
                 result.add(key);
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     };
 
@@ -755,7 +756,7 @@ public class GlobalOperationHandlers {
                 result.setEmptyList();
             }
             context.getResult().set(result);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     };
 
@@ -791,7 +792,7 @@ public class GlobalOperationHandlers {
 
                 context.getResult().set(result);
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     };
 
@@ -823,7 +824,7 @@ public class GlobalOperationHandlers {
                                 doExecute(context, operation);
                             }
                         }), OperationContext.Stage.IMMEDIATE);
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             } else {
                 doExecute(context, operation);
             }
@@ -951,7 +952,8 @@ public class GlobalOperationHandlers {
                     nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
                 }
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+            context.stepCompleted();
         }
     };
 
@@ -999,7 +1001,7 @@ public class GlobalOperationHandlers {
             }
 
             context.getResult().set(nodeDescription);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 
@@ -1030,7 +1032,7 @@ public class GlobalOperationHandlers {
                         doExecute(context, operation);
                     }
                 }), OperationContext.Stage.IMMEDIATE);
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             } else {
                 doExecute(context, operation);
             }
@@ -1065,7 +1067,7 @@ public class GlobalOperationHandlers {
         public void execute(final OperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             execute(address, PathAddress.EMPTY_ADDRESS, context);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
 
         void execute(final PathAddress address, final PathAddress base, final OperationContext context) {
@@ -1141,7 +1143,7 @@ public class GlobalOperationHandlers {
         public void execute(final OperationContext context, final ModelNode ignored) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             execute(address, PathAddress.EMPTY_ADDRESS, context);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
 
         void execute(final PathAddress address, PathAddress base, final OperationContext context) {

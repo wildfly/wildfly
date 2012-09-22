@@ -48,6 +48,6 @@ public class ReadResourceNameOperationStepHandler implements OperationStepHandle
 
         context.getResult().set(name);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 }

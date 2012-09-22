@@ -1044,7 +1044,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (!missingByStep.isEmpty() && context.isRollbackOnRuntimeFailure()) {
                 context.setRollbackOnly();
             }
-            context.completeStep();
+            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 

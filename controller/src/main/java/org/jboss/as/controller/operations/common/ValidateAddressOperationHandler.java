@@ -87,7 +87,7 @@ public class ValidateAddressOperationHandler implements OperationStepHandler, De
                     final OperationStepHandler proxyHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, OPERATION_NAME);
                     if(proxyHandler != null) {
                         context.addStep(newOperation, proxyHandler, OperationContext.Stage.IMMEDIATE);
-                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                        context.stepCompleted();
                         return;
                     }
                 }
@@ -95,12 +95,12 @@ public class ValidateAddressOperationHandler implements OperationStepHandler, De
                 // Invalid
                 context.getResult().get(VALID).set(false);
                 context.getResult().get(PROBLEM).set(ControllerMessages.MESSAGES.childResourceNotFound(next));
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
                 return;
             }
         }
         context.getResult().get(VALID).set(true);
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override

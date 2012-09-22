@@ -1,6 +1,7 @@
 package org.jboss.as.controller.transform;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -62,12 +63,7 @@ public class SessionDefinition extends SimpleResourceDefinition {
 
         final String name = "dump-session-info";
         DefaultOperationDescriptionProvider desc = new DefaultOperationDescriptionProvider(name, getResourceDescriptionResolver(), DEBUG);
-        registry.registerOperationHandler(name, new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                context.completeStep();
-            }
-        }, desc);
+        registry.registerOperationHandler(name, NoopOperationStepHandler.WITHOUT_RESULT, desc);
 
     }
 }

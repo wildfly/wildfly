@@ -106,7 +106,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             List<ParsedBootOp> subsystemRuntimeOps = new ArrayList<ParsedBootOp>();
             runtimeOpsBySubsystem.put(subsystemName, subsystemRuntimeOps);
 
-            final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(subsystemName, preparedLatch, committedLatch, completeLatch);
+            final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(preparedLatch, committedLatch, completeLatch);
             transactionControls.put(entry.getKey(), txControl);
 
             // Execute the subsystem's ops in another thread
@@ -161,7 +161,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         OperationContext.ResultAction resultAction = context.completeStep();
 
         // Tell all the subsystem tasks the result of the operations
-        notifySubsystemTransactions(transactionControls, resultAction, committedLatch, OperationContext.Stage.RUNTIME);
+        notifySubsystemTransactions(transactionControls, resultAction == OperationContext.ResultAction.ROLLBACK, committedLatch, OperationContext.Stage.RUNTIME);
 
         // Make sure all the subsystems have completed the out path before we return
         try {
@@ -195,13 +195,13 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     }
 
     private void notifySubsystemTransactions(final Map<String, ParallelBootTransactionControl> transactionControls,
-                                             final OperationContext.ResultAction resultAction,
+                                             final boolean rollback,
                                              final CountDownLatch committedLatch,
                                              final OperationContext.Stage stage) {
         for (Map.Entry<String, ParallelBootTransactionControl> entry : transactionControls.entrySet()) {
             ParallelBootTransactionControl txControl = entry.getValue();
             if (txControl.transaction != null) {
-                if (resultAction == OperationContext.ResultAction.KEEP) {
+                if (!rollback) {
                     txControl.transaction.commit();
                     MGMT_OP_LOGGER.debugf("Committed transaction for %s subsystem %s stage boot operations", entry.getKey(), stage);
                 } else {
@@ -232,7 +232,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
                 for (Map.Entry<String, List<ParsedBootOp>> entry : runtimeOpsBySubsystem.entrySet()) {
                     String subsystemName = entry.getKey();
-                    final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(subsystemName, preparedLatch, committedLatch, completeLatch);
+                    final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(preparedLatch, committedLatch, completeLatch);
                     transactionControls.put(subsystemName, txControl);
 
                     // Execute the subsystem's ops in another thread
@@ -262,7 +262,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 OperationContext.ResultAction resultAction = context.completeStep();
 
                 // Tell all the subsystem tasks the result of the operations
-                notifySubsystemTransactions(transactionControls, resultAction, committedLatch, OperationContext.Stage.MODEL);
+                notifySubsystemTransactions(transactionControls, resultAction == OperationContext.ResultAction.ROLLBACK, committedLatch, OperationContext.Stage.MODEL);
 
                 // Make sure all the subsystems have completed the out path before we return
                 try {
@@ -353,7 +353,6 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
     private static class ParallelBootTransactionControl implements ProxyController.ProxyOperationControl {
 
-        private final String subsystemName;
         private final CountDownLatch preparedLatch;
         private final CountDownLatch committedLatch;
         private final CountDownLatch completeLatch;
@@ -361,11 +360,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         private ModelController.OperationTransaction transaction;
         private boolean signalled;
 
-        public ParallelBootTransactionControl(String subsystemName, CountDownLatch preparedLatch, CountDownLatch committedLatch, CountDownLatch completeLatch) {
+        public ParallelBootTransactionControl(CountDownLatch preparedLatch, CountDownLatch committedLatch, CountDownLatch completeLatch) {
             this.preparedLatch = preparedLatch;
             this.committedLatch = committedLatch;
             this.completeLatch = completeLatch;
-            this.subsystemName = subsystemName;
         }
 
         @Override

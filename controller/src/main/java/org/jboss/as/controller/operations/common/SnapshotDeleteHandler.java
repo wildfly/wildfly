@@ -50,7 +50,7 @@ public class SnapshotDeleteHandler implements OperationStepHandler, DescriptionP
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
         try {
             persister.deleteSnapshot(name);
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (Exception e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
         }

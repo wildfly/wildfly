@@ -93,12 +93,16 @@ public class ValidateOperationHandler implements OperationStepHandler, Descripti
             ModelNode proxyOp = operation.clone();
             proxyOp.get(OP_ADDR).set(proxyAddr.toModelNode());
             proxyOp.get(VALUE, OP_ADDR).set(translator.translateAddress(addr).toModelNode());
-            ModelNode result = new ModelNode();
+            final ModelNode result = new ModelNode();
 
             context.addStep(result, proxyOp, proxyReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, VALIDATE_OPERATION), Stage.IMMEDIATE);
-            if( context.completeStep() == ResultAction.ROLLBACK) {
-                context.getFailureDescription().set(result.get(FAILURE_DESCRIPTION));
-            }
+            context.completeStep(new OperationContext.RollbackHandler() {
+
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    context.getFailureDescription().set(result.get(FAILURE_DESCRIPTION));
+                }
+            });
         } else {
             try {
                 new OperationValidator(context.getResourceRegistration(), false, false).validateOperation(op);

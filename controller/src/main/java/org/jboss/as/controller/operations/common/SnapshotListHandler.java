@@ -56,7 +56,7 @@ public class SnapshotListHandler implements OperationStepHandler, DescriptionPro
             for (String name : info.names()) {
                 result.get(ModelDescriptionConstants.NAMES).add(name);
             }
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (Exception e) {
             throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
         }

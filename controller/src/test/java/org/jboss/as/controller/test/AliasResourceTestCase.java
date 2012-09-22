@@ -818,7 +818,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             context.getResult().set("runtime");
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 
@@ -846,7 +846,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             context.getResult().set(value);
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 
@@ -885,7 +885,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
             ModelNode aliasOp = operation.clone();
             aliasOp.get(NAME).set(targetAttribute);
             context.addStep(aliasOp, step, Stage.IMMEDIATE);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
 
 

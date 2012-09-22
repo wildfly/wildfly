@@ -181,7 +181,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
                 createModel(context, model);
 
-                context.completeStep();
+                context.stepCompleted();
             }
         }, new DescriptionProvider() {
             @Override
@@ -441,7 +441,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             @Override
             public void execute(OperationContext context, ModelNode operation) {
                 context.getResult().set("Overridden by special read handler");
-                context.completeStep();
+                context.stepCompleted();
             }
         }, AttributeAccess.Storage.CONFIGURATION);
 
@@ -474,7 +474,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         @Override
         public void execute(final OperationContext context, final ModelNode operation) {
             context.getResult().set(random.nextInt());
-            context.completeStep();
+            context.stepCompleted();
         }
 
     }

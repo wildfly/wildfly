@@ -84,7 +84,7 @@ public class XmlMarshallingHandler implements OperationStepHandler, DescriptionP
                     PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
             context.getFailureDescription().set(e.toString());
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected PathAddress getBaseAddress() {

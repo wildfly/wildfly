@@ -40,7 +40,7 @@ public class SubsystemDescriptionDump implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         String path = PATH.resolveModelAttribute(context, operation).asString();
         dumpManagementResourceRegistration(extensionRegistry, path);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     public static void dumpManagementResourceRegistration(final ExtensionRegistry registry, final String path) throws OperationFailedException{

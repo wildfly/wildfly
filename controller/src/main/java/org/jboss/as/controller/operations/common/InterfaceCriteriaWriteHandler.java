@@ -92,9 +92,10 @@ public final class InterfaceCriteriaWriteHandler implements OperationStepHandler
         }
         // Verify the model in a later step
         context.addStep(VERIFY_HANDLER, OperationContext.Stage.MODEL);
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && updateRuntime) {
-            context.revertReloadRequired();
-        }
+        OperationContext.RollbackHandler rollbackHandler = updateRuntime
+                ? OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER
+                : OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
+        context.completeStep(rollbackHandler);
     }
 
     static class ModelValidationStep implements OperationStepHandler {
