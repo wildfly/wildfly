@@ -53,12 +53,12 @@ public class RaActivate implements OperationStepHandler {
                     final String archiveName = model.get(ARCHIVE.getName()).asString();
 
                     RaOperationUtil.activate(context, raName, archiveName);
-
-                    context.completeStep();
+                    // TODO AS7-5608 handle rollback
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
 }

@@ -53,11 +53,11 @@ public class ClearStatisticsHandler implements OperationStepHandler {
                     for (StatisticsPlugin statsPlugin : stats) {
                         statsPlugin.clear();
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 }
 

@@ -67,11 +67,11 @@ public abstract class PoolOperations implements OperationStepHandler {
                             context.getResult().set(operationResult);
                         }
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract ModelNode invokeCommandOn(Pool pool) throws Exception;

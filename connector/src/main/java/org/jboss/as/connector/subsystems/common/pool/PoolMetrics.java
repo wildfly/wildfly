@@ -66,12 +66,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                             throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                         }
                     }
-                   context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     protected abstract List<StatisticsPlugin> getMatchingStats(String jndiName, ManagementRepository repository);
@@ -89,7 +89,6 @@ public abstract class PoolMetrics implements OperationStepHandler {
             if (context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
                     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
                         final String attributeName = operation.require(NAME).asString();
 
                         final ServiceController<?> managementRepoService = context.getServiceRegistry(false).getService(
@@ -103,12 +102,12 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
                             }
                         }
-                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                        context.stepCompleted();
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
 
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
 
         }
 

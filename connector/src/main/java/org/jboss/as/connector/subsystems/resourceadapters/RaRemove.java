@@ -79,11 +79,14 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
 
                 }
                 context.removeService(raServiceName);
-                if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                    // TODO:  RE-ADD SERVICES
-                }
+                context.completeStep(new OperationContext.RollbackHandler() {
+                    @Override
+                    public void handleRollback(OperationContext context, ModelNode operation) {
+                        // TODO:  AS7-5609 RE-ADD SERVICES
+                    }
+                });
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+        context.stepCompleted();
     }
 }

@@ -75,7 +75,7 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
             }
         }
         context.getResult().set(result);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void addProtocolPropertyCommands(ModelNode protocol, ModelNode address, ModelNode result) throws OperationFailedException {
