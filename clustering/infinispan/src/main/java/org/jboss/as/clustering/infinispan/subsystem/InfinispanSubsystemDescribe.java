@@ -56,7 +56,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
         // add operations to recreate the cache container ModelNodes in their current state
         addCacheContainerCommands(subsystemModel, rootAddress.toModelNode(), result);
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     /**

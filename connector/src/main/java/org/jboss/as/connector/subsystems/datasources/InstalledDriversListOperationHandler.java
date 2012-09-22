@@ -70,13 +70,13 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                         driverNode.get(JDBC_COMPLIANT).set(driver.isJdbcCompliant());
                         result.add(driverNode);
                     }
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set(MESSAGES.noMetricsAvailable());
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

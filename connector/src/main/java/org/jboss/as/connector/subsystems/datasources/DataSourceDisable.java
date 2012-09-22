@@ -160,10 +160,16 @@ public class DataSourceDisable implements OperationStepHandler {
                     }
                 }, OperationContext.Stage.RUNTIME);
             } else {
-                context.restartRequired();
+                context.addStep(new OperationStepHandler() {
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        context.reloadRequired();
+                        context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
+                    }
+                }, OperationContext.Stage.RUNTIME);
             }
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     public void reEnable(final OperationContext context, final ModelNode operation) throws OperationFailedException {

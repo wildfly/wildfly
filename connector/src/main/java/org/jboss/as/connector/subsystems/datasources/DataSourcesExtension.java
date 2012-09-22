@@ -927,7 +927,7 @@ public class DataSourcesExtension implements Extension {
                 }
             }
 
-            context.completeStep();
+            context.stepCompleted();
         }
 
         @Override

@@ -103,7 +103,7 @@ public class CacheConfigOperationHandlers {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -114,7 +114,7 @@ public class CacheConfigOperationHandlers {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             CommonAttributes.VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -124,7 +124,7 @@ public class CacheConfigOperationHandlers {
             final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             CommonAttributes.VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -155,7 +155,7 @@ public class CacheConfigOperationHandlers {
 
             // This needs a reload
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
 
         void process(ModelNode subModel, ModelNode operation) {
@@ -480,9 +480,7 @@ public class CacheConfigOperationHandlers {
 //                        context.reloadRequired();
 //                    }
                     context.reloadRequired();
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.revertReloadRequired();
-                    }
+                    context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }

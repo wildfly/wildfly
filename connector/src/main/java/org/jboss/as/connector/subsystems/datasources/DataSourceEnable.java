@@ -90,11 +90,12 @@ public class DataSourceEnable implements OperationStepHandler {
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     addServices(context, operation, verificationHandler, model, isXa());
                     context.addStep(verificationHandler, Stage.VERIFY);
-                    context.completeStep();
+                    // TODO AS7-5607 handle rollback
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     static void addServices(OperationContext context, ModelNode operation, ServiceVerificationHandler verificationHandler, ModelNode model, boolean isXa) throws OperationFailedException {

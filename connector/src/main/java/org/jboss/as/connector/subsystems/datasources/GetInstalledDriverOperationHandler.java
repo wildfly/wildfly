@@ -75,11 +75,11 @@ public class GetInstalledDriverOperationHandler implements OperationStepHandler 
                     result.add(driverNode);
 
                     context.getResult().set(result);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

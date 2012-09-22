@@ -57,7 +57,7 @@ public class StackConfigOperationHandlers {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -67,7 +67,7 @@ public class StackConfigOperationHandlers {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             CommonAttributes.VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -77,7 +77,7 @@ public class StackConfigOperationHandlers {
             final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             CommonAttributes.VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -126,12 +126,12 @@ public class StackConfigOperationHandlers {
             }
             // This needs a reload
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
 
         void process(ModelNode subModel, ModelNode operation) {
             //
-        };
+        }
     }
 
     /**
@@ -200,12 +200,12 @@ public class StackConfigOperationHandlers {
             }
             // This needs a reload
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
 
         void process(ModelNode subModel, ModelNode operation) {
             //
-        };
+        }
     }
 
     /**
@@ -249,7 +249,7 @@ public class StackConfigOperationHandlers {
 
             // This needs a reload
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 
@@ -281,7 +281,7 @@ public class StackConfigOperationHandlers {
                         ProtocolStack stack = new ProtocolStack();
                         stack.addProtocols(protocols);
                         context.getResult().set(stack.printProtocolSpecAsXML());
-                        context.completeStep();
+                        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                     } finally {
                         channel.close();
                     }
@@ -348,11 +348,7 @@ public class StackConfigOperationHandlers {
                     // add some condition here if reload needs to be conditional on context
                     // e.g. if a service is not installed, don't do a reload
                     context.reloadRequired();
-                    context.completeStep();
-
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        context.revertReloadRequired();
-                    }
+                    context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }

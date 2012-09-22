@@ -60,7 +60,7 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeReadAttribute(attributeName, context, dataSource, address);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         } else {
             throw unknownOperation(opName);
         }

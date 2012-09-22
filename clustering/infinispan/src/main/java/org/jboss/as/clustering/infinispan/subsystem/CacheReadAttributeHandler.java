@@ -42,6 +42,6 @@ public class CacheReadAttributeHandler implements OperationStepHandler {
         context.getResult().set(currentValue);
 
         // since we are not updating the model, there is no need for a RUNTIME step
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 }
