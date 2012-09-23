@@ -290,6 +290,12 @@ public class InfinispanDescriptions {
         return op;
     }
 
+    static ModelNode getLocalCacheClearDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription("clear", resources, "infinispan.local-cache.clear");
+        return op;
+    }
+
     // cache container transport element
     static ModelNode getTransportDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);

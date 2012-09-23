@@ -119,6 +119,7 @@ public class InfinispanExtension implements Extension {
         ManagementResourceRegistration local = container.registerSubModel(localCachePath, InfinispanSubsystemProviders.LOCAL_CACHE);
         local.registerOperationHandler(ADD, LocalCacheAdd.INSTANCE, InfinispanSubsystemProviders.LOCAL_CACHE_ADD, false);
         local.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
+        local.registerOperationHandler("clear", CacheOperations.ClearCache.INSTANCE, InfinispanSubsystemProviders.LOCAL_CACHE_CLEAR, false);
         registerCommonCacheAttributeHandlers(local);
 
         // add /subsystem=infinispan/cache-container=*/invalidation-cache=*

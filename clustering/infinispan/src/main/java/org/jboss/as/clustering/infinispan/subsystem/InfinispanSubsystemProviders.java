@@ -143,6 +143,13 @@ public class InfinispanSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider LOCAL_CACHE_CLEAR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getLocalCacheClearDescription(locale);
+        }
+    };
+
     static final DescriptionProvider TRANSPORT = new DescriptionProvider() {
          @Override
         public ModelNode getModelDescription(Locale locale) {
