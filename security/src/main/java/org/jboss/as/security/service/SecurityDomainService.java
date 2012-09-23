@@ -113,6 +113,7 @@ public class SecurityDomainService implements Service<SecurityDomainContext> {
     /** {@inheritDoc} */
     @Override
     public void stop(StopContext context) {
+        log.debug("Stopping security domain service " + name);
         final JNDIBasedSecurityManagement securityManagement = (JNDIBasedSecurityManagement) securityManagementValue.getValue();
         securityManagement.removeSecurityDomain(name);
         // TODO clear auth cache?

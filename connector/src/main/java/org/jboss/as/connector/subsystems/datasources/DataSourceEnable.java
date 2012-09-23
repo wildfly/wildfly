@@ -32,7 +32,9 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.api.metadata.ds.DsSecurity;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
@@ -119,6 +121,14 @@ public class DataSourceEnable implements OperationStepHandler {
             if (verificationHandler != null) {
                 builder.addListener(verificationHandler);
             }
+            // add dependency on security domain service if applicable
+            final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
+            if (dsSecurityConfig != null) {
+                final String securityDomainName = dsSecurityConfig.getSecurityDomain();
+                if (securityDomainName != null) {
+                    builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                }
+            }
             int propertiesCount = 0;
             for (ServiceName name : serviceNames) {
                 if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
@@ -160,7 +170,14 @@ public class DataSourceEnable implements OperationStepHandler {
             if (verificationHandler != null) {
                 builder.addListener(verificationHandler);
             }
-
+            // add dependency on security domain service if applicable
+            final DsSecurity dsSecurityConfig = dataSourceConfig.getSecurity();
+            if (dsSecurityConfig != null) {
+                final String securityDomainName = dsSecurityConfig.getSecurityDomain();
+                if (securityDomainName != null) {
+                    builder.addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomainName));
+                }
+            }
             for (ServiceName name : serviceNames) {
                 if (dataSourceCongServiceName.append("connection-properties").isParentOf(name)) {
                     final ServiceController<?> dataSourceController = registry.getService(name);
