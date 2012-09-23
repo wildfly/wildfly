@@ -151,6 +151,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 addPropertiesAuthorizationService(context, authorization.require(PROPERTIES), realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector());
             } else if (authorization.hasDefined(PLUG_IN)) {
                 addPlugInAuthorizationService(context, authorization.require(PLUG_IN), realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector());
+            } else if (authorization.hasDefined(LDAP)) {
+                addLdapAuthorizationService(context, authorization.require(LDAP), realmServiceName,realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector());
             }
         }
 
@@ -366,6 +368,41 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         SubjectSupplementalService.ServiceUtil.addDependency(realmBuilder, injector, plugInServiceName, false);
+    }
+
+    private void addLdapAuthorizationService(OperationContext context, ModelNode ldap, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder,
+            InjectedValue<SubjectSupplementalService> injector) throws OperationFailedException {
+        ServiceName ldapServiceName = realmServiceName.append(LdapSubjectSupplemental.SERVICE_SUFFIX);
+
+        final String baseDn = LdapAuthorizationResourceDefinition.BASE_DN.resolveModelAttribute(context, ldap).asString();
+        ModelNode node = LdapAuthorizationResourceDefinition.USERNAME.resolveModelAttribute(context, ldap);
+        final String usernameAttribute = node.isDefined() ? node.asString() : null;
+        node = LdapAuthorizationResourceDefinition.ADVANCED_FILTER.resolveModelAttribute(context, ldap);
+        final String advancedFilter = node.isDefined() ? node.asString() : null;
+        final boolean recursive = LdapAuthorizationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
+        final boolean reverseGroup = LdapAuthorizationResourceDefinition.REVERSE_GROUP.resolveModelAttribute(context, ldap).asBoolean();
+        final String rolesDn = LdapAuthorizationResourceDefinition.ROLES_DN.resolveModelAttribute(context, ldap).asString();
+        final String pattern = LdapAuthorizationResourceDefinition.PATTERN.resolveModelAttribute(context, ldap).asString();
+        final String userDn = LdapAuthorizationResourceDefinition.USER_DN.resolveModelAttribute(context,ldap).asString();
+        ModelNode groupNode = LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap);
+        final int group = groupNode.isDefined() ? LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap).asInt() : 0;
+        final ModelNode resultPatternNode = LdapAuthorizationResourceDefinition.RESULT_PATTERN.resolveModelAttribute(context, ldap);
+        final String resultPattern = resultPatternNode.isDefined() ? resultPatternNode.asString(): null;
+        LdapSubjectSupplemental ldapSubjectHandler = new LdapSubjectSupplemental(recursive,rolesDn,baseDn,userDn,usernameAttribute,advancedFilter,pattern,group,resultPattern,reverseGroup);
+
+        ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapSubjectHandler);
+        String connectionManager = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
+
+        LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, ldapSubjectHandler.getConnectionManagerInjector(), connectionManager, false);
+
+        final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
+                .install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
+
+        SubjectSupplementalService.ServiceUtil.addDependency(realmBuilder, injector, ldapServiceName, false);
     }
 
     private void addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, String realmName,

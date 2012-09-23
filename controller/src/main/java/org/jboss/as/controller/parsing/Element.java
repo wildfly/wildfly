@@ -143,6 +143,7 @@ public enum Element {
     ROLE("role"),
     ROLE_MAPPING("role-mapping"),
     ROLLOUT_PLANS("rollout-plans"),
+    ROLES_FILTER("roles-filter"),
 
     SECRET("secret"),
     SECURITY_REALM("security-realm"),
