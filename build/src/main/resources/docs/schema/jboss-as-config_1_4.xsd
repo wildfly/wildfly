@@ -332,6 +332,7 @@
         <xs:choice>
             <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
             <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
+            <xs:element name="ldap" type="ldapAuthorizationType" minOccurs="0" />
         </xs:choice>
     </xs:complexType>
 
@@ -525,41 +526,7 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="ldapAuthenticationType">
-        <xs:annotation>
-            <xs:documentation>
-                Definition to use LDAP as the user repository.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:choice>
-            <xs:element name="username-filter">
-                <xs:complexType>
-                    <xs:attribute name="attribute" type="xs:string" use="required">
-                        <xs:annotation>
-                            <xs:documentation>
-                                The name of the attribute to search for the user, this filter will then perform
-                                a simple search where the username entered by the user matches the attribute
-                                specified here.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="advanced-filter">
-                <xs:complexType>
-                    <xs:attribute name="filter" type="xs:string" use="required">
-                        <xs:annotation>
-                            <xs:documentation>
-                                The fully defined filter to be used to search for the user based on their entered
-                                user ID. The filter should contain a variable in the form {0} - this will be
-                                replaced with the username supplied by the user.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
-            </xs:element>
-        </xs:choice>
-
+ 	<xs:complexType name="ldapPropertiesType">
         <xs:attribute name="connection" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -588,9 +555,178 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+ 	</xs:complexType>
+ 
+    <xs:complexType name="ldapAuthenticationType">
+        <xs:annotation>
+            <xs:documentation>
+                Definition to use LDAP as the user repository.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="ldapPropertiesType">
+		        <xs:choice>
+		            <xs:element name="username-filter">
+		                <xs:complexType>
+		                    <xs:attribute name="attribute" type="xs:string" use="required">
+		                        <xs:annotation>
+		                            <xs:documentation>
+		                                The name of the attribute to search for the user, this filter will then perform
+		                                a simple search where the username entered by the user matches the attribute
+		                                specified here.
+		                            </xs:documentation>
+		                        </xs:annotation>
+		                    </xs:attribute>
+		                </xs:complexType>
+		            </xs:element>
+		            <xs:element name="advanced-filter">
+		                <xs:complexType>
+		                    <xs:attribute name="filter" type="xs:string" use="required">
+		                        <xs:annotation>
+		                            <xs:documentation>
+		                                The fully defined filter to be used to search for the user based on their entered
+		                                user ID. The filter should contain a variable in the form {0} - this will be
+		                                replaced with the username supplied by the user.
+		                            </xs:documentation>
+		                        </xs:annotation>
+		                    </xs:attribute>
+		                </xs:complexType>
+		            </xs:element>
+		        </xs:choice>
+	   		</xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
+	<xs:complexType name="ldapAuthorizationPatternType">
+	<xs:attribute name="pattern" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					Specify a regular expression to parse the LDAP role return the possible
+					matches. This option make it possible to filter out part of the 
+					attribute result, before it	passed to the to the subject. This will 
+					always return group(0) and	element(0) from the	matches as default, 
+					unless a group attribute is defined with specific group to return.
+					
+					If no pattern is defined the complete attribute will be passed to the
+					subject
+					
+					Example : 
+					pattern 	: "=([^,]+)"
+					roles 		: "cn=admin,ou=roles,dc=jboss,dc=org"
+					result 		: "cn=admin" group(0) by default group 0 will be returned
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		
+		<xs:attribute name="group" type="xs:integer" default="0">
+			<xs:annotation>
+				<xs:documentation>
+					Group number which should be used as result from the regular expression.
+					By default this will always return the first element in the group list, 
+					unless a result-pattern attribute is defined
+					
+					Example : 
+					pattern		:"=([^,]+)"
+					group 		: "1"
+					roles 		: "cn=admin,ou=roles,dc=jboss,dc=org"
+					result 		: "admin" group(1)
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		
+		<xs:attribute name="result-pattern" type="xs:string">
+			<xs:annotation>
+				<xs:documentation>
+					Result pattern for the regular expression result, {0} through
+					{9}	is valid tags {0} will return the first element it the in the group
+					list.
+					You can combine multiple elements into one result, but one element
+					always has to be represented in the result-pattern other wise a 
+					empty role is returned
+					
+					Example : 
+					pattern 		: "=([^,]+)"
+					group 			: "1"
+					roles 			: "cn=admin,ou=roles,dc=jboss,dc=org"
+					result-pattern 	: "{0}-{2}"
+					result 			: "admin-jboss" group(1), element(0), element(2)
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
 
+	<xs:complexType name="ldapAuthorizationPropertiesType">
+		<xs:complexContent>
+           	<xs:extension base="ldapAuthorizationPatternType">
+				<xs:attribute name="attribute" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>
+							The name of the attribute which is the roles distinguished name.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+		
+				<xs:attribute name="username-attribute" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>
+							Attribute that contains the username to filter on. 
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+		
+				<xs:attribute name="reverse-group-member" type="xs:boolean"	default="false">
+					<xs:annotation>
+						<xs:documentation>
+							"true" if the role member ship is stored on the user object it self.
+							Not all LDAP provider support for reverse group membership overlay,
+							but if do this more efficient way of retrieving roles
+		
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ldapAuthorizationAdvancePropertiesType">
+		<xs:complexContent>
+            <xs:extension base="ldapAuthorizationPatternType">
+                <xs:attribute name="filter" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>
+							The fully defined filter to be used to search for the user based on	their entered
+							user ID. The filter should contain a variable in the form {0} - this will be
+							replaced with the username supplied by the user.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="attribute" type="xs:string" use="required">
+					<xs:annotation>
+						<xs:documentation>
+							The name of the attribute which is the roles distinguished name.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+	</xs:complexType>
+    
+    <xs:complexType name="ldapAuthorizationType">
+        <xs:annotation>
+            <xs:documentation>
+                Definition to use LDAP as the roles repository.
+            </xs:documentation>
+        </xs:annotation>
+		<xs:complexContent>
+            <xs:extension base="ldapPropertiesType" >
+				<xs:choice>
+					<xs:element name="roles-filter" type="ldapAuthorizationPropertiesType" />
+					<xs:element name="advanced-filter" type="ldapAuthorizationAdvancePropertiesType" />
+				</xs:choice>
+			</xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
     <xs:complexType name="usersAuthenticationType">
            <xs:annotation>
             <xs:documentation>

@@ -22,13 +22,14 @@
 
 package org.jboss.as.domain.management;
 
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -67,9 +68,38 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 15202, value = "The attribute 'password' is deprecated, 'keystore-password' should be used instead.")
     void passwordAttributeDeprecated();
 
+    /**
+     * Logs a warning message indicating it failed to retrieving roles from the LDAP provider
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15203, value = "Failed to retrieving roles from the LDAP provider.")
+    void failedRetrieveLdapRoles(@Cause Throwable cause);
+
+    /**
+     * log warning message it was not able to retrieving matching groups from the pattern
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15204, value = "Failed to retrieving matching groups from the pattern, check the regular expression for pattern attribute.")
+    void failedRetrieveMatchingLdapRoles(@Cause Throwable cause);
+
+    /**
+     * log warning message it was not able to retriev matching groups from the pattern
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15205, value = "Failed to retrieve matching groups from the groups, check the regular expression for groups attribute.")
+    void failedRetrieveMatchingGroups();
+
+    /**
+     * log warning message it was not able to retrieve matching groups from the pattern
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15206, value = "Failed to retrieve attribute %s from search result.")
+    void failedRetrieveLdapAttribute(String attribute);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
      * also contains messages in this range commencing 15220.
      */
+
 
 }

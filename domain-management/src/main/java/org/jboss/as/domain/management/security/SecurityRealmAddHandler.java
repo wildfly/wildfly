@@ -35,8 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.security.KeyStore;
@@ -156,6 +156,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             } else if (authorization.hasDefined(PLUG_IN)) {
                 authorizationName = addPlugInAuthorizationService(context, authorization.require(PLUG_IN), realmServiceName,
                         plugInLoaderName, realmName, serviceTarget, newControllers);
+            } else if (authorization.hasDefined(LDAP)) {
+                authorizationName = addLdapAuthorizationService(context, authorization.require(LDAP), realmServiceName,realmName, serviceTarget, newControllers);
             }
         }
         if (authenticationName != null) {
@@ -364,6 +366,39 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         return plugInServiceName;
     }
+
+    private ServiceName addLdapAuthorizationService(OperationContext context, ModelNode ldap, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> newControllers) throws OperationFailedException {
+        ServiceName ldapServiceName = realmServiceName.append(LdapSubjectSupplemental.SERVICE_SUFFIX);
+
+        final String baseDn = LdapAuthorizationResourceDefinition.BASE_DN.resolveModelAttribute(context, ldap).asString();
+        ModelNode node = LdapAuthorizationResourceDefinition.USERNAME.resolveModelAttribute(context, ldap);
+        final String usernameAttribute = node.isDefined() ? node.asString() : null;
+        node = LdapAuthorizationResourceDefinition.ADVANCED_FILTER.resolveModelAttribute(context, ldap);
+        final String advancedFilter = node.isDefined() ? node.asString() : null;
+        final boolean recursive = LdapAuthorizationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
+        final boolean reverseGroup = LdapAuthorizationResourceDefinition.REVERSE_GROUP.resolveModelAttribute(context, ldap).asBoolean();
+        final String rolesDn = LdapAuthorizationResourceDefinition.ROLES_DN.resolveModelAttribute(context, ldap).asString();
+        final String pattern = LdapAuthorizationResourceDefinition.PATTERN.resolveModelAttribute(context, ldap).asString();
+        final String userDn = LdapAuthorizationResourceDefinition.USER_DN.resolveModelAttribute(context,ldap).asString();
+        final int group = LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap).asInt();
+        final ModelNode resultPatternNode = LdapAuthorizationResourceDefinition.RESULT_PATTERN.resolveModelAttribute(context, ldap);
+        final String resultPattern = resultPatternNode.isDefined() ? resultPatternNode.asString(): null;
+        LdapSubjectSupplemental ldapSubjectHandler = new LdapSubjectSupplemental(recursive,rolesDn,baseDn,userDn,usernameAttribute,advancedFilter,pattern,group,resultPattern,reverseGroup);
+
+        ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapSubjectHandler);
+        String connectionManager = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
+        ldapBuilder.addDependency(LdapConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, ldapSubjectHandler.getConnectionManagerInjector());
+
+        final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
+                .install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
+
+        return ldapServiceName;
+    }
+
 
     private ServiceName addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, ServiceName realmServiceName,
             ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {

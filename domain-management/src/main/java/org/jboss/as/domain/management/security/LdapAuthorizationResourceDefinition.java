@@ -22,6 +22,9 @@
 
 package org.jboss.as.domain.management.security;
 
+
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -42,27 +46,45 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a management security realm's LDAP-based authentication resource.
+ * {@link ResourceDefinition} for a management security realm's LDAP-based Authorization resource.
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ *  @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
  */
-public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition {
+public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition {
 
-    public static final SimpleAttributeDefinition USERNAME_FILTER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelType.STRING, false)
-    .setXmlName("attribute")
+    public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelType.STRING, false)
+    .setXmlName("username-attribute")
     .setAlternatives(ModelDescriptionConstants.ADVANCED_FILTER)
     .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
     .setValidateNull(false)
     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
+    public static final SimpleAttributeDefinition ROLES_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ROLES_DN, ModelType.STRING, true)
+        .setXmlName("attribute")
+        .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setDefaultValue(new ModelNode(UserLdapCallbackHandler.DEFAULT_USER_DN))
+        .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
+    public static final SimpleAttributeDefinition PATTERN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATTERN, ModelType.STRING, true)
+    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
+    public static final SimpleAttributeDefinition RESULT_PATTERN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RESULT_PATTERN, ModelType.STRING, true)
+    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
+    public static final SimpleAttributeDefinition GROUP = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.GROUP, ModelType.INT, true)
+    .setValidator(new LongRangeValidator(1, 9, true, false)).
+    setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES). build();
+
+    public static final SimpleAttributeDefinition REVERSE_GROUP = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REVERSE_GROUP, ModelType.BOOLEAN, true)
+    .setDefaultValue(new ModelNode(false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        CONNECTION, BASE_DN, RECURSIVE, USER_DN, USERNAME_FILTER, ADVANCED_FILTER
+        CONNECTION, BASE_DN, RECURSIVE, USER_DN,USERNAME, ADVANCED_FILTER, ROLES_DN, PATTERN, GROUP, RESULT_PATTERN, REVERSE_GROUP
     };
 
-    public LdapAuthenticationResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.LDAP),
-                ControllerResolver.getResolver("core.management.security-realm.authentication.ldap"),
-                new LdapAuthenticationAddHandler(), new SecurityRealmChildRemoveHandler(true),
+    public LdapAuthorizationResourceDefinition() {
+        super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.LDAP),
+                ControllerResolver.getResolver("core.management.security-realm.authorization.ldap"),
+                new LdapAuthorizationAddHandler(), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
@@ -87,8 +109,8 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
                     final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                     final ModelNode model = resource.getModel();
                     validateAttributeCombination(model);
-
-                    context.stepCompleted();
+                    validateAttributePatternCombination(model);
+                    context.completeStep();
                 }
             }, OperationContext.Stage.MODEL);
             super.execute(context, operation);
@@ -96,17 +118,28 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
 
     }
 
-    private static class LdapAuthenticationAddHandler extends SecurityRealmChildAddHandler {
+    private static class LdapAuthorizationAddHandler extends SecurityRealmChildAddHandler {
 
-        private LdapAuthenticationAddHandler() {
+        private LdapAuthorizationAddHandler() {
             super(true, ATTRIBUTE_DEFINITIONS);
         }
 
         @Override
         protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
             validateAttributeCombination(operation);
-
+            validateAttributePatternCombination(operation);
             super.updateModel(context, operation);
+        }
+    }
+
+    protected static void validateAttributePatternCombination(ModelNode operation) throws OperationFailedException {
+        boolean resultPattern = operation.hasDefined(ModelDescriptionConstants.RESULT_PATTERN);
+        boolean groupDefined = operation.hasDefined(ModelDescriptionConstants.GROUP);
+        boolean patternDefined = operation.hasDefined(ModelDescriptionConstants.PATTERN);
+        if (resultPattern && !patternDefined) {
+            throw MESSAGES.canNotBeNull(ModelDescriptionConstants.PATTERN);
+        } else if (groupDefined && !patternDefined) {
+            throw MESSAGES.canNotBeNull(ModelDescriptionConstants.PATTERN);
         }
     }
 }

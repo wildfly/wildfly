@@ -97,6 +97,7 @@ public class ModelDescriptionConstants {
     public static final String FAILED = "failed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FILE = "file";
+    public static final String FILTER = "filter";
     public static final String FIXED_PORT = "fixed-port";
     public static final String FIXED_SOURCE_PORT = "fixed-source-port";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
@@ -177,6 +178,7 @@ public class ModelDescriptionConstants {
     public static final String OUTCOME = "outcome";
     public static final String PASSWORD = "password";
     public static final String PATH = "path";
+    public static final String PATTERN = "pattern";
     public static final String PERSISTENT = "persistent";
     public static final String PLAIN_TEXT = "plain-text";
     public static final String PLATFORM_MBEAN = "platform-mbean";
@@ -218,6 +220,7 @@ public class ModelDescriptionConstants {
     public static final String REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING = "remote-destination-outbound-socket-binding";
     public static final String REPLACE_DEPLOYMENT = "replace-deployment";
     public static final String REPLY_PROPERTIES = "reply-properties";
+    public static final String REVERSE_GROUP = "reverse-group";
     public static final String REQUEST_PROPERTIES = "request-properties";
     public static final String REQUIRED = "required";
     public static final String REQUIRES = "requires";
@@ -226,6 +229,7 @@ public class ModelDescriptionConstants {
     public static final String RESTART = "restart";
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
+    public static final String RESULT_PATTERN = "result-pattern";
     public static final String REASON = "reason";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
@@ -234,6 +238,8 @@ public class ModelDescriptionConstants {
     public static final String ROLLING_TO_SERVERS = "rolling-to-servers";
     public static final String ROLLOUT_PLAN = "rollout-plan";
     public static final String ROLLOUT_PLANS = "rollout-plans";
+    public static final String ROLES_DN = "roles-dn";
+    public static final String ROLES_FILTER = "roles-filter";
     public static final String RUNNING_MODE = "running-mode";
     public static final String RUNNING_SERVER = "server";
     public static final String RUNTIME_NAME = "runtime-name";
