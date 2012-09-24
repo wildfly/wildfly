@@ -21,6 +21,7 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
+import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
@@ -289,7 +290,10 @@ class HornetQService implements Service<HornetQServer> {
         }
 
         String resolve(PathManager pathManager, String path, String relativeToPath) {
-            return pathManager.resolveRelativePathEntry(path, relativeToPath);
+            // discard the relativeToPath if the path is absolute and must not be resolved according
+            // to the default relativeToPath value
+            String relativeTo = AbsolutePathService.isAbsoluteUnixOrWindowsPath(path) ? null : relativeToPath;
+            return pathManager.resolveRelativePathEntry(path, relativeTo);
         }
 
         synchronized void registerCallbacks(PathManager pathManager) {
