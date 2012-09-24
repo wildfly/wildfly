@@ -31,22 +31,36 @@ public final class WSComponent extends BasicComponent {
 
     private volatile BasicComponentInstance wsComponentInstance;
 
+    /**
+     * We can't lock on <code>this</code> because the
+     * {@link org.jboss.as.ee.component.BasicComponent#waitForComponentStart()}
+     * also synchronizes on it, and calls {@link #wait()}.
+     */
+    private final Object lock = new Object();
+
     public WSComponent(final WSComponentCreateService createService) {
         super(createService);
     }
 
-    public synchronized BasicComponentInstance getComponentInstance() {
+    public BasicComponentInstance getComponentInstance() {
         if (wsComponentInstance == null) {
-            wsComponentInstance = (BasicComponentInstance) createInstance();
+            synchronized (lock) {
+                if (wsComponentInstance == null) {
+                    wsComponentInstance = (BasicComponentInstance) createInstance();
+                }
+            }
         }
         return wsComponentInstance;
     }
 
     @Override
-    public synchronized void stop() {
-        if (wsComponentInstance != null) {
-            wsComponentInstance.destroy();
-            wsComponentInstance = null;
+    public void stop() {
+        if (wsComponentInstance == null) return;
+        synchronized(lock) {
+            if (wsComponentInstance != null) {
+                wsComponentInstance.destroy();
+                wsComponentInstance = null;
+            }
         }
     }
 }
