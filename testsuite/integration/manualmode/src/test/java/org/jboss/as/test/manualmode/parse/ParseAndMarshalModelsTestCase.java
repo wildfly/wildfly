@@ -83,6 +83,7 @@ import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -97,8 +98,10 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
+import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -858,8 +861,9 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                DomainModelUtil.updateCoreModel(resource, null);
-                DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), new MockDomainController(), extensionRegistry, MOCK_PATH_MANAGER);
+                DomainRootDefinition def = new DomainRootDefinition(null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER);
+                def.initialize(rootRegistration);
+                DomainModelUtil.initializeDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER);
             }
         });
 
@@ -1151,6 +1155,20 @@ public class ParseAndMarshalModelsTestCase {
         public ExpressionResolver getExpressionResolver() {
             return new RuntimeExpressionResolver(new MockVaultReader());
         }
+
+        @Override
+        public void initializeMasterDomainRegistry(ManagementResourceRegistration root,
+                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
+                HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
+        }
+
+        @Override
+        public void initializeSlaveDomainRegistry(ManagementResourceRegistration root,
+                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
+                HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
+                ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                PathManagerService pathManager) {
+        }
     }
 
     private static class MockVaultReader extends RuntimeVaultReader {
@@ -1177,7 +1195,7 @@ public class ParseAndMarshalModelsTestCase {
          * Create the ServerAddHandler
          */
         protected MockRemoteDomainControllerAddHandler() {
-            super(null, null, null, null, null, null, null, MOCK_PATH_MANAGER);
+            super(null, null, null, null, null, null, null, null, MOCK_PATH_MANAGER);
         }
 
         @Override

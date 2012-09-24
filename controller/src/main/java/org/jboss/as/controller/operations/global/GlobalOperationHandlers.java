@@ -187,20 +187,21 @@ public class GlobalOperationHandlers {
                         directAttributes.put(key, model.get(key));
                     }
                 }
-                if (defaults) {
-                    //get the model description
-                    final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
-                    final Locale locale = getLocale(context, operation);
-                    final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
+            }
 
-                    if (nodeDescription.isDefined() && nodeDescription.hasDefined(ATTRIBUTES)) {
-                        for (String key : nodeDescription.get(ATTRIBUTES).keys()) {
-                            if ((!childrenByType.containsKey(key)) &&
-                                    (!directAttributes.containsKey(key) || !directAttributes.get(key).isDefined()) &&
-                                    nodeDescription.get(ATTRIBUTES).hasDefined(key) &&
-                                    nodeDescription.get(ATTRIBUTES, key).hasDefined(DEFAULT)) {
-                                directAttributes.put(key, nodeDescription.get(ATTRIBUTES, key, DEFAULT));
-                            }
+            if (defaults) {
+                //get the model description
+                final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
+                final Locale locale = getLocale(context, operation);
+                final ModelNode nodeDescription = descriptionProvider.getModelDescription(locale);
+
+                if (nodeDescription.isDefined() && nodeDescription.hasDefined(ATTRIBUTES)) {
+                    for (String key : nodeDescription.get(ATTRIBUTES).keys()) {
+                        if ((!childrenByType.containsKey(key)) &&
+                                (!directAttributes.containsKey(key) || !directAttributes.get(key).isDefined()) &&
+                                nodeDescription.get(ATTRIBUTES).hasDefined(key) &&
+                                nodeDescription.get(ATTRIBUTES, key).hasDefined(DEFAULT)) {
+                            directAttributes.put(key, nodeDescription.get(ATTRIBUTES, key, DEFAULT));
                         }
                     }
                 }
