@@ -22,7 +22,6 @@
 package org.jboss.as.server;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
@@ -53,9 +52,7 @@ import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.controller.resources.ServerDeploymentResourceDescription;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
-import org.jboss.as.server.deploymentoverlay.ContentDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
-import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDeploymentDefinition;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
@@ -138,11 +135,7 @@ public class ServerControllerModelUtil {
         ManagementResourceRegistration deployments = root.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, vaultReader));
 
         //deployment overlays
-        final ManagementResourceRegistration contentOverrides = root.registerSubModel(DeploymentOverlayDefinition.INSTANCE);
-        contentOverrides.registerSubModel(new ContentDefinition(contentRepository, null));
-
-        //deployment overlay links
-        contentOverrides.registerSubModel(new DeploymentOverlayDeploymentDefinition(DeploymentOverlayPriority.SERVER));
+        root.registerSubModel(new DeploymentOverlayDefinition(DeploymentOverlayPriority.SERVER, contentRepository, null));
 
         // The sub-deployments registry
         deployments.registerSubModel(PathElement.pathElement(SUBDEPLOYMENT), ServerDescriptionProviders.SUBDEPLOYMENT_PROVIDER);

@@ -21,11 +21,26 @@
 */
 package org.jboss.as.domain.controller.resources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -34,6 +49,9 @@ import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.extension.ExtensionResourceDefinition;
+import org.jboss.as.controller.operations.common.InterfaceAddHandler;
+import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -44,6 +62,7 @@ import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -52,8 +71,11 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
+import org.jboss.as.domain.controller.DomainTransformers;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
@@ -66,14 +88,19 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplac
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
+import org.jboss.as.domain.controller.resource.DomainDeploymentResourceDescription;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
+import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.ManagementVersionAttributeHandler;
@@ -147,6 +174,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
     private final boolean isMaster;
     private final ExtensionRegistry extensionRegistry;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
+    private final PathManagerService pathManager;
 
 
     public DomainRootDefinition(final HostControllerEnvironment environment,
@@ -164,6 +192,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         this.fileRepository = fileRepository;
         this.extensionRegistry = extensionRegistry;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -243,9 +272,111 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         DomainServerLifecycleHandlers.registerDomainHandlers(resourceRegistration);
     }
 
+
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.DOMAIN));
+        resourceRegistration.registerSubModel(new InterfaceDefinition(
+                InterfaceAddHandler.NAMED_INSTANCE,
+                InterfaceRemoveHandler.INSTANCE,
+                false
+        ));
+        resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
+        resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
+        resourceRegistration.registerSubModel(DomainDeploymentResourceDescription.createForDomainRoot(isMaster, contentRepo, fileRepository));
+        resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
+
+        //TODO perhaps all these desriptions and the validator log messages should be moved into management-client-content?
+        resourceRegistration.registerSubModel(
+                new ManagedDMRContentTypeResourceDefinition(contentRepo, ROLLOUT_PLAN,
+                PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS), new RolloutPlanValidator(), DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLANS), DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLAN)));
+
+        // Extensions
+        resourceRegistration.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, !isMaster));
+
+
+        // Initialize the domain transformers
+        DomainTransformers.initializeDomainRegistry(extensionRegistry.getTransformerRegistry());
+
+    }
+
     public void initialize(ManagementResourceRegistration resourceRegistration) {
         registerAttributes(resourceRegistration);
         registerOperations(resourceRegistration);
         registerChildren(resourceRegistration);
+    }
+
+    public static class RolloutPlanValidator extends AbstractParameterValidator {
+        private static final List<String> ALLOWED_SERVER_GROUP_CHILDREN = Arrays.asList(ROLLING_TO_SERVERS, MAX_FAILURE_PERCENTAGE, MAX_FAILED_SERVERS);
+        @Override
+        public void validateParameter(String parameterName, ModelNode plan) throws OperationFailedException {
+            if(plan == null) {
+                throw new OperationFailedException(MESSAGES.nullVar("plan").getLocalizedMessage());
+            }
+            if(!plan.hasDefined(ROLLOUT_PLAN)) {
+                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, ROLLOUT_PLAN, plan.toString()));
+            }
+            ModelNode rolloutPlan1 = plan.get(ROLLOUT_PLAN);
+
+            final Set<String> keys;
+            try {
+                keys = rolloutPlan1.keys();
+            } catch (IllegalArgumentException e) {
+                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
+            }
+            if(!keys.contains(IN_SERIES)) {
+                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
+            }
+            if(keys.size() > 2 || keys.size() == 2 && !keys.contains(ROLLBACK_ACROSS_GROUPS)) {
+                throw new OperationFailedException(MESSAGES.unrecognizedChildren(ROLLOUT_PLAN, IN_SERIES + ", " + ROLLBACK_ACROSS_GROUPS, plan.toString()));
+            }
+
+            final ModelNode inSeries = rolloutPlan1.get(IN_SERIES);
+            if(!inSeries.isDefined()) {
+                throw new OperationFailedException(MESSAGES.requiredChildIsMissing(ROLLOUT_PLAN, IN_SERIES, plan.toString()));
+            }
+
+            final List<ModelNode> groups = inSeries.asList();
+            if(groups.isEmpty()) {
+                throw new OperationFailedException(MESSAGES.inSeriesIsMissingGroups(plan.toString()));
+            }
+
+            for(ModelNode group : groups) {
+                if(group.hasDefined(SERVER_GROUP)) {
+                    final ModelNode serverGroup = group.get(SERVER_GROUP);
+                    final Set<String> groupKeys;
+                    try {
+                        groupKeys = serverGroup.keys();
+                    } catch(IllegalArgumentException e) {
+                        throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(plan.toString()));
+                    }
+                    if(groupKeys.size() != 1) {
+                        throw new OperationFailedException(MESSAGES.serverGroupExpectsSingleChild(plan.toString()));
+                    }
+                    validateInSeriesServerGroup(serverGroup.asProperty().getValue());
+                } else if(group.hasDefined(CONCURRENT_GROUPS)) {
+                    final ModelNode concurrent = group.get(CONCURRENT_GROUPS);
+                    for(ModelNode child: concurrent.asList()) {
+                        validateInSeriesServerGroup(child.asProperty().getValue());
+                    }
+                } else {
+                    throw new OperationFailedException(MESSAGES.unexpectedInSeriesGroup(plan.toString()));
+                }
+            }
+        }
+
+        public static void validateInSeriesServerGroup(ModelNode serverGroup) throws OperationFailedException {
+            if(serverGroup.isDefined()) {
+                try {
+                    final Set<String> specKeys = serverGroup.keys();
+                    if(!ALLOWED_SERVER_GROUP_CHILDREN.containsAll(specKeys)) {
+                        throw new OperationFailedException(MESSAGES.unrecognizedChildren(SERVER_GROUP, ALLOWED_SERVER_GROUP_CHILDREN.toString(), specKeys.toString()));
+                    }
+                } catch(IllegalArgumentException e) {// ignore?
+                }
+            }
+        }
     }
 }
