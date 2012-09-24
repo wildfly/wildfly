@@ -58,12 +58,12 @@
                                         <echo>In Maven: node0: ${node0}</echo>
                                         <echo>In Maven: node1: ${node1}</echo>
                                         <echo>In Maven: mcast: ${mcast}</echo>
-                                        <!-- Build the UDP server configs in target/ . -->
+                                        <!-- Build the TCP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1" value="${node1}"/>
                                             <property name="mcast" value="${mcast}"/>
-                                            <target name="build-clustering-udp"/>
+                                            <target name="build-clustering"/>
                                         </ant>
                                     </target>
                                 </configuration>
@@ -83,11 +83,12 @@
                             <execution>
                                 <id>default-test</id> 
                                 <goals><goal>test</goal></goals>
-                                <phase>none</phase></execution>
+                                <phase>none</phase>
+                            </execution>
 
-                            <!-- Multinode UDP clustering tests with manual containers with unmanaged deployment. -->
+                            <!-- TCP clustering tests with manual containers with unmanaged deployment. -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-udp</id>
+                                <id>ts.surefire.clust.multinode-manual-tcp-sync</id>
                                 <phase>test</phase> 
                                 <goals><goal>test</goal></goals>
                                 <configuration>
@@ -101,11 +102,12 @@
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <stack>udp</stack>
+                                        <cacheMode>SYNC</cacheMode>
+                                        <stack>tcp</stack>
                                     </systemPropertyVariables>
 
                                     <!-- Differentiate surefire TCP and UDP reports. -->
-                                    <reportNameSuffix>UDP</reportNameSuffix>
+                                    <reportNameSuffix>SYNC-tcp</reportNameSuffix>
                                 </configuration>
                             </execution>
 
@@ -147,7 +149,7 @@
                         <artifactId>maven-antrun-plugin</artifactId>
                         <executions combine.children="append">
                             <execution>
-                                <id>ts.config-as.clust.tcp</id>
+                                <id>ts.config-as.clust.udp</id>
                                 <phase>process-test-resources</phase>
                                 <goals><goal>run</goal></goals>
                                 <configuration>
@@ -160,7 +162,7 @@
                                             <property name="node0" value="${node0}"/>
                                             <property name="node1" value="${node1}"/>
                                             <property name="mcast" value="${mcast}"/>
-                                            <target name="build-clustering-tcp"/>
+                                            <target name="build-clustering-extended"/>
                                         </ant>
                                     </target>
                                 </configuration>
@@ -180,30 +182,63 @@
                             <execution>
                                 <id>default-test</id>
                                 <goals><goal>test</goal></goals>
-                                <phase>none</phase></execution>
+                                <phase>none</phase>
+                            </execution>
 
-                            <!-- Multinode TCP clustering tests with manual containers with unmanaged deployment. -->
-                            <!-- This can be moved out to another profile and made optional with e.g. -Dts.oneStack. (Rado) -->
+                            <!-- TCP-ASYNC -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-tcp</id>
+                                <id>ts.surefire.clust.multinode-manual-tcp-async</id>
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <!-- Tests to execute, same tests as for UDP tests. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
-
-                                    <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.launch>clustering-all</arquillian.launch>
-                                        <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <cacheMode>SYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
+                                    <reportNameSuffix>ASYNC-tcp</reportNameSuffix>
+                                </configuration>
+                            </execution>
 
-                                    <!-- Differentiate surefire TCP and UDP reports. -->
-                                    <reportNameSuffix>TCP</reportNameSuffix>
+                            <!-- UDP-SYNC -->
+                            <execution>
+                                <id>ts.surefire.clust.multinode-manual-udp-sync</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <cacheMode>SYNC</cacheMode>
+                                        <stack>udp</stack>
+                                    </systemPropertyVariables>
+                                    <reportNameSuffix>SYNC-udp</reportNameSuffix>
+                                </configuration>
+                            </execution>
+
+                            <!-- UDP-ASYNC -->
+                            <execution>
+                                <id>ts.surefire.clust.multinode-manual-udp-async</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <cacheMode>ASYNC</cacheMode>
+                                        <stack>udp</stack>
+                                    </systemPropertyVariables>
+                                    <reportNameSuffix>ASYNC-udp</reportNameSuffix>
                                 </configuration>
                             </execution>
 
