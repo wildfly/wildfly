@@ -583,7 +583,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
                     writeRegularConnectionFactoryAttributes(writer, name, factory);
-                    writeCommonConnectionFactoryAttributes(writer, name, factory);
+                    writeCommonConnectionFactoryAttributes(writer, name, factory, false);
                 }
             }
         }
@@ -604,7 +604,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
                     writePooledConnectionFactoryAttributes(writer, name, factory);
-                    writeCommonConnectionFactoryAttributes(writer, name, factory);
+                    writeCommonConnectionFactoryAttributes(writer, name, factory, true);
                 }
             }
         }
@@ -614,7 +614,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         ConnectionFactoryAttributes.Regular.FACTORY_TYPE.marshallAsElement(factory, writer);
     }
 
-    private static void writeCommonConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException {
+    private static void writeCommonConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory, boolean pooled) throws XMLStreamException {
         Common.DISCOVERY_GROUP_NAME.marshallAsElement(factory, writer);
 
         // write the element for compatibility sake but it is deprecated
@@ -647,7 +647,12 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
         Common.RETRY_INTERVAL.marshallAsElement(factory, writer);
         Common.RETRY_INTERVAL_MULTIPLIER.marshallAsElement(factory, writer);
         Common.MAX_RETRY_INTERVAL.marshallAsElement(factory, writer);
-        Common.RECONNECT_ATTEMPTS.marshallAsElement(factory, writer);
+        // regular CF and pooled CF have different default value for reconnect attempts
+        if (pooled) {
+            Pooled.RECONNECT_ATTEMPTS.marshallAsElement(factory, writer);
+        } else {
+            CommonAttributes.RECONNECT_ATTEMPTS.marshallAsElement(factory, writer);
+        }
         Common.FAILOVER_ON_INITIAL_CONNECTION.marshallAsElement(factory, writer);
         Common.FAILOVER_ON_SERVER_SHUTDOWN.marshallAsElement(factory, writer);
         Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.marshallAsElement(factory, writer);

@@ -140,13 +140,17 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 case CONNECTION_TTL:
                 case MAX_RETRY_INTERVAL:
                 case MIN_LARGE_MESSAGE_SIZE:
-                case RECONNECT_ATTEMPTS:
                 case RETRY_INTERVAL:
                 case RETRY_INTERVAL_MULTIPLIER:
                 case SCHEDULED_THREAD_POOL_MAX_SIZE:
                 case THREAD_POOL_MAX_SIZE:
                     // Use the "connection" variant
                     handleElementText(reader, element, "connection", connectionFactory);
+                    break;
+                case RECONNECT_ATTEMPTS:
+                    // connection-factory and pooled-connection-factory have different
+                    // default values for the reconnect-attempts
+                    handleElementText(reader, element, pooled ? "pooled-connection" : "connection", connectionFactory);
                     break;
                 // end of common elements
                 // =========================================================

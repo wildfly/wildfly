@@ -237,7 +237,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
             }
 
             boolean hasReconnect = false;
-            final String reconnectName = ConnectionFactoryAttributes.Common.RECONNECT_ATTEMPTS_PROP_NAME;
+            final String reconnectName = ConnectionFactoryAttributes.Pooled.RECONNECT_ATTEMPTS_PROP_NAME;
             for (PooledConnectionFactoryConfigProperties adapterParam : adapterParams) {
                 hasReconnect |= reconnectName.equals(adapterParam.getName());
 

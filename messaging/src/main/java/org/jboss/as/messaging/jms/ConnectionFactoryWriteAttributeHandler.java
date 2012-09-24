@@ -145,7 +145,7 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 control.setRetryInterval(value.asLong());
             } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL_MULTIPLIER.getName())) {
                 control.setRetryIntervalMultiplier(value.asDouble());
-            } else if (attributeName.equals(Common.RECONNECT_ATTEMPTS.getName())) {
+            } else if (attributeName.equals(CommonAttributes.RECONNECT_ATTEMPTS.getName())) {
                 control.setReconnectAttempts(value.asInt());
             } else if (attributeName.equals(Common.FAILOVER_ON_INITIAL_CONNECTION.getName())) {
                 control.setFailoverOnInitialConnection(value.asBoolean());
