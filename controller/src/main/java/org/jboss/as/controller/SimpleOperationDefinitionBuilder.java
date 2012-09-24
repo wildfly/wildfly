@@ -40,8 +40,8 @@ public class SimpleOperationDefinitionBuilder {
     private ResourceDescriptionResolver resolver;
     private ResourceDescriptionResolver attributeResolver;
     protected String name;
-    protected OperationEntry.EntryType entryType;
-    protected EnumSet<OperationEntry.Flag> flags;
+    protected OperationEntry.EntryType entryType = OperationEntry.EntryType.PUBLIC;
+    protected EnumSet<OperationEntry.Flag> flags = EnumSet.noneOf(OperationEntry.Flag.class);
     protected AttributeDefinition[] parameters = new AttributeDefinition[0];
     protected ModelType replyType;
     protected ModelType replyValueType;
@@ -82,12 +82,12 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     public SimpleOperationDefinitionBuilder setRuntimeOnly() {
-        this.flags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
+        this.flags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY, flags.toArray(new OperationEntry.Flag[flags.size()]));
         return this;
     }
 
     public SimpleOperationDefinitionBuilder setReadOnly() {
-        this.flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
+        this.flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, flags.toArray(new OperationEntry.Flag[flags.size()]));
         return this;
     }
 

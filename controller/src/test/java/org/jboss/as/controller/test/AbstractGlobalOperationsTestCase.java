@@ -60,7 +60,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -72,21 +71,18 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AbstractGlobalOperationsTestCase extends AbstractControllerTestBase {
@@ -133,62 +129,56 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        rootRegistration.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, EnumSet.of(Flag.RUNTIME_ONLY));
-        rootRegistration.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+        GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
         rootRegistration.registerOperationHandler("setup", new OperationStepHandler() {
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                final ModelNode model = new ModelNode();
-                //Atttributes
-                model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(1);
-                model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(2);
-                //Children
-                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "name").set("Name11");
-                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "value").set("201");
-                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "name").set("Name12");
-                model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "value").set("202");
-                model.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").set("Name2");
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                        final ModelNode model = new ModelNode();
+                        //Atttributes
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(1);
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "attr1").add(2);
+                        //Children
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "name").set("Name11");
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing1", "value").set("201");
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "name").set("Name12");
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "type1", "thing2", "value").set("202");
+                        model.get("profile", "profileA", "subsystem", "subsystem1", "type2", "other", "name").set("Name2");
 
 
-                model.get("profile", "profileA", "subsystem", "subsystem2", "bigdecimal").set(new BigDecimal(100));
-                model.get("profile", "profileA", "subsystem", "subsystem2", "biginteger").set(new BigInteger("101"));
-                model.get("profile", "profileA", "subsystem", "subsystem2", "boolean").set(true);
-                model.get("profile", "profileA", "subsystem", "subsystem2", "bytes").set(new byte[] {1, 2, 3});
-                model.get("profile", "profileA", "subsystem", "subsystem2", "double").set(Double.MAX_VALUE);
-                model.get("profile", "profileA", "subsystem", "subsystem2", "expression").setExpression("{expr}");
-                model.get("profile", "profileA", "subsystem", "subsystem2", "int").set(102);
-                model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1A");
-                model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1B");
-                model.get("profile", "profileA", "subsystem", "subsystem2", "long").set(Long.MAX_VALUE);
-                model.get("profile", "profileA", "subsystem", "subsystem2", "object", "value").set("objVal");
-                model.get("profile", "profileA", "subsystem", "subsystem2", "property").set(new Property("prop1", new ModelNode().set("value1")));
-                model.get("profile", "profileA", "subsystem", "subsystem2", "string1").set("s1");
-                model.get("profile", "profileA", "subsystem", "subsystem2", "string2").set("s2");
-                model.get("profile", "profileA", "subsystem", "subsystem2", "type").set(ModelType.TYPE);
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "bigdecimal").set(new BigDecimal(100));
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "biginteger").set(new BigInteger("101"));
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "boolean").set(true);
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "bytes").set(new byte[]{1, 2, 3});
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "double").set(Double.MAX_VALUE);
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "expression").setExpression("{expr}");
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "int").set(102);
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1A");
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "list").add("l1B");
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "long").set(Long.MAX_VALUE);
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "object", "value").set("objVal");
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "property").set(new Property("prop1", new ModelNode().set("value1")));
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "string1").set("s1");
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "string2").set("s2");
+                        model.get("profile", "profileA", "subsystem", "subsystem2", "type").set(ModelType.TYPE);
 
 
-                model.get("profile", "profileB", "name").set("Profile B");
+                        model.get("profile", "profileB", "name").set("Profile B");
 
-                model.get("profile", "profileC", "subsystem", "subsystem4");
-                model.get("profile", "profileC", "subsystem", "subsystem5", "name").set("Test");
+                        model.get("profile", "profileC", "subsystem", "subsystem4");
+                        model.get("profile", "profileC", "subsystem", "subsystem5", "name").set("Test");
 
-                createModel(context, model);
+                        createModel(context, model);
 
-                context.stepCompleted();
-            }
-        }, new DescriptionProvider() {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                return new ModelNode();
-            }
-        }, false, OperationEntry.EntryType.PRIVATE);
+                        context.stepCompleted();
+                    }
+                }, new DescriptionProvider() {
+                    @Override
+                    public ModelNode getModelDescription(Locale locale) {
+                        return new ModelNode();
+                    }
+                }, false, OperationEntry.EntryType.PRIVATE
+        );
+
 
         ManagementResourceRegistration profileReg = rootRegistration.registerSubModel(PathElement.pathElement("profile", "*"), new DescriptionProvider() {
 
@@ -362,7 +352,8 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                         return node;
                     }
                 },
-                false);
+                false
+        );
         profileSub1Reg.registerOperationHandler("testA1-2",
                 new OperationStepHandler() {
 
@@ -381,7 +372,8 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                         return node;
                     }
                 },
-                false);
+                false
+        );
 
 
         profileASub2Reg.registerOperationHandler("testA2",
@@ -402,7 +394,8 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                         return node;
                     }
                 },
-                false);
+                false
+        );
 
         ManagementResourceRegistration profileCSub4Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem4"), new DescriptionProvider() {
 
@@ -471,6 +464,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
     static class TestMetricHandler implements OperationStepHandler {
         static final TestMetricHandler INSTANCE = new TestMetricHandler();
         private static final Random random = new Random();
+
         @Override
         public void execute(final OperationContext context, final ModelNode operation) {
             context.getResult().set(random.nextInt());
@@ -494,7 +488,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             assertTrue(ops.contains(READ_OPERATION_NAMES_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
-            assertEquals(processType == ProcessType.DOMAIN_SERVER ? false : true, ops.contains(WRITE_ATTRIBUTE_OPERATION));
+            assertEquals(processType != ProcessType.DOMAIN_SERVER, ops.contains(WRITE_ATTRIBUTE_OPERATION));
             for (String op : ops) {
                 assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
             }
@@ -562,7 +556,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         if (operations) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 11, ops.size());
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 12, ops.size());
             boolean runtimeOnly = processType != ProcessType.DOMAIN_SERVER;
             assertEquals(runtimeOnly, ops.contains("testA1-1"));
             assertEquals(runtimeOnly, ops.contains("testA1-2"));
@@ -603,7 +597,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         if (result.has(OPERATIONS)) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 9, ops.size());
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 10, ops.size());
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -628,7 +622,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         if (result.has(OPERATIONS)) {
             assertTrue(result.require(OPERATIONS).isDefined());
             Set<String> ops = result.require(OPERATIONS).keys();
-            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 9, ops.size());
+            assertEquals(processType == ProcessType.DOMAIN_SERVER ? 8 : 10, ops.size());
             assertTrue(ops.contains(READ_RESOURCE_OPERATION));
             assertTrue(ops.contains(READ_ATTRIBUTE_OPERATION));
             assertTrue(ops.contains(READ_RESOURCE_DESCRIPTION_OPERATION));
@@ -641,7 +635,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         }
     }
 
-    protected ModelNode createOperation(String operationName, String...address) {
+    protected ModelNode createOperation(String operationName, String... address) {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(operationName);
         if (address.length > 0) {
@@ -655,7 +649,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
         return operation;
     }
 
-    protected List<String> modelNodeListToStringList(List<ModelNode> nodes){
+    protected List<String> modelNodeListToStringList(List<ModelNode> nodes) {
         List<String> result = new ArrayList<String>();
         for (ModelNode node : nodes) {
             result.add(node.asString());
