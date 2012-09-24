@@ -241,6 +241,10 @@ public abstract class AbstractOperationTestCase {
 
         }
 
+        public void stepCompleted() {
+            completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        }
+
         public ModelNode getFailureDescription() {
             return null;
         }

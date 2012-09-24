@@ -234,6 +234,11 @@ abstract class AbstractOperationContext implements OperationContext {
         // we return and executeStep picks it up
     }
 
+    @Override
+    public final void stepCompleted() {
+        completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
     /**
      * Perform the work of completing a step.
      */

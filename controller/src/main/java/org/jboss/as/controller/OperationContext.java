@@ -194,6 +194,22 @@ public interface OperationContext extends ExpressionResolver {
      * @param rollbackHandler the handler for any rollback notification. Cannot be {@code null}.
      */
     void completeStep(RollbackHandler rollbackHandler);
+
+    /**
+     * Called by an {@link OperationStepHandler} to indicate it has completed its handling of a step and is
+     * uninterested in the result of subsequent steps. This is a convenience method that is equivalent to a call to
+     * {@link #completeStep(RollbackHandler) completeStep(OperationContext.RollbackHandler.NO_OP_ROLLBACK_HANDLER)}.
+     * <p>
+     * A common user of this method would be a {@link Stage#MODEL} handler. Typically such a handler would not need
+     * to take any further action in the case of a {@link ResultAction#KEEP successful result} for the overall operation.
+     * If the operation result is a {@link ResultAction#ROLLBACK rollback}, the {@code OperationContext} itself
+     * will ensure any changes made to the model are discarded, again requiring no action on the part of the handler.
+     * So a {@link Stage#MODEL} handler typically can be uninterested in the result of the overall operation and can
+     * use this method.
+     * </p>
+     */
+    void stepCompleted();
+
     /**
      * Get the type of process in which this operation is executing.
      *
