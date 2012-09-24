@@ -20,17 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.domain.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Model description for the domain root.
@@ -48,33 +42,6 @@ public class DomainRootDescription {
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DomainRootDescription.class.getClassLoader(), true, useUnprefixedChildTypes);
-    }
-
-    public static ModelNode getRestartServersOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DomainServerLifecycleHandlers.RESTART_SERVERS_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("domain.servers.restart"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getStopServersOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DomainServerLifecycleHandlers.STOP_SERVERS_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("domain.servers.stop"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getStartServersOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DomainServerLifecycleHandlers.START_SERVERS_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("domain.servers.start"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
     }
 
 

@@ -24,7 +24,6 @@ package org.jboss.as.controller.resource;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
-import java.util.Locale;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -43,8 +42,6 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;

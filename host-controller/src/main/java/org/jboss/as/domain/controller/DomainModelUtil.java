@@ -41,7 +41,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,7 +57,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -107,22 +105,17 @@ public class DomainModelUtil {
                                                  final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                                                  final PathManagerService pathManager) {
 
-        final EnumSet<OperationEntry.Flag> masterOnly = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
-
-
         // System Properties
         root.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.DOMAIN));
 
-        final ManagementResourceRegistration interfaces = root.registerSubModel(new InterfaceDefinition(
+        root.registerSubModel(new InterfaceDefinition(
                 InterfaceAddHandler.NAMED_INSTANCE,
                 InterfaceRemoveHandler.INSTANCE,
                 false
         ));
-        /*interfaces.registerOperationHandler(ADD, InterfaceAddHandler.NAMED_INSTANCE, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);
-        interfaces.registerOperationHandler(REMOVE, InterfaceRemoveHandler.INSTANCE, new DefaultResourceRemoveDescriptionProvider(CommonDescriptions.getResourceDescriptionResolver()), false);*/
 
 
-        final ManagementResourceRegistration profile = root.registerSubModel(new ProfileResourceDefinition());
+        root.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
 
         root.registerSubModel(PathResourceDefinition.createNamed(pathManager));
 
@@ -178,7 +171,7 @@ public class DomainModelUtil {
 
         // Extensions
         root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, !isMaster));
-        extensionRegistry.setSubsystemParentResourceRegistrations(profile, null);
+        //extensionRegistry.setSubsystemParentResourceRegistrations(profile, null);
 
 
         // Initialize the domain transformers

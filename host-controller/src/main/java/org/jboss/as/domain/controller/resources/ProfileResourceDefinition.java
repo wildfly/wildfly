@@ -31,6 +31,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -58,14 +59,19 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
         .withFlag(Flag.READ_ONLY)
         .build();
 
-    public ProfileResourceDefinition() {
+    private final ExtensionRegistry extensionRegistry;
+
+    public ProfileResourceDefinition(ExtensionRegistry extensionRegistry) {
         super(PathElement.pathElement(PROFILE), DomainRootDescription.getResourceDescriptionResolver(PROFILE, false), ProfileAddHandler.INSTANCE, ProfileRemoveHandler.INSTANCE);
+        this.extensionRegistry =extensionRegistry;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(DESCRIBE, ProfileDescribeHandler.INSTANCE);
+
+        extensionRegistry.setSubsystemParentResourceRegistrations(resourceRegistration, null);
     }
 
     @Override
