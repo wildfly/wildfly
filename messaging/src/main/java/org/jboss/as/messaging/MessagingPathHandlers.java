@@ -92,15 +92,6 @@ class MessagingPathHandlers {
         }
     }
 
-    static ModelNode createAddOperation(final ModelNode address, final ModelNode subModel) {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
-        operation.get(RELATIVE_TO).set(subModel.get(RELATIVE_TO));
-        operation.get(PATH).set(subModel.require(PATH));
-        return operation;
-    }
-
     static void reloadRequiredStep(final OperationContext context) {
         if(context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
