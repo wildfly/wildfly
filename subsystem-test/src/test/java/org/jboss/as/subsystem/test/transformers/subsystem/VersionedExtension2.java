@@ -79,7 +79,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
                 final ModelNode model = resource.getModel();
                 model.get("test-attribute").set("test");
                 context.getResult().set(model);
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             }
         }, new DefaultOperationDescriptionProvider("update", TEST_RESOURCE_DESCRIPTION_RESOLVER)); //Need description provider
 

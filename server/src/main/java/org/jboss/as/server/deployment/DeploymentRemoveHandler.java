@@ -107,7 +107,8 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+
+        context.stepCompleted();
     }
 
     private void recoverServices(OperationContext context, ModelNode model, Resource deployment,

@@ -30,6 +30,7 @@ import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -68,8 +69,8 @@ public class RootResourceHack implements OperationStepHandler, DescriptionProvid
         if (threadResource == null || threadResource != ResourceAndRegistration.NULL) {
             throw ServerMessages.MESSAGES.internalUseOnly();
         }
-        resource.set(new ResourceAndRegistration(context.getRootResource(), context.getResourceRegistration()));
-        context.completeStep();
+        resource.set(new ResourceAndRegistration(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true), context.getResourceRegistration()));
+        context.stepCompleted();
     }
 
     public ResourceAndRegistration getRootResource(ModelController controller) {

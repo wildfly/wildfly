@@ -65,10 +65,10 @@ public class DumpServicesHandler implements OperationStepHandler {
                 service.getServiceContainer().dumpServices(print);
                 print.flush();
                 context.getResult().set(new String(out.toByteArray()));
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+        context.stepCompleted();
     }
 
 }

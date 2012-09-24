@@ -93,9 +93,9 @@ public class ServerWriteAttributeOperationHandler extends WriteAttributeOperatio
     protected void modelChanged(final OperationContext context, final ModelNode operation,
                                 final String attributeName, final ModelNode newValue, final ModelNode currentValue) throws OperationFailedException {
 
-        boolean restartRequired = false;
-        boolean applyToRuntime = context.isNormalServer();
-        ModelNode resolvedValue = null;
+        final boolean restartRequired;
+        final boolean applyToRuntime = context.isNormalServer();
+        final ModelNode resolvedValue;
         if (applyToRuntime) {
             validateResolvedValue(attributeName, newValue);
             resolvedValue = newValue.resolve();
@@ -103,22 +103,31 @@ public class ServerWriteAttributeOperationHandler extends WriteAttributeOperatio
             if (restartRequired) {
                 context.reloadRequired();
             }
+        } else {
+            restartRequired = false;
+            resolvedValue = null;
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && applyToRuntime) {
-            ModelNode valueToRestore = currentValue.resolve();
-            try {
-                revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue);
-            } catch (Exception e) {
-                ServerLogger.ROOT_LOGGER.caughtExceptionRevertingOperation(e,
-                        getClass().getSimpleName(),
-                        operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (applyToRuntime) {
+                    ModelNode valueToRestore = currentValue.resolve();
+                    try {
+                        revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue);
+                    } catch (Exception e) {
+                        ServerLogger.ROOT_LOGGER.caughtExceptionRevertingOperation(e,
+                                getClass().getSimpleName(),
+                                operation.require(ModelDescriptionConstants.OP).asString(),
+                                PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+                    }
+                    if (restartRequired) {
+                        context.revertReloadRequired();
+                    }
+
+                }
             }
-            if (restartRequired) {
-                context.revertReloadRequired();
-            }
-        }
+        });
     }
 
     /**

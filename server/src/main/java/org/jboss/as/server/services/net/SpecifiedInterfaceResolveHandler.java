@@ -24,7 +24,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INT
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.EnumSet;
-import java.util.Locale;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -32,10 +31,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -93,18 +88,18 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
             throw ServerMessages.MESSAGES.cannotResolveInterface(e, e);
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     private void validateAndSet(final AttributeDefinition definition, final ModelNode operation, final ModelNode subModel) throws OperationFailedException {
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.required(attributeName)));
+            throw new OperationFailedException(new ModelNode(MESSAGES.required(attributeName)));
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalid(attributeName)));
+                throw new OperationFailedException(new ModelNode(MESSAGES.invalid(attributeName)));
             }
             definition.validateAndSet(operation, subModel);
         } else {

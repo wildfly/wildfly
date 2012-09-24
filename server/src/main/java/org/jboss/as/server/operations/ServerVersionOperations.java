@@ -50,7 +50,8 @@ public class ServerVersionOperations {
             } else if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION)) {
                 context.getResult().set(Version.MANAGEMENT_MICRO_VERSION);
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+            context.stepCompleted();
         }
     }
 
@@ -72,7 +73,8 @@ public class ServerVersionOperations {
                 //We are running as a test and these cannot be determined
                 context.getResult().set("-");
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+            context.stepCompleted();
         }
     }
 
@@ -104,7 +106,7 @@ public class ServerVersionOperations {
                 }
             }
 
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 
@@ -118,7 +120,8 @@ public class ServerVersionOperations {
             } else if (attr.equals(ModelDescriptionConstants.SCHEMA_LOCATIONS)) {
                 getAttributeValueOrDefault(ServerRootResourceDefinition.SCHEMA_LOCATIONS, context);
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+            context.stepCompleted();
         }
 
         private void getAttributeValueOrDefault(AttributeDefinition def, OperationContext context) throws OperationFailedException {

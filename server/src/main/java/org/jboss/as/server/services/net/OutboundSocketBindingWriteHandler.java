@@ -109,21 +109,24 @@ class OutboundSocketBindingWriteHandler extends WriteAttributeHandlers.Attribute
                             // socket binding service would have use the (now stale) attributes.
                             context.reloadRequired();
                         }
-                        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-                            if (binding == null) {
-                                // Back to the old service
-                                revertBindingReinstall(context, bindingName, bindingModel, attributeName, currentValue);
-                            } else {
-                                context.revertReloadRequired();
+                        context.completeStep(new OperationContext.RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                if (binding == null) {
+                                    // Back to the old service
+                                    revertBindingReinstall(context, bindingName, bindingModel, attributeName, currentValue);
+                                } else {
+                                    context.revertReloadRequired();
+                                }
                             }
-                        }
+                        });
                     }
                 }, OperationContext.Stage.RUNTIME);
             }
         }
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && setReload) {
-            context.revertReloadRequired();
-        }
+        OperationContext.RollbackHandler rollbackHandler = setReload ? OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER
+                                                                     : OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
+        context.completeStep(rollbackHandler);
     }
 
     private void handleBindingReinstall(OperationContext context, String bindingName, ModelNode bindingModel) throws OperationFailedException {
