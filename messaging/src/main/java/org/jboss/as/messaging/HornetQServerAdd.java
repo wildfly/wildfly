@@ -116,6 +116,7 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -135,7 +136,7 @@ import org.jboss.msc.service.ServiceTarget;
 class HornetQServerAdd implements OperationStepHandler {
 
     private static final String DEFAULT_PATH = "messaging";
-    private static final String DEFAULT_RELATIVE_TO = "jboss.server.data.dir";
+    static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
     static final String PATH_BASE = "paths";
 
     static final String DEFAULT_BINDINGS_DIR = "bindings";
