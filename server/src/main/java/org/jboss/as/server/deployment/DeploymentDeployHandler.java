@@ -62,6 +62,6 @@ public class DeploymentDeployHandler implements OperationStepHandler {
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT_ALL.resolveModelAttribute(context, model));
         DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contents);
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

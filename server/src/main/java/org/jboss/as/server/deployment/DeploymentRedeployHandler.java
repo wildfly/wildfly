@@ -58,5 +58,7 @@ public class DeploymentRedeployHandler implements OperationStepHandler{
         final String runtimeName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT_ALL.resolveModelAttribute(context, model));
         redeploy(context, runtimeName, name, vaultReader, contents);
+
+        context.stepCompleted();
     }
 }

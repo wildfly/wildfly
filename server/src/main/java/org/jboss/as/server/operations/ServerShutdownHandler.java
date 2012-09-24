@@ -67,10 +67,11 @@ public class ServerShutdownHandler implements OperationStepHandler, DescriptionP
                 // At the time of writing we did not yet have graceful shutdown.
                 thread.setName("Management Triggered Shutdown");
                 thread.start();
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+
+        context.stepCompleted();
     }
 
     /** {@inheritDoc} */

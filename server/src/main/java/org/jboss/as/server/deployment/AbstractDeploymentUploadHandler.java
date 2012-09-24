@@ -67,7 +67,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
             throw ServerMessages.MESSAGES.caughtIOExceptionUploadingContent(e);
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     protected abstract InputStream getContentInputStream(OperationContext context, ModelNode operation) throws IOException, OperationFailedException;

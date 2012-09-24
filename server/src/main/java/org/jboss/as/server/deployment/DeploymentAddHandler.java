@@ -128,7 +128,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {

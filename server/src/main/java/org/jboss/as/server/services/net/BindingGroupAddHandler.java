@@ -94,7 +94,7 @@ public class BindingGroupAddHandler extends AbstractSocketBindingGroupAddHandler
                     }
                 }
 
-                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                context.stepCompleted();
             }
         },OperationContext.Stage.MODEL);
 

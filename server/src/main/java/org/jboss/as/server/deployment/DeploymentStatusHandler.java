@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceController;
  * @author Jason T. Greene
  */
 public class DeploymentStatusHandler implements OperationStepHandler {
-    public static final String ATTRIBUTE_NAME = "status";
+
     public static final OperationStepHandler INSTANCE = new DeploymentStatusHandler();
     private static final ModelNode NO_METRICS = new ModelNode().set("no metrics available");
 
@@ -67,9 +67,10 @@ public class DeploymentStatusHandler implements OperationStepHandler {
                                 result.set(NO_METRICS);
                             }
                         }
-                        context.completeStep();
+                        context.stepCompleted();
                     }
                 }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+
+        context.stepCompleted();
     }
 }

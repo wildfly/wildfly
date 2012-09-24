@@ -99,11 +99,11 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
 
                     context.addStep(new FinalRuntimeStepHandler(), OperationContext.Stage.RUNTIME);
 
-                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override

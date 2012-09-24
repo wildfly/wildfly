@@ -60,6 +60,7 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     String setValue = value == null ? null : context.resolveExpressions(newValue).asString();
+                    final String oldValue = SecurityActions.getSystemProperty(name);
                     if (value != null) {
                         SecurityActions.setSystemProperty(name, setValue);
                     } else {
@@ -68,17 +69,19 @@ public class SystemPropertyValueWriteAttributeHandler extends WriteAttributeHand
                     if (systemPropertyUpdater != null) {
                         systemPropertyUpdater.systemPropertyUpdated(name, setValue);
                     }
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        final String oldValue = currentValue.isDefined() ? context.resolveExpressions(currentValue).asString() : null;
-                        if (oldValue != null) {
-                            SecurityActions.setSystemProperty(name, oldValue);
-                        } else {
-                            SecurityActions.clearSystemProperty(name);
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            if (oldValue != null) {
+                                SecurityActions.setSystemProperty(name, oldValue);
+                            } else {
+                                SecurityActions.clearSystemProperty(name);
+                            }
+                            if (systemPropertyUpdater != null) {
+                                systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
+                            }
                         }
-                        if (systemPropertyUpdater != null) {
-                            systemPropertyUpdater.systemPropertyUpdated(name, oldValue);
-                        }
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
 

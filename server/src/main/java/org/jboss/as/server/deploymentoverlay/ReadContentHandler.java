@@ -22,28 +22,22 @@
 
 package org.jboss.as.server.deploymentoverlay;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Stuart Douglas
@@ -71,7 +65,8 @@ public class ReadContentHandler implements OperationStepHandler {
         } catch (IOException e) {
             throw ServerMessages.MESSAGES.failedToLoadFile(file, e);
         }
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+        context.stepCompleted();
     }
 
 

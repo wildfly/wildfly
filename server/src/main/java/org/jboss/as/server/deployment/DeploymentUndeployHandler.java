@@ -38,10 +38,6 @@ public class DeploymentUndeployHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = UNDEPLOY;
 
-    static final ModelNode getOperation(ModelNode address) {
-        return Util.getEmptyOperation(OPERATION_NAME, address);
-    }
-
     private final AbstractVaultReader vaultReader;
 
     public DeploymentUndeployHandler(final AbstractVaultReader vaultReader) {
@@ -55,6 +51,6 @@ public class DeploymentUndeployHandler implements OperationStepHandler {
 
         DeploymentHandlerUtil.undeploy(context, deploymentUnitName, vaultReader);
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }
