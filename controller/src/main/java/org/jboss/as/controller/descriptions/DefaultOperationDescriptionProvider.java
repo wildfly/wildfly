@@ -84,16 +84,6 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
         this(operationName, descriptionResolver, descriptionResolver, replyType, replyValueType, deprecationData, null, parameters);
     }
 
-   /* public DefaultOperationDescriptionProvider(final String operationName,
-                                               final ResourceDescriptionResolver descriptionResolver,
-                                               final ModelType replyType,
-                                               final ModelType replyValueType,
-                                               final DeprecationData deprecationData,
-                                               final AttributeDefinition[] replyParameters,
-                                               final AttributeDefinition... parameters) {
-        this(operationName,descriptionResolver,null,replyType,replyValueType,deprecationData,replyParameters,parameters);
-    }*/
-
     public DefaultOperationDescriptionProvider(final String operationName,
                                                final ResourceDescriptionResolver descriptionResolver,
                                                final ResourceDescriptionResolver attributeDescriptionResolver,
@@ -195,6 +185,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
      */
     protected ModelNode getReplyValueTypeDescription(ResourceDescriptionResolver descriptionResolver, Locale locale, ResourceBundle bundle) {
         // bug -- user specifies a complex reply type but does not override this method to describe it
-        throw MESSAGES.operationReplyValueTypeRequired(operationName);
+        return new ModelNode(ModelType.OBJECT); //todo rethink this
+        //throw MESSAGES.operationReplyValueTypeRequired(operationName);
     }
 }

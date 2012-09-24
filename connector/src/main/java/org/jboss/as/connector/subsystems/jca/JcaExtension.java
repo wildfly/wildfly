@@ -108,7 +108,7 @@ public class JcaExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JcaSubsystemRootDefinition.INSTANCE);
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         final ManagementResourceRegistration archiveValidation = registration.registerSubModel(JcaArchiveValidationDefinition.INSTANCE);
 

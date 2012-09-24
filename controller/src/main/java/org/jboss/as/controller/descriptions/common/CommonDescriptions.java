@@ -206,6 +206,7 @@ public class CommonDescriptions {
         return descr;
     }
 
+    @Deprecated
     public static ModelNode getSubsystemDescribeOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();

@@ -21,6 +21,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -112,7 +113,7 @@ public class SimpleSubsystemExtension implements Extension {
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+            return GenericSubsystemDescribeHandler.DEFINITION.getDescriptionProvider().getModelDescription(locale);
         }
     }
 

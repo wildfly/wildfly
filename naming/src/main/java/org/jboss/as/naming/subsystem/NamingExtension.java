@@ -76,7 +76,7 @@ public class NamingExtension implements Extension {
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(NamingSubsystemRootResourceDefinition.INSTANCE);
 
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         registration.registerSubModel(NamingBindingResourceDefinition.INSTANCE);
         registration.registerSubModel(RemoteNamingResourceDefinition.INSTANCE);

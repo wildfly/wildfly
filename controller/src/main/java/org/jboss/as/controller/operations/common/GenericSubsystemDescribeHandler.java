@@ -22,7 +22,9 @@
 
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Locale;
 import java.util.Set;
@@ -32,12 +34,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * A generic handler recursively creating add operations for a managed resource using it's
@@ -48,6 +53,11 @@ import org.jboss.dmr.ModelNode;
 public class GenericSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final GenericSubsystemDescribeHandler INSTANCE = new GenericSubsystemDescribeHandler();
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(DESCRIBE,CommonDescriptions.getResourceDescriptionResolver(SUBSYSTEM))
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.OBJECT)
+            .setPrivateEntry()
+            .build();
 
     protected GenericSubsystemDescribeHandler() {
         //
@@ -107,9 +117,17 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
         return operation;
     }
 
+    /**
+     *
+     * @param locale the locale to use to generate any localized text used in the description.
+     *               May be {@code null}, in which case {@link Locale#getDefault()} should be used
+     *
+     * @return definition of operation
+     * @deprecated use {@link #DEFINITION} for registration of operation
+     */
     @Override
     public ModelNode getModelDescription(Locale locale) {
         // This is a private operation, so we should not be getting requests for descriptions
-        return CommonDescriptions.getSubsystemDescribeOperation(locale);
+        return DEFINITION.getDescriptionProvider().getModelDescription(locale);
     }
 }

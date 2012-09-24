@@ -66,7 +66,7 @@ public class DeploymentScannerExtension implements Extension {
         subsystem.registerXMLElementWriter(DeploymentScannerParser_1_1.INSTANCE);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DeploymentScannerSubsystemDefinition());
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         registration.registerSubModel(new DeploymentScannerDefinition(context.getPathManager()));
     }
 

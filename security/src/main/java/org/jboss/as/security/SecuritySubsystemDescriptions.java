@@ -107,14 +107,6 @@ class SecuritySubsystemDescriptions {
         }
     };
 
-    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
-        }
-    };
-
     static final DescriptionProvider SECURITY_DOMAIN = new DescriptionProvider() {
 
         @Override

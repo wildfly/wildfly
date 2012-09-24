@@ -120,7 +120,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @Override
     public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
-        registerOperationHandler(definition.getName(), handler, definition.getDescriptionProvider(), inherited, definition.getFlags());
+        registerOperationHandler(definition.getName(), handler, definition.getDescriptionProvider(), inherited, definition.getEntryType(), definition.getFlags());
     }
 
     public void unregisterSubModel(final PathElement address) throws IllegalArgumentException {

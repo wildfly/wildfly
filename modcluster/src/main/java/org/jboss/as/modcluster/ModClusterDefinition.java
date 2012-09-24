@@ -61,7 +61,7 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
-        registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         if (runtimeOnly) {
             registerRuntimeOperations(registration);

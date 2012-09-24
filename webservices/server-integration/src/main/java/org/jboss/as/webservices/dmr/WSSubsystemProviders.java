@@ -71,6 +71,7 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -102,7 +103,7 @@ final class WSSubsystemProviders {
 
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
         public ModelNode getModelDescription(final Locale locale) {
-            return CommonDescriptions.getSubsystemDescribeOperation(locale);
+            return GenericSubsystemDescribeHandler.DEFINITION.getDescriptionProvider().getModelDescription(locale);
         }
     };
 

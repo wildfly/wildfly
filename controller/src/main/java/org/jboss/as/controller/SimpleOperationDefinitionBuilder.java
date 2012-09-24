@@ -66,6 +66,11 @@ public class SimpleOperationDefinitionBuilder {
         return this;
     }
 
+    public SimpleOperationDefinitionBuilder setPrivateEntry() {
+        this.entryType = OperationEntry.EntryType.PRIVATE;
+        return this;
+    }
+
     public SimpleOperationDefinitionBuilder withFlags(EnumSet<OperationEntry.Flag> flags) {
         this.flags = flags;
         return this;

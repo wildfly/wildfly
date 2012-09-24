@@ -103,7 +103,7 @@ public class JMXExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JMXSubsystemRootResource());
-        subsystem.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerSubModel(ExposeModelResourceResolved.INSTANCE);
         subsystem.registerSubModel(ExposeModelResourceExpression.INSTANCE);
         subsystem.registerSubModel(RemotingConnectorResource.INSTANCE);
