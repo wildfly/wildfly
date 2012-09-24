@@ -44,11 +44,13 @@ import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.transaction.TransactionIntegration;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueInjectionService;
 import org.jboss.security.SubjectFactory;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
@@ -122,6 +124,20 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         ModelNode node = DATASOURCE_DRIVER.resolveModelAttribute(context, model);
 
+        final String driverName = node.asString();
+        final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
+
+
+        ValueInjectionService driverDemanderService = new ValueInjectionService<Driver>();
+
+        final ServiceName driverDemanderServiceName = ServiceName.JBOSS.append("driver-demander").append(jndiName);
+                final ServiceBuilder<?> driverDemanderBuilder = serviceTarget
+                        .addService(driverDemanderServiceName, driverDemanderService)
+                        .addDependency(driverServiceName, Driver.class,
+                                driverDemanderService.getInjector());
+        driverDemanderBuilder.addListener(verificationHandler);
+        driverDemanderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+        controllers.add(driverDemanderBuilder.install());
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
@@ -147,22 +163,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, dsName));
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
-        final String driverName = node.asString();
-        final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
-        if (!context.isBooting()) {
-            final ServiceRegistry registry = context.getServiceRegistry(true);
-            final ServiceController<?> dataSourceController = registry.getService(driverServiceName);
-
-            if (driverServiceName != null && dataSourceController != null) {
-                dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
-                        dataSourceService.getDriverInjector());
-            } else {
-                throw new OperationFailedException(MESSAGES.driverNotPresent(driverName));
-            }
-        } else {
-            dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
+        dataSourceServiceBuilder.addDependency(driverServiceName, Driver.class,
                     dataSourceService.getDriverInjector());
-        }
 
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
