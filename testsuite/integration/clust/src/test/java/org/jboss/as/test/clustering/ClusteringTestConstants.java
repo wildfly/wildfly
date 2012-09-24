@@ -32,6 +32,11 @@ import org.jboss.as.test.shared.TimeoutUtil;
 public class ClusteringTestConstants {
 
     /**
+     * Test configuration.
+     */
+    public static final String TEST_CACHE_MODE = System.getProperty("stack");
+
+    /**
      * Manual container with unmanaged deployments names.
      */
     public static final String CONTAINER_1 = "container-0";

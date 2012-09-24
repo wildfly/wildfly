@@ -57,6 +57,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.test.clustering.ClusterTestUtil.waitForReplication;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
 import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
@@ -170,7 +171,7 @@ public class ClusteredWebSimpleTestCase {
             response.getEntity().getContent().close();
 
             // Lets wait for the session to replicate
-            Thread.sleep(GRACE_TIME_TO_REPLICATE);
+            waitForReplication(GRACE_TIME_TO_REPLICATE);
 
             // Now check on the 2nd server
 
