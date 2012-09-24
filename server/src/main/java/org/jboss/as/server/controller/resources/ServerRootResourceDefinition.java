@@ -38,10 +38,6 @@ import java.util.EnumSet;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.RunningMode;
@@ -98,12 +94,13 @@ import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.operations.ServerProcessReloadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
+import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
+import org.jboss.as.server.operations.ServerVersionOperations.ManagementVersionAttributeHandler;
+import org.jboss.as.server.operations.ServerVersionOperations.ProductInfoAttributeHandler;
+import org.jboss.as.server.operations.ServerVersionOperations.ReleaseVersionAttributeHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.version.Version;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.modules.ModuleClassLoader;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -192,7 +189,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
             final PathManagerService pathManager) {
-        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), ServerDescriptions.getResourceDescriptionResolver(SERVER, false), null, null);
+        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
         this.serverEnvironment = serverEnvironment;
@@ -307,7 +304,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(RELEASE_VERSION, ReleaseVersionAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, ReleaseVersionAttributeHandler.INSTANCE);
 
-        ProductInfoAttributeHandler infoHandler = new ProductInfoAttributeHandler(serverEnvironment);
+        ProductInfoAttributeHandler infoHandler = new ProductInfoAttributeHandler(serverEnvironment != null ? serverEnvironment.getProductConfig() : null);
         resourceRegistration.registerReadOnlyAttribute(PRODUCT_NAME, infoHandler);
         resourceRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, infoHandler);
 
@@ -315,94 +312,5 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, DefaultEmptyListAttributeHandler.INSTANCE);
     }
 
-    private static class ManagementVersionAttributeHandler implements OperationStepHandler {
-        static final OperationStepHandler INSTANCE = new ManagementVersionAttributeHandler();
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-            if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION)) {
-                context.getResult().set(Version.MANAGEMENT_MAJOR_VERSION);
-            } else if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION)) {
-                context.getResult().set(Version.MANAGEMENT_MINOR_VERSION);
-            } else if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION)) {
-                context.getResult().set(Version.MANAGEMENT_MICRO_VERSION);
-            }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-        }
-    }
 
-    private static class ReleaseVersionAttributeHandler implements OperationStepHandler {
-        static final OperationStepHandler INSTANCE = new ReleaseVersionAttributeHandler();
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-            try {
-                if (attr.equals(ModelDescriptionConstants.RELEASE_VERSION)) {
-                    context.getResult().set(Version.AS_VERSION);
-                } else if (attr.equals(ModelDescriptionConstants.RELEASE_CODENAME)) {
-                    context.getResult().set(Version.AS_RELEASE_CODENAME);
-                }
-            } catch (RuntimeException e) {
-                if (SecurityActions.getClassLoader(this.getClass()) instanceof ModuleClassLoader) {
-                    throw new OperationFailedException(e.getMessage());
-                }
-                //We are running as a test and these cannot be determined
-                context.getResult().set("-");
-            }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-        }
-    }
-
-
-    private static class ProductInfoAttributeHandler implements OperationStepHandler {
-        final ServerEnvironment env;
-
-        public ProductInfoAttributeHandler(ServerEnvironment env) {
-            this.env = env;
-        }
-
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-
-            //These are undefined for the community version
-            if (env != null && env.getProductConfig() != null) {
-                if (attr.equals(ModelDescriptionConstants.PRODUCT_VERSION)) {
-                    String productVersion = env.getProductConfig().getProductVersion();
-                    if (productVersion != null) {
-                        context.getResult().set(productVersion);
-                    }
-                    context.getResult();
-                } else if (attr.equals(ModelDescriptionConstants.PRODUCT_NAME)) {
-                    String productName = env.getProductConfig().getProductName();
-                    if (productName != null) {
-                        context.getResult().set(productName);
-                    }
-                }
-            }
-
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-        }
-    }
-
-    private static class DefaultEmptyListAttributeHandler implements OperationStepHandler {
-        static final OperationStepHandler INSTANCE = new DefaultEmptyListAttributeHandler();
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-            if (attr.equals(ModelDescriptionConstants.NAMESPACES)) {
-                getAttributeValueOrDefault(ServerRootResourceDefinition.NAMESPACES, context);
-            } else if (attr.equals(ModelDescriptionConstants.SCHEMA_LOCATIONS)) {
-                getAttributeValueOrDefault(ServerRootResourceDefinition.SCHEMA_LOCATIONS, context);
-            }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-        }
-
-        private void getAttributeValueOrDefault(AttributeDefinition def, OperationContext context) throws OperationFailedException {
-            //TODO fails in the validator
-            //final ModelNode result = def.resolveModelAttribute(context, context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel());
-            final ModelNode result = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel().get(def.getName());
-            context.getResult().set(result.isDefined() ? result : new ModelNode().setEmptyList());
-        }
-    }
 }

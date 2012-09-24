@@ -59,4 +59,14 @@ class SecurityActions {
         });
     }
 
+    static ClassLoader getClassLoader(final Class<?> clazz) {
+        if (System.getSecurityManager() == null) {
+            return clazz.getClassLoader();
+        }
+        return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            public ClassLoader run() {
+                return clazz.getClassLoader();
+            }
+        });
+    }
 }

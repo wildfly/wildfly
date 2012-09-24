@@ -90,8 +90,8 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.domain.controller.descriptions.DomainAttributes;
 import org.jboss.as.domain.controller.resource.ServerGroupResourceDefinition;
+import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -155,7 +155,7 @@ public class DomainXml extends CommonXml {
         writeNamespaces(writer, modelNode);
         writeSchemaLocation(writer, modelNode);
 
-        DomainAttributes.NAME.marshallAsAttribute(modelNode, false, writer);
+        DomainRootDefinition.NAME.marshallAsAttribute(modelNode, false, writer);
 
         writeNewLine(writer);
 

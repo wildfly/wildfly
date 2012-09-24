@@ -26,28 +26,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILED_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_FAILURE_PERCENTAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ACROSS_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLANS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
@@ -65,15 +54,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
-import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
-import org.jboss.as.controller.operations.common.SnapshotListHandler;
-import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
-import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
-import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRangeValidatingHandler;
 import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
@@ -82,46 +62,30 @@ import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.controller.transform.SubsystemDescriptionDump;
-import org.jboss.as.domain.controller.descriptions.DomainAttributes;
 import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
-import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
-import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
-import org.jboss.as.domain.controller.operations.LocalHostNameOperationHandler;
-import org.jboss.as.domain.controller.operations.ProcessTypeHandler;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
-import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.SocketBindingGroupAddHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadBytesHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
-import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
 import org.jboss.as.domain.controller.resource.DomainDeploymentResourceDescription;
 import org.jboss.as.domain.controller.resource.SocketBindingResourceDefinition;
-import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.management.client.content.ManagedDMRContentResourceDefinition;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
@@ -129,10 +93,8 @@ import org.jboss.as.server.deploymentoverlay.ContentDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDeploymentDefinition;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
-import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
-import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 
 
@@ -144,55 +106,7 @@ import org.jboss.dmr.ModelNode;
  */
 public class DomainModelUtil {
 
-    /**
-     * Update the model to hold domain level configuration.
-     *
-     * @param rootResource the root resource to be updated.
-     * @param environment the host controller's configuration environment
-     */
-    public static void updateCoreModel(final Resource rootResource, HostControllerEnvironment environment) {
-        final ModelNode rootModel = rootResource.getModel();
-        rootModel.get(RELEASE_VERSION).set(Version.AS_VERSION);
-        rootModel.get(RELEASE_CODENAME).set(Version.AS_RELEASE_CODENAME);
-        rootModel.get(MANAGEMENT_MAJOR_VERSION).set(Version.MANAGEMENT_MAJOR_VERSION);
-        rootModel.get(MANAGEMENT_MINOR_VERSION).set(Version.MANAGEMENT_MINOR_VERSION);
-        rootModel.get(MANAGEMENT_MICRO_VERSION).set(Version.MANAGEMENT_MICRO_VERSION);
-
-         // Community uses UNDEF values
-        ModelNode nameNode = rootModel.get(PRODUCT_NAME);
-        ModelNode versionNode = rootModel.get(PRODUCT_VERSION);
-
-        if (environment != null) {
-            String productName = environment.getProductConfig().getProductName();
-            String productVersion = environment.getProductConfig().getProductVersion();
-
-            if (productName != null) {
-                nameNode.set(productName);
-            }
-            if (productVersion != null) {
-                versionNode.set(productVersion);
-            }
-        }
-    }
-
-    public static void initializeMasterDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                  final ContentRepository contentRepository, final HostFileRepository fileRepository,
-                                                                  final DomainController domainController, final ExtensionRegistry extensionRegistry,
-                                                                  final PathManagerService pathManager) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, true,
-                domainController.getLocalHostInfo(), extensionRegistry, null, pathManager);
-    }
-
-    public static void initializeSlaveDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
-                                                                 final ContentRepository contentRepository, final HostFileRepository fileRepository,
-                                                                 final LocalHostControllerInfo hostControllerInfo, final ExtensionRegistry extensionRegistry,
-                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                                             final PathManagerService pathManager) {
-        initializeDomainRegistry(root, configurationPersister, contentRepository, fileRepository, false,
-                hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
-    }
-
-    private static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+    public static void initializeDomainRegistry(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
                                                  final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
                                                  final LocalHostControllerInfo hostControllerInfo,
                                                  final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
@@ -201,59 +115,6 @@ public class DomainModelUtil {
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY);
         final EnumSet<OperationEntry.Flag> masterOnly = EnumSet.of(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY);
 
-        // Other root resource operations
-        XmlMarshallingHandler xmh = new XmlMarshallingHandler(configurationPersister);
-        root.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, readOnly);
-
-        root.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
-        root.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
-        root.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
-        root.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
-
-        //Added to pass Model validation
-        root.registerReadOnlyAttribute(RELEASE_VERSION, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(RELEASE_CODENAME, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(PRODUCT_NAME, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(PRODUCT_VERSION, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(NAMESPACES, null, Storage.CONFIGURATION);
-        root.registerReadOnlyAttribute(SCHEMA_LOCATIONS, null, Storage.CONFIGURATION);
-
-        if (isMaster) {
-            DeploymentUploadURLHandler.registerMaster(root, contentRepo);
-            DeploymentUploadStreamAttachmentHandler.registerMaster(root, contentRepo);
-            DeploymentUploadBytesHandler.registerMaster(root, contentRepo);
-        } else {
-            DeploymentUploadURLHandler.registerSlave(root);
-            DeploymentUploadStreamAttachmentHandler.registerSlave(root);
-            DeploymentUploadBytesHandler.registerSlave(root);
-
-        }
-        root.registerOperationHandler(DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_DEFINITION, isMaster ? new DeploymentFullReplaceHandler(contentRepo) : new DeploymentFullReplaceHandler(fileRepository));
-
-        if (isMaster) {
-            SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister);
-            root.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false, EntryType.PUBLIC, masterOnly);
-            SnapshotListHandler snapshotList = new SnapshotListHandler(configurationPersister);
-            root.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false, EntryType.PUBLIC, masterOnly);
-            SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(configurationPersister);
-            root.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false, EntryType.PUBLIC, masterOnly);
-        }
-
-        root.registerReadOnlyAttribute(PROCESS_TYPE, isMaster ? ProcessTypeHandler.MASTER : ProcessTypeHandler.SLAVE, Storage.RUNTIME);
-        root.registerReadOnlyAttribute(ServerDescriptionConstants.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN), Storage.RUNTIME);
-        root.registerReadOnlyAttribute(LOCAL_HOST_NAME, new LocalHostNameOperationHandler(hostControllerInfo), Storage.RUNTIME);
-        root.registerReadWriteAttribute(DomainAttributes.NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1, true, true));
-
-        root.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
-                ValidateAddressOperationHandler.INSTANCE, false, EnumSet.of(OperationEntry.Flag.READ_ONLY));
-
-        root.registerOperationHandler(ResolveExpressionOnDomainHandler.OPERATION_NAME, ResolveExpressionOnDomainHandler.INSTANCE,
-                ResolveExpressionOnDomainHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
-
-        DomainServerLifecycleHandlers.registerDomainHandlers(root);
 
         // System Properties
         root.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.DOMAIN));
@@ -329,17 +190,6 @@ public class DomainModelUtil {
         root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, !isMaster));
         extensionRegistry.setSubsystemParentResourceRegistrations(profile, null);
 
-        if(!isMaster) {
-            final ApplyExtensionsHandler aexh = new ApplyExtensionsHandler(extensionRegistry, hostControllerInfo, ignoredDomainResourceRegistry);
-            root.registerOperationHandler(ApplyExtensionsHandler.OPERATION_NAME, aexh, aexh, false, EntryType.PRIVATE);
-
-            ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(fileRepository,
-                    contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
-            root.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
-        } else {
-            final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
-            root.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper, false);
-        }
 
         // Initialize the domain transformers
         DomainTransformers.initializeDomainRegistry(extensionRegistry.getTransformerRegistry());

@@ -35,7 +35,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.as.repository.ContentRepository;
@@ -122,8 +121,7 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         hostControllerInfo.setMasterDomainController(true);
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
-        DomainModelUtil.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(),
-                contentRepository, fileRepository, domainController, extensionRegistry, pathManager);
+        domainController.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository, extensionRegistry, pathManager);
     }
 
     @Override

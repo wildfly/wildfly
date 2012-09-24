@@ -20,202 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */package org.jboss.as.domain.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_HOST_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_LENGTH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.LAUNCH_TYPE;
-import static org.jboss.as.server.controller.descriptions.ServerDescriptionConstants.PROCESS_TYPE;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Model description for the domain root.
  *
  * @author Brian Stansberry
  */
+@Deprecated
 public class DomainRootDescription {
 
     private static final String RESOURCE_NAME = DomainRootDescription.class.getPackage().getName() + ".LocalDescriptions";
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DomainRootDescription.class.getClassLoader(), true, true);
+        return getResourceDescriptionResolver(keyPrefix, true);
     }
 
-    public static ModelNode getDescription(final Locale locale) {
-        final ResourceDescriptionResolver resolver = getResourceDescriptionResolver("domain");
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("domain"));
-        root.get(HEAD_COMMENT_ALLOWED).set(true);
-        root.get(TAIL_COMMENT_ALLOWED).set(true);
-        root.get(ATTRIBUTES, NAMESPACES).set(CommonDescriptions.getNamespacePrefixAttribute(locale));
-        root.get(ATTRIBUTES, SCHEMA_LOCATIONS).set(CommonDescriptions.getSchemaLocationAttribute(locale));
-
-        DomainAttributes.NAME.addResourceAttributeDescription(root, resolver, locale, bundle);
-
-        //TODO Convert these to use AttributeDefinition
-        root.get(ATTRIBUTES, PROCESS_TYPE, DESCRIPTION).set(bundle.getString("domain.process-type"));
-        root.get(ATTRIBUTES, PROCESS_TYPE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, PROCESS_TYPE, REQUIRED).set(true);
-        root.get(ATTRIBUTES, PROCESS_TYPE, NILLABLE).set(false);
-        root.get(ATTRIBUTES, PROCESS_TYPE, MIN_LENGTH).set(1);
-        root.get(ATTRIBUTES, PROCESS_TYPE, ALLOWED).add("Domain Controller");
-        root.get(ATTRIBUTES, PROCESS_TYPE, ALLOWED).add("Host Controller");
-
-        root.get(ATTRIBUTES, RELEASE_VERSION, DESCRIPTION).set(bundle.getString("domain.release-version"));
-        root.get(ATTRIBUTES, RELEASE_VERSION, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, RELEASE_VERSION, REQUIRED).set(true);
-        root.get(ATTRIBUTES, RELEASE_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, RELEASE_VERSION, MIN_LENGTH).set(1);
-
-        root.get(ATTRIBUTES, RELEASE_CODENAME, DESCRIPTION).set(bundle.getString("domain.release-codename"));
-        root.get(ATTRIBUTES, RELEASE_CODENAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, RELEASE_CODENAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, RELEASE_CODENAME, NILLABLE).set(false);
-        root.get(ATTRIBUTES, RELEASE_CODENAME, MIN_LENGTH).set(1);
-
-        root.get(ATTRIBUTES, PRODUCT_NAME, DESCRIPTION).set(bundle.getString("domain.product-name"));
-        root.get(ATTRIBUTES, PRODUCT_NAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, PRODUCT_NAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, PRODUCT_NAME, NILLABLE).set(true);
-        root.get(ATTRIBUTES, PRODUCT_NAME, MIN_LENGTH).set(1);
-
-        root.get(ATTRIBUTES, PRODUCT_VERSION, DESCRIPTION).set(bundle.getString("domain.product-version"));
-        root.get(ATTRIBUTES, PRODUCT_VERSION, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, PRODUCT_VERSION, REQUIRED).set(true);
-        root.get(ATTRIBUTES, PRODUCT_VERSION, NILLABLE).set(true);
-        root.get(ATTRIBUTES, PRODUCT_VERSION, MIN_LENGTH).set(1);
-
-        root.get(ATTRIBUTES, MANAGEMENT_MAJOR_VERSION, DESCRIPTION).set(bundle.getString("domain.management-major-version"));
-        root.get(ATTRIBUTES, MANAGEMENT_MAJOR_VERSION, TYPE).set(ModelType.INT);
-        root.get(ATTRIBUTES, MANAGEMENT_MAJOR_VERSION, REQUIRED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT_MAJOR_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_MAJOR_VERSION, MIN).set(1);
-
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, DESCRIPTION).set(bundle.getString("domain.management-minor-version"));
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, TYPE).set(ModelType.INT);
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, REQUIRED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_MINOR_VERSION, MIN).set(0);
-
-        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, DESCRIPTION).set(bundle.getString("domain.management-micro-version"));
-        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, TYPE).set(ModelType.INT);
-        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, REQUIRED).set(true);
-        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, NILLABLE).set(false);
-        root.get(ATTRIBUTES, MANAGEMENT_MICRO_VERSION, MIN).set(0);
-
-        root.get(ATTRIBUTES, LOCAL_HOST_NAME, DESCRIPTION).set(bundle.getString("domain.local-host-name"));
-        root.get(ATTRIBUTES, LOCAL_HOST_NAME, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, LOCAL_HOST_NAME, REQUIRED).set(true);
-        root.get(ATTRIBUTES, LOCAL_HOST_NAME, NILLABLE).set(false);
-
-        //Added to pass test model validation, take with a pinch of salt
-        root.get(ATTRIBUTES, LAUNCH_TYPE, DESCRIPTION).set(bundle.getString("domain.local-host-name"));
-        root.get(ATTRIBUTES, LAUNCH_TYPE, TYPE).set(ModelType.STRING);
-        root.get(ATTRIBUTES, LAUNCH_TYPE, REQUIRED).set(true);
-        root.get(ATTRIBUTES, LAUNCH_TYPE, NILLABLE).set(false);
-
-        root.get(OPERATIONS).setEmptyObject();
-
-        root.get(CHILDREN, EXTENSION, DESCRIPTION).set(bundle.getString("domain.extension"));
-        root.get(CHILDREN, EXTENSION, MIN_OCCURS).set(0);
-        root.get(CHILDREN, EXTENSION, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, EXTENSION, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, PATH, DESCRIPTION).set(bundle.getString("domain.path"));
-        root.get(CHILDREN, PATH, MIN_OCCURS).set(0);
-        root.get(CHILDREN, PATH, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, PATH, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, SYSTEM_PROPERTY, DESCRIPTION).set(bundle.getString("domain.system-properties"));
-        root.get(CHILDREN, SYSTEM_PROPERTY, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, SYSTEM_PROPERTY, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, PROFILE, DESCRIPTION).set(bundle.getString("domain.profile"));
-        root.get(CHILDREN, PROFILE, MIN_OCCURS).set(1);
-        root.get(CHILDREN, PROFILE, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, PROFILE, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, INTERFACE, DESCRIPTION).set(bundle.getString("domain.interface"));
-        root.get(CHILDREN, INTERFACE, MIN_OCCURS).set(0);
-        root.get(CHILDREN, INTERFACE, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, INTERFACE, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, SOCKET_BINDING_GROUP, DESCRIPTION).set(bundle.getString("domain.socket-binding-group"));
-        root.get(CHILDREN, SOCKET_BINDING_GROUP, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SOCKET_BINDING_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, SOCKET_BINDING_GROUP, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, DEPLOYMENT, DESCRIPTION).set(bundle.getString("domain.deployment"));
-        root.get(CHILDREN, DEPLOYMENT, MIN_OCCURS).set(0);
-        root.get(CHILDREN, DEPLOYMENT, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, DEPLOYMENT, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY, DESCRIPTION).set(bundle.getString("domain.deployment-overlay"));
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MIN_OCCURS).set(0);
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, DEPLOYMENT_OVERLAY, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, SERVER_GROUP, DESCRIPTION).set(bundle.getString("domain.server-group"));
-        root.get(CHILDREN, SERVER_GROUP, MIN_OCCURS).set(0);
-        root.get(CHILDREN, SERVER_GROUP, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, SERVER_GROUP, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, HOST, DESCRIPTION).set(bundle.getString("domain.host"));
-        root.get(CHILDREN, HOST, MIN_OCCURS).set(0);
-        root.get(CHILDREN, HOST, MAX_OCCURS).set(Integer.MAX_VALUE);
-        root.get(CHILDREN, HOST, MODEL_DESCRIPTION).setEmptyObject();
-
-        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, DESCRIPTION).set(bundle.getString("domain.rollout-plans"));
-        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MIN_OCCURS).set(0);
-        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MAX_OCCURS).set(1);
-        root.get(CHILDREN, MANAGEMENT_CLIENT_CONTENT, MODEL_DESCRIPTION).setEmptyObject();
-
-        return root;
+    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DomainRootDescription.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
     public static ModelNode getRestartServersOperation(Locale locale) {

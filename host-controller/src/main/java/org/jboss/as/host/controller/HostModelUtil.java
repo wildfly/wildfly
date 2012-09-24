@@ -201,11 +201,12 @@ public class HostModelUtil {
         ValidateOperationHandler validateOperationHandler = hostControllerInfo.isMasterDomainController() ? ValidateOperationHandler.INSTANCE : ValidateOperationHandler.SLAVE_HC_INSTANCE;
         hostRegistration.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, validateOperationHandler, validateOperationHandler, false, EntryType.PRIVATE, EnumSet.of(Flag.READ_ONLY));
 
+        //TODO See if some of all these parameters can come from domain controller
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(rootRegistration, hostControllerInfo,
                 configurationPersister, localFileRepository, contentRepository, domainController, extensionRegistry, pathManager);
         hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
         hostRegistration.registerOperationHandler(LocalDomainControllerRemoveHandler.OPERATION_NAME, LocalDomainControllerRemoveHandler.INSTANCE, LocalDomainControllerRemoveHandler.INSTANCE, false);
-        RemoteDomainControllerAddHandler remoteDcAddHandler = new RemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo,
+        RemoteDomainControllerAddHandler remoteDcAddHandler = new RemoteDomainControllerAddHandler(rootRegistration, hostControllerInfo, domainController,
                 configurationPersister, contentRepository, remoteFileRepository, extensionRegistry, ignoredRegistry, pathManager);
         hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
         hostRegistration.registerOperationHandler(RemoteDomainControllerRemoveHandler.OPERATION_NAME, RemoteDomainControllerRemoveHandler.INSTANCE, RemoteDomainControllerRemoveHandler.INSTANCE, false);

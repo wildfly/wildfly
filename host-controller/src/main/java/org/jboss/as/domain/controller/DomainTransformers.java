@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.controller;
 
+import java.util.Map;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -35,14 +37,12 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 
-import java.util.Map;
-
 /**
  * Global transformation rules for the domain, host and server-config model.
  *
  * @author Emanuel Muckenhuber
  */
-class DomainTransformers {
+public class DomainTransformers {
 
     /** Dummy version for ignored subsystems. */
     private static final ModelVersion IGNORED_SUBSYSTEMS = ModelVersion.create(-1);

@@ -26,8 +26,13 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -153,4 +158,15 @@ public interface DomainController {
     ExtensionRegistry getExtensionRegistry();
 
     ExpressionResolver getExpressionResolver();
+
+    void initializeMasterDomainRegistry(final ManagementResourceRegistration root,
+            final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepository,
+            final HostFileRepository fileRepository,
+            final ExtensionRegistry extensionRegistry, final PathManagerService pathManager);
+
+    void initializeSlaveDomainRegistry(final ManagementResourceRegistration root,
+            final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepository,
+            final HostFileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo,
+            final ExtensionRegistry extensionRegistry,
+            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry, final PathManagerService pathManager);
 }

@@ -66,16 +66,20 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -84,8 +88,8 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
-import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
+import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
@@ -162,12 +166,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final IgnoredDomainResourceRegistry ignoredRegistry;
     private final PathManagerService pathManager;
     private final ExpressionResolver expressionResolver;
+    private final DelegatingResourceDefinition rootResourceDefinition;
 
     private volatile ServerInventory serverInventory;
 
     // TODO look into using the controller executor
     private volatile ExecutorService proxyExecutor;
     private volatile ScheduledExecutorService pingScheduler;
+    private volatile DomainRootDefinition domainRootDefinition;
+
 
     public static ServiceController<ModelController> addService(final ServiceTarget serviceTarget,
                                                             final HostControllerEnvironment environment,
@@ -187,7 +194,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final ExpressionResolver expressionResolver = new RuntimeExpressionResolver(vaultReader);
         DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
-                ignoredRegistry, bootstrapListener, pathManager, expressionResolver);
+                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition());
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -207,9 +214,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final IgnoredDomainResourceRegistry ignoredRegistry,
                                          final BootstrapListener bootstrapListener,
                                          final PathManagerService pathManager,
-                                         final ExpressionResolver expressionResolver) {
+                                         final ExpressionResolver expressionResolver,
+                                         final DelegatingResourceDefinition rootResourceDefinition) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
-                DomainDescriptionProviders.ROOT_PROVIDER, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
+                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
         this.environment = environment;
         this.runningModeControl = runningModeControl;
         this.processState = processState;
@@ -227,6 +235,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
         this.pathManager = pathManager;
         this.expressionResolver = expressionResolver;
+        this.rootResourceDefinition = rootResourceDefinition;
     }
 
     @Override
@@ -361,12 +370,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
         proxyExecutor = Executors.newCachedThreadPool(threadFactory);
         ThreadFactory pingerThreadFactory = new JBossThreadFactory(new ThreadGroup("proxy-pinger-threads"), Boolean.TRUE, null, "%G - %t", null, null, AccessController.getContext());
         pingScheduler = Executors.newScheduledThreadPool(PINGER_POOL_SIZE, pingerThreadFactory);
+
         super.start(context);
     }
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        DomainModelUtil.updateCoreModel(rootResource, environment);
+        //DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this);
         this.modelNodeRegistration = rootRegistration;
     }
@@ -581,6 +591,37 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager);
     }
 
+
+    public void initializeMasterDomainRegistry(final ManagementResourceRegistration root,
+            final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepository,
+            final HostFileRepository fileRepository,
+            final ExtensionRegistry extensionRegistry, final PathManagerService pathManager) {
+        initializeDomainResource(root, configurationPersister, contentRepository, fileRepository, true,
+                hostControllerInfo, extensionRegistry, null, pathManager);
+    }
+
+    public void initializeSlaveDomainRegistry(final ManagementResourceRegistration root,
+            final ExtensibleConfigurationPersister configurationPersister, final ContentRepository contentRepository,
+            final HostFileRepository fileRepository, final LocalHostControllerInfo hostControllerInfo,
+            final ExtensionRegistry extensionRegistry,
+            final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry, final PathManagerService pathManager) {
+        initializeDomainResource(root, configurationPersister, contentRepository, fileRepository, false, hostControllerInfo,
+                extensionRegistry, ignoredDomainResourceRegistry, pathManager);
+    }
+
+    private void initializeDomainResource(final ManagementResourceRegistration root, final ExtensibleConfigurationPersister configurationPersister,
+            final ContentRepository contentRepo, final HostFileRepository fileRepository, final boolean isMaster,
+            final LocalHostControllerInfo hostControllerInfo,
+            final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+            final PathManagerService pathManager) {
+
+        DomainRootDefinition domainRootDefinition = new DomainRootDefinition(environment, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
+        //TODO remove this once converted
+        DomainModelUtil.initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
+
+        rootResourceDefinition.setDelegate(domainRootDefinition, root);
+    }
+
     private static class HostRegistration {
         private final Long remoteConnectionId;
         private final ManagementChannelHandler channelHandler;
@@ -735,5 +776,39 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public ExpressionResolver getExpressionResolver() {
         return expressionResolver;
+    }
+
+    private static class DelegatingResourceDefinition implements ResourceDefinition {
+        private volatile ResourceDefinition delegate;
+
+        void setDelegate(DomainRootDefinition delegate, ManagementResourceRegistration root) {
+            this.delegate = delegate;
+            delegate.initialize(root);
+        }
+
+        @Override
+        public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+            //These will be registered later
+        }
+
+        @Override
+        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+            //These will be registered later
+        }
+
+        @Override
+        public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+            //These will be registered later
+        }
+
+        @Override
+        public PathElement getPathElement() {
+            return delegate.getPathElement();
+        }
+
+        @Override
+        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
+            return delegate.getDescriptionProvider(resourceRegistration);
+        }
     }
 }
