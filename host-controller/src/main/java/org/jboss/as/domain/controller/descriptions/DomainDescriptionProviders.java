@@ -24,7 +24,6 @@ package org.jboss.as.domain.controller.descriptions;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,13 +40,6 @@ public final class DomainDescriptionProviders {
 
     // Prevent instantiation
     private DomainDescriptionProviders() {}
-
-    public static final DescriptionProvider PROFILE = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return ProfileDescription.getProfileWithIncludesDescription(locale);
-        }
-    };
 
     public static final DescriptionProvider SERVER_GROUP = new DescriptionProvider() {
         @Override

@@ -22,17 +22,13 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.ProfileDescription;
-import org.jboss.dmr.ModelNode;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ProfileRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class ProfileRemoveHandler extends AbstractRemoveStepHandler {
 
     public static final ProfileRemoveHandler INSTANCE = new ProfileRemoveHandler();
 
@@ -45,10 +41,4 @@ public class ProfileRemoveHandler extends AbstractRemoveStepHandler implements D
     protected boolean requireNoChildResources() {
         return true;
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ProfileDescription.getProfileRemoveOperation(locale);
-    }
-
 }
