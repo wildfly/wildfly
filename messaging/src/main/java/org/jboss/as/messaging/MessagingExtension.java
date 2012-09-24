@@ -44,6 +44,7 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.RECONNECT_ATTEMPTS;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
 
 import java.util.ArrayList;
@@ -313,6 +314,10 @@ public class MessagingExtension implements Extension {
                 transformedOperation.remove(Pooled.INITIAL_MESSAGE_PACKET_SIZE.getName());
                 transformedOperation.remove(Pooled.USE_AUTO_RECOVERY.getName());
                 transformedOperation.remove(Common.COMPRESS_LARGE_MESSAGES.getName());
+                if (!transformedOperation.hasDefined(RECONNECT_ATTEMPTS.getName())) {
+                    transformedOperation.get(RECONNECT_ATTEMPTS.getName()).set(RECONNECT_ATTEMPTS.getDefaultValue());
+                }
+
                 return new TransformedOperation(transformedOperation, ORIGINAL_RESULT);
             }
         });

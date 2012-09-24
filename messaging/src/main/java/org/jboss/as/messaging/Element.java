@@ -361,7 +361,8 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("connection", Common.RECONNECT_ATTEMPTS);
+        result.put("connection", CommonAttributes.RECONNECT_ATTEMPTS);
+        result.put("pooled-connection", Pooled.RECONNECT_ATTEMPTS);
         result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
         result.put("cluster", ClusterConnectionDefinition.RECONNECT_ATTEMPTS);
         return result;

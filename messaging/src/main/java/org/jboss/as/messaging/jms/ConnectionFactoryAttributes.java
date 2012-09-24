@@ -40,8 +40,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.hornetq.api.core.client.HornetQClient;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.ra.HornetQResourceAdapter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ListAttributeDefinition;
@@ -59,8 +58,6 @@ import org.jboss.dmr.ModelType;
 public interface ConnectionFactoryAttributes {
 
     interface Common {
-        String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
-
         AttributeDefinition AUTO_GROUP = SimpleAttributeDefinitionBuilder.create("auto-group", BOOLEAN)
                 .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_AUTO_GROUP))
                 .setAllowNull(true)
@@ -193,11 +190,6 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .build();
 
-        AttributeDefinition RECONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("reconnect-attempts", INT)
-                .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS))
-                .setAllowNull(true)
-                .build();
-
         AttributeDefinition RETRY_INTERVAL = SimpleAttributeDefinitionBuilder.create("retry-interval", LONG)
                 .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
                 .setMeasurementUnit(MILLISECONDS)
@@ -261,7 +253,6 @@ public interface ConnectionFactoryAttributes {
                 create(PRE_ACKNOWLEDGE, "preAcknowledge", true),
                 create(PRODUCER_MAX_RATE, "producerMaxRate", true),
                 create(PRODUCER_WINDOW_SIZE, "producerWindowSize", true),
-                create(RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_PROP_NAME, true),
                 create(RETRY_INTERVAL, "retryInterval", true),
                 create(RETRY_INTERVAL_MULTIPLIER, "retryIntervalMultiplier", true),
                 create(SCHEDULED_THREAD_POOL_MAX_SIZE, "scheduledThreadPoolMaxSize", true),
@@ -280,7 +271,7 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
-        AttributeDefinition[] ATTRIBUTES = { FACTORY_TYPE } ;
+        AttributeDefinition[] ATTRIBUTES = { FACTORY_TYPE, CommonAttributes.RECONNECT_ATTEMPTS } ;
 
         AttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = create("initial-message-packet-size", INT)
                 .setStorageRuntime()
@@ -291,6 +282,7 @@ public interface ConnectionFactoryAttributes {
         String USE_JNDI_PROP_NAME = "useJNDI";
         String SETUP_ATTEMPTS_PROP_NAME = "setupAttempts";
         String SETUP_INTERVAL_PROP_NAME = "setupInterval";
+        String RECONNECT_ATTEMPTS_PROP_NAME = "reconnectAttempts";
 
         SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("initial-connect-attempts", INT)
                 .setAllowNull(true)
@@ -327,6 +319,14 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
+                .build();
+
+        /**
+         * By default, the resource adapter must reconnect infinitely (see {@link HornetQResourceAdapter#setParams})
+         */
+        AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
+                .setDefaultValue(new ModelNode().set(-1))
+                .setAllowNull(true)
                 .build();
 
         SimpleAttributeDefinition SETUP_ATTEMPTS = SimpleAttributeDefinitionBuilder.create("setup-attempts", INT)
@@ -378,6 +378,7 @@ public interface ConnectionFactoryAttributes {
                 .build();
 
         ConnectionFactoryAttribute[] ATTRIBUTES = {
+                create(RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_PROP_NAME, true),
                 create(INITIAL_CONNECT_ATTEMPTS, "initialConnectAttempts", true),
                 create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
                 create(JNDI_PARAMS, "jndiParams", true),
