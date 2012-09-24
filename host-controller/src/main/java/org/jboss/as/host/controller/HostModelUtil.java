@@ -19,14 +19,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
@@ -34,6 +26,7 @@ import java.util.EnumSet;
 
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -111,24 +104,17 @@ public class HostModelUtil {
 
     public static void createRootRegistry(final ManagementResourceRegistration root, final HostControllerEnvironment environment,
                                           final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                          final HostModelRegistrar hostModelRegistrar) {
+                                          final HostModelRegistrar hostModelRegistrar, ProcessType processType) {
 
         // Add of the host itself
         final HostModelRegistrationHandler hostModelRegistratorHandler = new HostModelRegistrationHandler(environment, ignoredDomainResourceRegistry, hostModelRegistrar);
         root.registerOperationHandler(HostModelRegistrationHandler.OPERATION_NAME, hostModelRegistratorHandler, hostModelRegistratorHandler, false, OperationEntry.EntryType.PRIVATE);
 
         // Global operations
-        EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
-        root.registerOperationHandler(READ_RESOURCE_OPERATION, GlobalOperationHandlers.READ_RESOURCE, CommonProviders.READ_RESOURCE_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_ATTRIBUTE_OPERATION, GlobalOperationHandlers.READ_ATTRIBUTE, CommonProviders.READ_ATTRIBUTE_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_RESOURCE_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_RESOURCE_DESCRIPTION, CommonProviders.READ_RESOURCE_DESCRIPTION_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_CHILDREN_NAMES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_NAMES, CommonProviders.READ_CHILDREN_NAMES_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_CHILDREN_TYPES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_TYPES, CommonProviders.READ_CHILDREN_TYPES_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_CHILDREN_RESOURCES_OPERATION, GlobalOperationHandlers.READ_CHILDREN_RESOURCES, CommonProviders.READ_CHILDREN_RESOURCES_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_OPERATION_NAMES_OPERATION, GlobalOperationHandlers.READ_OPERATION_NAMES, CommonProviders.READ_OPERATION_NAMES_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(READ_OPERATION_DESCRIPTION_OPERATION, GlobalOperationHandlers.READ_OPERATION_DESCRIPTION, CommonProviders.READ_OPERATION_PROVIDER, true, OperationEntry.EntryType.PUBLIC, flags);
-        root.registerOperationHandler(UNDEFINE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.UNDEFINE_ATTRIBUTE, CommonProviders.UNDEFINE_ATTRIBUTE_PROVIDER, true);
-        root.registerOperationHandler(WRITE_ATTRIBUTE_OPERATION, GlobalOperationHandlers.WRITE_ATTRIBUTE, CommonProviders.WRITE_ATTRIBUTE_PROVIDER, true);
+        GlobalOperationHandlers.registerGlobalOperations(root,processType);
+
+
+
         root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE, false, EntryType.PUBLIC, EnumSet.of(Flag.READ_ONLY));
         root.registerOperationHandler(WhoAmIOperation.OPERATION_NAME, WhoAmIOperation.INSTANCE, WhoAmIOperation.INSTANCE, true);
 
