@@ -963,7 +963,7 @@
                </xs:documentation>
             </xs:annotation>
          </xs:element>
-         <xs:element maxOccurs="1" minOccurs="0" name="contex" type="contextType" />
+         <xs:element maxOccurs="1" minOccurs="0" name="context" type="contextType" />
       </xs:all>
    </xs:complexType>
 
