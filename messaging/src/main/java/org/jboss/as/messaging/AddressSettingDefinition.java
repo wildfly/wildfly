@@ -106,9 +106,23 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] { ADDRESS_FULL_MESSAGE_POLICY,
-        DEAD_LETTER_ADDRESS, LAST_VALUE_QUEUE, MAX_DELIVERY_ATTEMPTS, MAX_SIZE_BYTES, MESSAGE_COUNTER_HISTORY_DAY_LIMIT, EXPIRY_ADDRESS,
-        REDELIVERY_DELAY, REDISTRIBUTION_DELAY, PAGE_MAX_CACHE_SIZE, PAGE_SIZE_BYTES, SEND_TO_DLA_ON_NO_ROUTE };
+    /**
+     * Attributes are defined in the <em>same order than in the XSD schema</em>
+     */
+    static final SimpleAttributeDefinition[] ATTRIBUTES = new SimpleAttributeDefinition[] {
+        DEAD_LETTER_ADDRESS,
+        EXPIRY_ADDRESS,
+        REDELIVERY_DELAY,
+        MAX_DELIVERY_ATTEMPTS,
+        MAX_SIZE_BYTES,
+        PAGE_SIZE_BYTES,
+        PAGE_MAX_CACHE_SIZE,
+        ADDRESS_FULL_MESSAGE_POLICY,
+        MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
+        LAST_VALUE_QUEUE,
+        REDISTRIBUTION_DELAY,
+        SEND_TO_DLA_ON_NO_ROUTE
+    };
 
     public AddressSettingDefinition(final boolean registerRuntimeOnly) {
         super(AddressSettingDefinition.ADDRESS_SETTING_PATH,
