@@ -21,6 +21,7 @@
 */
 package org.jboss.as.txn;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -33,7 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.io.IOException;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -91,14 +92,10 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         final ModelNode mainResult = mainServices.executeOperation(operation);
         Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
 
-        try {
-            mainServices.transformOperation(modelVersion, operation);
-            // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
-            // so we need to reject the expression on the DC already
-            Assert.fail("should reject the expression");
-        } catch (OperationFailedException e) {
-            // OK
-        }
+        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(modelVersion, operation);
+        ModelNode result = mainServices.executeOperation(modelVersion, op);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+
     }
 
 }
