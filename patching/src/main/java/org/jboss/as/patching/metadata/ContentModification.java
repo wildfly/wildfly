@@ -20,23 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.runner;
-
-import org.jboss.as.patching.metadata.Patch;
-
-import java.io.IOException;
+package org.jboss.as.patching.metadata;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchingTask {
+public class ContentModification {
 
-    /**
-     * Execute a patch.
-     *
-     * @param context
-     * @throws IOException
-     */
-    void execute(Patch patch, PatchingContext context) throws IOException;
+    private final ContentItem item;
+    private final byte[] targetHash;
+    private final ModificationType type;
+
+    public ContentModification(ContentItem item, byte[] targetHash, ModificationType type) {
+        this.item = item;
+        this.targetHash = targetHash;
+        this.type = type;
+    }
+
+    public ContentItem getItem() {
+        return item;
+    }
+
+    public byte[] getTargetHash() {
+        return targetHash;
+    }
+
+    public ModificationType getType() {
+        return type;
+    }
 
 }

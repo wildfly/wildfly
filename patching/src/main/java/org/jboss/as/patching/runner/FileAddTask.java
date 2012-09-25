@@ -22,21 +22,35 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchingTask {
+class FileAddTask extends AbstractFileTask {
 
-    /**
-     * Execute a patch.
-     *
-     * @param context
-     * @throws IOException
-     */
-    void execute(Patch patch, PatchingContext context) throws IOException;
+    FileAddTask(File target, File backup, ContentModification modification) {
+        super(target, backup, modification);
+    }
+
+    @Override
+    public boolean prepare(PatchingContext context) throws IOException {
+        boolean result = super.prepare(context);
+        if(result) {
+            // Check that there was really no content copied
+            return backupHash == NO_CONTENT;
+        }
+        return result;
+    }
+
+    @Override
+    protected ContentModification createRollback(PatchingContext context, ContentItem item, ContentItem backupItem, byte[] targetHash) {
+        return new ContentModification(backupItem, targetHash, ModificationType.REMOVE);
+    }
 
 }

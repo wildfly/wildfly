@@ -22,23 +22,23 @@
 
 package org.jboss.as.patching.runner;
 
-import java.util.Set;
+import org.jboss.as.patching.PatchInfo;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface ContentItem {
+public interface PatchingResult {
 
+    /**
+     * Get the patch info.
+     *
+     * @return the patch info
+     */
+    PatchInfo getPatchInfo();
 
-    String getName();
-    Set<String> getPath();
-
-
-    static enum Type {
-
-        FILE,
-        MODULE,
-
-    }
+    /**
+     * Rollback...
+     */
+    void rollback();
 
 }

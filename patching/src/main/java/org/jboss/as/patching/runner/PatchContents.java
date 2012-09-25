@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.metadata.ContentItem;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,23 +60,13 @@ class PatchContents {
     }
 
     static ContentItem createContentItem(final File root, final File file) {
-        final Set<String> relativePath = getPath(root, file);
+        final String[] relativePath = getPath(root, file);
         final String name = file.getName();
-        return new ContentItem() {
-            @Override
-            public String getName() {
-                return name;
-            }
-
-            @Override
-            public Set<String> getPath() {
-                return relativePath;
-            }
-        };
+        return new ContentItem(name, relativePath, new byte[0]);
     }
 
-    static Set<String> getPath(final File root, final File file) {
-        final Set<String> path = new HashSet<String>();
+    static String[] getPath(final File root, final File file) {
+        final List<String> path = new ArrayList<String>();
         final Iterator<String> rootPath = getPath(root).iterator();
         final Iterator<String> filePath = getPath(file).iterator();
         while(rootPath.hasNext()) {
@@ -87,11 +79,11 @@ class PatchContents {
             final String p = filePath.next();
             path.add(p);
         }
-        return path;
+        return path.toArray(new String[path.size()]);
     }
 
-    static Set<String> getPath(final File file) {
-        final Set<String> path = new HashSet<String>();
+    static List<String> getPath(final File file) {
+        final List<String> path = new ArrayList<String>();
         File parent = file.getParentFile();
         while(parent != null) {
             path.add(parent.getName());
@@ -99,6 +91,5 @@ class PatchContents {
         }
         return path;
     }
-
 
 }

@@ -22,33 +22,37 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
+
 import java.io.File;
+import java.io.IOException;
 
 /**
- * Generic cleanup task.
- *
  * @author Emanuel Muckenhuber
  */
-interface CleanupTask {
+public class FileRemoveTask extends AbstractFileTask {
 
-    /**
-     * Cleanup.
-     *
-     * @throws Exception
-     */
-    boolean cleanup() throws Exception;
+    public FileRemoveTask(File target, File backup, ContentModification modification) {
+        super(target, backup, modification);
+    }
 
-    static final class FileCleanupTask implements CleanupTask {
+    @Override
+    public ContentModification execute(PatchingContext context) throws IOException {
 
-        private final File toDelete;
-        public FileCleanupTask(File toDelete) {
-            this.toDelete = toDelete;
-        }
+        final ContentItem item = modification.getItem();
 
-        @Override
-        public boolean cleanup() throws Exception {
-            return toDelete.delete();
-        }
+        // delete the file
+        target.delete();
+
+        final ContentItem backupItem = new ContentItem(item.getName(), item.getPath(), backupHash);
+        return createRollback(context, item, backupItem, NO_CONTENT);
+    }
+
+    @Override
+    protected ContentModification createRollback(PatchingContext context, ContentItem item, ContentItem backupItem, byte[] targetHash) {
+        return new ContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
     }
 
 }

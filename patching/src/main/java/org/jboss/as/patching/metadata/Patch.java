@@ -20,23 +20,54 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.runner;
+package org.jboss.as.patching.metadata;
 
-import org.jboss.as.patching.metadata.Patch;
-
-import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchingTask {
+public interface Patch {
+
+    public enum PatchType {
+        CUMULATIVE,
+        ONE_OFF,
+        ;
+    }
 
     /**
-     * Execute a patch.
+     * Get the unique patch ID.
      *
-     * @param context
-     * @throws IOException
+     * @return the patch id
      */
-    void execute(Patch patch, PatchingContext context) throws IOException;
+    String getPatchId();
+
+    /**
+     * Get the patch description.
+     *
+     * @return the patch description
+     */
+    String getDescription();
+
+    /**
+     * Get the patch type.
+     *
+     * @return the type of the patch
+     */
+    PatchType getPatchType();
+
+    /**
+     * Get the versions this patch applies to.
+     *
+     * @return the versions the patch can be applied
+     */
+    List<String> getAppliesTo();
+
+    /**
+     * Get the content modifications.
+     *
+     * @return the modifications
+     */
+    List<ContentModification> getModifications();
 
 }

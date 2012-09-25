@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.metadata.ContentItem;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
