@@ -35,6 +35,7 @@ import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -197,13 +198,10 @@ public class ViewDescription {
                 if (componentMethod != null) {
 
                     if ((BRIDGE & componentMethod.getModifiers()) != 0) {
-                        Collection<Method> otherMethods = ClassReflectionIndexUtil.findMethods(reflectionIndex, reflectionIndex.getClassIndex(componentConfiguration.getComponentClass()), methodIdentifier.getName(), methodIdentifier.getParameterTypes());
+                        Method other = findRealMethodForBridgeMethod(componentMethod, componentConfiguration, reflectionIndex, methodIdentifier);
                         //try and find the non-bridge method to delegate to
-                        for (final Method other : otherMethods) {
-                            if ((BRIDGE & other.getModifiers()) == 0) {
+                        if(other != null) {
                                 componentMethod = other;
-                                break;
-                            }
                         }
                     }
 
@@ -214,6 +212,28 @@ public class ViewDescription {
 
             configuration.addClientPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPostConstruct.TERMINAL_INTERCEPTOR);
             configuration.addClientPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ClientPreDestroy.TERMINAL_INTERCEPTOR);
+        }
+
+        private Method findRealMethodForBridgeMethod(final Method componentMethod, final ComponentConfiguration componentConfiguration, final DeploymentReflectionIndex reflectionIndex, final MethodIdentifier methodIdentifier) {
+            final ClassReflectionIndex<?> classIndex = reflectionIndex.getClassIndex(componentMethod.getDeclaringClass()); //the non-bridge method will be on the same class as the bridge method
+            final Collection<Method> methods = classIndex.getAllMethods(componentMethod.getName(), componentMethod.getParameterTypes().length);
+            for(final Method method : methods) {
+                if ((BRIDGE & method.getModifiers()) == 0) {
+                    if(componentMethod.getReturnType().isAssignableFrom(method.getReturnType())) {
+                        boolean ok = true;
+                        for(int i = 0; i < method.getParameterTypes().length; ++i) {
+                            if(!componentMethod.getParameterTypes()[i].isAssignableFrom(method.getParameterTypes()[i])) {
+                                ok = false;
+                                break;
+                            }
+                        }
+                        if(ok) {
+                            return method;
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 
