@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.test;
 
+import junit.framework.Assert;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -34,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import org.jboss.as.controller.transform.OperationTransformer;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
@@ -119,23 +121,9 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         ignoreResult.get(OUTCOME).set(IGNORED);
         ignoreResult.protect();
 
-        try {
-            TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-            // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
-            // so we need to reject the expression on the DC already
-            fail("should reject the expression,instead got " + transformedOperation.getTransformedOperation().toJSONString(true));
-        } catch (OperationFailedException e) {
-            // OK
-        }
-        // TODO replace try/catch above with the below once RejectExpressionValuesTransformer is fixed
-//        TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-//        ModelNode transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
-//        assertEquals("success transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
-//        transformedResult = transformedOperation.getResultTransformer().transformResult(successResult);
-//        assertEquals("failed transformed to failed", FAILED, transformedResult.get(OUTCOME).asString());
-//        assertTrue("failed transformed with failure description", transformedResult.hasDefined(FAILURE_DESCRIPTION));
-//        transformedResult = transformedOperation.getResultTransformer().transformResult(ignoreResult);
-//        assertEquals("ignored result untransformed", IGNORED, transformedResult.get(OUTCOME).asString());
+        final OperationTransformer.TransformedOperation op = mainServices.transformOperation(version_1_1_0, operation);
+        final ModelNode result = mainServices.executeOperation(version_1_1_0, op);
+        Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
 
         operation = new ModelNode();
         operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
@@ -190,11 +178,9 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         ModelNode mainResult = mainServices.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
 
-        try {
-            TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
-            fail("should reject the expression,instead got " + transformedOperation.getTransformedOperation().toJSONString(true));
-        } catch (OperationFailedException e) {
-            // OK
-        }
+        TransformedOperation transformedOperation = mainServices.transformOperation(version_1_1_0, operation);
+        final ModelNode result = mainServices.executeOperation(version_1_1_0, transformedOperation);
+        Assert.assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
+
     }
 }
