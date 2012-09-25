@@ -87,6 +87,7 @@ public class KernelServices extends ModelTestKernelServices {
         ModelTestModelControllerService svc = TestModelControllerService.create(mainExtension, controllerInitializer, additionalInit, controllerExtensionRegistry,
                 persister, additionalInit.isValidateOperations());
         ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
+        builder.addDependency(PathManagerService.SERVICE_NAME); // ensure this is up before the ModelControllerService, as it would be in a real server
         builder.install();
         target.addService(PathManagerService.SERVICE_NAME, pathManager).install();
 
@@ -165,7 +166,7 @@ public class KernelServices extends ModelTestKernelServices {
      * legacy controller's format.
      *
      * @param modelVersion the subsystem model version of the legacy subsystem model controller
-     * @param operation the operation for the main controller
+     * @param op the operation for the main controller
      * @throws IllegalStateException if this is not the test's main model controller
      * @throws IllegalStateException if there is no legacy controller containing the version of the subsystem
      */

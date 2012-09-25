@@ -197,6 +197,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
+                .addDependency(PathManagerService.SERVICE_NAME) // ensure this is up
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
     }
