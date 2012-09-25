@@ -19,12 +19,12 @@
                     <property key="jnp.sotimeout"                value="5000"/>
                 </context>
             </target>
-            <selector string="color='red'"/>
             <quality-of-service>ONCE_AND_ONLY_ONCE</quality-of-service>
             <failure-retry-interval>-1</failure-retry-interval>
             <max-retries>-1</max-retries>
             <max-batch-size>1</max-batch-size>
             <max-batch-time>-1</max-batch-time>
+            <selector string="color='red'"/>
             <subscription-name>mySubscription</subscription-name>
             <client-id>myClientID</client-id>
             <add-messageID-in-header>true</add-messageID-in-header>

@@ -149,10 +149,10 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] JMS_BRIDGE_ATTRIBUTES = {
             MODULE,
-            CommonAttributes.SELECTOR,
             QUALITY_OF_SERVICE,
             FAILURE_RETRY_INTERVAL, MAX_RETRIES,
             MAX_BATCH_SIZE, MAX_BATCH_TIME,
+            CommonAttributes.SELECTOR,
             SUBSCRIPTION_NAME, CommonAttributes.CLIENT_ID,
             ADD_MESSAGE_ID_IN_HEADER
     };
