@@ -21,6 +21,7 @@
 */
 package org.jboss.as.jpa.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -36,6 +37,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
@@ -86,14 +88,10 @@ public class JPASubsystemTestCase extends AbstractSubsystemBaseTest {
             System.out.println(mainResult);
             Assert.assertTrue(SUCCESS.equals(mainResult.get(OUTCOME).asString()));
 
-            try {
-                mainServices.transformOperation(oldVersion, operation);
-                // legacyServices.executeOperation(operation); would actually work - however it does not understand the expr
-                // so we need to reject the expression on the DC already
-                Assert.fail("should reject the expression");
-            } catch (OperationFailedException e) {
-                // OK
-            }
+            final OperationTransformer.TransformedOperation op = mainServices.transformOperation(oldVersion, operation);
+            final ModelNode result = mainServices.executeOperation(oldVersion, op);
+            Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+
         } finally {
             System.clearProperty("org.jboss.as.jpa.testBadExpr");
         }
