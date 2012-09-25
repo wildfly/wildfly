@@ -18,11 +18,8 @@
  */
 package org.jboss.as.server.services.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -30,9 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.controller.descriptions.VaultDescriptions;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -44,9 +39,8 @@ import org.jboss.msc.service.ServiceController;
  * @author Anil Saldhana
  * @author Brian Stansberry
  */
-public class VaultAddHandler extends AbstractAddStepHandler implements DescriptionProvider {
+public class VaultAddHandler extends AbstractAddStepHandler {
 
-    public static final String OPERATION_NAME = ADD;
     private final AbstractVaultReader vaultReader;
 
     /**
@@ -94,10 +88,5 @@ public class VaultAddHandler extends AbstractAddStepHandler implements Descripti
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
         vaultReader.destroyVault();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return VaultDescriptions.getVaultAddDescription(locale);
     }
 }
