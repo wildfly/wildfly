@@ -41,7 +41,6 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttribute;
@@ -164,13 +163,6 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     private static void writeConnectors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         if (node.hasDefined(CONNECTOR) || node.hasDefined(REMOTE_CONNECTOR) || node.hasDefined(IN_VM_CONNECTOR)) {
             writer.writeStartElement(Element.CONNECTORS.getLocalName());
-            if(node.hasDefined(CONNECTOR)) {
-                for(final Property property : node.get(CONNECTOR).asPropertyList()) {
-                    writer.writeStartElement(Element.CONNECTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
-                    writer.writeEndElement();
-                }
-            }
             if(node.hasDefined(REMOTE_CONNECTOR)) {
                 for(final Property property : node.get(REMOTE_CONNECTOR).asPropertyList()) {
                     writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
@@ -185,6 +177,13 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeEndElement();
                 }
             }
+            if(node.hasDefined(CONNECTOR)) {
+                for(final Property property : node.get(CONNECTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.CONNECTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
+            }
             writer.writeEndElement();
             writeNewLine(writer);
         }
@@ -193,13 +192,6 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     private static void writeAcceptors(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         if (node.hasDefined(ACCEPTOR) || node.hasDefined(REMOTE_ACCEPTOR) || node.hasDefined(IN_VM_ACCEPTOR)) {
             writer.writeStartElement(Element.ACCEPTORS.getLocalName());
-            if(node.hasDefined(ACCEPTOR)) {
-                for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
-                    writer.writeStartElement(Element.ACCEPTOR.getLocalName());
-                    writeAcceptorAndConnectorContent(writer, property);
-                    writer.writeEndElement();
-                }
-            }
             if(node.hasDefined(REMOTE_ACCEPTOR)) {
                 for(final Property property : node.get(REMOTE_ACCEPTOR).asPropertyList()) {
                     writer.writeStartElement(Element.NETTY_ACCEPTOR.getLocalName());
@@ -210,6 +202,13 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             if(node.hasDefined(IN_VM_ACCEPTOR)) {
                 for(final Property property : node.get(IN_VM_ACCEPTOR).asPropertyList()) {
                     writer.writeStartElement(Element.IN_VM_ACCEPTOR.getLocalName());
+                    writeAcceptorAndConnectorContent(writer, property);
+                    writer.writeEndElement();
+                }
+            }
+            if(node.hasDefined(ACCEPTOR)) {
+                for(final Property property : node.get(ACCEPTOR).asPropertyList()) {
+                    writer.writeStartElement(Element.ACCEPTOR.getLocalName());
                     writeAcceptorAndConnectorContent(writer, property);
                     writer.writeEndElement();
                 }

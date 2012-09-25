@@ -114,9 +114,8 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition[] ATTRIBUTES = {
             BridgeDefinition.QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
             CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
-            CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CONNECTION_TTL,
+            CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
-            CommonAttributes.CHECK_PERIOD,
             RECONNECT_ATTEMPTS,
             USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD,
