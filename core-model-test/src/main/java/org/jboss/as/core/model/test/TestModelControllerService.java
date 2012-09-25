@@ -50,7 +50,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
@@ -515,17 +514,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     hostFIleRepository, true, info, extensionRegistry, null, pathManagerService);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
-
-            DomainModelUtil.initializeDomainRegistry(
-                    rootRegistration,
-                    new NullConfigurationPersister(),
-                    injectedContentRepository.getValue(),
-                    hostFIleRepository,
-                    true,
-                    info,
-                    extensionRegistry,
-                    null,
-                    pathManagerService);
 
             HostModelUtil.createRootRegistry(
                     rootRegistration,

@@ -85,7 +85,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
@@ -376,7 +375,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        //DomainModelUtil.updateCoreModel(rootResource, environment);
         HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this);
         this.modelNodeRegistration = rootRegistration;
     }
@@ -616,9 +614,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
             final PathManagerService pathManager) {
 
         DomainRootDefinition domainRootDefinition = new DomainRootDefinition(environment, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
-        //TODO remove this once converted
-        DomainModelUtil.initializeDomainRegistry(root, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
-
         rootResourceDefinition.setDelegate(domainRootDefinition, root);
     }
 

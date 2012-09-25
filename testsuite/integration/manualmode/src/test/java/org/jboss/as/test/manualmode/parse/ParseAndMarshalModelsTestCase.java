@@ -95,7 +95,6 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainModelUtil;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
@@ -863,7 +862,6 @@ public class ParseAndMarshalModelsTestCase {
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
                 DomainRootDefinition def = new DomainRootDefinition(null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER);
                 def.initialize(rootRegistration);
-                DomainModelUtil.initializeDomainRegistry(rootRegistration, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER);
             }
         });
 

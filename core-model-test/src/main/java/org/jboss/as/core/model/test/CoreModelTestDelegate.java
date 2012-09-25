@@ -112,8 +112,6 @@ public class CoreModelTestDelegate {
 
         //System.out.println(model);
 
-        System.out.println(model);
-
         ValidationConfiguration config = KnownIssuesValidationConfiguration.createAndFixupModel(type, model);
 
         ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(PathAddress.EMPTY_ADDRESS.toModelNode(), model, config);
