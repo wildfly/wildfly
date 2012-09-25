@@ -13,26 +13,40 @@
                 <class-name>bar.foo</class-name>
             </remoting-interceptors>
             <live-connector-ref connector-name="in-vm"/>
+            <page-max-concurrent-io>10</page-max-concurrent-io>
+            <create-journal-dir>true</create-journal-dir>
             <journal-type>NIO</journal-type>
+            <journal-buffer-timeout>1357</journal-buffer-timeout>
+            <journal-buffer-size>2468</journal-buffer-size>
+            <journal-sync-transactional>false</journal-sync-transactional>
+            <journal-sync-non-transactional>true</journal-sync-non-transactional>
+            <log-journal-write-rate>true</log-journal-write-rate>
             <!-- Default journal file size is 10Mb, reduced here to 100k for faster first boot -->
             <journal-file-size>102400</journal-file-size>
             <journal-min-files>2</journal-min-files>
-            <page-max-concurrent-io>10</page-max-concurrent-io>
+            <journal-compact-percentage>83</journal-compact-percentage>
+            <journal-compact-min-files>2</journal-compact-min-files>
+            <journal-max-io>50</journal-max-io>
+            <perf-blast-pages>70</perf-blast-pages>
+            <run-sync-speed-test>false</run-sync-speed-test>
+            <server-dump-interval>8642</server-dump-interval>
+            <memory-warning-threshold>1024</memory-warning-threshold>
+            <memory-measure-interval>2048</memory-measure-interval>
             <paging-directory path="test" relative-to="test" />
             <bindings-directory path="test" relative-to="test" />
             <journal-directory path="test" relative-to="test" />
             <large-messages-directory path="test" relative-to="test" />
             <connectors>
-               <connector name="myconnector">
-                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
-                  <param key="host" value="192.168.1.2"/>
-                  <param key="port" value="5445"/>
-               </connector>
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                   <param key="batch-delay" value="50"/>
                </netty-connector>
                <in-vm-connector name="in-vm" server-id="0" />
+               <connector name="myconnector">
+                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <param key="host" value="192.168.1.2"/>
+                  <param key="port" value="5445"/>
+               </connector>
             </connectors>
             <acceptors>
                <netty-acceptor name="netty" socket-binding="messaging" />
@@ -110,11 +124,11 @@
                     <filter string="afilter"/>
                     <transformer-class-name>foo.bar</transformer-class-name>
                     <min-large-message-size>10240</min-large-message-size>
+                    <check-period>666</check-period>
                     <connection-ttl>36000</connection-ttl>
                     <retry-interval>750</retry-interval>
                     <retry-interval-multiplier>2</retry-interval-multiplier>
                     <max-retry-interval>3000</max-retry-interval>
-                    <check-period>666</check-period>
                     <reconnect-attempts>3</reconnect-attempts>
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <confirmation-window-size>350</confirmation-window-size>
@@ -134,17 +148,17 @@
                 <cluster-connection name="cc1">
                     <address>cc1-address</address>
                     <connector-ref>netty</connector-ref>
+                    <check-period>2345</check-period>
                     <connection-ttl>1234</connection-ttl>
-                    <forward-when-no-consumers>true</forward-when-no-consumers>
-                    <max-hops>7</max-hops>
+                    <min-large-message-size>10245</min-large-message-size>
+                    <call-timeout>3456</call-timeout>
                     <retry-interval>987</retry-interval>
                     <retry-interval-multiplier>3.0</retry-interval-multiplier>
                     <max-retry-interval>3600</max-retry-interval>
                     <reconnect-attempts>-1</reconnect-attempts>
                     <use-duplicate-detection>true</use-duplicate-detection>
-                    <check-period>2345</check-period>
-                    <call-timeout>3456</call-timeout>
-                    <min-large-message-size>10245</min-large-message-size>
+                    <forward-when-no-consumers>true</forward-when-no-consumers>
+                    <max-hops>7</max-hops>
                     <confirmation-window-size>459</confirmation-window-size>
                     <static-connectors>
                         <connector-ref>in-vm</connector-ref>

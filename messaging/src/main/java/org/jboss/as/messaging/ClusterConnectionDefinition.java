@@ -166,17 +166,17 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES = {
             ADDRESS, CONNECTOR_REF,
+            CHECK_PERIOD,
             CONNECTION_TTL,
-            FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
+            CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+            CommonAttributes.CALL_TIMEOUT,
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL,
             RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
-            CHECK_PERIOD,
-            ALLOW_DIRECT_CONNECTIONS_ONLY,
-            CommonAttributes.CALL_TIMEOUT,
-            CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+            FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
-            DISCOVERY_GROUP_NAME,
             CONNECTOR_REFS,
+            ALLOW_DIRECT_CONNECTIONS_ONLY,
+            DISCOVERY_GROUP_NAME,
     };
 
     public static final SimpleAttributeDefinition NODE_ID = create("node-id", STRING)
