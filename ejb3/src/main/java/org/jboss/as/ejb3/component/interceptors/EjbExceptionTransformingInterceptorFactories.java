@@ -64,13 +64,21 @@ public class EjbExceptionTransformingInterceptorFactories {
             try {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
-                throw new TransactionRequiredException(e.getMessage());
+                final TransactionRequiredException tre = new TransactionRequiredException(e.getMessage());
+                tre.initCause(e);
+                throw tre;
             } catch (EJBTransactionRolledbackException e) {
-                throw new TransactionRolledbackException(e.getMessage());
+                final TransactionRolledbackException trbe = new TransactionRolledbackException(e.getMessage());
+                trbe.initCause(e);
+                throw trbe;
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectException(e.getMessage());
+                final NoSuchObjectException nsoe = new NoSuchObjectException(e.getMessage());
+                nsoe.initCause(e);
+                throw nsoe;
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectException(e.getMessage());
+                final NoSuchObjectException nsee = new NoSuchObjectException(e.getMessage());
+                nsee.initCause(e);
+                throw nsee;
             } catch (EJBException e) {
                 //as the create exception is not propagated the init method interceptor just stashes it in a ThreadLocal
                 CreateException createException = popCreateException();
@@ -88,13 +96,21 @@ public class EjbExceptionTransformingInterceptorFactories {
             try {
                 return context.proceed();
             } catch (EJBTransactionRequiredException e) {
-                throw new TransactionRequiredLocalException(e.getMessage());
+                final TransactionRequiredLocalException trle = new TransactionRequiredLocalException(e.getMessage());
+                trle.initCause(e);
+                throw trle;
             } catch (EJBTransactionRolledbackException e) {
-                throw new TransactionRolledbackLocalException(e.getMessage());
+                final TransactionRolledbackLocalException trble = new TransactionRolledbackLocalException(e.getMessage());
+                trble.initCause(e);
+                throw trble;
             } catch (NoSuchEJBException e) {
-                throw new NoSuchObjectLocalException(e.getMessage());
+                final NoSuchObjectLocalException nsole = new NoSuchObjectLocalException(e.getMessage());
+                nsole.initCause(e);
+                throw nsole;
             } catch (NoSuchEntityException e) {
-                throw new NoSuchObjectLocalException(e.getMessage());
+                final NoSuchObjectLocalException nsole = new NoSuchObjectLocalException(e.getMessage());
+                nsole.initCause(e);
+                throw nsole;
             } catch (EJBException e) {
                 CreateException createException = popCreateException();
                 if (createException != null) {
