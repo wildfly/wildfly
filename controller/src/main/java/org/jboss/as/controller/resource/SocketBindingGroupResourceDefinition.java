@@ -100,12 +100,15 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
             .build();
 
     private final boolean forDomainModel;
+    private final ResourceDefinition[] children;
 
-    public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel) {
+
+    public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel, ResourceDefinition...children) {
         super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
                 CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.forDomainModel = forDomainModel;
+        this.children = children;
     }
 
     @Override
@@ -137,6 +140,13 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
             resourceRegistration.registerOperationHandler(SocketBindingGroupIncludeRemoveHandler.OPERATION_NAME, SocketBindingGroupIncludeRemoveHandler.INSTANCE, SocketBindingGroupIncludeRemoveHandler.INSTANCE);
         }
         */
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        for (ResourceDefinition child : children) {
+            resourceRegistration.registerSubModel(child);
+        }
     }
 
     public static void validateDefaultInterfaceReference(final OperationContext context, final ModelNode bindingGroup) throws OperationFailedException {

@@ -241,13 +241,13 @@ public class ControllerInitializer {
         /*interfaces.registerOperationHandler(SpecifiedInterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, new DefaultResourceAddDescriptionProvider(interfaces, CommonDescriptions.getResourceDescriptionResolver()), false);
         interfaces.registerOperationHandler(SpecifiedInterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, new DefaultResourceRemoveDescriptionProvider(CommonDescriptions.getResourceDescriptionResolver()), false);*/
 
-        // Sockets
-        ManagementResourceRegistration socketGroup = rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
-        socketGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
-        // client-socket-binding (for remote destination)
-        socketGroup.registerSubModel(RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
-        // client-socket-binding (for local destination)
-        socketGroup.registerSubModel(LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
+        //TODO socket-binding-group currently lives in controller and the child RDs live in server so they currently need passing in from here
+        rootRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE,
+                                                    SocketBindingGroupRemoveHandler.INSTANCE,
+                                                    false,
+                                                    SocketBindingResourceDefinition.INSTANCE,
+                                                    RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE,
+                                                    LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE));
     }
 
 

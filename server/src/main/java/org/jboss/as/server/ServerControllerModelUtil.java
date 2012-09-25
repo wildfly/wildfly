@@ -123,13 +123,13 @@ public class ServerControllerModelUtil {
         interfaces.registerReadOnlyAttribute(NetworkInterfaceRuntimeHandler.RESOLVED_ADDRESS, NetworkInterfaceRuntimeHandler.INSTANCE);
         interfaces.registerOperationHandler(SpecifiedInterfaceResolveHandler.DEFINITION, SpecifiedInterfaceResolveHandler.INSTANCE);
 
-        // Sockets
-        ManagementResourceRegistration socketGroup = root.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE, SocketBindingGroupRemoveHandler.INSTANCE, false));
-        socketGroup.registerSubModel(SocketBindingResourceDefinition.INSTANCE);
-        // client-socket-binding (for remote destination)
-        socketGroup.registerSubModel(RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
-        // client-socket-binding (for local destination)
-        socketGroup.registerSubModel(LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE);
+        //TODO socket-binding-group currently lives in controller and the child RDs live in server so they currently need passing in from here
+        root.registerSubModel(new SocketBindingGroupResourceDefinition(BindingGroupAddHandler.INSTANCE,
+                                        SocketBindingGroupRemoveHandler.INSTANCE,
+                                        false,
+                                        SocketBindingResourceDefinition.INSTANCE,
+                                        RemoteDestinationOutboundSocketBindingResourceDefinition.INSTANCE,
+                                        LocalDestinationOutboundSocketBindingResourceDefinition.INSTANCE));
 
         // Deployments
         ManagementResourceRegistration deployments = root.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, vaultReader));
