@@ -25,21 +25,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
-import java.util.EnumSet;
-
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -48,7 +45,7 @@ import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDef
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
+import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.ServerDeploymentResourceDescription;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
@@ -85,9 +82,6 @@ public class ServerControllerModelUtil {
                                       final boolean parallelBoot,
                                       final PathManagerService pathManager) {
 
-        EnumSet<Flag> runtimeOnlyFlag = EnumSet.of(Flag.RUNTIME_ONLY);
-
-
         // System Properties
         root.registerSubModel(SystemPropertyResourceDefinition.createForStandaloneServer(serverEnvironment));
 
@@ -105,7 +99,8 @@ public class ServerControllerModelUtil {
         management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
 
         // Other core services
-        ManagementResourceRegistration serviceContainer = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), CommonProviders.SERVICE_CONTAINER_PROVIDER);
+        ManagementResourceRegistration serviceContainer = root.registerSubModel(
+                new SimpleResourceDefinition(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), CommonDescriptions.getResourceDescriptionResolver("core",SERVICE_CONTAINER)));
         serviceContainer.registerOperationHandler(DumpServicesHandler.DEFINITION, DumpServicesHandler.INSTANCE);
 
         // Platform MBeans
@@ -138,7 +133,7 @@ public class ServerControllerModelUtil {
         root.registerSubModel(new DeploymentOverlayDefinition(DeploymentOverlayPriority.SERVER, contentRepository, null));
 
         // The sub-deployments registry
-        deployments.registerSubModel(PathElement.pathElement(SUBDEPLOYMENT), ServerDescriptionProviders.SUBDEPLOYMENT_PROVIDER);
+        deployments.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement(SUBDEPLOYMENT), DeploymentAttributes.DEPLOYMENT_RESOLVER));
 
         // Extensions
         root.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, parallelBoot, false));
@@ -149,7 +144,7 @@ public class ServerControllerModelUtil {
         }
 
         // Util
-        root.registerOperationHandler(DeployerChainAddHandler.NAME, DeployerChainAddHandler.INSTANCE, DeployerChainAddHandler.INSTANCE, false, EntryType.PRIVATE);
+        root.registerOperationHandler(DeployerChainAddHandler.DEFINITION, DeployerChainAddHandler.INSTANCE, false);
     }
 
     static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
