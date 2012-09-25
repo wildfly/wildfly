@@ -48,7 +48,7 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
+
 
 /**
  *
@@ -64,6 +64,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     private static final String REMOVE = "remove";
     private static final String UPLOAD = "upload";
 
+    private static final byte REDEPLOY_NONE = 0;
+    private static final byte REDEPLOY_ONLY_AFFECTED = 1;
+    private static final byte REDEPLOY_ALL = 2;
+
     private final ArgumentWithoutValue l;
     private final ArgumentWithValue action;
     private final ArgumentWithValue name;
@@ -73,7 +77,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     private final ArgumentWithoutValue allRelevantServerGroups;
     private final ArgumentWithValue deployments;
     private final ArgumentWithValue wildcards;
-    //private final ArgumentWithValue redeployAffected;
+    private final ArgumentWithoutValue redeployAffected;
 
     private final FilenameTabCompleter pathCompleter;
 
@@ -269,18 +273,18 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                             if(groupsStr != null) {
                                 final String[] groups = groupsStr.split(",+");
                                 if(groups.length == 1) {
-                                    return loadLinkedDeployments(client, overlay, groups[0]);
+                                    return loadLinks(client, overlay, groups[0]);
                                 } else if(groups.length > 1) {
                                     final Set<String> commonLinks = new HashSet<String>();
-                                    commonLinks.addAll(loadLinkedDeployments(client, overlay, groups[0]));
+                                    commonLinks.addAll(loadLinks(client, overlay, groups[0]));
                                     for(int i = 1; i < groups.length; ++i) {
-                                        commonLinks.retainAll(loadLinkedDeployments(client, overlay, groups[i]));
+                                        commonLinks.retainAll(loadLinks(client, overlay, groups[i]));
                                     }
                                     return commonLinks;
                                 }
                             }
                         } else {
-                            return loadLinkedDeployments(client, overlay, null);
+                            return loadLinks(client, overlay, null);
                         }
                     } catch(CommandLineException e) {
                     }
@@ -334,6 +338,16 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         };
         wildcards.addRequiredPreceding(name);
         wildcards.addCantAppearAfter(l);
+
+        redeployAffected = new ArgumentWithoutValue(this, "--redeploy-affected") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if(deployments.isPresent(ctx.getParsedCommandLine()) || wildcards.isPresent(ctx.getParsedCommandLine())) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
     }
 
     @Override
@@ -403,6 +417,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         assertNotPresent(content, args);
         assertNotPresent(deployments, args);
         assertNotPresent(wildcards, args);
+        assertNotPresent(redeployAffected, args);
 
         final String overlay = name.getValue(args, true);
         final ModelControllerClient client = ctx.getModelControllerClient();
@@ -413,73 +428,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ModelNode steps = redeployOp.get(Util.STEPS);
 
         if(ctx.isDomainMode()) {
-            throw new CommandFormatException("redeploy-affected in domain mode is not yet supported.");
+            for(String group : Util.getServerGroupsReferencingOverlay(overlay, client)) {
+                addRemoveRedeployLinksSteps(client, steps, overlay, group, null, false, REDEPLOY_ALL);
+            }
         } else {
-            final List<String> remainingDeployments = Util.getDeployments(client);
-            if(remainingDeployments.isEmpty()) {
-                return;
-            }
-
-            final ModelNode op = new ModelNode();
-            final ModelNode addr = op.get(Util.ADDRESS);
-//            if(serverGroup != null) {
-//                addr.add(Util.SERVER_GROUP, serverGroup);
-//            }
-            addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
-            op.get(Util.OPERATION).set(Util.READ_CHILDREN_RESOURCES);
-            op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
-            final ModelNode response;
-            try {
-                response = client.execute(op);
-            } catch (IOException e) {
-                throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay, e);
-            }
-
-            final ModelNode result = response.get(Util.RESULT);
-            if(!result.isDefined()) {
-                final String descr = Util.getFailureDescription(response);
-                if(descr != null && descr.contains("JBAS014807")) {
-                    // resource doesn't exist
-                    throw new CommandLineException("Overlay " + overlay + " is not linked to any deployment.");
-                }
-                throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
-            }
-            final List<Property> links = result.asPropertyList();
-            if(links.isEmpty()) {
-                return;
-            }
-
-            for(Property link : links) {
-                final String linkName = link.getName();
-                final boolean regexp;
-                final ModelNode linkValue = link.getValue();
-                if(linkValue.has(Util.REGULAR_EXPRESSION)) {
-                    regexp = linkValue.get(Util.REGULAR_EXPRESSION).asBoolean();
-                } else {
-                    regexp = false;
-                }
-                if(regexp) {
-                    final Pattern pattern = Pattern.compile(Util.wildcardToJavaRegex(linkName));
-                    final Iterator<String> i = remainingDeployments.iterator();
-                    while(i.hasNext()) {
-                        final String deployment = i.next();
-                        if(pattern.matcher(deployment).matches()) {
-                            i.remove();
-                            final ModelNode step = new ModelNode();
-                            step.get(Util.ADDRESS).add(Util.DEPLOYMENT, deployment);
-                            step.get(Util.OPERATION).set(Util.REDEPLOY);
-                            steps.add(step);
-                        }
-                    }
-                } else {
-                    if(remainingDeployments.remove(linkName)) {
-                        final ModelNode step = new ModelNode();
-                        step.get(Util.ADDRESS).add(Util.DEPLOYMENT, linkName);
-                        step.get(Util.OPERATION).set(Util.REDEPLOY);
-                        steps.add(step);
-                    }
-                }
-            }
+            addRemoveRedeployLinksSteps(client, steps, overlay, null, null, false, REDEPLOY_ALL);
         }
 
         if(steps.asList().isEmpty()) {
@@ -506,6 +459,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         assertNotPresent(content, args);
         assertNotPresent(deployments, args);
         assertNotPresent(wildcards, args);
+        assertNotPresent(redeployAffected, args);
 
         final String name = this.name.getValue(args, true);
         if(name == null) {
@@ -524,7 +478,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 throw new CommandFormatException(serverGroups.getFullName() + " is missing value.");
             }
             for(String group : groups) {
-                final List<String> links = loadLinkedDeployments(client, name, group);
+                final List<String> links = loadLinks(client, name, group);
                 if(!links.isEmpty()) {
                     ctx.printLine("SERVER GROUP: " + group + Util.LINE_SEPARATOR);
                     ctx.printColumns(links);
@@ -532,7 +486,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 }
             }
         } else {
-            final List<String> content = loadLinkedDeployments(client, name, sg);
+            final List<String> content = loadLinks(client, name, sg);
             if (l.isPresent(args)) {
                 for (String contentPath : content) {
                     ctx.printLine(contentPath);
@@ -553,6 +507,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         assertNotPresent(deployments, args);
         assertNotPresent(wildcards, args);
         assertNotPresent(content, args);
+        assertNotPresent(redeployAffected, args);
 
         final String name = this.name.getValue(args, true);
         if(name == null) {
@@ -609,48 +564,15 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
 
-        if(deploymentStr != null || contentStr == null) {
-            // remove the overlay links
+        byte redeploy = this.redeployAffected.isPresent(args) ? REDEPLOY_ONLY_AFFECTED : REDEPLOY_NONE;
 
-            if(ctx.isDomainMode()) {
-                if(deploymentStr == null) {
-                    final List<String> sgNames = sg == null ? Util.getServerGroups(client) : sg;
-                    // remove all
-                    for(String sgName : sgNames) {
-                        final List<String> deployments = loadLinkedDeployments(client, name, sgName);
-                        if(!deployments.isEmpty()) {
-                            addRemoveDeploymentSteps(name, sgName, deployments, steps);
-                            final ModelNode op = new ModelNode();
-                            final ModelNode addr = op.get(Util.ADDRESS);
-                            addr.add(Util.SERVER_GROUP, sgName);
-                            addr.add(Util.DEPLOYMENT_OVERLAY, name);
-                            op.get(Util.OPERATION).set(Util.REMOVE);
-                            steps.add(op);
-                        }
-                    }
-                } else {
-                    if(ctx.isDomainMode() && sg == null) {
-                        throw new CommandFormatException(serverGroups.getFullName() + " or " + allRelevantServerGroups.getFullName() + " is required.");
-                    }
-                    final List<String> deployments = Arrays.asList(deploymentStr.split(",+"));
-                    for(String group : sg) {
-                        addRemoveDeploymentSteps(name, group, deployments, steps);
-                    }
-                }
-            } else {
-                final List<String> overlays;
-                if(deploymentStr == null) {
-                    // remove all
-                    overlays = loadLinkedDeployments(client, name, null);
-                } else {
-                    overlays = Arrays.asList(deploymentStr.split(",+"));
-                }
-                addRemoveDeploymentSteps(name, null, overlays, steps);
-            }
-        }
-
+        // remove the content first and determine whether all the linked deployments
+        // should be redeployed
         if(contentStr != null || deploymentStr == null && sg == null) {
-            // determine the content to be removed
+
+            if(redeploy == REDEPLOY_ONLY_AFFECTED) {
+                redeploy = REDEPLOY_ALL;
+            }
 
             final List<String> contentList;
             if(contentStr == null) {
@@ -667,6 +589,37 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 op.get(Util.OPERATION).set(Util.REMOVE);
                 steps.add(op);
             }
+        }
+
+        if(deploymentStr != null || contentStr == null) {
+            // remove the overlay links
+
+            if(ctx.isDomainMode()) {
+                if(deploymentStr == null) {
+                    final List<String> groups = sg == null ? Util.getServerGroupsReferencingOverlay(name, client) : sg;
+                    for(String group : groups) {
+                        addRemoveRedeployLinksSteps(client, steps, name, group, null, true, redeploy);
+                    }
+                } else {
+                    if(ctx.isDomainMode() && sg == null) {
+                        throw new CommandFormatException(serverGroups.getFullName() + " or " + allRelevantServerGroups.getFullName() + " is required.");
+                    }
+                    final List<String> links = Arrays.asList(deploymentStr.split(",+"));
+                    for(String group : sg) {
+                        addRemoveRedeployLinksSteps(client, steps, name, group, links, true, redeploy);
+                    }
+                }
+            } else {
+                if(deploymentStr == null) {
+                    // remove all
+                    addRemoveRedeployLinksSteps(client, steps, name, null, null, true, redeploy);
+                } else {
+                    final List<String> links = Arrays.asList(deploymentStr.split(",+"));
+                    addRemoveRedeployLinksSteps(client, steps, name, null, links, true, redeploy);
+                }
+            }
+        } else if(redeploy == REDEPLOY_ALL) {
+            addRemoveRedeployLinksSteps(client, steps, name, null, null, false, redeploy);
         }
 
         if(contentStr == null && deploymentStr == null && sg == null) {
@@ -686,62 +639,6 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         } catch (IOException e) {
             throw new CommandFormatException("Failed to remove overlay", e);
         }
-    }
-
-    protected List<String> loadContentFor(final ModelControllerClient client, final String overlay) throws CommandLineException {
-        final List<String> contentList;
-        final ModelNode op = new ModelNode();
-        op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, overlay);
-        op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
-        op.get(Util.CHILD_TYPE).set(Util.CONTENT);
-        final ModelNode response;
-        try {
-            response = client.execute(op);
-        } catch (IOException e) {
-            throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay, e);
-        }
-
-        final ModelNode result = response.get(Util.RESULT);
-        if(!result.isDefined()) {
-            throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay + ": " + response);
-        }
-        contentList = new ArrayList<String>();
-        for(ModelNode node : result.asList()) {
-            contentList.add(node.asString());
-        }
-        return contentList;
-    }
-
-    protected List<String> loadLinkedDeployments(final ModelControllerClient client, String overlay, String serverGroup) throws CommandLineException {
-        final ModelNode op = new ModelNode();
-        final ModelNode addr = op.get(Util.ADDRESS);
-        if(serverGroup != null) {
-            addr.add(Util.SERVER_GROUP, serverGroup);
-        }
-        addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
-        op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
-        op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
-        final ModelNode response;
-        try {
-            response = client.execute(op);
-        } catch (IOException e) {
-            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay, e);
-        }
-
-        final ModelNode result = response.get(Util.RESULT);
-        if(!result.isDefined()) {
-            final String descr = Util.getFailureDescription(response);
-            if(descr != null && descr.contains("JBAS014807")) {
-                // resource doesn't exist
-                return Collections.emptyList();
-            }
-            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
-        }
-        final List<String> contentList = new ArrayList<String>();
-        for(ModelNode node : result.asList()) {
-            contentList.add(node.asString());
-        }
-        return contentList;
     }
 
     protected void add(CommandContext ctx) throws CommandLineException {
@@ -910,6 +807,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     protected void upload(CommandContext ctx) throws CommandLineException {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
+        assertNotPresent(redeployAffected, args);
+
         final String name = this.name.getValue(args, true);
         if(!Util.isValidPath(ctx.getModelControllerClient(), Util.DEPLOYMENT_OVERLAY, name)) {
             throw new CommandLineException("Deployment overlay " + name + " does not exist.");
@@ -980,6 +879,101 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
     }
 
+    protected List<String> loadContentFor(final ModelControllerClient client, final String overlay) throws CommandLineException {
+        final List<String> contentList;
+        final ModelNode op = new ModelNode();
+        op.get(Util.ADDRESS).add(Util.DEPLOYMENT_OVERLAY, overlay);
+        op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
+        op.get(Util.CHILD_TYPE).set(Util.CONTENT);
+        final ModelNode response;
+        try {
+            response = client.execute(op);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay, e);
+        }
+
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            throw new CommandLineException("Failed to load the list of the existing content for overlay " + overlay + ": " + response);
+        }
+        contentList = new ArrayList<String>();
+        for(ModelNode node : result.asList()) {
+            contentList.add(node.asString());
+        }
+        return contentList;
+    }
+
+    protected List<String> loadLinks(final ModelControllerClient client, String overlay, String serverGroup) throws CommandLineException {
+        final ModelNode op = new ModelNode();
+        final ModelNode addr = op.get(Util.ADDRESS);
+        if(serverGroup != null) {
+            addr.add(Util.SERVER_GROUP, serverGroup);
+        }
+        addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
+        op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
+        op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
+        final ModelNode response;
+        try {
+            response = client.execute(op);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay, e);
+        }
+
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            final String descr = Util.getFailureDescription(response);
+            if(descr != null && descr.contains("JBAS014807")) {
+                // resource doesn't exist
+                return Collections.emptyList();
+            }
+            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
+        }
+        final List<String> contentList = new ArrayList<String>();
+        for(ModelNode node : result.asList()) {
+            contentList.add(node.asString());
+        }
+        return contentList;
+    }
+
+    protected ModelNode loadLinkResources(final ModelControllerClient client, String overlay, String serverGroup) throws CommandLineException {
+        final ModelNode op = new ModelNode();
+        final ModelNode addr = op.get(Util.ADDRESS);
+        if(serverGroup != null) {
+            addr.add(Util.SERVER_GROUP, serverGroup);
+        }
+        addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
+        op.get(Util.OPERATION).set(Util.READ_CHILDREN_RESOURCES);
+        op.get(Util.CHILD_TYPE).set(Util.DEPLOYMENT);
+        final ModelNode response;
+        try {
+            response = client.execute(op);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay, e);
+        }
+
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            final String descr = Util.getFailureDescription(response);
+            if(descr != null && descr.contains("JBAS014807")) {
+                // resource doesn't exist
+                return null;
+            }
+            throw new CommandLineException("Failed to load the list of deployments for overlay " + overlay + ": " + response);
+        }
+        return result;
+    }
+
+    protected void addRedeployStep(final ModelNode steps, final String deployment, String serverGroup) {
+        final ModelNode step = new ModelNode();
+        final ModelNode address = step.get(Util.ADDRESS);
+        if(serverGroup != null) {
+            address.add(Util.SERVER_GROUP, serverGroup);
+        }
+        address.add(Util.DEPLOYMENT, deployment);
+        step.get(Util.OPERATION).set(Util.REDEPLOY);
+        steps.add(step);
+    }
+
     protected String[] getLinks(ArgumentWithValue linksArg, final ParsedCommandLine args) throws CommandFormatException {
         final String deploymentsStr = linksArg.getValue(args);
         final String[] deployments;
@@ -1035,18 +1029,98 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
     }
 
-    protected void addRemoveDeploymentSteps(final String overlayName, String serverGroup,
-            final List<String> deployments, final ModelNode steps) {
-        for(String deploymentName : deployments) {
-            final ModelNode op = new ModelNode();
-            final ModelNode addr = op.get(Util.ADDRESS);
-            if(serverGroup != null) {
-                addr.add(Util.SERVER_GROUP, serverGroup);
+    protected void addRemoveRedeployLinksSteps(ModelControllerClient client, ModelNode steps,
+            String overlay, String sgName, List<String> specifiedLinks, boolean removeLinks, byte redeploy)
+            throws CommandLineException {
+        final ModelNode linkResources = loadLinkResources(client, overlay, sgName);
+        if(linkResources == null) {
+            return;
+        }
+        if(linkResources.keys().isEmpty()) {
+            return;
+        }
+
+        if(removeLinks) {
+            final Iterator<String> linkNames;
+            if(specifiedLinks != null) {
+                linkNames = specifiedLinks.iterator();
+            } else {
+                linkNames = linkResources.keys().iterator();
             }
-            addr.add(Util.DEPLOYMENT_OVERLAY, overlayName);
-            addr.add(Util.DEPLOYMENT, deploymentName);
-            op.get(Util.OPERATION).set(Util.REMOVE);
-            steps.add(op);
+            while(linkNames.hasNext()) {
+                final String linkName = linkNames.next();
+                final ModelNode op = new ModelNode();
+                final ModelNode addr = op.get(Util.ADDRESS);
+                if(sgName != null) {
+                    addr.add(Util.SERVER_GROUP, sgName);
+                }
+                addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
+                addr.add(Util.DEPLOYMENT, linkName);
+                op.get(Util.OPERATION).set(Util.REMOVE);
+                steps.add(op);
+            }
+            if(specifiedLinks == null && sgName != null) {
+                // this is only for the domain mode for the specific server group
+                // TODO specified links may cover all, in which case it wouldn't clean this one
+                final ModelNode op = new ModelNode();
+                final ModelNode addr = op.get(Util.ADDRESS);
+                addr.add(Util.SERVER_GROUP, sgName);
+                addr.add(Util.DEPLOYMENT_OVERLAY, overlay);
+                op.get(Util.OPERATION).set(Util.REMOVE);
+                steps.add(op);
+            }
+        }
+
+        // redeploy
+
+        final Iterator<String> linkNames;
+        if(redeploy == REDEPLOY_ALL) {
+            linkNames = linkResources.keys().iterator();
+        } else if(redeploy == REDEPLOY_ONLY_AFFECTED && specifiedLinks != null) {
+            linkNames = specifiedLinks.iterator();
+        } else {
+            return;
+        }
+
+        final List<String> sgDeployments = Util.getDeployments(client, sgName);
+        while(linkNames.hasNext() && !sgDeployments.isEmpty()) {
+            final String linkName = linkNames.next();
+            final ModelNode link = linkResources.get(linkName);
+            if(!link.isDefined()) {
+                final StringBuilder buf = new StringBuilder();
+                buf.append(linkName);
+                buf.append(" not found among the registered links ");
+                if(sgName != null) {
+                    buf.append("for server group ").append(sgName).append(' ');
+                }
+                buf.append(linkResources.keys());
+                throw new CommandFormatException(buf.toString());
+            }
+            addRedeploySteps(steps, sgName, linkName, link, sgDeployments);
+        }
+    }
+
+    protected void addRedeploySteps(ModelNode steps, String serverGroup, String linkName, ModelNode link, List<String> remainingDeployments) {
+        final boolean regexp;
+        if(link.has(Util.REGULAR_EXPRESSION)) {
+            regexp = link.get(Util.REGULAR_EXPRESSION).asBoolean();
+        } else {
+            regexp = false;
+        }
+        if(regexp) {
+            final Pattern pattern = Pattern.compile(Util.wildcardToJavaRegex(linkName));
+            final Iterator<String> i = remainingDeployments.iterator();
+            while(i.hasNext()) {
+                final String deployment = i.next();
+                if(pattern.matcher(deployment).matches()) {
+                    i.remove();
+                    addRedeployStep(steps, deployment, serverGroup);
+                }
+            }
+        } else {
+            if(remainingDeployments.remove(linkName)) {
+                addRedeployStep(steps, linkName, serverGroup);
+            }
         }
     }
 
