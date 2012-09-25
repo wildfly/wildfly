@@ -23,15 +23,19 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
-import org.jboss.as.patching.api.Patch;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.Patch;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,7 +54,7 @@ public class PatchingTaskRunner {
         this.structure = structure;
     }
 
-    public PatchInfo execute(final Patch patch, final InputStream content) throws PatchingException {
+    public PatchingResult execute(final Patch patch, final InputStream content) throws PatchingException {
         // Check if we can apply this patch
         final String patchId = patch.getPatchId();
         final List<String> appliesTo = patch.getAppliesTo();
@@ -65,9 +69,9 @@ public class PatchingTaskRunner {
         }
         workDir.mkdirs();
         final PatchContentLoader loader = new PatchContentLoader.FilePatchContentLoader(workDir);
-        final PatchingContext context = new PatchingContext(patchInfo, structure, loader);
+        final PatchingContext context = new PatchingContext(patch, patchInfo, structure, loader);
+        final File cachedContent = new File(workDir, "content");
         try {
-            final File cachedContent = context.newFile(workDir, "content");
             FileOutputStream os = null;
             try {
                 // Cache the content first
@@ -94,25 +98,55 @@ public class PatchingTaskRunner {
                     throw new PatchingException("...");
                 }
             }
-            // File
-            final File files = new File(workDir, PatchContents.FILES);
-            if(files.exists()) {
-                final Collection<ContentItem> contents = PatchContents.getContents(files);
-                final PatchingTask task = new FilesPatchingTask(contents);
+            // Create the modification tasks
+            final List<ContentTask> tasks = new ArrayList<ContentTask>();
+            final List<ContentItem> problems = new ArrayList<ContentItem>();
+            for(final ContentModification modification : patch.getModifications()) {
+                final ContentTask task = ContentTask.Factory.create(modification, context);
                 try {
-                    task.execute(patch, context);
+                    // backup
+                    if(! task.prepare(context)) {
+                        // In case the file was modified we report a problem
+                        final ContentItem item = modification.getItem();
+                        // Unless it was ignored (or excluded)
+                        if(context.isIgnored(item)) {
+                            problems.add(item);
+                        }
+                    }
+                    tasks.add(task);
                 } catch (IOException e) {
-                    context.rollbackOnly();
                     throw new PatchingException(e);
                 }
+            }
+            // If there were problems report them
+            if(! problems.isEmpty()) {
+                // TODO
+                throw new PatchingException("...");
+            }
+            //
+            final List<ContentModification> rollbackTasks = new ArrayList<ContentModification>();
+            try {
+                // Execute the tasks
+                for(final ContentTask task : tasks) {
+                    // Unless it's excluded by the user
+                    if(context.isExcluded(task.getContentItem())) {
+                        continue;
+                    }
+                    // Record the rollback task
+                    final ContentModification rollback = task.execute(context);
+                    rollbackTasks.add(rollback);
+                }
+            } catch (Exception e) {
+                // Rollback
+                e.printStackTrace();
             }
             // Finish..
             return context.finish(patch);
         } finally {
+            cachedContent.delete();
             if(! recursiveDelete(workDir)) {
                 PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
             }
-            context.cleanup();
         }
     }
 

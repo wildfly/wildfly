@@ -48,13 +48,6 @@ import java.io.File;
  */
 public final class DirectoryStructure {
 
-    static String CUMULATIVE = "cumulative";
-    static String HISTORY = "history";
-    static String METADATA = ".metadata";
-    static String MODULES = "modules";
-    static String PATCHES = "patches";
-    static String REFERENCES = "references";
-
     public static interface InstalledImage {
 
         /**
@@ -79,6 +72,15 @@ public final class DirectoryStructure {
         File getPatchesDir();
 
     }
+
+    // Directories
+    static String HISTORY = "history";
+    static String METADATA = ".metadata";
+    static String MODULES = "modules";
+    static String PATCHES = "patches";
+    // Markers
+    static String CUMULATIVE = "cumulative";
+    static String REFERENCES = "references";
 
     private final InstalledImage image;
 

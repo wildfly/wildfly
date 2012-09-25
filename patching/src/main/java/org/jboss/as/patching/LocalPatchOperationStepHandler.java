@@ -26,8 +26,9 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.patching.api.Patch;
+import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.dmr.ModelNode;
 
@@ -52,12 +53,18 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final Patch patch = null; // From metadata
         final InputStream is = context.getAttachmentStream(0);
         try {
-            final PatchInfo newInfo = runner.execute(patch, is);
+            final PatchingResult result = runner.execute(patch, is);
+            final PatchInfo newInfo = result.getPatchInfo();
             service.setPatchInfo(info, newInfo);
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    result.rollback();
+                }
+            });
         } catch (PatchingException e) {
             throw new OperationFailedException(e.getMessage(), e);
         }
-        context.completeStep();
     }
 
 }

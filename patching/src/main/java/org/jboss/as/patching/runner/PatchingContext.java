@@ -26,7 +26,9 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.api.Patch;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.Patch;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,55 +43,47 @@ class PatchingContext {
 
     private final PatchInfo info;
     private final PatchContentLoader loader;
-    private final DirectoryStructure structure;
-    private final List<PatchingRecord> records = new ArrayList<PatchingRecord>();
-    private final List<CleanupTask> tasks = new ArrayList<CleanupTask>();
+    private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
+
+    private final File root;
+    private final File backup;
 
     private boolean rollbackOnly;
 
-    PatchingContext(final PatchInfo info, final DirectoryStructure structure, final PatchContentLoader loader) {
+    PatchingContext(final Patch patch, final PatchInfo info, final DirectoryStructure structure, final PatchContentLoader loader) {
         this.info = info;
-        this.structure = structure;
         this.loader = loader;
+        this.root = structure.getInstalledImage().getJbossHome();
+        this.backup = structure.getHistoryDir(patch.getPatchId());
     }
 
     public PatchContentLoader getLoader() {
         return loader;
     }
 
-    public DirectoryStructure getStructure() {
-        return structure;
+    public File getTargetFile(final ContentItem item) {
+        return getTargetFile(root, item);
     }
 
-    File newFile(final File parent, final String name) {
-        final File f = new File(parent, name);
-        cleanup(f);
-        return f;
+    public File getBackupFile(final ContentItem item) {
+        return getTargetFile(backup, item);
     }
 
-    void cleanup(File file) {
-        add(new CleanupTask.FileCleanupTask(file));
+    public boolean isIgnored(final ContentItem item) {
+        // TODO
+        return false;
     }
 
-    void add(final CleanupTask task) {
-        tasks.add(task);
+    public boolean isExcluded(final ContentItem item) {
+        // TODO
+        return false;
     }
 
-    void cleanup() {
-        for(final CleanupTask task : tasks) {
-            try {
-                task.cleanup();
-            } catch (Exception e) {
-                PatchLogger.ROOT_LOGGER.debugf(e, "exception when trying to cleanup up (%s)", task);
-            }
-        }
+    public void addRollbackAction(final ContentModification modification) {
+        rollbackActions.add(modification);
     }
 
-    void record(PatchingRecord record) {
-        records.add(record);
-    }
-
-    PatchInfo finish(Patch patch) throws PatchingException {
+    PatchingResult finish(Patch patch) throws PatchingException {
         assert ! rollbackOnly;
         // Create the new info
         final String patchId = patch.getPatchId();
@@ -102,7 +96,24 @@ class PatchingContext {
             newInfo = new LocalPatchInfo("undefined", patchId, Collections.<String>emptyList(), info.getEnvironment());
         }
         try {
-            return persist(newInfo);
+            // Persist
+            persist(newInfo);
+            //
+            return new PatchingResult() {
+                @Override
+                public PatchInfo getPatchInfo() {
+                    return newInfo;
+                }
+
+                @Override
+                public void rollback() {
+                    try {
+                        persist(info);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
         } catch (Exception e) {
             throw new PatchingException(e);
         }
@@ -113,14 +124,7 @@ class PatchingContext {
     }
 
     PatchInfo undo(final Patch patch) {
-        for(final PatchingRecord record : records) {
-            try {
-                record.undo(patch, this);
-            } catch (Exception e) {
-                // TODO i18n
-                PatchLogger.ROOT_LOGGER.warnf(e, "exception when trying rolling back (%s)", patch);
-            }
-        }
+        // TODO rollback
         return info;
     }
 
@@ -138,6 +142,14 @@ class PatchingContext {
         PatchUtils.writeRef(environment.getCumulativeLink(), info.getCumulativeID());
         PatchUtils.writeRefs(environment.getCumulativeRefs(cumulativeID), info.getPatchIDs());
         return patch;
+    }
+
+    static File getTargetFile(final File root, final ContentItem item)  {
+        File file = root;
+        for(final String path : item.getPath()) {
+            file = new File(file, path);
+        }
+        return new File(file, item.getName());
     }
 
 }

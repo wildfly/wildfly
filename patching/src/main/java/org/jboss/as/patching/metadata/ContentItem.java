@@ -20,54 +20,48 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.api;
-
-import java.util.List;
+package org.jboss.as.patching.metadata;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface Patch {
+public class ContentItem {
 
-    public enum PatchType {
-        CUMULATIVE,
-        ONE_OFF,
-        ;
+    private final String name;
+    private final String[] path;
+    private final byte[] contentHash;
+
+    public ContentItem(String name, String[] path, byte[] contentHash) {
+        this.name = name;
+        this.path = path;
+        this.contentHash = contentHash;
     }
 
     /**
-     * Get the unique patch ID.
+     * Get the content name.
      *
-     * @return the patch id
+     * @return the name
      */
-    String getPatchId();
+    public String getName() {
+        return name;
+    }
 
     /**
-     * Get the patch description.
+     * Get the relative content path.
      *
-     * @return the patch description
+     * @return the content path
      */
-    String getDescription();
+    public String[] getPath() {
+        return path;
+    }
 
     /**
-     * Get the patch type.
+     * Get the content hash.
      *
-     * @return the type of the patch
+     * @return the content hash
      */
-    PatchType getPatchType();
-
-    /**
-     * Get the patch content hash.
-     *
-     * @return the hash
-     */
-    byte[] getContentHash();
-
-    /**
-     * Get the versions this patch applies to.
-     *
-     * @return the versions the patch can be applied
-     */
-    List<String> getAppliesTo();
+    public byte[] getContentHash() {
+        return contentHash;
+    }
 
 }
