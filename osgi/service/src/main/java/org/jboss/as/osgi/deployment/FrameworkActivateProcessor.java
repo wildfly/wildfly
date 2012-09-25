@@ -103,7 +103,7 @@ public class FrameworkActivateProcessor implements DeploymentUnitProcessor {
             if (target instanceof FieldInfo) {
                 FieldInfo fieldInfo = (FieldInfo) target;
                 String typeName = fieldInfo.type().toString();
-                if (typeName.startsWith("org.osgi.framework")) {
+                if (typeName.startsWith("org.osgi.framework") || typeName.startsWith("org.osgi.service")) {
                     LOGGER.debugf("OSGi injection point of type '%s' detected: %s", typeName, fieldInfo.declaringClass());
                     result = true;
                     break;

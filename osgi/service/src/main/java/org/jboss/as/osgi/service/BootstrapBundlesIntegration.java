@@ -131,7 +131,6 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     public synchronized void start(StartContext context) throws StartException {
         super.start(context);
 
-        final BundleContext syscontext = injectedSystemContext.getValue();
         final List<Deployment> deployments = new ArrayList<Deployment>();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
@@ -152,7 +151,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
             }
 
             for (OSGiCapability configcap : configcaps) {
-                Deployment dep = getInitialDeployment(syscontext, configcap);
+                Deployment dep = getInitialBundleDeployment(configcap);
                 deployments.add(dep);
             }
         } catch (Exception ex) {
@@ -163,8 +162,8 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
         installBootstrapBundles(context.getChildTarget(), deployments);
     }
 
-    private boolean installInitialModuleCapability(OSGiCapability osgicap) throws Exception {
-        String identifier = osgicap.getIdentifier();
+    private boolean installInitialModuleCapability(OSGiCapability configcap) throws Exception {
+        String identifier = configcap.getIdentifier();
         if (isValidModuleIdentifier(identifier)) {
             ModuleIdentifier moduleId = ModuleIdentifier.fromString(identifier);
 
@@ -205,9 +204,9 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
         return false;
     }
 
-    private Deployment getInitialDeployment(BundleContext context, OSGiCapability osgicap) throws Exception {
-        String identifier = osgicap.getIdentifier();
-        Integer level = osgicap.getStartLevel();
+    private Deployment getInitialBundleDeployment(OSGiCapability configcap) throws Exception {
+        String identifier = configcap.getIdentifier();
+        Integer level = configcap.getStartLevel();
 
         Deployment deployment = null;
 
