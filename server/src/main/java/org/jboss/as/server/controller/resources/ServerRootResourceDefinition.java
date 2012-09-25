@@ -229,7 +229,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
         }
 
-        resourceRegistration.registerOperationHandler(ServerRestartRequiredHandler.OPERATION_NAME, ServerRestartRequiredHandler.INSTANCE, ServerRestartRequiredHandler.INSTANCE, false);
+        resourceRegistration.registerOperationHandler(ServerRestartRequiredHandler.DEFINITION, ServerRestartRequiredHandler.INSTANCE);
 
         resourceRegistration.registerOperationHandler(ResolveExpressionHandler.OPERATION_NAME, ResolveExpressionHandler.INSTANCE,
                 ResolveExpressionHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
@@ -252,7 +252,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
             if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE) {
                 ServerShutdownHandler serverShutdownHandler = new ServerShutdownHandler(processState);
-                resourceRegistration.registerOperationHandler(ServerShutdownHandler.OPERATION_NAME, serverShutdownHandler, serverShutdownHandler);
+                resourceRegistration.registerOperationHandler(ServerShutdownHandler.DEFINITION, serverShutdownHandler);
             }
             resourceRegistration.registerSubModel(ServerEnvironmentResourceDescription.of(serverEnvironment));
         }

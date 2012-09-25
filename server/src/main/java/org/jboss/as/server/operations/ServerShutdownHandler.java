@@ -22,27 +22,35 @@
 
 package org.jboss.as.server.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
-
-import java.util.Locale;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler that shuts down the standalone server.
  *
  * @author Jason T. Greene
  */
-public class ServerShutdownHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerShutdownHandler implements OperationStepHandler {
+    private static final SimpleAttributeDefinition RESTART = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RESTART, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .build();
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("shutdown", ServerDescriptions.getResourceDescriptionResolver())
+            .setParameters(RESTART)
+            .build();
 
-    public static final String OPERATION_NAME = "shutdown";
 
     private final ControlledProcessState processState;
 
@@ -50,10 +58,12 @@ public class ServerShutdownHandler implements OperationStepHandler, DescriptionP
         this.processState = processState;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final boolean restart = operation.hasDefined(RESTART) ? operation.get(RESTART).asBoolean() : false;
+        final boolean restart = RESTART.resolveModelAttribute(context, operation).asBoolean();
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -72,10 +82,5 @@ public class ServerShutdownHandler implements OperationStepHandler, DescriptionP
         }, OperationContext.Stage.RUNTIME);
 
         context.stepCompleted();
-    }
-
-    /** {@inheritDoc} */
-    public ModelNode getModelDescription(final Locale locale) {
-        return ServerDescriptions.getShutdownOperationDescription(locale);
     }
 }
