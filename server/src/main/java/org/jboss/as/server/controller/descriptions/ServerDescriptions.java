@@ -86,21 +86,6 @@ public class ServerDescriptions {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
-    public static ModelNode getCompositeOperationDescription(Locale locale) {
-
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(COMPOSITE);
-        root.get(DESCRIPTION).set(bundle.getString("composite"));
-        root.get(REQUEST_PROPERTIES, STEPS, TYPE).set(ModelType.LIST); // TODO details of the type
-        root.get(REQUEST_PROPERTIES, STEPS, DESCRIPTION).set(bundle.getString("composite.steps"));
-        root.get(REQUEST_PROPERTIES, STEPS, REQUIRED).set(true);
-        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
-        // TODO details of the reply
-        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString("composite.result"));
-        return root;
-    }
-
     /** {@inheritDoc} */
     public static ModelNode getShutdownOperationDescription(final Locale locale) {
         ResourceBundle bundle = getResourceBundle(locale);
@@ -114,17 +99,6 @@ public class ServerDescriptions {
         node.get(REQUEST_PROPERTIES, RESTART, REQUIRED).set(false);
         node.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
         node.get(REPLY_PROPERTIES).setEmptyObject();
-        return node;
-    }
-
-    public static ModelNode getDumpServicesOperationDescription(final Locale locale) {
-        ResourceBundle bundle = getResourceBundle(locale);
-
-        ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(DUMP_SERVICES);
-        node.get(DESCRIPTION).set(bundle.getString("dump-services"));
-        node.get(REQUEST_PROPERTIES).setEmptyObject();
-        node.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
         return node;
     }
 

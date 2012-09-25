@@ -23,17 +23,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.BOOT_TIME;
 import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.VALUE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SystemPropertyAddHandler implements OperationStepHandler, DescriptionProvider {
+public class SystemPropertyAddHandler implements OperationStepHandler{
 
     public static final String OPERATION_NAME = ADD;
 
@@ -121,9 +117,5 @@ public class SystemPropertyAddHandler implements OperationStepHandler, Descripti
                 }
             }
         });
-    }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return SystemPropertyDescriptions.getAddSystemPropertyOperation(locale, useBoottime);
     }
 }

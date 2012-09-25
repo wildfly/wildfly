@@ -24,17 +24,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.controller.descriptions.SystemPropertyDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SystemPropertyRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public class SystemPropertyRemoveHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -58,7 +54,7 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
 
     /**
      * Create the SystemPropertyRemoveHandler
-     * @param processEnvironment the process environment to use to validate changes. May be {@code null}
+     * @param systemPropertyUpdater the process environment to use to validate changes. May be {@code null}
      */
     public SystemPropertyRemoveHandler(ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater) {
         this.systemPropertyUpdater = systemPropertyUpdater;
@@ -109,9 +105,4 @@ public class SystemPropertyRemoveHandler implements OperationStepHandler, Descri
             }
         });
     }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return SystemPropertyDescriptions.getRemoveSystemPropertyOperation(locale);
-    }
-
 }
