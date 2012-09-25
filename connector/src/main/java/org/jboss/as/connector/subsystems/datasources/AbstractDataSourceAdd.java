@@ -137,7 +137,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                                 driverDemanderService.getInjector());
         driverDemanderBuilder.addListener(verificationHandler);
         driverDemanderBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
-        controllers.add(driverDemanderBuilder.install());
 
         AbstractDataSourceService dataSourceService = createDataSourceService(dsName);
 
@@ -169,6 +168,8 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.NEVER);
 
         controllers.add(dataSourceServiceBuilder.install());
+        controllers.add(driverDemanderBuilder.install());
+
 
     }
 
