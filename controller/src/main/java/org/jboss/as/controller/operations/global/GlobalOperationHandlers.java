@@ -146,11 +146,6 @@ public class GlobalOperationHandlers {
 
     private static final SimpleAttributeDefinition CHILD_TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CHILD_TYPE, ModelType.STRING)
             .setValidator(new StringLengthValidator(1))
-            .setAllowNull(true)
-            .build();
-
-    private static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE, ModelType.STRING)
-            .setValidator(new StringLengthValidator(1))
             .setAllowNull(false)
             .build();
 

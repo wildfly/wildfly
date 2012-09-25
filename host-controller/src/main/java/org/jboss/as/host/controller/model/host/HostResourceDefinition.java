@@ -101,6 +101,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             build();
     public static final SimpleAttributeDefinition MASTER = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.MASTER, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(false))
+            .setStorageRuntime()
+            .setResourceOnly()
             .build();
 
     public static final SimpleAttributeDefinition REMOTE_DC_HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING)
@@ -108,14 +110,15 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .setMinSize(1)
             .build();
     public static final SimpleAttributeDefinition REMOTE_DC_PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT)
+            .setAllowNull(false)
             .build();
 
     public static final ObjectTypeAttributeDefinition DC_LOCAL = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.LOCAL)
-            .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final ObjectTypeAttributeDefinition DC_REMOTE = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.REMOTE, REMOTE_DC_HOST, REMOTE_DC_PORT)
-            .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)
