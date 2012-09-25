@@ -643,8 +643,8 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeStartElement(Element.JMS_QUEUE.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
                     JndiEntriesAttribute.DESTINATION.marshallAsElement(queue, writer);
-                    DURABLE.marshallAsElement(queue, writer);
                     SELECTOR.marshallAsElement(queue, writer);
+                    DURABLE.marshallAsElement(queue, writer);
                     writer.writeEndElement();
                 }
             }

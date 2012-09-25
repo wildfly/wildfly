@@ -358,6 +358,7 @@
               <jms-queue name="testQueue">
                  <entry name="queue/test"/>
                  <selector string="color='red'"/>
+                 <durable>true</durable>
               </jms-queue>
               <jms-topic name="testTopic">
                  <entry name="topic/test"/>
