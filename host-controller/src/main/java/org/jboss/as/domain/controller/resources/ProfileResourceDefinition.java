@@ -34,8 +34,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
@@ -43,27 +41,27 @@ import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
 import org.jboss.dmr.ModelType;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ProfileResourceDefinition extends SimpleResourceDefinition {
 
     public static SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
-        .setValidator(new StringLengthValidator(1))
-        .build();
+            .setValidator(new StringLengthValidator(1))
+            .setResourceOnly()
+            .build();
 
     private static OperationDefinition DESCRIBE = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, DomainRootDescription.getResourceDescriptionResolver(PROFILE, false))
-        .setReplyType(ModelType.LIST)
-        .setReplyValueType(ModelType.OBJECT)
-        .setEntryType(EntryType.PRIVATE)
-        .withFlag(Flag.READ_ONLY)
-        .build();
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.OBJECT)
+            .setPrivateEntry()
+            .setReadOnly()
+            .build();
 
     private final ExtensionRegistry extensionRegistry;
 
     public ProfileResourceDefinition(ExtensionRegistry extensionRegistry) {
         super(PathElement.pathElement(PROFILE), DomainRootDescription.getResourceDescriptionResolver(PROFILE, false), ProfileAddHandler.INSTANCE, ProfileRemoveHandler.INSTANCE);
-        this.extensionRegistry =extensionRegistry;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -79,7 +77,6 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
     }
-
 
 
 }

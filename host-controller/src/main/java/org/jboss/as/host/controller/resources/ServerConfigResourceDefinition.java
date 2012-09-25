@@ -80,7 +80,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition SOCKET_BINDING_GROUP = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SOCKET_BINDING_GROUP, ModelType.STRING, true)
             .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition SOCKET_BINDING_PORT_OFFSET = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition SOCKET_BINDING_PORT_OFFSET = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET, ModelType.INT, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(0))
             .setXmlName(Attribute.PORT_OFFSET.getLocalName())

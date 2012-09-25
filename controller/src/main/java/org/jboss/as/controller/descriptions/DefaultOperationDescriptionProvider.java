@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.descriptions;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -130,7 +129,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             if (replyType == ModelType.LIST || replyType == ModelType.OBJECT) {
                 if (replyValueType != null && replyValueType != ModelType.OBJECT) {
                     reply.get(VALUE_TYPE).set(replyValueType);
-                } else {
+                } else if (replyValueType != null) {
                     reply.get(VALUE_TYPE).set(getReplyValueTypeDescription(descriptionResolver, locale, bundle));
                 }
             }
@@ -175,12 +174,10 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
      * <p>This default implementation throws an {@code IllegalStateException}; it is the responsibility of
      * subclasses to override this method if a complex "value-type" description is required.</p>
      *
-     * @param descriptionResolver  resolver for localizing any text in the description
-     * @param locale locale for any text description
-     * @param bundle resource bundle previously {@link ResourceDescriptionResolver#getResourceBundle(Locale) obtained from the description resolver}
-     *
+     * @param descriptionResolver resolver for localizing any text in the description
+     * @param locale              locale for any text description
+     * @param bundle              resource bundle previously {@link ResourceDescriptionResolver#getResourceBundle(Locale) obtained from the description resolver}
      * @return a node describing the reply's "value-type"
-     *
      * @throws IllegalStateException if not overridden by an implementation that does not
      */
     protected ModelNode getReplyValueTypeDescription(ResourceDescriptionResolver descriptionResolver, Locale locale, ResourceBundle bundle) {
