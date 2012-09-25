@@ -341,7 +341,7 @@ public class UndeployHandler extends DeploymentHandler {
         if(name.indexOf('*') < 0) {
             deploymentNames = Collections.singletonList(name);
         } else {
-            deploymentNames = Util.getDeployments(client, name);
+            deploymentNames = Util.getMatchingDeployments(client, name);
             if(deploymentNames.isEmpty()) {
                 throw new CommandFormatException("No deployment matched wildcard expression " + name);
             }
