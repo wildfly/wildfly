@@ -19,8 +19,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.EnumSet;
 
@@ -28,7 +26,6 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonProviders;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
@@ -111,8 +108,7 @@ public class HostModelUtil {
         root.registerOperationHandler(HostModelRegistrationHandler.OPERATION_NAME, hostModelRegistratorHandler, hostModelRegistratorHandler, false, OperationEntry.EntryType.PRIVATE);
 
         // Global operations
-        GlobalOperationHandlers.registerGlobalOperations(root,processType);
-
+        GlobalOperationHandlers.registerGlobalOperations(root, processType);
 
 
         root.registerOperationHandler(ValidateOperationHandler.OPERATION_NAME, ValidateOperationHandler.INSTANCE, ValidateOperationHandler.INSTANCE, false, EntryType.PUBLIC, EnumSet.of(Flag.READ_ONLY));
@@ -149,19 +145,19 @@ public class HostModelUtil {
     }
 
     public static void createHostRegistry(final String hostName,
-            final ManagementResourceRegistration rootRegistration,
-            final ManagementResourceRegistration hostRegistration, final HostControllerConfigurationPersister configurationPersister,
-            final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
-            final HostFileRepository localFileRepository,
-            final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
-            final HostFileRepository remoteFileRepository,
-            final ContentRepository contentRepository,
-            final DomainController domainController,
-            final ExtensionRegistry extensionRegistry,
-            final AbstractVaultReader vaultReader,
-            final IgnoredDomainResourceRegistry ignoredRegistry,
-            final ControlledProcessState processState,
-            final PathManagerService pathManager) {
+                                          final ManagementResourceRegistration rootRegistration,
+                                          final ManagementResourceRegistration hostRegistration, final HostControllerConfigurationPersister configurationPersister,
+                                          final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
+                                          final HostFileRepository localFileRepository,
+                                          final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
+                                          final HostFileRepository remoteFileRepository,
+                                          final ContentRepository contentRepository,
+                                          final DomainController domainController,
+                                          final ExtensionRegistry extensionRegistry,
+                                          final AbstractVaultReader vaultReader,
+                                          final IgnoredDomainResourceRegistry ignoredRegistry,
+                                          final ControlledProcessState processState,
+                                          final PathManagerService pathManager) {
         // Global operations
         EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
 
