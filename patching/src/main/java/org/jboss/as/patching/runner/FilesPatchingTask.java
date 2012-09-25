@@ -22,12 +22,10 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.api.Patch;
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
-import org.jboss.as.patching.loader.PatchUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +47,7 @@ public class FilesPatchingTask implements PatchingTask {
     @Override
     public void execute(final Patch patch, final PatchingContext context) throws IOException {
         //
-        final PatchDirectoryStructure structure = context.getStructure();
+        final DirectoryStructure structure = context.getStructure();
         final File jbossHome = structure.getInstalledImage().getJbossHome();
         final File historyDir = structure.getHistoryDir(patch.getPatchId());
         final List<PatchingRecord> records = new ArrayList<PatchingRecord>();

@@ -852,6 +852,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-boot</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-config-assembly</artifactId>
                 </dependency>

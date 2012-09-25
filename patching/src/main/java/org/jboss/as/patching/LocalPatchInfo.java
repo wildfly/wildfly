@@ -22,8 +22,8 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
-import org.jboss.as.patching.loader.PatchUtils;
+import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.runner.PatchUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,9 +38,9 @@ public class LocalPatchInfo implements PatchInfo {
     private final String version;
     private final String cumulativeId;
     private final List<String> patches;
-    private final PatchDirectoryStructure environment;
+    private final DirectoryStructure environment;
 
-    public LocalPatchInfo(final String version, final String cumulativeId, final List<String> patches, final PatchDirectoryStructure environment) {
+    public LocalPatchInfo(final String version, final String cumulativeId, final List<String> patches, final DirectoryStructure environment) {
         this.version = version;
         this.cumulativeId = cumulativeId;
         this.patches = patches;
@@ -63,7 +63,7 @@ public class LocalPatchInfo implements PatchInfo {
     }
 
     @Override
-    public PatchDirectoryStructure getEnvironment() {
+    public DirectoryStructure getEnvironment() {
         return environment;
     }
 
@@ -90,7 +90,7 @@ public class LocalPatchInfo implements PatchInfo {
      * @return the patches
      * @throws IOException
      */
-    static LocalPatchInfo load(final String version, final PatchDirectoryStructure environment) throws IOException {
+    static LocalPatchInfo load(final String version, final DirectoryStructure environment) throws IOException {
         if(environment.getCumulativeLink().exists()) {
             final String ref = PatchUtils.readRef(environment.getCumulativeLink());
             final List<String> patches = PatchUtils.readRefs(environment.getCumulativeRefs(ref));

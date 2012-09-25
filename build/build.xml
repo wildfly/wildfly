@@ -174,7 +174,7 @@
     <target name="modules-minimalistic">
 
         <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
-        <copy file="${org.jboss.as:jboss-as-patching:jar:loader}" tofile="${output.dir}/loader.jar"/>
+        <copy file="${org.jboss.as:jboss-as-boot:jar}" tofile="${output.dir}/loader.jar"/>
 
         <!--
           ~ Minimalistic list of modules to assemble.
@@ -193,6 +193,10 @@
         <module-def name="javax.xml.stream.api"/>
 
         <module-def name="org.apache.log4j"/>
+
+        <module-def name="org.jboss.as.boot">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-boot"/>
+        </module-def>
 
         <module-def name="org.jboss.as.controller">
             <maven-resource group="org.wildfly" artifact="wildfly-controller"/>

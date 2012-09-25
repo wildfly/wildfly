@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.loader;
+package org.jboss.as.patching.runner;
+
+import org.jboss.as.boot.DirectoryStructure;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +42,7 @@ class PatchModulePathFactory {
      * @return the module path
      */
     protected static File[] load(final File jbossHome, final File[] modulePath) throws IOException {
-        final PatchDirectoryStructure structure = PatchDirectoryStructure.createDefault(jbossHome);
+        final DirectoryStructure structure = DirectoryStructure.createDefault(jbossHome);
         if(structure.getCumulativeLink().exists()) {
             final String ref = PatchUtils.readRef(structure.getCumulativeLink());
             final List<String> patches = PatchUtils.readRefs(structure.getCumulativeRefs(ref));

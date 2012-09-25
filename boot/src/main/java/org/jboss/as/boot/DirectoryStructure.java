@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.loader;
+package org.jboss.as.boot;
 
 import java.io.File;
 
@@ -46,7 +46,7 @@ import java.io.File;
  *
  * @author Emanuel Muckenhuber
  */
-public final class PatchDirectoryStructure {
+public final class DirectoryStructure {
 
     static String CUMULATIVE = "cumulative";
     static String HISTORY = "history";
@@ -82,7 +82,7 @@ public final class PatchDirectoryStructure {
 
     private final InstalledImage image;
 
-    PatchDirectoryStructure(final InstalledImage image) {
+    DirectoryStructure(final InstalledImage image) {
         this.image = image;
     }
 
@@ -152,10 +152,10 @@ public final class PatchDirectoryStructure {
      * @param jbossHome the $JBOSS_HOME
      * @return the patch environment
      */
-    public static PatchDirectoryStructure createDefault(final File jbossHome) {
+    public static DirectoryStructure createDefault(final File jbossHome) {
         final File modules = new File(jbossHome, MODULES);
         final File patches = new File(jbossHome, PATCHES);
-        return new PatchDirectoryStructure(new InstalledImage() {
+        return new DirectoryStructure(new InstalledImage() {
 
             @Override
             public File getJbossHome() {

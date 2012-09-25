@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.loader;
+package org.jboss.as.boot;
 
 import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -29,23 +29,19 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.ModuleSpec;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * The patching boot module loader.
- *
  * @author Emanuel Muckenhuber
  */
-public final class BootLoader extends ModuleLoader {
+public final class BootModuleLoader extends ModuleLoader {
 
     private final File[] repoRoots;
     private final LocalModuleLoader localModuleLoader;
-    public BootLoader() {
-        repoRoots = createModulePath();
+    public BootModuleLoader() {
+        repoRoots = resolveModulePath();
         localModuleLoader = new LocalModuleLoader(repoRoots);
-        System.out.println(this);
     }
 
     @Override
@@ -66,7 +62,7 @@ public final class BootLoader extends ModuleLoader {
     @Override
     public String toString() {
         final StringBuilder b = new StringBuilder();
-        b.append("patch module loader @").append(Integer.toHexString(hashCode())).append(" (roots: ");
+        b.append("boot module loader @").append(Integer.toHexString(hashCode())).append(" (roots: ");
         final int repoRootsLength = repoRoots.length;
         for (int i = 0; i < repoRootsLength; i++) {
             final File root = repoRoots[i];
@@ -79,16 +75,10 @@ public final class BootLoader extends ModuleLoader {
         return b.toString();
     }
 
-    private static File[] createModulePath() {
-        final String jbossHome = System.getProperty("jboss.home", System.getenv("JBOSS_HOME"));
+    private static File[] resolveModulePath() {
         final String modulePath = System.getProperty("module.path", System.getenv("JAVA_MODULEPATH"));
-        final File root = jbossHome == null ? new File(".") : new File(jbossHome); // TODO
         final File[] files = modulePath == null ? new File[0] : getFiles(modulePath, 0, 0);
-        try {
-            return PatchModulePathFactory.load(root, files);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return ModulePathFactory.resolveModulePath(files);
     }
 
     private static File[] getFiles(final String modulePath, final int stringIdx, final int arrayIdx) {

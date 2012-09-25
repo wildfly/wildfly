@@ -22,11 +22,11 @@
 
 package org.jboss.as.patching;
 
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.api.Patch;
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.dmr.ModelNode;
@@ -46,7 +46,7 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
 
         final PatchInfo info = service.getPatchInfo();
-        final PatchDirectoryStructure structure = service.getStructure();
+        final DirectoryStructure structure = service.getStructure();
         final PatchingTaskRunner runner = new PatchingTaskRunner(info, structure);
 
         final Patch patch = null; // From metadata

@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
+import org.jboss.as.boot.DirectoryStructure;
 
 import java.util.List;
 
@@ -60,7 +60,7 @@ public interface PatchInfo {
      *
      * @return the patch environment
      */
-    PatchDirectoryStructure getEnvironment();
+    DirectoryStructure getEnvironment();
 
     /**
      * Get the module path.
