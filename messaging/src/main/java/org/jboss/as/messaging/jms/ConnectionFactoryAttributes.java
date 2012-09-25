@@ -223,42 +223,48 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .build();
 
+        /**
+         * Attributes are defined in the <em>same order than in the XSD schema</em>
+         */
         ConnectionFactoryAttribute[] ATTRIBUTES = {
+                create(DISCOVERY_GROUP_NAME, null, false),
                 create(CONNECTOR, null, false),
                 create(ENTRIES, null, false),
-
-                create(AUTO_GROUP, "autoGroup", true),
-                create(BLOCK_ON_ACKNOWLEDGE, "blockOnAcknowledge", true),
-                create(BLOCK_ON_DURABLE_SEND, "blockOnDurableSend", true),
-                create(BLOCK_ON_NON_DURABLE_SEND, "blockOnNonDurableSend", true),
-                create(CACHE_LARGE_MESSAGE_CLIENT, "cacheLargeMessagesClient", true),
-                create(CommonAttributes.CALL_TIMEOUT, "callTimeout", true),
-                create(CLIENT_FAILURE_CHECK_PERIOD, "clientFailureCheckPeriod", true),
-                create(CommonAttributes.CLIENT_ID, "clientID", true),
-                create(COMPRESS_LARGE_MESSAGES, "compressLargeMessage", true),
-                create(CONFIRMATION_WINDOW_SIZE, "confirmationWindowSize", true),
-                create(CONNECTION_LOAD_BALANCING_CLASS_NAME, "connectionLoadBalancingPolicyClassName", true),
-                create(CONNECTION_TTL, "connectionTTL", true),
-                create(CommonAttributes.CONSUMER_MAX_RATE, "consumerMaxRate", true),
-                create(CONSUMER_WINDOW_SIZE, "consumerWindowSize", true),
-                create(DISCOVERY_GROUP_NAME, null, false),
-                create(DISCOVERY_INITIAL_WAIT_TIMEOUT, null, false), // Not used since messaging 1.2, we keep it for compatibility sake
-                create(DUPS_OK_BATCH_SIZE, "dupsOKBatchSize", true),
-                create(FAILOVER_ON_INITIAL_CONNECTION, "failoverOnInitialConnection", true),
-                create(FAILOVER_ON_SERVER_SHUTDOWN, "failoverOnServerShutdown", false), // TODO HornetQResourceAdapter does not have this method
-                create(GROUP_ID, "groupID", true),
                 create(CommonAttributes.HA, "HA", true),
-                create(CommonAttributes.MAX_RETRY_INTERVAL, "maxRetryInterval", true),
-                create(CommonAttributes.MIN_LARGE_MESSAGE_SIZE, "minLargeMessageSize", true),
-                create(PRE_ACKNOWLEDGE, "preAcknowledge", true),
-                create(PRODUCER_MAX_RATE, "producerMaxRate", true),
+                create(CLIENT_FAILURE_CHECK_PERIOD, "clientFailureCheckPeriod", true),
+                create(CONNECTION_TTL, "connectionTTL", true),
+                create(CommonAttributes.CALL_TIMEOUT, "callTimeout", true),
+                create(CONSUMER_WINDOW_SIZE, "consumerWindowSize", true),
+                create(CommonAttributes.CONSUMER_MAX_RATE, "consumerMaxRate", true),
+                create(CONFIRMATION_WINDOW_SIZE, "confirmationWindowSize", true),
                 create(PRODUCER_WINDOW_SIZE, "producerWindowSize", true),
+                create(PRODUCER_MAX_RATE, "producerMaxRate", true),
+                create(COMPRESS_LARGE_MESSAGES, "compressLargeMessage", true),
+                create(CACHE_LARGE_MESSAGE_CLIENT, "cacheLargeMessagesClient", true),
+                create(CommonAttributes.MIN_LARGE_MESSAGE_SIZE, "minLargeMessageSize", true),
+                create(CommonAttributes.CLIENT_ID, "clientID", true),
+                create(DUPS_OK_BATCH_SIZE, "dupsOKBatchSize", true),
+                create(TRANSACTION_BATCH_SIZE, "transactionBatchSize", true),
+                create(BLOCK_ON_ACKNOWLEDGE, "blockOnAcknowledge", true),
+                create(BLOCK_ON_NON_DURABLE_SEND, "blockOnNonDurableSend", true),
+                create(BLOCK_ON_DURABLE_SEND, "blockOnDurableSend", true),
+                create(AUTO_GROUP, "autoGroup", true),
+                create(PRE_ACKNOWLEDGE, "preAcknowledge", true),
                 create(RETRY_INTERVAL, "retryInterval", true),
                 create(RETRY_INTERVAL_MULTIPLIER, "retryIntervalMultiplier", true),
+                create(CommonAttributes.MAX_RETRY_INTERVAL, "maxRetryInterval", true),
+                // the pooled CF has a different default value for the reconnect-attempts attribute.
+                // the specific attribute is replaced when PooledConnectionFactoryDefinition#ATTRIBUTES is defined
+                create(CommonAttributes.RECONNECT_ATTEMPTS, null, false),
+                create(FAILOVER_ON_INITIAL_CONNECTION, "failoverOnInitialConnection", true),
+                create(FAILOVER_ON_SERVER_SHUTDOWN, "failoverOnServerShutdown", false), // TODO HornetQResourceAdapter does not have this method
+                create(CONNECTION_LOAD_BALANCING_CLASS_NAME, "connectionLoadBalancingPolicyClassName", true),
+                create(USE_GLOBAL_POOLS, "useGlobalPools", true),
                 create(SCHEDULED_THREAD_POOL_MAX_SIZE, "scheduledThreadPoolMaxSize", true),
                 create(THREAD_POOL_MAX_SIZE, "threadPoolMaxSize", true),
-                create(TRANSACTION_BATCH_SIZE, "transactionBatchSize", true),
-                create(USE_GLOBAL_POOLS, "useGlobalPools", true)
+                create(GROUP_ID, "groupID", true),
+
+                create(DISCOVERY_INITIAL_WAIT_TIMEOUT, null, false), // Not used since messaging 1.2, we keep it for compatibility sake
         };
 
     }
@@ -271,7 +277,7 @@ public interface ConnectionFactoryAttributes {
                 .setRestartAllServices()
                 .build();
 
-        AttributeDefinition[] ATTRIBUTES = { FACTORY_TYPE, CommonAttributes.RECONNECT_ATTEMPTS } ;
+        AttributeDefinition[] ATTRIBUTES = { FACTORY_TYPE } ;
 
         AttributeDefinition INITIAL_MESSAGE_PACKET_SIZE = create("initial-message-packet-size", INT)
                 .setStorageRuntime()
@@ -377,21 +383,25 @@ public interface ConnectionFactoryAttributes {
                 .setAllowExpression(true)
                 .build();
 
+        /**
+         * Attributes are defined in the <em>same order than in the XSD schema</em>
+         */
         ConnectionFactoryAttribute[] ATTRIBUTES = {
-                create(RECONNECT_ATTEMPTS, RECONNECT_ATTEMPTS_PROP_NAME, true),
-                create(INITIAL_CONNECT_ATTEMPTS, "initialConnectAttempts", true),
-                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
-                create(JNDI_PARAMS, "jndiParams", true),
-                create(MAX_POOL_SIZE, null, false),
-                create(MIN_POOL_SIZE, null, false),
-                create(PASSWORD, "password", true),
+                /* inbound config */
+                create(USE_JNDI, USE_JNDI_PROP_NAME, true, true),
+                create(JNDI_PARAMS, "jndiParams", true, true),
+                create(USE_LOCAL_TX, "useLocalTx", true, true),
+                create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true, true),
+                create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true, true),
+
                 create(TRANSACTION, null, false),
-                create(USE_LOCAL_TX, "useLocalTx", true),
-                create(SETUP_ATTEMPTS, SETUP_ATTEMPTS_PROP_NAME, true),
-                create(SETUP_INTERVAL, SETUP_INTERVAL_PROP_NAME, true),
-                create(USE_AUTO_RECOVERY, "useAutoRecovery", true),
-                create(USE_JNDI, USE_JNDI_PROP_NAME, true),
                 create(USER, "userName", true),
+                create(PASSWORD, "password", true),
+                create(MIN_POOL_SIZE, null, false),
+                create(MAX_POOL_SIZE, null, false),
+                create(USE_AUTO_RECOVERY, "useAutoRecovery", true),
+                create(INITIAL_MESSAGE_PACKET_SIZE, "initialMessagePacketSize", true),
+                create(INITIAL_CONNECT_ATTEMPTS, "initialConnectAttempts", true),
         };
     }
 }
