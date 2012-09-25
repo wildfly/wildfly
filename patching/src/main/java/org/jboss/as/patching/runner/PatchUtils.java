@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.loader;
+package org.jboss.as.patching.runner;
 
 import org.jboss.as.protocol.StreamUtils;
 

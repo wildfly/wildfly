@@ -22,12 +22,11 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.api.Patch;
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
-import org.jboss.as.patching.loader.PatchUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,13 +41,13 @@ class PatchingContext {
 
     private final PatchInfo info;
     private final PatchContentLoader loader;
-    private final PatchDirectoryStructure structure;
+    private final DirectoryStructure structure;
     private final List<PatchingRecord> records = new ArrayList<PatchingRecord>();
     private final List<CleanupTask> tasks = new ArrayList<CleanupTask>();
 
     private boolean rollbackOnly;
 
-    PatchingContext(final PatchInfo info, final PatchDirectoryStructure structure, final PatchContentLoader loader) {
+    PatchingContext(final PatchInfo info, final DirectoryStructure structure, final PatchContentLoader loader) {
         this.info = info;
         this.structure = structure;
         this.loader = loader;
@@ -58,7 +57,7 @@ class PatchingContext {
         return loader;
     }
 
-    public PatchDirectoryStructure getStructure() {
+    public DirectoryStructure getStructure() {
         return structure;
     }
 
@@ -134,7 +133,7 @@ class PatchingContext {
     PatchInfo persist(PatchInfo patch) throws IOException {
         // TODO persist records...
 
-        final PatchDirectoryStructure environment = info.getEnvironment();
+        final DirectoryStructure environment = info.getEnvironment();
         final String cumulativeID = info.getCumulativeID();
         PatchUtils.writeRef(environment.getCumulativeLink(), info.getCumulativeID());
         PatchUtils.writeRefs(environment.getCumulativeRefs(cumulativeID), info.getPatchIDs());

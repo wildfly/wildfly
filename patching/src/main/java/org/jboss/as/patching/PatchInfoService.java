@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -41,14 +41,14 @@ public final class PatchInfoService implements Service<PatchInfoService> {
     public static ServiceName NAME = ServiceName.JBOSS.append("patch").append("info");
 
     private final String version;
-    private final PatchDirectoryStructure structure;
+    private final DirectoryStructure structure;
     private volatile PatchInfo patchInfo;
 
     private static final AtomicReferenceFieldUpdater<PatchInfoService, PatchInfo> updater = AtomicReferenceFieldUpdater.newUpdater(PatchInfoService.class, PatchInfo.class, "patchInfo");
 
     public PatchInfoService(final String version, final File jbossHome) {
         this.version = version;
-        this.structure = PatchDirectoryStructure.createDefault(jbossHome);
+        this.structure = DirectoryStructure.createDefault(jbossHome);
     }
 
     @Override
@@ -70,7 +70,7 @@ public final class PatchInfoService implements Service<PatchInfoService> {
         return this;
     }
 
-    public PatchDirectoryStructure getStructure() {
+    public DirectoryStructure getStructure() {
         return structure;
     }
 

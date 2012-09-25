@@ -22,12 +22,11 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
-import org.jboss.as.patching.loader.PatchUtils;
 import org.jboss.as.patching.api.Patch;
-import org.jboss.as.patching.loader.PatchDirectoryStructure;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,8 +44,8 @@ import java.util.zip.ZipFile;
 public class PatchingTaskRunner {
 
     private final PatchInfo patchInfo;
-    private final PatchDirectoryStructure structure;
-    public PatchingTaskRunner(final PatchInfo patchInfo, final PatchDirectoryStructure structure) {
+    private final DirectoryStructure structure;
+    public PatchingTaskRunner(final PatchInfo patchInfo, final DirectoryStructure structure) {
         this.patchInfo = patchInfo;
         this.structure = structure;
     }

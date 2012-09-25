@@ -251,7 +251,7 @@ while true; do
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         \"-Dboot.module.loader=org.jboss.as.patching.loader.BootLoader\" \
+         \"-Dboot.module.loader=org.jboss.as.boot.BootModuleLoader\" \
          -cp \"$JBOSS_HOME/jboss-modules.jar:$JBOSS_HOME/loader.jar\" \
          org.jboss.modules.Main \
          -mp \"${JBOSS_MODULEPATH}\" \
@@ -265,7 +265,7 @@ while true; do
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
-         \"-Dboot.module.loader=org.jboss.as.patching.loader.BootLoader\" \
+         \"-Dboot.module.loader=org.jboss.as.boot.BootModuleLoader\" \
          -cp \"$JBOSS_HOME/jboss-modules.jar:$JBOSS_HOME/loader.jar\" \
          org.jboss.modules.Main \
          -mp \"${JBOSS_MODULEPATH}\" \
