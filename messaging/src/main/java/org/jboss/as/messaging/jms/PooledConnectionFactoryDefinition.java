@@ -54,15 +54,27 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.POOLED_CONNECTION_FACTORY);
 
-    private static ConnectionFactoryAttribute[] concat(ConnectionFactoryAttribute[] common, ConnectionFactoryAttribute... specific) {
+    // the generation of the Pooled CF attributes is a bit ugly but it is with purpose:
+    // * factorize the attributes which are common between the regular CF and the pooled CF
+    // * keep in a single place the subtle differences (e.g. different default values for reconnect-attempts between
+    //   the regular and pooled CF
+    // * define the attributes in the *same order than the XSD* to write them to the XML configuration by simply iterating over the array
+    private static ConnectionFactoryAttribute[] define(ConnectionFactoryAttribute[] common, ConnectionFactoryAttribute... specific) {
         int size = common.length + specific.length;
         ConnectionFactoryAttribute[] result = new ConnectionFactoryAttribute[size];
         arraycopy(common, 0, result, 0, common.length);
         arraycopy(specific, 0, result, common.length, specific.length);
+        // replace the reconnect-attempts attribute to use a different default value for pooled CF
+        for (int i = 0; i < result.length; i++) {
+            ConnectionFactoryAttribute attribute = result[i];
+            if (attribute.getDefinition() == CommonAttributes.RECONNECT_ATTEMPTS) {
+                result[i] = ConnectionFactoryAttribute.create(Pooled.RECONNECT_ATTEMPTS, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
+            }
+        }
         return result;
     }
 
-    public static final ConnectionFactoryAttribute[] ATTRIBUTES = concat(Common.ATTRIBUTES, Pooled.ATTRIBUTES);
+    public static final ConnectionFactoryAttribute[] ATTRIBUTES = define(Pooled.ATTRIBUTES, Common.ATTRIBUTES);
 
 
     private static final DescriptionProvider DESC = new DescriptionProvider() {

@@ -35,9 +35,14 @@ public class ConnectionFactoryAttribute {
     private final AttributeDefinition attributeDefinition;
     private String propertyName;
     private final boolean resourceAdapterProperty;
+    private final boolean inboundConfig;
 
     public static ConnectionFactoryAttribute create(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty) {
-        return new ConnectionFactoryAttribute(attributeDefinition, propertyName, resourceAdapterProperty);
+        return new ConnectionFactoryAttribute(attributeDefinition, propertyName, resourceAdapterProperty, false);
+    }
+
+    public static ConnectionFactoryAttribute create(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty, boolean inboundConfig) {
+        return new ConnectionFactoryAttribute(attributeDefinition, propertyName, resourceAdapterProperty, inboundConfig);
     }
 
     public static AttributeDefinition[] getDefinitions(final ConnectionFactoryAttribute... attrs) {
@@ -49,10 +54,11 @@ public class ConnectionFactoryAttribute {
         return definitions;
     }
 
-    private ConnectionFactoryAttribute(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty) {
+    private ConnectionFactoryAttribute(final AttributeDefinition attributeDefinition, final String propertyName, boolean resourceAdapterProperty, boolean inboundConfig) {
         this.attributeDefinition = attributeDefinition;
         this.propertyName = propertyName;
         this.resourceAdapterProperty = resourceAdapterProperty;
+        this.inboundConfig = inboundConfig;
     }
 
     public String getClassType() {
@@ -83,5 +89,9 @@ public class ConnectionFactoryAttribute {
 
     public boolean isResourceAdapterProperty() {
         return resourceAdapterProperty;
+    }
+
+    public boolean isInboundConfig() {
+        return inboundConfig;
     }
 }

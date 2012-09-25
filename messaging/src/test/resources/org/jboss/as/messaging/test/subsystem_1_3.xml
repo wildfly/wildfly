@@ -254,12 +254,12 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
-                 <compress-large-messages>true</compress-large-messages>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
 			     <producer-window-size>-1</producer-window-size>
 			     <producer-max-rate>1024</producer-max-rate>
+                 <compress-large-messages>true</compress-large-messages>
 			     <cache-large-message-client>false</cache-large-message-client>
 			     <min-large-message-size>2048</min-large-message-size>
 			     <client-id>myClientID</client-id>
@@ -283,9 +283,9 @@
 				 <group-id>myGroup</group-id>
               </connection-factory>
               <pooled-connection-factory name="hornetq-ra">
+                 <transaction mode="xa"/>
                  <user>alice</user>
                  <password>alicepassword</password>
-                 <transaction mode="xa"/>
                  <min-pool-size>42</min-pool-size>
                  <max-pool-size>242</max-pool-size>
 				 <initial-message-packet-size>9876</initial-message-packet-size>
@@ -300,13 +300,13 @@
                  <client-failure-check-period>12345</client-failure-check-period>
                  <connection-ttl>56789</connection-ttl>
                  <call-timeout>123</call-timeout>
-                 <compress-large-messages>false</compress-large-messages>
                  <consumer-window-size>456</consumer-window-size>
                  <consumer-max-rate>789</consumer-max-rate>
                  <confirmation-window-size>-1</confirmation-window-size>
 			     <producer-window-size>-1</producer-window-size>
 			     <producer-max-rate>1024</producer-max-rate>
-			     <cache-large-message-client>false</cache-large-message-client>
+			     <compress-large-messages>false</compress-large-messages>
+                 <cache-large-message-client>false</cache-large-message-client>
 			     <min-large-message-size>2048</min-large-message-size>
 			     <client-id>myClientID</client-id>
 			     <dups-ok-batch-size>256</dups-ok-batch-size>
@@ -329,9 +329,9 @@
 				 <group-id>myGroup</group-id>
               </pooled-connection-factory>
               <pooled-connection-factory name="hornetq-ra-local">
+                 <transaction mode="local"/>
                  <user>alice</user>
                  <password>alicepassword</password>
-                 <transaction mode="local"/>
                  <use-auto-recovery>true</use-auto-recovery>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>
@@ -341,9 +341,9 @@
                  </entries>
               </pooled-connection-factory>
               <pooled-connection-factory name="hornetq-ra-none">
+                 <transaction mode="none"/>
                  <user>alice</user>
                  <password>alicepassword</password>
-                 <transaction mode="none"/>
                  <connectors>
                     <connector-ref connector-name="in-vm"/>
                  </connectors>

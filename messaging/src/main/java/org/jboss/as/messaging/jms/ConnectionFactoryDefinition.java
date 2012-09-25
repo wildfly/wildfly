@@ -51,7 +51,7 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
         return result;
     }
 
-    public static final AttributeDefinition[] ATTRIBUTES = concat(getDefinitions(Common.ATTRIBUTES), Regular.ATTRIBUTES);
+    public static final AttributeDefinition[] ATTRIBUTES = concat(Regular.ATTRIBUTES, getDefinitions(Common.ATTRIBUTES));
 
     static final AttributeDefinition[] READONLY_ATTRIBUTES = { Regular.INITIAL_MESSAGE_PACKET_SIZE };
 

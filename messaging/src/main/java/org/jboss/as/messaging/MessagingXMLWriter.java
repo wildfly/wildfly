@@ -43,10 +43,10 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
+import org.jboss.as.messaging.jms.ConnectionFactoryAttribute;
+import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -582,8 +582,11 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-                    writeRegularConnectionFactoryAttributes(writer, name, factory);
-                    writeCommonConnectionFactoryAttributes(writer, name, factory, false);
+                    for (AttributeDefinition attribute : ConnectionFactoryDefinition.ATTRIBUTES) {
+                        attribute.marshallAsElement(factory, writer);
+                    }
+
+                    writer.writeEndElement();
                 }
             }
         }
@@ -603,97 +606,35 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
 
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-                    writePooledConnectionFactoryAttributes(writer, name, factory);
-                    writeCommonConnectionFactoryAttributes(writer, name, factory, true);
-                }
-            }
-        }
-    }
-
-    private static void writeRegularConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory) throws XMLStreamException {
-        ConnectionFactoryAttributes.Regular.FACTORY_TYPE.marshallAsElement(factory, writer);
-    }
-
-    private static void writeCommonConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory, boolean pooled) throws XMLStreamException {
-        Common.DISCOVERY_GROUP_NAME.marshallAsElement(factory, writer);
-
-        // write the element for compatibility sake but it is deprecated
-        Common.DISCOVERY_INITIAL_WAIT_TIMEOUT.marshallAsElement(factory, writer);
-
-        Common.CONNECTOR.marshallAsElement(factory, writer);
-
-        JndiEntriesAttribute.CONNECTION_FACTORY.marshallAsElement(factory, writer);
-
-        CommonAttributes.HA.marshallAsElement(factory, writer);
-        Common.CLIENT_FAILURE_CHECK_PERIOD.marshallAsElement(factory, writer);
-        Common.CONNECTION_TTL.marshallAsElement(factory, writer);
-        CommonAttributes.CALL_TIMEOUT.marshallAsElement(factory, writer);
-        Common.COMPRESS_LARGE_MESSAGES.marshallAsElement(factory, writer);
-        Common.CONSUMER_WINDOW_SIZE.marshallAsElement(factory, writer);
-        CommonAttributes.CONSUMER_MAX_RATE.marshallAsElement(factory, writer);
-        Common.CONFIRMATION_WINDOW_SIZE.marshallAsElement(factory, writer);
-        Common.PRODUCER_WINDOW_SIZE.marshallAsElement(factory, writer);
-        Common.PRODUCER_MAX_RATE.marshallAsElement(factory, writer);
-        Common.CACHE_LARGE_MESSAGE_CLIENT.marshallAsElement(factory, writer);
-        Common.MIN_LARGE_MESSAGE_SIZE.marshallAsElement(factory, writer);
-        CommonAttributes.CLIENT_ID.marshallAsElement(factory, writer);
-        Common.DUPS_OK_BATCH_SIZE.marshallAsElement(factory, writer);
-        Common.TRANSACTION_BATCH_SIZE.marshallAsElement(factory, writer);
-        Common.BLOCK_ON_ACKNOWLEDGE.marshallAsElement(factory, writer);
-        Common.BLOCK_ON_NON_DURABLE_SEND.marshallAsElement(factory, writer);
-        Common.BLOCK_ON_DURABLE_SEND.marshallAsElement(factory, writer);
-        Common.AUTO_GROUP.marshallAsElement(factory, writer);
-        Common.PRE_ACKNOWLEDGE.marshallAsElement(factory, writer);
-        Common.RETRY_INTERVAL.marshallAsElement(factory, writer);
-        Common.RETRY_INTERVAL_MULTIPLIER.marshallAsElement(factory, writer);
-        Common.MAX_RETRY_INTERVAL.marshallAsElement(factory, writer);
-        // regular CF and pooled CF have different default value for reconnect attempts
-        if (pooled) {
-            Pooled.RECONNECT_ATTEMPTS.marshallAsElement(factory, writer);
-        } else {
-            CommonAttributes.RECONNECT_ATTEMPTS.marshallAsElement(factory, writer);
-        }
-        Common.FAILOVER_ON_INITIAL_CONNECTION.marshallAsElement(factory, writer);
-        Common.FAILOVER_ON_SERVER_SHUTDOWN.marshallAsElement(factory, writer);
-        Common.CONNECTION_LOAD_BALANCING_CLASS_NAME.marshallAsElement(factory, writer);
-        Common.USE_GLOBAL_POOLS.marshallAsElement(factory, writer);
-        Common.SCHEDULED_THREAD_POOL_MAX_SIZE.marshallAsElement(factory, writer);
-        Common.THREAD_POOL_MAX_SIZE.marshallAsElement(factory, writer);
-        Common.GROUP_ID.marshallAsElement(factory, writer);
-
-        writer.writeEndElement();
-    }
-
-
-    private static void writePooledConnectionFactoryAttributes(XMLExtendedStreamWriter writer, String name, ModelNode factory)
-            throws XMLStreamException {
-
-        Pooled.USER.marshallAsElement(factory, writer);
-        Pooled.PASSWORD.marshallAsElement(factory, writer);
-
-        if(factory.hasDefined(INBOUND_CONFIG)) {
-            final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
-            if (inboundConfigs.getType() == ModelType.LIST) {
-                writer.writeStartElement(Element.INBOUND_CONFIG.getLocalName());
-                for (ModelNode config : inboundConfigs.asList()) {
-                    if (config.isDefined()) {
-                        Pooled.USE_JNDI.marshallAsElement(config, writer);
-                        Pooled.JNDI_PARAMS.marshallAsElement(config, writer);
-                        Pooled.USE_LOCAL_TX.marshallAsElement(config, writer);
-                        Pooled.SETUP_ATTEMPTS.marshallAsElement(config, writer);
-                        Pooled.SETUP_INTERVAL.marshallAsElement(config, writer);
+                    // write inbound config attributes first...
+                    if(factory.hasDefined(INBOUND_CONFIG)) {
+                        final ModelNode inboundConfigs = factory.get(INBOUND_CONFIG);
+                        if (inboundConfigs.getType() == ModelType.LIST) {
+                            writer.writeStartElement(Element.INBOUND_CONFIG.getLocalName());
+                            for (ModelNode config : inboundConfigs.asList()) {
+                                if (config.isDefined()) {
+                                    for (ConnectionFactoryAttribute attribute : PooledConnectionFactoryDefinition.ATTRIBUTES) {
+                                        if (attribute.isInboundConfig()) {
+                                            attribute.getDefinition().marshallAsElement(factory, writer);
+                                        }
+                                    }
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
                     }
+
+                    // ... then the attributes that are not part of the inbound config
+                    for (ConnectionFactoryAttribute attribute : PooledConnectionFactoryDefinition.ATTRIBUTES) {
+                        if (!attribute.isInboundConfig()) {
+                            attribute.getDefinition().marshallAsElement(factory, writer);
+                        }
+                    }
+
+                    writer.writeEndElement();
                 }
-                writer.writeEndElement();
             }
         }
-
-        Pooled.TRANSACTION.marshallAsElement(factory, writer);
-        Pooled.MIN_POOL_SIZE.marshallAsElement(factory, writer);
-        Pooled.MAX_POOL_SIZE.marshallAsElement(factory, writer);
-        Pooled.USE_AUTO_RECOVERY.marshallAsElement(factory, writer);
-        Pooled.INITIAL_MESSAGE_PACKET_SIZE.marshallAsElement(factory, writer);
-        Pooled.INITIAL_CONNECT_ATTEMPTS.marshallAsElement(factory, writer);
     }
 
     private static void writeJmsQueues(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
