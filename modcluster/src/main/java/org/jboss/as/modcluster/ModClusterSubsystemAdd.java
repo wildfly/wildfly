@@ -35,6 +35,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.security.ModulesMap;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.dmr.ModelNode;
@@ -48,10 +49,15 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import static org.jboss.as.modcluster.LoadMetricDefinition.CAPACITY;
 import static org.jboss.as.modcluster.LoadMetricDefinition.TYPE;
@@ -66,6 +72,10 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.CIPHER_SUI
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.KEY_ALIAS;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PASSWORD;
 import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.MODULE;
+import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 
 /**
  * The managed subsystem add update.
@@ -78,7 +88,8 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
+            throws OperationFailedException {
 
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
@@ -87,44 +98,79 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         // Add mod_cluster service
         final ModClusterService service = new ModClusterService(config, loadProvider);
-        final ServiceBuilder<ModCluster> builder = AsynchronousService.addService(context.getServiceTarget(), ModClusterService.NAME, service, true, true)
+        final ServiceBuilder<ModCluster> builder = AsynchronousService
+                .addService(context.getServiceTarget(), ModClusterService.NAME, service, true, true)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer())
-                .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, service.getBindingManager())
-                .addDependency(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(connector), Connector.class, service.getConnectorInjector())
-                .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-        ;
+                .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class,
+                        service.getBindingManager())
+                .addDependency(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(connector), Connector.class,
+                        service.getConnectorInjector()).addListener(verificationHandler).setInitialMode(Mode.ACTIVE);
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {
-            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
+            builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class,
+                    service.getBinding());
         }
         newControllers.add(builder.install());
     }
 
     /*
-    this is here so legacy configuration can be supported
+     * this is here so legacy configuration can be supported
      */
     @Override
-    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource)
+            throws OperationFailedException {
+
         if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
             PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
             PathAddress parent = opAddress.append(ModClusterExtension.CONFIGURATION_PATH);
             ModelNode targetOperation = Util.createAddOperation(parent);
+
             for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
                 def.validateAndSet(operation, targetOperation);
             }
+
             context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+        }else if(operation.hasDefined(CommonAttributes.CONFIGURATION)){
+
+            // Populate the model using the list attribute validateAndSet
+            this.populateModel(operation,  resource.getModel());
+
+            // Get the map out of the resource
+            ModelNode node = resource.getModel();
+            ModelNode map = new ModelNode();
+            if(node != null && node.has(CommonAttributes.CONFIGURATION)){
+                ModelNode configuration = node.get(CommonAttributes.CONFIGURATION);
+                List<ModelNode> list = configuration.asList();
+                if( list.size() >= 1 ){
+                    map = list.get(0);
+                }
+            }
+
+            // Add the attributes to the context using the ModClusterConfigAdd
+            PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+            PathAddress parent = opAddress.append(ModClusterExtension.CONFIGURATION_PATH);
+            ModelNode targetOperation = Util.createAddOperation(parent);
+
+            for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
+                def.validateAndSet(map, targetOperation);
+            }
+
+            context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
         }
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+        ModClusterConfigResourceDefinition.CONFIG_ATTRIBUTE_DEFINITION.validateAndSet(operation, model);
     }
 
-    private ModClusterConfig getModClusterConfig(final OperationContext context, ModelNode model) throws OperationFailedException {
+    private ModClusterConfig getModClusterConfig(final OperationContext context, ModelNode model)
+            throws OperationFailedException {
         ModClusterConfig config = new ModClusterConfig();
         config.setAdvertise(ADVERTISE.resolveModelAttribute(context, model).asBoolean());
 
@@ -169,7 +215,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
 
         config.setStopContextTimeout(STOP_CONTEXT_TIMEOUT.resolveModelAttribute(context, model).asInt());
         config.setStopContextTimeoutUnit(TimeUnit.valueOf(STOP_CONTEXT_TIMEOUT.getMeasurementUnit().getName()));
-        //config.setStopContextTimeoutUnit(TimeUnit.SECONDS); //todo use AttributeDefinition.getMeasurementUnit
+        // config.setStopContextTimeoutUnit(TimeUnit.SECONDS); //todo use AttributeDefinition.getMeasurementUnit
         // the default value is 20000 = 20 seconds.
         config.setSocketTimeout(SOCKET_TIMEOUT.resolveModelAttribute(context, model).asInt() * 1000);
         config.setStickySession(STICKY_SESSION.resolveModelAttribute(context, model).asBoolean());
@@ -193,7 +239,8 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         return config;
     }
 
-    private LoadBalanceFactorProvider getModClusterLoadProvider(final OperationContext context, ModelNode model) throws OperationFailedException {
+    private LoadBalanceFactorProvider getModClusterLoadProvider(final OperationContext context, ModelNode model)
+            throws OperationFailedException {
         LoadBalanceFactorProvider load = null;
         if (model.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
             // TODO it seems we don't support that stuff.
@@ -231,8 +278,8 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         return load;
     }
 
-
-    private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes, final OperationContext context) throws OperationFailedException {
+    private void addLoadMetrics(Set<LoadMetric> metrics, ModelNode nodes, final OperationContext context)
+            throws OperationFailedException {
         for (Property p : nodes.asPropertyList()) {
             ModelNode node = p.getValue();
             double capacity = CAPACITY.resolveModelAttribute(context, node).asDouble();

@@ -23,6 +23,7 @@
 package org.jboss.as.modcluster;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -281,4 +282,17 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         final DescriptionProvider removeCustomMetric = new DefaultOperationDescriptionProvider(CommonAttributes.REMOVE_CUSTOM_METRIC, rootResolver, CustomLoadMetricDefinition.CLASS);
         resourceRegistration.registerOperationHandler(CommonAttributes.REMOVE_CUSTOM_METRIC, ModClusterRemoveCustomMetric.INSTANCE, removeCustomMetric, false, runtimeOnlyFlags);
     }
+
+
+    public static final ModClusterConfigAttributeDefinition CONFIG_ATTRIBUTE_DEFINITION = new ModClusterConfigAttributeDefinition(
+            CommonAttributes.CONFIGURATION, CommonAttributes.MOD_CLUSTER_CONFIG);
+
+    public static AttributeDefinition getThisAttributeDefinition(){
+        return CONFIG_ATTRIBUTE_DEFINITION;
+    }
+
+    public static OperationStepHandler getThisAttributeHandler(){
+        return new ReloadRequiredWriteAttributeHandler(CONFIG_ATTRIBUTE_DEFINITION);
+    }
+
 }
