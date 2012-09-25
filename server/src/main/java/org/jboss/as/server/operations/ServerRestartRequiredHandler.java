@@ -22,11 +22,11 @@
 
 package org.jboss.as.server.operations;
 
-import java.util.Locale;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 
@@ -35,8 +35,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author John Bailey
  */
-public class ServerRestartRequiredHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerRestartRequiredHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "server-set-restart-required";
+
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver())
+            .build();
 
     public static final ServerRestartRequiredHandler INSTANCE = new ServerRestartRequiredHandler();
 
@@ -51,7 +54,4 @@ public class ServerRestartRequiredHandler implements OperationStepHandler, Descr
         });
     }
 
-    public ModelNode getModelDescription(final Locale locale) {
-        return ServerDescriptions.getRestartRequiredDescription(locale);
-    }
 }

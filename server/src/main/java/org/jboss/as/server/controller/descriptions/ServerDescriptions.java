@@ -18,39 +18,15 @@
  */
 package org.jboss.as.server.controller.descriptions;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADMIN_ONLY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DUMP_SERVICES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.ProcessReloadHandler;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Model descriptions for deployment resources.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-@Deprecated
-public class ServerDescriptions {
+public final class ServerDescriptions {
 
     public static final String RESOURCE_NAME = ServerDescriptions.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -66,50 +42,10 @@ public class ServerDescriptions {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, true);
     }
 
-    private ServerDescriptions() {
-    }
-
-    public static final ModelNode getServerReloadOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSingleParamOnlyOperation(bundle, ProcessReloadHandler.OPERATION_NAME, null,
-                ADMIN_ONLY, ModelType.BOOLEAN, true);
-    }
-
-    public static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
-
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ServerDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
-    /** {@inheritDoc} */
-    public static ModelNode getShutdownOperationDescription(final Locale locale) {
-        ResourceBundle bundle = getResourceBundle(locale);
-
-        ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(SHUTDOWN);
-        node.get(DESCRIPTION).set(bundle.getString("shutdown"));
-        node.get(REQUEST_PROPERTIES, RESTART, TYPE).set(ModelType.BOOLEAN);
-        node.get(REQUEST_PROPERTIES, RESTART, DESCRIPTION).set(bundle.getString("shutdown.restart"));
-        node.get(REQUEST_PROPERTIES, RESTART, DEFAULT).set(false);
-        node.get(REQUEST_PROPERTIES, RESTART, REQUIRED).set(false);
-        node.get(REQUEST_PROPERTIES, RESTART, NILLABLE).set(true);
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-        return node;
-    }
-
-    public static ModelNode getRestartRequiredDescription(final Locale locale) {
-        ResourceBundle bundle = getResourceBundle(locale);
-
-        ModelNode node = new ModelNode();
-        node.get(OPERATION_NAME).set(ServerRestartRequiredHandler.OPERATION_NAME);
-        node.get(DESCRIPTION).set(bundle.getString("restart-required"));
-        node.get(REQUEST_PROPERTIES).setEmptyObject();
-        node.get(REPLY_PROPERTIES).setEmptyObject();
-        return node;
+    private ServerDescriptions() {
     }
 }
