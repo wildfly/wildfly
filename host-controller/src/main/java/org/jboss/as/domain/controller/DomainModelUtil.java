@@ -22,38 +22,13 @@
 
 package org.jboss.as.domain.controller;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
-
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers.IntRangeValidatingHandler;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.controller.descriptions.DomainDescriptionProviders;
-import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
-import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
-import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
-import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
-import org.jboss.as.domain.controller.operations.deployment.ServerGroupDeploymentReplaceHandler;
-import org.jboss.as.domain.controller.resources.DomainDeploymentResourceDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
-import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.controller.resources.DeploymentAttributes;
-import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
-import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
-import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
-import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 
 
 /**
@@ -77,26 +52,5 @@ public class DomainModelUtil {
 
 
 
-        final ManagementResourceRegistration serverGroups = root.registerSubModel(PathElement.pathElement(SERVER_GROUP), DomainDescriptionProviders.SERVER_GROUP);
-        serverGroups.registerOperationHandler(ADD, ServerGroupAddHandler.INSTANCE, ServerGroupAddHandler.INSTANCE, false);
-        serverGroups.registerOperationHandler(REMOVE, ServerGroupRemoveHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE, false);
-        serverGroups.registerReadWriteAttribute(SOCKET_BINDING_GROUP, null, WriteAttributeHandlers.WriteAttributeOperationHandler.INSTANCE, Storage.CONFIGURATION);
-        serverGroups.registerReadWriteAttribute(SOCKET_BINDING_PORT_OFFSET, null, new IntRangeValidatingHandler(0, true), Storage.CONFIGURATION);
-        serverGroups.registerReadWriteAttribute(PROFILE, null, ServerGroupProfileWriteAttributeHandler.INSTANCE, Storage.CONFIGURATION);
-        serverGroups.registerReadOnlyAttribute(MANAGEMENT_SUBSYSTEM_ENDPOINT, null, Storage.CONFIGURATION);
-        DomainServerLifecycleHandlers.registerServerGroupHandlers(serverGroups);
-
-        serverGroups.registerSubModel(JvmResourceDefinition.GLOBAL);
-
-        serverGroups.registerOperationHandler(DeploymentAttributes.SERVER_GROUP_REPLACE_DEPLOYMENT_DEFINITION, new ServerGroupDeploymentReplaceHandler(fileRepository));
-        serverGroups.registerSubModel(DomainDeploymentResourceDescription.createForServerGroup(contentRepo, fileRepository));
-
-
-        // Server Group System Properties
-        serverGroups.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.SERVER_GROUP));
-
-
-        //server group deployment overlay links
-        serverGroups.registerSubModel(new DeploymentOverlayDefinition(DeploymentOverlayPriority.SERVER_GROUP, null, null));
     }
 }

@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
-import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.OperationContext;
@@ -39,19 +38,17 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ServerGroupAddHandler implements OperationStepHandler, DescriptionProvider {
+public class ServerGroupAddHandler implements OperationStepHandler {
 
     public static final ServerGroupAddHandler INSTANCE = new ServerGroupAddHandler();
 
@@ -115,10 +112,4 @@ public class ServerGroupAddHandler implements OperationStepHandler, DescriptionP
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return ServerGroupDescription.getServerGroupAdd(locale);
-    }
-
 }
