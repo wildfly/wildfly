@@ -632,8 +632,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         try {
             final ModelNode result = client.execute(composite);
             if (!Util.isSuccess(result)) {
-                ctx.printLine("request: " + composite.toString());
-                ctx.printLine("response: " + result.toString());
+                ctx.printLine("failed request: " + composite.toString());
+                ctx.printLine("failed response: " + result.toString());
                 throw new CommandFormatException(Util.getFailureDescription(result));
             }
         } catch (IOException e) {
@@ -721,18 +721,18 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                     op.get(Util.OPERATION).set(Util.ADD);
                     steps.add(op);
                     if(deployments != null) {
-                        addLinkSteps(name, group, deployments, false, steps);
+                        addAddRedeployLinksSteps(ctx, steps, name, group, deployments, false);
                     }
                     if(wildcards != null) {
-                        addLinkSteps(name, group, wildcards, true, steps);
+                        addAddRedeployLinksSteps(ctx, steps, name, group, wildcards, true);
                     }
                 }
             } else {
                 if(deployments != null) {
-                    addLinkSteps(name, null, deployments, false, steps);
+                    addAddRedeployLinksSteps(ctx, steps, name, null, deployments, false);
                 }
                 if(wildcards != null) {
-                    addLinkSteps(name, null, wildcards, true, steps);
+                    addAddRedeployLinksSteps(ctx, steps, name, null, wildcards, true);
                 }
             }
         } else if(ctx.isDomainMode() && (serverGroups.isPresent(args) || allServerGroups.isPresent(args))) {
@@ -767,10 +767,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
 
+        final ModelControllerClient client = ctx.getModelControllerClient();
         if(ctx.isDomainMode()) {
             final List<String> sg = getServerGroupsToLink(ctx);
             for(String group : sg) {
-                if(!Util.isValidPath(ctx.getModelControllerClient(), Util.SERVER_GROUP, group, Util.DEPLOYMENT_OVERLAY, name)) {
+                if(!Util.isValidPath(client, Util.SERVER_GROUP, group, Util.DEPLOYMENT_OVERLAY, name)) {
                     final ModelNode op = new ModelNode();
                     final ModelNode address = op.get(Util.ADDRESS);
                     address.add(Util.SERVER_GROUP, group);
@@ -779,23 +780,23 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                     steps.add(op);
                 }
                 if(deployments != null) {
-                    addLinkSteps(name, group, deployments, false, steps);
+                    addAddRedeployLinksSteps(ctx, steps, name, group, deployments, false);
                 }
                 if(wildcards != null) {
-                    addLinkSteps(name, group, wildcards, true, steps);
+                    addAddRedeployLinksSteps(ctx, steps, name, group, wildcards, true);
                 }
             }
         } else {
             if(deployments != null) {
-                addLinkSteps(name, null, deployments, false, steps);
+                addAddRedeployLinksSteps(ctx, steps, name, null, deployments, false);
             }
             if(wildcards != null) {
-                addLinkSteps(name, null, wildcards, true, steps);
+                addAddRedeployLinksSteps(ctx, steps, name, null, wildcards, true);
             }
         }
 
         try {
-            final ModelNode result = ctx.getModelControllerClient().execute(composite);
+            final ModelNode result = client.execute(composite);
             if (!Util.isSuccess(result)) {
                 throw new CommandFormatException(Util.getFailureDescription(result));
             }
@@ -807,7 +808,6 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     protected void upload(CommandContext ctx) throws CommandLineException {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
-        assertNotPresent(redeployAffected, args);
 
         final String name = this.name.getValue(args, true);
         if(!Util.isValidPath(ctx.getModelControllerClient(), Util.DEPLOYMENT_OVERLAY, name)) {
@@ -868,6 +868,15 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             steps.add(op);
         }
 
+        if(redeployAffected.isPresent(args)) {
+            if(ctx.isDomainMode()) {
+                for(String sgName : Util.getServerGroups(client)) {
+                    addRemoveRedeployLinksSteps(client, steps, name, sgName, null, false, REDEPLOY_ALL);
+                }
+            } else {
+                addRemoveRedeployLinksSteps(client, steps, name, null, null, false, REDEPLOY_ALL);
+            }
+        }
 
         try {
             final ModelNode result = client.execute(opBuilder.build());
@@ -1011,21 +1020,67 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         return sg;
     }
 
-    protected void addLinkSteps(final String overlayName, final String serverGroup, final String[] deployments,
-            final boolean regexp, final ModelNode steps) {
-        for(String deployment : deployments) {
+    protected void addAddRedeployLinksSteps(CommandContext ctx, ModelNode steps,
+            String overlay, String serverGroup, String[] links, boolean regexp)
+                    throws CommandLineException {
+        for(String link : links) {
             final ModelNode op = new ModelNode();
             final ModelNode address = op.get(Util.ADDRESS);
             if(serverGroup != null) {
                 address.add(Util.SERVER_GROUP, serverGroup);
             }
-            address.add(Util.DEPLOYMENT_OVERLAY, overlayName);
-            address.add(Util.DEPLOYMENT, deployment);
+            address.add(Util.DEPLOYMENT_OVERLAY, overlay);
+            address.add(Util.DEPLOYMENT, link);
             op.get(Util.OPERATION).set(Util.ADD);
             if(regexp) {
                 op.get(Util.REGULAR_EXPRESSION).set(true);
+                steps.add(op);
+
+                final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup);
+                if(!matchingDeployments.isEmpty()) {
+                    if(serverGroup == null) {
+                        for(String deployment : matchingDeployments) {
+                            final ModelNode step = new ModelNode();
+                            final ModelNode addr = step.get(Util.ADDRESS);
+                            addr.add(Util.DEPLOYMENT, deployment);
+                            step.get(Util.OPERATION).set(Util.REDEPLOY);
+                            steps.add(step);
+                        }
+                    } else {
+                        for(String deployment : matchingDeployments) {
+                            final ModelNode step = new ModelNode();
+                            final ModelNode addr = step.get(Util.ADDRESS);
+                            addr.add(Util.SERVER_GROUP, serverGroup);
+                            addr.add(Util.DEPLOYMENT, deployment);
+                            step.get(Util.OPERATION).set(Util.REDEPLOY);
+                            steps.add(step);
+                        }
+                    }
+                }
+            } else if(redeployAffected.isPresent(ctx.getParsedCommandLine())) {
+                steps.add(op);
+
+                if(serverGroup == null) {
+                    if(Util.isValidPath(ctx.getModelControllerClient(), Util.DEPLOYMENT, link)) {
+                        final ModelNode step = new ModelNode();
+                        final ModelNode addr = step.get(Util.ADDRESS);
+                        addr.add(Util.DEPLOYMENT, link);
+                        step.get(Util.OPERATION).set(Util.REDEPLOY);
+                        steps.add(step);
+                    }
+                } else {
+                    if(Util.isValidPath(ctx.getModelControllerClient(), Util.SERVER_GROUP, serverGroup, Util.DEPLOYMENT, link)) {
+                        final ModelNode step = new ModelNode();
+                        final ModelNode addr = step.get(Util.ADDRESS);
+                        addr.add(Util.SERVER_GROUP, serverGroup);
+                        addr.add(Util.DEPLOYMENT, link);
+                        step.get(Util.OPERATION).set(Util.REDEPLOY);
+                        steps.add(step);
+                    }
+                }
+            } else {
+                steps.add(op);
             }
-            steps.add(op);
         }
     }
 
