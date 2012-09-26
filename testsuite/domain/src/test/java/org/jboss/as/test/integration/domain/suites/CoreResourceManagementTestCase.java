@@ -475,14 +475,14 @@ public class CoreResourceManagementTestCase {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
         ModelNode snapshotOperation = new ModelNode();
-        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.DEFINITION.getName());
         snapshotOperation.get(OP_ADDR).setEmptyList();
         final String snapshot = validateResponse(masterClient.execute(snapshotOperation)).asString();
         Assert.assertNotNull(snapshot);
         Assert.assertFalse(snapshot.isEmpty());
 
         ModelNode listSnapshotOperation = new ModelNode();
-        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.DEFINITION.getName());
         listSnapshotOperation.get(OP_ADDR).setEmptyList();
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
@@ -493,7 +493,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertTrue(snapshots.contains(snapshot));
 
         ModelNode deleteSnapshotOperation = new ModelNode();
-        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.DEFINITION.getName());
         deleteSnapshotOperation.get(OP_ADDR).setEmptyList();
         deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf(fileSeparator)  + fileSeparator.length()));
         validateResponse(masterClient.execute(deleteSnapshotOperation), false);
@@ -832,7 +832,7 @@ public class CoreResourceManagementTestCase {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
         ModelNode snapshotOperation = new ModelNode();
-        snapshotOperation.get(OP).set(SnapshotTakeHandler.OPERATION_NAME);
+        snapshotOperation.get(OP).set(SnapshotTakeHandler.DEFINITION.getName());
         snapshotOperation.get(OP_ADDR).set(addr);
         ModelNode response = masterClient.execute(snapshotOperation);
         final String snapshot = validateResponse(response).asString();
@@ -840,7 +840,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertFalse(snapshot.isEmpty());
 
         ModelNode listSnapshotOperation = new ModelNode();
-        listSnapshotOperation.get(OP).set(SnapshotListHandler.OPERATION_NAME);
+        listSnapshotOperation.get(OP).set(SnapshotListHandler.DEFINITION.getName());
         listSnapshotOperation.get(OP_ADDR).set(addr);
         ModelNode listResult = validateResponse(masterClient.execute(listSnapshotOperation));
         Set<String> snapshots = new HashSet<String>();
@@ -851,7 +851,7 @@ public class CoreResourceManagementTestCase {
         Assert.assertTrue(snapshots.contains(snapshot));
 
         ModelNode deleteSnapshotOperation = new ModelNode();
-        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.OPERATION_NAME);
+        deleteSnapshotOperation.get(OP).set(SnapshotDeleteHandler.DEFINITION.getName());
         deleteSnapshotOperation.get(OP_ADDR).set(addr);
         deleteSnapshotOperation.get(NAME).set(snapshot.substring(snapshot.lastIndexOf(fileSeparator)  + fileSeparator.length()));
         validateResponse(masterClient.execute(deleteSnapshotOperation));
@@ -872,7 +872,7 @@ public class CoreResourceManagementTestCase {
             result.get(VALUE).set(value);
         }
         if (boottime != null) {
-            result.get(BOOT_TIME).set(boottime.booleanValue());
+            result.get(BOOT_TIME).set(boottime);
         }
         return result;
     }

@@ -245,11 +245,11 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             DeploymentUploadBytesHandler.registerMaster(resourceRegistration, contentRepo);
 
             SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister);
-            resourceRegistration.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false, EntryType.PUBLIC, masterOnly);
+            resourceRegistration.registerOperationHandler(SnapshotDeleteHandler.DEFINITION, snapshotDelete);
             SnapshotListHandler snapshotList = new SnapshotListHandler(configurationPersister);
-            resourceRegistration.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false, EntryType.PUBLIC, masterOnly);
+            resourceRegistration.registerOperationHandler(SnapshotListHandler.DEFINITION, snapshotList);
             SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(configurationPersister);
-            resourceRegistration.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false, EntryType.PUBLIC, masterOnly);
+            resourceRegistration.registerOperationHandler(SnapshotTakeHandler.DEFINITION, snapshotTake);
 
             final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
             resourceRegistration.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper, false);

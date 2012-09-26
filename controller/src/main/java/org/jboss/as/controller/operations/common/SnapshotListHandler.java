@@ -18,17 +18,22 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.SnapshotDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Locale;
+import org.jboss.dmr.ModelType;
 
 /**
  * An operation that lists the snapshots taken of the current configuration
@@ -36,9 +41,20 @@ import java.util.Locale;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @version $Revision: 1.1 $
  */
-public class SnapshotListHandler implements OperationStepHandler, DescriptionProvider {
+public class SnapshotListHandler implements OperationStepHandler {
 
-    public static final String OPERATION_NAME = "list-snapshots";
+    private static final String OPERATION_NAME = "list-snapshots";
+
+    private static final SimpleAttributeDefinition DIRECTORY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.DIRECTORY, ModelType.STRING)
+            .setAllowNull(false)
+            .build();
+    private static final AttributeDefinition NAMES = new StringListAttributeDefinition.Builder(ModelDescriptionConstants.NAMES)
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("snapshot"))
+            .setReplyParameters(DIRECTORY, NAMES)
+            .withFlag(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .build();
 
     private final ConfigurationPersister persister;
 
@@ -62,8 +78,4 @@ public class SnapshotListHandler implements OperationStepHandler, DescriptionPro
         }
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return SnapshotDescriptions.getSnapshotListModel(locale);
-    }
 }

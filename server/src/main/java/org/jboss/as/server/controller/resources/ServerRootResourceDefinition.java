@@ -222,11 +222,11 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         if (!isDomain) {
             SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(extensibleConfigurationPersister);
-            resourceRegistration.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
+            resourceRegistration.registerOperationHandler(SnapshotDeleteHandler.DEFINITION, snapshotDelete);
             SnapshotListHandler snapshotList = new SnapshotListHandler(extensibleConfigurationPersister);
-            resourceRegistration.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
+            resourceRegistration.registerOperationHandler(SnapshotListHandler.DEFINITION, snapshotList);
             SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(extensibleConfigurationPersister);
-            resourceRegistration.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
+            resourceRegistration.registerOperationHandler(SnapshotTakeHandler.DEFINITION, snapshotTake);
         }
 
         resourceRegistration.registerOperationHandler(ServerRestartRequiredHandler.DEFINITION, ServerRestartRequiredHandler.INSTANCE);

@@ -195,11 +195,11 @@ public class HostModelUtil {
 
 
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());
-        hostRegistration.registerOperationHandler(SnapshotDeleteHandler.OPERATION_NAME, snapshotDelete, snapshotDelete, false);
+        hostRegistration.registerOperationHandler(SnapshotDeleteHandler.DEFINITION, snapshotDelete);
         SnapshotListHandler snapshotList = new SnapshotListHandler(configurationPersister.getHostPersister());
-        hostRegistration.registerOperationHandler(SnapshotListHandler.OPERATION_NAME, snapshotList, snapshotList, false);
+        hostRegistration.registerOperationHandler(SnapshotListHandler.DEFINITION, snapshotList);
         SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(configurationPersister.getHostPersister());
-        hostRegistration.registerOperationHandler(SnapshotTakeHandler.OPERATION_NAME, snapshotTake, snapshotTake, false);
+        hostRegistration.registerOperationHandler(SnapshotTakeHandler.DEFINITION, snapshotTake);
 
         ignoredRegistry.registerResources(hostRegistration);
 

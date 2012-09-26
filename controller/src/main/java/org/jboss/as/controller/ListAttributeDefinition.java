@@ -47,7 +47,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
     private final ParameterValidator elementValidator;
 
     public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
-        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null, null);
+        this(name, name, allowNull, 0, Integer.MAX_VALUE, elementValidator, null, null);
     }
 
     protected ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator, final AttributeAccess.Flag... flags) {
@@ -56,7 +56,7 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
 
     public ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator) {
-        this(name, xmlName, allowNull, minSize, maxSize, elementValidator, null, null, null);
+        this(name, xmlName, allowNull, minSize, maxSize, elementValidator, null, null);
     }
 
     protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
