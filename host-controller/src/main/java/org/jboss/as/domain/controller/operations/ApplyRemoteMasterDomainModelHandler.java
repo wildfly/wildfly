@@ -323,7 +323,8 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 }
             }
         }
-        context.completeStep();
+
+        context.stepCompleted();
     }
 
     private void clearDomain(final Resource rootResource) {

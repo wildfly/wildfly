@@ -94,11 +94,11 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                         cleanStartServers(servers, domainModel);
                     }
                 }
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override

@@ -217,7 +217,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
                 }
             } catch (IOException e) {
                 context.getFailureDescription().set(e.getMessage());
-                context.completeStep();
+                context.stepCompleted();
                 return;
             }
             if(context.completeStep() == OperationContext.ResultAction.KEEP) {
@@ -255,7 +255,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
                             }
                             // Notify the server whether configuration is still in sync or it requires a reload
                             safeWriteResponse(channel, requestContext.getRequestHeader(), param);
-                            context.completeStep();
+                            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                         }
                     };
                     try {

@@ -42,7 +42,7 @@ public class LocalHostNameOperationHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.getResult().set(info.getLocalHostName());
-        context.completeStep();
+        context.stepCompleted();
     }
 
 }

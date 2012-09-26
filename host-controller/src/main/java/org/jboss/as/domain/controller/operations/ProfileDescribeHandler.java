@@ -100,7 +100,7 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                     }
                     context.getResult().set(result);
                 }
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.IMMEDIATE);
 
@@ -131,7 +131,7 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                                 }
                             }
                         }
-                        context.completeStep();
+                        context.stepCompleted();
                     }
                 }, OperationContext.Stage.IMMEDIATE);
 
@@ -156,6 +156,6 @@ public class ProfileDescribeHandler implements OperationStepHandler {
             }
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

@@ -24,7 +24,6 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENAB
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,17 +35,13 @@ public class ServerGroupDeploymentDeployHandler implements OperationStepHandler 
 
     public static final String OPERATION_NAME = DEPLOY;
 
-    static final ModelNode getOperation(ModelNode address) {
-        return Util.getEmptyOperation(OPERATION_NAME, address);
-    }
-
     public static final ServerGroupDeploymentDeployHandler INSTANCE = new ServerGroupDeploymentDeployHandler();
 
     private ServerGroupDeploymentDeployHandler() {
     }
 
     public void execute(OperationContext context, ModelNode operation) {
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED.getName()).set(true);
-        context.completeStep();
+        context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(ENABLED.getName()).set(true);
+        context.stepCompleted();
     }
 }

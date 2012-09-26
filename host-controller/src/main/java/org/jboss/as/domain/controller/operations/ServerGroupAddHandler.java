@@ -75,7 +75,7 @@ public class ServerGroupAddHandler implements OperationStepHandler {
             }
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected boolean requiresRuntime(OperationContext context) {

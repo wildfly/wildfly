@@ -125,7 +125,7 @@ public class ServerOperationsResolverHandler implements OperationStepHandler {
             }
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getServerOperations(OperationContext context, ModelNode domainOp,

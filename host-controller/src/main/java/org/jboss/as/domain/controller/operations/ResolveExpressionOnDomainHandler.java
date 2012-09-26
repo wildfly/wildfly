@@ -55,7 +55,7 @@ public class ResolveExpressionOnDomainHandler implements OperationStepHandler, D
         // Just validate. The real work happens on the servers
         ResolveExpressionHandler.EXPRESSION.validateOperation(operation);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override

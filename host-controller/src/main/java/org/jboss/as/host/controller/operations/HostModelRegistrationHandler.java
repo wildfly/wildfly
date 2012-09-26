@@ -124,7 +124,7 @@ public class HostModelRegistrationHandler implements OperationStepHandler, Descr
         Resource.ResourceEntry ignoredRoot = ignoredDomainResourceRegistry.getRootResource();
         rootResource.registerChild(ignoredRoot.getPathElement(), ignoredRoot);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     private static void initCoreModel(final ModelNode root, HostControllerEnvironment environment) {

@@ -63,7 +63,7 @@ public class OperationSlaveStepHandler {
         operation.get(OPERATION_HEADERS).remove(PrepareStepHandler.EXECUTE_FOR_COORDINATOR);
 
         addSteps(context, operation, null, true);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     void addSteps(final OperationContext context, final ModelNode operation, final ModelNode response, final boolean recordResponse) throws OperationFailedException {

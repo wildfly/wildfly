@@ -60,7 +60,7 @@ public class ServerStatusHandler implements OperationStepHandler {
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
 
-        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
         final boolean isStart;
         if(subModel.hasDefined(AUTO_START)) {
             isStart = subModel.get(AUTO_START).asBoolean();
@@ -76,9 +76,9 @@ public class ServerStatusHandler implements OperationStepHandler {
 
         if(status != null) {
             context.getResult().set(status.toString());
-            context.completeStep();
+            context.stepCompleted();
         } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToGetServerStatus()));
+            throw new OperationFailedException(new ModelNode(MESSAGES.failedToGetServerStatus()));
         }
     }
 

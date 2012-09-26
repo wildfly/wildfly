@@ -72,7 +72,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
                 if(controller != null) {
                     context.getFailureDescription().set(MESSAGES.serverStillRunning(serverName));
                 }
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.RUNTIME);
     }

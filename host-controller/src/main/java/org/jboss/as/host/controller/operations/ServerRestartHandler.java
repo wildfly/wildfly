@@ -84,7 +84,7 @@ public class ServerRestartHandler implements OperationStepHandler, DescriptionPr
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override

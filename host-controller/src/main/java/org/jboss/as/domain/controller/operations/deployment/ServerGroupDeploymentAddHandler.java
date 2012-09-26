@@ -21,10 +21,8 @@ package org.jboss.as.domain.controller.operations.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME_NILLABLE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_GROUP_ADD_ATTRIBUTES;
 
@@ -34,7 +32,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
@@ -47,14 +44,6 @@ import org.jboss.dmr.ModelNode;
 public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
-
-    static final ModelNode getOperation(ModelNode address, ModelNode state) {
-        ModelNode op = Util.getEmptyOperation(OPERATION_NAME, address);
-        op.get(RUNTIME_NAME_NILLABLE.getName()).set(state.get(RUNTIME_NAME_NILLABLE.getName()));
-        op.get(HASH).set(state.get(HASH));
-        op.get(ENABLED.getName()).set(state.get(ENABLED.getName()));
-        return op;
-    }
 
     private final HostFileRepository fileRepository;
 
@@ -91,6 +80,6 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
             RUNTIME_NAME_NILLABLE.validateAndSet(deployment, subModel);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

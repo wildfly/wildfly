@@ -141,7 +141,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
 
         newModel.get(CONTENT_ALL.getName()).set(content);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     private static OperationFailedException createFailureException(String msg) {

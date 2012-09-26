@@ -111,7 +111,7 @@ public class DomainSocketBindingGroupRemoveHandler extends AbstractRemoveStepHan
                     if (!runningServers.isEmpty()) {
                         throw new OperationFailedException("Could not remove socket-binding-group since the following servers are running: " + runningServers);
                     }
-                    context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                    context.stepCompleted();
                 }
             }, Stage.MODEL);
         }

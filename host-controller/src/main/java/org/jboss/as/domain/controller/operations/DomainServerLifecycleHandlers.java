@@ -148,10 +148,11 @@ public class DomainServerLifecycleHandlers {
                     } else {
                         serverInventory.stopServers(TIMEOUT);
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, Stage.RUNTIME);
-            context.completeStep();
+
+            context.stepCompleted();
         }
     }
 
@@ -182,11 +183,11 @@ public class DomainServerLifecycleHandlers {
                             }
                         }
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, Stage.RUNTIME);
 
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 
@@ -214,13 +215,13 @@ public class DomainServerLifecycleHandlers {
                                     serverInventory.restartServer(serverModelName, TIMEOUT, model);
                                 }
                             }
-                            context.completeStep();
+                            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                         }
                     }, Stage.RUNTIME);
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, Stage.RUNTIME);
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 }

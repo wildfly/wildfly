@@ -70,7 +70,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
         if (context.hasFailureDescription()) {
             // abort
             context.setRollbackOnly();
-            context.completeStep();
+            context.stepCompleted();
             return;
         }
 

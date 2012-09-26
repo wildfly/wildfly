@@ -65,10 +65,10 @@ public class HostShutdownHandler implements OperationStepHandler, DescriptionPro
                 } else {
                     domainController.stopLocalHost();
                 }
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

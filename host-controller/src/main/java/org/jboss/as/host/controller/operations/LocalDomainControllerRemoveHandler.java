@@ -53,7 +53,7 @@ public class LocalDomainControllerRemoveHandler implements OperationStepHandler,
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
         model.get(DOMAIN_CONTROLLER).setEmptyObject();
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

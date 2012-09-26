@@ -135,7 +135,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler, Description
             }
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private Resource getResource(PathAddress resourceAddress, Resource rootResource, OperationContext context) {

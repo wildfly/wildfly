@@ -46,9 +46,9 @@ public class IsMasterHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
         boolean master = subModel.get(ModelDescriptionConstants.DOMAIN_CONTROLLER).hasDefined(ModelDescriptionConstants.LOCAL);
         context.getResult().set(master);
-        context.completeStep();
+        context.stepCompleted();
     }
 }
