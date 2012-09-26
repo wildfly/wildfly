@@ -376,7 +376,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-        HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this);
+        HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType);
         this.modelNodeRegistration = rootRegistration;
     }
 

@@ -18,15 +18,9 @@
  */
 package org.jboss.as.server.services.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.controller.descriptions.VaultDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,9 +29,7 @@ import org.jboss.dmr.ModelNode;
  * @author Anil Saldhana
  * @author Brian Stansberry
  */
-public class VaultRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
-
-    public static final String OPERATION_NAME = REMOVE;
+public class VaultRemoveHandler extends AbstractRemoveStepHandler {
 
     private final AbstractVaultReader vaultReader;
 
@@ -46,11 +38,6 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
      */
     public VaultRemoveHandler(AbstractVaultReader vaultReader) {
         this.vaultReader = vaultReader;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return VaultDescriptions.getVaultRemoveDescription(locale);
     }
 
     @Override

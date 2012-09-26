@@ -206,6 +206,12 @@ public class CommonDescriptions {
         return descr;
     }
 
+    /**
+     * default describe operation description,
+     * here just for  binary compatibility with external extensions
+     * @param locale
+     * @return
+     */
     @Deprecated
     public static ModelNode getSubsystemDescribeOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -214,16 +220,6 @@ public class CommonDescriptions {
         root.get(DESCRIPTION).set(bundle.getString("subsystem.describe"));
         root.get(REPLY_PROPERTIES, TYPE).set(ModelType.LIST);
         root.get(REPLY_PROPERTIES, VALUE_TYPE).set(ModelType.OBJECT);
-        return root;
-    }
-
-    public static ModelNode getServiceContainerDescription(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString("core.service-container"));
-        root.get(HEAD_COMMENT_ALLOWED).set(false);
-        root.get(TAIL_COMMENT_ALLOWED).set(false);
-        root.get(OPERATIONS);
         return root;
     }
 

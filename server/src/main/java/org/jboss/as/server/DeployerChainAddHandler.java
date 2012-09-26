@@ -33,8 +33,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
@@ -47,8 +50,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 /**
  * @author John Bailey
  */
-public class DeployerChainAddHandler implements OperationStepHandler, DescriptionProvider {
+public class DeployerChainAddHandler implements OperationStepHandler {
     static final String NAME = "add-deployer-chains";
+    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, CommonDescriptions.getResourceDescriptionResolver())
+            .setPrivateEntry()
+            .build();
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
 
     public static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
@@ -106,11 +112,6 @@ public class DeployerChainAddHandler implements OperationStepHandler, Descriptio
         context.stepCompleted();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //Since this instance should have EntryType.PRIVATE, there is no need for a description
-        return new ModelNode();
-    }
 
     private class FinalRuntimeStepHandler implements OperationStepHandler {
 

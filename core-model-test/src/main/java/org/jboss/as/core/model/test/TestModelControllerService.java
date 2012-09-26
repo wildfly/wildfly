@@ -21,6 +21,7 @@
 */
 package org.jboss.as.core.model.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import java.io.File;
@@ -473,7 +474,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration rootRegistration) {
                         }
-                    });
+                    },ProcessType.HOST_CONTROLLER);
 
             HostModelUtil.createHostRegistry(
                     hostName,
@@ -523,7 +524,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration root) {
                         }
-                    });
+                    },processType);
         }
 
     }

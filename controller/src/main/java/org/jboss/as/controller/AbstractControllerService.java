@@ -95,7 +95,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         }
     }
 
-    private final ProcessType processType;
+    protected final ProcessType processType;
     private final RunningModeControl runningModeControl;
     private final DescriptionProvider rootDescriptionProvider;
     private final ResourceDefinition rootResourceDefinition;
