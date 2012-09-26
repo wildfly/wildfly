@@ -22,9 +22,9 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -33,13 +33,14 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.logmanager.ContextClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
 
@@ -62,16 +63,18 @@ public class LoggingExtension implements Extension {
     static final PathElement FILE_HANDLER_PATH = PathElement.pathElement(CommonAttributes.FILE_HANDLER);
     static final PathElement PERIODIC_HANDLER_PATH = PathElement.pathElement(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER);
     static final PathElement SIZE_ROTATING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
+    static final PathElement LOGGING_PROFILE_PATH = PathElement.pathElement(CommonAttributes.LOGGING_PROFILE);
 
 
     static final ResourceDescriptionResolver FILTER_ATTRIBUTE_RESOLVER = getResourceDescriptionResolver(CommonAttributes.HANDLER.getName());
 
     static final ContextClassLoaderLogContextSelector CONTEXT_SELECTOR = new ContextClassLoaderLogContextSelector();
 
+    static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
-
 
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
@@ -88,16 +91,12 @@ public class LoggingExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingRootResource.INSTANCE);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-
-        registration.registerSubModel(RootLoggerResourceDefinition.INSTANCE);
-        registration.registerSubModel(LoggerResourceDefinition.INSTANCE);
-        registration.registerSubModel(AsyncHandlerResourceDefinition.INSTANCE);
-        registration.registerSubModel(ConsoleHandlerResourceDefinition.INSTANCE);
-        registration.registerSubModel(FileHandlerResourceDefinition.INSTANCE);
-        registration.registerSubModel(PeriodicHandlerResourceDefinition.INSTANCE);
-        registration.registerSubModel(SizePeriodicHandlerResourceDefinition.INSTANCE);
-        registration.registerSubModel(CustomHandlerResourceDefinition.INSTANCE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
+        registerSubModels(registration);
+        registerSubModels(registration.registerSubModel(new SimpleResourceDefinition(LOGGING_PROFILE_PATH,
+                getResourceDescriptionResolver(),
+                LoggingProfileOperations.ADD_PROFILE,
+                LoggingProfileOperations.REMOVE_PROFILE)));
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
     }
@@ -107,6 +106,17 @@ public class LoggingExtension implements Extension {
         for (Namespace namespace : Namespace.readable()) {
             context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUriString(), LoggingSubsystemParser.INSTANCE);
         }
+    }
+
+    private void registerSubModels(final ManagementResourceRegistration registration) {
+        registration.registerSubModel(RootLoggerResourceDefinition.INSTANCE);
+        registration.registerSubModel(LoggerResourceDefinition.INSTANCE);
+        registration.registerSubModel(AsyncHandlerResourceDefinition.INSTANCE);
+        registration.registerSubModel(ConsoleHandlerResourceDefinition.INSTANCE);
+        registration.registerSubModel(FileHandlerResourceDefinition.INSTANCE);
+        registration.registerSubModel(PeriodicHandlerResourceDefinition.INSTANCE);
+        registration.registerSubModel(SizePeriodicHandlerResourceDefinition.INSTANCE);
+        registration.registerSubModel(CustomHandlerResourceDefinition.INSTANCE);
     }
 
     private static class LoggingResourceDescriptionResolver extends StandardResourceDescriptionResolver {
@@ -194,6 +204,44 @@ public class LoggingExtension implements Extension {
                 }
             }
             return sb.toString();
+        }
+    }
+
+    public static class LoggingChildResourceComparator implements Comparator<PathElement> {
+        static final LoggingChildResourceComparator INSTANCE = new LoggingChildResourceComparator();
+        static final int GREATER = 1;
+        static final int EQUAL = 0;
+        static final int LESS = -1;
+
+        @Override
+        public int compare(final PathElement o1, final PathElement o2) {
+            final String key1 = o1.getKey();
+            final String key2 = o2.getKey();
+            int result = key1.compareTo(key2);
+            if (result != EQUAL) {
+                if (ModelDescriptionConstants.SUBSYSTEM.equals(key1)) {
+                    result = LESS;
+                } else if (ModelDescriptionConstants.SUBSYSTEM.equals(key2)) {
+                    result = GREATER;
+                } else if (CommonAttributes.LOGGING_PROFILE.equals(key1)) {
+                    result = LESS;
+                } else if (CommonAttributes.LOGGING_PROFILE.equals(key2)) {
+                    result = GREATER;
+                } else if (CommonAttributes.ROOT_LOGGER.equals(key1)) {
+                    result = GREATER;
+                } else if (CommonAttributes.ROOT_LOGGER.equals(key2)) {
+                    result = LESS;
+                } else if (CommonAttributes.LOGGER.equals(key1)) {
+                    result = GREATER;
+                } else if (CommonAttributes.LOGGER.equals(key2)) {
+                    result = LESS;
+                } else if (CommonAttributes.ASYNC_HANDLER.equals(key1)) {
+                    result = GREATER;
+                } else if (CommonAttributes.ASYNC_HANDLER.equals(key2)) {
+                    result = LESS;
+                }
+            }
+            return result;
         }
     }
 }

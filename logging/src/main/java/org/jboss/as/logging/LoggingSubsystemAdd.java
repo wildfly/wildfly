@@ -41,10 +41,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.msc.service.ServiceController;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -65,7 +61,7 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(final DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_CONFIG, LoggingConfigurationProcessor.INSTANCE);
+                processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_CONFIG, LoggingDeploymentUnitProcessor.INSTANCE);
             }
         }, Stage.RUNTIME);
 
@@ -108,12 +104,5 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         } finally {
             logContextConfiguration.forget();
         }
-    }
-
-    static ModelNode createOperation(ModelNode address) {
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).set(address);
-        return subsystem;
     }
 }

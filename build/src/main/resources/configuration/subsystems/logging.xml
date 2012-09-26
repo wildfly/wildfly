@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
    <extension-module>org.jboss.as.logging</extension-module>
-   <subsystem xmlns="urn:jboss:domain:logging:1.1">
+   <subsystem xmlns="urn:jboss:domain:logging:1.2">
        <console-handler name="CONSOLE">
            <level name="INFO"/>
            <formatter>

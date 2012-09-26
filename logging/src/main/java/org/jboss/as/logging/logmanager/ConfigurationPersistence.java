@@ -126,6 +126,18 @@ public final class ConfigurationPersistence implements Configurator {
         return result;
     }
 
+    /**
+     * Gets the property configurator. If the {@link ConfigurationPersistence} does not exist a {@code null} is
+     * returned.
+     *
+     * @param logContext the log context used to find the property configurator or to attach it to.
+     *
+     * @return the property configurator or {@code null}
+     */
+    public static ConfigurationPersistence getConfigurationPersistence(final LogContext logContext) {
+        return (ConfigurationPersistence) logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, Configurator.ATTACHMENT_KEY);
+    }
+
     @Override
     public void configure(final InputStream inputStream) throws IOException {
         final Properties properties = new Properties();
@@ -409,9 +421,9 @@ public final class ConfigurationPersistence implements Configurator {
     /**
      * Writes a property to the print stream.
      *
-     * @param out    the print stream to write to.
-     * @param name   the name of the property.
-     * @param value  the value of the property.
+     * @param out   the print stream to write to.
+     * @param name  the name of the property.
+     * @param value the value of the property.
      */
     private static void writeProperty(final PrintStream out, final String name, final String value) throws IOException {
         writeProperty(out, null, name, value);
@@ -693,7 +705,7 @@ public final class ConfigurationPersistence implements Configurator {
         for (int x = 0; x < string.length(); x++) {
             final char c = string.charAt(x);
             switch (c) {
-                case ' ' :
+                case ' ':
                     if (x == 0 || escapeSpaces)
                         out.append('\\');
                     out.append(c);

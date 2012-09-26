@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging.resolvers;
 
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import static org.jboss.as.logging.Logging.createOperationFailure;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

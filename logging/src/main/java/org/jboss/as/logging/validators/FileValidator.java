@@ -24,8 +24,8 @@ package org.jboss.as.logging.validators;
 
 import static org.jboss.as.logging.CommonAttributes.PATH;
 import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import static org.jboss.as.logging.Logging.createOperationFailure;
+import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;

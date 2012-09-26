@@ -22,11 +22,10 @@
 package org.jboss.as.logging;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.junit.BeforeClass;
@@ -69,6 +68,7 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
     static class RemoveOperationComparator implements Comparator<PathAddress> {
         static final RemoveOperationComparator INSTANCE = new RemoveOperationComparator();
         static final int GREATER = 1;
+        static final int EQUAL = 0;
         static final int LESS = -1;
 
         @Override
@@ -76,24 +76,48 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
             final String key1 = o1.getLastElement().getKey();
             final String key2 = o2.getLastElement().getKey();
             int result = key1.compareTo(key2);
-            if (result != 0) {
-                if ("subsystem".equals(key1)) {
-                    result = LESS;
-                } else if ("subsystem".equals(key2)) {
+            if (result != EQUAL) {
+                if (LoggingProfileOperations.isLoggingProfileAddress(o1) && !LoggingProfileOperations.isLoggingProfileAddress(o2)) {
                     result = GREATER;
-                } else if (CommonAttributes.ROOT_LOGGER.equals(key1)) {
-                    result = GREATER;
-                } else if (CommonAttributes.ROOT_LOGGER.equals(key2)) {
+                } else if (!LoggingProfileOperations.isLoggingProfileAddress(o1) && LoggingProfileOperations.isLoggingProfileAddress(o2)) {
                     result = LESS;
-                } else if (CommonAttributes.LOGGER.equals(key1)) {
-                    result = GREATER;
-                } else if (CommonAttributes.LOGGER.equals(key2)) {
-                    result = LESS;
-                } else if (CommonAttributes.ASYNC_HANDLER.equals(key1)) {
-                    result = GREATER;
-                } else if (CommonAttributes.ASYNC_HANDLER.equals(key2)) {
-                    result = LESS;
+                } else if (LoggingProfileOperations.isLoggingProfileAddress(o1) && LoggingProfileOperations.isLoggingProfileAddress(o2)) {
+                    if (CommonAttributes.LOGGING_PROFILE.equals(key1) && !CommonAttributes.LOGGING_PROFILE.equals(key2)) {
+                        result = LESS;
+                    } else if (!CommonAttributes.LOGGING_PROFILE.equals(key1) && CommonAttributes.LOGGING_PROFILE.equals(key2)) {
+                        result = GREATER;
+                    } else {
+                        result = compare(key1, key2);
+                    }
+                } else {
+                  result = compare(key1, key2);
                 }
+            }
+            return result;
+        }
+
+        private int compare(final String key1, final String key2) {
+            int result = EQUAL;
+            if (ModelDescriptionConstants.SUBSYSTEM.equals(key1)) {
+                result = LESS;
+            } else if (ModelDescriptionConstants.SUBSYSTEM.equals(key2)) {
+                result = GREATER;
+            } else if (CommonAttributes.LOGGING_PROFILE.equals(key1)) {
+                result = LESS;
+            } else if (CommonAttributes.LOGGING_PROFILE.equals(key2)) {
+                result = GREATER;
+            } else if (CommonAttributes.ROOT_LOGGER.equals(key1)) {
+                result = LESS;
+            } else if (CommonAttributes.ROOT_LOGGER.equals(key2)) {
+                result = GREATER;
+            } else if (CommonAttributes.LOGGER.equals(key1)) {
+                result = LESS;
+            } else if (CommonAttributes.LOGGER.equals(key2)) {
+                result = GREATER;
+            } else if (CommonAttributes.ASYNC_HANDLER.equals(key1) && !(CommonAttributes.LOGGER.equals(key2) || CommonAttributes.ROOT_LOGGER.equals(key2))) {
+                result = LESS;
+            } else if (CommonAttributes.ASYNC_HANDLER.equals(key2) && !(CommonAttributes.LOGGER.equals(key1) || CommonAttributes.ROOT_LOGGER.equals(key1))) {
+                result = GREATER;
             }
             return result;
         }

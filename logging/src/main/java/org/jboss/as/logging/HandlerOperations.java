@@ -27,9 +27,9 @@ import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
-import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.LoggerOperations.ADD_HANDLER;
@@ -58,7 +58,6 @@ import org.jboss.logmanager.Logger.AttachmentKey;
 import org.jboss.logmanager.config.FormatterConfiguration;
 import org.jboss.logmanager.config.HandlerConfiguration;
 import org.jboss.logmanager.config.LogContextConfiguration;
-import org.jboss.logmanager.config.LoggerConfiguration;
 import org.jboss.logmanager.formatters.PatternFormatter;
 
 /**
@@ -285,27 +284,10 @@ final class HandlerOperations {
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
-            // Check to see if the handler is assigned to a logger
-            final List<String> attached = new ArrayList<String>();
-            for (String loggerName : logContextConfiguration.getLoggerNames()) {
-                final LoggerConfiguration loggerConfig = logContextConfiguration.getLoggerConfiguration(loggerName);
-                if (loggerConfig.getHandlerNames().contains(name)) {
-                    attached.add(loggerName);
-                }
-            }
-            if (!attached.isEmpty()) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAttachedToLoggers(name, attached));
-            }
-            // Check to see if the handler is assigned to another handler
-            for (String handlerName : logContextConfiguration.getHandlerNames()) {
-                final HandlerConfiguration handlerConfig = logContextConfiguration.getHandlerConfiguration(handlerName);
-                if (handlerConfig.getHandlerNames().contains(name)) {
-                    attached.add(handlerName);
-                }
-            }
-            if (!attached.isEmpty()) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAttachedToHandlers(name, attached));
-            }
+            // Validating wouldn't work until the LogContextConfiguration.commit() happens as handlers could still be
+            // named as attached removed the check for this reason.
+
+            // Remove the handler
             logContextConfiguration.removeHandlerConfiguration(name);
             // Remove the formatter if there is one
             if (logContextConfiguration.getFormatterNames().contains(name)) {

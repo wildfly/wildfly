@@ -28,10 +28,10 @@ import java.util.EnumSet;
 import java.util.logging.Handler;
 
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 
 /**
  * This module is using message IDs in the range 11500-11599.
