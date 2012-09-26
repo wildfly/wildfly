@@ -38,6 +38,7 @@
                 <path name="com/sun/jndi/url/dns"/>
                 <path name="sun/print"/>
                 <path name="sun/print/resources"/>
+                <path name="com/sun/crypto/provider"/>
                 <path name="com/sun/org/apache/xml/internal/security/transforms/implementations"/>
                 <path name="com/sun/security/auth"/>
                 <path name="com/sun/security/auth/login"/>
