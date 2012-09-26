@@ -76,10 +76,10 @@ public class ServerStopHandler implements OperationStepHandler, DescriptionProvi
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final ServerStatus status = serverInventory.stopServer(serverName, -1, blocking);
                 context.getResult().set(status.toString());
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

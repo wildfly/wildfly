@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
@@ -49,10 +48,6 @@ import org.jboss.dmr.ModelNode;
 public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = REPLACE_DEPLOYMENT;
-
-    static final ModelNode getOperation(ModelNode address) {
-        return Util.getEmptyOperation(OPERATION_NAME, address);
-    }
 
     private final HostFileRepository fileRepository;
 
@@ -117,7 +112,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
         }
         //
         replaceResource.getModel().get(ENABLED).set(false);
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private static OperationFailedException operationFailed(String msg) {

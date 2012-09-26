@@ -58,6 +58,6 @@ public class ServerGroupProfileWriteAttributeHandler extends StringLengthValidat
             throw DomainControllerMessages.MESSAGES.noProfileCalled(newValue.asString());
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 }

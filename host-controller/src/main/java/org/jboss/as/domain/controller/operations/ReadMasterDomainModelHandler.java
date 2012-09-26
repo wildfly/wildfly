@@ -65,7 +65,7 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
         context.getResult().set(describeAsNodeList(root));
         // The HC registration process will hijack the operationPrepared call and push
         // the model to a registering host-controller
-        context.completeStep();
+        context.stepCompleted();
     }
 
     /**

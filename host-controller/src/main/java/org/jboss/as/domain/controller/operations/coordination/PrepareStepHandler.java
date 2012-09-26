@@ -119,7 +119,7 @@ public class PrepareStepHandler  implements OperationStepHandler {
         } else {
             context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
 }

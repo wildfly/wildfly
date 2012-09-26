@@ -78,7 +78,8 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
                 }
             }
         }, OperationContext.Stage.RUNTIME);
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+
+        context.stepCompleted();
     }
 
     protected void checkCanRemove(OperationContext context, ModelNode operation) throws OperationFailedException {

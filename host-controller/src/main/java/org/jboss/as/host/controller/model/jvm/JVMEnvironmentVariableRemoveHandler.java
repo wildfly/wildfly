@@ -64,7 +64,7 @@ public final class JVMEnvironmentVariableRemoveHandler implements OperationStepH
             }
         }
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     /**

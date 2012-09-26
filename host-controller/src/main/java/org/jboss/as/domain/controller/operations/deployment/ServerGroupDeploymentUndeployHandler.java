@@ -24,7 +24,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UND
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,17 +35,13 @@ public class ServerGroupDeploymentUndeployHandler implements OperationStepHandle
 
     public static final String OPERATION_NAME = UNDEPLOY;
 
-    static final ModelNode getOperation(ModelNode address) {
-        return Util.getEmptyOperation(OPERATION_NAME, address);
-    }
-
     public static final ServerGroupDeploymentUndeployHandler INSTANCE = new ServerGroupDeploymentUndeployHandler();
 
     private ServerGroupDeploymentUndeployHandler() {
     }
 
     public void execute(OperationContext context, ModelNode operation) {
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(false);
-        context.completeStep();
+        context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(ENABLED).set(false);
+        context.stepCompleted();
     }
 }

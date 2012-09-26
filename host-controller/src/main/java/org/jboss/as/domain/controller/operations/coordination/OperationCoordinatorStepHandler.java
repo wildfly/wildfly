@@ -134,7 +134,7 @@ public class OperationCoordinatorStepHandler {
         // not a problem
         context.getFailureDescription().set(MESSAGES.masterDomainControllerOnlyOperation(operation.get(OP).asString(),
                 PathAddress.pathAddress(operation.get(OP_ADDR))));
-        context.completeStep();
+        context.stepCompleted();
     }
 
     /**
@@ -159,7 +159,7 @@ public class OperationCoordinatorStepHandler {
         } else {
             context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void executeTwoPhaseOperation(OperationContext context, ModelNode operation, OperationRouting routing) throws OperationFailedException {
@@ -223,7 +223,7 @@ public class OperationCoordinatorStepHandler {
         // Finally, the step to formulate and execute the 2nd phase rollout plan
         context.addStep(new DomainRolloutStepHandler(hostProxies, serverProxies, overallContext, rolloutPlan, getExecutorService()), OperationContext.Stage.DOMAIN);
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void storeDeploymentContent(ModelNode opNode, OperationContext context) throws OperationFailedException {

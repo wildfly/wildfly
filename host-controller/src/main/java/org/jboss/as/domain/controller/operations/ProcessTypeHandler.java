@@ -48,6 +48,6 @@ public class ProcessTypeHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.getResult().set(master ? DOMAIN_CONTROLLER_TYPE : HOST_CONTROLLER_TYPE);
-        context.completeStep();
+        context.stepCompleted();
     }
 }

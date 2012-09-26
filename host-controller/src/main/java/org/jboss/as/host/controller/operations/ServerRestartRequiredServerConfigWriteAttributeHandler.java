@@ -64,7 +64,7 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
         }
         validateReferencedNewValueExisits(context, newValue);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     protected abstract void validateReferencedNewValueExisits(OperationContext context, ModelNode value) throws OperationFailedException;

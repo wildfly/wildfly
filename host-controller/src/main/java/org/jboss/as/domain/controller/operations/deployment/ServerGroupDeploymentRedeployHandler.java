@@ -45,6 +45,6 @@ public class ServerGroupDeploymentRedeployHandler implements OperationStepHandle
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         // We do nothing. This operation is really handled at the server level.
-        context.completeStep();
+        context.stepCompleted();
     }
 }
