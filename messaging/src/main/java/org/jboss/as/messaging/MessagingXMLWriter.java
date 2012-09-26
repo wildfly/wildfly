@@ -24,7 +24,6 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
@@ -33,6 +32,7 @@ import static org.jboss.as.messaging.CommonAttributes.VALUE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 import static org.jboss.as.messaging.Namespace.CURRENT;
 
 import java.util.ArrayList;
@@ -422,7 +422,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             if(path != null || relativeTo != null) {
                 writer.writeEmptyElement(localName);
                 if(path != null) writer.writeAttribute(PATH.getName(), path);
-                if(relativeTo != null) writer.writeAttribute(RELATIVE_TO.getName(), relativeTo);
+                RELATIVE_TO.marshallAsAttribute(node.get(localName), writer);
             }
         }
     }

@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
@@ -82,6 +81,7 @@ import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
+import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -117,7 +117,6 @@ import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -137,7 +136,6 @@ import org.jboss.msc.service.ServiceTarget;
 class HornetQServerAdd implements OperationStepHandler {
 
     private static final String DEFAULT_PATH = "messaging";
-    static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
     static final String PATH_BASE = "paths";
 
     static final String DEFAULT_BINDINGS_DIR = "bindings";
@@ -215,13 +213,13 @@ class HornetQServerAdd implements OperationStepHandler {
 
                 // Create path services
                 String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY)));
-                String bindingsRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY));
+                String bindingsRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY)).asString();
                 String journalPath = getPath(DEFAULT_JOURNAL_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY)));
-                String journalRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY));
+                String journalRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY)).asString();
                 String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY)));
-                String largeMessageRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY));
+                String largeMessageRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY)).asString();
                 String pagingPath = getPath(DEFAULT_PAGING_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY)));
-                String pagingRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY));
+                String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY)).asString();
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService(
@@ -480,17 +478,4 @@ class HornetQServerAdd implements OperationStepHandler {
     static String getPath(final String name, final ModelNode path) {
         return path.isDefined() ? path.asString() : DEFAULT_PATH + name;
     }
-
-    /**
-     * Get the relative path for a given target.
-     *
-     *
-     * @param name          the path service name
-     * @param path          the detyped path element
-     * @return the path
-     */
-     static String getRelativeToPath(final ModelNode path) {
-         return path.hasDefined(RELATIVE_TO) ? path.get(RELATIVE_TO).asString() : DEFAULT_RELATIVE_TO;
-     }
-
 }

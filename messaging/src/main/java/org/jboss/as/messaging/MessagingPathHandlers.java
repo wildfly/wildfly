@@ -22,16 +22,14 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
+import static org.jboss.dmr.ModelType.STRING;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -39,9 +37,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -52,12 +52,21 @@ import org.jboss.msc.service.ServiceName;
  */
 class MessagingPathHandlers {
 
+    static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
+
+    public static final SimpleAttributeDefinition RELATIVE_TO = create("relative-to", STRING)
+            .setDefaultValue(new ModelNode(DEFAULT_RELATIVE_TO))
+            .setAllowNull(true)
+            .setRestartAllServices()
+            .build();
+
     public static final String[] PATHS = { BINDINGS_DIRECTORY,
         JOURNAL_DIRECTORY,
         LARGE_MESSAGES_DIRECTORY,
         PAGING_DIRECTORY };
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CommonAttributes.PATH, CommonAttributes.RELATIVE_TO };
+    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CommonAttributes.PATH, RELATIVE_TO };
+
     static final OperationStepHandler PATH_ADD = new OperationStepHandler() {
 
         @Override
@@ -72,7 +81,7 @@ class MessagingPathHandlers {
         }
     };
 
-    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler(CommonAttributes.RELATIVE_TO, CommonAttributes.PATH);
+    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler(RELATIVE_TO, CommonAttributes.PATH);
 
     static final OperationStepHandler PATH_REMOVE = new OperationStepHandler() {
 
@@ -107,6 +116,5 @@ class MessagingPathHandlers {
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 
 }
