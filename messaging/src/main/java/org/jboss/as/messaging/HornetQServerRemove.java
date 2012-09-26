@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.messaging.jms.JMSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -93,9 +96,8 @@ class HornetQServerRemove implements OperationStepHandler {
         for(final Resource.ResourceEntry divertGroup : resource.getChildren(CommonAttributes.DISCOVERY_GROUP)) {
             context.removeService(GroupBindingService.getDiscoveryBaseServiceName(hqServiceName).append(divertGroup.getName()));
         }
-        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_BINDINGS_DIR));
-        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_JOURNAL_DIR));
-        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_LARGE_MESSAGE_DIR));
-        context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(HornetQServerAdd.DEFAULT_PAGING_DIR));
+        for (ResourceEntry path : resource.getChildren(PATH)) {
+            context.removeService(hqServiceName.append(HornetQServerAdd.PATH_BASE).append(path.getName()));
+        }
     }
 }

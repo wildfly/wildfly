@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import java.util.Locale;
 
@@ -33,6 +34,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
@@ -92,9 +94,8 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
             @Override
             public ModelNode getModelDescription(Locale locale) {
                 ModelNode result = super.getModelDescription(locale);
-                String path = CommonAttributes.PATH.getName();
-                result.get(CHILDREN, path, MIN_OCCURS).set(4);
-                result.get(CHILDREN, path, MAX_OCCURS).set(4);
+                result.get(CHILDREN, PATH, MIN_OCCURS).set(4);
+                result.get(CHILDREN, PATH, MAX_OCCURS).set(4);
                 return result;
             }
         };

@@ -22,7 +22,6 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_DESTINATIONS;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
-import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
@@ -32,6 +31,7 @@ import static org.jboss.as.messaging.CommonAttributes.VALUE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
 import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 import static org.jboss.as.messaging.Namespace.CURRENT;
 
@@ -417,11 +417,10 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
     private static void writeDirectory(final XMLExtendedStreamWriter writer, final Element element, final ModelNode node) throws XMLStreamException {
         final String localName = element.getLocalName();
         if(node.hasDefined(localName)) {
-            final String path = node.get(localName).has(PATH.getName()) ? node.get(localName, PATH.getName()).asString() : null;
-            final String relativeTo = node.get(localName).hasDefined(RELATIVE_TO.getName()) ? node.get(localName, RELATIVE_TO.getName()).asString() : null;
-            if(path != null || relativeTo != null) {
+            final ModelNode localNode = node.get(localName);
+            if (RELATIVE_TO.isMarshallable(localNode) ||  PATHS.get(localName).isMarshallable(localNode)) {
                 writer.writeEmptyElement(localName);
-                if(path != null) writer.writeAttribute(PATH.getName(), path);
+                PATHS.get(localName).marshallAsAttribute(node.get(localName), writer);
                 RELATIVE_TO.marshallAsAttribute(node.get(localName), writer);
             }
         }
