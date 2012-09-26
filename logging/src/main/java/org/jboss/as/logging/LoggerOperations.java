@@ -24,8 +24,8 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME;
 import static org.jboss.as.logging.CommonAttributes.ROOT_LOGGER_NAME;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;

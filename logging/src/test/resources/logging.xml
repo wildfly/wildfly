@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:logging:1.1">
+<subsystem xmlns="urn:jboss:domain:logging:1.2">
     <async-handler name="async">
         <queue-length value="10"/>
         <overflow-action value="block"/>
@@ -134,4 +134,33 @@
             <handler name="FILE"/>
         </handlers>
     </root-logger>
+
+    <logging-profiles>
+        <logging-profile name="test-profile">
+
+            <console-handler name="CONSOLE">
+                <level name="ALL"/>
+                <filter>
+                    <level-range min-level="TRACE" max-level="WARN"/>
+                </filter>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+            </console-handler>
+
+            <logger category="org.jboss.as.logging">
+                <level name="TRACE"/>
+                <filter>
+                    <level-range min-level="TRACE" max-level="ERROR" min-inclusive="true"/>
+                </filter>
+            </logger>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                </handlers>
+            </root-logger>
+        </logging-profile>
+    </logging-profiles>
 </subsystem>

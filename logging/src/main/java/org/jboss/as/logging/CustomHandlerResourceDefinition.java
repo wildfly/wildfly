@@ -25,9 +25,6 @@ package org.jboss.as.logging;
 import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 

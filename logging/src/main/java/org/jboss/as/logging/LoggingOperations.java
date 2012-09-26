@@ -28,7 +28,6 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
-import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationContext.RollbackHandler;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,6 +36,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.config.LogContextConfiguration;
 
 /**
@@ -75,49 +75,75 @@ final class LoggingOperations {
         @Override
         public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             // Get the address and the name of the logger or handler
+            final PathAddress address = getAddress(operation);
             final String name = getAddressName(operation);
-            final ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence();
+            final ConfigurationPersistence configurationPersistence;
+            final boolean isLoggingProfile = LoggingProfileOperations.isLoggingProfileAddress(address);
+            if (isLoggingProfile) {
+                final LogContext logContext = LoggingProfileContextSelector.getInstance().getOrCreate(LoggingProfileOperations.getLoggingProfileName(address));
+                configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence(logContext);
+            } else {
+                configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence();
+            }
             final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
 
             execute(context, operation, name, logContextConfiguration);
             if (context.getProcessType().isServer()) {
-                // Add a new OSH for writing the configuration
-                context.addStep(new OperationStepHandler() {
-                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                        context.attachIfAbsent(ATTACHMENT_KEY, Boolean.TRUE);
-                        context.addStep(new OperationStepHandler() {
-                            @Override
-                            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                                final Boolean addCommit = context.getAttachment(ATTACHMENT_KEY);
+                // Don't add a write step for profiles
+                if (isLoggingProfile) {
+                    // Add a new OSH for writing the configuration
+                    context.addStep(new OperationStepHandler() {
+                        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                            try {
                                 logContextConfiguration.commit();
-                                if (addCommit != null && addCommit) {
-                                    final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
-                                    logContextConfiguration.commit();
-                                    configurationPersistence.writeConfiguration(context);
-                                    context.detach(ATTACHMENT_KEY);
-
-                                    context.completeStep(new RollbackHandler() {
-                                        @Override
-                                        public void handleRollback(OperationContext context, ModelNode operation) {
-                                            // The real rollbacks should happen in the subclasses
-                                            logContextConfiguration.forget();
-                                            try {
-                                                configurationPersistence.writeConfiguration(context);
-                                            } catch (OperationFailedException e) {
-                                                throw LoggingMessages.MESSAGES.rollbackFailure(e);
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                                }
+                            } finally {
+                                logContextConfiguration.forget();
                             }
-                        }, Stage.RUNTIME);
-                        context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                    }
-                }, Stage.RUNTIME);
+                            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                        }
+                    }, Stage.RUNTIME);
+                } else {
+                    // Add a new OSH for writing the configuration
+                    context.addStep(new OperationStepHandler() {
+                        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                            context.attachIfAbsent(ATTACHMENT_KEY, Boolean.TRUE);
+                            context.addStep(new OperationStepHandler() {
+                                @Override
+                                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                                    final Boolean addCommit = context.getAttachment(ATTACHMENT_KEY);
+                                    try {
+                                        logContextConfiguration.commit();
+                                    } finally {
+                                        logContextConfiguration.forget();
+                                    }
+                                    if (addCommit != null && addCommit) {
+                                        configurationPersistence.writeConfiguration(context);
+                                        context.detach(ATTACHMENT_KEY);
+
+                                        context.completeStep(new RollbackHandler() {
+                                            @Override
+                                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                                final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
+                                                // The real rollbacks should happen in the subclasses
+                                                logContextConfiguration.forget();
+                                                try {
+                                                    configurationPersistence.writeConfiguration(context);
+                                                } catch (OperationFailedException e) {
+                                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                                    }
+                                }
+                            }, Stage.RUNTIME);
+                            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+                        }
+                    }, Stage.RUNTIME);
+                }
             }
-            context.stepCompleted();
+            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
 
         public abstract void execute(OperationContext context, ModelNode operation, String name, LogContextConfiguration logContextConfiguration) throws OperationFailedException;
@@ -365,13 +391,26 @@ final class LoggingOperations {
         @Override
         protected final boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue, final ModelNode currentValue, final HandbackHolder<ConfigurationPersistence> handbackHolder) throws OperationFailedException {
             final String name = getAddressName(operation);
-            final ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence();
+            final PathAddress address = getAddress(operation);
+            final ConfigurationPersistence configurationPersistence;
+            final boolean isLoggingProfile = LoggingProfileOperations.isLoggingProfileAddress(address);
+            if (isLoggingProfile) {
+                final LogContext logContext = LoggingProfileContextSelector.getInstance().getOrCreate(LoggingProfileOperations.getLoggingProfileName(address));
+                configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence(logContext);
+            } else {
+                configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence();
+            }
             final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
             handbackHolder.setHandback(configurationPersistence);
             final boolean restartRequired = applyUpdate(context, attributeName, name, resolvedValue, logContextConfiguration);
-            logContextConfiguration.commit();
+            try {
+                logContextConfiguration.commit();
+            } finally {
+                logContextConfiguration.forget();
+            }
             // Write the configuration
-            configurationPersistence.writeConfiguration(context);
+            if (!isLoggingProfile)
+                configurationPersistence.writeConfiguration(context);
             return restartRequired;
         }
 
@@ -398,7 +437,8 @@ final class LoggingOperations {
             final String name = getAddressName(operation);
             applyUpdate(context, attributeName, name, valueToRestore, logContextConfiguration);
             // Write the configuration
-            configurationPersistence.writeConfiguration(context);
+            if (!LoggingProfileOperations.isLoggingProfileAddress(getAddress(operation)))
+                configurationPersistence.writeConfiguration(context);
         }
 
         /**

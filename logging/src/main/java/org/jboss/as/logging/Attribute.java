@@ -22,10 +22,10 @@
 
 package org.jboss.as.logging;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jboss.as.controller.AttributeDefinition;
 
 /**
  *

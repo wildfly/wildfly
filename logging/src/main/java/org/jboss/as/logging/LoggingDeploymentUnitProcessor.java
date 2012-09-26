@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.Manifest;
 
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
@@ -52,13 +53,14 @@ import org.jboss.vfs.VirtualFileFilter;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
-    static final LoggingConfigurationProcessor INSTANCE = new LoggingConfigurationProcessor();
+public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
+    static final LoggingDeploymentUnitProcessor INSTANCE = new LoggingDeploymentUnitProcessor();
 
     public static final String PER_DEPLOYMENT_LOGGING = "org.jboss.as.logging.per-deployment";
 
     public static final AttachmentKey<LogContext> LOG_CONTEXT_KEY = AttachmentKey.create(LogContext.class);
 
+    private static final String LOGGING_PROFILE = "Logging-Profile";
     private static final String LOG4J_PROPERTIES = "log4j.properties";
     private static final String LOG4J_XML = "log4j.xml";
     private static final String JBOSS_LOG4J_XML = "jboss-log4j.xml";
@@ -69,8 +71,58 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT) &&
-                Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
+        if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+            if (!processLoggingProfiles(deploymentUnit)) {
+                // Only look for a logging configuration file if no logging profile was found
+                processDeploymentLogging(deploymentUnit);
+            }
+        }
+    }
+
+    @Override
+    public void undeploy(final DeploymentUnit context) {
+        // OSGi bundles deployments may not have a module attached
+        if (context.hasAttachment(Attachments.MODULE)) {
+            // Remove any log context selector references
+            final Module module = context.getAttachment(Attachments.MODULE);
+            final ClassLoader current = SecurityActions.getThreadContextClassLoader();
+            try {
+                // Unregister the log context
+                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
+                final LogContext logContext = LogContext.getLogContext();
+                LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
+                LoggingLogger.ROOT_LOGGER.tracef("Removing LogContext '%s' from '%s'", logContext, module);
+                context.removeAttachment(LOG_CONTEXT_KEY);
+            } finally {
+                SecurityActions.setThreadContextClassLoader(current);
+            }
+        }
+    }
+
+    private boolean processLoggingProfiles(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+        boolean result = false;
+        final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final String loggingProfile = findLoggingProfile(root);
+        if (loggingProfile != null) {
+            result = true;
+            // Get the profile logging context
+            final LoggingProfileContextSelector loggingProfileContext = LoggingProfileContextSelector.getInstance();
+            if (loggingProfileContext.exists(loggingProfile)) {
+                // Get the module
+                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+                final LogContext logContext = loggingProfileContext.get(loggingProfile);
+                LoggingExtension.CONTEXT_SELECTOR.registerLogContext(module.getClassLoader(), logContext);
+                LoggingLogger.ROOT_LOGGER.tracef("Registering log context '%s' on '%s' for profile '%s'", logContext, root, loggingProfile);
+            } else {
+                LoggingLogger.ROOT_LOGGER.loggingProfileNotFound(loggingProfile, root);
+            }
+        }
+        return result;
+    }
+
+    private void processDeploymentLogging(final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+
+        if (Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
             // If the log context is already attached, just skip processing
             if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) return;
 
@@ -130,21 +182,23 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit context) {
-        // OSGi bundles deployments may not have a module attached
-        if (context.hasAttachment(Attachments.MODULE)) {
-            final Module module = context.getAttachment(Attachments.MODULE);
-            final ClassLoader current = SecurityActions.getThreadContextClassLoader();
-            try {
-                // Unregister the log context
-                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
-                LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), LogContext.getLogContext());
-                context.removeAttachment(LOG_CONTEXT_KEY);
-            } finally {
-                SecurityActions.setThreadContextClassLoader(current);
+    /**
+     * Find the logging profile attached to any resource.
+     *
+     * @param resourceRoot the root resource
+     *
+     * @return the logging profile name or {@code null} if one was not found
+     */
+    private String findLoggingProfile(final ResourceRoot resourceRoot) {
+        final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
+        if (manifest != null) {
+            final String loggingProfile = manifest.getMainAttributes().getValue(LOGGING_PROFILE);
+            if (loggingProfile != null) {
+                LoggingLogger.ROOT_LOGGER.debugf("Logging profile '%s' found in '%s'.", loggingProfile, resourceRoot);
+                return loggingProfile;
             }
         }
+        return null;
     }
 
     /**
@@ -153,7 +207,9 @@ public class LoggingConfigurationProcessor implements DeploymentUnitProcessor {
      * Preference is for {@literal logging.properties} or {@literal jboss-logging.properties}.
      *
      * @param resourceRoot the resource to check.
+     *
      * @return the configuration file if found, otherwise {@code null}.
+     *
      * @throws DeploymentUnitProcessingException
      *          if an error occurs.
      */

@@ -112,6 +112,10 @@ public interface CommonAttributes {
 
     String LOGGER = "logger";
 
+    String LOGGING_PROFILE = "logging-profile";
+
+    String LOGGING_PROFILES = "logging-profiles";
+
     SimpleAttributeDefinition MATCH = SimpleAttributeDefinitionBuilder.create("match", ModelType.STRING, true).build();
 
     PropertyAttributeDefinition MAX_BACKUP_INDEX = PropertyAttributeDefinition.Builder.of("max-backup-index", ModelType.INT, true).

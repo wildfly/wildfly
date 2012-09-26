@@ -26,8 +26,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -58,9 +60,42 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
             .setReplyValueType(ModelType.OBJECT)
             .setPrivateEntry()
             .build();
+    private final Comparator<PathElement> comparator;
 
     protected GenericSubsystemDescribeHandler() {
-        //
+        this(null);
+    }
+
+    /**
+     * Creates a new describe handler.
+     * <p/>
+     * If the comparator is not {@code null} the {@link ImmutableManagementResourceRegistration#getChildAddresses(org.jboss.as.controller.PathAddress)}
+     * child addresses} from the registration are placed in a sorted collection. This allows the result to order the
+     * add operations for the subsystem resources.
+     * <p/>
+     * If the comparator is {@code null} the order for the {@link ImmutableManagementResourceRegistration#getChildAddresses(org.jboss.as.controller.PathAddress)}
+     * child addresses} is not guaranteed.
+     *
+     * @param comparator the comparator used to sort the child addresses
+     */
+    protected GenericSubsystemDescribeHandler(final Comparator<PathElement> comparator) {
+        this.comparator = comparator;
+    }
+
+    /**
+     * Creates a new describe handler.
+     * <p/>
+     * If the comparator is <b>not</b> {@code null} the {@link ImmutableManagementResourceRegistration#getChildAddresses(org.jboss.as.controller.PathAddress)}
+     * child addresses} from the registration are placed in a sorted collection. This allows the result to order the
+     * add operations for the subsystem resources.
+     * <p/>
+     * If the comparator is {@code null} the order for the {@link ImmutableManagementResourceRegistration#getChildAddresses(org.jboss.as.controller.PathAddress)}
+     * child addresses} is not guaranteed.
+     *
+     * @param comparator the comparator used to sort the child addresses
+     */
+    public static GenericSubsystemDescribeHandler create(final Comparator<PathElement> comparator) {
+        return new GenericSubsystemDescribeHandler(comparator);
     }
 
     @Override
@@ -82,7 +117,13 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
         if(resource == null || registration.isRemote() || registration.isRuntimeOnly() || resource.isProxy() || resource.isRuntime() || registration.isAlias()) {
             return;
         }
-        final Set<PathElement> children = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+        final Set<PathElement> children;
+        if (comparator == null) {
+            children = registration.getChildAddresses(PathAddress.EMPTY_ADDRESS);
+        } else {
+            children = new TreeSet<PathElement>(comparator);
+            children.addAll(registration.getChildAddresses(PathAddress.EMPTY_ADDRESS));
+        }
         result.add(createAddOperation(address, resource.getModel(), children));
         for(final PathElement element : children) {
             if(element.isMultiTarget()) {
