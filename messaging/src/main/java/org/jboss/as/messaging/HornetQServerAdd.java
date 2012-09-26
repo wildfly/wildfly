@@ -105,6 +105,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
@@ -162,6 +163,21 @@ class HornetQServerAdd implements OperationStepHandler {
         }
 
         if (context.isNormalServer()) {
+            // add an operation to create all the messaging paths resources that have not been already been created
+            // prior to adding the HornetQ server
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    final ModelNode model = Resource.Tools.readModel(resource);
+                    for (String path : MessagingPathHandlers.PATHS) {
+                        if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
+                            PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
+                            context.createResource(pathAddress);
+                        }
+                    }
+                    context.completeStep();
+                }
+            }, OperationContext.Stage.MODEL);
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
@@ -198,7 +214,6 @@ class HornetQServerAdd implements OperationStepHandler {
                 final Configuration configuration = transformConfig(context, serverName, model);
 
                 // Create path services
-
                 String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY)));
                 String bindingsRelativeToPath = getRelativeToPath(model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY));
                 String journalPath = getPath(DEFAULT_JOURNAL_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY)));
