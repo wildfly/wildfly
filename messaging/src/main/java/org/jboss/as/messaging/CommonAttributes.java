@@ -383,9 +383,6 @@ public interface CommonAttributes {
             .setAllowNull(true)
             .build();
 
-    SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinition("relative-to", ModelType.STRING, true);
-
-
     PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder(CommonAttributes.REMOTING_INTERCEPTORS_STRING, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)

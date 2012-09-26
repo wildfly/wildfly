@@ -23,7 +23,7 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.HornetQServerAdd.DEFAULT_LARGE_MESSAGE_DIR;
 import static org.jboss.as.messaging.HornetQServerAdd.DEFAULT_PAGING_DIR;
-import static org.jboss.as.messaging.HornetQServerAdd.DEFAULT_RELATIVE_TO;
+import static org.jboss.as.messaging.MessagingPathHandlers.DEFAULT_RELATIVE_TO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
