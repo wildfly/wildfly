@@ -89,7 +89,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             IronJacamar ijmd = mdr.getValue().getIronJacamar(deployment);
             File root = mdr.getValue().getRoot(deployment);
 
-            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
+            cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(ijmd, cmd);
 
             final ServiceContainer container = context.getController().getServiceContainer();
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
