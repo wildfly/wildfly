@@ -54,7 +54,6 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.JMSServerControlHandler;
@@ -573,12 +572,12 @@ public class MessagingDescriptions {
         return node;
     }
 
-    public static ModelNode getPathResource(Locale locale, String pathType) {
+    public static ModelNode getPathResource(Locale locale, final String path) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode root = new ModelNode();
-        root.get(DESCRIPTION).set(bundle.getString(pathType + ".path"));
-        for (AttributeDefinition attr : MessagingPathHandlers.ATTRIBUTES) {
+        root.get(DESCRIPTION).set(bundle.getString(path + ".path"));
+        for (AttributeDefinition attr : MessagingPathHandlers.getAttributes(path)) {
             attr.addResourceAttributeDescription(bundle, "path", root);
         }
 
@@ -589,14 +588,14 @@ public class MessagingDescriptions {
         return root;
     }
 
-    public static ModelNode getPathAdd(Locale locale) {
+    public static ModelNode getPathAdd(Locale locale, final String path) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         final ModelNode node = new ModelNode();
         node.get(OPERATION_NAME).set(ADD);
         node.get(DESCRIPTION).set(bundle.getString("path.add"));
 
-        for (AttributeDefinition attr : MessagingPathHandlers.ATTRIBUTES) {
+        for (AttributeDefinition attr : MessagingPathHandlers.getAttributes(path)) {
             attr.addOperationParameterDescription(bundle, "path", node);
         }
 

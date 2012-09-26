@@ -24,12 +24,16 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
 import static org.jboss.dmr.ModelType.STRING;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -43,6 +47,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -54,18 +59,42 @@ class MessagingPathHandlers {
 
     static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
 
+    // base attribute for the 4 messaging path subresources.
+    // each one define a different default values. Their respective attributes are accessed through the PATHS map.
+    private static final SimpleAttributeDefinition PATH_BASE = create("path", ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition RELATIVE_TO = create("relative-to", STRING)
             .setDefaultValue(new ModelNode(DEFAULT_RELATIVE_TO))
             .setAllowNull(true)
             .setRestartAllServices()
             .build();
 
-    public static final String[] PATHS = { BINDINGS_DIRECTORY,
-        JOURNAL_DIRECTORY,
-        LARGE_MESSAGES_DIRECTORY,
-        PAGING_DIRECTORY };
+    public static final Map<String, SimpleAttributeDefinition> PATHS = new HashMap<String, SimpleAttributeDefinition>();
 
-    static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { CommonAttributes.PATH, RELATIVE_TO };
+    private static final String DEFAULT_PATH = "messaging";
+    // all default paths dir are prepended with messaging
+    // I am not sure this was not a typo and that they should have been put inside a messaging/ dir instead (as it
+    // was stated in LocalDescriptions.properties)
+    // For compatibility sake, we keep the messaging prefix.
+    static final String DEFAULT_BINDINGS_DIR = DEFAULT_PATH + "bindings";
+    static final String DEFAULT_JOURNAL_DIR = DEFAULT_PATH + "journal";
+    static final String DEFAULT_LARGE_MESSAGE_DIR = DEFAULT_PATH + "largemessages";
+    static final String DEFAULT_PAGING_DIR = DEFAULT_PATH + "paging";
+
+    static {
+        PATHS.put(BINDINGS_DIRECTORY, create(PATH_BASE).setDefaultValue(new ModelNode(DEFAULT_BINDINGS_DIR)).build());
+        PATHS.put(JOURNAL_DIRECTORY, create(PATH_BASE).setDefaultValue(new ModelNode(DEFAULT_JOURNAL_DIR)).build());
+        PATHS.put(LARGE_MESSAGES_DIRECTORY, create(PATH_BASE).setDefaultValue(new ModelNode(DEFAULT_LARGE_MESSAGE_DIR)).build());
+        PATHS.put(PAGING_DIRECTORY, create(PATH_BASE).setDefaultValue(new ModelNode(DEFAULT_PAGING_DIR)).build());
+    }
+
+    static final AttributeDefinition[] getAttributes(final String path) {
+        return new AttributeDefinition[] { PATHS.get(path), RELATIVE_TO };
+    }
 
     static final OperationStepHandler PATH_ADD = new OperationStepHandler() {
 
@@ -73,15 +102,15 @@ class MessagingPathHandlers {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = resource.getModel();
-            for(final AttributeDefinition def : ATTRIBUTES) {
-                def.validateAndSet(operation, model);
+            final String path = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
+
+            for (AttributeDefinition attribute : getAttributes(path)) {
+                attribute.validateAndSet(operation, model);
             }
             reloadRequiredStep(context);
             context.completeStep();
         }
     };
-
-    static final OperationStepHandler PATH_ATTR = new ReloadRequiredWriteAttributeHandler(RELATIVE_TO, CommonAttributes.PATH);
 
     static final OperationStepHandler PATH_REMOVE = new OperationStepHandler() {
 
@@ -93,11 +122,14 @@ class MessagingPathHandlers {
         }
     };
 
-    static void register(final ManagementResourceRegistration registration) {
-        registration.registerOperationHandler(ADD, PATH_ADD, MessagingSubsystemProviders.PATH_ADD);
+    static void register(final ManagementResourceRegistration registration, final String path) {
+        registration.registerOperationHandler(ADD, PATH_ADD, new MessagingSubsystemProviders.PathAddProvider(path));
         registration.registerOperationHandler(REMOVE, PATH_REMOVE, MessagingSubsystemProviders.PATH_REMOVE);
-        for(final AttributeDefinition def : ATTRIBUTES) {
-            registration.registerReadWriteAttribute(def, null, PATH_ATTR);
+
+        AttributeDefinition[] attributes = getAttributes(path);
+        OperationStepHandler attributeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
+        for (AttributeDefinition attribute : attributes) {
+            registration.registerReadWriteAttribute(attribute, null, attributeHandler);
         }
     }
 

@@ -351,12 +351,6 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    SimpleAttributeDefinition PATH = create("path", ModelType.STRING)
-            .setAllowExpression(true)
-            .setAllowNull(true)
-            .setRestartAllServices()
-            .build();
-
     AttributeDefinition PAUSED = create("paused", BOOLEAN)
             .setStorageRuntime()
             .build();

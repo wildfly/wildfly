@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 
 /**
@@ -20,7 +21,7 @@ public enum Attribute {
    KEY(CommonAttributes.KEY),
    MATCH(CommonAttributes.MATCH),
    NAME(CommonAttributes.NAME),
-   PATH(CommonAttributes.PATH),
+   PATH(ModelDescriptionConstants.PATH),
    RELATIVE_TO(MessagingPathHandlers.RELATIVE_TO),
    ROLES_ATTR_NAME(CommonAttributes.ROLES_ATTR_NAME),
    SERVER_ID(InVMTransportDefinition.SERVER_ID),

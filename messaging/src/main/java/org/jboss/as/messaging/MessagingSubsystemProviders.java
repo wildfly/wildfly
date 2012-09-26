@@ -34,22 +34,28 @@ import org.jboss.dmr.ModelNode;
 class MessagingSubsystemProviders {
 
     public static class PathProvider implements DescriptionProvider  {
-        final String pathType;
+        final String path;
 
-        public PathProvider(String pathType) {
-            this.pathType = pathType;
+        public PathProvider(String path) {
+            this.path = path;
         }
 
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getPathResource(locale, pathType);
+            return MessagingDescriptions.getPathResource(locale, path);
         }
     };
 
-    public static final DescriptionProvider PATH_ADD = new DescriptionProvider() {
+    public static class PathAddProvider implements DescriptionProvider  {
+        final String path;
+
+        public PathAddProvider(final String path) {
+            this.path = path;
+        }
+
         @Override
         public ModelNode getModelDescription(Locale locale) {
-            return MessagingDescriptions.getPathAdd(locale);
+            return MessagingDescriptions.getPathAdd(locale, path);
         }
     };
 

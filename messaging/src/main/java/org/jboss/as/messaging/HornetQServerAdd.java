@@ -23,6 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.messaging.CommonAttributes.ADDRESS_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.ALLOW_FAILBACK;
 import static org.jboss.as.messaging.CommonAttributes.ASYNC_CONNECTION_EXECUTION_ENABLED;
@@ -64,7 +65,6 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CONCURRENT_IO;
 import static org.jboss.as.messaging.CommonAttributes.PAGING_DIRECTORY;
-import static org.jboss.as.messaging.CommonAttributes.PATH;
 import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
@@ -81,6 +81,7 @@ import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
+import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
 import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 
 import java.util.ArrayList;
@@ -135,13 +136,7 @@ import org.jboss.msc.service.ServiceTarget;
  */
 class HornetQServerAdd implements OperationStepHandler {
 
-    private static final String DEFAULT_PATH = "messaging";
     static final String PATH_BASE = "paths";
-
-    static final String DEFAULT_BINDINGS_DIR = "bindings";
-    static final String DEFAULT_JOURNAL_DIR = "journal";
-    static final String DEFAULT_LARGE_MESSAGE_DIR = "largemessages";
-    static final String DEFAULT_PAGING_DIR = "paging";
 
     public static final HornetQServerAdd INSTANCE = new HornetQServerAdd();
 
@@ -167,7 +162,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode model = Resource.Tools.readModel(resource);
-                    for (String path : MessagingPathHandlers.PATHS) {
+                    for (String path : MessagingPathHandlers.PATHS.keySet()) {
                         if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
                             PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
                             context.createResource(pathAddress);
@@ -212,14 +207,14 @@ class HornetQServerAdd implements OperationStepHandler {
                 final Configuration configuration = transformConfig(context, serverName, model);
 
                 // Create path services
-                String bindingsPath = getPath(DEFAULT_BINDINGS_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY)));
-                String bindingsRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, BINDINGS_DIRECTORY)).asString();
-                String journalPath = getPath(DEFAULT_JOURNAL_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY)));
-                String journalRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, JOURNAL_DIRECTORY)).asString();
-                String largeMessagePath = getPath(DEFAULT_LARGE_MESSAGE_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY)));
-                String largeMessageRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, LARGE_MESSAGES_DIRECTORY)).asString();
-                String pagingPath = getPath(DEFAULT_PAGING_DIR, PATH.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY)));
-                String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(ModelDescriptionConstants.PATH, PAGING_DIRECTORY)).asString();
+                String bindingsPath = PATHS.get(BINDINGS_DIRECTORY).resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
+                String bindingsRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, BINDINGS_DIRECTORY)).asString();
+                String journalPath = PATHS.get(JOURNAL_DIRECTORY).resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
+                String journalRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, JOURNAL_DIRECTORY)).asString();
+                String largeMessagePath = PATHS.get(LARGE_MESSAGES_DIRECTORY).resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
+                String largeMessageRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, LARGE_MESSAGES_DIRECTORY)).asString();
+                String pagingPath = PATHS.get(PAGING_DIRECTORY).resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
+                String pagingRelativeToPath = RELATIVE_TO.resolveModelAttribute(context, model.get(PATH, PAGING_DIRECTORY)).asString();
 
                 // Create the HornetQ Service
                 final HornetQService hqService = new HornetQService(
@@ -465,17 +460,5 @@ class HornetQServerAdd implements OperationStepHandler {
                 }
             }
         }
-    }
-
-   /**
-    * Get the path for a given target.
-    *
-    *
-    * @param name          the path service name
-    * @param path          the detyped path element
-    * @return the path
-    */
-    static String getPath(final String name, final ModelNode path) {
-        return path.isDefined() ? path.asString() : DEFAULT_PATH + name;
     }
 }
