@@ -31,14 +31,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -69,7 +68,7 @@ public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefiniti
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
 
     ExtensionSubsystemResourceDefinition() {
-        super(PathElement.pathElement(SUBSYSTEM), CommonDescriptions.getResourceDescriptionResolver(EXTENSION, SUBSYSTEM));
+        super(PathElement.pathElement(SUBSYSTEM), ControllerResolver.getResolver(EXTENSION, SUBSYSTEM));
     }
 
     @Override

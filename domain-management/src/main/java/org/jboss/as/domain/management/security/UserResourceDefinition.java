@@ -28,7 +28,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -49,7 +49,7 @@ public class UserResourceDefinition extends SimpleResourceDefinition {
 
     public UserResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.USER),
-                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.authentication.xml.user"),
+                ControllerResolver.getResolver("core.management.security-realm.authentication.xml.user"),
                 UserAddHandler.INSTANCE,
                 UserRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE,

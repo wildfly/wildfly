@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
@@ -56,7 +56,7 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
             ServerDescriptions.getResourceDescriptionResolver(INTERFACE))
             .setParameters(ATTRIBUTES)
             .setReplyType(ModelType.STRING)
-            .setAttributeResolver(CommonDescriptions.getResourceDescriptionResolver(INTERFACE))
+            .setAttributeResolver(ControllerResolver.getResolver(INTERFACE))
             .withFlags(EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY))
             .build();
 

@@ -43,7 +43,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
@@ -105,7 +105,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
 
     public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel, ResourceDefinition...children) {
         super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
+                ControllerResolver.getResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.forDomainModel = forDomainModel;
         this.children = children;

@@ -24,7 +24,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
@@ -40,10 +40,6 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class InterfaceDefinition extends SimpleResourceDefinition {
-    /*  public static final InterfaceDefinition INSTANCE_RUNTIME = new InterfaceDefinition(true);
-        public static final InterfaceDefinition INSTANCE_CONFIG = new InterfaceDefinition(false);
-    */
-
     public static final String[] ALTERNATIVES_ANY = new String[]{ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS};
     public static final String[] OTHERS = new String[]{localName(Element.INET_ADDRESS), localName(Element.LINK_LOCAL_ADDRESS),
             localName(Element.LOOPBACK), localName(Element.LOOPBACK_ADDRESS), localName(Element.MULTICAST), localName(Element.NIC),
@@ -164,7 +160,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
 
     public InterfaceDefinition(InterfaceAddHandler addHandler, InterfaceRemoveHandler removeHandler, boolean updateRuntime) {
         super(PathElement.pathElement(INTERFACE),
-                CommonDescriptions.getResourceDescriptionResolver(INTERFACE),
+                ControllerResolver.getResolver(INTERFACE),
                 addHandler,
                 removeHandler);
         this.updateRuntime = updateRuntime;

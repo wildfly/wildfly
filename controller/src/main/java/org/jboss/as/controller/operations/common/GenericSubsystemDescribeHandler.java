@@ -38,7 +38,7 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -53,7 +53,7 @@ import org.jboss.dmr.ModelType;
 public class GenericSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final GenericSubsystemDescribeHandler INSTANCE = new GenericSubsystemDescribeHandler();
-    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(DESCRIBE,CommonDescriptions.getResourceDescriptionResolver(SUBSYSTEM))
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(DESCRIBE, ControllerResolver.getResolver(SUBSYSTEM))
             .setReplyType(ModelType.LIST)
             .setReplyValueType(ModelType.OBJECT)
             .setPrivateEntry()

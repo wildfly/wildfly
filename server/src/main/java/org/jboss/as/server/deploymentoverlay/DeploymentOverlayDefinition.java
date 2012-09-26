@@ -3,7 +3,7 @@ package org.jboss.as.server.deploymentoverlay;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
@@ -14,7 +14,7 @@ import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
  */
 public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
 
-    private static final AttributeDefinition[] ATTRIBUTES = { };
+    private static final AttributeDefinition[] ATTRIBUTES = {};
 
     public static AttributeDefinition[] attributes() {
         return ATTRIBUTES.clone();
@@ -27,7 +27,7 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
 
     public DeploymentOverlayDefinition(DeploymentOverlayPriority priority, ContentRepository contentRepo, DeploymentFileRepository fileRepository) {
         super(DeploymentOverlayModel.DEPLOYMENT_OVERRIDE_PATH,
-                CommonDescriptions.getResourceDescriptionResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, false),
+                ControllerResolver.getResolver(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),
                 DeploymentOverlayAdd.INSTANCE,
                 DeploymentOverlayRemove.INSTANCE);
         this.priority = priority;
@@ -47,7 +47,7 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
         if (contentRepo != null) {
             resourceRegistration.registerSubModel(new ContentDefinition(contentRepo, fileRepository));
         }
-        if (priority != null){
+        if (priority != null) {
             resourceRegistration.registerSubModel(new DeploymentOverlayDeploymentDefinition(priority));
         }
     }

@@ -33,7 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -88,7 +88,7 @@ public class ResolveExpressionHandler implements OperationStepHandler, Descripti
     public ModelNode getModelDescription(Locale locale) {
         ModelType valueType = null;
         DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME,
-                CommonDescriptions.getResourceDescriptionResolver("core"), ModelType.STRING, valueType, EXPRESSION);
+                ControllerResolver.getResolver("core"), ModelType.STRING, valueType, EXPRESSION);
         ModelNode result = delegate.getModelDescription(locale);
         result.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.NILLABLE).set(true);
         return result;

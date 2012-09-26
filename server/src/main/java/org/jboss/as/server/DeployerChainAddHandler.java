@@ -25,7 +25,6 @@ package org.jboss.as.server;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
@@ -35,9 +34,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.server.deployment.DeployerChainsService;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
@@ -52,7 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
  */
 public class DeployerChainAddHandler implements OperationStepHandler {
     static final String NAME = "add-deployer-chains";
-    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, CommonDescriptions.getResourceDescriptionResolver())
+    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver())
             .setPrivateEntry()
             .build();
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();

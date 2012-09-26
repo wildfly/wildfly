@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -45,7 +44,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -63,58 +61,6 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class CommonDescriptions {
 
-    private static final String RESOURCE_NAME = CommonDescriptions.class.getPackage().getName() + ".LocalDescriptions";
-
-   /* @Deprecated
-        public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-            return getResourceDescriptionResolver(keyPrefix, true);
-        }*/
-
-    @Deprecated
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, boolean useUnprefixedChildTypes) {
-        return getResourceDescriptionResolver(useUnprefixedChildTypes, keyPrefix);
-    }
-
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-        return getResourceDescriptionResolver(false, keyPrefix);
-    }
-
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(boolean useUnprefixedChildTypes, final String... keyPrefix) {
-        StringBuilder prefix = new StringBuilder();
-        for (String kp : keyPrefix) {
-            if (prefix.length() > 0) {
-                prefix.append('.').append(kp);
-            } else {
-                prefix.append(kp);
-            }
-        }
-
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, CommonDescriptions.class.getClassLoader(), true, useUnprefixedChildTypes);
-    }
-
-    public static ModelNode getNamespacePrefixAttribute(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(TYPE).set(ModelType.OBJECT);
-        root.get(VALUE_TYPE).set(ModelType.STRING);
-        root.get(DESCRIPTION).set(bundle.getString("namespaces"));
-        root.get(REQUIRED).set(false);
-        root.get(HEAD_COMMENT_ALLOWED).set(false);
-        root.get(TAIL_COMMENT_ALLOWED).set(false);
-        return root;
-    }
-
-    public static ModelNode getSchemaLocationAttribute(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(TYPE).set(ModelType.OBJECT);
-        root.get(VALUE_TYPE).set(ModelType.STRING);
-        root.get(DESCRIPTION).set(bundle.getString("schema-locations"));
-        root.get(REQUIRED).set(false);
-        root.get(HEAD_COMMENT_ALLOWED).set(false);
-        root.get(TAIL_COMMENT_ALLOWED).set(false);
-        return root;
-    }
 
     public static ModelNode getAddNamespaceOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
@@ -296,20 +242,10 @@ public class CommonDescriptions {
         return result;
     }
 
-    public static ModelNode getSingleParamSimpleListReplyOperation(final ResourceBundle bundle, final String operationName,
-                                                         final String descriptionPrefix, final String paramName,
-                                                         final ModelType paramType, final boolean paramNillable,
-                                                         final ModelType listValueType, final boolean describeReply) {
-        ModelNode result = getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
-                paramType, paramNillable, ModelType.LIST, describeReply);
-        result.get(REPLY_PROPERTIES, VALUE_TYPE).set(listValueType);
-        return result;
-    }
-
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
         }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
+        return ResourceBundle.getBundle(ControllerResolver.RESOURCE_NAME, locale);
     }
 }

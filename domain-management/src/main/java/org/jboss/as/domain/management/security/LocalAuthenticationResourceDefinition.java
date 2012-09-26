@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -58,7 +58,7 @@ public class LocalAuthenticationResourceDefinition extends SimpleResourceDefinit
 
     public LocalAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.LOCAL),
-                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.authentication.local"),
+                ControllerResolver.getResolver("core.management.security-realm.authentication.local"),
                 new SecurityRealmChildAddHandler(true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

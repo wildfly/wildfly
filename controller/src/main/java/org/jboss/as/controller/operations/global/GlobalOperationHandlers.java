@@ -68,7 +68,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -157,27 +157,27 @@ public class GlobalOperationHandlers {
     ************** operations ***************
      */
 
-    public static final OperationDefinition READ_RESOURCE_DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_RESOURCE_DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_RUNTIME, INCLUDE_DEFAULTS, ATTRIBUTES_ONLY, INCLUDE_ALIASES)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .build();
-    public static final OperationDefinition READ_ATTRIBUTE_DEFINITION = new SimpleOperationDefinitionBuilder(READ_ATTRIBUTE_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_ATTRIBUTE_DEFINITION = new SimpleOperationDefinitionBuilder(READ_ATTRIBUTE_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(NAME, INCLUDE_DEFAULTS)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .build();
 
-    public static final OperationDefinition READ_RESOURCE_DESCRIPTION_DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_DESCRIPTION_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_RESOURCE_DESCRIPTION_DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, LOCALE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
             .build();
 
-    public static final OperationDefinition READ_CHILDREN_NAMES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_NAMES_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_CHILDREN_NAMES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_NAMES_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(CHILD_TYPE)
             .setReadOnly()
             .setRuntimeOnly()
@@ -185,7 +185,7 @@ public class GlobalOperationHandlers {
             .setReplyValueType(ModelType.STRING)
             .build();
 
-    public static final OperationDefinition READ_CHILDREN_TYPES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_TYPES_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_CHILDREN_TYPES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_TYPES_OPERATION, ControllerResolver.getResolver("global"))
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)
@@ -193,7 +193,7 @@ public class GlobalOperationHandlers {
             .build();
 
 
-    public static final OperationDefinition READ_CHILDREN_RESOURCES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_RESOURCES_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_CHILDREN_RESOURCES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_RESOURCES_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(CHILD_TYPE, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_RUNTIME, INCLUDE_DEFAULTS)
             .setReadOnly()
             .setRuntimeOnly()
@@ -202,7 +202,7 @@ public class GlobalOperationHandlers {
             .build();
 
 
-    public static final OperationDefinition READ_OPERATION_NAMES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_OPERATION_NAMES_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_OPERATION_NAMES_DEFINITION = new SimpleOperationDefinitionBuilder(READ_OPERATION_NAMES_OPERATION, ControllerResolver.getResolver("global"))
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)
@@ -210,19 +210,19 @@ public class GlobalOperationHandlers {
             .build();
 
 
-    public static final OperationDefinition READ_OPERATION_DESCRIPTION_DEFINITION = new SimpleOperationDefinitionBuilder(READ_OPERATION_DESCRIPTION_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition READ_OPERATION_DESCRIPTION_DEFINITION = new SimpleOperationDefinitionBuilder(READ_OPERATION_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(NAME, LOCALE)
             .setReplyType(ModelType.OBJECT)
             .setReadOnly()
             .setRuntimeOnly()
             .build();
 
-    public static final OperationDefinition UNDEFINE_ATTRIBUTE_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition UNDEFINE_ATTRIBUTE_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(NAME)
             .setRuntimeOnly()
             .build();
 
-    public static final OperationDefinition WRITE_ATTRIBUTE_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, CommonDescriptions.getResourceDescriptionResolver("global"))
+    public static final OperationDefinition WRITE_ATTRIBUTE_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(NAME, VALUE)
             .setRuntimeOnly()
             .build();

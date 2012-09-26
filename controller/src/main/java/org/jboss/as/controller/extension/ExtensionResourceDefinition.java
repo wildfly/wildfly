@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -48,7 +49,7 @@ public class ExtensionResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new StringLengthValidator(1)).build();
 
     public ExtensionResourceDefinition(final ExtensionRegistry extensionRegistry, final boolean parallelBoot, boolean slaveHC) {
-        super(PathElement.pathElement(EXTENSION), CommonDescriptions.getResourceDescriptionResolver(EXTENSION, false),
+        super(PathElement.pathElement(EXTENSION), ControllerResolver.getResolver(EXTENSION),
                 new ExtensionAddHandler(extensionRegistry, parallelBoot, slaveHC), new ExtensionRemoveHandler(extensionRegistry),
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
     }

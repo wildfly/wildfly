@@ -14,6 +14,6 @@ public class CoreManagementDefinition extends SimpleResourceDefinition {
 
     private CoreManagementDefinition() {
         super(PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
-                CommonDescriptions.getResourceDescriptionResolver("core", MANAGEMENT));
+                ControllerResolver.getResolver("core", MANAGEMENT));
     }
 }
