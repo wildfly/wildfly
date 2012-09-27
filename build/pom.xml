@@ -96,6 +96,11 @@
                         <version>${version.org.apache.ant}</version>
                     </dependency>
                     <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                        <version>${version.org.slf4j}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>rhino</groupId>
                         <artifactId>js</artifactId>
                         <version>${version.rhino.js}</version>
