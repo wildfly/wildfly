@@ -49,7 +49,7 @@ import org.jboss.modules.ModuleLoadException;
  */
 public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
-    private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld" };
+    private static final String[] JSF_TAGLIBS = { "html_basic.tld", "jsf_core.tld", "mojarra_ext.tld", "myfaces_core.tld", "myfaces_html.tld" };
 
     private final ArrayList<TldMetaData> jsfTlds = new ArrayList<TldMetaData>();
 

@@ -36,5 +36,9 @@
         <module name="javax.api"/>
         <module name="org.jboss.as.web"/>
         <module name="javax.servlet.api"/>
+        <module name="org.jboss.logging"/>
+
+        <!-- added this for MyFacesAnnotationProvider -->
+        <module name="javax.faces.api"/>
     </dependencies>
 </module>
