@@ -25,7 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.infinispan.Cache;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -33,7 +33,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
 
 /**
  * @author Guillaume Grossetie
@@ -50,18 +49,14 @@ public abstract class CacheOperations implements OperationStepHandler {
                 String cacheName = address.getLastElement().getValue();
                 String containerName = containerAddress.getLastElement().getValue();
                 final ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
-                final ServiceController<?> cacheService = context.getServiceRegistry(false).getService(cacheServiceName);
-                try {
-                    if (!ServiceController.State.UP.equals(cacheService.getState())) {
-                        cacheService.setMode(ServiceController.Mode.ACTIVE);
-                    }
-                    final Cache cache = ServiceContainerHelper.getValue(cacheService, Cache.class);
-                    ModelNode operationResult = invokeCommandOn(cache);
-                    if (operationResult != null) {
-                        context.getResult().set(operationResult);
-                    }
-                } catch (StartException e) {
-                    throw new OperationFailedException(e.getLocalizedMessage(), e);
+                final ServiceController<?> cacheService = context.getServiceRegistry(false).getRequiredService(cacheServiceName);
+                final Cache cache = Cache.class.cast(cacheService.getValue());
+                if (cache == null) {
+                    throw new OperationFailedException(new ModelNode().set(InfinispanMessages.MESSAGES.cacheNotAvailableForOperation(cacheName)));
+                }
+                ModelNode operationResult = invokeCommandOn(cache);
+                if (operationResult != null) {
+                    context.getResult().set(operationResult);
                 }
                 context.completeStep();
             }

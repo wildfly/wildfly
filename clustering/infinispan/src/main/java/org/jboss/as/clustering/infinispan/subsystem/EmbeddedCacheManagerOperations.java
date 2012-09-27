@@ -25,7 +25,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -33,7 +33,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
 
 /**
  * @author Guillaume Grossetie
@@ -48,18 +47,14 @@ public abstract class EmbeddedCacheManagerOperations implements OperationStepHan
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final String containerName = address.getLastElement().getValue();
                 final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-                final ServiceController<?> containerService = context.getServiceRegistry(false).getService(containerServiceName);
-                try {
-                    if (!ServiceController.State.UP.equals(containerService.getState())) {
-                        containerService.setMode(ServiceController.Mode.ACTIVE);
-                    }
-                    final EmbeddedCacheManager embeddedCacheManager = ServiceContainerHelper.getValue(containerService, EmbeddedCacheManager.class);
-                    ModelNode operationResult = invokeCommandOn(embeddedCacheManager);
-                    if (operationResult != null) {
-                        context.getResult().set(operationResult);
-                    }
-                } catch (StartException e) {
-                    throw new OperationFailedException(e.getLocalizedMessage(), e);
+                final ServiceController<?> containerService = context.getServiceRegistry(false).getRequiredService(containerServiceName);
+                final EmbeddedCacheManager embeddedCacheManager = EmbeddedCacheManager.class.cast(containerService.getValue());
+                if (embeddedCacheManager == null) {
+                    throw new OperationFailedException(new ModelNode().set(InfinispanMessages.MESSAGES.cacheContainerNotAvailableForOperation(containerName)));
+                }
+                ModelNode operationResult = invokeCommandOn(embeddedCacheManager);
+                if (operationResult != null) {
+                    context.getResult().set(operationResult);
                 }
                 context.completeStep();
             }
