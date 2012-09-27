@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
@@ -299,6 +300,7 @@ public class CompareModelVersionsUtil {
         compareNillable(context, id, current, legacy);
         compareExpressionsAllowed(context, id, current, legacy);
         compareAlternatives(context, id, current, legacy);
+        compareDefault(context, id, current, legacy);
         //TODO compare anything else?
     }
 
@@ -356,6 +358,12 @@ public class CompareModelVersionsUtil {
     private void compareStorage(CompareContext context, String id, ModelNode current, ModelNode legacy) {
         if (!current.get(STORAGE).equals(legacy.get(STORAGE))) {
             context.println("Different 'storage' for " + id + ". Current: " + current.get(STORAGE) + "; legacy: " + legacy.get(STORAGE));
+        }
+    }
+
+    private void compareDefault(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(DEFAULT).equals(legacy.get(DEFAULT))) {
+            context.println("Different 'default' for " + id + ". Current: " + current.get(DEFAULT) + "; legacy: " + legacy.get(DEFAULT));
         }
     }
 
