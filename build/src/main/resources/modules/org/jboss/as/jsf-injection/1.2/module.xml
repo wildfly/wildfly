@@ -36,5 +36,6 @@
         <module name="javax.api"/>
         <module name="org.jboss.as.web"/>
         <module name="javax.servlet.api"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>
