@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -55,23 +56,27 @@ public class Util {
     }
 
     public static ModelNode createAddOperation(final PathAddress address) {
-        return createOperation(ModelDescriptionConstants.ADD,address);
+        return createOperation(ModelDescriptionConstants.ADD, address);
     }
 
     public static ModelNode createRemoveOperation(final PathAddress address) {
-        return createOperation(ModelDescriptionConstants.REMOVE,address);
+        return createOperation(ModelDescriptionConstants.REMOVE, address);
     }
 
     public static ModelNode createOperation(final String operationName, final PathAddress address) {
-        return getEmptyOperation(operationName,address.toModelNode());
+        return getEmptyOperation(operationName, address.toModelNode());
     }
+
+    public static ModelNode createOperation(final OperationDefinition operationDefinition, final PathAddress address) {
+        return getEmptyOperation(operationDefinition.getName(), address.toModelNode());
+    }
+
     public static ModelNode getEmptyOperation(String operationName, ModelNode address) {
         ModelNode op = new ModelNode();
         op.get(OP).set(operationName);
         if (address != null) {
             op.get(OP_ADDR).set(address);
-        }
-        else {
+        } else {
             // Just establish the standard structure; caller can fill in address later
             op.get(OP_ADDR);
         }
@@ -132,7 +137,7 @@ public class Util {
     }
 
     public static PathAddress getParentAddressByKey(PathAddress address, String parentKey) {
-       for (int i = address.size() - 1; i >=0; i--) {
+        for (int i = address.size() - 1; i >= 0; i--) {
             PathElement pe = address.getElement(i);
             if (parentKey.equals(pe.getKey())) {
                 return address.subAddress(0, i + 1);

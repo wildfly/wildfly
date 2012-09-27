@@ -61,64 +61,6 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class CommonDescriptions {
 
-
-    public static ModelNode getAddNamespaceOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(NamespaceAddHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("namespaces.add"));
-        root.get(REQUEST_PROPERTIES, NAMESPACE, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAMESPACE, DESCRIPTION).set(bundle.getString("namespaces.add.prefix"));
-        root.get(REQUEST_PROPERTIES, NAMESPACE, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, URI, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, URI, DESCRIPTION).set(bundle.getString("namespaces.add.uri"));
-        root.get(REQUEST_PROPERTIES, URI, REQUIRED).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return root;
-    }
-
-    public static ModelNode getRemoveNamespaceOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(NamespaceRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("namespaces.remove"));
-        root.get(REQUEST_PROPERTIES, NAMESPACE, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, NAMESPACE, DESCRIPTION).set(bundle.getString("namespaces.remove.namespace"));
-        root.get(REQUEST_PROPERTIES, NAMESPACE, REQUIRED).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static ModelNode getAddSchemaLocationOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(SchemaLocationAddHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("schema-locations.add"));
-        root.get(REQUEST_PROPERTIES, URI, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, URI, DESCRIPTION).set(bundle.getString("schema-locations.add.uri"));
-        root.get(REQUEST_PROPERTIES, URI, REQUIRED).set(true);
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, DESCRIPTION).set(bundle.getString("schema-locations.add.schema-location"));
-        root.get(REQUEST_PROPERTIES, SCHEMA_LOCATION, REQUIRED).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-
-        return root;
-
-    }
-
-    public static ModelNode getRemoveSchemaLocationOperation(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(SchemaLocationRemoveHandler.OPERATION_NAME);
-        root.get(DESCRIPTION).set(bundle.getString("schema-locations.remove"));
-        root.get(REQUEST_PROPERTIES, URI, TYPE).set(ModelType.STRING);
-        root.get(REQUEST_PROPERTIES, URI, DESCRIPTION).set(bundle.getString("schema-locations.remove.schema-uri"));
-        root.get(REQUEST_PROPERTIES, URI, REQUIRED).set(true);
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
     public static final String READ_CONFIG_AS_XML = "read-config-as-xml";
     public static ModelNode getReadConfigAsXmlOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
