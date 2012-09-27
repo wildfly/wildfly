@@ -148,6 +148,7 @@ public class OperationCoordinatorStepHandler {
             HOST_CONTROLLER_LOGGER.trace("Executing direct");
         }
         final String operationName =  operation.require(OP).asString();
+
         OperationStepHandler stepHandler = null;
         final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {

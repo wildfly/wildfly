@@ -56,8 +56,8 @@ public class DomainRootTestCase extends AbstractCoreModelTest {
         assertAttribute(model, ServerDescriptionConstants.LAUNCH_TYPE, new ModelNode("DOMAIN"));
 
         //These two cannot work in tests - placeholder
-        assertAttribute(model, ModelDescriptionConstants.RELEASE_VERSION, new ModelNode("-"));
-        assertAttribute(model, ModelDescriptionConstants.RELEASE_CODENAME, new ModelNode("-"));
+        assertAttribute(model, ModelDescriptionConstants.RELEASE_VERSION, new ModelNode("Unknown"));
+        assertAttribute(model, ModelDescriptionConstants.RELEASE_CODENAME, new ModelNode("Unknown"));
 
         //Try changing namespaces, schema-locations and name
     }

@@ -1,5 +1,7 @@
 package org.jboss.as.controller.transform;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.Collections;
@@ -27,6 +29,13 @@ import org.jboss.dmr.Property;
  * @author Emanuel Muckenhuber
  */
 public final class TransformerRegistry {
+
+    public static final ModelNode DISCARD_OPERATION = new ModelNode();
+    static {
+        DISCARD_OPERATION.get(OP).set("discard");
+        DISCARD_OPERATION.get(OP_ADDR).setEmptyList();
+        DISCARD_OPERATION.protect();
+    }
 
     private final ExtensionRegistry extensionRegistry;
 
@@ -120,6 +129,7 @@ public final class TransformerRegistry {
         // The domain / host / servers
         final OperationTransformerRegistry root = domain.create(mgmtVersion, Collections.<PathAddress, ModelVersion>emptyMap());
         subsystem.mergeSubtree(root, PathAddress.pathAddress(PROFILE), subsystems);
+        subsystem.mergeSubtree(root, PathAddress.pathAddress(HOST, SERVER), subsystems);
         return root;
     }
 
@@ -156,11 +166,24 @@ public final class TransformerRegistry {
      */
     void addSubsystem(final OperationTransformerRegistry registry, final String name, final ModelVersion version) {
         final OperationTransformerRegistry profile = registry.getChild(PathAddress.pathAddress(PROFILE));
+        final OperationTransformerRegistry server = registry.getChild(PathAddress.pathAddress(HOST, SERVER));
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name));
         subsystem.mergeSubtree(profile, Collections.singletonMap(address, version));
+        if(server != null) {
+            subsystem.mergeSubtree(server, Collections.singletonMap(address, version));
+        }
     }
 
-    static Map<PathAddress, ModelVersion> resolveVersions(final ModelNode subsystems) {
+    public static Map<PathAddress, ModelVersion> resolveVersions(ExtensionRegistry extensionRegistry) {
+
+        final ModelNode subsystems = new ModelNode();
+        for (final String extension : extensionRegistry.getExtensionModuleNames()) {
+            extensionRegistry.recordSubsystemVersions(extension, subsystems);
+        }
+        return resolveVersions(subsystems);
+    }
+
+    public static Map<PathAddress, ModelVersion> resolveVersions(final ModelNode subsystems) {
         final PathAddress base = PathAddress.EMPTY_ADDRESS;
         final Map<PathAddress, ModelVersion> versions = new HashMap<PathAddress, ModelVersion>();
         for(final Property property : subsystems.asPropertyList()) {

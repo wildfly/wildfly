@@ -152,6 +152,16 @@ public abstract class ServerTaskExecutor {
     static class ServerOperationListener extends BlockingQueueOperationListener<ServerOperation> {
 
         @Override
+        public void operationPrepared(TransactionalProtocolClient.PreparedOperation<ServerOperation> prepared) {
+            super.operationPrepared(prepared);
+        }
+
+        @Override
+        public void operationComplete(ServerOperation operation, ModelNode result) {
+            super.operationComplete(operation, result);
+        }
+
+        @Override
         protected void drainTo(Collection<TransactionalProtocolClient.PreparedOperation<ServerOperation>> preparedOperations) {
             super.drainTo(preparedOperations);
         }

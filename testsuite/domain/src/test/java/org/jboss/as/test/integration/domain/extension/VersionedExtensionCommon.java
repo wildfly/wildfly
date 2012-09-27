@@ -59,11 +59,11 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  */
 public abstract class VersionedExtensionCommon implements Extension {
 
-    public static final String SUBSYSTEM_NAME = "test-subsystem";
     public static final String EXTENSION_NAME = "org.jboss.as.test.transformers";
 
-    static SubsystemParser PARSER = new SubsystemParser(EXTENSION_NAME);
-    static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM,  SUBSYSTEM_NAME);
+    public static final String SUBSYSTEM_NAME = "test-subsystem";
+    public static final String IGNORED_SUBSYSTEM_NAME = "ignored-test-subsystem";
+
     static DescriptionProvider DESCRIPTION_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -72,79 +72,23 @@ public abstract class VersionedExtensionCommon implements Extension {
     };
     static AttributeDefinition TEST_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("test-attribute", ModelType.STRING).build();
 
-    public SubsystemParser getParser() {
-        return PARSER;
-    }
-
-    protected ManagementResourceRegistration initializeSubsystem(final SubsystemRegistration registration) {
-        // Common subsystem tasks
-        final ResourceDefinition def = createResourceDefinition(SUBSYSTEM_PATH);
-        registration.registerXMLElementWriter(getParser());
-
-        final ManagementResourceRegistration reg = registration.registerSubsystemModel(def);
-        reg.registerReadWriteAttribute(TEST_ATTRIBUTE, null, new BasicAttributeWriteHandler(TEST_ATTRIBUTE));
-        return reg;
-    }
-
-    @Override
-    public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, EXTENSION_NAME, PARSER);
-    }
-
-    protected ResourceDefinition createResourceDefinition(final PathElement element) {
+    protected static ResourceDefinition createResourceDefinition(final PathElement element) {
         return new SimpleResourceDefinition(element, new NonResolvingResourceDescriptionResolver(),
                 NOOP_ADD_HANDLER, NOOP_REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
     }
 
-    private static OperationStepHandler NOOP_ADD_HANDLER = new AbstractAddStepHandler() {
+    static OperationStepHandler NOOP_ADD_HANDLER = new AbstractAddStepHandler() {
         @Override
         protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             //
         }
     };
 
-    private static OperationStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
+    static OperationStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
         }
     };
 
-    private static class BasicAttributeWriteHandler extends AbstractWriteAttributeHandler<Void> {
-
-        protected BasicAttributeWriteHandler(AttributeDefinition def) {
-            super(def);
-        }
-
-        @Override
-        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandbackHolder) throws OperationFailedException {
-            return false;
-        }
-
-        @Override
-        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-
-        }
-    }
-
-    private static class SubsystemParser implements XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-        private final String namespace;
-
-        private SubsystemParser(String namespace) {
-            this.namespace = namespace;
-        }
-
-        @Override
-        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> value) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ParseUtils.requireNoContent(reader);
-        }
-
-        @Override
-        public void writeContent(XMLExtendedStreamWriter streamWriter, SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(namespace, false);
-            streamWriter.writeEndElement();
-        }
-    }
 }

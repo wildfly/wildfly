@@ -50,10 +50,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
@@ -85,6 +88,7 @@ public class DomainLifecycleUtil {
 
     private final JBossAsManagedConfiguration configuration;
     private final DomainControllerClientConfig clientConfiguration;
+    private final PathAddress address;
 
     public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) throws IOException {
         this(configuration, DomainControllerClientConfig.create());
@@ -95,7 +99,11 @@ public class DomainLifecycleUtil {
         assert clientConfiguration != null : "clientConfiguration is null";
         this.configuration = configuration;
         this.clientConfiguration = clientConfiguration;
+        this.address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, configuration.getHostName()));
+    }
 
+    public PathAddress getAddress() {
+        return address;
     }
 
     public void start() {

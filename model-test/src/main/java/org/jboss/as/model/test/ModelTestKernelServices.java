@@ -186,7 +186,7 @@ public class ModelTestKernelServices {
      */
     public ModelNode executeOperation(ModelNode operation, InputStream...inputStreams) {
         if (inputStreams.length == 0) {
-            return controller.execute(operation, null, OperationTransactionControl.COMMIT, null);
+            return executeOperation(operation, OperationTransactionControl.COMMIT);
         } else {
             ExecutorService executor = Executors.newCachedThreadPool();
             try {
@@ -206,6 +206,10 @@ public class ModelTestKernelServices {
                 executor.shutdownNow();
             }
         }
+    }
+
+    public ModelNode executeOperation(ModelNode operation, OperationTransactionControl txControl) {
+        return controller.execute(operation, null, txControl, null);
     }
 
     public ModelNode executeForResult(ModelNode operation, InputStream...inputStreams) throws OperationFailedException {

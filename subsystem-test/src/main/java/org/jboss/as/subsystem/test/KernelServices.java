@@ -170,11 +170,20 @@ public class KernelServices extends ModelTestKernelServices {
      * @throws IllegalStateException if this is not the test's main model controller
      * @throws IllegalStateException if there is no legacy controller containing the version of the subsystem
      */
-    public ModelNode executeOperation(ModelVersion modelVersion, TransformedOperation op) {
+    public ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op) {
         ModelTestKernelServices legacy = getLegacyServices(modelVersion);
         ModelNode result = new ModelNode();
         if (op.getTransformedOperation() != null) {
-            result = legacy.executeOperation(op.getTransformedOperation());
+            result = legacy.executeOperation(op.getTransformedOperation(), new ModelController.OperationTransactionControl() {
+                    @Override
+                    public void operationPrepared(ModelController.OperationTransaction transaction, ModelNode result) {
+                        if(op.rejectOperation(result)) {
+                            transaction.rollback();
+                        } else {
+                            transaction.commit();
+                        }
+                    }
+                });
         }
         OperationResultTransformer resultTransformer = op.getResultTransformer();
         if (resultTransformer != null) {

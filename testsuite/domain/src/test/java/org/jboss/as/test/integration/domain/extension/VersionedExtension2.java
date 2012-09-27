@@ -39,18 +39,25 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
 
+import java.util.EnumSet;
+
 /**
+ * Version 2 of an extension.
+ *
  * @author Emanuel Muckenhuber
  */
 public class VersionedExtension2 extends VersionedExtensionCommon {
@@ -60,11 +67,10 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
     // Element which is element>renamed in v2
     private static final PathElement RENAMED = PathElement.pathElement("renamed", "element");
 
-    @Override
-    public void initialize(final ExtensionContext context) {
-        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 2, 0, 0);
-        // Initialize the subsystem
-        final ManagementResourceRegistration registration = initializeSubsystem(subsystem);
+    private static final SubsystemInitialization TEST_SUBSYSTEM = new SubsystemInitialization(SUBSYSTEM_NAME, true);
+    private static final RejectExpressionValuesTransformer rejectExpressions = new RejectExpressionValuesTransformer("int", "string");
+
+    void processTestSubsystem(final SubsystemRegistration subsystem, final ManagementResourceRegistration registration) {
 
         // Register a update operation, which requires the transformer to create composite operation
         registration.registerOperationHandler("update", new OperationStepHandler() {
@@ -82,17 +88,51 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         registration.registerSubModel(createResourceDefinition(NEW_ELEMENT));
         // Add the renamed model
         registration.registerSubModel(createResourceDefinition(RENAMED));
+        registration.registerOperationHandler("test", new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(true);
+                context.completeStep();
+            }
+        }, DESCRIPTION_PROVIDER, false, OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 
         // Register the transformers
         final TransformersSubRegistration transformers =  subsystem.registerModelTransformers(ModelVersion.create(1, 0, 0), RESOURCE_TRANSFORMER);
+        // Reject the expression values for attributes
+        transformers.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpressions.getWriteAttributeTransformer());
+        //
         transformers.registerOperationTransformer("update", new UpdateTransformer());
+        transformers.registerOperationTransformer("test", new OperationTransformer() {
+            @Override
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+                return new TransformedOperation(operation, new OperationResultTransformer() {
+                    @Override
+                    public ModelNode transformResult(ModelNode result) {
+                        result.get(RESULT).set(false);
+                        return result;
+                    }
+                });
+            }
+        });
 
         // Discard the add/remove operation to the new element
         final TransformersSubRegistration newElement = transformers.registerSubResource(NEW_ELEMENT);
         newElement.discardOperations(TransformersSubRegistration.COMMON_OPERATIONS);
 
         // Register an alias operation transformer, transforming renamed>element to element>renamed
-        final TransformersSubRegistration renamed = transformers.registerSubResource(RENAMED, AliasOperationTransformer.replaceLastElement(PathElement.pathElement("element", "renamed")));
+        transformers.registerSubResource(RENAMED, AliasOperationTransformer.replaceLastElement(PathElement.pathElement("element", "renamed")));
+    }
+
+    @Override
+    public void initialize(final ExtensionContext context) {
+        // Normal test subsystem
+        final SubsystemInitialization.RegistrationResult result1 = TEST_SUBSYSTEM.initializeSubsystem(context, ModelVersion.create(2, 0, 0));
+        processTestSubsystem(result1.getSubsystemRegistration(), result1.getResourceRegistration());
+    }
+
+    @Override
+    public void initializeParsers(ExtensionParsingContext context) {
+        TEST_SUBSYSTEM.initializeParsers(context);
     }
 
     static ResourceTransformer RESOURCE_TRANSFORMER = new ResourceTransformer() {
@@ -134,7 +174,9 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
             return new TransformedOperation(composite, new OperationResultTransformer() {
                 @Override
                 public ModelNode transformResult(final ModelNode result) {
-                    return result.get(RESULT, "step-2");
+                    final ModelNode transformed = result.clone();
+                    transformed.get(RESULT).set(result.get(RESULT, "step-2", RESULT));
+                    return transformed;
                 }
             });
         }
