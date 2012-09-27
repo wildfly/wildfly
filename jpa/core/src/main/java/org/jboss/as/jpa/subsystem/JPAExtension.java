@@ -47,6 +47,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.persistenceprovider.PersistenceProviderLoader;
@@ -129,8 +130,12 @@ public class JPAExtension implements Extension {
 
     private void initializeTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
         ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
+        // We need to reject all expressions, since they can't be resolved on the client
+        // However, a slave running 1.1.0 has no way to tell us at registration that it has ignored a resource,
+        // so we can't agressively fail on resource transformation
+        final ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
         RejectExpressionValuesTransformer rejectDefaultDataSourceExpressions = new RejectExpressionValuesTransformer(JPADefinition.DEFAULT_DATASOURCE);
-        TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(oldVersion, rejectDefaultDataSourceExpressions);
+        TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(oldVersion, resourceTransformer);
         reg.registerOperationTransformer(ADD, rejectDefaultDataSourceExpressions);
         reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectDefaultDataSourceExpressions.getWriteAttributeTransformer());
     }
