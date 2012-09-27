@@ -61,18 +61,6 @@ import org.jboss.dmr.ModelType;
 @Deprecated
 public class CommonDescriptions {
 
-    public static final String READ_CONFIG_AS_XML = "read-config-as-xml";
-    public static ModelNode getReadConfigAsXmlOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(READ_CONFIG_AS_XML);
-        root.get(DESCRIPTION).set(bundle.getString(READ_CONFIG_AS_XML));
-        root.get(REQUEST_PROPERTIES).setEmptyObject();
-        root.get(REPLY_PROPERTIES, TYPE).set(ModelType.STRING);
-        root.get(REPLY_PROPERTIES, DESCRIPTION).set(bundle.getString(READ_CONFIG_AS_XML + ".response"));
-        return root;
-    }
-
     public static ModelNode getValidateAddressOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode descr = getSingleParamSimpleReplyOperation(bundle, ValidateAddressOperationHandler.OPERATION_NAME, "global", VALUE, ModelType.OBJECT, false, ModelType.OBJECT, true);

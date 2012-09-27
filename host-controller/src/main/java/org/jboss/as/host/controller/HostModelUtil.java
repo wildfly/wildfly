@@ -158,12 +158,9 @@ public class HostModelUtil {
                                           final IgnoredDomainResourceRegistry ignoredRegistry,
                                           final ControlledProcessState processState,
                                           final PathManagerService pathManager) {
-        // Global operations
-        EnumSet<OperationEntry.Flag> flags = EnumSet.of(OperationEntry.Flag.READ_ONLY);
-
-        // Host root resource operations
+             // Host root resource operations
         XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
-        hostRegistration.registerOperationHandler(XmlMarshallingHandler.OPERATION_NAME, xmh, xmh, false, OperationEntry.EntryType.PUBLIC, flags);
+        hostRegistration.registerOperationHandler(XmlMarshallingHandler.DEFINITION, xmh);
 
 
         StartServersHandler ssh = new StartServersHandler(environment, serverInventory, runningModeControl);
