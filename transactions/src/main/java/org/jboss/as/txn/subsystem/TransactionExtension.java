@@ -42,6 +42,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.txn.TransactionMessages;
 import org.jboss.msc.service.ServiceController;
@@ -126,9 +127,6 @@ public class TransactionExtension implements Extension {
 
     // Transformation
 
-    private static final ModelVersion version = ModelVersion.create(1, 1, 0);
-    private static final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
-
     /**
      * Register the transformers for older model versions.
      *
@@ -137,10 +135,18 @@ public class TransactionExtension implements Extension {
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
         // Check the resource and operations for expressions
-        // For now we need to reject all expressions, since they can't be resolved on the client
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, TRANSFORMER);
-        registration.registerOperationTransformer(ADD, TRANSFORMER);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+
+        // Transformations to the 1.1.0 Model:
+        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+        // We need to reject all expressions, since they can't be resolved on the client
+        // However, a slave running 1.1.0 has no way to tell us at registration that it has ignored a resource,
+        // so we can't agressively fail on resource transformation
+        final ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
+        final RejectExpressionValuesTransformer operationTransformer =
+                new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, resourceTransformer);
+        registration.registerOperationTransformer(ADD, operationTransformer);
+        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer.getWriteAttributeTransformer());
 
     }
 
