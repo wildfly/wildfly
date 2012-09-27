@@ -25,28 +25,11 @@ package org.jboss.as.patching.metadata;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ContentModification {
+public enum ContentType {
 
-    private final ContentItem item;
-    private final byte[] targetHash;
-    private final ModificationType type;
-
-    public ContentModification(ContentItem item, byte[] targetHash, ModificationType type) {
-        this.item = item;
-        this.targetHash = targetHash;
-        this.type = type;
-    }
-
-    public ContentItem getItem() {
-        return item;
-    }
-
-    public byte[] getTargetHash() {
-        return targetHash;
-    }
-
-    public ModificationType getType() {
-        return type;
-    }
+    BUNDLE,
+    MISC,
+    MODULE,
+    ;
 
 }

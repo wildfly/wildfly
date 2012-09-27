@@ -20,46 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.runner;
 
-import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.MiscContentModification;
+import org.jboss.as.patching.metadata.ModuleItem;
 
-import java.util.List;
+import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchInfo {
+public class ModuleUpdateTask implements ContentTask {
 
-    /** The default if no patches are active. */
-    String BASE = "base";
+    private final ModuleItem item;
 
-    /**
-     * Get the current version.
-     *
-     * @return the current version
-     */
-    String getVersion();
+    public ModuleUpdateTask(ModuleItem item) {
+        this.item = item;
+    }
 
-    /**
-     * The cumulative patch id.
-     *
-     * @return the cp id
-     */
-    String getCumulativeID();
+    @Override
+    public ContentItem getContentItem() {
+        return item;
+    }
 
-    /**
-     * Get cumulative patch ids.
-     *
-     * @return the patch ids
-     */
-    List<String> getPatchIDs();
+    @Override
+    public boolean prepare(PatchingContext context) throws IOException {
 
-    /**
-     * Get the local patch environment.
-     *
-     * @return the patch environment
-     */
-    DirectoryStructure getEnvironment();
 
+
+        return false;
+    }
+
+    @Override
+    public MiscContentModification execute(PatchingContext context) throws IOException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

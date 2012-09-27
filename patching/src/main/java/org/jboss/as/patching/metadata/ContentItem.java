@@ -25,16 +25,14 @@ package org.jboss.as.patching.metadata;
 /**
  * @author Emanuel Muckenhuber
  */
-public class ContentItem {
+public abstract class ContentItem {
 
     private final String name;
-    private final String[] path;
-    private final byte[] contentHash;
+    private final ContentType contentType;
 
-    public ContentItem(String name, String[] path, byte[] contentHash) {
+    protected ContentItem(String name, ContentType contentType) {
         this.name = name;
-        this.path = path;
-        this.contentHash = contentHash;
+        this.contentType = contentType;
     }
 
     /**
@@ -47,21 +45,12 @@ public class ContentItem {
     }
 
     /**
-     * Get the relative content path.
+     * The content type.
      *
-     * @return the content path
+     * @return the content type
      */
-    public String[] getPath() {
-        return path;
-    }
-
-    /**
-     * Get the content hash.
-     *
-     * @return the content hash
-     */
-    public byte[] getContentHash() {
-        return contentHash;
+    public ContentType getContentType() {
+        return contentType;
     }
 
 }

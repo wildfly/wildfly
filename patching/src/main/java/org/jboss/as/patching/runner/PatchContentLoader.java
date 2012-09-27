@@ -32,7 +32,12 @@ import java.io.InputStream;
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchContentLoader {
+class PatchContentLoader {
+
+    private final PatchItemMapping mapping;
+    PatchContentLoader(File root) {
+        this.mapping = new PatchItemMapping(root);
+    }
 
     /**
      * Open a new content stream.
@@ -40,29 +45,9 @@ public interface PatchContentLoader {
      * @param item the content item
      * @return the content stream
      */
-    InputStream openContentStream(ContentItem item) throws IOException;
-
-    public static class FilePatchContentLoader implements PatchContentLoader {
-
-        private final File root;
-        protected FilePatchContentLoader(File content) {
-            this.root = content;
-        }
-
-        @Override
-        public InputStream openContentStream(ContentItem item) throws IOException {
-            File file = root;
-            for(final String path : item.getPath()) {
-                file = new File(file, path);
-            }
-            file = new File(file, item.getName());
-            return new FileInputStream(file);
-        }
-
-        public static PatchContentLoader create(final File content) {
-            return new FilePatchContentLoader(content);
-        }
-
+    InputStream openContentStream(ContentItem item) throws IOException {
+        final File file = mapping.getFile(item);
+        return new FileInputStream(file);
     }
 
 }

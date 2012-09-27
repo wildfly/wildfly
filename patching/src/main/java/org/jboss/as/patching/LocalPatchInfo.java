@@ -67,21 +67,6 @@ public class LocalPatchInfo implements PatchInfo {
         return environment;
     }
 
-    @Override
-    public String getModulePath() {
-        final StringBuilder builder = new StringBuilder();
-        for(final String patchId : getPatchIDs()) {
-            final File path = environment.getPatchDirectory(patchId);
-            builder.append(path.getAbsolutePath()).append(File.pathSeparatorChar);
-        }
-        if(cumulativeId != null && ! BASE.equals(cumulativeId)) {
-            final File path = environment.getPatchDirectory(cumulativeId);
-            builder.append(path.getAbsolutePath()).append(File.pathSeparatorChar);
-        }
-        builder.append(environment.getInstalledImage().getModulesDir().getAbsolutePath());
-        return builder.toString();
-    }
-
     /**
      * Load the information from the disk.
      *

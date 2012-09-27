@@ -20,46 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
-
-import org.jboss.as.boot.DirectoryStructure;
-
-import java.util.List;
+package org.jboss.as.patching.metadata;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchInfo {
+public class ModuleItem extends ContentItem {
 
-    /** The default if no patches are active. */
-    String BASE = "base";
+    private final String slot;
 
-    /**
-     * Get the current version.
-     *
-     * @return the current version
-     */
-    String getVersion();
+    public ModuleItem(String name) {
+        this(name, "main");
+    }
 
-    /**
-     * The cumulative patch id.
-     *
-     * @return the cp id
-     */
-    String getCumulativeID();
+    public ModuleItem(String name, String slot) {
+        super(name, ContentType.MODULE);
+        this.slot = slot;
+    }
 
     /**
-     * Get cumulative patch ids.
+     * Get the module slot.
      *
-     * @return the patch ids
+     * @return the module slot
      */
-    List<String> getPatchIDs();
-
-    /**
-     * Get the local patch environment.
-     *
-     * @return the patch environment
-     */
-    DirectoryStructure getEnvironment();
+    public String getSlot() {
+        return slot;
+    }
 
 }

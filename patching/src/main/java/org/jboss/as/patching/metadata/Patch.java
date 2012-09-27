@@ -68,6 +68,6 @@ public interface Patch {
      *
      * @return the modifications
      */
-    List<ContentModification> getModifications();
+    List<MiscContentModification> getModifications();
 
 }

@@ -23,12 +23,11 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.boot.DirectoryStructure;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
-import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.Patch;
 
 import java.io.File;
@@ -36,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -68,7 +66,7 @@ public class PatchingTaskRunner {
             recursiveDelete(workDir);
         }
         workDir.mkdirs();
-        final PatchContentLoader loader = new PatchContentLoader.FilePatchContentLoader(workDir);
+        final PatchContentLoader loader = new PatchContentLoader(workDir);
         final PatchingContext context = new PatchingContext(patch, patchInfo, structure, loader);
         final File cachedContent = new File(workDir, "content");
         try {
@@ -93,21 +91,21 @@ public class PatchingTaskRunner {
             final File modules = new File(workDir, PatchContents.MODULES);
             if(modules.exists()) {
                 // patches/patch-id/...
-                final File patchDir = structure.getPatchDirectory(patchId);
+                final File patchDir = structure.getModulePatchDirectory(patchId);
                 if(! modules.renameTo(patchDir)) {
                     throw new PatchingException("...");
                 }
             }
             // Create the modification tasks
             final List<ContentTask> tasks = new ArrayList<ContentTask>();
-            final List<ContentItem> problems = new ArrayList<ContentItem>();
-            for(final ContentModification modification : patch.getModifications()) {
+            final List<MiscContentItem> problems = new ArrayList<MiscContentItem>();
+            for(final MiscContentModification modification : patch.getModifications()) {
                 final ContentTask task = ContentTask.Factory.create(modification, context);
                 try {
                     // backup
                     if(! task.prepare(context)) {
                         // In case the file was modified we report a problem
-                        final ContentItem item = modification.getItem();
+                        final MiscContentItem item = modification.getItem();
                         // Unless it was ignored (or excluded)
                         if(context.isIgnored(item)) {
                             problems.add(item);
@@ -124,7 +122,7 @@ public class PatchingTaskRunner {
                 throw new PatchingException("...");
             }
             //
-            final List<ContentModification> rollbackTasks = new ArrayList<ContentModification>();
+            final List<MiscContentModification> rollbackTasks = new ArrayList<MiscContentModification>();
             try {
                 // Execute the tasks
                 for(final ContentTask task : tasks) {
@@ -133,7 +131,7 @@ public class PatchingTaskRunner {
                         continue;
                     }
                     // Record the rollback task
-                    final ContentModification rollback = task.execute(context);
+                    final MiscContentModification rollback = task.execute(context);
                     rollbackTasks.add(rollback);
                 }
             } catch (Exception e) {
