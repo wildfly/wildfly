@@ -25,9 +25,9 @@ package org.jboss.as.patching.runner;
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.Patch;
 
 import java.io.File;
@@ -43,7 +43,7 @@ class PatchingContext {
 
     private final PatchInfo info;
     private final PatchContentLoader loader;
-    private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
+    private final List<MiscContentModification> rollbackActions = new ArrayList<MiscContentModification>();
 
     private final File root;
     private final File backup;
@@ -61,11 +61,11 @@ class PatchingContext {
         return loader;
     }
 
-    public File getTargetFile(final ContentItem item) {
+    public File getTargetFile(final MiscContentItem item) {
         return getTargetFile(root, item);
     }
 
-    public File getBackupFile(final ContentItem item) {
+    public File getBackupFile(final MiscContentItem item) {
         return getTargetFile(backup, item);
     }
 
@@ -79,7 +79,7 @@ class PatchingContext {
         return false;
     }
 
-    public void addRollbackAction(final ContentModification modification) {
+    public void addRollbackAction(final MiscContentModification modification) {
         rollbackActions.add(modification);
     }
 
@@ -144,7 +144,7 @@ class PatchingContext {
         return patch;
     }
 
-    static File getTargetFile(final File root, final ContentItem item)  {
+    static File getTargetFile(final File root, final MiscContentItem item)  {
         File file = root;
         for(final String path : item.getPath()) {
             file = new File(file, path);

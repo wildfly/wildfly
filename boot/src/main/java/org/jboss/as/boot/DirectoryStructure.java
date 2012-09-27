@@ -29,19 +29,36 @@ import java.io.File;
  *
  * ${JBOSS_HOME}
  * |
+ * |-- bin
+ * |-- bundles
+ * |   `-- org/jboss/as/osgi
+ * |-- docs
  * |-- modules
+ * |   |-- org/jboss/as/...
+ * |   `-- org/jboss/as/server/main/module.xml
  * |-- patches (overlay directory)
  * |   |-- patch01
+ * |   |   |-- bundles
+ * |   |   |   `-- org/jboss/as/osgi/configadmin/main
+ * |   |   `-- modules
+ * |   |       `-- org/jboss/as/server/main/module.xml
  * |   |-- patch02
+ * |   |   |-- bundles
+ * |   |   |   `-- org/jboss/as/osgi/configadmin/main
+ * |   |   `-- modules
+ * |   |       `-- org/jboss/as/server/main/module.xml
  * |   `-- .metadata
  * |       |-- cumulative (links to given patchId)
- * |       |-- references (list of one-off patches)
- * |       |   |-- patch01
- * |       |   `-- patch02
+ * |       |-- references [patch01, patch02] (list of one-off patches )
  * |       `-- history (rollback information for a patch)
  * |           |-- patch01
+ * |           |   |-- cumulative (previous cp)
+ * |           |   `-- misc
  * |           `-- patch02
+ * |               |-- cumulative (previous cp)
+ * |               `-- misc
  * |
+ * |-- jboss-modules.jar
  * `-- loader.jar (boot module-loader)
  *
  * @author Emanuel Muckenhuber
@@ -56,6 +73,13 @@ public final class DirectoryStructure {
          * @return the jboss home
          */
         File getJbossHome();
+
+        /**
+         * Get the bundles directory.
+         *
+         * @return the bundles directory
+         */
+        File getBundlesDir();
 
         /**
          * Get the modules directory.
@@ -74,6 +98,7 @@ public final class DirectoryStructure {
     }
 
     // Directories
+    static String BUNDLES = "bundles";
     static String HISTORY = "history";
     static String METADATA = ".metadata";
     static String MODULES = "modules";
@@ -144,8 +169,29 @@ public final class DirectoryStructure {
      * @param patchId the patch-id
      * @return the patch directory
      */
-    public File getPatchDirectory(final String patchId) {
+    // TODO make public
+    File getPatchDirectory(final String patchId) {
         return new File(getInstalledImage().getPatchesDir(), patchId);
+    }
+
+    /**
+     * Get the bundles patch directory for a given patch-id.
+     *
+     * @param patchId the patch-id
+     * @return the bundles patch directory
+     */
+    public File getBundlesPatchDirectory(final String patchId) {
+        return new File(getPatchDirectory(patchId), BUNDLES);
+    }
+
+    /**
+     * Get the modules patch directory for a given patch-id.
+     *
+     * @param patchId the patch-id
+     * @return the modules patch directory
+     */
+    public File getModulePatchDirectory(final String patchId) {
+        return new File(getPatchDirectory(patchId), MODULES);
     }
 
     /**
@@ -155,6 +201,7 @@ public final class DirectoryStructure {
      * @return the patch environment
      */
     public static DirectoryStructure createDefault(final File jbossHome) {
+        final File bundles = new File(jbossHome, BUNDLES);
         final File modules = new File(jbossHome, MODULES);
         final File patches = new File(jbossHome, PATCHES);
         return new DirectoryStructure(new InstalledImage() {
@@ -162,6 +209,11 @@ public final class DirectoryStructure {
             @Override
             public File getJbossHome() {
                 return jbossHome;
+            }
+
+            @Override
+            public File getBundlesDir() {
+                return bundles;
             }
 
             @Override

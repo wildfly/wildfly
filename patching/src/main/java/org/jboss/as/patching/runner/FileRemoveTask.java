@@ -22,8 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
@@ -34,25 +34,24 @@ import java.io.IOException;
  */
 public class FileRemoveTask extends AbstractFileTask {
 
-    public FileRemoveTask(File target, File backup, ContentModification modification) {
+    public FileRemoveTask(File target, File backup, MiscContentModification modification) {
         super(target, backup, modification);
     }
 
     @Override
-    public ContentModification execute(PatchingContext context) throws IOException {
-
-        final ContentItem item = modification.getItem();
+    public MiscContentModification execute(PatchingContext context) throws IOException {
 
         // delete the file
         target.delete();
 
-        final ContentItem backupItem = new ContentItem(item.getName(), item.getPath(), backupHash);
+        final MiscContentItem item = modification.getItem();
+        final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
         return createRollback(context, item, backupItem, NO_CONTENT);
     }
 
     @Override
-    protected ContentModification createRollback(PatchingContext context, ContentItem item, ContentItem backupItem, byte[] targetHash) {
-        return new ContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
+    protected MiscContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
+        return new MiscContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
     }
 
 }

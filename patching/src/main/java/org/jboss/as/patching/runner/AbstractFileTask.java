@@ -22,8 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.MiscContentModification;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,11 +42,11 @@ abstract class AbstractFileTask implements ContentTask {
 
     final File target; // the target file
     final File backup; // the backup file
-    final ContentModification modification;
+    final MiscContentModification modification;
 
     byte[] backupHash = NO_CONTENT;
 
-    protected AbstractFileTask(File target, File backup, ContentModification modification) {
+    protected AbstractFileTask(File target, File backup, MiscContentModification modification) {
         this.target = target;
         this.backup = backup;
         this.modification = modification;
@@ -61,9 +61,9 @@ abstract class AbstractFileTask implements ContentTask {
      * @param targetHash the target hash for the modification
      * @return the rollback modification item
      */
-    protected abstract ContentModification createRollback(PatchingContext context, ContentItem item, ContentItem backupItem, byte[] targetHash);
+    protected abstract MiscContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash);
 
-    public ContentItem getContentItem() {
+    public MiscContentItem getContentItem() {
         return modification.getItem();
     }
 
@@ -77,14 +77,14 @@ abstract class AbstractFileTask implements ContentTask {
         return Arrays.equals(expected, backupHash);
     }
 
-    public ContentModification execute(final PatchingContext context) throws IOException {
+    public MiscContentModification execute(final PatchingContext context) throws IOException {
 
-        final ContentItem item = modification.getItem();
+        final MiscContentItem item = modification.getItem();
         final InputStream is = context.getLoader().openContentStream(item);
         try {
             // Replace the file
             final byte[] hash = copy(is, target);
-            final ContentItem backupItem = new ContentItem(item.getName(), item.getPath(), backupHash);
+            final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
             return createRollback(context, item, backupItem, hash);
         } finally {
             PatchUtils.safeClose(is);

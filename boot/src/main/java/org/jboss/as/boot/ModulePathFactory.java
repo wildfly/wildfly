@@ -54,10 +54,10 @@ class ModulePathFactory {
             final List<File> path = new ArrayList<File>(patches.size() + modulePath.length + 1);
             for(final String patch : patches) {
                 // one-off patches
-                path.add(structure.getPatchDirectory(patch));
+                path.add(structure.getModulePatchDirectory(patch));
             }
             // CP
-            path.add(structure.getPatchDirectory(ref));
+            path.add(structure.getModulePatchDirectory(ref));
             // User defined module path
             for(final File file : modulePath) {
                 path.add(file);

@@ -20,46 +20,38 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
-
-import org.jboss.as.boot.DirectoryStructure;
-
-import java.util.List;
+package org.jboss.as.patching.metadata;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchInfo {
+public class MiscContentItem extends ContentItem {
 
-    /** The default if no patches are active. */
-    String BASE = "base";
+    private final String[] path;
+    private final byte[] contentHash;
 
-    /**
-     * Get the current version.
-     *
-     * @return the current version
-     */
-    String getVersion();
-
-    /**
-     * The cumulative patch id.
-     *
-     * @return the cp id
-     */
-    String getCumulativeID();
+    public MiscContentItem(String name, String[] path, byte[] contentHash) {
+        super(name, ContentType.MISC);
+        this.path = path;
+        this.contentHash = contentHash;
+    }
 
     /**
-     * Get cumulative patch ids.
+     * Get the relative content path.
      *
-     * @return the patch ids
+     * @return the content path
      */
-    List<String> getPatchIDs();
+    public String[] getPath() {
+        return path;
+    }
 
     /**
-     * Get the local patch environment.
+     * Get the content hash.
      *
-     * @return the patch environment
+     * @return the content hash
      */
-    DirectoryStructure getEnvironment();
+    public byte[] getContentHash() {
+        return contentHash;
+    }
 
 }

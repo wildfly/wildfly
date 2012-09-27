@@ -22,31 +22,31 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.MiscContentItem;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Emanuel Muckenhuber
  */
 class PatchContents {
 
+    public static final String PATCH = "patch.xml";
     public static final String MODULES = "modules";
-    public static final String FILES = "files";
+    public static final String BUNDLES = "modules";
+    public static final String MISC = "misc";
 
-    static Collection<ContentItem> getContents(final File directory) {
-        final List<ContentItem> contents = new ArrayList<ContentItem>();
+    static Collection<MiscContentItem> getContents(final File directory) {
+        final List<MiscContentItem> contents = new ArrayList<MiscContentItem>();
         establishContentList(directory, directory, contents);
         return contents;
     }
 
-    static void establishContentList(final File root, final File directory, final List<ContentItem> contents) {
+    static void establishContentList(final File root, final File directory, final List<MiscContentItem> contents) {
         final File[] children = directory.listFiles();
         if(children != null && children.length > 0) {
             for(final File child : children) {
@@ -59,10 +59,10 @@ class PatchContents {
         }
     }
 
-    static ContentItem createContentItem(final File root, final File file) {
+    static MiscContentItem createContentItem(final File root, final File file) {
         final String[] relativePath = getPath(root, file);
         final String name = file.getName();
-        return new ContentItem(name, relativePath, new byte[0]);
+        return new MiscContentItem(name, relativePath, new byte[0]);
     }
 
     static String[] getPath(final File root, final File file) {

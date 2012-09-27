@@ -20,46 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
-
-import org.jboss.as.boot.DirectoryStructure;
-
-import java.util.List;
+package org.jboss.as.patching.metadata;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchInfo {
+public class MiscContentModification {
 
-    /** The default if no patches are active. */
-    String BASE = "base";
+    private final MiscContentItem item;
+    private final byte[] targetHash;
+    private final ModificationType type;
 
-    /**
-     * Get the current version.
-     *
-     * @return the current version
-     */
-    String getVersion();
+    public MiscContentModification(MiscContentItem item, byte[] targetHash, ModificationType type) {
+        this.item = item;
+        this.targetHash = targetHash;
+        this.type = type;
+    }
 
-    /**
-     * The cumulative patch id.
-     *
-     * @return the cp id
-     */
-    String getCumulativeID();
+    public MiscContentItem getItem() {
+        return item;
+    }
 
-    /**
-     * Get cumulative patch ids.
-     *
-     * @return the patch ids
-     */
-    List<String> getPatchIDs();
+    public byte[] getTargetHash() {
+        return targetHash;
+    }
 
-    /**
-     * Get the local patch environment.
-     *
-     * @return the patch environment
-     */
-    DirectoryStructure getEnvironment();
+    public ModificationType getType() {
+        return type;
+    }
 
 }

@@ -23,7 +23,8 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
@@ -58,13 +59,13 @@ interface ContentTask {
      * @return the rollback action
      * @throws IOException
      */
-    ContentModification execute(final PatchingContext context) throws IOException;
+    MiscContentModification execute(final PatchingContext context) throws IOException;
 
     static final class Factory {
 
-        static ContentTask create(final ContentModification modification, final PatchingContext context) {
+        static ContentTask create(final MiscContentModification modification, final PatchingContext context) {
             // Resolve the files
-            final ContentItem item = modification.getItem();
+            final MiscContentItem item = modification.getItem();
             final File target = context.getTargetFile(item);
             final File backup = context.getBackupFile(item);
             // Create the task
@@ -79,8 +80,6 @@ interface ContentTask {
                 default:
                     throw new IllegalStateException();
             }
-
-
         }
     }
 

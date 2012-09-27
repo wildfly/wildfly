@@ -29,6 +29,7 @@ public enum ModificationType {
 
     ADD,
     MODIFY,
-    REMOVE
+    REMOVE,
+    ;
 
 }
