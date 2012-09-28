@@ -61,7 +61,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
     }
 
     @SuppressWarnings("unchecked")
-    public void start(StartContext context) throws StartException {
+    protected void startInternal(StartContext context) throws StartException {
         try {
             setModule(getBeanConfig().getModule().getInjectedModule().getValue());
             String beanClass = getBeanConfig().getBeanClass();
@@ -72,7 +72,7 @@ public class DescribedPojoPhase extends AbstractPojoPhase {
         } catch (Exception e) {
             throw new StartException(e);
         }
-        super.start(context);
+        super.startInternal(context);
     }
 
     public BeanInfo getValue() throws IllegalStateException, IllegalArgumentException {
