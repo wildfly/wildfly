@@ -6,7 +6,7 @@
 
     <groupId>org.jboss.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>1.0.1.Final</version>
+    <version>1.0.2-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -61,13 +61,13 @@
         <!-- Version of Hibernate projects -->
         <version.org.hibernate>4.1.1.Final</version.org.hibernate>
         <version.org.hibernate.common>4.0.1.Final</version.org.hibernate.common>
-        <version.org.hibernate.javax.persistence>1.0.1.Final</version.org.hibernate.javax.persistence>
+        <version.org.hibernate.javax.persistence>1.0.2-SNAPSHOT</version.org.hibernate.javax.persistence>
         <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>
         <version.org.hibernate.search>4.1.0.CR3</version.org.hibernate.search>
         <version.org.hibernate.validator>4.2.0.Final</version.org.hibernate.validator>
         <version.org.hibernate.search>4.1.0.CR3</version.org.hibernate.search>
         <version.org.hibernate.common>4.0.1.Final</version.org.hibernate.common>
-        <version.org.hibernate.javax.persistence>1.0.1.Final</version.org.hibernate.javax.persistence>
+        <version.org.hibernate.javax.persistence>1.0.2-SNAPSHOT</version.org.hibernate.javax.persistence>
         <version.org.hibernate-jpamodelgen>1.2.0.Final</version.org.hibernate-jpamodelgen>
 
         <!-- Version of Hibernate 3 projects -->
