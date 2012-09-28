@@ -29,8 +29,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.javaee.spec.LifecycleCallbackMetaData;
 import org.jboss.metadata.javaee.spec.LifecycleCallbacksMetaData;
@@ -52,12 +50,12 @@ public class DescriptorEnvironmentLifecycleMethodProcessor implements Deployment
         final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
 
         if (environment != null) {
-            handleMethods(environment, eeModuleDescription);
+            handleMethods(environment, eeModuleDescription, null);
         }
     }
 
 
-    private void handleMethods(DeploymentDescriptorEnvironment env, EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException {
+    public static void handleMethods(DeploymentDescriptorEnvironment env, EEModuleDescription eeModuleDescription, String defaultClassName) throws DeploymentUnitProcessingException {
 
         final RemoteEnvironment environment = env.getEnvironment();
 
@@ -65,12 +63,19 @@ public class DescriptorEnvironmentLifecycleMethodProcessor implements Deployment
         LifecycleCallbacksMetaData postConstructs = environment.getPostConstructs();
         if (postConstructs != null) {
             for (LifecycleCallbackMetaData postConstruct : postConstructs) {
-
+                String className = postConstruct.getClassName();
+                if (className == null || className.isEmpty()) {
+                    if (defaultClassName == null) {
+                        continue;
+                    } else {
+                        className = defaultClassName;
+                    }
+                }
                 final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
                 String methodName = postConstruct.getMethodName();
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPostConstruct(methodIdentifier);
-                eeModuleDescription.addInterceptorMethodOverride(postConstruct.getClassName(), builder.build());
+                eeModuleDescription.addInterceptorMethodOverride(className, builder.build());
             }
         }
 
@@ -78,11 +83,19 @@ public class DescriptorEnvironmentLifecycleMethodProcessor implements Deployment
         LifecycleCallbacksMetaData preDestroys = environment.getPreDestroys();
         if (preDestroys != null) {
             for (LifecycleCallbackMetaData preDestroy : preDestroys) {
+                String className = preDestroy.getClassName();
+                if (className == null || className.isEmpty()) {
+                    if (defaultClassName == null) {
+                        continue;
+                    } else {
+                        className = defaultClassName;
+                    }
+                }
                 final InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder();
                 String methodName = preDestroy.getMethodName();
                 MethodIdentifier methodIdentifier = MethodIdentifier.getIdentifier(void.class, methodName);
                 builder.setPreDestroy(methodIdentifier);
-                eeModuleDescription.addInterceptorMethodOverride(preDestroy.getClassName(), builder.build());
+                eeModuleDescription.addInterceptorMethodOverride(className, builder.build());
             }
         }
     }
