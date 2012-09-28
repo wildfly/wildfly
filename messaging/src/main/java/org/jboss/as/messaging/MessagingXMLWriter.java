@@ -28,7 +28,6 @@ import static org.jboss.as.messaging.CommonAttributes.RELATIVE_TO;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
-import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.VALUE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
@@ -45,7 +44,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttribute;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
-import org.jboss.as.messaging.jms.JndiEntriesAttribute;
+import org.jboss.as.messaging.jms.JMSQueueDefinition;
+import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
 import org.jboss.dmr.ModelNode;
@@ -642,9 +642,11 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 if (queue.isDefined()) {
                     writer.writeStartElement(Element.JMS_QUEUE.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-                    JndiEntriesAttribute.DESTINATION.marshallAsElement(queue, writer);
-                    SELECTOR.marshallAsElement(queue, writer);
-                    DURABLE.marshallAsElement(queue, writer);
+
+                    for (AttributeDefinition attribute : JMSQueueDefinition.ATTRIBUTES) {
+                        attribute.marshallAsElement(queue, writer);
+                    }
+
                     writer.writeEndElement();
                 }
             }
@@ -663,7 +665,11 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                 if (topic.isDefined()) {
                     writer.writeStartElement(Element.JMS_TOPIC.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), name);
-                    JndiEntriesAttribute.DESTINATION.marshallAsElement(topic, writer);
+
+                    for (AttributeDefinition attribute : JMSTopicDefinition.ATTRIBUTES) {
+                        attribute.marshallAsElement(topic, writer);
+                    }
+
                     writer.writeEndElement();
                 }
             }

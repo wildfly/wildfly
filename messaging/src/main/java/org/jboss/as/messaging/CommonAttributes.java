@@ -148,7 +148,7 @@ public interface CommonAttributes {
             .setStorageRuntime()
             .build();
 
-    ListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
+    PrimitiveListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
             .setAllowNull(false)
             .setValidator(new StringLengthValidator(1))
             .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(true))
