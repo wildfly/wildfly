@@ -73,24 +73,11 @@ public class RaAdd extends AbstractAddStepHandler {
         model.get(ARCHIVE.getName()).set(archiveName);
 
 
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-
         ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation);
 
-        final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
-                ConnectorServices.RESOURCEADAPTERS_SERVICE);
-        ServiceController<?> controller = null;
-        if (resourceAdaptersService == null) {
-            controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
-                    new ResourceAdaptersService()).setInitialMode(Mode.ACTIVE).addListener(verificationHandler).install();
-        }
-        ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
-
-        ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
-        serviceTarget.addService(raServiceName, raService).setInitialMode(Mode.ACTIVE)
-                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
-                .addListener(verificationHandler).install();
-
+        RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
 
     }
+
+
 }
