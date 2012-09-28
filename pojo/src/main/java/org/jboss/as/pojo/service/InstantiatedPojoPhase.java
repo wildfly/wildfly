@@ -48,7 +48,8 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
         return new ConfiguredPojoPhase();
     }
 
-    public void start(StartContext context) throws StartException {
+    @Override
+    protected void startInternal(StartContext context) throws StartException {
         try {
             BeanInfo beanInfo = getBeanInfo();
             setBean(BeanUtils.instantiateBean(getBeanConfig(), beanInfo, getIndex(), getModule()));
@@ -64,6 +65,6 @@ public class InstantiatedPojoPhase extends AbstractPojoPhase {
         } catch (Throwable t) {
             throw new StartException(t);
         }
-        super.start(context);
+        super.startInternal(context);
     }
 }
