@@ -25,8 +25,10 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
+import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.component.deployers.DescriptorEnvironmentLifecycleMethodProcessor;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -69,6 +71,11 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
                         final ApplicationClientComponentDescription description = new ApplicationClientComponentDescription(clazz.getName(), moduleDescription, deploymentUnit.getServiceName(), applicationClasses);
                         moduleDescription.addComponent(description);
                         deploymentUnit.putAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT, description);
+
+                        final DeploymentDescriptorEnvironment environment = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.MODULE_DEPLOYMENT_DESCRIPTOR_ENVIRONMENT);
+                        if (environment != null) {
+                            DescriptorEnvironmentLifecycleMethodProcessor.handleMethods(environment, moduleDescription, mainClass);
+                        }
                     } catch (ClassNotFoundException e) {
                         throw MESSAGES.cannotLoadAppClientMainClass(e);
                     }
