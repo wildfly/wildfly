@@ -32,6 +32,7 @@ import java.util.Locale;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -52,7 +53,16 @@ import org.jboss.dmr.ModelType;
  */
 public class JMSTopicDefinition extends SimpleResourceDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES };
+    public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES };
+
+    /**
+     * Attributes for deployed JMS topic are stored in runtime
+     */
+    private static AttributeDefinition[] getDeploymentAttributes() {
+        return new AttributeDefinition[] {
+                new PrimitiveListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES).setStorageRuntime().build()
+        };
+    }
 
     static final AttributeDefinition TOPIC_ADDRESS = create(CommonAttributes.TOPIC_ADDRESS, STRING)
             .setStorageRuntime()
@@ -135,7 +145,8 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
-        for (AttributeDefinition attr : ATTRIBUTES) {
+        AttributeDefinition[] attributes = deployed ? getDeploymentAttributes() : ATTRIBUTES;
+        for (AttributeDefinition attr : attributes) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, JMSTopicConfigurationRuntimeHandler.INSTANCE);

@@ -30,6 +30,8 @@ import static org.jboss.dmr.ModelType.STRING;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -44,7 +46,18 @@ import org.jboss.as.messaging.MessagingExtension;
  */
 public class JMSQueueDefinition extends SimpleResourceDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE };
+    public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE };
+
+    /**
+     * Attributes for deployed JMS queue are stored in runtime
+     */
+    private static AttributeDefinition[] getDeploymentAttributes() {
+        return new AttributeDefinition[] {
+                new PrimitiveListAttributeDefinition.Builder(CommonAttributes.DESTINATION_ENTRIES).setStorageRuntime().build(),
+                SimpleAttributeDefinitionBuilder.create(CommonAttributes.SELECTOR).setStorageRuntime().build(),
+                SimpleAttributeDefinitionBuilder.create(CommonAttributes.DURABLE).setStorageRuntime().build()
+        };
+    }
 
     static final AttributeDefinition QUEUE_ADDRESS = create("queue-address", STRING)
             .setStorageRuntime()
@@ -92,7 +105,8 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
-        for (AttributeDefinition attr : ATTRIBUTES) {
+        AttributeDefinition[] attributes = deployed ? getDeploymentAttributes() : ATTRIBUTES;
+        for (AttributeDefinition attr : attributes) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, JMSQueueConfigurationRuntimeHandler.INSTANCE);
@@ -112,6 +126,7 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
             }
         }
     }
+
 
     @Override
     public void registerOperations(ManagementResourceRegistration registry) {
