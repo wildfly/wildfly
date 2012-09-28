@@ -53,8 +53,17 @@ public class RaActivate implements OperationStepHandler {
                     final String archiveName = model.get(ARCHIVE.getName()).asString();
 
                     RaOperationUtil.activate(context, raName, archiveName);
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            try {
+                                RaOperationUtil.deactivateIfActive(context, raName);
+                            } catch (OperationFailedException e) {
 
-                    context.completeStep();
+                            }
+
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
