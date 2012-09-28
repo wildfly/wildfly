@@ -27,6 +27,7 @@ import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResou
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -53,6 +54,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -293,7 +295,8 @@ public class RaOperationUtil {
         }
     }
 
-    public static void deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
+    public static boolean deactivateIfActive(OperationContext context, String raName) throws OperationFailedException {
+        boolean wasActive =false;
         final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
         Integer identifier = 0;
         if (raName.indexOf("->") != -1) {
@@ -303,13 +306,14 @@ public class RaOperationUtil {
         if (raDeploymentServiceName != null)  {
             context.removeService(raDeploymentServiceName);
             ConnectorServices.unregisterDeployment(raName, raDeploymentServiceName);
+            wasActive = true;
         }
         ConnectorServices.unregisterResourceIdentifier(raName, identifier);
 
         ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
         AbstractResourceAdapterDeploymentService service = ((AbstractResourceAdapterDeploymentService) context.getServiceRegistry(false).getService(deploymentServiceName));
 
-
+        return wasActive;
 
     }
 
@@ -327,5 +331,23 @@ public class RaOperationUtil {
 
         ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeployment(), raxml, inactive.getResource());
+    }
+
+    public static void installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter) {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+
+        final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
+                ConnectorServices.RESOURCEADAPTERS_SERVICE);
+        ServiceController<?> controller = null;
+        if (resourceAdaptersService == null) {
+            controller = serviceTarget.addService(ConnectorServices.RESOURCEADAPTERS_SERVICE,
+                    new ResourceAdaptersService()).setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
+        }
+        ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
+
+        ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
+        serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
+                .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                .addListener(verificationHandler).install();
     }
 }
