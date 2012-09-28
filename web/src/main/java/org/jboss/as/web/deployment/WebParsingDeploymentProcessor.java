@@ -113,7 +113,7 @@ public class WebParsingDeploymentProcessor implements DeploymentUnitProcessor {
                 warMetaData.setWebMetaData(webMetaData);
 
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
+                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webXml), e);
             } finally {
