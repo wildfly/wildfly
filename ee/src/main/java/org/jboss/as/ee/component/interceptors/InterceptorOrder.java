@@ -46,6 +46,7 @@ public class InterceptorOrder {
         public static final int JPA_SESSION_BEAN_INTERCEPTOR = 0x600;
         public static final int SINGLETON_CONTAINER_MANAGED_CONCURRENCY_INTERCEPTOR = 0x700;
         public static final int CMP_RELATIONSHIP_INTERCEPTOR = 0x800;
+        public static final int USER_TX_ACCESS_PERMISSION_INTERCEPTOR = 0x801;
         // WS handlers, user and CDI interceptors plus the bean method are considered user execution time
         public static final int EJB_EXECUTION_TIME_INTERCEPTOR = 0x850;
         // JSR 109 - Version 1.3 - 6.2.2.4 Security
@@ -70,6 +71,7 @@ public class InterceptorOrder {
     public static final class ComponentPostConstruct {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
+        public static final int USER_TX_ACCESS_PERMISSION_INTERCEPTOR = 0x101;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JPA_SFSB_PRE_CREATE = 0x400;
@@ -93,6 +95,7 @@ public class InterceptorOrder {
     public static final class ComponentPreDestroy {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
+        public static final int USER_TX_ACCESS_PERMISSION_INTERCEPTOR = 0x101;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
@@ -111,6 +114,7 @@ public class InterceptorOrder {
     public static final class ComponentPassivation {
 
         public static final int TCCL_INTERCEPTOR = 0x100;
+        public static final int USER_TX_ACCESS_PERMISSION_INTERCEPTOR = 0x101;
         public static final int EJB_SESSION_CONTEXT_INTERCEPTOR = 0x200;
         public static final int TRANSACTION_INTERCEPTOR = 0x300;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x400;
@@ -134,6 +138,7 @@ public class InterceptorOrder {
         public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x210;
         public static final int SHUTDOWN_INTERCEPTOR = 0x220;
         public static final int INVALID_METHOD_EXCEPTION = 0x230;
+        public static final int USER_TX_ACCESS_PERMISSION_INTERCEPTOR = 0x240;
         public static final int SECURITY_CONTEXT = 0x250;
         public static final int EJB_SECURITY_AUTHORIZATION_INTERCEPTOR = 0x300;
         // after security we take note of the invocation

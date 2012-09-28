@@ -39,9 +39,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
+import org.jboss.as.txn.service.UserTransactionAccessRightService;
+import org.jboss.as.txn.service.UserTransactionBindingService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+
 
 /**
  * Processor responsible for binding transaction related resources to JNDI.
@@ -87,11 +90,12 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
     private void bindServices(DeploymentUnit deploymentUnit, ServiceTarget serviceTarget, EEModuleDescription description,String componentName,ServiceName contextServiceName) {
 
         final ServiceName userTransactionServiceName = contextServiceName.append("UserTransaction");
-        BinderService userTransactionBindingService = new BinderService("UserTransaction");
+        final UserTransactionBindingService userTransactionBindingService = new UserTransactionBindingService("UserTransaction");
         serviceTarget.addService(userTransactionServiceName, userTransactionBindingService)
             .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class,
                     new ManagedReferenceInjector<UserTransaction>(userTransactionBindingService.getManagedObjectInjector()))
             .addDependency(contextServiceName, ServiceBasedNamingStore.class, userTransactionBindingService.getNamingStoreInjector())
+            .addDependency(UserTransactionAccessRightService.SERVICE_NAME, UserTransactionAccessRightService.class, userTransactionBindingService.getUserTransactionAccessRightServiceInjector())
             .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,userTransactionServiceName);
 
@@ -109,4 +113,5 @@ public class TransactionJndiBindingProcessor implements DeploymentUnitProcessor 
     @Override
     public void undeploy(DeploymentUnit context) {
     }
+
 }
