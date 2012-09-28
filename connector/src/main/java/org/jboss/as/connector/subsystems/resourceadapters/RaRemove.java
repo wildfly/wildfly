@@ -32,8 +32,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import java.util.List;
@@ -42,7 +44,7 @@ import java.util.List;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
  *         Maestri</a>
  */
-public class RaRemove extends RaOperationUtil implements OperationStepHandler {
+public class RaRemove implements OperationStepHandler {
     static final RaRemove INSTANCE = new RaRemove();
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -69,8 +71,15 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                RaOperationUtil.deactivateIfActive(context, raName);
+                final boolean wasActive = RaOperationUtil.deactivateIfActive(context, raName);
                 ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName);
+                ServiceController<?> serviceController =  context.getServiceRegistry(false).getService(raServiceName);
+                final ModifiableResourceAdapter resourceAdapter;
+                if (serviceController != null) {
+                    resourceAdapter = (ModifiableResourceAdapter) serviceController.getValue();
+                } else {
+                    resourceAdapter = null;
+                }
                 final List<ServiceName> serviceNameList = context.getServiceRegistry(false).getServiceNames();
                 for (ServiceName name : serviceNameList) {
                     if (raServiceName.isParentOf(name)) {
@@ -82,7 +91,16 @@ public class RaRemove extends RaOperationUtil implements OperationStepHandler {
                 context.completeStep(new OperationContext.RollbackHandler() {
                     @Override
                     public void handleRollback(OperationContext context, ModelNode operation) {
-                        // TODO:  AS7-5609 RE-ADD SERVICES
+                        if (resourceAdapter != null) {
+                            RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), raName, resourceAdapter);
+                            try {
+                                if (wasActive)
+                                    RaOperationUtil.activate(context, raName, archive);
+                            } catch (OperationFailedException e) {
+
+                            }
+                        }
+
                     }
                 });
             }
