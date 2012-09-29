@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -118,6 +119,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
     }
 
     @Test
+    @Ignore("AS7-5350")
     public void testWrongControler() throws Exception {
         int exitCode = execute(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort() - 1, true, "quit", true);
         assertTrue(exitCode != 0);
