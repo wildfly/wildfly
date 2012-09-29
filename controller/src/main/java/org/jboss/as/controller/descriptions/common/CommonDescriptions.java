@@ -99,10 +99,6 @@ public class CommonDescriptions {
         return root;
     }
 
-    public static ModelNode getValidateOperationDescription(final Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return getSingleParamOnlyOperation(bundle, ValidateOperationHandler.OPERATION_NAME, "global", VALUE, ModelType.OBJECT, false);
-    }
 
     public static ModelNode getDescriptionOnlyOperation(final ResourceBundle bundle, final String operationName, final String descriptionPrefix) {
 
