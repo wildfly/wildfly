@@ -127,7 +127,7 @@
         <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
         <version.org.apache.santuario>1.5.2</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
-        <version.org.apache.ws.security>1.6.6</version.org.apache.ws.security>
+        <version.org.apache.ws.security>1.6.7</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
         <version.org.apache.xalan>2.7.1.jbossorg-1</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-jbossas-2</version.org.apache.xerces>
@@ -231,12 +231,12 @@
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>1.1.9.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
-        <version.org.jboss.ws.api>1.0.1.Beta3</version.org.jboss.ws.api>
-        <version.org.jboss.ws.spi>2.1.0.Beta3</version.org.jboss.ws.spi>
-        <version.org.jboss.ws.common>2.1.0.Beta3</version.org.jboss.ws.common>
-        <version.org.jboss.ws.common.tools>1.0.1.GA</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>4.1.0.Beta2</version.org.jboss.ws.cxf>
-        <version.org.jboss.ws.jbossws-native>4.1.0.Beta2</version.org.jboss.ws.jbossws-native>
+        <version.org.jboss.ws.api>1.0.1.CR1</version.org.jboss.ws.api>
+        <version.org.jboss.ws.spi>2.1.0.CR1</version.org.jboss.ws.spi>
+        <version.org.jboss.ws.common>2.1.0.CR1</version.org.jboss.ws.common>
+        <version.org.jboss.ws.common.tools>1.1.0.CR1</version.org.jboss.ws.common.tools>
+        <version.org.jboss.ws.cxf>4.1.0.CR1</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.jbossws-native>4.1.0.CR1</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
         <version.org.jboss.xnio>3.0.6.GA</version.org.jboss.xnio>
