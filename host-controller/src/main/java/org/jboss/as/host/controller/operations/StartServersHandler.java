@@ -132,7 +132,7 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                 }
             } else if (info != null){
                 //Reconnect the server
-                serverInventory.reconnectServer(serverName, domainModel, info.isRunning());
+                serverInventory.reconnectServer(serverName, domainModel, info.isRunning(), info.isStopping());
             }
         }
     }
