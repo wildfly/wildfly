@@ -34,7 +34,11 @@ public class ModuleItem extends ContentItem {
     }
 
     public ModuleItem(String name, String slot) {
-        super(name, ContentType.MODULE);
+        this(name, slot, ContentType.MODULE);
+    }
+
+    ModuleItem(String name, String slot, ContentType type) {
+        super(name, type);
         this.slot = slot;
     }
 

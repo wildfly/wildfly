@@ -40,13 +40,24 @@ class PatchContentLoader {
     }
 
     /**
+     * Get a patch content file.
+     *
+     * @param item the content item
+     * @return the file
+     * @throws IOException
+     */
+    File getFile(final ContentItem item) throws IOException {
+        return mapping.getFile(item);
+    }
+
+    /**
      * Open a new content stream.
      *
      * @param item the content item
      * @return the content stream
      */
-    InputStream openContentStream(ContentItem item) throws IOException {
-        final File file = mapping.getFile(item);
+    InputStream openContentStream(final ContentItem item) throws IOException {
+        final File file = getFile(item);
         return new FileInputStream(file);
     }
 

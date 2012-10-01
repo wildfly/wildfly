@@ -23,8 +23,8 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
@@ -36,32 +36,32 @@ import java.io.InputStream;
  */
 final class FileModifyTask extends AbstractFileTask {
 
-    FileModifyTask(File target, File backup, MiscContentModification modification) {
-        super(target, backup, modification);
+    FileModifyTask(MiscContentItem item, File target, File backup, ContentModification modification) {
+        super(target, backup, item, modification);
     }
 
-    public MiscContentModification execute(final PatchingContext context) throws IOException {
+    public void execute(final PatchingContext context) throws IOException {
 
-        final MiscContentItem item = modification.getItem();
         final InputStream is = context.getLoader().openContentStream(item);
         try {
             // Replace the file
             final byte[] hash = copy(is, target);
             final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
-            return createRollback(context, item, backupItem, hash);
+            final ContentModification rollback = createRollback(context, item, backupItem, hash);
+            context.recordRollbackAction(rollback);
         } finally {
             PatchUtils.safeClose(is);
         }
     }
 
-    protected MiscContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
+    protected ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
         final byte[] expected = item.getContentHash();
         // TODO Ignored resources
         if(! targetHash.equals(expected)) {
             // TODO rollback if the content hash is different than in the metadata?
             PatchLogger.ROOT_LOGGER.warnf("wrong content has for item (%s) ", item); // TODO i18n
         }
-        return new MiscContentModification(backupItem, targetHash, ModificationType.MODIFY);
+        return new ContentModification(backupItem, targetHash, ModificationType.MODIFY);
     }
 
 }

@@ -27,6 +27,7 @@ import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -41,5 +42,8 @@ public interface PatchMessages {
 
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
     PatchingException doesNotApply(List < String > appliesTo, String version);
+
+    @Message(id = 16841, value = "Failed to delete (%s)")
+    IOException failedToDelete(String path);
 
 }

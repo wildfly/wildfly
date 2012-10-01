@@ -20,29 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.runner.PatchingException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import static org.jboss.logging.Logger.Level.WARN;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.as.patching.metadata.ModuleItem;
+
+import java.io.IOException;
 
 /**
- * 16800 - 16840
- *
  * @author Emanuel Muckenhuber
  */
-@MessageBundle(projectCode = "JBAS")
-public interface PatchLogger extends BasicLogger {
+class ModuleRemoveTask extends AbstractModuleTask {
 
-    PatchLogger ROOT_LOGGER = Logger.getMessageLogger(PatchLogger.class, PatchLogger.class.getPackage().getName());
+    ModuleRemoveTask(ModuleItem item, byte[] expected) {
+        super(item, expected);
+    }
 
-    @LogMessage(level = WARN)
-    @Message(id = 16800, value = "detected modification to module (%s)")
-    void moduleContentChanged(String moduleIdentifier);
+    @Override
+    public void execute(PatchingContext context) throws IOException {
+        throw new IOException("TODO");
+    }
 
 }

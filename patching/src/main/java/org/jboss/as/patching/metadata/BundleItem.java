@@ -27,26 +27,14 @@ package org.jboss.as.patching.metadata;
  *
  * @author Emanuel Muckenhuber
  */
-public class BundleItem extends ContentItem {
-
-    private final String slot;
+public class BundleItem extends ModuleItem {
 
     public BundleItem(String name) {
         this(name, "main");
     }
 
     public BundleItem(String name, String slot) {
-        super(name, ContentType.BUNDLE);
-        this.slot = slot;
-    }
-
-    /**
-     * Get the bundle slot.
-     *
-     * @return the module slot
-     */
-    public String getSlot() {
-        return slot;
+        super(name, slot, ContentType.BUNDLE);
     }
 
 }

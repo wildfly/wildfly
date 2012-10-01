@@ -26,8 +26,8 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.Patch;
 
 import java.io.File;
@@ -41,20 +41,34 @@ import java.util.List;
  */
 class PatchingContext {
 
+    private final Patch patch;
     private final PatchInfo info;
     private final PatchContentLoader loader;
-    private final List<MiscContentModification> rollbackActions = new ArrayList<MiscContentModification>();
+
+    private final DirectoryStructure structure;
 
     private final File root;
     private final File backup;
+    private ContentVerificationPolicy verificationPolicy = ContentVerificationPolicy.STRICT;
+    private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
 
     private boolean rollbackOnly;
 
     PatchingContext(final Patch patch, final PatchInfo info, final DirectoryStructure structure, final PatchContentLoader loader) {
+        this.patch = patch;
         this.info = info;
         this.loader = loader;
         this.root = structure.getInstalledImage().getJbossHome();
         this.backup = structure.getHistoryDir(patch.getPatchId());
+        this.structure = structure;
+    }
+
+    public File getModulePatchDirectory() {
+        return structure.getModulePatchDirectory(patch.getPatchId());
+    }
+
+    public PatchInfo getPatchInfo() {
+        return info;
     }
 
     public PatchContentLoader getLoader() {
@@ -70,16 +84,14 @@ class PatchingContext {
     }
 
     public boolean isIgnored(final ContentItem item) {
-        // TODO
-        return false;
+        return verificationPolicy.ignoreContentValidation(item);
     }
 
     public boolean isExcluded(final ContentItem item) {
-        // TODO
-        return false;
+        return verificationPolicy.preserveExisting(item);
     }
 
-    public void addRollbackAction(final MiscContentModification modification) {
+    protected void recordRollbackAction(final ContentModification modification) {
         rollbackActions.add(modification);
     }
 

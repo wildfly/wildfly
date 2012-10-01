@@ -76,11 +76,15 @@ class PatchItemMapping {
     }
 
     File getModulePath(final ModuleItem item) {
-        return getModulePath(modulesRoot, item.getName(), item.getSlot());
+        return getModulePath(modulesRoot, item);
     }
 
     File getBundlePath(final BundleItem item) {
         return getModulePath(bundlesRoot, item.getName(), item.getSlot());
+    }
+
+    static File getModulePath(File root, ModuleItem item) {
+        return getModulePath(root, item.getName(), item.getSlot());
     }
 
     static File getModulePath(File root, String name, String slot) {

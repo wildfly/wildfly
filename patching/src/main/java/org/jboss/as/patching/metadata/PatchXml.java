@@ -37,11 +37,12 @@ import java.util.Set;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchXml implements XMLStreamConstants {
+public class PatchXml implements XMLStreamConstants {
 
+    public static final String PATCH_XML = "patch.xml";
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
-    static Patch parse(final InputStream stream) throws XMLStreamException {
+    public static Patch parse(final InputStream stream) throws XMLStreamException {
         try {
             final XMLInputFactory inputFactory = INPUT_FACTORY;
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);

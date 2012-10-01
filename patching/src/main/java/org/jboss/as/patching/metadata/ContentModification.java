@@ -25,19 +25,19 @@ package org.jboss.as.patching.metadata;
 /**
  * @author Emanuel Muckenhuber
  */
-public class MiscContentModification {
+public class ContentModification {
 
-    private final MiscContentItem item;
+    private final ContentItem item;
     private final byte[] targetHash;
     private final ModificationType type;
 
-    public MiscContentModification(MiscContentItem item, byte[] targetHash, ModificationType type) {
+    public ContentModification(ContentItem item, byte[] targetHash, ModificationType type) {
         this.item = item;
         this.targetHash = targetHash;
         this.type = type;
     }
 
-    public MiscContentItem getItem() {
+    public ContentItem getItem() {
         return item;
     }
 

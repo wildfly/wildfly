@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.metadata;
 
+import java.util.List;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -29,11 +31,26 @@ public class MiscContentItem extends ContentItem {
 
     private final String[] path;
     private final byte[] contentHash;
+    private final boolean affectsRuntime;
+
+    public MiscContentItem(String name, List<String> path, byte[] contentHash) {
+        this(name, path.toArray(new String[path.size()]), contentHash, false);
+    }
 
     public MiscContentItem(String name, String[] path, byte[] contentHash) {
+        this(name, path, contentHash, false);
+    }
+
+    public MiscContentItem(String name, String[] path, byte[] contentHash, boolean affectsRuntime) {
         super(name, ContentType.MISC);
         this.path = path;
         this.contentHash = contentHash;
+        this.affectsRuntime = affectsRuntime;
+
+    }
+
+    public boolean isAffectsRuntime() {
+        return affectsRuntime;
     }
 
     /**

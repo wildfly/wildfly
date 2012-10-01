@@ -22,21 +22,97 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.BundleItem;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
+import org.jboss.as.patching.metadata.ModuleItem;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public interface PatchingTask {
+interface PatchingTask {
+
+    byte[] NO_CONTENT = new byte[0];
 
     /**
-     * Execute a patch.
+     * Get the content item modified by this task.
      *
-     * @param context
+     * @return the content item
+     */
+    ContentItem getContentItem();
+
+    /**
+     * Prepare the content modification. This will backup the current target file and check
+     * if the file was modified.
+     *
+     * @param  context the patching context
+     * @return whether it meets the modification tasks expectation
      * @throws IOException
      */
-    void execute(Patch patch, PatchingContext context) throws IOException;
+    boolean prepare(PatchingContext context) throws IOException;
+
+    /**
+     * Execute.
+     *
+     * @param context the patching context
+     * @return the rollback action
+     * @throws IOException
+     */
+    void execute(final PatchingContext context) throws IOException;
+
+    static final class Factory {
+
+        static PatchingTask create(final ContentModification modification, final PatchingContext context) {
+            final ContentItem item = modification.getItem();
+            switch (item.getContentType()) {
+                case BUNDLE:
+                    return createBundleTask(modification, (BundleItem)item, context);
+                case MISC:
+                    return createMiscTask(modification, (MiscContentItem) item, context);
+                case MODULE:
+                    return createModuleTask(modification, (ModuleItem) item, context);
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+
+        static PatchingTask createBundleTask(final ContentModification modification, final BundleItem item, final PatchingContext context) {
+            if(modification.getType() == ModificationType.REMOVE) {
+                return new ModuleRemoveTask(item, modification.getTargetHash());
+            } else {
+                return new ModuleUpdateTask(item, modification.getTargetHash());
+            }
+        }
+
+        static PatchingTask createModuleTask(final ContentModification modification, final ModuleItem item, final PatchingContext context) {
+            if(modification.getType() == ModificationType.REMOVE) {
+                return new ModuleRemoveTask(item, modification.getTargetHash());
+            } else {
+                return new ModuleUpdateTask(item, modification.getTargetHash());
+            }
+        }
+
+        static PatchingTask createMiscTask(final ContentModification modification, final MiscContentItem item, final PatchingContext context) {
+            // Create the task
+            final File target = context.getTargetFile(item);
+            final File backup = context.getBackupFile(item);
+            final ModificationType type = modification.getType();
+            switch (type) {
+                case ADD:
+                    return new FileAddTask(item, target, backup, modification);
+                case MODIFY:
+                    return new FileModifyTask(item, target, backup, modification);
+                case REMOVE:
+                    return new FileRemoveTask(item, target, backup, modification);
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
 
 }

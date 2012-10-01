@@ -27,6 +27,7 @@ import org.jboss.as.patching.runner.PatchUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -85,4 +86,15 @@ public class LocalPatchInfo implements PatchInfo {
         }
     }
 
+    @Override
+    public File[] getPatchingPath() {
+        final List<File> path = new ArrayList<File>();
+        for(final String patch :patches) {
+            path.add(environment.getModulePatchDirectory(patch));
+        }
+        if(cumulativeId != BASE) {
+            path.add(environment.getModulePatchDirectory(cumulativeId));
+        }
+        return path.toArray(new File[path.size()]);
+    }
 }
