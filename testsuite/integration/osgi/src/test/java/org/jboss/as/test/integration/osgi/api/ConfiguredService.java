@@ -20,12 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.osgi.xservice.bundle;
+package org.jboss.as.test.integration.osgi.api;
 
 import java.util.Dictionary;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.osgi.service.cm.ConfigurationException;
 import org.osgi.service.cm.ManagedService;
@@ -38,27 +37,23 @@ import org.osgi.service.cm.ManagedService;
  */
 public class ConfiguredService implements ManagedService {
 
-    public static String SERVICE_PID = ConfiguredService.class.getName();
-
-    @SuppressWarnings("rawtypes")
-    private Dictionary properties;
-    private CountDownLatch latch = new CountDownLatch(1);
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private Dictionary<String, String> properties;
 
     @Override
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void updated(Dictionary update) throws ConfigurationException {
-        properties = update;
-        if (latch.getCount() == 1)
+        if (update != null) {
+            properties = update;
             latch.countDown();
+        }
     }
 
-    public String getValue(String key) throws InterruptedException, TimeoutException {
-
-        // Wait a little for the update to happen
-        if (latch.await(5, TimeUnit.SECONDS) == false)
-            throw new TimeoutException();
-
-        return (String) properties.get(key);
+    public boolean awaitUpdate(long timeout, TimeUnit unit) throws InterruptedException {
+        return latch.await(timeout, unit);
     }
 
+    public Dictionary<String, String> getProperties() {
+        return properties;
+    }
 }

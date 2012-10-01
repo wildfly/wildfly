@@ -22,13 +22,12 @@
 package org.jboss.as.osgi.configadmin;
 
 import java.util.Arrays;
-import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
 import org.apache.felix.cm.PersistenceManager;
-import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.junit.Test;
@@ -36,13 +35,13 @@ import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author David Bosschaert
  */
 public class DomainModelPersistenceManagerTestCase {
+
     @Test
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public void testInitialization() throws Exception {
@@ -52,7 +51,7 @@ public class DomainModelPersistenceManagerTestCase {
         ServiceReference mockCASSR = Mockito.mock(ServiceReference.class);
         ServiceReference mockSCSR = Mockito.mock(ServiceReference.class);
 
-        ConfigAdminService mockJBCAS = Mockito.mock(ConfigAdminService.class);
+        ConfigAdmin mockJBCAS = Mockito.mock(ConfigAdmin.class);
         Set<String> pids = new HashSet<String>(Arrays.asList("a.b", "1"));
         Mockito.when(mockJBCAS.getConfigurations()).thenReturn(pids);
 
@@ -60,7 +59,7 @@ public class DomainModelPersistenceManagerTestCase {
         Mockito.when(mockJBCASController.getValue()).thenReturn(mockJBCAS);
 
         ServiceContainer mockServiceContainer = Mockito.mock(ServiceContainer.class);
-        Mockito.when(mockServiceContainer.getRequiredService(ConfigAdminService.SERVICE_NAME)).thenReturn(mockJBCASController);
+        Mockito.when(mockServiceContainer.getRequiredService(ConfigAdmin.SERVICE_NAME)).thenReturn(mockJBCASController);
 
         BundleContext mockBundleContext = Mockito.mock(BundleContext.class);
         Mockito.when(mockBundleContext.getServiceReferences(ConfigurationAdmin.class.getName(), null)).
@@ -78,81 +77,5 @@ public class DomainModelPersistenceManagerTestCase {
         Hashtable<String, Object> props = new Hashtable<String, Object>();
         props.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
         Mockito.verify(mockBundleContext).registerService(PersistenceManager.class.getName(), dmpm, props);
-
-        // The OSGi ConfigAdmin needs to be primed with the configurations known to the JBoss ConfigAdmin
-        Mockito.verify(mockOSGiCAS).getConfiguration("a.b", null);
-        Mockito.verify(mockOSGiCAS).getConfiguration("1", null);
-    }
-
-    @Test
-    public void testModificationFromDMRCausesUpdate() throws Exception {
-        DomainModelPersistenceManager dmpm = new DomainModelPersistenceManager();
-        Configuration mockConfiguration = initPersistenceManager(dmpm, "abc");
-
-        Dictionary<String, String> dict = new Hashtable<String, String>();
-        dict.put("a", "b");
-        dict.put(ConfigAdminService.SOURCE_PROPERTY_KEY, ConfigAdminService.FROM_DMR_SOURCE_VALUE);
-        dmpm.configurationModified("abc", dict);
-
-        Mockito.verify(mockConfiguration).update(dict);
-        Mockito.verifyNoMoreInteractions(mockConfiguration);
-    }
-
-    @Test
-    public void testModificationNoUpdate() throws Exception {
-        DomainModelPersistenceManager dmpm = new DomainModelPersistenceManager();
-        Configuration mockConfiguration = initPersistenceManager(dmpm, "abc");
-
-        Dictionary<String, String> dict = new Hashtable<String, String>();
-        dict.put("a", "b");
-        dmpm.configurationModified("abc", dict);
-
-        // Because the modification is not marked to come from DMR it is assumed to come from the
-        // OSGi Config Admin system, so it does not need to be fed back into it. Therefore the
-        // Configuration.update() should not be called.
-        Mockito.verify(mockConfiguration, Mockito.never()).update(dict);
-        Mockito.verifyNoMoreInteractions(mockConfiguration);
-    }
-
-    @Test
-    public void testConfigurationDeleted() throws Exception {
-        DomainModelPersistenceManager dmpm = new DomainModelPersistenceManager();
-        Configuration mockConfiguration = initPersistenceManager(dmpm, "abc");
-
-        dmpm.configurationModified("abc", null);
-
-        Mockito.verify(mockConfiguration).delete();
-        Mockito.verifyNoMoreInteractions(mockConfiguration);
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Configuration initPersistenceManager(DomainModelPersistenceManager dmpm, String pid) throws Exception {
-        Configuration mockConfiguration = Mockito.mock(Configuration.class);
-
-        ConfigurationAdmin mockOSGiCAS = Mockito.mock(ConfigurationAdmin.class);
-        Mockito.when(mockOSGiCAS.getConfiguration(pid, null)).thenReturn(mockConfiguration);
-        Mockito.when(mockOSGiCAS.listConfigurations("(" + Constants.SERVICE_PID + "=" + pid + ")")).
-            thenReturn(new Configuration [] {mockConfiguration});
-
-        ServiceReference mockCASSR = Mockito.mock(ServiceReference.class);
-        ServiceReference mockSCSR = Mockito.mock(ServiceReference.class);
-
-        ConfigAdminService mockJBCAS = Mockito.mock(ConfigAdminService.class);
-
-        ServiceController mockJBCASController = Mockito.mock(ServiceController.class);
-        Mockito.when(mockJBCASController.getValue()).thenReturn(mockJBCAS);
-
-        ServiceContainer mockServiceContainer = Mockito.mock(ServiceContainer.class);
-        Mockito.when(mockServiceContainer.getRequiredService(ConfigAdminService.SERVICE_NAME)).thenReturn(mockJBCASController);
-
-        BundleContext mockBundleContext = Mockito.mock(BundleContext.class);
-        Mockito.when(mockBundleContext.getServiceReferences(ConfigurationAdmin.class.getName(), null)).
-        thenReturn(new ServiceReference [] {mockCASSR}); // call used by OSGi ServiceTracker
-        Mockito.when(mockBundleContext.getServiceReference(ServiceContainer.class.getName())).thenReturn(mockSCSR);
-        Mockito.when(mockBundleContext.getService(mockSCSR)).thenReturn(mockServiceContainer);
-        Mockito.when(mockBundleContext.getService(mockCASSR)).thenReturn(mockOSGiCAS);
-
-        dmpm.start(mockBundleContext);
-        return mockConfiguration;
     }
 }

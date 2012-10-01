@@ -22,77 +22,66 @@
 
 package org.jboss.as.test.integration.osgi.configadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.DeploymentMarker;
-import org.jboss.as.test.integration.osgi.xservice.bundle.ConfiguredService;
+import org.jboss.as.test.integration.osgi.api.ConfiguredService;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-import org.osgi.service.cm.ConfigurationEvent;
-import org.osgi.service.cm.ConfigurationListener;
 import org.osgi.service.cm.ManagedService;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
  * A test that shows how an OSGi {@link ManagedService} can be configured through the {@link ConfigurationAdmin}.
  *
  * This test needs to run against an AS instance that contains the following config
  *
-     <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
-       <configuration pid="a.test.pid">
-         <property name="testkey" value="test value"/>
-         <property name="test.key.2" value="nothing"/>
-       </configuration>
-     </subsystem>
+   <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
+     <configuration pid="a.test.pid">
+       <property name="testkey" value="test value"/>
+       <property name="test.key.2" value="nothing"/>
+     </configuration>
+   </subsystem>
  *
  * @author Thomas.Diesler@jboss.com
  * @author David Bosschaert
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-@DeploymentMarker(autoStart = false)
 public class ConfigurationAdminTestCase {
 
-    @Inject
-    public BundleContext context;
+    static final String PID_A = ConfigurationAdminTestCase.class.getSimpleName() + "-pid-a";
+    static final String PID_B = "a.test.pid";
 
     @Inject
     public Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "example-configadmin");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "osgi-configadmin");
         archive.addClasses(FrameworkUtils.class, ConfiguredService.class);
         archive.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(StartLevel.class, ConfigurationAdmin.class);
+                builder.addImportPackages(ConfigurationAdmin.class);
                 return builder.openStream();
             }
         });
@@ -102,66 +91,52 @@ public class ConfigurationAdminTestCase {
     @Test
     public void testManagedService() throws Exception {
 
-        // Start the test bundle
-        bundle.start();
-        BundleContext context = bundle.getBundleContext();
-
-        // Get the {@link ConfigurationAdmin}
-        ServiceReference sref = context.getServiceReference(ConfigurationAdmin.class.getName());
-        ConfigurationAdmin configAdmin = (ConfigurationAdmin) context.getService(sref);
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        ConfigurationListener listener = new ConfigurationListener() {
-            @Override
-            public void configurationEvent(ConfigurationEvent event) {
-                if (ConfiguredService.SERVICE_PID.equals(event.getPid()))
-                    latch.countDown();
-            }
-        };
-        context.registerService(ConfigurationListener.class.getName(), listener, null);
-
         // Get the {@link Configuration} for the given PID
-        Configuration config = configAdmin.getConfiguration(ConfiguredService.SERVICE_PID);
-        assertNotNull("Config not null", config);
-        try
-        {
+        BundleContext context = bundle.getBundleContext();
+        ConfigurationAdmin configAdmin = getConfigurationAdmin(context);
+        Configuration config = configAdmin.getConfiguration(PID_A);
+        Assert.assertNotNull("Config not null", config);
+        Assert.assertNull("Config is empty, but was: " + config.getProperties(), config.getProperties());
+
+        try {
             Dictionary<String, String> configProps = new Hashtable<String, String>();
             configProps.put("foo", "bar");
             config.update(configProps);
 
             // Register a {@link ManagedService}
+            ConfiguredService service = new ConfiguredService();
             Dictionary<String, String> serviceProps = new Hashtable<String, String>();
-            serviceProps.put(Constants.SERVICE_PID, ConfiguredService.SERVICE_PID);
-            context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, new ConfiguredService(), serviceProps);
+            serviceProps.put(Constants.SERVICE_PID, PID_A);
+            context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, service, serviceProps);
 
             // Wait a little for the update event
-            if (latch.await(5, TimeUnit.SECONDS) == false)
-                throw new TimeoutException();
+            Assert.assertTrue(service.awaitUpdate(3, TimeUnit.SECONDS));
 
             // Verify service property
-            sref = context.getServiceReference(ConfiguredService.class.getName());
-            ConfiguredService service = (ConfiguredService) context.getService(sref);
-            assertEquals("bar", service.getValue("foo"));
-        }
-        finally
-        {
+            Assert.assertEquals("bar", service.getProperties().get("foo"));
+        } finally {
             config.delete();
         }
     }
 
     @Test
     public void testManagedServiceConfiguredFromXML() throws Exception {
-        ConfiguredService ms = new ConfiguredService();
 
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put(Constants.SERVICE_PID, "a.test.pid");
+        BundleContext context = bundle.getBundleContext();
+
         // This configuration is present in the standalone.xml used for this test
+        ConfiguredService service = new ConfiguredService();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        props.put(Constants.SERVICE_PID, PID_B);
+        context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, service, props);
 
-        ServiceRegistration reg = context.registerService(ManagedService.class.getName(), ms, props);
-        try {
-            assertEquals("test value", ms.getValue("testkey"));
-        } finally {
-            reg.unregister();
-        }
+        // Wait a little for the update to happen
+        Assert.assertTrue(service.awaitUpdate(3, TimeUnit.SECONDS));
+        Assert.assertEquals("test value", service.getProperties().get("testkey"));
+    }
+
+    private ConfigurationAdmin getConfigurationAdmin(BundleContext context) {
+        ServiceReference sref = context.getServiceReference(ConfigurationAdmin.class.getName());
+        return (ConfigurationAdmin) context.getService(sref);
     }
 }
