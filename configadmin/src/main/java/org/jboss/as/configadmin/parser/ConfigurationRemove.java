@@ -24,7 +24,7 @@ package org.jboss.as.configadmin.parser;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
+import org.jboss.as.configadmin.service.ConfigAdminInternal;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -45,9 +45,9 @@ public class ConfigurationRemove extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
-        ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+        ConfigAdminInternal configAdmin = ConfigAdminExtension.getConfigAdminService(context);
         if (configAdmin != null) {
-            configAdmin.removeConfigurationFromDMR(pid);
+            configAdmin.removeConfigurationInternal(pid);
         }
     }
 

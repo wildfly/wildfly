@@ -19,14 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.configadmin.service;
+
+package org.jboss.as.configadmin;
+
+import java.util.Dictionary;
+import java.util.Set;
 
 
 /**
- * @deprecated
+ * A configuration listener for the {@link ConfigAdmin}.
+ *
+ * When a configuration listener is first registered with the {@link ConfigAdmin}
+ * its configurationModified method is invoked for every PID the listener registers with.
+ *
+ * A <code>null</code> dictionary indicates that there is currently no configuration for the associated PID.
+ *
  * @author Thomas.Diesler@jboss.com
- * @since 29-Nov-2010
+ * @since 11-Dec-2010
  */
-public interface ConfigAdminService extends org.jboss.as.configadmin.ConfigAdmin {
+public interface ConfigAdminListener {
 
+    /**
+     * Called when the {@code ConfigAdminService} receives an update for
+     * a PID that the listener has registered with.
+     */
+    void configurationModified(String pid, Dictionary<String, String> props);
+
+    /**
+     * Return the set of PIDs that this listener is interested in.
+     * A <code>null</code> return value denotes any PID.
+     */
+    Set<String> getPIDs();
 }

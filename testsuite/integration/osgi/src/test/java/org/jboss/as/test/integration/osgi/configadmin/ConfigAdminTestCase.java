@@ -22,11 +22,6 @@
 
 package org.jboss.as.test.integration.osgi.configadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.Dictionary;
@@ -40,28 +35,34 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.configadmin.service.ConfigAdminListener;
-import org.jboss.as.configadmin.service.ConfigAdminService;
-import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfiguredService;
+import org.jboss.as.configadmin.ConfigAdminListener;
+import org.jboss.as.configadmin.ConfigAdmin;
+import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfiguredMSCService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Transition;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * A test that shows how an MSC service can be configured through the {@link ConfigAdminService}.
+ * A test that shows how an MSC service can be configured through the {@link ConfigAdmin}.
  *
  * @author Thomas.Diesler@jboss.com
  * @since 11-Dec-2010
  */
 @RunWith(Arquillian.class)
-public class ConfigAdminServiceTestCase {
+public class ConfigAdminTestCase {
+
+    static final String PID_A = ConfigAdminTestCase.class.getSimpleName() + "-pid-a";
+    static final String PID_B = ConfigAdminTestCase.class.getSimpleName() + "-pid-b";
 
     @Inject
     public ServiceContainer serviceContainer;
@@ -72,7 +73,7 @@ public class ConfigAdminServiceTestCase {
     @Deployment
     public static Archive<?> deployment() {
         return ShrinkWrap.create(JavaArchive.class, "configadmin.jar")
-                .addClasses(ConfiguredService.class)
+                .addClasses(ConfiguredMSCService.class)
                 .addAsManifestResource(new StringAsset(
                         "Manifest-Version: 1.0\n" +
                         "Dependencies: org.jboss.as.configadmin,javax.inject.api\n"
@@ -83,43 +84,39 @@ public class ConfigAdminServiceTestCase {
     public void testConfigAdminService() throws Exception {
 
         // Verify that there is no config with this PID already
-        ConfigAdminService configAdmin = getConfigAdminService();
-        boolean hasconfig = configAdmin.hasConfiguration(ConfiguredService.SERVICE_PID);
-        assertFalse("Config null", hasconfig);
-
-        Dictionary<String, String> config = new Hashtable<String, String>();
-        config.put("foo", "bar");
+        ConfigAdmin configAdmin = getConfigAdmin();
+        boolean hasconfig = configAdmin.hasConfiguration(PID_A);
+        Assert.assertFalse("Precondition: null config", hasconfig);
 
         // Register a new config for the given PID
-        Dictionary<String, String> oldConfig = configAdmin.putConfiguration(ConfiguredService.SERVICE_PID, config);
+        Dictionary<String, String> config = new Hashtable<String, String>();
+        config.put("foo", "bar");
+        Dictionary<String, String> oldConfig = configAdmin.putConfiguration(PID_A, config);
+
         try {
-            assertNull("Config null", oldConfig);
+            Assert.assertNull("Old config null", oldConfig);
 
             // Verify the registered config
-            Dictionary<String, String> regConfig = configAdmin.getConfiguration(ConfiguredService.SERVICE_PID);
-            assertNotNull("Config not null", regConfig);
-            assertEquals("Config not null", 1, regConfig.size());
-            assertEquals("bar", regConfig.get("foo"));
+            Dictionary<String, String> regConfig = configAdmin.getConfiguration(PID_A);
+            Assert.assertNotNull("Config not null", regConfig);
+            Assert.assertEquals("bar", regConfig.get("foo"));
 
             // Verify unmodifiable dictionary
             try {
                 regConfig.remove("foo");
-                fail("UnsupportedOperationException expected");
+                Assert.fail("UnsupportedOperationException expected");
             } catch (UnsupportedOperationException ex) {
                 // expected
             }
 
             // Verify unmodifiable dictionary
             config.put("foo", "baz");
-            regConfig = configAdmin.getConfiguration(ConfiguredService.SERVICE_PID);
-            assertEquals("bar", regConfig.get("foo"));
+            regConfig = configAdmin.getConfiguration(PID_A);
+            Assert.assertEquals("bar", regConfig.get("foo"));
 
         } finally {
-            oldConfig = configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);
-            assertNotNull("Config not null", oldConfig);
-
-            hasconfig = configAdmin.hasConfiguration(ConfiguredService.SERVICE_PID);
-            assertFalse("Config null", hasconfig);
+            oldConfig = configAdmin.removeConfiguration(PID_A);
+            Assert.assertNotNull("Config not null", oldConfig);
         }
     }
 
@@ -145,64 +142,63 @@ public class ConfigAdminServiceTestCase {
 
             @Override
             public Set<String> getPIDs() {
-                return Collections.singleton(ConfiguredService.SERVICE_PID);
+                return Collections.singleton(PID_B);
             }
         };
-        ConfigAdminService configAdmin = getConfigAdminService();
+        ConfigAdmin configAdmin = getConfigAdmin();
         configAdmin.addListener(listener);
 
-        latches[0].await();
-        assertNull("First invocation with null", dictionaries[0]);
-
-        Dictionary<String, String> config = new Hashtable<String, String>();
-        config.put("foo", "bar");
+        Assert.assertTrue(latches[0].await(3, TimeUnit.SECONDS));
+        Assert.assertNull("First invocation with null, but was: " + dictionaries[0], dictionaries[0]);
 
         // Register a new config for the given PID
-        configAdmin.putConfiguration(ConfiguredService.SERVICE_PID, config);
+        Dictionary<String, String> config = new Hashtable<String, String>();
+        config.put("foo", "bar");
+        configAdmin.putConfiguration(PID_B, config);
+
         try {
-            latches[1].await();
-            assertNotNull("Second invocation not null", dictionaries[1]);
+            Assert.assertTrue(latches[1].await(3, TimeUnit.SECONDS));
+            Assert.assertNotNull("Second invocation not null", dictionaries[1]);
+            Assert.assertEquals("bar", dictionaries[1].get("foo"));
         } finally {
-            configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);
+            configAdmin.removeConfiguration(PID_B);
             configAdmin.removeListener(listener);
         }
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testConfiguredService() throws Exception {
 
         Dictionary<String, String> config = new Hashtable<String, String>();
         config.put("foo", "bar");
 
         // Register a new config for the given PID
-        ConfigAdminService configAdmin = getConfigAdminService();
-        configAdmin.putConfiguration(ConfiguredService.SERVICE_PID, config);
+        ConfigAdmin configAdmin = getConfigAdmin();
+        configAdmin.putConfiguration(ConfiguredMSCService.SERVICE_PID, config);
+
+        ServiceController<ConfiguredMSCService> controller = null;
         try {
-            ConfiguredService.addService(serviceTarget);
             final CountDownLatch latch = new CountDownLatch(1);
-            final ServiceController<ConfiguredService> controller = (ServiceController<ConfiguredService>) serviceContainer.getService(ConfiguredService.SERVICE_NAME);
-            controller.addListener(new AbstractServiceListener<ConfiguredService>(){
-                public void serviceStarted(ServiceController<? extends ConfiguredService> controller) {
-                    controller.removeListener(this);
-                    latch.countDown();
+            ServiceListener<ConfiguredMSCService> tracker = new AbstractServiceListener<ConfiguredMSCService>() {
+                @Override
+                public void transition(ServiceController<? extends ConfiguredMSCService> controller, Transition transition) {
+                    if (transition == Transition.STARTING_to_UP) {
+                        latch.countDown();
+                    }
                 }
-            });
-            latch.await(3, TimeUnit.SECONDS);
-            ConfiguredService service = controller.getValue();
-            assertEquals("bar", service.getConfigValue("foo"));
+            };
+            controller = ConfiguredMSCService.addService(serviceTarget, tracker);
+            Assert.assertTrue(latch.await(3, TimeUnit.SECONDS));
+            ConfiguredMSCService service = controller.getValue();
+            Assert.assertEquals("bar", service.getConfig().get("foo"));
         } finally {
-            configAdmin.removeConfiguration(ConfiguredService.SERVICE_PID);
-            serviceContainer.getService(ConfiguredService.SERVICE_NAME).setMode(ServiceController.Mode.REMOVE);
+            configAdmin.removeConfiguration(ConfiguredMSCService.SERVICE_PID);
+            controller.setMode(ServiceController.Mode.REMOVE);
         }
     }
 
-    // [TODO] Move this to @Before when Arquillian supports injected values there
-    private ConfigAdminService getConfigAdminService() {
-        ServiceController<?> controller = serviceContainer.getService(ConfigAdminService.SERVICE_NAME);
-        assertNotNull("ServiceController available: " + ConfigAdminService.SERVICE_NAME, controller);
-        ConfigAdminService configAdmin = (ConfigAdminService) controller.getValue();
-        assertNotNull("Service available: " + ConfigAdminService.SERVICE_NAME, configAdmin);
-        return configAdmin;
+    private ConfigAdmin getConfigAdmin() {
+        ServiceController<?> controller = serviceContainer.getRequiredService(ConfigAdmin.SERVICE_NAME);
+        return (ConfigAdmin) controller.getValue();
     }
 }

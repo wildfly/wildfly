@@ -26,7 +26,7 @@ import java.util.Hashtable;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
+import org.jboss.as.configadmin.service.ConfigAdminInternal;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -50,15 +50,15 @@ public class ConfigurationUpdate implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        // Remove the resource from the model
+
         context.removeResource(PathAddress.EMPTY_ADDRESS);
-        // Add the new resource with the updated information
         Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         resource.getModel().get(ModelConstants.ENTRIES).set(operation.get(ModelConstants.ENTRIES));
 
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
                 ModelNode entries = operation.get(ModelConstants.ENTRIES);
                 String pid = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CONFIGURATION).asString();
 
@@ -67,9 +67,9 @@ public class ConfigurationUpdate implements OperationStepHandler {
                     dictionary.put(key, entries.get(key).asString());
                 }
 
-                ConfigAdminServiceImpl configAdmin = ConfigAdminExtension.getConfigAdminService(context);
+                ConfigAdminInternal configAdmin = ConfigAdminExtension.getConfigAdminService(context);
                 if (configAdmin != null) {
-                    configAdmin.putConfigurationFromDMR(pid, dictionary);
+                    configAdmin.putConfigurationInternal(pid, dictionary);
                 }
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -86,8 +86,7 @@ public class ConfigurationUpdate implements OperationStepHandler {
             ResourceBundle resbundle = ConfigAdminProviders.getResourceBundle(locale);
             node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelConstants.UPDATE);
             node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.update"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(
-                    resbundle.getString("configuration.entries"));
+            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.entries"));
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
             node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);

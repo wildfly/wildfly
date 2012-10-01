@@ -21,6 +21,7 @@
  */
 package org.jboss.as.configadmin.parser;
 
+import static org.jboss.as.configadmin.parser.ModelConstants.UPDATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -29,8 +30,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
-import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
+import org.jboss.as.configadmin.service.ConfigAdminInternal;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -66,8 +68,8 @@ public class ConfigAdminExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
-    static ConfigAdminServiceImpl getConfigAdminService(OperationContext context) {
-        ServiceController<?> controller = context.getServiceRegistry(true).getService(ConfigAdminService.SERVICE_NAME);
+    static ConfigAdminInternal getConfigAdminService(OperationContext context) {
+        ServiceController<?> controller = context.getServiceRegistry(true).getService(ConfigAdmin.SERVICE_NAME);
         return controller != null ? (ConfigAdminServiceImpl) controller.getValue() : null;
     }
 
@@ -90,7 +92,7 @@ public class ConfigAdminExtension implements Extension {
         ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
         configuration.registerOperationHandler(ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
         configuration.registerOperationHandler(REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);
-        configuration.registerOperationHandler(ModelConstants.UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false);
+        configuration.registerOperationHandler(UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false);
         configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES, null, AttributeAccess.Storage.CONFIGURATION);
 
         registerTransformers_1_0_0(subsystem);

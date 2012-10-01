@@ -21,12 +21,19 @@
  */
 package org.jboss.as.configadmin.service;
 
+import java.util.Dictionary;
+
+import org.jboss.as.configadmin.ConfigAdmin;
 
 /**
- * @deprecated
+ * An internal extension to the {@link ConfigAdmin}
+ *
  * @author Thomas.Diesler@jboss.com
  * @since 29-Nov-2010
  */
-public interface ConfigAdminService extends org.jboss.as.configadmin.ConfigAdmin {
+public interface ConfigAdminInternal extends ConfigAdmin {
 
+    void putConfigurationInternal(String pid, Dictionary<String, String> dictionary);
+
+    void removeConfigurationInternal(String pid);
 }

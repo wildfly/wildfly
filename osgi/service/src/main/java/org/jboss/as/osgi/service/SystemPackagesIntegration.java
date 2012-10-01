@@ -37,6 +37,7 @@ interface SystemPackagesIntegration  {
         "org.jboss.as.configadmin",
         "org.jboss.as.controller-client",
         "org.jboss.as.osgi",
+        "org.jboss.dmr",
         "org.jboss.logging",
         "org.jboss.modules",
         "org.jboss.msc",
@@ -48,11 +49,12 @@ interface SystemPackagesIntegration  {
     String[] DEFAULT_INTEGRATION_PACKAGES = new String[] {
         "javax.inject",
         "org.apache.xerces.jaxp",
-        "org.jboss.as.configadmin.service",
+        "org.jboss.as.configadmin",
         "org.jboss.as.controller.client",
         "org.jboss.as.controller.client.helpers",
         "org.jboss.as.controller.client.helpers.domain",
         "org.jboss.as.controller.client.helpers.standalone",
+        "org.jboss.dmr;version=1.1.1",
         "org.jboss.logging;version=3.1.0",
         "org.jboss.osgi.repository;version=1.0",
         "org.osgi.service.repository;version=1.0"

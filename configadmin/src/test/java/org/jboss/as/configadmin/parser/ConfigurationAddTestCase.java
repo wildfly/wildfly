@@ -27,7 +27,7 @@ import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.jboss.as.configadmin.service.ConfigAdminService;
+import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -71,7 +71,7 @@ public class ConfigurationAddTestCase {
         Mockito.when(mockCASServiceController.getValue()).thenReturn(mockCAS);
 
         ServiceRegistry mockServiceRegistry = Mockito.mock(ServiceRegistry.class);
-        Mockito.when(mockServiceRegistry.getService(ConfigAdminService.SERVICE_NAME)).thenReturn(mockCASServiceController);
+        Mockito.when(mockServiceRegistry.getService(ConfigAdmin.SERVICE_NAME)).thenReturn(mockCASServiceController);
 
         OperationContext mockOperationContext = Mockito.mock(OperationContext.class);
         Mockito.when(mockOperationContext.getServiceRegistry(true)).thenReturn(mockServiceRegistry);
@@ -85,7 +85,7 @@ public class ConfigurationAddTestCase {
         ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, operation, null, null, null);
 
         // Verify the results
-        Mockito.verify(mockCAS).putConfigurationFromDMR("some.config", dict);
+        Mockito.verify(mockCAS).putConfigurationInternal("some.config", dict);
         assertNull(getInitializationService());
     }
 
@@ -118,8 +118,8 @@ public class ConfigurationAddTestCase {
 
         // Check that the service that depends on the Config Admin Service has been created
         Mockito.verify(mockBuilder).addDependency(
-                Mockito.eq(ConfigAdminService.SERVICE_NAME),
-                Mockito.eq(ConfigAdminService.class),
+                Mockito.eq(ConfigAdmin.SERVICE_NAME),
+                Mockito.eq(ConfigAdmin.class),
                 Mockito.any(Injector.class));
         Mockito.verify(mockBuilder).install();
 
@@ -128,20 +128,19 @@ public class ConfigurationAddTestCase {
         ConfigurationAdd.InitializeConfigAdminService initSvc = getInitializationService();
         Field injectedCASField = initSvc.getClass().getDeclaredField("injectedConfigAdminService");
         injectedCASField.setAccessible(true);
-        InjectedValue<ConfigAdminService> injectedCAS = (InjectedValue<ConfigAdminService>) injectedCASField.get(initSvc);
-        injectedCAS.setValue(new ImmediateValue<ConfigAdminService>(mockCAS));
+        InjectedValue<ConfigAdmin> injectedCAS = (InjectedValue<ConfigAdmin>) injectedCASField.get(initSvc);
+        injectedCAS.setValue(new ImmediateValue<ConfigAdmin>(mockCAS));
 
         // Invoke the operation again
         Hashtable<String, String> values2 = new Hashtable<String, String>();
         values2.put("x", "x");
-        values2.put(ConfigAdminService.SOURCE_PROPERTY_KEY, ConfigAdminService.FROM_NONDMR_SOURCE_VALUE);
         ModelNode op2 = getOperationModelNode("xx", values2);
         ConfigurationAdd.INSTANCE.performRuntime(mockOperationContext, op2, null, null, null);
 
         initSvc.start(null);
 
-        Mockito.verify(mockCAS).putConfigurationFromDMR("a.b.c", values);
-        Mockito.verify(mockCAS).putConfigurationFromDMR("xx", values2);
+        Mockito.verify(mockCAS).putConfigurationInternal("a.b.c", values);
+        Mockito.verify(mockCAS).putConfigurationInternal("xx", values2);
     }
 
     private ModelNode getOperationModelNode(String pid, Map<String, String> props) {
