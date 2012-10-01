@@ -22,8 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,20 +36,22 @@ import java.util.Arrays;
 /**
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractFileTask implements ContentTask {
+abstract class AbstractFileTask implements PatchingTask {
 
     static final byte[] NO_CONTENT = new byte[0];
 
     final File target; // the target file
     final File backup; // the backup file
-    final MiscContentModification modification;
+    final MiscContentItem item;
+    final ContentModification modification;
 
     byte[] backupHash = NO_CONTENT;
 
-    protected AbstractFileTask(File target, File backup, MiscContentModification modification) {
+    protected AbstractFileTask(File target, File backup, MiscContentItem item, ContentModification modification) {
         this.target = target;
         this.backup = backup;
         this.modification = modification;
+        this.item = item;
     }
 
     /**
@@ -61,14 +63,14 @@ abstract class AbstractFileTask implements ContentTask {
      * @param targetHash the target hash for the modification
      * @return the rollback modification item
      */
-    protected abstract MiscContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash);
+    protected abstract ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash);
 
     public MiscContentItem getContentItem() {
-        return modification.getItem();
+        return item;
     }
 
     public boolean prepare(final PatchingContext context) throws IOException {
-        if(target.exists()) {
+        if(target.isFile()) {
             // Backup the original in the history directory
             backupHash = copy(target, backup);
         }
@@ -77,15 +79,15 @@ abstract class AbstractFileTask implements ContentTask {
         return Arrays.equals(expected, backupHash);
     }
 
-    public MiscContentModification execute(final PatchingContext context) throws IOException {
+    public void execute(final PatchingContext context) throws IOException {
 
-        final MiscContentItem item = modification.getItem();
         final InputStream is = context.getLoader().openContentStream(item);
         try {
             // Replace the file
             final byte[] hash = copy(is, target);
             final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
-            return createRollback(context, item, backupItem, hash);
+            final ContentModification rollback = createRollback(context, item, backupItem, hash);
+            context.recordRollbackAction(rollback);
         } finally {
             PatchUtils.safeClose(is);
         }

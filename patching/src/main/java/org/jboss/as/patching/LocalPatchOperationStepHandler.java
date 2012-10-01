@@ -50,10 +50,9 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final DirectoryStructure structure = service.getStructure();
         final PatchingTaskRunner runner = new PatchingTaskRunner(info, structure);
 
-        final Patch patch = null; // From metadata
         final InputStream is = context.getAttachmentStream(0);
         try {
-            final PatchingResult result = runner.execute(patch, is);
+            final PatchingResult result = runner.executeDirect(is);
             final PatchInfo newInfo = result.getPatchInfo();
             service.setPatchInfo(info, newInfo);
             context.completeStep(new OperationContext.RollbackHandler() {

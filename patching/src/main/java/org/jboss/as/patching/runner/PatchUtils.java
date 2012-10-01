@@ -278,6 +278,7 @@ public final class PatchUtils {
         return sha1Bytes;
     }
 
+
     /**
      * Calculate the hash of a file.
      *
@@ -286,18 +287,30 @@ public final class PatchUtils {
      * @throws IOException
      */
     public static byte[] calculateHash(final File file) throws IOException {
-        final InputStream is = new FileInputStream(file);
-        try {
-            final DigestOutputStream os = new DigestOutputStream(PatchUtils.NULL_OUTPUT_STREAM, DIGEST);
-            synchronized (DIGEST) {
-                DIGEST.reset();
-                PatchUtils.copyStream(is, os);
-                return DIGEST.digest();
-            }
-        } finally {
-            StreamUtils.safeClose(is);
+        synchronized (DIGEST) {
+            DIGEST.reset();
+            internalCalculateHash(file, DIGEST);
+            return DIGEST.digest();
         }
     }
+
+    static void internalCalculateHash(final File file, final MessageDigest digest) throws IOException {
+        if(file.isDirectory()) {
+            final File[] children = file.listFiles();
+            for(final File child : children) {
+                internalCalculateHash(child, digest);
+            }
+        } else {
+            final InputStream is = new FileInputStream(file);
+            try {
+                final DigestOutputStream os = new DigestOutputStream(PatchUtils.NULL_OUTPUT_STREAM, digest);
+                PatchUtils.copyStream(is, os);
+                is.close();
+            } finally {
+                StreamUtils.safeClose(is);
+            }
+        }
+   }
 
     private static char[] table = {
             '0', '1', '2', '3', '4', '5', '6', '7',

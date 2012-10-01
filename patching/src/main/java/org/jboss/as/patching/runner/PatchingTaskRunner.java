@@ -26,11 +26,14 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
-import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchXml;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,65 +50,95 @@ public class PatchingTaskRunner {
 
     private final PatchInfo patchInfo;
     private final DirectoryStructure structure;
+
+    private final File tempDir = null;
+
     public PatchingTaskRunner(final PatchInfo patchInfo, final DirectoryStructure structure) {
         this.patchInfo = patchInfo;
         this.structure = structure;
     }
 
-    public PatchingResult execute(final Patch patch, final InputStream content) throws PatchingException {
-        // Check if we can apply this patch
-        final String patchId = patch.getPatchId();
-        final List<String> appliesTo = patch.getAppliesTo();
-        if(! appliesTo.contains(patchInfo.getVersion())) {
-            throw PatchMessages.MESSAGES.doesNotApply(appliesTo, patchInfo.getVersion());
-        }
-        // Create the work directory
-        final File workDir = new File(structure.getHistoryDir(patchId), "work");
-        if(workDir.exists()) {
-            // Remove cached contents
-            recursiveDelete(workDir);
-        }
-        workDir.mkdirs();
-        final PatchContentLoader loader = new PatchContentLoader(workDir);
-        final PatchingContext context = new PatchingContext(patch, patchInfo, structure, loader);
-        final File cachedContent = new File(workDir, "content");
+    /**
+     * Execute directly based of a stream.
+     *
+     * @param content the patch content
+     * @return the patching result
+     * @throws PatchingException
+     */
+    public PatchingResult executeDirect(final InputStream content) throws PatchingException {
+
+        File workDir = null;
         try {
+            workDir = File.createTempFile("patch", "work", tempDir);
+            workDir.mkdir();
+
+            // Save the content
+            final File cachedContent = new File(workDir, "content");
             FileOutputStream os = null;
             try {
                 // Cache the content first
                 os = new FileOutputStream(cachedContent);
                 PatchUtils.copyStream(content, os);
                 os.close();
-            } catch (IOException e) {
-                throw new PatchingException(e);
             } finally {
                 PatchUtils.safeClose(os);
             }
+
+            // Unpack to the work dir
+            unpack(cachedContent, workDir);
+
+            // Parse the xml
+            final File patchXml = new File(workDir, PatchXml.PATCH_XML);
+            final InputStream patchIS = new FileInputStream(patchXml);
+            final Patch patch;
             try {
-                // Unpack to the work dir
-                unpack(cachedContent, workDir);
-            } catch (IOException e) {
-                throw new PatchingException(e);
+                patch = PatchXml.parse(patchIS);
+                patchIS.close();
+            } finally {
+                PatchUtils.safeClose(patchIS);
             }
-            // Create the overlay directory
-            final File modules = new File(workDir, PatchContents.MODULES);
-            if(modules.exists()) {
-                // patches/patch-id/...
-                final File patchDir = structure.getModulePatchDirectory(patchId);
-                if(! modules.renameTo(patchDir)) {
-                    throw new PatchingException("...");
-                }
+
+            // Execute the patch itself
+            final PatchContentLoader loader = new PatchContentLoader(workDir);
+            final PatchingContext context = new PatchingContext(patch, patchInfo, structure, loader);
+            return execute(patch, context);
+
+        } catch (IOException e) {
+            throw new PatchingException(e);
+        } catch (XMLStreamException e) {
+            throw new PatchingException(e);
+        } finally {
+            if(workDir != null && ! recursiveDelete(workDir)) {
+                PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
             }
+        }
+    }
+
+    /**
+     * Execute a patch.
+     *
+     * @param patch the patch
+     * @param context the context
+     * @return the result of the patching action
+     * @throws PatchingException
+     */
+    public PatchingResult execute(final Patch patch, final PatchingContext context) throws PatchingException {
+        // Check if we can apply this patch
+        final List<String> appliesTo = patch.getAppliesTo();
+        if(! appliesTo.contains(patchInfo.getVersion())) {
+            throw PatchMessages.MESSAGES.doesNotApply(appliesTo, patchInfo.getVersion());
+        }
+        try {
             // Create the modification tasks
-            final List<ContentTask> tasks = new ArrayList<ContentTask>();
-            final List<MiscContentItem> problems = new ArrayList<MiscContentItem>();
-            for(final MiscContentModification modification : patch.getModifications()) {
-                final ContentTask task = ContentTask.Factory.create(modification, context);
+            final List<PatchingTask> tasks = new ArrayList<PatchingTask>();
+            final List<ContentItem> problems = new ArrayList<ContentItem>();
+            for(final ContentModification modification : patch.getModifications()) {
+                final PatchingTask task = PatchingTask.Factory.create(modification, context);
                 try {
                     // backup
                     if(! task.prepare(context)) {
                         // In case the file was modified we report a problem
-                        final MiscContentItem item = modification.getItem();
+                        final ContentItem item = modification.getItem();
                         // Unless it was ignored (or excluded)
                         if(context.isIgnored(item)) {
                             problems.add(item);
@@ -122,29 +155,23 @@ public class PatchingTaskRunner {
                 throw new PatchingException("...");
             }
             //
-            final List<MiscContentModification> rollbackTasks = new ArrayList<MiscContentModification>();
             try {
                 // Execute the tasks
-                for(final ContentTask task : tasks) {
+                for(final PatchingTask task : tasks) {
                     // Unless it's excluded by the user
                     if(context.isExcluded(task.getContentItem())) {
                         continue;
                     }
                     // Record the rollback task
-                    final MiscContentModification rollback = task.execute(context);
-                    rollbackTasks.add(rollback);
+                    task.execute(context);
                 }
             } catch (Exception e) {
-                // Rollback
-                e.printStackTrace();
+                throw new PatchingException(e);
             }
             // Finish..
             return context.finish(patch);
         } finally {
-            cachedContent.delete();
-            if(! recursiveDelete(workDir)) {
-                PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
-            }
+
         }
     }
 

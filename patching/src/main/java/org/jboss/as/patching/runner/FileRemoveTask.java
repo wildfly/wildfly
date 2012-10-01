@@ -22,36 +22,152 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.DigestOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class FileRemoveTask extends AbstractFileTask {
+class FileRemoveTask implements PatchingTask {
 
-    public FileRemoveTask(File target, File backup, MiscContentModification modification) {
-        super(target, backup, modification);
+    private static final MessageDigest DIRECTORY;
+    static {
+        try {
+            DIRECTORY = MessageDigest.getInstance("SHA-1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private final MiscContentItem item;
+    private final File target;
+    private final File backup;
+    private final ContentModification modification;
+
+    private final List<ContentModification> rollback = new ArrayList<ContentModification>();
+
+    FileRemoveTask(MiscContentItem item, File target, File backup, ContentModification modification) {
+        this.item = item;
+        this.target = target;
+        this.backup = backup;
+        this.modification = modification;
     }
 
     @Override
-    public MiscContentModification execute(PatchingContext context) throws IOException {
-
-        // delete the file
-        target.delete();
-
-        final MiscContentItem item = modification.getItem();
-        final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
-        return createRollback(context, item, backupItem, NO_CONTENT);
+    public ContentItem getContentItem() {
+        return item;
     }
 
     @Override
-    protected MiscContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
-        return new MiscContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
+    public boolean prepare(PatchingContext context) throws IOException {
+        final byte[] hash;
+        synchronized (DIRECTORY) {
+            // Backup the files
+            DIRECTORY.reset();
+            backup(target, Collections.<String>emptyList(), rollback);
+            hash = DIRECTORY.digest();
+        }
+        // See if the hash matches the metadata
+        final byte[] expected = modification.getTargetHash();
+        return Arrays.equals(expected, hash);
+    }
+
+    @Override
+    public void execute(PatchingContext context) throws IOException {
+        // delete the file or directory recursively
+        boolean ok = recursiveDelete(target);
+        for(ContentModification mod : rollback) {
+            // Add the rollback (add actions)
+            context.recordRollbackAction(mod);
+        }
+        if(! ok) {
+            throw PatchMessages.MESSAGES.failedToDelete(target.getAbsolutePath());
+        }
+    }
+
+    void backup(final File root, final List<String> path, final List<ContentModification> rollback) throws IOException {
+        if(root.isDirectory()) {
+            final File[] files = root.listFiles();
+            for (File file : files) {
+                final List<String> newPath = new ArrayList<String>(path);
+                newPath.add(file.getName());
+                backup(file, newPath, rollback);
+            }
+        } else {
+            // Copy and record the backup action
+            final byte[] hash = copy(root, getTarget(backup, root.getName(), path));
+            rollback.add(createRollbackItem(root.getName(), path, hash));
+        }
+    }
+
+    static File getTarget(final File root, String name, List<String> paths) {
+        File file = root;
+        for(final String path : paths) {
+            file = new File(root, path);
+        }
+        return new File(file, name);
+    }
+
+    static ContentModification createRollbackItem(String name, List<String> path,  byte[] backupHash) {
+        final MiscContentItem backupItem = new MiscContentItem(name, path, backupHash);
+        return new ContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
+    }
+
+    static boolean recursiveDelete(File root) {
+        boolean ok = true;
+        if (root.isDirectory()) {
+            final File[] files = root.listFiles();
+            for (File file : files) {
+                ok &= recursiveDelete(file);
+            }
+            return ok && (root.delete() || !root.exists());
+        } else {
+            ok &= root.delete() || !root.exists();
+        }
+        return ok;
+    }
+
+    static byte[] copy(File source, File target) throws IOException {
+        final FileInputStream is = new FileInputStream(source);
+        try {
+            byte[] backupHash = copy(is, target);
+            is.close();
+            return backupHash;
+        } finally {
+            PatchUtils.safeClose(is);
+        }
+    }
+
+    static byte[] copy(final InputStream is, final File target) throws IOException {
+        if(! target.getParentFile().exists()) {
+            target.getParentFile().mkdirs(); // Hmm
+        }
+        final OutputStream os = new FileOutputStream(target);
+        try {
+            final DigestOutputStream dos = new DigestOutputStream(os, DIRECTORY);
+            byte[] nh = PatchUtils.copyAndGetHash(is, dos);
+            dos.close();
+            return nh;
+        } finally {
+            PatchUtils.safeClose(os);
+        }
     }
 
 }

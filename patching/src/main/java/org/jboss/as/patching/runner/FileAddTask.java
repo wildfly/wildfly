@@ -22,8 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
@@ -34,8 +34,8 @@ import java.io.IOException;
  */
 class FileAddTask extends AbstractFileTask {
 
-    FileAddTask(File target, File backup, MiscContentModification modification) {
-        super(target, backup, modification);
+    FileAddTask(MiscContentItem item, File target, File backup, ContentModification modification) {
+        super(target, backup, item, modification);
     }
 
     @Override
@@ -49,8 +49,8 @@ class FileAddTask extends AbstractFileTask {
     }
 
     @Override
-    protected MiscContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
-        return new MiscContentModification(backupItem, targetHash, ModificationType.REMOVE);
+    protected ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
+        return new ContentModification(backupItem, targetHash, ModificationType.REMOVE);
     }
 
 }

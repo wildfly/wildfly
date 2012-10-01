@@ -22,38 +22,75 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.MiscContentModification;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class ModuleUpdateTask implements ContentTask {
+class ModuleUpdateTask extends AbstractModuleTask {
 
-    private final ModuleItem item;
+    ModuleUpdateTask(ModuleItem item, byte[] expected) {
+        super(item, expected);
+    }
 
-    public ModuleUpdateTask(ModuleItem item) {
-        this.item = item;
+    protected File[] getResources(PatchingContext context) {
+        // Hmm ...
+        return new File[0];
     }
 
     @Override
-    public ContentItem getContentItem() {
-        return item;
+    public void execute(PatchingContext context) throws IOException {
+
+        // Copy the new module resources to the patching directory
+        final File targetDir = context.getModulePatchDirectory();
+        final File[] moduleResources = getResources(context);
+        for(final File file : moduleResources) {
+            final File target = PatchItemMapping.getModulePath(targetDir, item);
+            copy(file, target);
+        }
+
+        final ContentModification modification = new ContentModification(item, expected, ModificationType.MODIFY);
+        context.recordRollbackAction(modification);
     }
 
-    @Override
-    public boolean prepare(PatchingContext context) throws IOException {
-
-
-
-        return false;
+    static byte[] copy(File source, File target) throws IOException {
+        final FileInputStream is = new FileInputStream(source);
+        try {
+            byte[] backupHash = copy(is, target);
+            is.close();
+            return backupHash;
+        } finally {
+            PatchUtils.safeClose(is);
+        }
     }
 
-    @Override
-    public MiscContentModification execute(PatchingContext context) throws IOException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    static byte[] copy(final InputStream is, final File target) throws IOException {
+        if(! target.getParentFile().exists()) {
+            target.getParentFile().mkdirs(); // Hmm
+        }
+        final OutputStream os = new FileOutputStream(target);
+        try {
+            byte[] nh = PatchUtils.copyAndGetHash(is, os);
+            os.close();
+            return nh;
+        } finally {
+            PatchUtils.safeClose(os);
+        }
     }
+
 }

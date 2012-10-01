@@ -24,6 +24,7 @@ package org.jboss.as.patching;
 
 import org.jboss.as.boot.DirectoryStructure;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -61,5 +62,13 @@ public interface PatchInfo {
      * @return the patch environment
      */
     DirectoryStructure getEnvironment();
+
+    /**
+     * Get the current path for patching.
+     * Note this does not include the module.path.
+     *
+     * @return the module path
+     */
+    File[] getPatchingPath();
 
 }
