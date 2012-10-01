@@ -161,7 +161,7 @@ public interface ServerInventory {
      * @param running whether the process was running. If {@code false}, the existence of the server will be
      *                recorded but no attempt to contact it will be made
      */
-    void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running);
+    void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running, final boolean stopping);
 
     /**
      * Gets a callback handler security services can use for handling authentication data provided by
