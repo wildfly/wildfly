@@ -228,6 +228,14 @@ class ManagedServer {
     }
 
     /**
+     * On host controller reload, remove a not running server registered in the process controller.
+     */
+    protected synchronized void removeServerProcess() {
+        this.requiredState = InternalState.STOPPED;
+        internalSetState(new ProcessRemoveTask(), InternalState.STOPPED, InternalState.PROCESS_REMOVING);
+    }
+
+    /**
      * Await a state.
      *
      * @param expected the expected state

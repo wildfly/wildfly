@@ -251,6 +251,8 @@ public class ServerInventoryImpl implements ServerInventory {
         }
         if(running) {
             server.reconnectServerProcess();
+        } else {
+            server.removeServerProcess();
         }
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
