@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.dmr.ModelNode;
@@ -122,10 +121,6 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
 
         final ModelNode reply = result.get(REPLY_PROPERTIES).setEmptyObject();
 
-        final String replyDesc = descriptionResolver.getOperationReplyDescription(operationName, locale, bundle);
-        if (replyDesc != null) {
-            reply.get(DESCRIPTION).set(replyDesc);
-        }
         if (replyType != null && replyType != ModelType.UNDEFINED) {
             reply.get(TYPE).set(replyType);
             if (replyType == ModelType.LIST || replyType == ModelType.OBJECT) {
@@ -153,6 +148,12 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                     final ModelNode param = ad.addOperationParameterDescription(new ModelNode(), operationName,attributeDescriptionResolver,locale,bundle);
                     reply.get(VALUE_TYPE, ad.getName()).set(param);
                 }
+            }
+        }
+        if (!reply.asList().isEmpty()) {
+            final String replyDesc = descriptionResolver.getOperationReplyDescription(operationName, locale, bundle);
+            if (replyDesc != null) {
+                reply.get(DESCRIPTION).set(replyDesc);
             }
         }
         if (deprecationData != null) {

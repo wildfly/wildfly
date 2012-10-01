@@ -264,7 +264,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         DomainSocketBindingGroupRemoveHandler.INSTANCE.initializeServerInventory(serverInventory);
 
         ValidateOperationHandler validateOperationHandler = hostControllerInfo.isMasterDomainController() ? ValidateOperationHandler.INSTANCE : ValidateOperationHandler.SLAVE_HC_INSTANCE;
-        hostRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, validateOperationHandler);
+        hostRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION_PRIVATE, validateOperationHandler);
 
 
         SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());

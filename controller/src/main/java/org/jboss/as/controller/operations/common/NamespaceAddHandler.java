@@ -57,7 +57,7 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler {
             .build();
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("namespaces"))
-            .setReplyParameters(NAMESPACE, URI)
+            .setParameters(NAMESPACE, URI)
             .build();
 
     public static final NamespaceAddHandler INSTANCE = new NamespaceAddHandler();

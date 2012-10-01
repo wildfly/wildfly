@@ -52,7 +52,7 @@ public class NamespaceRemoveHandler implements OperationStepHandler {
             .build();
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("namespaces"))
-            .setReplyParameters(NAMESPACE)
+            .setParameters(NAMESPACE)
             .build();
 
 

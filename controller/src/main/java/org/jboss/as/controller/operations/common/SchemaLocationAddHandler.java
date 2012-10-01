@@ -60,7 +60,7 @@ public class SchemaLocationAddHandler extends AbstractModelUpdateHandler {
             .build();
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("schema-locations"))
-            .setReplyParameters(SCHEMA_LOCATION, URI)
+            .setParameters(SCHEMA_LOCATION, URI)
             .build();
 
     public static final SchemaLocationAddHandler INSTANCE = new SchemaLocationAddHandler();

@@ -52,7 +52,7 @@ public class SchemaLocationRemoveHandler implements OperationStepHandler {
             .build();
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("schema-locations"))
-            .setReplyParameters(URI)
+            .setParameters(URI)
             .build();
 
     public static final SchemaLocationRemoveHandler INSTANCE = new SchemaLocationRemoveHandler();

@@ -65,6 +65,14 @@ public class ValidateOperationHandler implements OperationStepHandler {
             .setRuntimeOnly()
             .build();
 
+    public static final OperationDefinition DEFINITION_PRIVATE = new SimpleOperationDefinitionBuilder(VALIDATE_OPERATION, ControllerResolver.getResolver("global"))
+            .setParameters(VALUE)
+            .setReadOnly()
+            .setRuntimeOnly()
+            .setPrivateEntry()
+            .build();
+
+
     private final boolean slave;
 
     private ValidateOperationHandler(boolean slave) {
