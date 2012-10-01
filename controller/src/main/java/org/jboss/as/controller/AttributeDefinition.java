@@ -210,6 +210,9 @@ public abstract class AttributeDefinition {
      * @throws OperationFailedException if the value is not valid
      */
     public final void validateAndSet(ModelNode operationObject, final ModelNode model) throws OperationFailedException {
+        if (isDeprecated()){
+            ControllerLogger.DEPRECATED_LOGGER.attributeDeprecated(getName());
+        }
         final ModelNode newValue = correctValue(operationObject.get(name), model.get(name));
         if (!newValue.equals(operationObject.get(name))) {
             operationObject.get(name).set(newValue);
