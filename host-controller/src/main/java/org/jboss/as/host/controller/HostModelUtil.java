@@ -25,7 +25,6 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -81,7 +80,7 @@ public class HostModelUtil {
 
 
         //root.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
-        root.registerOperationHandler(WhoAmIOperation.OPERATION_NAME, WhoAmIOperation.INSTANCE, WhoAmIOperation.INSTANCE, true);
+        root.registerOperationHandler(WhoAmIOperation.DEFINITION, WhoAmIOperation.INSTANCE, true);
 
         // Other root resource operations
         root.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
