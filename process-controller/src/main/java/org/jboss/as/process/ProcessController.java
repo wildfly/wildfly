@@ -187,7 +187,7 @@ public final class ProcessController {
             // In order to do a controlled shutdown we stop the host controller first
             // it will stop all managed servers and wait until they shutdown
             final ManagedProcess hc = processes.get(Main.HOST_CONTROLLER_PROCESS_NAME);
-            if(hc != null && hc.isRunning()) {
+            if(hc != null && hc.isRunning() && !hc.isStopping()) {
                 hc.shutdown();
                 while(processes.containsKey(Main.HOST_CONTROLLER_PROCESS_NAME)) {
                     try {
@@ -312,6 +312,7 @@ public final class ProcessController {
                             StreamUtils.writeUTFZBytes(os, process.getProcessName());
                             os.write(process.getAuthKey());
                             StreamUtils.writeBoolean(os, process.isRunning());
+                            StreamUtils.writeBoolean(os, process.isStopping());
                         }
                         os.close();
                     } finally {
