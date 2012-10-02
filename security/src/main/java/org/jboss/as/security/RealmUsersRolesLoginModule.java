@@ -37,6 +37,13 @@ import org.jboss.security.auth.spi.UsersRolesLoginModule;
  * @author Jason T. Greene
  */
 public class RealmUsersRolesLoginModule extends UsersRolesLoginModule{
+    private static final String REALM_OPTION = "realm";
+
+    private static final String[] ALL_VALID_OPTIONS =
+    {
+        REALM_OPTION
+    };
+
     private UsernamePasswordHashUtil usernamePasswordHashUtil;
     private String realm;
 
@@ -51,7 +58,9 @@ public class RealmUsersRolesLoginModule extends UsersRolesLoginModule{
     @Override
     @SuppressWarnings("unchecked")
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
-        this.realm = (String) options.get("realm");
+        addValidOptions(ALL_VALID_OPTIONS);
+
+        this.realm = (String) options.get(REALM_OPTION);
         HashMap map = new HashMap(options);
         map.putAll(options);
         map.put("hashAlgorithm", "REALM");
