@@ -94,7 +94,7 @@ public class EmbeddedDeployableContainer extends CommonDeployableContainer<Embed
         sysprops.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
         sysprops.setProperty("logging.configuration", "file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
         sysprops.setProperty("org.jboss.boot.log.file", jbossHomeDir + "/standalone/log/boot.log");
-        sysprops.setProperty("jboss.bundles.dir", configuration.getBundlePath());
+        sysprops.setProperty("jboss.bundles.dir", bundlePath);
 
         server = EmbeddedServerFactory.create(jbossHomeDir, modulesDir, sysprops, System.getenv(),
                 getSystemPackages(sysprops, "org.jboss.logmanager"));
