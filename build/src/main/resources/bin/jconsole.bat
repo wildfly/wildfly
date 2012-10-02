@@ -65,21 +65,21 @@ rem Setup The Classpath
 set CLASSPATH=%JAVA_HOME%\lib\jconsole.jar
 set CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar
 
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting-jmx\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\remoting3\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\logging\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\xnio\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\xnio\nio\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\sasl\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\marshalling\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\marshalling\river\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\cli\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\staxmapper\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\protocol\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\dmr\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller-client\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\threads\main
-call :SearchForJars %JBOSS_MODULEPATH%\org\jboss\as\controller\main
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\remoting-jmx\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\remoting3\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\logging\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\xnio\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\xnio\nio\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\sasl\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\marshalling\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\marshalling\river\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\cli\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\staxmapper\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\protocol\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\dmr\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\controller-client\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\threads\main"
+call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\controller\main"
 
 rem echo %CLASSPATH%
 
@@ -89,12 +89,21 @@ rem echo %CLASSPATH%
 goto :EOF
 
 :SearchForJars
-pushd %1
-for %%j in (*.jar) do call :ClasspathAdd %1\%%j
+set NEXT_MODULE_DIR=%1
+call :DeQuote NEXT_MODULE_DIR
+pushd %NEXT_MODULE_DIR%
+for %%j in (*.jar) do call :ClasspathAdd "%NEXT_MODULE_DIR%\%%j"
 popd
 goto :EOF
 
 :ClasspathAdd
-SET CLASSPATH=%CLASSPATH%;%1
+set NEXT_JAR=%1
+call :DeQuote NEXT_JAR
+set CLASSPATH=%CLASSPATH%;%NEXT_JAR%
+goto :EOF
+
+:DeQuote
+for /f "delims=" %%A in ('echo %%%1%%') do set %1=%%~A
+goto :EOF
 
 :EOF
