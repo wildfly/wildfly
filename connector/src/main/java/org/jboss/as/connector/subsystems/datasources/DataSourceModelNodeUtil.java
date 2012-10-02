@@ -172,7 +172,7 @@ class DataSourceModelNodeUtil {
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
-                .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
+                .forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
         final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
@@ -253,7 +253,7 @@ class DataSourceModelNodeUtil {
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
         final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
-                .valueOf(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
+                .forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECKVALIDCONNECTIONSQL, null);
 
         final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
