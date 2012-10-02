@@ -353,8 +353,4 @@ final class LoggerOperations {
     private static String getLogManagerLoggerName(final String name) {
         return (name.equals(ROOT_LOGGER_ATTRIBUTE_NAME) ? CommonAttributes.ROOT_LOGGER_NAME : name);
     }
-
-    static OperationFailedException createRollbackFailure(final Throwable cause) {
-        return createOperationFailure(cause, LoggingMessages.MESSAGES.rollbackFailure());
-    }
 }

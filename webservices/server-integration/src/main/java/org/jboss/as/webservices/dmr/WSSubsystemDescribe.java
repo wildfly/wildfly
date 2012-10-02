@@ -43,6 +43,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,7 +63,7 @@ final class WSSubsystemDescribe implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement());
         final ModelNode wsSubsystemAddress = rootAddress.toModelNode();
-        final ModelNode wsSubsystem = context.readModel(PathAddress.EMPTY_ADDRESS);
+        final ModelNode wsSubsystem = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode result = context.getResult();
 
         final ModelNode subsystemAdd = getSubsystemAddOperation(wsSubsystemAddress, wsSubsystem);
@@ -75,7 +76,7 @@ final class WSSubsystemDescribe implements OperationStepHandler {
             processConfig(wsSubsystem, CLIENT_CONFIG, wsSubsystemAddress, result);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private static void processConfig(final ModelNode wsSubsystem, final String elementName, final ModelNode wsSubsystemAddress, final ModelNode result) {

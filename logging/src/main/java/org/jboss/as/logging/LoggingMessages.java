@@ -405,10 +405,12 @@ public interface LoggingMessages {
     /**
      * Creates an exception indicating a failure was detected while performing a rollback.
      *
-     * @return an {@link IllegalStateException} for the error
+     * @param cause the cause of the failure
+     *
+     * @return an {@link RuntimeException} for the error
      */
     @Message(id = 11566, value = "A failure was detecting while performing a rollback.")
-    String rollbackFailure();
+    RuntimeException rollbackFailure(@Cause Throwable cause);
 
     /**
      * Creates an exception indicating the variable, represented by the {@code name} parameter, is {@code null}.

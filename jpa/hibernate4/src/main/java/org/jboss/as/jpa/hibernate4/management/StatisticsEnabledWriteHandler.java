@@ -36,7 +36,7 @@ public class StatisticsEnabledWriteHandler implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                    ManagementLookup stats = null;
+                    final ManagementLookup stats;
                     boolean oldSetting = false;
                     {
                         final ModelNode value = operation.get(ModelDescriptionConstants.VALUE).resolve();
@@ -52,14 +52,20 @@ public class StatisticsEnabledWriteHandler implements OperationStepHandler {
                             stats.getStatistics().setStatisticsEnabled(setting);
                         }
                     }
+                    final boolean rollBackValue = oldSetting;
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            if (stats != null) {
+                                stats.getStatistics().setStatisticsEnabled(rollBackValue);
+                            }
+                        }
+                    });
 
-                    if (context.completeStep() != OperationContext.ResultAction.KEEP && stats != null) {
-                        stats.getStatistics().setStatisticsEnabled(oldSetting);
-                    }
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

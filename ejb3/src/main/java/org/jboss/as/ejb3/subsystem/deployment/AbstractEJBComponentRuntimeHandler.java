@@ -82,7 +82,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         if (ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeReadAttribute(attributeName, context, component,  address);
-            context.completeStep();
+            context.stepCompleted();
         } else if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(opName)) {
             final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
             executeWriteAttribute(attributeName, context, operation, component, address);
@@ -175,12 +175,15 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
                                          PathAddress address) throws OperationFailedException {
         if (componentType.hasPool() && POOL_MAX_SIZE.getName().equals(attributeName)) {
             int newSize = POOL_MAX_SIZE.resolveModelAttribute(context, operation).asInt();
-            Pool<?> pool = componentType.getPool(component);
-            int oldSize = pool.getMaxSize();
+            final Pool<?> pool = componentType.getPool(component);
+            final int oldSize = pool.getMaxSize();
             componentType.getPool(component).setMaxSize(newSize);
-            if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-                pool.setMaxSize(oldSize);
-            }
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    pool.setMaxSize(oldSize);
+                }
+            });
         } else {
             // Bug; we were registered for an attribute but there is no code for handling it
             throw MESSAGES.unknownAttribute(attributeName);

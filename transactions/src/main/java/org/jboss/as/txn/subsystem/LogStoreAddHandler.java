@@ -54,7 +54,7 @@ class LogStoreAddHandler implements OperationStepHandler {
             }
         }
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
-        context.completeStep();
+        context.stepCompleted();
     }
 
 

@@ -177,7 +177,7 @@ class DeploymentScannerAdd implements OperationStepHandler {
                         context.addStep(result, op, handler, OperationContext.Stage.MODEL);
                         try {
                             stepCompleted = true;
-                            context.completeStep();
+                            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                         } finally {
                             deploymentResults.set(result);
                             deploymentDoneLatch.countDown();

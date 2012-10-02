@@ -158,7 +158,8 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
                 launchServices(context, securityDomain, Resource.Tools.readModel(resource), verificationHandler, newControllers);
-                context.completeStep();
+                // Rollback handled by the parent step
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
     }

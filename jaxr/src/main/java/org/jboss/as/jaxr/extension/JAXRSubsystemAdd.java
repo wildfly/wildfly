@@ -79,7 +79,8 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 ServiceTarget serviceTarget = context.getServiceTarget();
                 newControllers.add(JAXRConfigurationService.addService(serviceTarget, config, verifyHandler));
                 newControllers.add(JAXRConnectionFactoryService.addService(serviceTarget, verifyHandler));
-                context.completeStep();
+                // Rollback isn't handled because this operation only executes at boot
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
     }

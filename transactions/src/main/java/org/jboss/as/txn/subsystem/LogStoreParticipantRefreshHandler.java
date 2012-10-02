@@ -64,6 +64,6 @@ public class LogStoreParticipantRefreshHandler implements OperationStepHandler {
             throw new OperationFailedException("JMX error: ", e);
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

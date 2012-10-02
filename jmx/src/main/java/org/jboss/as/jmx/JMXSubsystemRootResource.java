@@ -95,7 +95,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
                     context.addStep(addOp, handler, Stage.IMMEDIATE);
                 }
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
     }
 
@@ -106,7 +106,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             context.getResult().set(resource.hasChild(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED)));
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
 
     }

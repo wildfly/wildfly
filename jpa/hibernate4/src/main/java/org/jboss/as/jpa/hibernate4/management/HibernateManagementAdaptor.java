@@ -531,7 +531,7 @@ public class HibernateManagementAdaptor implements ManagementAdaptor {
             if (stats != null) {
                 handle(context.getResult(), address.getLastElement().getValue(), stats, context);
             }
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 

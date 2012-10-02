@@ -1425,7 +1425,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 invoked = true;
-                context.completeStep();
+                context.stepCompleted();
             }
 
             @Override
@@ -1454,7 +1454,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
                 invoked = true;
                 long l = operation.get("param1").resolve().asLong() + context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("int").asInt() + operation.get("param3", "test").resolve().asInt();
                 context.getResult().set(operation.get("param2").resolve().asList().get(0).asString() + l);
-                context.completeStep();
+                context.stepCompleted();
             }
 
             @Override
@@ -1490,7 +1490,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 context.getResult().set(operation.get("param1"));
-                context.completeStep();
+                context.stepCompleted();
             }
 
             @Override

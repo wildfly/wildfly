@@ -97,10 +97,10 @@ public class WebDeploymentServletDefinition extends SimpleResourceDefinition {
                         handle(response, name, (StandardWrapper) wrapper);
                         context.getResult().set(response);
                     }
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 

@@ -73,7 +73,7 @@ public class ManagedDMRContentStoreHandler implements OperationStepHandler, Desc
         // IMPORTANT: Use writeModel, as this is what causes the content to be flushed to the content repo!
         resource.writeModel(model);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        context.stepCompleted();
     }
 
     @Override
