@@ -43,5 +43,11 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-jsf</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.myfaces.core</groupId>
+            <artifactId>myfaces-impl</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
