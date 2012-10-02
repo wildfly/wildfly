@@ -439,7 +439,7 @@ public abstract class AttributeDefinition {
             result.get(ModelDescriptionConstants.REQUIRED).set(!isAllowNull());
         }
         result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
-        if (!forOperation && defaultValue != null && defaultValue.isDefined()) {
+        if (defaultValue != null && defaultValue.isDefined()) {
             result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
         }
         if (measurementUnit != null && measurementUnit != MeasurementUnit.NONE) {

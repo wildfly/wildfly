@@ -27,7 +27,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -107,7 +107,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static class SpecifiedPathResourceDefinition extends PathResourceDefinition {
         SpecifiedPathResourceDefinition(PathManagerService pathManager){
             super(pathManager,
-                    CommonDescriptions.getResourceDescriptionResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
+                    ControllerResolver.getResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
                     PathAddHandler.createSpecifiedInstance(pathManager),
                     PathRemoveHandler.createSpecifiedInstance(pathManager),
                     true,
@@ -118,7 +118,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static class NamedPathResourceDefinition extends PathResourceDefinition {
         NamedPathResourceDefinition(PathManagerService pathManager){
             super(pathManager,
-                    CommonDescriptions.getResourceDescriptionResolver(NAMED_PATH_RESOURCE_PREFIX),
+                    ControllerResolver.getResolver(NAMED_PATH_RESOURCE_PREFIX),
                     PathAddHandler.createNamedInstance(pathManager),
                     PathRemoveHandler.createNamedInstance(pathManager),
                     false,
@@ -129,7 +129,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     private static class SpecifiedNoServicesPathResourceDefinition extends PathResourceDefinition {
         SpecifiedNoServicesPathResourceDefinition(PathManagerService pathManager){
             super(pathManager,
-                    CommonDescriptions.getResourceDescriptionResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
+                    ControllerResolver.getResolver(SPECIFIED_PATH_RESOURCE_PREFIX),
                     PathAddHandler.createSpecifiedNoServicesInstance(pathManager),
                     PathRemoveHandler.createSpecifiedNoServicesInstance(pathManager),
                     true,

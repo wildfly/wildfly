@@ -4,6 +4,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 
 import java.util.EnumSet;
 
+import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -15,30 +16,62 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.NamespaceRemoveHandler;
+import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.controller.operations.common.ProcessStateAttributeHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationRemoveHandler;
+import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
+import org.jboss.as.controller.operations.common.SnapshotListHandler;
+import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
+import org.jboss.as.controller.operations.common.ValidateOperationHandler;
+import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
+import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
+import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
+import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.host.controller.DirectoryGrouping;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.HostControllerService;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
+import org.jboss.as.host.controller.operations.HostShutdownHandler;
+import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
+import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
+import org.jboss.as.host.controller.operations.HostXmlMarshallingHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.LocalDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerRemoveHandler;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
+import org.jboss.as.host.controller.operations.StartServersHandler;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
+import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
+import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
@@ -125,27 +158,51 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(false)
             .build();
 
+    private final HostControllerConfigurationPersister configurationPersister;
     private final HostControllerEnvironment environment;
     private final HostRunningModeControl runningModeControl;
+    private final HostFileRepository localFileRepository;
+    private final LocalHostControllerInfoImpl hostControllerInfo;
+    private final ServerInventory serverInventory;
+    private final HostFileRepository remoteFileRepository;
+    private final ContentRepository contentRepository;
+    private final DomainController domainController;
+    private final ExtensionRegistry extensionRegistry;
+    private final AbstractVaultReader vaultReader;
+    private final IgnoredDomainResourceRegistry ignoredRegistry;
     private final ControlledProcessState processState;
+    private final PathManagerService pathManager;
 
     public HostResourceDefinition(final String hostName,
-            final HostControllerConfigurationPersister configurationPersister,
-            final HostControllerEnvironment environment, final HostRunningModeControl runningModeControl,
-            final HostFileRepository localFileRepository,
-            final LocalHostControllerInfoImpl hostControllerInfo, final ServerInventory serverInventory,
-            final HostFileRepository remoteFileRepository,
-            final ContentRepository contentRepository,
-            final DomainController domainController,
-            final ExtensionRegistry extensionRegistry,
-            final AbstractVaultReader vaultReader,
-            final IgnoredDomainResourceRegistry ignoredRegistry,
-            final ControlledProcessState processState,
-            final PathManagerService pathManager) {
+                                  final HostControllerConfigurationPersister configurationPersister,
+                                  final HostControllerEnvironment environment,
+                                  final HostRunningModeControl runningModeControl,
+                                  final HostFileRepository localFileRepository,
+                                  final LocalHostControllerInfoImpl hostControllerInfo,
+                                  final ServerInventory serverInventory,
+                                  final HostFileRepository remoteFileRepository,
+                                  final ContentRepository contentRepository,
+                                  final DomainController domainController,
+                                  final ExtensionRegistry extensionRegistry,
+                                  final AbstractVaultReader vaultReader,
+                                  final IgnoredDomainResourceRegistry ignoredRegistry,
+                                  final ControlledProcessState processState,
+                                  final PathManagerService pathManager) {
         super(PathElement.pathElement(HOST, hostName), HostModelUtil.getResourceDescriptionResolver());
+        this.configurationPersister = configurationPersister;
         this.environment = environment;
         this.runningModeControl = runningModeControl;
+        this.localFileRepository = localFileRepository;
+        this.hostControllerInfo = hostControllerInfo;
+        this.serverInventory = serverInventory;
+        this.remoteFileRepository = remoteFileRepository;
+        this.contentRepository = contentRepository;
+        this.domainController = domainController;
+        this.extensionRegistry = extensionRegistry;
+        this.vaultReader = vaultReader;
+        this.ignoredRegistry = ignoredRegistry;
         this.processState = processState;
+        this.pathManager = pathManager;
     }
 
     @Override
@@ -167,17 +224,16 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         hostRegistration.registerReadWriteAttribute(HostResourceDefinition.NAME, environment.getProcessNameReadHandler(), environment.getProcessNameWriteHandler());
         hostRegistration.registerReadOnlyAttribute(HostResourceDefinition.HOST_STATE, new ProcessStateAttributeHandler(processState));
         hostRegistration.registerReadOnlyAttribute(ServerRootResourceDefinition.RUNNING_MODE, new RunningModeReadHandler(runningModeControl));
-
-
     }
+
 
     @Override
     public void registerOperations(ManagementResourceRegistration hostRegistration) {
         super.registerOperations(hostRegistration);
-        hostRegistration.registerOperationHandler(NamespaceAddHandler.OPERATION_NAME, NamespaceAddHandler.INSTANCE, NamespaceAddHandler.INSTANCE, false);
-        hostRegistration.registerOperationHandler(NamespaceRemoveHandler.OPERATION_NAME, NamespaceRemoveHandler.INSTANCE, NamespaceRemoveHandler.INSTANCE, false);
-        hostRegistration.registerOperationHandler(SchemaLocationAddHandler.OPERATION_NAME, SchemaLocationAddHandler.INSTANCE, SchemaLocationAddHandler.INSTANCE, false);
-        hostRegistration.registerOperationHandler(SchemaLocationRemoveHandler.OPERATION_NAME, SchemaLocationRemoveHandler.INSTANCE, SchemaLocationRemoveHandler.INSTANCE, false);
+        hostRegistration.registerOperationHandler(NamespaceAddHandler.DEFINITION, NamespaceAddHandler.INSTANCE);
+        hostRegistration.registerOperationHandler(NamespaceRemoveHandler.DEFINITION, NamespaceRemoveHandler.INSTANCE);
+        hostRegistration.registerOperationHandler(SchemaLocationAddHandler.DEFINITION, SchemaLocationAddHandler.INSTANCE);
+        hostRegistration.registerOperationHandler(SchemaLocationRemoveHandler.DEFINITION, SchemaLocationRemoveHandler.INSTANCE);
 
 
         hostRegistration.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
@@ -188,5 +244,90 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         hostRegistration.registerOperationHandler(ResolveExpressionOnHostHandler.OPERATION_NAME, ResolveExpressionOnHostHandler.INSTANCE,
                 ResolveExpressionOnHostHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
         hostRegistration.registerOperationHandler(SpecifiedInterfaceResolveHandler.DEFINITION, SpecifiedInterfaceResolveHandler.INSTANCE);
+
+        XmlMarshallingHandler xmh = new HostXmlMarshallingHandler(configurationPersister.getHostPersister(), hostControllerInfo);
+        hostRegistration.registerOperationHandler(XmlMarshallingHandler.DEFINITION, xmh);
+
+
+        StartServersHandler ssh = new StartServersHandler(environment, serverInventory, runningModeControl);
+        hostRegistration.registerOperationHandler(StartServersHandler.OPERATION_NAME, ssh, ssh, false, OperationEntry.EntryType.PRIVATE);
+
+        HostShutdownHandler hsh = new HostShutdownHandler(domainController);
+        hostRegistration.registerOperationHandler(HostShutdownHandler.OPERATION_NAME, hsh, hsh, EnumSet.of(OperationEntry.Flag.HOST_CONTROLLER_ONLY));
+
+        HostProcessReloadHandler reloadHandler = new HostProcessReloadHandler(HostControllerService.HC_SERVICE_NAME, runningModeControl, processState,
+                getResourceDescriptionResolver(), hostControllerInfo);
+        hostRegistration.registerOperationHandler(ProcessReloadHandler.OPERATION_NAME, reloadHandler, reloadHandler, EnumSet.of(OperationEntry.Flag.HOST_CONTROLLER_ONLY));
+
+
+        DomainServerLifecycleHandlers.initializeServerInventory(serverInventory);
+        DomainSocketBindingGroupRemoveHandler.INSTANCE.initializeServerInventory(serverInventory);
+
+        ValidateOperationHandler validateOperationHandler = hostControllerInfo.isMasterDomainController() ? ValidateOperationHandler.INSTANCE : ValidateOperationHandler.SLAVE_HC_INSTANCE;
+        hostRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION_PRIVATE, validateOperationHandler);
+
+
+        SnapshotDeleteHandler snapshotDelete = new SnapshotDeleteHandler(configurationPersister.getHostPersister());
+        hostRegistration.registerOperationHandler(SnapshotDeleteHandler.DEFINITION, snapshotDelete);
+        SnapshotListHandler snapshotList = new SnapshotListHandler(configurationPersister.getHostPersister());
+        hostRegistration.registerOperationHandler(SnapshotListHandler.DEFINITION, snapshotList);
+        SnapshotTakeHandler snapshotTake = new SnapshotTakeHandler(configurationPersister.getHostPersister());
+        hostRegistration.registerOperationHandler(SnapshotTakeHandler.DEFINITION, snapshotTake);
+
+        ignoredRegistry.registerResources(hostRegistration);
+
+
+        // Platform MBeans
+        PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(hostRegistration);
+    }
+
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration hostRegistration) {
+        super.registerChildren(hostRegistration);
+
+
+        // System Properties
+        hostRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(SystemPropertyResourceDefinition.Location.HOST));
+
+        /////////////////////////////////////////
+        // Core Services
+
+        //vault
+        hostRegistration.registerSubModel(new VaultResourceDefinition(vaultReader));
+
+        // Central Management
+        ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreServiceResourceDefinition.INSTANCE);
+        management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
+        management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+        management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
+        management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
+
+        // Other core services
+        // TODO get a DumpServicesHandler that works on the domain
+        //        ManagementResourceRegistration serviceContainer = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), CommonProviders.SERVICE_CONTAINER_PROVIDER);
+        //        serviceContainer.registerOperationHandler(DumpServicesHandler.OPERATION_NAME, DumpServicesHandler.INSTANCE, DumpServicesHandler.INSTANCE, false);
+
+        //host-environment
+        hostRegistration.registerSubModel(HostEnvironmentResourceDescription.of(environment));
+
+
+        // Jvms
+        final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(JvmResourceDefinition.GLOBAL);
+
+        //Paths
+        hostRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
+
+        //interface
+        ManagementResourceRegistration interfaces = hostRegistration.registerSubModel(new InterfaceDefinition(
+                new HostSpecifiedInterfaceAddHandler(),
+                new HostSpecifiedInterfaceRemoveHandler(),
+                true
+        ));
+        interfaces.registerOperationHandler(SpecifiedInterfaceResolveHandler.DEFINITION, SpecifiedInterfaceResolveHandler.INSTANCE);
+
+        //server configurations
+        hostRegistration.registerSubModel(new ServerConfigResourceDefinition(serverInventory, pathManager));
+
     }
 }

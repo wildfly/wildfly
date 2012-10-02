@@ -41,6 +41,7 @@ import org.jboss.dmr.ModelType;
  * Provides a default description of an operation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Tomaz Cerar (c) 2012 Red Hat Inc.
  */
 public class DefaultOperationDescriptionProvider implements DescriptionProvider {
 
@@ -120,10 +121,6 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
 
         final ModelNode reply = result.get(REPLY_PROPERTIES).setEmptyObject();
 
-        final String replyDesc = descriptionResolver.getOperationReplyDescription(operationName, locale, bundle);
-        if (replyDesc != null) {
-            reply.get(DESCRIPTION).set(replyDesc);
-        }
         if (replyType != null && replyType != ModelType.UNDEFINED) {
             reply.get(TYPE).set(replyType);
             if (replyType == ModelType.LIST || replyType == ModelType.OBJECT) {
@@ -148,16 +145,15 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             } else {
                 reply.get(TYPE).set(ModelType.OBJECT);
                 for (AttributeDefinition ad : replyParameters) {
-
-                    final ModelNode param = ad.getNoTextDescription(true);
-                    final String description = attributeDescriptionResolver.getOperationParameterDescription(operationName, ad.getName(), locale, bundle);
-                    param.get(ModelDescriptionConstants.DESCRIPTION).set(description);
+                    final ModelNode param = ad.addOperationParameterDescription(new ModelNode(), operationName,attributeDescriptionResolver,locale,bundle);
                     reply.get(VALUE_TYPE, ad.getName()).set(param);
-                    ModelNode deprecated = ad.addDeprecatedInfo(result);
-                    if (deprecated != null) {
-                        deprecated.get(ModelDescriptionConstants.REASON).set(attributeDescriptionResolver.getOperationParameterDeprecatedDescription(operationName, ad.getName(), locale, attributeBundle));
-                    }
                 }
+            }
+        }
+        if (!reply.asList().isEmpty()) {
+            final String replyDesc = descriptionResolver.getOperationReplyDescription(operationName, locale, bundle);
+            if (replyDesc != null) {
+                reply.get(DESCRIPTION).set(replyDesc);
             }
         }
         if (deprecationData != null) {

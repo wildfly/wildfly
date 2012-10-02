@@ -29,7 +29,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -54,7 +54,7 @@ public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinitio
 
     public SSLServerIdentityResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SERVER_IDENTITY, ModelDescriptionConstants.SSL),
-                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.server-identity.ssl"),
+                ControllerResolver.getResolver("core.management.security-realm.server-identity.ssl"),
                 new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS),
                 new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,

@@ -24,10 +24,9 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.OperationEntry;
 
 /**
@@ -39,7 +38,7 @@ public class PlugInResourceDefinition extends SimpleResourceDefinition {
 
     public PlugInResourceDefinition() {
         super(PathElement.pathElement(PLUG_IN),
-                CommonDescriptions.getResourceDescriptionResolver("core.management.security-realm.plug-in"),
+                ControllerResolver.getResolver("core.management.security-realm.plug-in"),
                 new SecurityRealmChildAddHandler(true),
                 new SecurityRealmChildRemoveHandler(true), OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);

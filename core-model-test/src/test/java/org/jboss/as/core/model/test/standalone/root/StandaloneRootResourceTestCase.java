@@ -150,7 +150,7 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
         read.get(NAME).set(ModelDescriptionConstants.NAMESPACES);
         Assert.assertEquals(new ModelNode().setEmptyList(), kernelServices.executeForResult(read));
 
-        ModelNode add = Util.createOperation(NamespaceAddHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        ModelNode add = Util.createOperation(NamespaceAddHandler.DEFINITION, PathAddress.EMPTY_ADDRESS);
         add.get(ModelDescriptionConstants.NAMESPACE).set("one");
         add.get(ModelDescriptionConstants.URI).set("urn:uno");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(add));
@@ -176,7 +176,7 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
         Assert.assertEquals("two", prop.getName());
         Assert.assertEquals("urn:dos", prop.getValue().asString());
 
-        ModelNode remove = Util.createOperation(NamespaceRemoveHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        ModelNode remove = Util.createOperation(NamespaceRemoveHandler.DEFINITION, PathAddress.EMPTY_ADDRESS);
         remove.get(ModelDescriptionConstants.NAMESPACE).set("one");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(remove));
 
@@ -205,7 +205,7 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
         read.get(NAME).set(ModelDescriptionConstants.SCHEMA_LOCATIONS);
         Assert.assertEquals(new ModelNode().setEmptyList(), kernelServices.executeForResult(read));
 
-        ModelNode add = Util.createOperation(SchemaLocationAddHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        ModelNode add = Util.createOperation(SchemaLocationAddHandler.DEFINITION, PathAddress.EMPTY_ADDRESS);
         add.get(ModelDescriptionConstants.URI).set("one");
         add.get(ModelDescriptionConstants.SCHEMA_LOCATION).set("loc-one");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(add));
@@ -231,7 +231,7 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
         Assert.assertEquals("two", prop.getName());
         Assert.assertEquals("loc-two", prop.getValue().asString());
 
-        ModelNode remove = Util.createOperation(SchemaLocationRemoveHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
+        ModelNode remove = Util.createOperation(SchemaLocationRemoveHandler.DEFINITION.getName(), PathAddress.EMPTY_ADDRESS);
         remove.get(ModelDescriptionConstants.URI).set("one");
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(remove));
 

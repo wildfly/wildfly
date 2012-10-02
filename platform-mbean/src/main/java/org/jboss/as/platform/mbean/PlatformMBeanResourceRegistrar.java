@@ -214,20 +214,6 @@ public class PlatformMBeanResourceRegistrar {
                 }
             });
             BufferPoolMXBeanAttributeHandler.INSTANCE.register(bufPool);
-
-            // PlatformLoggingMXBean
-            // Only exposing through our management layer at this point. [AS7-2185]
-            /*ManagementResourceRegistration logging = root.registerSubModel(LOGGING_PATH, new DescriptionProvider() {
-                @Override
-                public ModelNode getModelDescription(Locale locale) {
-                    return PlatformMBeanDescriptions.getPlatformLoggingResource(locale);
-                }
-            });
-            logging.registerOperationHandler(GET_LOGGER_LEVEL, PlatformLoggingMXBeanGetLoggerLevelHandler.INSTANCE, PlatformLoggingMXBeanGetLoggerLevelHandler.INSTANCE);
-            logging.registerOperationHandler(SET_LOGGER_LEVEL, PlatformLoggingMXBeanSetLoggerLevelHandler.INSTANCE, PlatformLoggingMXBeanSetLoggerLevelHandler.INSTANCE);
-            logging.registerOperationHandler(GET_PARENT_LOGGER_NAME, PlatformLoggingMXBeanGetParentLoggerNameHandler.INSTANCE, PlatformLoggingMXBeanGetParentLoggerNameHandler.INSTANCE);
-            PlatformLoggingMXBeanAttributeHandler.INSTANCE.register(logging);*/
-
         }
 
     }

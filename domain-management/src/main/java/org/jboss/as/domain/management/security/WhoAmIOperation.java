@@ -24,24 +24,23 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.IDENTITY;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.REALM;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.ROLES;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.VERBOSE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.WHOAMI;
 
-import java.util.Locale;
 import java.util.Set;
-
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.domain.management.ManagementDescriptions;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -57,24 +56,23 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class WhoAmIOperation implements OperationStepHandler, DescriptionProvider {
-
-    public static final String OPERATION_NAME = WHOAMI;
+public class WhoAmIOperation implements OperationStepHandler {
     public static final WhoAmIOperation INSTANCE = new WhoAmIOperation();
 
-    private final ParametersValidator validator;
-
-    private WhoAmIOperation() {
-        validator = new ParametersValidator();
-        validator.registerValidator(VERBOSE, new ModelTypeValidator(ModelType.BOOLEAN, true));
-    }
+    private static final SimpleAttributeDefinition VERBOSE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VERBOSE, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(WHOAMI, ControllerResolver.getResolver("core", "management"))
+            .setParameters(VERBOSE)
+            .build();
 
     /**
      * @see org.jboss.as.controller.OperationStepHandler#execute(org.jboss.as.controller.OperationContext,
      *      org.jboss.dmr.ModelNode)
      */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        validator.validate(operation);
+        boolean verbose = VERBOSE.resolveModelAttribute(context, operation).asBoolean();
 
         Subject subject = SecurityActions.getSecurityContextSubject();
         if (subject == null) {
@@ -95,7 +93,7 @@ public class WhoAmIOperation implements OperationStepHandler, DescriptionProvide
             identity.get(REALM).set(realm);
         }
 
-        if (operation.hasDefined(VERBOSE) && operation.require(VERBOSE).asBoolean()) {
+        if (verbose) {
             ModelNode roles = result.get(ROLES);
             Set<RealmRole> roleSet = subject.getPrincipals(RealmRole.class);
             for (RealmRole current : roleSet) {
@@ -104,10 +102,6 @@ public class WhoAmIOperation implements OperationStepHandler, DescriptionProvide
         }
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-    }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return ManagementDescriptions.getWhoamiOperationDescription(locale);
     }
 
 }
