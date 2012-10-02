@@ -74,6 +74,11 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     private static final String DEFAULT_REALM = "ApplicationRealm";
     private static final String REALM_OPTION = "realm";
 
+    private static final String[] ALL_VALID_OPTIONS =
+    {
+        REALM_OPTION
+    };
+
     private SecurityRealm securityRealm;
     private AuthenticationMechanism chosenMech;
     private ValidationMode validationMode;
@@ -82,8 +87,11 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
-        final String realm = options.containsKey(REALM_OPTION) ? (String) options.get(REALM_OPTION) : DEFAULT_REALM;
+        addValidOptions(ALL_VALID_OPTIONS);
         super.initialize(subject, callbackHandler, sharedState, options);
+
+        final String realm = options.containsKey(REALM_OPTION) ? (String) options.get(REALM_OPTION) : DEFAULT_REALM;
+
         final ServiceController<?> controller = currentServiceContainer().getService(SecurityRealmService.BASE_SERVICE_NAME.append(realm));
         if (controller != null) {
             securityRealm = (SecurityRealm) controller.getValue();
