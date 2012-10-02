@@ -68,7 +68,17 @@ public class EmbeddedDeployableContainer extends CommonDeployableContainer<Embed
             throw new IllegalStateException("Invalid jboss home directory: " + jbossHomeDir);
         }
 
-        File modulesDir = new File(configuration.getModulePath());
+        String bundlePath = configuration.getBundlePath();
+        if(bundlePath == null) {
+            bundlePath = jbossHomeDir + "/bundles";
+        }
+
+        String modulePath = configuration.getModulePath();
+        if(modulePath == null) {
+            modulePath = jbossHomeDir + "/modules";
+        }
+
+        File modulesDir = new File(modulePath);
         if (!modulesDir.isDirectory()) {
             throw new IllegalStateException("Invalid modules directory: " + modulesDir);
         }
@@ -77,6 +87,7 @@ public class EmbeddedDeployableContainer extends CommonDeployableContainer<Embed
         if (!modulesJar.exists()) {
             throw new IllegalStateException("Cannot find: " + modulesJar);
         }
+
         Properties sysprops = new Properties();
         sysprops.putAll(System.getProperties());
         sysprops.setProperty("jboss.home.dir", jbossHomeDir.getAbsolutePath());
