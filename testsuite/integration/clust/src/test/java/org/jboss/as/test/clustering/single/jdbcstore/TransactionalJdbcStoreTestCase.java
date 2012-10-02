@@ -44,6 +44,7 @@ import javax.naming.NamingException;
  * @author Martin Gencur
  */
 @RunWith(Arquillian.class)
+@Ignore("https://issues.jboss.org/browse/ISPN-604")
 public class TransactionalJdbcStoreTestCase {
 
     @Deployment
@@ -55,37 +56,31 @@ public class TransactionalJdbcStoreTestCase {
         return war;
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxPutCommit() throws Exception {
         getIspnBeanFromJndi().testTxPutCommit();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxPutRollback() throws Exception {
         getIspnBeanFromJndi().testTxPutRollback();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxRemoveCommit() throws Exception {
         getIspnBeanFromJndi().testTxRemoveCommit();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxRemoveRollback() throws Exception {
         getIspnBeanFromJndi().testTxRemoveRollback();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxAlterCommit() throws Exception {
         getIspnBeanFromJndi().testTxAlterCommit();
     }
 
-    @Ignore("ISPN-604")
     @Test
     public void testTxAlterRollback() throws Exception {
         getIspnBeanFromJndi().testTxAlterRollback();
