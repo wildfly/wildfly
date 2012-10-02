@@ -6,7 +6,7 @@
         
     <container qualifier="jbossas-embedded" default="true">
         <configuration>
-            <property name="jbossHome">target/jboss-as</property>
+            <property name="jbossHome">target/jbossas</property>
         </configuration>
     </container>
 </arquillian>

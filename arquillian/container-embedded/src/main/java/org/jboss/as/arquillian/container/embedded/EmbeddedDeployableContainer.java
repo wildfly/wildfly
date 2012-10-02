@@ -68,6 +68,11 @@ public class EmbeddedDeployableContainer extends CommonDeployableContainer<Embed
             throw new IllegalStateException("Invalid jboss home directory: " + jbossHomeDir);
         }
 
+        File modulesDir = new File(configuration.getModulePath());
+        if (!modulesDir.isDirectory()) {
+            throw new IllegalStateException("Invalid modules directory: " + modulesDir);
+        }
+
         File modulesJar = new File(jbossHomeDir + "/jboss-modules.jar");
         if (!modulesJar.exists()) {
             throw new IllegalStateException("Cannot find: " + modulesJar);
@@ -78,8 +83,9 @@ public class EmbeddedDeployableContainer extends CommonDeployableContainer<Embed
         sysprops.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
         sysprops.setProperty("logging.configuration", "file:" + jbossHomeDir + "/standalone/configuration/logging.properties");
         sysprops.setProperty("org.jboss.boot.log.file", jbossHomeDir + "/standalone/log/boot.log");
+        sysprops.setProperty("jboss.bundles.dir", configuration.getBundlePath());
 
-        server = EmbeddedServerFactory.create(jbossHomeDir, sysprops, System.getenv(),
+        server = EmbeddedServerFactory.create(jbossHomeDir, modulesDir, sysprops, System.getenv(),
                 getSystemPackages(sysprops, "org.jboss.logmanager"));
         // server.getConfiguration()
         // .bindAddress(configuration.getBindAddress())

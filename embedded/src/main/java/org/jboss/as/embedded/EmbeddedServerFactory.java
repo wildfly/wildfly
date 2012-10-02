@@ -96,7 +96,7 @@ public class EmbeddedServerFactory {
         }
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
+    public static StandaloneServer create(final File jbossHomeDir, final File modulesDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
         if (jbossHomeDir == null || !jbossHomeDir.isDirectory()) {
             throw MESSAGES.invalidJbossHome(jbossHomeDir);
         }
@@ -104,7 +104,6 @@ public class EmbeddedServerFactory {
             systemProps.setProperty(ServerEnvironment.HOME_DIR, jbossHomeDir.getAbsolutePath());
         }
 
-        File modulesDir = new File(jbossHomeDir + "/modules");
         final ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir, systemPackages);
 
         try {
@@ -135,6 +134,10 @@ public class EmbeddedServerFactory {
         }
     }
 
+    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
+        File modulesDir = new File(jbossHomeDir + "/modules");
+        return create(jbossHomeDir, modulesDir, systemProps, systemEnv, systemPackages);
+    }
     @Deprecated
     public static void main(String[] args) throws Throwable {
         SecurityActions.setSystemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");

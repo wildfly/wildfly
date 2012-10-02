@@ -30,6 +30,10 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     private String jbossHome = System.getenv("JBOSS_HOME");
 
+    private String modulePath = System.getProperty("module.path");
+
+    private String bundlePath = System.getProperty("bundle.path");
+
     /**
      * @see org.jboss.as.arquillian.container.CommonContainerConfiguration#validate()
      */
@@ -43,5 +47,21 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     public void setJbossHome(String jbossHome) {
         this.jbossHome = jbossHome;
+    }
+
+    public String getModulePath() {
+        return modulePath;
+    }
+
+    public void setModulePath(final String modulePath) {
+        this.modulePath = modulePath;
+    }
+
+    public String getBundlePath() {
+        return bundlePath;
+    }
+
+    public void setBundlePath(String bundlePath) {
+        this.bundlePath = bundlePath;
     }
 }
