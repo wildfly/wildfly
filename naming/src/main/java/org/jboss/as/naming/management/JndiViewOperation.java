@@ -108,13 +108,13 @@ public class JndiViewOperation implements OperationStepHandler {
                             });
                         }
                     }
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiViewNotAvailable()));
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void addEntries(final ModelNode current, final Context context) throws NamingException {

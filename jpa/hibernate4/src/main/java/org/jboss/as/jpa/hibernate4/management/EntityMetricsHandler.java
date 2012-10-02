@@ -50,7 +50,7 @@ public abstract class EntityMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (statistics != null) {
             handle(statistics, context, operation.require(ModelDescriptionConstants.NAME).asString());
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract void handle(EntityStatistics statistics, OperationContext context, String attributeName);

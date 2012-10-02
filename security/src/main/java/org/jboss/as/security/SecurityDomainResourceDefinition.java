@@ -118,9 +118,9 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 if (!result.isDefined())
                     result.setEmptyList();
             } else {
-                context.getFailureDescription().set("No authentication cache for security domain " + securityDomain + " available");
+                throw SecurityMessages.MESSAGES.noAuthenticationCacheAvailable(securityDomain);
             }
-            context.completeStep();
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 
@@ -147,9 +147,10 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 else
                     manager.flushCache();
             } else {
-                context.getFailureDescription().set("No authentication cache for security domain " + securityDomain + " available");
+                throw SecurityMessages.MESSAGES.noAuthenticationCacheAvailable(securityDomain);
             }
-            context.completeStep();
+            // Can't rollback
+            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 

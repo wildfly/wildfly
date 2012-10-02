@@ -78,12 +78,12 @@ public class JdrReportRequestHandler implements OperationStepHandler {
                 }
                 response.get("report-location").set(report.getLocation());
 
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
 
 
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

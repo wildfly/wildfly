@@ -1339,7 +1339,7 @@ public class ThreadsSubsystemTestCase {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("profile", "test")));
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, new DescriptionProvider() {
                 @Override

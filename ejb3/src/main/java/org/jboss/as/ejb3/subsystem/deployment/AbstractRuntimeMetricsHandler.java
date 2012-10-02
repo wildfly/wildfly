@@ -68,6 +68,6 @@ public abstract class AbstractRuntimeMetricsHandler extends AbstractRuntimeOnlyH
         final ServiceName componentServiceName = componentServiceName(operation);
         final EJBComponent component = (EJBComponent) context.getServiceRegistry(false).getRequiredService(componentServiceName).getValue();
         executeReadMetricStep(context, operation, component);
-        context.completeStep();
+        context.stepCompleted();
     }
 }

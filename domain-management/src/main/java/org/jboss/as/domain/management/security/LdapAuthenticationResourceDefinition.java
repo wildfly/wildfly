@@ -111,7 +111,7 @@ public class LdapAuthenticationResourceDefinition extends SimpleResourceDefiniti
                     final ModelNode model = resource.getModel();
                     validateAttributeCombination(model);
 
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.MODEL);
             super.execute(context, operation);

@@ -60,7 +60,7 @@ public class ThreadMXBeanFindDeadlockedThreadsHandler implements OperationStepHa
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

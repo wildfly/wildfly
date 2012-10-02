@@ -73,7 +73,7 @@ public class ThreadMXBeanThreadInfoHandler implements OperationStepHandler, Desc
             throw new OperationFailedException(new ModelNode().set(e.toString()));
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

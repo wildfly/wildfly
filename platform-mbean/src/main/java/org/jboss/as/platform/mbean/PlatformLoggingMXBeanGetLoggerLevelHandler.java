@@ -76,7 +76,7 @@ public class PlatformLoggingMXBeanGetLoggerLevelHandler implements OperationStep
             throw new RuntimeException(e);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

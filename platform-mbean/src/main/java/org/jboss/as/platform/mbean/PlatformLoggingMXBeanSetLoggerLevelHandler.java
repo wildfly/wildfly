@@ -79,7 +79,8 @@ public class PlatformLoggingMXBeanSetLoggerLevelHandler implements OperationStep
             throw new RuntimeException(e);
         }
 
-        context.completeStep();
+        // TODO AS7-5667 handle rollback
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override

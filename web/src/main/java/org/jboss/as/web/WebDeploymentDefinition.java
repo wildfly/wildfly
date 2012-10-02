@@ -117,7 +117,7 @@ public class WebDeploymentDefinition extends SimpleResourceDefinition {
                 context.getResult().set(result);
             }
 
-            context.completeStep();
+            context.stepCompleted();
         }
 
     }

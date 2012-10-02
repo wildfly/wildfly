@@ -48,7 +48,7 @@ public class MemoryMXBeanGCHandler implements OperationStepHandler, DescriptionP
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         ManagementFactory.getMemoryMXBean().gc();
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
     @Override

@@ -82,18 +82,18 @@ final class WSEndpointMetrics implements OperationStepHandler {
                         try {
                             context.getResult().set(getEndpointMetricsFragment(operation, controller));
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set(getFallbackMessage() + ": " + e.getMessage()));
+                            throw new OperationFailedException(new ModelNode(getFallbackMessage() + ": " + e.getMessage()));
                         }
                     } else {
                         context.getResult().set(getFallbackMessage());
                     }
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
             context.getResult().set(getFallbackMessage());
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceController<?> controller) throws OperationFailedException {

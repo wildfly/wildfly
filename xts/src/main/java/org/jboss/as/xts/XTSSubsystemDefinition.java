@@ -14,11 +14,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -68,7 +65,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 ModelNode url = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get(ModelDescriptionConstants.URL);
                 context.getResult().get(ModelDescriptionConstants.URL).set(url);
-                context.completeStep();
+                context.stepCompleted();
             }
         });
     }

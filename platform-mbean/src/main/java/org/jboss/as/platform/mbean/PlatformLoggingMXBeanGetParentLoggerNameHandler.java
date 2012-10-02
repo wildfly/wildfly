@@ -77,7 +77,7 @@ public class PlatformLoggingMXBeanGetParentLoggerNameHandler implements Operatio
             throw new RuntimeException(e);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     @Override

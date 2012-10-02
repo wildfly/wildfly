@@ -22,33 +22,25 @@
 package org.jboss.as.jsr77.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -86,7 +78,7 @@ public class JSR77ManagementExtension  implements Extension {
         final ManagementResourceRegistration rootResource = subsystem.registerSubsystemModel(JSR77ManagementRootResource.INSTANCE);
 
         // Mandatory describe operation
-        rootResource.registerOperationHandler(DESCRIBE, J2EEManagementSubsystemDescribeHandler.INSTANCE, J2EEManagementSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(parser);
     }
@@ -122,21 +114,6 @@ public class JSR77ManagementExtension  implements Extension {
             ParseUtils.requireNoContent(reader);
 
             list.add(createSubsystemAddOperation());
-        }
-    }
-
-    private static class J2EEManagementSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final J2EEManagementSubsystemDescribeHandler INSTANCE = new J2EEManagementSubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode op = createSubsystemAddOperation();
-            context.getResult().add(op);
-            context.completeStep();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return GenericSubsystemDescribeHandler.DEFINITION.getDescriptionProvider().getModelDescription(locale);
         }
     }
 

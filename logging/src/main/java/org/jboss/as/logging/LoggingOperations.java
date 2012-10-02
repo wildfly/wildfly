@@ -96,11 +96,18 @@ final class LoggingOperations {
                                     configurationPersistence.writeConfiguration(context);
                                     context.detach(ATTACHMENT_KEY);
 
-                                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                                        // The real rollbacks should happen in the subclasses
-                                        logContextConfiguration.forget();
-                                        configurationPersistence.writeConfiguration(context);
-                                    }
+                                    context.completeStep(new RollbackHandler() {
+                                        @Override
+                                        public void handleRollback(OperationContext context, ModelNode operation) {
+                                            // The real rollbacks should happen in the subclasses
+                                            logContextConfiguration.forget();
+                                            try {
+                                                configurationPersistence.writeConfiguration(context);
+                                            } catch (OperationFailedException e) {
+                                                throw LoggingMessages.MESSAGES.rollbackFailure(e);
+                                            }
+                                        }
+                                    });
                                 } else {
                                     context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
                                 }
@@ -110,7 +117,7 @@ final class LoggingOperations {
                     }
                 }, Stage.RUNTIME);
             }
-            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.stepCompleted();
         }
 
         public abstract void execute(OperationContext context, ModelNode operation, String name, LogContextConfiguration logContextConfiguration) throws OperationFailedException;
@@ -132,15 +139,18 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        if (context.completeStep() == ResultAction.ROLLBACK) {
-                            logContextConfiguration.forget();
-                            try {
-                                performRollback(context, operation, logContextConfiguration, name);
-                                logContextConfiguration.commit();
-                            } catch (OperationFailedException e) {
-                                throw LoggerOperations.createRollbackFailure(e);
+                        context.completeStep(new RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                logContextConfiguration.forget();
+                                try {
+                                    performRollback(context, operation, logContextConfiguration, name);
+                                    logContextConfiguration.commit();
+                                } catch (OperationFailedException e) {
+                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
+                                }
                             }
-                        }
+                        });
                     }
                 }, Stage.RUNTIME);
             }
@@ -202,20 +212,25 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        if (context.completeStep() == ResultAction.ROLLBACK) {
-                            // Forget the original changes
-                            logContextConfiguration.forget();
-                            try {
-                                performRollback(context, operation, model, logContextConfiguration, name, originalModel);
-                                // Commit any new changes
-                                logContextConfiguration.commit();
-                            } catch (OperationFailedException e) {
-                                throw LoggerOperations.createRollbackFailure(e);
+                        context.completeStep(new RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                // Forget the original changes
+                                logContextConfiguration.forget();
+                                try {
+                                    performRollback(context, operation, model, logContextConfiguration, name, originalModel);
+                                    // Commit any new changes
+                                    logContextConfiguration.commit();
+                                } catch (OperationFailedException e) {
+                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
+                                }
                             }
-                        }
+                        });
                     }
                 }, Stage.RUNTIME);
             }
+
+            context.stepCompleted();
         }
 
         /**
@@ -277,18 +292,23 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        if (context.completeStep() == ResultAction.ROLLBACK) {
-                            logContextConfiguration.forget();
-                            try {
-                                performRollback(context, operation, logContextConfiguration, name, originalModel);
-                                logContextConfiguration.commit();
-                            } catch (OperationFailedException e) {
-                                throw LoggerOperations.createRollbackFailure(e);
+                        context.completeStep(new RollbackHandler() {
+                            @Override
+                            public void handleRollback(OperationContext context, ModelNode operation) {
+                                logContextConfiguration.forget();
+                                try {
+                                    performRollback(context, operation, logContextConfiguration, name, originalModel);
+                                    logContextConfiguration.commit();
+                                } catch (OperationFailedException e) {
+                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
+                                }
                             }
-                        }
+                        });
                     }
                 }, Stage.RUNTIME);
             }
+
+            context.stepCompleted();
         }
 
         /**
