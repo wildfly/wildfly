@@ -23,6 +23,7 @@
 package org.jboss.as.connector.metadata.deployment;
 
 import org.jboss.jca.deployers.common.CommonDeployment;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * A resource adapter deployment
@@ -32,12 +33,20 @@ public final class ResourceAdapterDeployment {
 
     private final CommonDeployment deployment;
 
+    private final String raName;
+
+    private final ServiceName raServiceName;
+
     /**
      * Create an instance
      * @param deployment The deployment
+     * @param raName the resource-adapter name
+     * @param raServiceName service name for this resource-adapter
      */
-    public ResourceAdapterDeployment(CommonDeployment deployment) {
+    public ResourceAdapterDeployment(final CommonDeployment deployment, final String raName, final ServiceName raServiceName) {
         this.deployment = deployment;
+        this.raName = raName;
+        this.raServiceName = raServiceName;
     }
 
     /**
@@ -61,4 +70,13 @@ public final class ResourceAdapterDeployment {
 
         return sb.toString();
     }
+
+    public String getRaName() {
+        return raName;
+    }
+
+    public ServiceName getRaServiceName() {
+        return raServiceName;
+    }
+
 }

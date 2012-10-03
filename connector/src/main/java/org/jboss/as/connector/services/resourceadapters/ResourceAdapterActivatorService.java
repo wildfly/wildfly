@@ -100,12 +100,12 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
             throw MESSAGES.failedToStartRaDeployment(e, deploymentName);
         }
 
-        value = new ResourceAdapterDeployment(deploymentMD);
+        String raName = deploymentMD.getDeploymentName();
+        ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
+
+        value = new ResourceAdapterDeployment(deploymentMD, raName, raServiceName);
         registry.getValue().registerResourceAdapterDeployment(value);
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-
-        String raName = value.getDeployment().getDeploymentName();
-        ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
 
         context.getChildTarget()
                 .addService(raServiceName,
