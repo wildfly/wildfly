@@ -2520,5 +2520,12 @@ public interface ControllerMessages {
     @Message(id = 14875, value = "Could not marshal attribute as attribute: %s")
     UnsupportedOperationException couldNotMarshalAttributeAsAttribute(String attributeName);
 
+    @Message(id = 14876, value = "Operation %s invoked against multiple target addresses failed at address %s with failure description %s")
+    String wildcardOperationFailedAtSingleAddress(String operation, PathAddress address, String failureMessage);
 
+    @Message(id = 14877, value = "Operation %s invoked against multiple target addresses failed at address %s. See the operation result for details.")
+    String wildcardOperationFailedAtSingleAddressWithComplexFailure(String operation, PathAddress address);
+
+    @Message(id = 14878, value = "Operation %s invoked against multiple target addresses failed at addresses %s. See the operation result for details.")
+    String wildcardOperationFailedAtMultipleAddresses(String operation, Set<PathAddress> addresses);
 }
