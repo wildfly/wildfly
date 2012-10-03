@@ -2490,4 +2490,16 @@ public interface ControllerMessages {
 
     @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
     RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
+
+    // 14874 unused in branch '7.1' but used in branch 'master'
+    // 14875 unused in branch '7.1' but used in branch 'master'
+
+    @Message(id = 14876, value = "Operation %s invoked against multiple target addresses failed at address %s with failure description %s")
+    String wildcardOperationFailedAtSingleAddress(String operation, PathAddress address, String failureMessage);
+
+    @Message(id = 14877, value = "Operation %s invoked against multiple target addresses failed at address %s. See the operation result for details.")
+    String wildcardOperationFailedAtSingleAddressWithComplexFailure(String operation, PathAddress address);
+
+    @Message(id = 14878, value = "Operation %s invoked against multiple target addresses failed at addresses %s. See the operation result for details.")
+    String wildcardOperationFailedAtMultipleAddresses(String operation, Set<PathAddress> addresses);
 }
