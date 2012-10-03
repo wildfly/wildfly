@@ -365,4 +365,8 @@ public interface WebMessages {
 
     @Message(id = 18104, value = "Deployment error processing SCI for jar: %s")
     DeploymentUnitProcessingException errorProcessingSCI(String jar, @Cause Exception e);
+
+    @Message(id = 18105, value = "Not applicable")
+    RuntimeException notApplicable();
+
 }

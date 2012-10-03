@@ -79,6 +79,7 @@ import org.jboss.security.javaee.SecurityHelperFactory;
 import org.jboss.security.mapping.MappingContext;
 import org.jboss.security.mapping.MappingManager;
 import org.jboss.security.mapping.MappingType;
+import org.jboss.web.CatalinaMessages;
 
 /**
  * A {@code RealmBase} implementation
@@ -520,7 +521,7 @@ public class JBossWebRealm extends RealmBase {
                 entries.put("Step", "hasResourcePermission");
                 failureAudit(request.getUserPrincipal(), entries);
             }
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, sm.getString("realmBase.forbidden"));
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, CatalinaMessages.MESSAGES.forbiddenAccess());
         } else {
             if (!disableAudit) {
                 Map<String, Object> entries = new HashMap<String, Object>();
