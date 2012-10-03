@@ -103,17 +103,24 @@ class FileRemoveTask implements PatchingTask {
     }
 
     void backup(final File root, final List<String> path, final List<ContentModification> rollback) throws IOException {
-        if(root.isDirectory()) {
+        if(root.exists()) {
+            // Perhaps an error condition?
+        } else if(root.isDirectory()) {
             final File[] files = root.listFiles();
-            for (File file : files) {
-                final List<String> newPath = new ArrayList<String>(path);
-                newPath.add(file.getName());
-                backup(file, newPath, rollback);
+            if(files.length == 0) {
+                // Create empty directory
+                rollback.add(createRollbackItem(root.getName(), path, NO_CONTENT, true));
+            } else {
+                for (File file : files) {
+                    final List<String> newPath = new ArrayList<String>(path);
+                    newPath.add(file.getName());
+                    backup(file, newPath, rollback);
+                }
             }
         } else {
             // Copy and record the backup action
             final byte[] hash = copy(root, getTarget(backup, root.getName(), path));
-            rollback.add(createRollbackItem(root.getName(), path, hash));
+            rollback.add(createRollbackItem(root.getName(), path, hash, false));
         }
     }
 
@@ -125,8 +132,8 @@ class FileRemoveTask implements PatchingTask {
         return new File(file, name);
     }
 
-    static ContentModification createRollbackItem(String name, List<String> path,  byte[] backupHash) {
-        final MiscContentItem backupItem = new MiscContentItem(name, path, backupHash);
+    static ContentModification createRollbackItem(String name, List<String> path,  byte[] backupHash, boolean directory) {
+        final MiscContentItem backupItem = new MiscContentItem(name, path, backupHash, directory);
         return new ContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
     }
 

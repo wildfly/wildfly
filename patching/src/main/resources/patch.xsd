@@ -144,11 +144,14 @@
                 A piece of patch content with a name and a slot.
             </xs:documentation>
         </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="contentType">
-                <xs:attributeGroup ref="slottedGroup"/>
-            </xs:extension>
-        </xs:complexContent>
+        <xs:attributeGroup ref="slottedGroup"/>
+        <xs:attribute name="hash" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Hash of the content.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="updated-slotted-contentType">

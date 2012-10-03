@@ -22,25 +22,90 @@
 
 package org.jboss.as.patching.metadata;
 
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import org.jboss.as.patching.runner.PatchUtils;
+import org.jboss.as.patching.runner.PatchingTask;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.jboss.staxmapper.XMLMapper;
 
-import javax.xml.stream.Location;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Set;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchXml implements XMLStreamConstants {
+public class PatchXml {
 
     public static final String PATCH_XML = "patch.xml";
+
+    private static final XMLMapper MAPPER = XMLMapper.Factory.create();
+    private static final PatchXml_1_0 INSTANCE = new PatchXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
+    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+    private static final QName ROOT_ELEMENT = new QName(Namespace.PATCH_1_0.getNamespace(), PatchXml_1_0.Element.PATCH.name);
+
+    static {
+        MAPPER.registerRootElement(ROOT_ELEMENT, INSTANCE);
+    }
+
+    enum Namespace {
+
+        PATCH_1_0("urn:jboss:patch:1.0"),
+        UNKNOWN(null),
+        ;
+
+        private final String namespace;
+        Namespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+    }
+
+    private PatchXml() {
+        //
+    }
+
+    public static void marshal(final Writer writer, final Patch patch) throws XMLStreamException {
+        try {
+            final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
+            final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(writer);
+            MAPPER.deparseDocument(INSTANCE, patch, streamWriter);
+        } finally {
+            PatchUtils.safeClose(writer);
+        }
+    }
+
+    public static void marshal(final OutputStream os, final Patch patch) throws XMLStreamException {
+        try {
+            final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
+            final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(os);
+            MAPPER.deparseDocument(INSTANCE, patch, streamWriter);
+        } finally {
+            PatchUtils.safeClose(os);
+        }
+    }
 
     public static Patch parse(final InputStream stream) throws XMLStreamException {
         try {
@@ -48,65 +113,13 @@ public class PatchXml implements XMLStreamConstants {
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
             setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(stream);
-            return parseDocument(streamReader);
+            //
+            final PatchBuilder builder = new PatchBuilder();
+            MAPPER.parseDocument(builder, streamReader);
+            return builder;
         } finally {
             PatchUtils.safeClose(stream);
         }
-    }
-
-    static Patch parseDocument(final XMLStreamReader reader) throws XMLStreamException {
-        while(reader.hasNext()) {
-            switch (reader.nextTag()) {
-                case START_DOCUMENT:
-                    return parsePatch(reader);
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-        throw endOfDocument(reader.getLocation());
-    }
-
-    static Patch parsePatch(final XMLStreamReader reader) throws XMLStreamException {
-        while(reader.hasNext()) {
-            switch (reader.nextTag()) {
-                case START_ELEMENT:
-                    break;
-                default:
-                    throw unexpectedElement(reader);
-            }
-        }
-        throw endOfDocument(reader.getLocation());
-    }
-
-
-    private static XMLStreamException unexpectedElement(final XMLStreamReader reader) {
-        return new XMLStreamException("Unexpected element '" + reader.getName() + "' encountered", reader.getLocation());
-    }
-
-    private static XMLStreamException unexpectedEndElement(final XMLStreamReader reader) {
-        return new XMLStreamException("Unexpected end of element '" + reader.getName() + "' encountered", reader.getLocation());
-    }
-
-    private static XMLStreamException unexpectedAttribute(final XMLStreamReader reader, final int index) {
-        return new XMLStreamException("Unexpected attribute '" + reader.getAttributeName(index) + "' encountered",
-                reader.getLocation());
-    }
-
-    private static XMLStreamException endOfDocument(final Location location) {
-        return new XMLStreamException("Unexpected end of document", location);
-    }
-
-    private static XMLStreamException missingRequired(final XMLExtendedStreamReader reader, final Set<?> required) {
-        final StringBuilder b = new StringBuilder();
-        Iterator<?> iterator = required.iterator();
-        while (iterator.hasNext()) {
-            final Object o = iterator.next();
-            b.append(o.toString());
-            if (iterator.hasNext()) {
-                b.append(", ");
-            }
-        }
-        return new XMLStreamException("Missing required attribute(s): " + b, reader.getLocation());
     }
 
     private static void setIfSupported(final XMLInputFactory inputFactory, final String property, final Object value) {

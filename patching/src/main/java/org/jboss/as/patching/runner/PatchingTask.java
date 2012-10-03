@@ -35,7 +35,7 @@ import java.io.IOException;
 /**
  * @author Emanuel Muckenhuber
  */
-interface PatchingTask {
+public interface PatchingTask {
 
     byte[] NO_CONTENT = new byte[0];
 

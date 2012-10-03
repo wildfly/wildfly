@@ -30,25 +30,38 @@ import java.util.List;
 public class MiscContentItem extends ContentItem {
 
     private final String[] path;
-    private final byte[] contentHash;
+    private final boolean isDirectory;
     private final boolean affectsRuntime;
 
-    public MiscContentItem(String name, List<String> path, byte[] contentHash) {
-        this(name, path.toArray(new String[path.size()]), contentHash, false);
+    public MiscContentItem(String name, List<String> path, byte[] contentHash, boolean directory) {
+        this(name, path.toArray(new String[path.size()]), contentHash, directory, false);
     }
 
     public MiscContentItem(String name, String[] path, byte[] contentHash) {
-        this(name, path, contentHash, false);
+        this(name, path, contentHash, false, false);
     }
 
-    public MiscContentItem(String name, String[] path, byte[] contentHash, boolean affectsRuntime) {
-        super(name, ContentType.MISC);
+    public MiscContentItem(String name, String[] path, byte[] contentHash, boolean isDirectory, boolean affectsRuntime) {
+        super(name, contentHash, ContentType.MISC);
         this.path = path;
-        this.contentHash = contentHash;
+        this.isDirectory = isDirectory;
         this.affectsRuntime = affectsRuntime;
-
     }
 
+    /**
+     * Whether the item is a directory or not
+     *
+     * @return Whether the item is a directory or not
+     */
+    public boolean isDirectory() {
+        return isDirectory;
+    }
+
+    /**
+     * Affects the runtime directly.
+     *
+     * @return {@code true} if it directly affects the runtime, {@code false otherwise}
+     */
     public boolean isAffectsRuntime() {
         return affectsRuntime;
     }
@@ -60,15 +73,6 @@ public class MiscContentItem extends ContentItem {
      */
     public String[] getPath() {
         return path;
-    }
-
-    /**
-     * Get the content hash.
-     *
-     * @return the content hash
-     */
-    public byte[] getContentHash() {
-        return contentHash;
     }
 
 }
