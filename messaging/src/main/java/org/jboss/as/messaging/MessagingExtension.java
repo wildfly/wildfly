@@ -178,8 +178,11 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(new DivertDefinition(registerRuntimeOnly));
 
         // Core queues
-        serverRegistration.registerSubModel(new QueueDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(QueueDefinition.newQueueDefinition(registerRuntimeOnly));
         // getExpiryAddress, setExpiryAddress, getDeadLetterAddress, setDeadLetterAddress  -- no -- just toggle the 'queue-address', make this a mutable attr of address-setting
+
+        // Runtime core queues
+        serverRegistration.registerSubModel(QueueDefinition.newRuntimeQueueDefinition(registerRuntimeOnly));
 
         // Acceptors
         serverRegistration.registerSubModel(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));

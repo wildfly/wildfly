@@ -629,6 +629,7 @@ public interface CommonAttributes {
     String RESOURCE_ADAPTER = "resource-adapter";
     String ROLE = "role";
     String ROLES_ATTR_NAME = "roles";
+    String RUNTIME_QUEUE = "runtime-queue";
     String SECURITY_ROLE = "security-role";
     String SECURITY_SETTING = "security-setting";
     String SECURITY_SETTINGS = "security-settings";

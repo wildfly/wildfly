@@ -23,7 +23,6 @@
 package org.jboss.as.messaging;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -508,4 +507,19 @@ public interface MessagingMessages {
     @Message(id = 11673, value = "The clustered attribute is deprecated. To create a clustered HornetQ server, define at least one cluster-connection")
     UnsupportedOperationException canNotWriteClusteredAttribute();
 
+    /**
+     * Create an failure description message indicating that the resource of given type can not be registered.
+     *
+     * @return an {@link UnsupportedOperationException} for the error.
+     */
+    @Message(id = 11674, value = "Resources of type %s cannot be registered")
+    UnsupportedOperationException canNotRegisterResourceOfType(String childType);
+
+    /**
+     * Create an failure description message indicating that the resource of given type can not be removed.
+     *
+     * @return an {@link UnsupportedOperationException} for the error.
+     */
+    @Message(id = 11675, value = "Resources of type %s cannot be removed")
+    UnsupportedOperationException canNotRemoveResourceOfType(String childType);
 }

@@ -22,18 +22,23 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
+import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
+import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
-
 import org.hornetq.api.core.management.AddressControl;
+import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -83,6 +88,8 @@ public class HornetQServerResource implements Resource {
     public boolean hasChild(PathElement element) {
         if (CORE_ADDRESS.equals(element.getKey())) {
             return hasAddressControl(element);
+        } else if (RUNTIME_QUEUE.equals(element.getKey())) {
+            return hasQueueControl(element.getValue());
         } else {
             return delegate.hasChild(element);
         }
@@ -92,6 +99,8 @@ public class HornetQServerResource implements Resource {
     public Resource getChild(PathElement element) {
         if (CORE_ADDRESS.equals(element.getKey())) {
             return hasAddressControl(element) ? new CoreAddressResource(element.getValue(), getManagementService()) : null;
+        } else if (RUNTIME_QUEUE.equals(element.getKey())) {
+            return hasQueueControl(element.getValue()) ? PlaceholderResource.INSTANCE : null;
         } else {
             return delegate.getChild(element);
         }
@@ -104,6 +113,11 @@ public class HornetQServerResource implements Resource {
                 return new CoreAddressResource(element.getValue(), getManagementService());
             }
             throw new NoSuchResourceException(element);
+        } else if (RUNTIME_QUEUE.equals(element.getKey())) {
+            if (hasQueueControl(element.getValue())) {
+                return PlaceholderResource.INSTANCE;
+            }
+            throw new NoSuchResourceException(element);
         } else {
             return delegate.requireChild(element);
         }
@@ -113,6 +127,8 @@ public class HornetQServerResource implements Resource {
     public boolean hasChildren(String childType) {
         if (CORE_ADDRESS.equals(childType)) {
             return getChildrenNames(CORE_ADDRESS).size() > 0;
+        } else if (RUNTIME_QUEUE.equals(childType)) {
+            return getChildrenNames(RUNTIME_QUEUE).size() > 0;
         } else {
             return delegate.hasChildren(childType);
         }
@@ -125,6 +141,11 @@ public class HornetQServerResource implements Resource {
                 throw new NoSuchResourceException(address.getElement(1));
             }
             return new CoreAddressResource(address.getElement(0).getValue(), getManagementService());
+        } else if (address.size() > 0 && RUNTIME_QUEUE.equals(address.getElement(0).getKey())) {
+            if (address.size() > 1) {
+                throw new NoSuchResourceException(address.getElement(1));
+            }
+            return PlaceholderResource.INSTANCE;
         } else {
             return delegate.navigate(address);
         }
@@ -134,6 +155,7 @@ public class HornetQServerResource implements Resource {
     public Set<String> getChildTypes() {
         Set<String> result = new HashSet<String>(delegate.getChildTypes());
         result.add(CORE_ADDRESS);
+        result.add(RUNTIME_QUEUE);
         return result;
     }
 
@@ -141,6 +163,8 @@ public class HornetQServerResource implements Resource {
     public Set<String> getChildrenNames(String childType) {
         if (CORE_ADDRESS.equals(childType)) {
             return getCoreAddressNames();
+        } else if (RUNTIME_QUEUE.equals(childType)) {
+            return getCoreQueueNames();
         } else {
             return delegate.getChildrenNames(childType);
         }
@@ -154,6 +178,12 @@ public class HornetQServerResource implements Resource {
                 result.add(new CoreAddressResource.CoreAddressResourceEntry(name, getManagementService()));
             }
             return result;
+        } else if (RUNTIME_QUEUE.equals(childType)) {
+            Set<ResourceEntry> result = new LinkedHashSet<ResourceEntry>();
+            for (String name : getCoreQueueNames()) {
+                result.add(new PlaceholderResource.PlaceholderResourceEntry(RUNTIME_QUEUE, name));
+            }
+            return result;
         } else {
             return delegate.getChildren(childType);
         }
@@ -161,8 +191,10 @@ public class HornetQServerResource implements Resource {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        if (CORE_ADDRESS.equals(address.getKey())) {
-            throw new UnsupportedOperationException(String.format("Resources of type %s cannot be registered", CORE_ADDRESS));
+        String type = address.getKey();
+        if (CORE_ADDRESS.equals(type) ||
+                RUNTIME_QUEUE.equals(type)) {
+            throw MESSAGES.canNotRegisterResourceOfType(type);
         } else {
             delegate.registerChild(address, resource);
         }
@@ -170,8 +202,10 @@ public class HornetQServerResource implements Resource {
 
     @Override
     public Resource removeChild(PathElement address) {
-        if (CORE_ADDRESS.equals(address.getKey())) {
-            throw new UnsupportedOperationException(String.format("Resources of type %s cannot be removed", CORE_ADDRESS));
+        String type = address.getKey();
+        if (CORE_ADDRESS.equals(type) ||
+                RUNTIME_QUEUE.equals(type)) {
+            throw MESSAGES.canNotRemoveResourceOfType(type);
         } else {
             return delegate.removeChild(address);
         }
@@ -179,12 +213,12 @@ public class HornetQServerResource implements Resource {
 
     @Override
     public boolean isRuntime() {
-        return false;
+        return delegate.isRuntime();
     }
 
     @Override
     public boolean isProxy() {
-        return false;
+        return delegate.isProxy();
     }
 
     @Override
@@ -199,6 +233,11 @@ public class HornetQServerResource implements Resource {
         return managementService == null ? false : managementService.getResource(ResourceNames.CORE_ADDRESS + element.getValue()) != null;
     }
 
+    private boolean hasQueueControl(String name) {
+        final ManagementService managementService = getManagementService();
+        return managementService == null ? false : managementService.getResource(ResourceNames.CORE_QUEUE + name) != null;
+    }
+
     private Set<String> getCoreAddressNames() {
         final ManagementService managementService = getManagementService();
         if (managementService == null) {
@@ -208,6 +247,20 @@ public class HornetQServerResource implements Resource {
             for (Object obj : managementService.getResources(AddressControl.class)) {
                 AddressControl ac = AddressControl.class.cast(obj);
                 result.add(ac.getAddress());
+            }
+            return result;
+        }
+    }
+
+    private Set<String> getCoreQueueNames() {
+        final ManagementService managementService = getManagementService();
+        if (managementService == null) {
+            return Collections.emptySet();
+        } else {
+            Set<String> result = new HashSet<String>();
+            for (Object obj : managementService.getResources(QueueControl.class)) {
+                QueueControl qc = QueueControl.class.cast(obj);
+                result.add(qc.getName());
             }
             return result;
         }
