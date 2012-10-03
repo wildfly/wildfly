@@ -36,7 +36,6 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.test.integration.osgi.stilts.bundle.SimpleStomplet;
 import org.jboss.as.test.integration.osgi.stilts.bundle.SimpleStompletActivator;
 import org.jboss.as.test.integration.osgi.stilts.bundle.StompletServerActivator;
-import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.repository.XRequirementBuilder;
@@ -89,8 +88,6 @@ public class StompletTestCase {
             ServerDeploymentHelper server = new ServerDeploymentHelper(client);
             InputStream input = getStompletServerProviderArchive().as(ZipExporter.class).exportAsInputStream();
             server.deploy(STOMPLET_SERVER_PROVIDER, input);
-
-            FrameworkManagement.bundleStart(client, STOMPLET_SERVER_PROVIDER);
         }
 
         @Override

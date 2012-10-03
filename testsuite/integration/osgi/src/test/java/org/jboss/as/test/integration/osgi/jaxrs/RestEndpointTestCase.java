@@ -26,9 +26,11 @@ import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Application;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -44,6 +46,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.BundleContext;
 
 /**
  * Test simple OSGi REST deployment
@@ -60,7 +63,13 @@ public class RestEndpointTestCase {
     static final String BUNDLE_C_WAB = "bundle-c.wab";
 
     @ArquillianResource
+    Deployer deployer;
+
+    @ArquillianResource
     ManagementClient managementClient;
+
+    @Inject
+    public BundleContext context;
 
     @Deployment
     public static Archive<?> testDeployment() {
@@ -78,7 +87,52 @@ public class RestEndpointTestCase {
         return jar;
     }
 
-    @Deployment(name = SIMPLE_WAR, testable = false)
+    @Test
+    public void testSimpleWar() throws Exception {
+        deployer.deploy(SIMPLE_WAR);
+        try {
+            Assert.assertEquals("Hello World!", performCall("/simple/helloworld"));
+        } finally {
+            deployer.undeploy(SIMPLE_WAR);
+        }
+    }
+
+    @Test
+    public void testSimpleWarAsBundle() throws Exception {
+        deployer.deploy(BUNDLE_A_WAR);
+        try {
+            Assert.assertEquals("Hello World!", performCall("/bundle-a/helloworld"));
+        } finally {
+            deployer.undeploy(BUNDLE_A_WAR);
+        }
+    }
+
+    @Test
+    public void testBundleWithWarExtension() throws Exception {
+        deployer.deploy(BUNDLE_B_WAR);
+        try {
+            Assert.assertEquals("Hello World!", performCall("/bundle-b/helloworld"));
+        } finally {
+            deployer.undeploy(BUNDLE_B_WAR);
+        }
+    }
+
+    @Test
+    public void testBundleWithWabExtension() throws Exception {
+        deployer.deploy(BUNDLE_C_WAB);
+        try {
+            Assert.assertEquals("Hello World!", performCall("/bundle-c/helloworld"));
+        } finally {
+            deployer.undeploy(BUNDLE_C_WAB);
+        }
+    }
+
+    private String performCall(String path) throws Exception {
+        String urlspec = managementClient.getWebUri() + path;
+        return HttpRequest.get(urlspec, 5, TimeUnit.SECONDS);
+    }
+
+    @Deployment(name = SIMPLE_WAR, managed = false, testable = false)
     public static Archive<?> getSimpleWar(){
         final WebArchive archive = create(WebArchive.class, SIMPLE_WAR);
         archive.addClasses(SimpleResource.class);
@@ -86,7 +140,7 @@ public class RestEndpointTestCase {
         return archive;
     }
 
-    @Deployment(name = BUNDLE_A_WAR, testable = false)
+    @Deployment(name = BUNDLE_A_WAR, managed = false, testable = false)
     public static Archive<?> getSimpleWarAsBundle() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
         archive.addClasses(SimpleResource.class);
@@ -105,7 +159,7 @@ public class RestEndpointTestCase {
         return archive;
     }
 
-    @Deployment(name = BUNDLE_B_WAR, testable = false)
+    @Deployment(name = BUNDLE_B_WAR, managed = false, testable = false)
     public static Archive<?> getBundleWithWarExtension() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B_WAR);
         archive.addClasses(SimpleResource.class);
@@ -123,7 +177,7 @@ public class RestEndpointTestCase {
         return archive;
     }
 
-    @Deployment(name = BUNDLE_C_WAB, testable = false)
+    @Deployment(name = BUNDLE_C_WAB, managed = false, testable = false)
     public static Archive<?> getBundleWithWabExtension() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
         archive.addClasses(SimpleResource.class);
@@ -139,30 +193,5 @@ public class RestEndpointTestCase {
             }
         });
         return archive;
-    }
-
-    @Test
-    public void testSimpleWar() throws Exception {
-        Assert.assertEquals("Hello World!", performCall("/simple/helloworld"));
-    }
-
-    @Test
-    public void testSimpleWarAsBundle() throws Exception {
-        Assert.assertEquals("Hello World!", performCall("/bundle-a/helloworld"));
-    }
-
-    @Test
-    public void testBundleWithWarExtension() throws Exception {
-        Assert.assertEquals("Hello World!", performCall("/bundle-b/helloworld"));
-    }
-
-    @Test
-    public void testBundleWithWabExtension() throws Exception {
-        Assert.assertEquals("Hello World!", performCall("/bundle-c/helloworld"));
-    }
-
-    private String performCall(String path) throws Exception {
-        String urlspec = managementClient.getWebUri() + path;
-        return HttpRequest.get(urlspec, 5, TimeUnit.SECONDS);
     }
 }

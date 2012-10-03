@@ -22,25 +22,10 @@
 
 package org.jboss.as.test.osgi;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.test.integration.management.ManagementOperations;
-import org.jboss.as.test.integration.management.util.MgmtOperationException;
-import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.osgi.framework.Version;
@@ -58,20 +43,53 @@ public final class FrameworkManagement {
     private FrameworkManagement() {
     }
 
-    public static void activateFramework(ModelControllerClient client) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi", ModelConstants.ACTIVATE);
+    interface ModelConstants {
+        String ACTIVATE = "activate";
+        String ACTIVATION = "activation";
+        String BUNDLE = "bundle";
+        String CAPABILITY = "capability";
+        String PROPERTY = "property";
+        String START = "start";
+        String STARTLEVEL = "startlevel";
+        String STATE = "state";
+        String STOP = "stop";
+        String SYMBOLIC_NAME = "symbolic-name";
+        String VALUE = "value";
+        String VERSION = "version";
+    }
+
+    interface ModelDescriptionConstants {
+        String ADD = "add";
+        String CHILD_TYPE = "child-type";
+        String FAILURE_DESCRIPTION = "failure-description";
+        String INCLUDE_RUNTIME = "include-runtime";
+        String NAME = "name";
+        String OUTCOME = "outcome";
+        String READ_ATTRIBUTE_OPERATION = "read-attribute";
+        String READ_CHILDREN_NAMES_OPERATION = "read-children-names";
+        String READ_RESOURCE_OPERATION = "read-resource";
+        String RECURSIVE = "recursive";
+        String REMOVE = "remove";
+        String RESULT = "result";
+        String SUCCESS = "success";
+        String VALUE = "value";
+        String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
+    }
+
+    public static void activateFramework(ModelControllerClient client) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi", ModelConstants.ACTIVATE);
         executeOperation(client, op);
     }
 
-    public static String getActivationMode(ModelControllerClient client) throws MgmtOperationException, IOException {
+    public static String getActivationMode(ModelControllerClient client) throws Exception {
         return readAttribute(client, ModelConstants.ACTIVATION);
     }
 
-    public static boolean setActivationMode(ModelControllerClient client, String mode) throws MgmtOperationException, IOException {
-        return writeAttribute(client, ModelConstants.ACTIVATION, mode);
+    public static void setActivationMode(ModelControllerClient client, String mode) throws Exception {
+        writeAttribute(client, ModelConstants.ACTIVATION, mode);
     }
 
-    public static Integer getFrameworkStartLevel(ModelControllerClient client) throws MgmtOperationException, IOException {
+    public static Integer getFrameworkStartLevel(ModelControllerClient client) throws Exception {
         String sl = readAttribute(client, ModelConstants.STARTLEVEL);
         if (sl.trim().length() == 0)
             return null;
@@ -79,24 +97,22 @@ public final class FrameworkManagement {
         return Integer.parseInt(sl);
     }
 
-    public static boolean setFrameworkStartLevel(ModelControllerClient client, int i) throws MgmtOperationException, IOException {
-        return writeAttribute(client, ModelConstants.STARTLEVEL, "" + i);
+    public static void setFrameworkStartLevel(ModelControllerClient client, int i) throws Exception {
+        writeAttribute(client, ModelConstants.STARTLEVEL, "" + i);
     }
 
-    public static boolean bundleStart(ModelControllerClient client, Object resId) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/bundle=" + resId, ModelConstants.START);
-        ModelNode result = executeOperation(client, op, false);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
+    public static void bundleStart(ModelControllerClient client, Object resId) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/bundle=" + resId, ModelConstants.START);
+        executeOperation(client, op, true);
     }
 
-    public static boolean bundleStop(ModelControllerClient client, Object resId) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/bundle=" + resId, ModelConstants.STOP);
-        ModelNode result = executeOperation(client, op, false);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
+    public static void bundleStop(ModelControllerClient client, Object resId) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/bundle=" + resId, ModelConstants.STOP);
+        executeOperation(client, op, true);
     }
 
-    public static List<Long> listBundleIDs(ModelControllerClient client) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi", READ_CHILDREN_NAMES_OPERATION);
+    public static List<Long> listBundleIDs(ModelControllerClient client) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi", ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION);
         op.get(ModelDescriptionConstants.CHILD_TYPE).set(ModelConstants.BUNDLE);
         ModelNode result = executeOperation(client, op, true);
 
@@ -107,9 +123,9 @@ public final class FrameworkManagement {
         return ids;
     }
 
-    public static Long getBundleId(ModelControllerClient client, String symbolicName, Version version) throws MgmtOperationException, IOException {
+    public static Long getBundleId(ModelControllerClient client, String symbolicName, Version version) throws Exception {
         Long result = new Long(-1);
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi", READ_RESOURCE_OPERATION);
+        ModelNode op = createOpNode("subsystem=osgi", ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set("true");
         op.get(ModelDescriptionConstants.RECURSIVE).set("true");
         ModelNode bundleNode = executeOperation(client, op).get(ModelConstants.BUNDLE);
@@ -135,70 +151,57 @@ public final class FrameworkManagement {
         return result;
     }
 
-    public static String getBundleState(ModelControllerClient client, Object resId) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/bundle=" + resId, READ_RESOURCE_OPERATION);
+    public static String getBundleState(ModelControllerClient client, Object resId) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/bundle=" + resId, ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set("true");
         op.get(ModelDescriptionConstants.RECURSIVE).set("true");
         ModelNode result = executeOperation(client, op);
         return result.get(ModelConstants.STATE).asString();
     }
 
-    public static ModelNode getBundleInfo(ModelControllerClient client, Object resId) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/bundle=" + resId, READ_RESOURCE_OPERATION);
+    public static ModelNode getBundleInfo(ModelControllerClient client, Object resId) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/bundle=" + resId, ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         op.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set("true");
         op.get(ModelDescriptionConstants.RECURSIVE).set("true");
         return executeOperation(client, op);
     }
 
-    public static boolean addCapability(ModelControllerClient client, String name, Integer startLevel) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/capability=" + name, ADD);
+    public static void addCapability(ModelControllerClient client, String name, Integer startLevel) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/capability=" + name, ModelDescriptionConstants.ADD);
         op.get(ModelConstants.STARTLEVEL).set(startLevel.toString());
-        ModelNode result = executeOperation(client, op, false);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
+        executeOperation(client, op, true);
     }
 
-    public static List<String> listCapabilities(ModelControllerClient client) throws MgmtOperationException, IOException {
+    public static List<String> listCapabilities(ModelControllerClient client) throws Exception {
         return listChildrenNames(client, ModelConstants.CAPABILITY);
     }
 
-    public static boolean removeCapability(ModelControllerClient client, String name) throws MgmtOperationException, IOException {
-        return removeResource(client, ModelConstants.CAPABILITY, name);
+    public static void removeCapability(ModelControllerClient client, String name) throws Exception {
+        removeResource(client, ModelConstants.CAPABILITY, name);
     }
 
-    public static boolean addProperty(ModelControllerClient client, String name, String value) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/property=" + name, ADD);
+    public static void addProperty(ModelControllerClient client, String name, String value) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/property=" + name, ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.VALUE).set(value);
-        ModelNode result = executeOperation(client, op, false);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
+        executeOperation(client, op, true);
     }
 
-    public static List<String> listProperties(ModelControllerClient client) throws MgmtOperationException, IOException {
+    public static List<String> listProperties(ModelControllerClient client) throws Exception {
         return listChildrenNames(client, ModelConstants.PROPERTY);
     }
 
-    public static String readProperty(ModelControllerClient client, String name) throws MgmtOperationException, IOException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/property=" + name, READ_RESOURCE_OPERATION);
+    public static String readProperty(ModelControllerClient client, String name) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/property=" + name, ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         ModelNode result = executeOperation(client, op);
         return result.get(ModelConstants.VALUE).asString();
     }
 
-    public static boolean removeProperty(ModelControllerClient client, String name) throws MgmtOperationException, IOException {
-        return removeResource(client, ModelConstants.PROPERTY, name);
+    public static void removeProperty(ModelControllerClient client, String name) throws Exception {
+        removeResource(client, ModelConstants.PROPERTY, name);
     }
 
-    private static ModelNode executeOperation(final ModelControllerClient client, ModelNode op) throws IOException, MgmtOperationException {
-        return executeOperation(client, op, true);
-    }
-
-    private static ModelNode executeOperation(final ModelControllerClient client, ModelNode op, boolean unwrapResult) throws IOException, MgmtOperationException {
-        System.out.println(op);
-        ModelNode result = unwrapResult ? ManagementOperations.executeOperation(client, op) : ManagementOperations.executeOperationRaw(client, op);
-        System.out.println(result);
-        return result;
-    }
-
-    private static List<String> listChildrenNames(ModelControllerClient client, String type) throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi", READ_CHILDREN_NAMES_OPERATION);
+    private static List<String> listChildrenNames(ModelControllerClient client, String type) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi", ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION);
         op.get(ModelDescriptionConstants.CHILD_TYPE).set(type);
         ModelNode result = executeOperation(client, op);
 
@@ -209,24 +212,49 @@ public final class FrameworkManagement {
         return names;
     }
 
-    private static boolean removeResource(ModelControllerClient client, String type, String name) throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi/" + type + "=" + name, REMOVE);
-        ModelNode result = executeOperation(client, op, false);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
+    private static void removeResource(ModelControllerClient client, String type, String name) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi/" + type + "=" + name, ModelDescriptionConstants.REMOVE);
+        executeOperation(client, op, true);
     }
 
-    private static String readAttribute(ModelControllerClient client, String attributeName) throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi", READ_ATTRIBUTE_OPERATION);
+    private static String readAttribute(ModelControllerClient client, String attributeName) throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi", ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
         op.get(ModelDescriptionConstants.NAME).set(attributeName);
         ModelNode result = executeOperation(client, op);
         return result.asString();
     }
 
-    private static boolean writeAttribute(ModelControllerClient client, String attributeName, String value)  throws IOException, MgmtOperationException {
-        ModelNode op = ModelUtil.createOpNode("subsystem=osgi", WRITE_ATTRIBUTE_OPERATION);
+    private static void writeAttribute(ModelControllerClient client, String attributeName, String value)  throws Exception {
+        ModelNode op = createOpNode("subsystem=osgi", ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
         op.get(ModelDescriptionConstants.NAME).set(attributeName);
         op.get(ModelDescriptionConstants.VALUE).set(value);
-        ModelNode result = executeOperation(client, op, false);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
+        executeOperation(client, op, true);
+    }
+
+    private static ModelNode createOpNode(String address, String operation) {
+        ModelNode op = new ModelNode();
+        ModelNode list = op.get("address").setEmptyList();
+        if (address != null) {
+            String[] pathSegments = address.split("/");
+            for (String segment : pathSegments) {
+                String[] elements = segment.split("=");
+                list.add(elements[0], elements[1]);
+            }
+        }
+        op.get("operation").set(operation);
+        return op;
+    }
+
+    private static ModelNode executeOperation(final ModelControllerClient client, ModelNode op) throws Exception {
+        return executeOperation(client, op, true);
+    }
+
+    private static ModelNode executeOperation(final ModelControllerClient client, ModelNode op, boolean unwrapResult) throws Exception {
+        ModelNode ret = client.execute(op);
+        if (!unwrapResult) return ret;
+        if (!ModelDescriptionConstants.SUCCESS.equals(ret.get(ModelDescriptionConstants.OUTCOME).asString())) {
+            throw new IllegalStateException("Management operation failed: " + ret.get(ModelDescriptionConstants.FAILURE_DESCRIPTION));
+        }
+        return ret.get(ModelDescriptionConstants.RESULT);
     }
 }

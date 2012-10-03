@@ -22,16 +22,21 @@
 package org.jboss.as.test.integration.osgi.jpa;
 
 import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.jpa.bundle.Employee;
-import org.jboss.as.test.osgi.FrameworkUtils;
+import org.jboss.as.test.integration.osgi.jpa.bundle.PersistenceActivatorA;
+import org.jboss.as.test.integration.osgi.jpa.bundle.PersistenceService;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -39,6 +44,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
 /**
@@ -50,13 +59,55 @@ import org.osgi.util.tracker.ServiceTracker;
 @RunWith(Arquillian.class)
 public class PersistenceTestCase {
 
+    private static final String PERSISTENCE_BUNDLE_A = "persistence-bundle-a.jar";
+
+    @ArquillianResource
+    Deployer deployer;
+
     @Inject
-    public Bundle bundle;
+    public PackageAdmin packageAdmin;
+
+    @Inject
+    public BundleContext context;
 
     @Deployment
-    public static JavaArchive createdeployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "simple-jpa-bundle");
-        archive.addClasses(Employee.class, FrameworkUtils.class);
+    public static Archive<?> deployment() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "osgi-jpa-test");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(Bundle.class, ServiceTracker.class, EntityManager.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testEntityManagerFactoryService() throws Exception {
+        deployer.deploy(PERSISTENCE_BUNDLE_A);
+        try {
+            Bundle bundle = packageAdmin.getBundles(PERSISTENCE_BUNDLE_A, null)[0];
+            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+            // This service is registered by the {@link PersistenceActivatorA}
+            ServiceReference sref = context.getServiceReference(Callable.class.getName());
+            Callable<Boolean> service = (Callable<Boolean>) context.getService(sref);
+            Assert.assertTrue(service.call());
+
+        } finally {
+            deployer.undeploy(PERSISTENCE_BUNDLE_A);
+        }
+    }
+
+    @Deployment(name = PERSISTENCE_BUNDLE_A, managed = false, testable = false)
+    public static JavaArchive getBundleA() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, PERSISTENCE_BUNDLE_A);
+        archive.addClasses(Employee.class, PersistenceActivatorA.class, PersistenceService.class);
         archive.addAsResource(Employee.class.getPackage(), "simple-persistence.xml", "META-INF/persistence.xml");
         archive.setManifest(new Asset() {
             @Override
@@ -67,38 +118,12 @@ public class PersistenceTestCase {
                 // The Meta-Persistence header may include zero or more comma-separated jar-paths.
                 // Each a path to a Persistence Descriptor resource in the bundle.
                 builder.addManifestHeader("Meta-Persistence", "");
-                builder.addImportPackages(EntityManagerFactory.class, ServiceTracker.class);
+                builder.addBundleActivator(PersistenceActivatorA.class);
+                builder.addImportPackages(EntityManagerFactory.class);
+                builder.addImportPackages(BundleActivator.class, Assert.class);
                 return builder.openStream();
             }
         });
         return archive;
     }
-
-    @Test
-    public void testEntityManagerFactoryService() throws Exception {
-        EntityManagerFactory emf = null;
-        try {
-            emf = FrameworkUtils.waitForService(bundle.getBundleContext(), EntityManagerFactory.class);
-            Assert.assertNotNull("EntityManagerFactory not null", emf);
-
-            Employee emp = new Employee();
-            emp.setId(100);
-            emp.setAddress("Sesame Street");
-            emp.setName("Kermit");
-
-            EntityManager em = emf.createEntityManager();
-            em.persist(emp);
-
-            emp = em.find(Employee.class, 100);
-            Assert.assertNotNull("Employee not null", emp);
-
-            em.remove(emp);
-
-        } finally {
-            if (emf != null) {
-                emf.close();
-            }
-        }
-    }
-
 }

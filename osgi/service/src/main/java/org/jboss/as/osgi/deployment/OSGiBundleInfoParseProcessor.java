@@ -25,7 +25,7 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.BundleInstallIntegration;
+import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -52,7 +52,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
         final String contextName = depUnit.getName();
 
         // Check if we already have a bundle {@link Deployment}
-        if (BundleInstallIntegration.getDeployment(contextName) != null)
+        if (BundleLifecycleIntegration.getDeployment(contextName) != null)
             return;
 
         // Get the manifest from the deployment's virtual file
