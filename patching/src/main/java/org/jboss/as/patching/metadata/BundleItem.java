@@ -29,12 +29,12 @@ package org.jboss.as.patching.metadata;
  */
 public class BundleItem extends ModuleItem {
 
-    public BundleItem(String name) {
-        this(name, "main");
+    public BundleItem(String name, byte[] contentHash) {
+        this(name, "main", contentHash);
     }
 
-    public BundleItem(String name, String slot) {
-        super(name, slot, ContentType.BUNDLE);
+    public BundleItem(String name, String slot, byte[] contentHash) {
+        super(name, slot, contentHash, ContentType.BUNDLE);
     }
 
 }

@@ -28,11 +28,22 @@ package org.jboss.as.patching.metadata;
 public abstract class ContentItem {
 
     private final String name;
+    private final byte[] contentHash;
     private final ContentType contentType;
 
-    protected ContentItem(String name, ContentType contentType) {
+    protected ContentItem(String name, byte[] contentHash, ContentType contentType) {
         this.name = name;
+        this.contentHash = contentHash;
         this.contentType = contentType;
+    }
+
+    /**
+     * Get the content hash.
+     *
+     * @return the content hash
+     */
+    public byte[] getContentHash() {
+        return contentHash;
     }
 
     /**

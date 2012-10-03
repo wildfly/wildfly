@@ -29,16 +29,16 @@ public class ModuleItem extends ContentItem {
 
     private final String slot;
 
-    public ModuleItem(String name) {
-        this(name, "main");
+    public ModuleItem(String name, byte[] contentHash) {
+        this(name, "main", contentHash);
     }
 
-    public ModuleItem(String name, String slot) {
-        this(name, slot, ContentType.MODULE);
+    public ModuleItem(String name, String slot, byte[] contentHash) {
+        this(name, slot, contentHash, ContentType.MODULE);
     }
 
-    ModuleItem(String name, String slot, ContentType type) {
-        super(name, type);
+    ModuleItem(String name, String slot, final byte[] contentHash, ContentType type) {
+        super(name, contentHash, type);
         this.slot = slot;
     }
 

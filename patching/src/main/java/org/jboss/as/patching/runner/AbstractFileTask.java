@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.SyncFailedException;
 import java.util.Arrays;
 
 /**
@@ -80,16 +81,24 @@ abstract class AbstractFileTask implements PatchingTask {
     }
 
     public void execute(final PatchingContext context) throws IOException {
-
-        final InputStream is = context.getLoader().openContentStream(item);
-        try {
-            // Replace the file
-            final byte[] hash = copy(is, target);
-            final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
-            final ContentModification rollback = createRollback(context, item, backupItem, hash);
+        if(item.isDirectory()) {
+            if(! target.mkdir()) {
+                throw new IOException();
+            }
+            final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash, item.isDirectory(), item.isAffectsRuntime());
+            final ContentModification rollback = createRollback(context, item, backupItem, NO_CONTENT);
             context.recordRollbackAction(rollback);
-        } finally {
-            PatchUtils.safeClose(is);
+        } else {
+            final InputStream is = context.getLoader().openContentStream(item);
+            try {
+                // Replace the file
+                final byte[] hash = copy(is, target);
+                final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash, item.isDirectory(), item.isAffectsRuntime());
+                final ContentModification rollback = createRollback(context, item, backupItem, hash);
+                context.recordRollbackAction(rollback);
+            } finally {
+                PatchUtils.safeClose(is);
+            }
         }
     }
 

@@ -48,19 +48,16 @@ class ModuleUpdateTask extends AbstractModuleTask {
         super(item, expected);
     }
 
-    protected File[] getResources(PatchingContext context) {
-        // Hmm ...
-        return new File[0];
-    }
-
     @Override
     public void execute(PatchingContext context) throws IOException {
 
         // Copy the new module resources to the patching directory
-        final File targetDir = context.getModulePatchDirectory();
-        final File[] moduleResources = getResources(context);
+        final File modulePatchDirectory = context.getModulePatchDirectory();
+        final File targetDir = PatchItemMapping.getModulePath(modulePatchDirectory, item);
+        final File sourceDir = context.getLoader().getFile(item);
+        final File[] moduleResources = sourceDir.listFiles();
         for(final File file : moduleResources) {
-            final File target = PatchItemMapping.getModulePath(targetDir, item);
+            final File target = new File(targetDir, file.getName());
             copy(file, target);
         }
 

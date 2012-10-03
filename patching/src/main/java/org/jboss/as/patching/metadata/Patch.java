@@ -57,6 +57,13 @@ public interface Patch {
     PatchType getPatchType();
 
     /**
+     * Get the resulting version of a CP.
+     *
+     * @return the resulting version
+     */
+    String getResultingVersion();
+
+    /**
      * Get the versions this patch applies to.
      *
      * @return the versions the patch can be applied
