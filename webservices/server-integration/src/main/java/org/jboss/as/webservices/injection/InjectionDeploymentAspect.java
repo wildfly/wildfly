@@ -67,7 +67,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
         private final boolean isEjb3Endpoint;
         private final ServiceName componentPrefix;
         private static final String componentSuffix = "START";
-        private final Map<String, Reference> cache = new HashMap<String, Reference>();
+        private final Map<String, Reference> cache = new HashMap<String, Reference>(8);
 
         private InjectionAwareInstanceProvider(final InstanceProvider delegate, final Endpoint endpoint, final DeploymentUnit unit) {
             this.delegate = delegate;
