@@ -148,8 +148,8 @@ public class GenerateModulesDefinition {
         try {
             if (!dependencies.isEmpty()) {
                 for (ModuleIdentifier moduleId : dependencies) {
-                    String path = moduleId.getName().replace('.', '/') + File.separator + moduleId.getSlot();
-                    pw.println(path + File.separator + "**");
+                    String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
+                    pw.println(path + '/' + "**");
                 }
             } else {
                 pw.println(NO_MODULE_DEPENENCIES);
@@ -183,7 +183,7 @@ public class GenerateModulesDefinition {
         } else {
             parentNode.addChild(moduleNode);
 
-            String path = moduleId.getName().replace('.', '/') + File.separator + moduleId.getSlot();
+            String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
             File moduleFile = new File(resourcesDir + File.separator + "modules" + File.separator + path + File.separator + "module.xml");
             if (moduleFile.exists() || !dep.isOptional()) {
                 dependencies.add(moduleId);
