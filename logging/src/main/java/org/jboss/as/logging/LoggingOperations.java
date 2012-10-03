@@ -229,8 +229,6 @@ final class LoggingOperations {
                     }
                 }, Stage.RUNTIME);
             }
-
-            context.stepCompleted();
         }
 
         /**
@@ -307,8 +305,6 @@ final class LoggingOperations {
                     }
                 }, Stage.RUNTIME);
             }
-
-            context.stepCompleted();
         }
 
         /**
