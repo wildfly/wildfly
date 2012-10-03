@@ -111,13 +111,13 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 unregisterAll(raName);
                 throw MESSAGES.failedToStartRaDeployment(t, raName);
             }
+            ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
 
-            value = new ResourceAdapterDeployment(raxmlDeployment);
+            value = new ResourceAdapterDeployment(raxmlDeployment, raName, raServiceName);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
 
             registry.getValue().registerResourceAdapterDeployment(value);
 
-            ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
 
             context.getChildTarget()
                     .addService(raServiceName,
