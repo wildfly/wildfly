@@ -41,6 +41,7 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.LifecycleSupport;
+import org.jboss.as.web.WebLogger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.SessionConfigMetaData;
 
@@ -99,7 +100,7 @@ public abstract class AbstractSessionManager extends ManagerBase implements Sess
             this.init();
         }
 
-        log.debug("Starting JBossManager");
+        WebLogger.WEB_SESSION_LOGGER.debug("Starting JBossManager");
 
         // Validate and update our current component state
         if (this.started) return;
@@ -121,7 +122,7 @@ public abstract class AbstractSessionManager extends ManagerBase implements Sess
 
             this.lifecycle.fireLifecycleEvent(STOP_EVENT, null);
 
-            log.debug("Stopping JBossManager");
+            WebLogger.WEB_SESSION_LOGGER.debug("Stopping JBossManager");
 
             this.destroy();
         }
@@ -212,7 +213,7 @@ public abstract class AbstractSessionManager extends ManagerBase implements Sess
                     cookie.setSecure(true);
                 }
 
-                log.tracef("Setting cookie with session id: %s & name: %s", sessionId, Globals.SESSION_COOKIE_NAME);
+                WebLogger.WEB_SESSION_LOGGER.tracef("Setting cookie with session id: %s & name: %s", sessionId, Globals.SESSION_COOKIE_NAME);
 
                 response.addCookie(cookie);
             }

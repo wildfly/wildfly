@@ -22,13 +22,15 @@
 
 package org.jboss.as.web.security.jaspi.modules;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.authenticator.Constants;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.apache.catalina.util.StringManager;
 import org.apache.coyote.ActionCode;
 import org.jboss.as.web.WebLogger;
+import org.jboss.web.CatalinaMessages;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
@@ -55,8 +57,6 @@ public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
 
     public static final String CERTIFICATES_ATTR = "javax.servlet.request.X509Certificate";
 
-    protected static final StringManager sm = StringManager.getManager(Constants.Package);
-
     /**
      * <p>
      * Creates an instance of {@code HTTPClientCertServerAuthModule}.
@@ -68,7 +68,7 @@ public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
 
     @Override
     public AuthStatus secureResponse(MessageInfo messageInfo, Subject serviceSubject) throws AuthException {
-        throw new RuntimeException("Not Applicable");
+        throw MESSAGES.notApplicable();
     }
 
     @Override
@@ -88,7 +88,8 @@ public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
         if ((certs == null) || (certs.length < 1)) {
             WebLogger.WEB_SECURITY_LOGGER.debugf("No certificates included with this request");
             try {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sm.getString("authenticator.certificates"));
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                        CatalinaMessages.MESSAGES.missingRequestCertificate());
             } catch (IOException e) {
              // Ignore IOException here (client disconnect)
             }
@@ -100,7 +101,8 @@ public class HTTPClientCertServerAuthModule extends WebServerAuthModule {
         if (principal == null) {
             WebLogger.WEB_SECURITY_LOGGER.debugf("Realm.authenticate() returned false");
             try {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sm.getString("authenticator.unauthorized"));
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                        CatalinaMessages.MESSAGES.certificateAuthenticationFailure());
             } catch (IOException e) {
              // Ignore IOException here (client disconnect)
             }

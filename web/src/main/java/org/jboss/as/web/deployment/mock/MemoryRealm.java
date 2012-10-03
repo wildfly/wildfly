@@ -34,12 +34,9 @@ import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
-import org.jboss.logging.Logger;
 
 
 public class MemoryRealm extends RealmBase {
-
-    private static Logger log = Logger.getLogger(MemoryRealm.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -108,12 +105,8 @@ public class MemoryRealm extends RealmBase {
         }
 
         if (validated) {
-            if (log.isDebugEnabled())
-                log.debug(sm.getString("memoryRealm.authenticateSuccess", username));
             return (principal);
         } else {
-            if (log.isDebugEnabled())
-                log.debug(sm.getString("memoryRealm.authenticateFailure", username));
             return (null);
         }
 
