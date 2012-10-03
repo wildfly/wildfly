@@ -63,10 +63,10 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final String contextName = depUnit.getName();
+        final String runtimeName = depUnit.getName();
 
         // Check if {@link BundleInstallIntegration} provided the {@link Deployment}
-        Deployment deployment = BundleLifecycleIntegration.removeDeployment(contextName);
+        Deployment deployment = BundleLifecycleIntegration.removeDeployment(runtimeName);
         if (deployment != null) {
             deployment.setAutoStart(false);
         }

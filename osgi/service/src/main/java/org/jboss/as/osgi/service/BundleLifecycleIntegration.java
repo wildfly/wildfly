@@ -23,20 +23,35 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+import static org.jboss.as.osgi.deployment.DeferredPhaseProcessor.DEFERRED_PHASE;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
+import static org.jboss.as.server.deployment.Services.deploymentUnitName;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.osgi.management.OperationAssociation;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -46,8 +61,10 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.FutureServiceValue;
 import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.util.ServiceTracker;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.vfs.VFSUtils;
 import org.osgi.framework.BundleException;
@@ -99,12 +116,22 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
         return this;
     }
 
-    public static Deployment getDeployment(String contextName) {
-        return deploymentMap.get(contextName);
+    public static Deployment getDeployment(String runtimeName) {
+        synchronized (deploymentMap) {
+            return deploymentMap.get(runtimeName);
+        }
     }
 
-    public static Deployment removeDeployment(String contextName) {
-        return deploymentMap.remove(contextName);
+    public static Deployment removeDeployment(String runtimeName) {
+        synchronized (deploymentMap) {
+            return deploymentMap.remove(runtimeName);
+        }
+    }
+
+    private void putDeployment(String runtimeName, final Deployment dep) {
+        synchronized (deploymentMap) {
+            deploymentMap.put(runtimeName, dep);
+        }
     }
 
     @Override
@@ -117,31 +144,50 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
             bundleManager.installBundle(dep, null);
         } else {
             LOGGER.debugf("Install deployment: %s", dep);
-            executeDeployOperation(dep);
-        }
-    }
-
-    private void executeDeployOperation(final Deployment dep) throws BundleException {
-        String contextName = getContextName(dep);
-        deploymentMap.put(contextName, dep);
-        try {
-            InputStream input = dep.getRoot().openStream();
+            String runtimeName = getRuntimeName(dep);
+            putDeployment(runtimeName, dep);
             try {
-                ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
-                server.deploy(contextName, input);
-            } finally {
-                VFSUtils.safeClose(input);
+                InputStream input = dep.getRoot().openStream();
+                try {
+                    ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+                    server.deploy(runtimeName, input);
+                } finally {
+                    VFSUtils.safeClose(input);
+                }
+            } catch (RuntimeException rte) {
+                throw rte;
+            } catch (Exception ex) {
+                throw MESSAGES.cannotDeployBundle(ex, dep);
             }
-        } catch (RuntimeException rte) {
-            throw rte;
-        } catch (Exception ex) {
-            throw MESSAGES.cannotDeployBundle(ex, dep);
         }
     }
 
     @Override
     public void start(XBundle bundle, int options, DefaultHandler handler) throws BundleException {
-        handler.start(bundle, options);
+        Deployment deployment = bundle.adapt(Deployment.class);
+        DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+
+        // The DeploymentUnit would be null for initial capabilities
+        if (depUnit == null) {
+            handler.start(bundle, options);
+            return;
+        }
+
+        // There is no deferred phase, activate using the default
+        Boolean deferredPhase = depUnit.getAttachment(Attachments.DEFERRED_MODULE_PHASE);
+        if (Boolean.FALSE.equals(deferredPhase)) {
+            handler.start(bundle, options);
+            return;
+        }
+
+        // Get the INSTALL phase service and check whether we need to activate it
+        ServiceController<Phase> phaseService = getDeferredPhaseService(depUnit);
+        if (phaseService.getMode() != Mode.NEVER) {
+            handler.start(bundle, options);
+            return;
+        }
+
+        activateDeferredPhase(bundle, depUnit, phaseService);
     }
 
     @Override
@@ -155,13 +201,80 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
         try {
             ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
             Deployment dep = bundle.adapt(Deployment.class);
-            server.undeploy(getContextName(dep));
+            server.undeploy(getRuntimeName(dep));
         } catch (Exception ex) {
             LOGGER.warnCannotUndeployBundle(ex, bundle);
         }
     }
 
-    private String getContextName(Deployment dep) {
+    private void activateDeferredPhase(XBundle bundle, DeploymentUnit depUnit, ServiceController<Phase> phaseService) throws BundleException {
+
+        // There is a possiblitity that the phase service is not DOWN (yet) although its mode is NEVER
+        // This could be because a previous start attempt has not yet settled
+        FutureServiceValue<Phase> future = new FutureServiceValue<Phase>(phaseService, State.DOWN);
+        try {
+            future.get(5, TimeUnit.SECONDS);
+        } catch (ExecutionException ex) {
+            throw MESSAGES.cannotActivateDeferredModulePhase(ex, bundle);
+        } catch (TimeoutException ex) {
+            throw MESSAGES.cannotActivateDeferredModulePhase(ex, bundle);
+        }
+
+        LOGGER.infoActivateDeferredModulePhase(bundle);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final List<ServiceController<?>> failed = new ArrayList<ServiceController<?>>();
+        ServiceTracker<Object> serviceTracker = new ServiceTracker<Object>(true) {
+            private final AtomicInteger count = new AtomicInteger();
+
+            @Override
+            public void serviceListenerAdded(ServiceController<? extends Object> controller) {
+                LOGGER.debugf("Added: [%d] %s ", count.incrementAndGet(), controller.getName());
+            }
+
+            @Override
+            protected void serviceStarted(ServiceController<?> controller) {
+                LOGGER.debugf("Started: [%d] %s ", count.decrementAndGet(), controller.getName());
+            }
+
+            @Override
+            protected void serviceStartFailed(ServiceController<?> controller, Throwable th) {
+                LOGGER.debugf("Failed: [%d] %s ", count.decrementAndGet(), controller.getName());
+                failed.add(controller);
+            }
+
+            @Override
+            protected void complete() {
+                LOGGER.debugf("Complete: [%d]", count.get());
+                latch.countDown();
+            }
+        };
+        phaseService.addListener(Inheritance.ALL, serviceTracker);
+
+        phaseService.setMode(Mode.ACTIVE);
+        depUnit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT).incrementAndGet();
+
+        try {
+            latch.await();
+        } catch (InterruptedException ex) {
+            // ignore
+        }
+
+        // In case of failure we go back to NEVER
+        if (failed.size() > 0) {
+            LOGGER.warnDeactivateDeferredModulePhase(bundle);
+            phaseService.setMode(Mode.NEVER);
+            StartException startex = failed.get(0).getStartException();
+            Throwable cause = startex.getCause();
+            if (cause instanceof BundleException) {
+                throw (BundleException)cause;
+            } else {
+                throw MESSAGES.cannotActivateDeferredModulePhase(startex, bundle);
+            }
+        }
+    }
+
+    private String getRuntimeName(Deployment dep) {
         String name = dep.getLocation();
         if (name.endsWith("/"))
             name = name.substring(0, name.length() - 1);
@@ -169,5 +282,15 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
         if (idx > 0)
             name = name.substring(idx + 1);
         return name;
+    }
+
+    @SuppressWarnings("unchecked")
+    private ServiceController<Phase> getDeferredPhaseService(DeploymentUnit depUnit) {
+        String name = depUnit.getName();
+        DeploymentUnit parent = depUnit.getParent();
+        ServiceName serviceName = parent == null ? deploymentUnitName(name, DEFERRED_PHASE) : deploymentUnitName(parent.getName(), name, DEFERRED_PHASE);
+        BundleManager bundleManager = injectedBundleManager.getValue();
+        ServiceContainer serviceContainer = bundleManager.getServiceContainer();
+        return (ServiceController<Phase>) serviceContainer.getRequiredService(serviceName);
     }
 }

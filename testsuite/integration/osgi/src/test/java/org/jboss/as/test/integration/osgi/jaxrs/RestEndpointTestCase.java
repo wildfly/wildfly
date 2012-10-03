@@ -23,6 +23,7 @@ package org.jboss.as.test.integration.osgi.jaxrs;
 
 import static org.jboss.shrinkwrap.api.ShrinkWrap.create;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
 import org.jboss.as.test.integration.osgi.jaxrs.bundle.SimpleResource;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -44,9 +46,13 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 
 /**
  * Test simple OSGi REST deployment
@@ -61,6 +67,7 @@ public class RestEndpointTestCase {
     static final String BUNDLE_A_WAR = "bundle-a.war";
     static final String BUNDLE_B_WAR = "bundle-b.war";
     static final String BUNDLE_C_WAB = "bundle-c.wab";
+    static final String BUNDLE_D_WAB = "bundle-d.wab";
 
     @ArquillianResource
     Deployer deployer;
@@ -127,6 +134,65 @@ public class RestEndpointTestCase {
         }
     }
 
+    @Test
+    public void testDeferredBundleWithWabExtension() throws Exception {
+        InputStream input = deployer.getDeployment(BUNDLE_C_WAB);
+        Bundle bundle = context.installBundle(BUNDLE_C_WAB, input);
+        try {
+            Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
+            try {
+                performCall("/bundle-c/helloworld");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+
+            bundle.start();
+            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+            Assert.assertEquals("Hello World!", performCall("/bundle-c/helloworld"));
+        } finally {
+            bundle.uninstall();
+        }
+    }
+
+    @Test
+    @Ignore("[AS7-5653] Cannot restart webapp bundle after activation failure")
+    public void testDeferredBundleWithFailure() throws Exception {
+        InputStream input = deployer.getDeployment(BUNDLE_D_WAB);
+        Bundle bundle = context.installBundle(BUNDLE_D_WAB, input);
+        try {
+            Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
+            try {
+                performCall("/bundle-d/helloworld");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+
+            try {
+                bundle.start();
+                Assert.fail("BundleException expected");
+            } catch (BundleException ex) {
+                // expected
+            }
+            Assert.assertEquals("RESOLVED", Bundle.RESOLVED, bundle.getState());
+            try {
+                performCall("/bundle-d/helloworld");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+
+            bundle.start();
+            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+            Assert.assertEquals("Hello World!", performCall("/bundle-d/helloworld"));
+        } finally {
+            bundle.uninstall();
+        }
+    }
+
     private String performCall(String path) throws Exception {
         String urlspec = managementClient.getWebUri() + path;
         return HttpRequest.get(urlspec, 5, TimeUnit.SECONDS);
@@ -189,6 +255,25 @@ public class RestEndpointTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Produces.class, Application.class);
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_D_WAB, managed = false, testable = false)
+    public static Archive<?> getBundleD() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_D_WAB);
+        archive.addClasses(SimpleResource.class, DeferredFailActivator.class);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(DeferredFailActivator.class);
+                builder.addImportPackages(Produces.class, Application.class);
+                builder.addImportPackages(BundleActivator.class);
                 return builder.openStream();
             }
         });

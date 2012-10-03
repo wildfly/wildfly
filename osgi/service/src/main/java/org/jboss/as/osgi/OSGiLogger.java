@@ -116,4 +116,12 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11915, value = "Cannot deploy from management operation, bypassing deployment unit processors: %s")
     void warnCannotDeployBundleFromManagementOperation(Deployment dep);
+
+    @LogMessage(level = INFO)
+    @Message(id = 11916, value = "Activate deferred module phase for: %s")
+    void infoActivateDeferredModulePhase(Bundle bundle);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11917, value = "Deactivate deferred module phase for: %s")
+    void warnDeactivateDeferredModulePhase(Bundle bundle);
 }

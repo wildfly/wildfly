@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.deployment;
 
+import static org.jboss.as.server.ServerLogger.DEPLOYMENT_LOGGER;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -33,6 +35,8 @@ import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -131,12 +135,10 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             if(nextPhaseDeps != null) {
                 phaseServiceBuilder.addDependencies(nextPhaseDeps);
             }
-            final List<AttachableDependency> nextPhaseAttachableDeps = processorContext
-                    .getAttachment(Attachments.NEXT_PHASE_ATTACHABLE_DEPS);
+            final List<AttachableDependency> nextPhaseAttachableDeps = processorContext.getAttachment(Attachments.NEXT_PHASE_ATTACHABLE_DEPS);
             if (nextPhaseAttachableDeps != null) {
                 for (AttachableDependency attachableDep : nextPhaseAttachableDeps) {
-                    AttachedDependency result = new AttachedDependency(attachableDep.getAttachmentKey(), attachableDep
-                            .isDeploymentUnit());
+                    AttachedDependency result = new AttachedDependency(attachableDep.getAttachmentKey(), attachableDep.isDeploymentUnit());
                     phaseServiceBuilder.addDependency(attachableDep.getServiceName(), result.getValue());
                     phaseService.injectedAttachedDependencies.add(result);
 
@@ -149,6 +151,18 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             // make sure all sub deployments have finished this phase before moving to the next one
             for (DeploymentUnit du : subDeployments) {
                 phaseServiceBuilder.addDependencies(du.getServiceName().append(phase.name()));
+            }
+
+            // Defer the {@link Phase.FIRST_MODULE_USE} phase
+            Boolean deferredPhase = deploymentUnit.getAttachment(Attachments.DEFERRED_MODULE_PHASE);
+            if (nextPhase == Phase.FIRST_MODULE_USE && Boolean.TRUE.equals(deferredPhase)) {
+                DEPLOYMENT_LOGGER.infoDeferredModulePhase(deploymentUnit.getName());
+                phaseServiceBuilder.setInitialMode(Mode.NEVER);
+                if (parent != null) {
+                    ServiceName parentPhaseServiceName = Services.deploymentUnitName(parent.getName(), nextPhase);
+                    ServiceController<?> parentPhaseService = container.getRequiredService(parentPhaseServiceName);
+                    parentPhaseService.setMode(Mode.PASSIVE);
+                }
             }
 
             phaseServiceBuilder.install();

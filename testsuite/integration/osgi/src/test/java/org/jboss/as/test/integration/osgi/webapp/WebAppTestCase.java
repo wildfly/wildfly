@@ -38,6 +38,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
+import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -47,10 +48,13 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
@@ -69,6 +73,7 @@ public class WebAppTestCase {
     static final String BUNDLE_C_WAB = "bundle-c.wab";
     static final String BUNDLE_D_WAB = "bundle-d.wab";
     static final String BUNDLE_E_JAR = "bundle-e.jar";
+    static final String BUNDLE_F_WAB = "bundle-f.wab";
 
     static final Asset STRING_ASSET = new StringAsset("Hello from Resource");
 
@@ -207,6 +212,71 @@ public class WebAppTestCase {
         }
     }
 
+    @Test
+    public void testDeferredBundleWithWabExtension() throws Exception {
+        InputStream input = deployer.getDeployment(BUNDLE_C_WAB);
+        Bundle bundle = context.installBundle(BUNDLE_C_WAB, input);
+        try {
+            Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
+            try {
+                performCall("/bundle-d/servlet?input=Hello");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+
+            bundle.start();
+            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+            String result = performCall("/bundle-c/servlet?input=Hello");
+            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            result = performCall("/bundle-c/message.txt");
+            Assert.assertEquals("Hello from Resource", result);
+        } finally {
+            bundle.uninstall();
+        }
+    }
+
+    @Test
+    @Ignore("[AS7-5653] Cannot restart webapp bundle after activation failure")
+    public void testDeferredBundleWithFailure() throws Exception {
+        InputStream input = deployer.getDeployment(BUNDLE_F_WAB);
+        Bundle bundle = context.installBundle(BUNDLE_F_WAB, input);
+        try {
+            Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
+            try {
+                performCall("/bundle-d/servlet?input=Hello");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+
+            try {
+                bundle.start();
+                Assert.fail("BundleException expected");
+            } catch (BundleException ex) {
+                // expected
+            }
+            Assert.assertEquals("RESOLVED", Bundle.RESOLVED, bundle.getState());
+            try {
+                performCall("/bundle-d/servlet?input=Hello");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+
+            bundle.start();
+            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+            String result = performCall("/bundle-c/servlet?input=Hello");
+            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            result = performCall("/bundle-c/message.txt");
+            Assert.assertEquals("Hello from Resource", result);
+        } finally {
+            bundle.uninstall();
+        }
+    }
+
     private String performCall(String path) throws Exception {
         String urlspec = managementClient.getWebUri() + path;
         return HttpRequest.get(urlspec, 5, TimeUnit.SECONDS);
@@ -312,6 +382,27 @@ public class WebAppTestCase {
                 builder.addImportPackages(PostConstruct.class, WebServlet.class);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
                 builder.addManifestHeader("Web-ContextPath", "/bundle-e");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_F_WAB, managed = false, testable = false)
+    public static Archive<?> getBundleF() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_F_WAB);
+        archive.addClasses(SimpleServlet.class, Echo.class, DeferredFailActivator.class);
+        archive.addAsResource(STRING_ASSET, "message.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivator(DeferredFailActivator.class);
+                builder.addImportPackages(PostConstruct.class, WebServlet.class);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(BundleActivator.class);
                 return builder.openStream();
             }
         });
