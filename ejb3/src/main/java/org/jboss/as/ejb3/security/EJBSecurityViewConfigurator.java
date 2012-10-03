@@ -66,6 +66,15 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         }
         final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
+        // The getSecurityDomain() will return a null value if neither an explicit security domain is configured
+        // for the bean nor there's any default security domain that's configured at EJB3 subsystem level.
+        // In such cases, we do *not* apply any security interceptors
+        if (ejbComponentDescription.getSecurityDomain() == null) {
+            ROOT_LOGGER.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() +
+                    ", since no explicit security domain is configured for the bean, nor is there any default security domain configured in the EJB3 subsystem");
+            return;
+        }
+
         final String viewClassName = viewDescription.getViewClassName();
         final EJBViewDescription ejbViewDescription = (EJBViewDescription) viewDescription;
 
