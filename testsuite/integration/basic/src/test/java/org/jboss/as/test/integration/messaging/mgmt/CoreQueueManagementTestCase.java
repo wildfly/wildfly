@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.messaging.mgmt;
 
+import static java.util.UUID.randomUUID;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,6 +122,41 @@ public class CoreQueueManagementTestCase {
             session.deleteQueue(getOtherQueueName());
             session.close();
         }
+    }
+
+    @Test
+    public void testReadResource() throws Exception {
+        String address = randomUUID().toString();
+        String queueName = randomUUID().toString();
+
+        final ModelNode readQueueResourceOp = getQueueOperation("read-resource", queueName);
+
+        final ModelNode readRuntimeQueueResourceOp = getRuntimeQueueOperation("read-resource", queueName);
+        readRuntimeQueueResourceOp.get(INCLUDE_RUNTIME).set(true);
+
+        // resource does not exist
+        ModelNode result = execute(readQueueResourceOp, false);
+        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        result = execute(readRuntimeQueueResourceOp, false);
+        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+
+        session.createQueue(address, queueName, false);
+
+        // resource does not exist for core queue...
+        result = execute(readQueueResourceOp, false);
+        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        // ... but it does for runtime-queue
+        result = execute(readRuntimeQueueResourceOp, true);
+        assertTrue(result.isDefined());
+        assertEquals(address, result.get("queue-address").asString());
+
+        session.deleteQueue(queueName);
+
+        // resource no longer exists
+        result = execute(readQueueResourceOp, false);
+        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        result = execute(readRuntimeQueueResourceOp, false);
+        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
     }
 
     @Test
@@ -331,12 +371,24 @@ public class CoreQueueManagementTestCase {
         Assert.assertEquals(ModelType.STRING, result.getType());
     }
 
-    private ModelNode getQueueOperation(String operationName) {
+    private ModelNode getQueueOperation(String operationName, String queueName) {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "messaging");
         address.add("hornetq-server", "default");
-        address.add("queue", getQueueName());
+        address.add("queue", queueName);
         return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
+    }
+
+    private ModelNode getRuntimeQueueOperation(String operationName, String queueName) {
+        final ModelNode address = new ModelNode();
+        address.add("subsystem", "messaging");
+        address.add("hornetq-server", "default");
+        address.add("runtime-queue", queueName);
+        return org.jboss.as.controller.operations.common.Util.getEmptyOperation(operationName, address);
+    }
+
+    private ModelNode getQueueOperation(String operationName) {
+        return getQueueOperation(operationName, getQueueName());
     }
 
     private ModelNode execute(final ModelNode op, final boolean expectSuccess) throws IOException {

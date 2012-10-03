@@ -24,13 +24,20 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.CONSUMER_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.DELIVERING_COUNT;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGES_ADDED;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.QueueDefinition.ADDRESS;
 import static org.jboss.as.messaging.QueueDefinition.ID;
+import static org.jboss.as.messaging.QueueDefinition.forwardToRuntimeQueue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
@@ -39,6 +46,7 @@ import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -54,23 +62,33 @@ import org.jboss.msc.service.ServiceName;
  */
 public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
-    public static final QueueReadAttributeHandler INSTANCE = new QueueReadAttributeHandler();
+    public static final QueueReadAttributeHandler INSTANCE = new QueueReadAttributeHandler(false);
+
+    public static final QueueReadAttributeHandler RUNTIME_INSTANCE = new QueueReadAttributeHandler(true);
 
     private ParametersValidator validator = new ParametersValidator();
 
-    private QueueReadAttributeHandler() {
+    private final boolean readStorageAttributes;
+
+    private QueueReadAttributeHandler(final boolean readStorageAttributes) {
+        this.readStorageAttributes = readStorageAttributes;
         validator.registerValidator(CommonAttributes.NAME, new StringLengthValidator(1));
     }
 
     @Override
     public void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         validator.validate(operation);
         final String attributeName = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        String queueName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        String queueName = address.getLastElement().getValue();
 
-        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        if (forwardToRuntimeQueue(context, operation, RUNTIME_INSTANCE)) {
+            context.stepCompleted();
+            return;
+        }
+
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(address);
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         QueueControl control = QueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
@@ -97,10 +115,30 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             }
         } else if (TEMPORARY.getName().equals(attributeName)) {
             context.getResult().set(control.isTemporary());
+        } else if (readStorageAttributes && getStorageAttributeNames().contains(attributeName)) {
+            if (ADDRESS.getName().equals(attributeName)) {
+                context.getResult().set(control.getAddress());
+            } else if (DURABLE.getName().equals(attributeName)) {
+                context.getResult().set(control.isDurable());
+            } else if (FILTER.getName().equals(attributeName)) {
+                ModelNode result = context.getResult();
+                String filter = control.getFilter();
+                if (filter != null) {
+                    result.set(filter);
+                }
+            }
         } else {
             throw MESSAGES.unsupportedAttribute(attributeName);
         }
 
         context.stepCompleted();
+    }
+
+    private static List<String> getStorageAttributeNames() {
+        List<String> names = new ArrayList<String>();
+        for (SimpleAttributeDefinition attr : QueueDefinition.ATTRIBUTES) {
+          names.add(attr.getName());
+        }
+        return names;
     }
 }

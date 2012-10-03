@@ -22,14 +22,25 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.OperationContext.Stage.IMMEDIATE;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+import static org.jboss.as.messaging.CommonAttributes.QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.dmr.ModelType.LONG;
 
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 
@@ -40,12 +51,12 @@ import org.jboss.dmr.ModelType;
  */
 public class QueueDefinition extends SimpleResourceDefinition {
 
-    public static final AttributeDefinition ADDRESS = create("queue-address", ModelType.STRING)
+    public static final SimpleAttributeDefinition ADDRESS = create("queue-address", ModelType.STRING)
             .setXmlName(CommonAttributes.ADDRESS)
             .setRestartAllServices()
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
+    static final SimpleAttributeDefinition[] ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
 
     static final AttributeDefinition ID= create("id", LONG)
             .setStorageRuntime()
@@ -57,23 +68,43 @@ public class QueueDefinition extends SimpleResourceDefinition {
             CommonAttributes.SCHEDULED_COUNT, CommonAttributes.CONSUMER_COUNT
             };
 
-    private final boolean registerRuntimeOnly;
+    public static QueueDefinition newRuntimeQueueDefinition(final boolean registerRuntimeOnly) {
+        return new QueueDefinition(registerRuntimeOnly, true, RUNTIME_QUEUE, null, null);
+    }
 
-    public QueueDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.QUEUE),
+    public static QueueDefinition newQueueDefinition(final boolean registerRuntimeOnly) {
+        return new QueueDefinition(registerRuntimeOnly, false, QUEUE, QueueAdd.INSTANCE, QueueRemove.INSTANCE);
+    }
+
+    private final boolean registerRuntimeOnly;
+    private final boolean runtimeOnly;
+
+    private QueueDefinition(final boolean registerRuntimeOnly, final boolean runtimeOnly,
+            final String path,
+            final AbstractAddStepHandler addHandler,
+            final OperationStepHandler removeHandler) {
+        super(PathElement.pathElement(path),
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.QUEUE),
-                QueueAdd.INSTANCE,
-                QueueRemove.INSTANCE);
+                addHandler,
+                removeHandler);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.runtimeOnly = runtimeOnly;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
 
-        for (AttributeDefinition attr : ATTRIBUTES) {
+        for (SimpleAttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, QueueConfigurationWriteHandler.INSTANCE);
+                if (runtimeOnly) {
+                    AttributeDefinition readOnlyRuntimeAttr = create(attr)
+                            .setStorageRuntime()
+                            .build();
+                    registry.registerReadOnlyAttribute(readOnlyRuntimeAttr, QueueReadAttributeHandler.RUNTIME_INSTANCE);
+                } else {
+                    registry.registerReadWriteAttribute(attr, null, QueueConfigurationWriteHandler.INSTANCE);
+                }
             }
         }
 
@@ -94,6 +125,32 @@ public class QueueDefinition extends SimpleResourceDefinition {
 
         if (registerRuntimeOnly) {
             QueueControlHandler.INSTANCE.registerOperations(registry);
+        }
+    }
+
+    /**
+     * [AS7-5850] Core queues created with HornetQ API does not create AS7 resources
+     *
+     * For backwards compatibility if an operation is invoked on a queue that has no corresponding resources,
+     * we forward the operation to the corresponding runtime-queue resource (which *does* exist).
+     *
+     * @return true if the operation is forwarded to the corresponding runtime-queue resource, false else.
+     */
+    static boolean forwardToRuntimeQueue(OperationContext context, ModelNode operation, OperationStepHandler handler) {
+        PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+        String queueName = address.getLastElement().getValue();
+
+        PathAddress hornetQPathAddress = MessagingServices.getHornetQServerPathAddress(address);
+        Resource hornetqServerResource = context.readResourceFromRoot(hornetQPathAddress);
+        boolean hasChild = hornetqServerResource.hasChild(address.getLastElement());
+        if (hasChild) {
+            return false;
+        } else {
+            // there is no registered queue resource, forward to the runtime-queue address instead
+            ModelNode forwardOperation = operation.clone();
+            forwardOperation.get(ModelDescriptionConstants.OP_ADDR).set(hornetQPathAddress.append(RUNTIME_QUEUE, queueName).toModelNode());
+            context.addStep(forwardOperation, handler, IMMEDIATE);
+            return true;
         }
     }
 }
