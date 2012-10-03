@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.Vector;
 
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.api.monitoring.RecordProcessorFactory;
@@ -54,8 +55,9 @@ public final class EndpointRecordProcessorDeploymentAspect extends AbstractDeplo
 
     @Override
     public void start(final Deployment dep) {
+       final int size = processors.size();
        for (final Endpoint ep : dep.getService().getEndpoints()) {
-          List<RecordProcessor> processorList = new LinkedList<RecordProcessor>();
+          List<RecordProcessor> processorList = new Vector<RecordProcessor>(size);
           if (processors != null) {
              for (RecordProcessor pr : processors) {
                 try {
