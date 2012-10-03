@@ -300,7 +300,16 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
             }
             properties.put(propertyName, result);
         } else {
-            result = new File(value).getAbsolutePath();
+            final File dir = new File(value);
+            switch (directoryGrouping) {
+                case BY_TYPE:
+                    result = getAbsolutePath(dir, "servers", serverName);
+                    break;
+                case BY_SERVER:
+                default:
+                    result = dir.getAbsolutePath();
+                    break;
+            }
         }
         command.add(String.format("-D%s=%s", propertyName, result));
         return result;
