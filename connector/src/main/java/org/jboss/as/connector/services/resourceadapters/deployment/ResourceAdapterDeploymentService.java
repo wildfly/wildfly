@@ -110,15 +110,16 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             WritableServiceBasedNamingStore.popOwner();
         }
 
-        value = new ResourceAdapterDeployment(raDeployment);
+        raName = raDeployment.getDeploymentName();
+        ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
+
+        value = new ResourceAdapterDeployment(raDeployment, raName, raServiceName);
 
         managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-        raName = value.getDeployment().getDeploymentName();
 
         if (raDeployer.checkActivation(cmd, ijmd)) {
             registry.getValue().registerResourceAdapterDeployment(value);
 
-            ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
             context.getChildTarget()
                     .addService(raServiceName,
                                 new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
