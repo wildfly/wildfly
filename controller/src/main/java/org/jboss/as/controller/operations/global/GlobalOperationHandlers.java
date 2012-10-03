@@ -56,6 +56,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -487,7 +488,7 @@ public class GlobalOperationHandlers {
          * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
          * of the given maps.
          *
-         * @param directAttributes
+         * @param directAttributes map of attributes read directly from the model with no special read handler step in the middle
          * @param metrics          map of attributes of AccessType.METRIC. Keys are the attribute names, values are the full
          *                         read-attribute response from invoking the attribute's read handler. Will not be {@code null}
          * @param otherAttributes  map of attributes not of AccessType.METRIC that have a read handler registered. Keys
@@ -499,7 +500,8 @@ public class GlobalOperationHandlers {
          *                         value is the full read-resource response. Will not be {@code null}
          */
         private ReadResourceAssemblyHandler(final Map<String, ModelNode> directAttributes, final Map<String, ModelNode> metrics,
-                                            final Map<String, ModelNode> otherAttributes, Map<String, ModelNode> directChildren, final Map<PathElement, ModelNode> childResources) {
+                                            final Map<String, ModelNode> otherAttributes, final Map<String, ModelNode> directChildren,
+                                            final Map<PathElement, ModelNode> childResources) {
             this.directAttributes = directAttributes;
             this.metrics = metrics;
             this.otherAttributes = otherAttributes;
@@ -956,17 +958,7 @@ public class GlobalOperationHandlers {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             if (address.isMultiTarget()) {
-                // Format wildcard queries as list
-                final ModelNode result = context.getResult().setEmptyList();
-                context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION.clone(), new RegistrationAddressResolver(operation, result,
-                        new OperationStepHandler() {
-                            @Override
-                            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                                // step handler bypassing further wildcard resolution
-                                doExecute(context, operation);
-                            }
-                        }), OperationContext.Stage.IMMEDIATE);
-                context.stepCompleted();
+                executeMultiTarget(context, operation);
             } else {
                 doExecute(context, operation);
             }
@@ -1095,7 +1087,61 @@ public class GlobalOperationHandlers {
                 }
             }
 
-            context.stepCompleted();
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+
+                    if (!context.hasFailureDescription()) {
+                        for (final ModelNode value : childResources.values()) {
+                            if (value.hasDefined(FAILURE_DESCRIPTION)) {
+                                context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        private void executeMultiTarget(final OperationContext context, final ModelNode operation) {
+            // Format wildcard queries as list
+            final ModelNode result = context.getResult().setEmptyList();
+            context.addStep(new ModelNode(), AbstractMultiTargetHandler.FAKE_OPERATION.clone(), new RegistrationAddressResolver(operation, result,
+                    new OperationStepHandler() {
+                        @Override
+                        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                            // step handler bypassing further wildcard resolution
+                            doExecute(context, operation);
+                        }
+                    }), OperationContext.Stage.IMMEDIATE);
+            context.completeStep(new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    if (!context.hasFailureDescription()) {
+                        String op = operation.require(OP).asString();
+                        Map<PathAddress, ModelNode> failures = new HashMap<PathAddress, ModelNode>();
+                        for (ModelNode resultItem : result.asList()) {
+                            if (resultItem.hasDefined(FAILURE_DESCRIPTION)) {
+                                final PathAddress failedAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
+                                ModelNode failedDesc = resultItem.get(FAILURE_DESCRIPTION);
+                                failures.put(failedAddress, failedDesc);
+                            }
+                        }
+
+                        if (failures.size() == 1) {
+                            Map.Entry<PathAddress, ModelNode> entry = failures.entrySet().iterator().next();
+                            if (entry.getValue().getType() == ModelType.STRING) {
+                                context.getFailureDescription().set(ControllerMessages.MESSAGES.wildcardOperationFailedAtSingleAddress(op, entry.getKey(), entry.getValue().asString()));
+                            } else {
+                                context.getFailureDescription().set(ControllerMessages.MESSAGES.wildcardOperationFailedAtSingleAddressWithComplexFailure(op, entry.getKey()));
+                            }
+                        } else if (failures.size() > 1) {
+                            context.getFailureDescription().set(ControllerMessages.MESSAGES.wildcardOperationFailedAtMultipleAddresses(op, failures.keySet()));
+                        }
+                    }
+                }
+            });
+
         }
     };
 
