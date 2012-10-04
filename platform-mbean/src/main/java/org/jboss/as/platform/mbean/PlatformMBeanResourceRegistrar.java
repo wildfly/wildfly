@@ -25,7 +25,6 @@ package org.jboss.as.platform.mbean;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.READ_RESOURCE_DEFINITION;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.BUFFER_POOL_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.CLASS_LOADING_PATH;
 import static org.jboss.as.platform.mbean.PlatformMBeanConstants.COMPILATION_PATH;
@@ -52,6 +51,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
@@ -94,7 +94,7 @@ public class PlatformMBeanResourceRegistrar {
                     return PlatformMBeanDescriptions.getCompilationResource(locale);
                 }
             });
-            compilation.registerOperationHandler(READ_RESOURCE_DEFINITION, CompilationMXBeanReadResourceHandler.INSTANCE);
+            compilation.registerOperationHandler(ReadResourceHandler.DEFINITION, CompilationMXBeanReadResourceHandler.INSTANCE);
             CompilationMXBeanAttributeHandler.INSTANCE.register(compilation);
         }
 
@@ -152,7 +152,7 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getMemoryPoolResource(locale);
             }
         });
-        memPool.registerOperationHandler(READ_RESOURCE_DEFINITION, MemoryPoolMXBeanReadResourceHandler.INSTANCE);
+        memPool.registerOperationHandler(ReadResourceHandler.DEFINITION, MemoryPoolMXBeanReadResourceHandler.INSTANCE);
         memPool.registerOperationHandler(RESET_PEAK_USAGE, MemoryPoolMXBeanResetPeakUsageHandler.INSTANCE, MemoryPoolMXBeanResetPeakUsageHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         MemoryPoolMXBeanAttributeHandler.INSTANCE.register(memPool);
 
@@ -163,7 +163,7 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getOperatingSystemResource(locale);
             }
         });
-        opSys.registerOperationHandler(READ_RESOURCE_DEFINITION, OperatingSystemMXBeanReadResourceHandler.INSTANCE);
+        opSys.registerOperationHandler(ReadResourceHandler.DEFINITION, OperatingSystemMXBeanReadResourceHandler.INSTANCE);
         OperatingSystemMXBeanAttributeHandler.INSTANCE.register(opSys);
 
         // Runtime
@@ -173,7 +173,7 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getRuntimeResource(locale);
             }
         });
-        runtime.registerOperationHandler(READ_RESOURCE_DEFINITION, RuntimeMXBeanReadResourceHandler.INSTANCE);
+        runtime.registerOperationHandler(ReadResourceHandler.DEFINITION, RuntimeMXBeanReadResourceHandler.INSTANCE);
         RuntimeMXBeanAttributeHandler.INSTANCE.register(runtime);
 
         // Threads
@@ -183,7 +183,7 @@ public class PlatformMBeanResourceRegistrar {
                 return PlatformMBeanDescriptions.getThreadingResource(locale);
             }
         });
-        threads.registerOperationHandler(READ_RESOURCE_DEFINITION, ThreadMXBeanReadResourceHandler.INSTANCE);
+        threads.registerOperationHandler(ReadResourceHandler.DEFINITION, ThreadMXBeanReadResourceHandler.INSTANCE);
         threads.registerOperationHandler(RESET_PEAK_THREAD_COUNT, ThreadMXBeanResetPeakThreadCountHandler.INSTANCE,
                 ThreadMXBeanResetPeakThreadCountHandler.INSTANCE, RUNTIME_ONLY_FLAG);
         threads.registerOperationHandler(FIND_DEADLOCKED_THREADS, ThreadMXBeanFindDeadlockedThreadsHandler.INSTANCE,

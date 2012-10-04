@@ -18,6 +18,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -89,7 +90,7 @@ public class ReadTransformedResourceOperation implements OperationStepHandler {
         op.get(OP).set(READ_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         op.get(RECURSIVE).set(true);
-        context.addStep(readResourceResult, op, GlobalOperationHandlers.READ_RESOURCE, OperationContext.Stage.IMMEDIATE);
+        context.addStep(readResourceResult, op, ReadResourceHandler.INSTANCE, OperationContext.Stage.IMMEDIATE);
 
         context.stepCompleted();
     }
