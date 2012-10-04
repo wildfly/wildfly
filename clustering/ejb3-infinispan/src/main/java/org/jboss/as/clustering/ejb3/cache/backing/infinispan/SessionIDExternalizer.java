@@ -37,6 +37,7 @@ import org.jboss.ejb.client.UnknownSessionID;
 /**
  * @author Paul Ferraro
  */
+@SuppressWarnings("serial")
 public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID> {
 
     public SessionIDExternalizer() {

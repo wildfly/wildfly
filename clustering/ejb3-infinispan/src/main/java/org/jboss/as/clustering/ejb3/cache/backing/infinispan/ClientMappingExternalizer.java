@@ -32,6 +32,7 @@ import org.jboss.as.network.ClientMapping;
 /**
  * @author Paul Ferraro
  */
+@SuppressWarnings("serial")
 public class ClientMappingExternalizer extends AbstractSimpleExternalizer<ClientMapping> {
 
     public ClientMappingExternalizer() {
