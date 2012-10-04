@@ -2,13 +2,13 @@ package org.jboss.as.web;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers.WriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-public class WriteDefaultWebModule extends WriteAttributeHandler {
+public class WriteDefaultWebModule implements OperationStepHandler {
     static final WriteDefaultWebModule INSTANCE = new WriteDefaultWebModule();
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode virtualHost = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();

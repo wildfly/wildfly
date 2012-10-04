@@ -2,13 +2,13 @@ package org.jboss.as.web;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers.WriteAttributeHandler;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
-public class WriteEnableWelcomeRoot extends WriteAttributeHandler {
+public class WriteEnableWelcomeRoot implements OperationStepHandler {
     static final WriteEnableWelcomeRoot INSTANCE = new WriteEnableWelcomeRoot();
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode virtualHost = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();

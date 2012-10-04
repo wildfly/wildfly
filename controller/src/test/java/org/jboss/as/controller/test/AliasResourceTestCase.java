@@ -78,6 +78,8 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.ReadAttributeHandler;
+import org.jboss.as.controller.operations.global.WriteAttributeHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -869,7 +871,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            OperationStepHandler step =  operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) ? GlobalOperationHandlers.WRITE_ATTRIBUTE : GlobalOperationHandlers.READ_ATTRIBUTE;
+            OperationStepHandler step =  operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) ? WriteAttributeHandler.INSTANCE : ReadAttributeHandler.INSTANCE;
             ModelNode aliasOp = operation.clone();
             aliasOp.get(NAME).set(targetAttribute);
             context.addStep(aliasOp, step, Stage.IMMEDIATE);
