@@ -28,10 +28,9 @@ import java.util.Set;
  * Abstract implementation of an externalizer for a single class.
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
-// N.B. unlike JBoss Marshalling externalizers, Infinispan AdvancedExternalizers are never serialized
-// While AdvancedExternalizer currently extends Serializable, this will be dropped in a future release
 public abstract class AbstractSimpleExternalizer<T> implements SimpleExternalizer<T> {
+    private static final long serialVersionUID = 8140195092034455537L;
+
     private final Class<T> targetClass;
 
     protected AbstractSimpleExternalizer(Class<T> targetClass) {
