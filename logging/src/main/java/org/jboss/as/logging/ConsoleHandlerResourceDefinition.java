@@ -26,6 +26,7 @@ import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logmanager.handlers.ConsoleHandler;
 
 /**
@@ -33,20 +34,12 @@ import org.jboss.logmanager.handlers.ConsoleHandler;
  */
 class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, TARGET);
+    static final PathElement CONSOLE_HANDLER_PATH = PathElement.pathElement(CommonAttributes.CONSOLE_HANDLER);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, TARGET);
 
-    /**
-     * Operation step handlers for {@link org.jboss.logmanager.handlers.ConsoleHandler}
-     */
-    static final HandlerOperations.HandlerAddOperationStepHandler ADD_CONSOLE_HANDLER = new HandlerOperations.HandlerAddOperationStepHandler(ConsoleHandler.class, ATTRIBUTES);
-
-    static final ConsoleHandlerResourceDefinition INSTANCE = new ConsoleHandlerResourceDefinition();
-
-    private ConsoleHandlerResourceDefinition() {
-        super(LoggingExtension.CONSOLE_HANDLER_PATH,
-                CommonAttributes.CONSOLE_HANDLER,
-                ADD_CONSOLE_HANDLER,
-                ATTRIBUTES);
+    public ConsoleHandlerResourceDefinition(final boolean includeLegacyAttributes) {
+        super(CONSOLE_HANDLER_PATH, ConsoleHandler.class,
+                (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 
 }

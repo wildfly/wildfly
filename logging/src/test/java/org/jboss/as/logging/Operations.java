@@ -43,8 +43,15 @@ public class Operations extends ClientConstants {
     public static final String READ_RESOURCE = ModelDescriptionConstants.READ_RESOURCE_OPERATION;
     public static final String RECURSIVE = ModelDescriptionConstants.RECURSIVE;
     public static final String REMOVE = ModelDescriptionConstants.REMOVE;
+    public static final String UNDEFINE_ATTRIBUTE = ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
     public static final String VALUE = ModelDescriptionConstants.VALUE;
     public static final String WRITE_ATTRIBUTE = ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
+    static final ModelNode UNDEFINED = new ModelNode(ModelType.UNDEFINED);
+
+    static {
+        UNDEFINED.protect();
+    }
 
     /**
      * Checks the result for a successful operation.
@@ -121,7 +128,7 @@ public class Operations extends ClientConstants {
     /**
      * Creates an operation to read the attribute represented by the {@code attributeName} parameter.
      *
-     * @param address   the address to create the write attribute for
+     * @param address   the address to create the read attribute for
      * @param attribute the attribute to read
      *
      * @return the operation
@@ -133,7 +140,7 @@ public class Operations extends ClientConstants {
     /**
      * Creates an operation to read the attribute represented by the {@code attributeName} parameter.
      *
-     * @param address       the address to create the write attribute for
+     * @param address       the address to create the read attribute for
      * @param attributeName the name of the parameter to read
      *
      * @return the operation
@@ -142,6 +149,59 @@ public class Operations extends ClientConstants {
         ModelNode op = new ModelNode();
         op.get(OP_ADDR).set(address);
         op.get(OP).set(READ_ATTRIBUTE);
+        op.get(NAME).set(attributeName);
+        return op;
+    }
+
+    /**
+     * Creates a non-recursive operation to read a resource.
+     *
+     * @param address the address to create the read for
+     *
+     * @return the operation
+     */
+    public static ModelNode createReadResourceOperation(final ModelNode address) {
+        return createReadResourceOperation(address, false);
+    }
+
+    /**
+     * Creates an operation to read a resource.
+     *
+     * @param address   the address to create the read for
+     * @param recursive whether to search recursively or not
+     *
+     * @return the operation
+     */
+    public static ModelNode createReadResourceOperation(final ModelNode address, final boolean recursive) {
+        ModelNode op = new ModelNode();
+        op.get(OP_ADDR).set(address);
+        op.get(OP).set(READ_RESOURCE);
+        op.get(RECURSIVE).set(recursive);
+        return op;
+    }
+
+    /**
+     * Creates an operation to undefine an attribute value represented by the {@code attribute} parameter.
+     *
+     * @param address   the address to create the write attribute for
+     * @param attribute the attribute to undefine
+     *
+     * @return the operation
+     */
+    public static ModelNode createUndefineAttributeOperation(final ModelNode address, final AttributeDefinition attribute) {
+        return createUndefineAttributeOperation(address, attribute.getName());
+    }
+
+    /**
+     * Creates an operation to undefine an attribute value represented by the {@code attributeName} parameter.
+     *
+     * @param address       the address to create the write attribute for
+     * @param attributeName the name attribute to undefine
+     *
+     * @return the operation
+     */
+    public static ModelNode createUndefineAttributeOperation(final ModelNode address, final String attributeName) {
+        ModelNode op = createOperation(UNDEFINE_ATTRIBUTE, address);
         op.get(NAME).set(attributeName);
         return op;
     }
@@ -169,6 +229,35 @@ public class Operations extends ClientConstants {
      * @return the operation
      */
     public static ModelNode createWriteAttributeOperation(final ModelNode address, final String attributeName, final String value) {
+        ModelNode op = createOperation(WRITE_ATTRIBUTE, address);
+        op.get(NAME).set(attributeName);
+        op.get(VALUE).set(value);
+        return op;
+    }
+
+    /**
+     * Creates an operation to write an attribute value represented by the {@code attributeName} parameter.
+     *
+     * @param address   the address to create the write attribute for
+     * @param attribute the attribute to write
+     * @param value     the value to set the attribute to
+     *
+     * @return the operation
+     */
+    public static ModelNode createWriteAttributeOperation(final ModelNode address, final AttributeDefinition attribute, final ModelNode value) {
+        return createWriteAttributeOperation(address, attribute.getName(), value);
+    }
+
+    /**
+     * Creates an operation to write an attribute value represented by the {@code attributeName} parameter.
+     *
+     * @param address       the address to create the write attribute for
+     * @param attributeName the name of the attribute to write
+     * @param value         the value to set the attribute to
+     *
+     * @return the operation
+     */
+    public static ModelNode createWriteAttributeOperation(final ModelNode address, final String attributeName, final ModelNode value) {
         ModelNode op = new ModelNode();
         op.get(OP_ADDR).set(address);
         op.get(OP).set(WRITE_ATTRIBUTE);
@@ -225,6 +314,18 @@ public class Operations extends ClientConstants {
         final ModelNode op = createOperation(operation, address);
         op.get(RECURSIVE).set(recursive);
         return op;
+    }
+
+    /**
+     * Reads the result of an operation and returns the result. If the operation does not have a {@link #RESULT}
+     * attribute an undefined {@link ModelNode} is returned.
+     *
+     * @param result the result of executing an operation
+     *
+     * @return the result of the operation or an empty string
+     */
+    public static ModelNode readResult(final ModelNode result) {
+        return (result.hasDefined(RESULT) ? result.get(RESULT) : UNDEFINED);
     }
 
     /**

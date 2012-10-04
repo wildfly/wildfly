@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import org.jboss.as.controller.CaseParameterCorrector;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
@@ -51,10 +52,7 @@ import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
  */
 public interface CommonAttributes {
 
-    SimpleAttributeDefinition ACCEPT = SimpleAttributeDefinitionBuilder.create("accept", ModelType.BOOLEAN, true).
-            setDefaultValue(new ModelNode(true)).
-            build();
-
+    // Attributes
     PropertyAttributeDefinition APPEND = PropertyAttributeDefinition.Builder.of("append", ModelType.BOOLEAN, true).
             setDefaultValue(new ModelNode(true)).
             setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).
@@ -69,11 +67,6 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition CATEGORY = SimpleAttributeDefinitionBuilder.create("category", ModelType.STRING, true).build();
 
-    SimpleAttributeDefinition CHANGE_LEVEL = SimpleAttributeDefinitionBuilder.create("change-level", ModelType.STRING, true).
-            setCorrector(CaseParameterCorrector.TO_UPPER).
-            setValidator(new LogLevelValidator(true)).
-            build();
-
     SimpleAttributeDefinition CLASS = SimpleAttributeDefinitionBuilder.create("class", ModelType.STRING).
             setAllowExpression(false).
             build();
@@ -82,13 +75,14 @@ public interface CommonAttributes {
 
     String CUSTOM_HANDLER = "custom-handler";
 
-    SimpleAttributeDefinition DENY = SimpleAttributeDefinitionBuilder.create("deny", ModelType.BOOLEAN, true).
-            setDefaultValue(new ModelNode(true)).
-            build();
-
     PropertyAttributeDefinition ENCODING = PropertyAttributeDefinition.Builder.of("encoding", ModelType.STRING, true).build();
 
     String FILE_HANDLER = "file-handler";
+
+    PropertyAttributeDefinition FILTER_SPEC = PropertyAttributeDefinition.Builder.of("filter-spec", ModelType.STRING, true).
+            addAlternatives("filter").
+            setAllowExpression(true).
+            build();
 
     PropertyAttributeDefinition FORMATTER = PropertyAttributeDefinition.Builder.of("formatter", ModelType.STRING, true).
             setDefaultValue(new ModelNode("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n")).
@@ -116,30 +110,10 @@ public interface CommonAttributes {
 
     String LOGGING_PROFILES = "logging-profiles";
 
-    SimpleAttributeDefinition MATCH = SimpleAttributeDefinitionBuilder.create("match", ModelType.STRING, true).build();
-
     PropertyAttributeDefinition MAX_BACKUP_INDEX = PropertyAttributeDefinition.Builder.of("max-backup-index", ModelType.INT, true).
             setDefaultValue(new ModelNode(1)).
             setPropertyName("maxBackupIndex").
             setValidator(new IntRangeValidator(1, true)).
-            build();
-
-    SimpleAttributeDefinition MAX_INCLUSIVE = SimpleAttributeDefinitionBuilder.create("max-inclusive", ModelType.BOOLEAN, true).
-            setDefaultValue(new ModelNode(true)).
-            build();
-
-    SimpleAttributeDefinition MAX_LEVEL = SimpleAttributeDefinitionBuilder.create("max-level", ModelType.STRING, true).
-            setCorrector(CaseParameterCorrector.TO_UPPER).
-            setValidator(new LogLevelValidator(true)).
-            build();
-
-    SimpleAttributeDefinition MIN_INCLUSIVE = SimpleAttributeDefinitionBuilder.create("min-inclusive", ModelType.BOOLEAN, true).
-            setDefaultValue(new ModelNode(true)).
-            build();
-
-    SimpleAttributeDefinition MIN_LEVEL = SimpleAttributeDefinitionBuilder.create("min-level", ModelType.STRING, true).
-            setCorrector(CaseParameterCorrector.TO_UPPER).
-            setValidator(new LogLevelValidator(true)).
             build();
 
     SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create("module", ModelType.STRING).
@@ -152,11 +126,6 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create("value", ModelType.STRING).build();
 
-    SimpleAttributeDefinition NEW_LEVEL = SimpleAttributeDefinitionBuilder.create("new-level", ModelType.STRING, true).
-            setCorrector(CaseParameterCorrector.TO_UPPER).
-            setValidator(new LogLevelValidator(true)).
-            build();
-
     PropertyAttributeDefinition OVERFLOW_ACTION = PropertyAttributeDefinition.Builder.of("overflow-action", ModelType.STRING).
             setDefaultValue(new ModelNode(OverflowAction.BLOCK.name())).
             setPropertyName("overflowAction").
@@ -166,15 +135,15 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition PATH = SimpleAttributeDefinitionBuilder.create("path", ModelType.STRING).build();
 
-    SimpleAttributeDefinition PATTERN = SimpleAttributeDefinitionBuilder.create("pattern", ModelType.STRING).build();
-
     String PATTERN_FORMATTER = "pattern-formatter";
 
     String PERIODIC_ROTATING_FILE_HANDLER = "periodic-rotating-file-handler";
 
     SimpleAttributeDefinition PROPERTY = SimpleAttributeDefinitionBuilder.create("property", ModelType.PROPERTY).build();
 
-    SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition("properties", "properties", true, true);
+    SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder("properties", true)
+            .setAllowExpression(true)
+            .build();
 
     PropertyAttributeDefinition QUEUE_LENGTH = PropertyAttributeDefinition.Builder.of("queue-length", ModelType.INT).
             setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).
@@ -183,12 +152,6 @@ public interface CommonAttributes {
             build();
 
     SimpleAttributeDefinition RELATIVE_TO = SimpleAttributeDefinitionBuilder.create("relative-to", ModelType.STRING, true).build();
-
-    SimpleAttributeDefinition REPLACEMENT = SimpleAttributeDefinitionBuilder.create("replacement", ModelType.STRING).build();
-
-    SimpleAttributeDefinition REPLACE_ALL = SimpleAttributeDefinitionBuilder.create("replace-all", ModelType.BOOLEAN).
-            setDefaultValue(new ModelNode(true)).
-            build();
 
     String ROOT_LOGGER = "root-logger";
 
@@ -223,29 +186,6 @@ public interface CommonAttributes {
             build();
 
     // Global object types
-    PropertyObjectTypeAttributeDefinition LEVEL_RANGE = PropertyObjectTypeAttributeDefinition.Builder.of("level-range", MIN_LEVEL, MIN_INCLUSIVE, MAX_LEVEL, MAX_INCLUSIVE).
-            setAllowNull(true).
-            build();
-
-    PropertyObjectTypeAttributeDefinition REPLACE = PropertyObjectTypeAttributeDefinition.Builder.of("replace", PATTERN, REPLACEMENT, REPLACE_ALL).
-            setAllowNull(true).
-            build();
-
-    PropertyObjectTypeAttributeDefinition NOT = PropertyObjectTypeAttributeDefinition.Builder.of("not", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE, MATCH, REPLACE).
-            setAllowNull(true).
-            build();
-
-    PropertyObjectTypeAttributeDefinition ALL = PropertyObjectTypeAttributeDefinition.Builder.of("all", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE, MATCH, NOT, REPLACE).
-            setAllowNull(true).
-            build();
-
-    PropertyObjectTypeAttributeDefinition ANY = PropertyObjectTypeAttributeDefinition.Builder.of("any", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE, MATCH, NOT, REPLACE).
-            setAllowNull(true).
-            build();
-
-    PropertyObjectTypeAttributeDefinition FILTER = PropertyObjectTypeAttributeDefinition.Builder.of("filter", ALL, ANY, ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE, MATCH, NOT, REPLACE).
-            setAllowNull(true).
-            build();
 
     PropertyObjectTypeAttributeDefinition FILE = PropertyObjectTypeAttributeDefinition.Builder.of("file", RELATIVE_TO, PATH).
             setCorrector(FileCorrector.INSTANCE).
@@ -258,4 +198,77 @@ public interface CommonAttributes {
      * The name of the root logger.
      */
     String ROOT_LOGGER_NAME = "";
+
+    // Legacy Filter attributes
+    SimpleAttributeDefinition ACCEPT = SimpleAttributeDefinitionBuilder.create("accept", ModelType.BOOLEAN, true).
+            setDefaultValue(new ModelNode(true)).
+            build();
+
+    SimpleAttributeDefinition CHANGE_LEVEL = SimpleAttributeDefinitionBuilder.create("change-level", ModelType.STRING, true).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
+
+    SimpleAttributeDefinition DENY = SimpleAttributeDefinitionBuilder.create("deny", ModelType.BOOLEAN, true).
+            setDefaultValue(new ModelNode(true)).
+            build();
+
+    SimpleAttributeDefinition MATCH = SimpleAttributeDefinitionBuilder.create("match", ModelType.STRING, true).build();
+
+    SimpleAttributeDefinition MAX_INCLUSIVE = SimpleAttributeDefinitionBuilder.create("max-inclusive", ModelType.BOOLEAN, true).
+            setDefaultValue(new ModelNode(true)).
+            build();
+
+    SimpleAttributeDefinition MAX_LEVEL = SimpleAttributeDefinitionBuilder.create("max-level", ModelType.STRING, true).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
+
+    SimpleAttributeDefinition MIN_INCLUSIVE = SimpleAttributeDefinitionBuilder.create("min-inclusive", ModelType.BOOLEAN, true).
+            setDefaultValue(new ModelNode(true)).
+            build();
+
+    SimpleAttributeDefinition MIN_LEVEL = SimpleAttributeDefinitionBuilder.create("min-level", ModelType.STRING, true).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
+
+    SimpleAttributeDefinition NEW_LEVEL = SimpleAttributeDefinitionBuilder.create("new-level", ModelType.STRING, true).
+            setCorrector(CaseParameterCorrector.TO_UPPER).
+            setValidator(new LogLevelValidator(true)).
+            build();
+
+    SimpleAttributeDefinition PATTERN = SimpleAttributeDefinitionBuilder.create("pattern", ModelType.STRING).build();
+
+    SimpleAttributeDefinition REPLACEMENT = SimpleAttributeDefinitionBuilder.create("replacement", ModelType.STRING).build();
+
+    SimpleAttributeDefinition REPLACE_ALL = SimpleAttributeDefinitionBuilder.create("replace-all", ModelType.BOOLEAN).
+            setDefaultValue(new ModelNode(true)).
+            build();
+
+    ObjectTypeAttributeDefinition LEVEL_RANGE_LEGACY = ObjectTypeAttributeDefinition.Builder.of("level-range", MIN_LEVEL, MIN_INCLUSIVE, MAX_LEVEL, MAX_INCLUSIVE).
+            setAllowNull(true).
+            build();
+
+    ObjectTypeAttributeDefinition REPLACE = ObjectTypeAttributeDefinition.Builder.of("replace", PATTERN, REPLACEMENT, REPLACE_ALL).
+            setAllowNull(true).
+            build();
+
+    ObjectTypeAttributeDefinition NOT = ObjectTypeAttributeDefinition.Builder.of("not", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE_LEGACY, MATCH, REPLACE).
+            setAllowNull(true).
+            build();
+
+    ObjectTypeAttributeDefinition ALL = ObjectTypeAttributeDefinition.Builder.of("all", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE_LEGACY, MATCH, NOT, REPLACE).
+            setAllowNull(true).
+            build();
+
+    ObjectTypeAttributeDefinition ANY = ObjectTypeAttributeDefinition.Builder.of("any", ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE_LEGACY, MATCH, NOT, REPLACE).
+            setAllowNull(true).
+            build();
+
+    ObjectTypeAttributeDefinition FILTER = ObjectTypeAttributeDefinition.Builder.of("filter", ALL, ANY, ACCEPT, CHANGE_LEVEL, DENY, LEVEL, LEVEL_RANGE_LEGACY, MATCH, NOT, REPLACE).
+            addAlternatives(FILTER_SPEC.getName()).
+            setDeprecated(ModelVersion.create(1, 2, 0)).
+            setAllowNull(true).
+            build();
 }

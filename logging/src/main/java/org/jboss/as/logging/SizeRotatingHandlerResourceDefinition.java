@@ -29,22 +29,20 @@ import static org.jboss.as.logging.CommonAttributes.MAX_BACKUP_INDEX;
 import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-class SizePeriodicHandlerResourceDefinition extends AbstractFileHandlerDefinition {
+class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE);
+    static final PathElement SIZE_ROTATING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE);
 
-    static final SizePeriodicHandlerResourceDefinition INSTANCE = new SizePeriodicHandlerResourceDefinition();
-
-    private SizePeriodicHandlerResourceDefinition() {
-        super(LoggingExtension.SIZE_ROTATING_HANDLER_PATH,
-                CommonAttributes.SIZE_ROTATING_FILE_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(SizeRotatingFileHandler.class, ATTRIBUTES, FILE, APPEND),
-                ATTRIBUTES);
+    public SizeRotatingHandlerResourceDefinition(final boolean includeLegacyAttributes) {
+        super(SIZE_ROTATING_HANDLER_PATH, SizeRotatingFileHandler.class,
+                (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 
 

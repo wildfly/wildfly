@@ -125,7 +125,7 @@
         </xs:annotation>
         <xs:all minOccurs="1" maxOccurs="1">
             <xs:element name="level" type="refType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="handlers" type="handlersType" minOccurs="0"/>
         </xs:all>
     </xs:complexType>
@@ -153,7 +153,7 @@
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="target" minOccurs="0">
                 <xs:complexType>
@@ -181,7 +181,7 @@
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="file" type="pathType" minOccurs="1"/>
             <xs:element name="append" type="booleanValueType" minOccurs="0"/>
@@ -200,7 +200,7 @@
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="file" type="pathType"/>
             <xs:element name="suffix" type="valueType"/>
@@ -220,7 +220,7 @@
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="file" type="pathType"/>
             <xs:element name="rotate-size" type="sizeType" minOccurs="0"/>
@@ -240,7 +240,7 @@
         </xs:annotation>
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="queue-length" type="queueLengthType" minOccurs="1" maxOccurs="1"/>
             <xs:element name="overflow-action" type="overflowActionType" minOccurs="0"/>
             <xs:element name="subhandlers" type="handlersType"/>
@@ -257,7 +257,7 @@
         <xs:all>
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="filterType" minOccurs="0"/>
+            <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="formatterType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
         </xs:all>
@@ -313,95 +313,6 @@
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-    </xs:complexType>
-
-    <xs:complexType name="filterType">
-        <xs:annotation>
-            <xs:documentation>
-                Defines a simple filter type.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:group ref="simpleFilterGroup"/>
-    </xs:complexType>
-
-    <xs:complexType name="multiFilterType">
-        <xs:annotation>
-            <xs:documentation>
-                Defines a composite filter type.  The "any" filter will return true of any of its constituent filters
-                returns true; the "all" filter will return false if any of its constituent filters returns false.  Both
-                composite filter types are short-circuiting, meaning that if the result can be determined with an earlier
-                filter, later filters are not run.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:group ref="simpleFilterGroup" maxOccurs="unbounded"/>
-    </xs:complexType>
-
-    <xs:group name="simpleFilterGroup">
-        <xs:choice>
-            <xs:element name="all" type="multiFilterType"/>
-            <xs:element name="any" type="multiFilterType"/>
-            <xs:element name="accept"/>
-            <xs:element name="deny"/>
-            <xs:element name="not" type="filterType"/>
-            <xs:element name="match" type="regexFilterType"/>
-            <xs:element name="replace" type="replaceFilterType"/>
-            <xs:element name="level" type="levelFilterType"/>
-            <xs:element name="level-range" type="levelRangeFilterType"/>
-            <xs:element name="change-level" type="levelChangeFilterType"/>
-        </xs:choice>
-    </xs:group>
-
-    <xs:complexType name="regexFilterType">
-        <xs:annotation>
-            <xs:documentation>
-                A regular expression-based filter.  The filter returns true if the pattern matches.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="pattern" type="xs:string" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="replaceFilterType">
-        <xs:annotation>
-            <xs:documentation>
-                A regular expression substitution filter.  This filter modifies the log message and always returns true.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="pattern" type="xs:string" use="required"/>
-        <xs:attribute name="replacement" type="xs:string" use="required"/>
-        <xs:attribute name="replace-all" type="xs:boolean" default="true"/>
-    </xs:complexType>
-
-    <xs:complexType name="levelFilterType">
-        <xs:annotation>
-            <xs:documentation>
-                A level filter.  This filter returns true if the log message level matches the parameter.  It is a
-                numerical match; two differently-named levels with the same numeric value will be considered equal.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="name" type="xs:string" use="required"/>
-    </xs:complexType>
-
-    <xs:complexType name="levelRangeFilterType">
-        <xs:annotation>
-            <xs:documentation>
-                A level range filter.  This filter returns true if the log message level matches the range specified
-                by the parameters.  It is a
-                numerical match; two differently-named levels with the same numeric value will be considered equal.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="min-level" type="xs:string" use="required"/>
-        <xs:attribute name="min-inclusive" type="xs:boolean" use="optional" default="true"/>
-        <xs:attribute name="max-level" type="xs:string" use="required"/>
-        <xs:attribute name="max-inclusive" type="xs:boolean" use="optional" default="true"/>
-    </xs:complexType>
-
-    <xs:complexType name="levelChangeFilterType">
-        <xs:annotation>
-            <xs:documentation>
-                A level change filter.  This filter modifies the log message and always returns true.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="new-level" type="xs:string" use="required"/>
     </xs:complexType>
 
     <!-- Formatters -->

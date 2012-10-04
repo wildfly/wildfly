@@ -70,7 +70,7 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         final LogContextConfiguration logContextConfiguration = ConfigurationPersistence.getOrCreateConfigurationPersistence().getLogContextConfiguration();
         try {
             // root logger
-            if (!resource.hasChild(LoggingExtension.ROOT_LOGGER_PATH)) {
+            if (!resource.hasChild(RootLoggerResourceDefinition.ROOT_LOGGER_PATH)) {
                 LoggingLogger.ROOT_LOGGER.tracef("Removing the root logger configuration.");
                 logContextConfiguration.removeLoggerConfiguration(CommonAttributes.ROOT_LOGGER_NAME);
             }

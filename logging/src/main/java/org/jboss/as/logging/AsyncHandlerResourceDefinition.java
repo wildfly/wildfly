@@ -22,13 +22,13 @@
 
 package org.jboss.as.logging;
 
-import static org.jboss.as.logging.CommonAttributes.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -41,18 +41,14 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
 
     public static final String ADD_SUBHANDLER_OPERATION_NAME = "assign-subhandler";
     public static final String REMOVE_SUBHANDLER_OPERATION_NAME = "unassign-subhandler";
+    static final PathElement ASYNC_HANDLER_PATH = PathElement.pathElement(CommonAttributes.ASYNC_HANDLER);
 
 
-    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(QUEUE_LENGTH, OVERFLOW_ACTION, SUBHANDLERS);
-
-    static final AsyncHandlerResourceDefinition INSTANCE = new AsyncHandlerResourceDefinition();
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, QUEUE_LENGTH, OVERFLOW_ACTION, SUBHANDLERS);
 
 
-    private AsyncHandlerResourceDefinition() {
-        super(LoggingExtension.ASYNC_HANDLER_PATH,
-                ASYNC_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(AsyncHandler.class, ATTRIBUTES, QUEUE_LENGTH),
-                ATTRIBUTES);
+    public AsyncHandlerResourceDefinition(final boolean includeLegacyAttributes) {
+        super(ASYNC_HANDLER_PATH, AsyncHandler.class, (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES), QUEUE_LENGTH);
     }
 
     @Override

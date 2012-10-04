@@ -28,6 +28,7 @@ import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logmanager.handlers.FileHandler;
 
 /**
@@ -35,15 +36,11 @@ import org.jboss.logmanager.handlers.FileHandler;
  */
 class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE);
-    /**
-     * Operation step handlers for {@link org.jboss.logmanager.handlers.FileHandler}.
-     */
-    static final FileHandlerResourceDefinition INSTANCE = new FileHandlerResourceDefinition();
-    private FileHandlerResourceDefinition() {
-        super(LoggingExtension.FILE_HANDLER_PATH,
-                FILE_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(FileHandler.class, ATTRIBUTES, FILE, APPEND),
-                ATTRIBUTES);
+    static final PathElement FILE_HANDLER_PATH = PathElement.pathElement(FILE_HANDLER);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE);
+
+    public FileHandlerResourceDefinition(final boolean includeLegacyAttributes) {
+        super(FILE_HANDLER_PATH, FileHandler.class, (
+                includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 }

@@ -26,6 +26,7 @@ import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
@@ -46,11 +47,11 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.LoggingOperations.LoggingAddOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingRemoveOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingUpdateOperationStepHandler;
 import org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandler;
-import org.jboss.as.logging.resolvers.FilterResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.Logger;
@@ -87,7 +88,16 @@ final class HandlerOperations {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             for (AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, model);
+                // Filter attribute needs to be converted to filter spec
+                if (CommonAttributes.FILTER.equals(attribute)) {
+                    final ModelNode filter = CommonAttributes.FILTER.validateOperation(operation);
+                    if (filter.isDefined()) {
+                        final String value = Filters.filterToFilterSpec(filter);
+                        model.get(CommonAttributes.FILTER_SPEC.getName()).set(value);
+                    }
+                } else {
+                    attribute.validateAndSet(operation, model);
+                }
             }
         }
 
@@ -166,7 +176,16 @@ final class HandlerOperations {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             for (AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, model);
+                // Filter attribute needs to be converted to filter spec
+                if (CommonAttributes.FILTER.equals(attribute)) {
+                    final ModelNode filter = CommonAttributes.FILTER.validateOperation(operation);
+                    if (filter.isDefined()) {
+                        final String value = Filters.filterToFilterSpec(filter);
+                        model.get(CommonAttributes.FILTER_SPEC.getName()).set(value);
+                    }
+                } else {
+                    attribute.validateAndSet(operation, model);
+                }
             }
         }
 
@@ -182,7 +201,7 @@ final class HandlerOperations {
             for (AttributeDefinition attribute : attributes) {
                 // CLASS and MODULE should be ignored
                 final boolean skip;
-                if ((attribute.equals(CLASS) || attribute.equals(MODULE))) {
+                if ((attribute.equals(CLASS) || attribute.equals(MODULE)) || attribute.equals(FILTER)) {
                     skip = true;
                 } else {
                     // No need to change values that are equal
@@ -242,7 +261,10 @@ final class HandlerOperations {
                 if (LEVEL.getName().equals(attributeName)) {
                     handleProperty(LEVEL, context, value, logContextConfiguration, configuration, false);
                 } else if (FILTER.getName().equals(attributeName)) {
-                    handleProperty(FILTER, context, value, logContextConfiguration, configuration, false);
+                    // Filter should be replaced by the filter-spec in the super class
+                    handleProperty(FILTER_SPEC, context, value, logContextConfiguration, configuration, false);
+                } else if (FILTER_SPEC.getName().equals(attributeName)) {
+                    handleProperty(FILTER_SPEC, context, value, logContextConfiguration, configuration, false);
                 } else if (FORMATTER.getName().equals(attributeName)) {
                     handleProperty(FORMATTER, context, value, logContextConfiguration, configuration, false);
                 } else if (ENCODING.getName().equals(attributeName)) {
@@ -451,9 +473,9 @@ final class HandlerOperations {
             final String resolvedValue = (resolveValue ? FORMATTER.resolvePropertyValue(context, model) : model.asString());
             fmtConfig.setPropertyValueString("pattern", resolvedValue);
             configuration.setFormatterName(formatterName);
-        } else if (attribute.getName().equals(FILTER.getName())) {
-            final ModelNode valueNode = (resolveValue ? FILTER.resolveModelAttribute(context, model) : model);
-            final String resolvedValue = FilterResolver.INSTANCE.resolveValue(context, valueNode);
+        } else if (attribute.getName().equals(FILTER_SPEC.getName())) {
+            final ModelNode valueNode = (resolveValue ? FILTER_SPEC.resolveModelAttribute(context, model) : model);
+            final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);
             configuration.setFilter(resolvedValue);
         } else if (attribute.getName().equals(LEVEL.getName())) {
             final String resolvedValue = (resolveValue ? LEVEL.resolvePropertyValue(context, model) : LEVEL.resolver().resolveValue(context, model));
@@ -514,9 +536,9 @@ final class HandlerOperations {
             } else {
                 result = false;
             }
-        } else if (attribute.getName().equals(FILTER.getName())) {
-            final ModelNode valueNode = FILTER.resolveModelAttribute(context, model);
-            final String resolvedValue = FilterResolver.INSTANCE.resolveValue(context, valueNode);
+        } else if (attribute.getName().equals(FILTER_SPEC.getName())) {
+            final ModelNode valueNode = FILTER_SPEC.resolveModelAttribute(context, model);
+            final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);
             final String currentValue = configuration.getFilter();
             result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
         } else if (attribute.getName().equals(LEVEL.getName())) {

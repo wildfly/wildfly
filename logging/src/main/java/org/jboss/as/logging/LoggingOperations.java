@@ -66,6 +66,25 @@ final class LoggingOperations {
         return PathAddress.pathAddress(operation.require(OP_ADDR));
     }
 
+    public static class ReadFilterOperationStepHandler implements OperationStepHandler {
+
+        public static final ReadFilterOperationStepHandler INSTANCE = new ReadFilterOperationStepHandler();
+
+        private ReadFilterOperationStepHandler() {
+
+        }
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+            final ModelNode filter = CommonAttributes.FILTER_SPEC.resolveModelAttribute(context, model);
+            if (filter.isDefined()) {
+                context.getResult().set(Filters.filterSpecToFilter(filter.asString()));
+            }
+            context.stepCompleted();
+        }
+    }
+
     /**
      * The base logging OSH.
      */
@@ -439,6 +458,17 @@ final class LoggingOperations {
             // Write the configuration
             if (!LoggingProfileOperations.isLoggingProfileAddress(getAddress(operation)))
                 configurationPersistence.writeConfiguration(context);
+        }
+
+        @Override
+        protected void validateUpdatedModel(final OperationContext context, final Resource model) throws OperationFailedException {
+            super.validateUpdatedModel(context, model);
+            final ModelNode submodel = model.getModel();
+            if (submodel.hasDefined(CommonAttributes.FILTER.getName())) {
+                final String filterSpec = Filters.filterToFilterSpec(CommonAttributes.FILTER.resolveModelAttribute(context, submodel));
+                submodel.remove(CommonAttributes.FILTER.getName());
+                submodel.get(CommonAttributes.FILTER_SPEC.getName()).set(filterSpec);
+            }
         }
 
         /**

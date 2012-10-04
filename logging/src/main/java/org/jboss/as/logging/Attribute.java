@@ -32,7 +32,7 @@ import org.jboss.as.controller.AttributeDefinition;
  */
 enum Attribute {
 
-    UNKNOWN(null),
+    UNKNOWN((String) null),
 
     APPEND(CommonAttributes.APPEND),
     AUTOFLUSH(CommonAttributes.AUTOFLUSH),
@@ -69,6 +69,11 @@ enum Attribute {
             this.name = definition.getXmlName();
         }
         this.definition = definition;
+    }
+
+    Attribute(final String name) {
+        this.name = name;
+        this.definition = null;
     }
 
     /**

@@ -26,33 +26,26 @@ import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.PathElement;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
+    static final PathElement CUSTOM_HANDLE_PATH = PathElement.pathElement(CommonAttributes.CUSTOM_HANDLER);
 
     /*
     * Configurations
     */
     static final AttributeDefinition[] READ_ONLY_ATTRIBUTES = {CLASS, MODULE};
-    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = appendDefaultWritableAttributes(CommonAttributes.PROPERTIES);
+    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, CommonAttributes.PROPERTIES);
     // Add attributes are a combination of writable and read-only attributes
-    static final AttributeDefinition[] ADD_ATTRIBUTES = joinUnique(WRITABLE_ATTRIBUTES, READ_ONLY_ATTRIBUTES);
+    static final AttributeDefinition[] ADD_ATTRIBUTES = Logging.join(WRITABLE_ATTRIBUTES, READ_ONLY_ATTRIBUTES);
 
-    static final CustomHandlerResourceDefinition INSTANCE = new CustomHandlerResourceDefinition();
-
-    private CustomHandlerResourceDefinition() {
-        super(LoggingExtension.CUSTOM_HANDLE_PATH,
-                CommonAttributes.CUSTOM_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(null, ADD_ATTRIBUTES),
+    public CustomHandlerResourceDefinition(final boolean includeLegacyAttributes) {
+        super(CUSTOM_HANDLE_PATH, null,
+                (includeLegacyAttributes ? Logging.join(ADD_ATTRIBUTES, LEGACY_ATTRIBUTES) : ADD_ATTRIBUTES),
                 READ_ONLY_ATTRIBUTES,
-                WRITABLE_ATTRIBUTES);
-    }
-
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
+                (includeLegacyAttributes ? Logging.join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES));
     }
 }
