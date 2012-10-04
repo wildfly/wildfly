@@ -53,9 +53,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.framework.SystemServicesPlugin;
+import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.SystemServicesPlugin;
 import org.jboss.osgi.repository.XRepository;
 import org.osgi.framework.BundleContext;
 

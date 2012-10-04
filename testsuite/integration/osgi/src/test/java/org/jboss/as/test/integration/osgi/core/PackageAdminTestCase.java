@@ -16,29 +16,24 @@
  */
 package org.jboss.as.test.integration.osgi.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
 
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.startlevel.StartLevel;
 
 /**
- * [ARQ-466] Add support for injected PackageAdmin
- *
- * https://issues.jboss.org/browse/ARQ-466
+ * Add support for injected PackageAdmin
  *
  * @author thomas.diesler@jboss.com
  * @since 07-Jun-2011
@@ -54,14 +49,12 @@ public class PackageAdminTestCase {
 
     @Deployment
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "arq466-bundle");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "package-admin-bundle");
         archive.setManifest(new Asset() {
-            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(StartLevel.class);
                 return builder.openStream();
             }
         });
@@ -71,14 +64,13 @@ public class PackageAdminTestCase {
     @Test
     public void testPackageAdmin() throws Exception {
 
-        assertNotNull("PackageAdmin injected", packageAdmin);
+        Assert.assertNotNull("PackageAdmin injected", packageAdmin);
 
-        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
-        assertEquals("arq466-bundle", bundle.getSymbolicName());
+        Bundle[] bundles = packageAdmin.getBundles("package-admin-bundle", null);
+        Assert.assertNotNull("Bundles not null", bundles);
+        Assert.assertEquals("One bundle found", 1, bundles.length);
 
-        Bundle[] bundles = packageAdmin.getBundles("arq466-bundle", null);
-        assertNotNull("Bundles not null", bundles);
-        assertEquals("One bundle found", 1, bundles.length);
-        assertEquals(bundle, bundles[0]);
+        Assert.assertEquals("package-admin-bundle", bundle.getSymbolicName());
+        Assert.assertEquals(bundle, bundles[0]);
     }
 }

@@ -17,7 +17,6 @@
 package org.jboss.as.test.integration.osgi.core;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.jboss.as.test.osgi.FrameworkUtils.changeStartLevel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -29,8 +28,8 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.osgi.FrameworkUtils;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.as.test.integration.osgi.FrameworkUtils;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -98,7 +97,7 @@ public class StartLevelTestCase {
             assertEquals("Bundle start level", 3, startLevel.getBundleStartLevel(bundle));
 
             // Change the framework start level and wait for the changed event
-            changeStartLevel(context, 2, TIMEOUT, MILLISECONDS);
+            FrameworkUtils.changeStartLevel(context, 2, TIMEOUT, MILLISECONDS);
             assertEquals("Framework start level", 2, startLevel.getStartLevel());
 
             try {
@@ -114,13 +113,13 @@ public class StartLevelTestCase {
             assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
 
             // Change the framework start level and wait for the changed event
-            changeStartLevel(context, 3, TIMEOUT, MILLISECONDS);
+            FrameworkUtils.changeStartLevel(context, 3, TIMEOUT, MILLISECONDS);
 
             // The bundle should now be started
             assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         } finally {
             bundle.uninstall();
-            changeStartLevel(context, frameworkStartLevel, TIMEOUT, MILLISECONDS);
+            FrameworkUtils.changeStartLevel(context, frameworkStartLevel, TIMEOUT, MILLISECONDS);
         }
     }
 

@@ -30,9 +30,9 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.osgi.FrameworkUtils;
 import org.jboss.as.test.integration.osgi.api.ConfiguredService;
-import org.jboss.as.test.osgi.FrameworkUtils;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -50,15 +50,6 @@ import org.osgi.service.cm.ManagedService;
 /**
  * A test that shows how an OSGi {@link ManagedService} can be configured through the {@link ConfigurationAdmin}.
  *
- * This test needs to run against an AS instance that contains the following config
- *
-   <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
-     <configuration pid="a.test.pid">
-       <property name="testkey" value="test value"/>
-       <property name="test.key.2" value="nothing"/>
-     </configuration>
-   </subsystem>
- *
  * @author Thomas.Diesler@jboss.com
  * @author David Bosschaert
  * @since 11-Dec-2010
@@ -67,7 +58,6 @@ import org.osgi.service.cm.ManagedService;
 public class ConfigurationAdminTestCase {
 
     static final String PID_A = ConfigurationAdminTestCase.class.getSimpleName() + "-pid-a";
-    static final String PID_B = "a.test.pid";
 
     @Inject
     public Bundle bundle;
@@ -117,22 +107,6 @@ public class ConfigurationAdminTestCase {
         } finally {
             config.delete();
         }
-    }
-
-    @Test
-    public void testManagedServiceConfiguredFromXML() throws Exception {
-
-        BundleContext context = bundle.getBundleContext();
-
-        // This configuration is present in the standalone.xml used for this test
-        ConfiguredService service = new ConfiguredService();
-        Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put(Constants.SERVICE_PID, PID_B);
-        context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, service, props);
-
-        // Wait a little for the update to happen
-        Assert.assertTrue(service.awaitUpdate(3, TimeUnit.SECONDS));
-        Assert.assertEquals("test value", service.getProperties().get("testkey"));
     }
 
     private ConfigurationAdmin getConfigurationAdmin(BundleContext context) {

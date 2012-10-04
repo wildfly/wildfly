@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.osgi;
+package org.jboss.as.test.integration.osgi;
 
 import java.util.ArrayList;
 import java.util.List;

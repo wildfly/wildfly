@@ -26,7 +26,7 @@ import java.util.jar.Manifest;
 import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
 import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 
 

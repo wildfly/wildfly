@@ -39,9 +39,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.IntegrationService;
-import org.jboss.osgi.framework.StorageState;
-import org.jboss.osgi.framework.StorageStatePlugin;
+import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.StorageState;
+import org.jboss.osgi.framework.spi.StorageStatePlugin;
 import org.osgi.framework.BundleException;
 
 /**
