@@ -35,25 +35,33 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
  */
 class LoggingTestEnvironment extends AdditionalInitialization {
     private static final LoggingTestEnvironment INSTANCE;
+    private static final LoggingTestEnvironment MANAGEMENT_INSTANCE;
 
     static {
         final File configDir = new File(System.getProperty("jboss.server.config.dir", "target/config"));
         final File logDir = new File(System.getProperty("jboss.server.log.dir", "target/logs"));
         logDir.mkdirs();
         configDir.mkdirs();
-        INSTANCE = new LoggingTestEnvironment(logDir, configDir);
+        INSTANCE = new LoggingTestEnvironment(logDir, configDir, RunningMode.NORMAL);
+        MANAGEMENT_INSTANCE = new LoggingTestEnvironment(logDir, configDir, RunningMode.ADMIN_ONLY);
     }
 
-    private File logDir;
-    private File configDir;
+    private final File logDir;
+    private final File configDir;
+    private final RunningMode runningMode;
 
-    private LoggingTestEnvironment(final File logDir, final File configDir) {
+    private LoggingTestEnvironment(final File logDir, final File configDir, final RunningMode runningMode) {
         this.logDir = logDir;
         this.configDir = configDir;
+        this.runningMode = runningMode;
     }
 
     public static LoggingTestEnvironment get() {
         return INSTANCE;
+    }
+
+    public static LoggingTestEnvironment getManagementInstance() {
+        return MANAGEMENT_INSTANCE;
     }
 
     public File getLogDir() {
@@ -62,6 +70,10 @@ class LoggingTestEnvironment extends AdditionalInitialization {
 
     public File getConfigDir() {
         return configDir;
+    }
+    @Override
+    protected RunningMode getRunningMode() {
+        return runningMode;
     }
 
     @Override

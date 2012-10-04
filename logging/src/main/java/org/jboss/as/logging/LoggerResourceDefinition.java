@@ -24,15 +24,20 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.CATEGORY;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
+import static org.jboss.as.logging.Logging.join;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -41,41 +46,53 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
     public static final String CHANGE_LEVEL_OPERATION_NAME = "change-log-level";
     public static final String ADD_HANDLER_OPERATION_NAME = "assign-handler";
     public static final String REMOVE_HANDLER_OPERATION_NAME = "unassign-handler";
+    static final PathElement LOGGER_PATH = PathElement.pathElement(CommonAttributes.LOGGER);
 
     static final AttributeDefinition[] ATTRIBUTES = {
             CATEGORY,
-            FILTER,
+            FILTER_SPEC,
             LEVEL,
             HANDLERS,
             USE_PARENT_HANDLERS
     };
 
     static final AttributeDefinition[] WRITABLE_ATTRIBUTES = {
-            FILTER,
+            FILTER_SPEC,
             LEVEL,
             HANDLERS,
             USE_PARENT_HANDLERS
     };
 
-    static LoggerOperations.LoggerWriteAttributeHandler LOGGER_WRITE_HANDLER = new LoggerOperations.LoggerWriteAttributeHandler(WRITABLE_ATTRIBUTES);
+    static final AttributeDefinition[] LEGACY_ATTRIBUTES = {
+            FILTER,
+    };
+
     /**
      * A step handler to add a logger.
      */
-    static LoggerOperations.LoggerAddOperationStepHandler ADD_LOGGER = new LoggerOperations.LoggerAddOperationStepHandler(ATTRIBUTES);
+    static LoggerOperations.LoggerAddOperationStepHandler ADD_LOGGER = new LoggerOperations.LoggerAddOperationStepHandler(LEGACY_ATTRIBUTES);
 
-    static final LoggerResourceDefinition INSTANCE = new LoggerResourceDefinition();
+    private final AttributeDefinition[] writableAttributes;
+    private final OperationStepHandler writeHandler;
 
-    private LoggerResourceDefinition() {
-        super(LoggingExtension.LOGGER_PATH,
+    public LoggerResourceDefinition(final boolean includeLegacy) {
+        super(LOGGER_PATH,
                 LoggingExtension.getResourceDescriptionResolver(CommonAttributes.LOGGER),
-                ADD_LOGGER,
+                (includeLegacy ? new LoggerOperations.LoggerAddOperationStepHandler(join(ATTRIBUTES, LEGACY_ATTRIBUTES)) : new LoggerOperations.LoggerAddOperationStepHandler(ATTRIBUTES)),
                 LoggerOperations.REMOVE_LOGGER);
+        writableAttributes = (includeLegacy ? join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES);
+        this.writeHandler = new LoggerOperations.LoggerWriteAttributeHandler(writableAttributes);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition def : WRITABLE_ATTRIBUTES) {
-            resourceRegistration.registerReadWriteAttribute(def, null, LOGGER_WRITE_HANDLER);
+        for (AttributeDefinition def : writableAttributes) {
+            // Filter requires a special reader
+            if (def.getName().equals(FILTER.getName())) {
+                resourceRegistration.registerReadWriteAttribute(def, ReadFilterOperationStepHandler.INSTANCE, writeHandler);
+            } else {
+                resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
+            }
         }
         resourceRegistration.registerReadOnlyAttribute(CATEGORY, null);
     }

@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:logging:1.2">
+<subsystem xmlns="urn:jboss:domain:logging:1.1">
     <async-handler name="async">
         <queue-length value="10"/>
         <overflow-action value="block"/>
@@ -32,21 +32,27 @@
 
     <console-handler name="CONSOLE">
         <level name="INFO"/>
-        <filter-spec value="levelRange(TRACE,WARN)" />
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN"/>
+        </filter>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
     </console-handler>
 
     <file-handler name="anotherFile">
-        <filter-spec value="levelRange(TRACE,WARN]" />
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" max-inclusive="true"/>
+        </filter>
         <file relative-to="jboss.server.log.dir" path="another.log"/>
         <append value="true"/>
     </file-handler>
 
     <file-handler name="simpleFile">
         <level name="INFO"/>
-        <filter-spec value="deny"/>
+        <filter>
+            <deny/>
+        </filter>
         <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
         <append value="true"/>
     </file-handler>
@@ -70,7 +76,14 @@
 
     <periodic-rotating-file-handler name="FILE">
         <encoding value="UTF-8"/>
-        <filter-spec value="any(levels(INFO),not(levels(TRACE)))"/>
+        <filter>
+            <any>
+                <level name="INFO"/>
+                <not>
+                    <level name="TRACE"/>
+                </not>
+            </any>
+        </filter>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
@@ -81,7 +94,12 @@
     <size-rotating-file-handler name="sizeLogger">
         <level name="DEBUG"/>
         <encoding value="UTF-8"/>
-        <filter-spec value="all(levelChange(DEBUG),match(&quot;JBAS+\\d&quot;))"/>
+        <filter>
+            <all>
+                <change-level new-level="DEBUG"/>
+                <match pattern=".*"/>
+            </all>
+        </filter>
         <formatter>
             <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
@@ -93,7 +111,9 @@
 
     <logger category="com.example" use-parent-handlers="false">
         <level name="TRACE"/>
-        <filter-spec value="levelRange[TRACE,WARN)"/>
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" min-inclusive="true"/>
+        </filter>
         <handlers>
             <handler name="sizeLogger"/>
             <handler name="CONSOLE"/>
@@ -102,39 +122,25 @@
 
     <logger category="com.arjuna">
         <level name="WARN"/>
-        <filter-spec value="levelRange[TRACE,WARN]"/>
+        <filter>
+            <level-range min-level="TRACE" max-level="WARN" min-inclusive="true"/>
+        </filter>
+    </logger>
+
+    <logger category="com.example.foo">
+        <filter>
+            <replace pattern="\b(Name)|\b(name)" replacement="user" replace-all="true"/>
+        </filter>
     </logger>
 
     <root-logger>
         <level name="INFO"/>
+        <filter>
+            <level name="TRACE" />
+        </filter>
         <handlers>
             <handler name="CONSOLE"/>
             <handler name="FILE"/>
         </handlers>
     </root-logger>
-
-    <logging-profiles>
-        <logging-profile name="test-profile">
-
-            <console-handler name="CONSOLE">
-                <level name="ALL"/>
-                <filter-spec value="levelRange(TRACE,WARN)"/>
-                <formatter>
-                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
-                </formatter>
-            </console-handler>
-
-            <logger category="org.jboss.as.logging">
-                <level name="TRACE"/>
-                <filter-spec value="levelRange[TRACE,WARN)"/>
-            </logger>
-
-            <root-logger>
-                <level name="INFO"/>
-                <handlers>
-                    <handler name="CONSOLE"/>
-                </handlers>
-            </root-logger>
-        </logging-profile>
-    </logging-profiles>
 </subsystem>

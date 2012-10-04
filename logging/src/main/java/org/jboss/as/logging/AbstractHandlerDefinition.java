@@ -26,14 +26,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
+import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.HandlerOperations.HandlerUpdateOperationStepHandler;
 import static org.jboss.as.logging.HandlerOperations.LogHandlerWriteAttributeHandler;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.logging.Handler;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -42,6 +42,8 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.logging.HandlerOperations.HandlerAddOperationStepHandler;
+import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -51,10 +53,14 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     public static final String UPDATE_OPERATION_NAME = "update-properties";
     public static final String CHANGE_LEVEL_OPERATION_NAME = "change-log-level";
 
-    static final AttributeDefinition[] DEFAULT_WRITABLE_ATTRIBUTES = {
+    static final AttributeDefinition[] DEFAULT_ATTRIBUTES = {
             LEVEL,
             ENCODING,
             FORMATTER,
+            FILTER_SPEC,
+    };
+
+    static final AttributeDefinition[] LEGACY_ATTRIBUTES = {
             FILTER,
     };
 
@@ -62,19 +68,28 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     private final AttributeDefinition[] writableAttributes;
     private final AttributeDefinition[] readOnlyAttributes;
 
-    protected AbstractHandlerDefinition(final PathElement path, final String key,
-                                        final LoggingOperations.LoggingAddOperationStepHandler addHandler,
-                                        final AttributeDefinition... writableAttributes) {
-        this(path, key, addHandler, null, writableAttributes);
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final AttributeDefinition[] attributes) {
+        this(path, type, attributes, null, attributes);
     }
 
-    protected AbstractHandlerDefinition(final PathElement path, final String key,
-                                        final LoggingOperations.LoggingAddOperationStepHandler addHandler,
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final AttributeDefinition[] attributes,
+                                        final ConfigurationProperty<?>... constructionProperties) {
+        this(path, type, attributes, null, attributes, constructionProperties);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final AttributeDefinition[] addAttributes,
                                         final AttributeDefinition[] readOnlyAttributes,
-                                        final AttributeDefinition... writableAttributes) {
+                                        final AttributeDefinition[] writableAttributes,
+                                        final ConfigurationProperty<?>... constructionProperties) {
         super(path,
                 LoggingExtension.getResourceDescriptionResolver("handler"),
-                addHandler,
+                new HandlerAddOperationStepHandler(type, addAttributes, constructionProperties),
                 HandlerOperations.REMOVE_HANDLER);
         this.writableAttributes = writableAttributes;
         writeHandler = new LogHandlerWriteAttributeHandler(this.writableAttributes);
@@ -84,7 +99,12 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition def : writableAttributes) {
-            resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
+            // Filter requires a special reader
+            if (def.getName().equals(FILTER.getName())) {
+                resourceRegistration.registerReadWriteAttribute(def, ReadFilterOperationStepHandler.INSTANCE, writeHandler);
+            } else {
+                resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
+            }
         }
         if (readOnlyAttributes != null)
             for (AttributeDefinition def : readOnlyAttributes) {
@@ -101,45 +121,5 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
         registration.registerOperationHandler(new SimpleOperationDefinition(DISABLE, resolver), HandlerOperations.DISABLE_HANDLER);
         registration.registerOperationHandler(new SimpleOperationDefinition(CHANGE_LEVEL_OPERATION_NAME, resolver, CommonAttributes.LEVEL), HandlerOperations.CHANGE_LEVEL);
         registration.registerOperationHandler(new SimpleOperationDefinition(UPDATE_OPERATION_NAME, resolver, writableAttributes), new HandlerUpdateOperationStepHandler(writableAttributes));
-    }
-
-    /**
-     * Appends the default writable attributes with the attributes provided.
-     * <p/>
-     * Uniqueness is guaranteed on the returned array.
-     *
-     * @param attributes the attributes to add
-     *
-     * @return an array of the attributes
-     */
-    static AttributeDefinition[] appendDefaultWritableAttributes(final AttributeDefinition... attributes) {
-        return joinUnique(DEFAULT_WRITABLE_ATTRIBUTES, attributes);
-    }
-
-    /**
-     * Joins the two arrays and guarantees a unique array.
-     * <p/>
-     * The array returned may contain fewer attributes than the two arrays combined. Any duplicate attributes are
-     * ignored.
-     *
-     * @param base       the base attributes
-     * @param attributes the attributes to add
-     *
-     * @return an array of the attributes
-     */
-    static AttributeDefinition[] joinUnique(final AttributeDefinition[] base, final AttributeDefinition... attributes) {
-        final Map<String, AttributeDefinition> result = new LinkedHashMap<String, AttributeDefinition>();
-        if (base != null) {
-            for (AttributeDefinition attr : base) {
-                result.put(attr.getName(), attr);
-            }
-        }
-        if (attributes != null) {
-            for (AttributeDefinition attr : attributes) {
-                if (!result.containsKey(attr.getName()))
-                    result.put(attr.getName(), attr);
-            }
-        }
-        return result.values().toArray(new AttributeDefinition[result.size()]);
     }
 }

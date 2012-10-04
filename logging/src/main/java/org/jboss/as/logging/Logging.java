@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationFailedException;
@@ -80,5 +81,28 @@ public final class Logging {
      */
     public static OperationFailedException createOperationFailure(final Throwable cause, final String message) {
         return new OperationFailedException(cause, new ModelNode(message));
+    }
+
+    /**
+     * Joins two arrays.
+     * <p/>
+     * If the base array is null, the {@code add} parameter is returned. If the add array is null, the {@code base}
+     * array is returned.
+     *
+     * @param base the base array to add to
+     * @param add  the array to add
+     * @param <T>  the type of the array
+     *
+     * @return the joined array
+     */
+    static <T> T[] join(final T[] base, final T... add) {
+        if (add == null) {
+            return base;
+        } else if (base == null) {
+            return add;
+        }
+        final T[] result = Arrays.copyOf(base, base.length + add.length);
+        System.arraycopy(add, 0, result, base.length, add.length);
+        return result;
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.logging;
 
+import java.util.logging.Handler;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
@@ -34,10 +36,9 @@ abstract class AbstractFileHandlerDefinition extends AbstractHandlerDefinition {
 
     public static final String CHANGE_FILE_OPERATION_NAME = "change-file";
 
-    protected AbstractFileHandlerDefinition(final PathElement path, final String key,
-                                            final LoggingOperations.LoggingAddOperationStepHandler addHandler,
+    protected AbstractFileHandlerDefinition(final PathElement path, final Class<? extends Handler> type,
                                             final AttributeDefinition... attributes) {
-        super(path, key, addHandler, attributes);
+        super(path, type, attributes);
     }
 
     @Override
