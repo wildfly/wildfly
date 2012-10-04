@@ -45,7 +45,7 @@ public class ModClusterAddCustomMetric implements OperationStepHandler {
 
         ModelNode targetOperation = Util.createAddOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), name)));
 
-        for (AttributeDefinition def : LoadMetricDefinition.ATTRIBUTES) {
+        for (AttributeDefinition def : CustomLoadMetricDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, targetOperation);
         }
         context.addStep(targetOperation, CustomLoadMetricAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
