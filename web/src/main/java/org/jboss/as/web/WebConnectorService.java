@@ -35,6 +35,7 @@ import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AjpAprProtocol;
 import org.apache.coyote.ajp.AjpProtocol;
 import org.apache.coyote.http11.Http11AprProtocol;
+import org.apache.coyote.http11.Http11NioProtocol;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
@@ -99,9 +100,13 @@ class WebConnectorService implements Service<Connector> {
             if(redirectPort != null) connector.setRedirectPort(redirectPort);
             if(secure != null) connector.setSecure(secure);
             boolean nativeProtocolHandler = false;
+            boolean nioProtocolHandler = false;
             if (connector.getProtocolHandler() instanceof Http11AprProtocol
                     || connector.getProtocolHandler() instanceof AjpAprProtocol) {
                 nativeProtocolHandler = true;
+            }
+            if (connector.getProtocolHandler() instanceof Http11NioProtocol) {
+                nioProtocolHandler = true;
             }
             if (executor != null) {
                 Method m = connector.getProtocolHandler().getClass().getMethod("setExecutor", Executor.class);
@@ -118,7 +123,7 @@ class WebConnectorService implements Service<Connector> {
                 } catch (NoSuchMethodException e) {
                  // Not all connectors will have this
                 }
-                if (nativeProtocolHandler) {
+                if (nativeProtocolHandler || nioProtocolHandler) {
                     try {
                         Method m = connector.getProtocolHandler().getClass().getMethod("setSendfileSize", Integer.TYPE);
                         m.invoke(connector.getProtocolHandler(), maxConnections);
