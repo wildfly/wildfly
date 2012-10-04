@@ -148,8 +148,6 @@ public class RespawnTestCase {
         args.add("-Xmx512m");
         args.add("-XX:MaxPermSize=256m");
         args.add("-Dorg.jboss.resolver.warning=true");
-        args.add("-Dsun.rmi.dgc.client.gcInterval=3600000");
-        args.add("-Dsun.rmi.dgc.server.gcInterval=3600000");
         args.add("--");
         args.add("-default-jvm");
         args.add(processUtil.getJavaCommand());

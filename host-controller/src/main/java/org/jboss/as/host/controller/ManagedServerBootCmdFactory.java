@@ -58,10 +58,6 @@ import org.jboss.dmr.Property;
  */
 class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
 
-    private static final String RMI_CLIENT_INTERVAL = "sun.rmi.dgc.client.gcInterval";
-    private static final String RMI_SERVER_INTERVAL = "sun.rmi.dgc.server.gcInterval";
-    private static final String DEFAULT_RMI_INTERVAL = "3600000";
-
     private static final ModelNode EMPTY = new ModelNode();
     static {
         EMPTY.setEmptyList();
@@ -150,10 +146,6 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         command.add("-D[" + ManagedServer.getServerProcessName(serverName) + "]");
 
         JvmOptionsBuilderFactory.getInstance().addOptions(jvmElement, command);
-
-        //These need to go in on the command-line
-        command.add("-D" + RMI_CLIENT_INTERVAL + "=" + SecurityActions.getSystemProperty(RMI_CLIENT_INTERVAL, DEFAULT_RMI_INTERVAL));
-        command.add("-D" + RMI_SERVER_INTERVAL + "=" + SecurityActions.getSystemProperty(RMI_SERVER_INTERVAL, DEFAULT_RMI_INTERVAL));
 
         Map<String, String> bootTimeProperties = getAllSystemProperties(true);
         // Add in properties passed in to the ProcessController command line
