@@ -1,5 +1,6 @@
 package org.jboss.as.modcluster;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -21,7 +22,7 @@ public class CustomLoadMetricDefinition extends SimpleResourceDefinition {
             .build();
 
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+    static final AttributeDefinition[] ATTRIBUTES = {
             CLASS, LoadMetricDefinition.WEIGHT, LoadMetricDefinition.CAPACITY, LoadMetricDefinition.PROPERTY
     };
 
@@ -36,7 +37,7 @@ public class CustomLoadMetricDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (SimpleAttributeDefinition def : ATTRIBUTES) {
+        for (AttributeDefinition def : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
         }
     }

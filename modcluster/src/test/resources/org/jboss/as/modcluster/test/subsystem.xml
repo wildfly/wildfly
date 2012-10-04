@@ -11,7 +11,8 @@
             <load-metric type="cpu"/>
             <load-metric type="heap"/>
             <load-metric type="busyness">
-                <property name="name" value="value"/>
+                <property name="name1" value="value1"/>
+                <property name="name2" value="value2"/>
             </load-metric>
             <custom-load-metric class="org.jboss.modcluster.SomeFakeLoadMetricClass" weight="5"/>
         </dynamic-load-provider>
