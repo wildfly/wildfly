@@ -99,6 +99,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         EXISTING_HASH("existing-hash"),
         EXISTING_PATH("existing-path"),
         HASH("hash"),
+        IN_RUNTIME_USE("in-runtime-use"),
         NAME("name"),
         PATH("path"),
         RESULTING_VERSION("resulting-version"),
@@ -422,6 +423,9 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                 case EXISTING_HASH:
                     targetHash = value.getBytes();
                     break;
+                case IN_RUNTIME_USE:
+                    affectsRuntime = Boolean.parseBoolean(value);
+                    break;
                 default:
                     throw unexpectedElement(reader);
             }
@@ -488,6 +492,9 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         }
         if(type != ModificationType.ADD) {
             writer.writeAttribute(Attribute.EXISTING_HASH.name, bytesToHexString(modification.getTargetHash()));
+            if (item.isAffectsRuntime()) {
+                writer.writeAttribute(Attribute.IN_RUNTIME_USE.name, "true");
+            }
         }
     }
 

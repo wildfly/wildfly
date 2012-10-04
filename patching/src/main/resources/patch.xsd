@@ -230,6 +230,13 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="in-runtime-use" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether the content is expected to be in use by a non-admin-only standalone server or Host Controller.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -258,6 +265,13 @@
             <xs:annotation>
                 <xs:documentation>
                     Whether the removed content is a directory
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="in-runtime-use" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether the content is expected to be in use by a non-admin-only standalone server or Host Controller.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

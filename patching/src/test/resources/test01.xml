@@ -42,7 +42,7 @@
     <misc-files>
         <added-misc-content path="test/file" hash="1a2b3c4d" />
         <updated-misc-content path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
-        <removed-misc-content path="test/file" hash="1a2b3c4d" />
+        <removed-misc-content path="test/file" hash="1a2b3c4d" in-runtime-use="true" />
     </misc-files>
 
 </patch>
