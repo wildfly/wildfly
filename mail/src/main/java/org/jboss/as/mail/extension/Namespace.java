@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-public enum Namespace {
+enum Namespace {
     // must be first
     UNKNOWN(null),
 

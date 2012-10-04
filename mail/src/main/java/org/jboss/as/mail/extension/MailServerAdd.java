@@ -9,11 +9,12 @@ import org.jboss.dmr.ModelNode;
  * @author Tomaz Cerar
  * @created 8.12.11 0:19
  */
-public class MailServerAdd extends AbstractAddStepHandler {
+class MailServerAdd extends AbstractAddStepHandler {
 
-    static final MailServerAdd INSTANCE = new MailServerAdd();
+    private final AttributeDefinition[] attributes;
 
-    private MailServerAdd() {
+    MailServerAdd(AttributeDefinition[] attributes) {
+        this.attributes = attributes;
     }
 
     /**
@@ -26,8 +27,8 @@ public class MailServerAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition def : MailServerWriteAttributeHandler.ATTRIBUTES){
-            def.validateAndSet(operation,model);
+        for (AttributeDefinition def : attributes) {
+            def.validateAndSet(operation, model);
         }
     }
 

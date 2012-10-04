@@ -26,11 +26,11 @@ import org.junit.Test;
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
+public class MailSubsystem10TestCase extends AbstractSubsystemBaseTest {
 
-    private static final Logger log = Logger.getLogger(SubsystemParsingTestCase.class);
+    private static final Logger log = Logger.getLogger(MailSubsystem10TestCase.class);
 
-    public SubsystemParsingTestCase() {
+    public MailSubsystem10TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
@@ -72,7 +72,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-    private class Initializer extends AdditionalInitialization {
+    public static class Initializer extends AdditionalInitialization {
         @Override
         protected ControllerInitializer createControllerInitializer() {
             ControllerInitializer ci = new ControllerInitializer() {
