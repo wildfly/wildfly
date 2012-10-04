@@ -113,7 +113,7 @@ class JacORBSubsystemDefinitions {
     public static final SimpleAttributeDefinition ORB_GIOP_MINOR_VERSION = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_GIOP_MINOR_VERSION, ModelType.INT, true)
             .setDefaultValue(new ModelNode().set(2))
-            .setValidator(new IntRangeValidator(1, 2, true, false))
+            .setValidator(new IntRangeValidator(0, 2, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
