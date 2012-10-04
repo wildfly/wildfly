@@ -26,8 +26,10 @@ import org.jboss.as.clustering.HashableMarshalledValue;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings({ "rawtypes", "serial" })
+@SuppressWarnings({ "rawtypes" })
 public class HashableMarshalledValueExternalizer extends ExternalizableExternalizer<HashableMarshalledValue> {
+    private static final long serialVersionUID = 7844272029437130369L;
+
     public HashableMarshalledValueExternalizer() {
         super(HashableMarshalledValue.class);
     }

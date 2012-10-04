@@ -33,8 +33,9 @@ import org.jboss.marshalling.reflect.ReflectiveCreator;
  * Externalizer for Externalizable objects.
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
 public class ExternalizableExternalizer<T extends Externalizable> extends AbstractSimpleExternalizer<T> {
+    private static final long serialVersionUID = -5938201796254055389L;
+
     private static final Creator creator = new ReflectiveCreator();
 
     public ExternalizableExternalizer(Class<T> targetClass) {

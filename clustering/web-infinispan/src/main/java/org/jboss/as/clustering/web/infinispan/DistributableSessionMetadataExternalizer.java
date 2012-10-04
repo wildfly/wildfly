@@ -27,7 +27,6 @@ import org.jboss.as.clustering.web.DistributableSessionMetadata;
 /**
  * @author Paul Ferraro
  */
-@SuppressWarnings("serial")
 public class DistributableSessionMetadataExternalizer extends ExternalizableExternalizer<DistributableSessionMetadata> {
     public DistributableSessionMetadataExternalizer() {
         super(DistributableSessionMetadata.class);

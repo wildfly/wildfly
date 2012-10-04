@@ -35,7 +35,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="net.jcip"/>
-        <module name="org.infinispan"/>
+        <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.cachestore.jdbc" optional="true"/>
         <module name="org.infinispan.cachestore.remote" optional="true"/>
         <module name="org.infinispan.hotrod.client" optional="true" export="true"/>
