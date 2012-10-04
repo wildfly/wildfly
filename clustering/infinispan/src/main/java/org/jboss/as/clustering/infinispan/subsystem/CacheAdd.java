@@ -14,21 +14,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.ClusterCacheLoaderConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder;
+import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder.FsyncMode;
+import org.infinispan.configuration.cache.LegacyLoaderConfigurationBuilder;
 import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
-import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder.FsyncMode;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
+import org.infinispan.loaders.CacheLoader;
+import org.infinispan.loaders.CacheStore;
+import org.infinispan.loaders.cluster.ClusterCacheLoader;
+import org.infinispan.loaders.file.FileCacheStore;
 import org.infinispan.loaders.jdbc.configuration.AbstractJdbcCacheStoreConfigurationBuilder;
 import org.infinispan.loaders.jdbc.configuration.JdbcBinaryCacheStoreConfigurationBuilder;
 import org.infinispan.loaders.jdbc.configuration.JdbcMixedCacheStoreConfigurationBuilder;
@@ -39,6 +44,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.infinispan.util.TypedProperties;
+import org.infinispan.util.Util;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.clustering.msc.AsynchronousService;
@@ -565,7 +571,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             final String datasource = CommonAttributes.DATA_SOURCE.resolveModelAttribute(context, store).asString();
 
             dependencies.add(new Dependency<Object>(ServiceName.JBOSS.append("data-source", datasource)));
-            return builder.datasource(datasource);
+            builder.dataSource().jndiUrl(datasource);
+            return builder;
         } else if (storeKey.equals(ModelKeys.REMOTE_STORE)) {
             final RemoteCacheStoreConfigurationBuilder builder = loadersBuilder.addStore(RemoteCacheStoreConfigurationBuilder.class);
             for (ModelNode server : store.require(ModelKeys.REMOTE_SERVERS).asList()) {
@@ -594,8 +601,21 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             return builder;
         } else {
             String className = store.require(ModelKeys.CLASS).asString();
+
             try {
-                return loadersBuilder.addStore(StoreConfigurationBuilder.class.getClassLoader().loadClass(className).asSubclass(StoreConfigurationBuilder.class));
+                //todo review this code!
+                CacheLoader loader = Util.getInstance(className, StoreConfigurationBuilder.class.getClassLoader());
+                if (loader instanceof FileCacheStore) {
+                    return loadersBuilder.loaders().addFileCacheStore();
+                } else if (loader instanceof CacheStore) {
+                    return loadersBuilder.loaders().addStore();
+                } else if (loader instanceof ClusterCacheLoader) {
+                    ClusterCacheLoaderConfigurationBuilder cclb = loadersBuilder.loaders().addClusterCacheLoader();
+                } else {
+                    LegacyLoaderConfigurationBuilder lcb = loadersBuilder.loaders().addLoader();
+                    lcb.cacheLoader(loader);
+                }
+                return loadersBuilder.addStore();
             } catch (Exception e) {
                 throw new IllegalArgumentException(String.format("%s is not a valid cache store", className), e);
             }
@@ -621,15 +641,15 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         return builder;
     }
 
-    private void buildBinaryKeyedTable(TableManipulationConfigurationBuilder builder, OperationContext context, ModelNode table) throws OperationFailedException {
+    private void buildBinaryKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table) throws OperationFailedException {
         this.buildTable(builder, context, table, "ispn_bucket");
     }
 
-    private void buildStringKeyedTable(TableManipulationConfigurationBuilder builder, OperationContext context, ModelNode table) throws OperationFailedException {
+    private void buildStringKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table) throws OperationFailedException {
         this.buildTable(builder, context, table, "ispn_entry");
     }
 
-    private void buildTable(TableManipulationConfigurationBuilder builder, OperationContext context, ModelNode table, String defaultTableNamePrefix) throws OperationFailedException {
+    private void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, String defaultTableNamePrefix) throws OperationFailedException {
         ModelNode tableNamePrefix = CommonAttributes.PREFIX.resolveModelAttribute(context, table);
         builder.batchSize(CommonAttributes.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .fetchSize(CommonAttributes.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
