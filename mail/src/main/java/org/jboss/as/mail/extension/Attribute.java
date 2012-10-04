@@ -7,7 +7,7 @@ import java.util.Map;
  * @author Tomaz Cerar
  * @created 10.8.11 22:41
  */
-public enum Attribute {
+enum Attribute {
     UNKNOWN(null),
     USERNAME(MailSubsystemModel.LOGIN_USERNAME),
     PASSWORD(MailSubsystemModel.PASSWORD),
@@ -16,7 +16,8 @@ public enum Attribute {
     FROM(MailSubsystemModel.FROM),
     OUTBOUND_SOCKET_BINDING_REF(MailSubsystemModel.OUTBOUND_SOCKET_BINDING_REF),
     SSL(MailSubsystemModel.SSL),
-    TLS(MailSubsystemModel.TLS);
+    TLS(MailSubsystemModel.TLS),
+    NAME(MailSubsystemModel.NAME);
 
     private final String name;
 

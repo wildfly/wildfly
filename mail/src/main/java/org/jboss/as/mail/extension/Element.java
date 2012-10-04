@@ -7,14 +7,15 @@ import java.util.Map;
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  * @created 26.7.11 15:21
  */
-public enum Element {
+enum Element {
     UNKNOWN(null),
 
     LOGIN(MailSubsystemModel.LOGIN),
     MAIL_SESSION(MailSubsystemModel.MAIL_SESSION),
     SMTP_SERVER(MailSubsystemModel.SMTP_SERVER),
     POP3_SERVER(MailSubsystemModel.POP3_SERVER),
-    IMAP_SERVER(MailSubsystemModel.IMAP_SERVER),;
+    IMAP_SERVER(MailSubsystemModel.IMAP_SERVER),
+    CUSTOM_SERVER(MailSubsystemModel.CUSTOM_SERVER),;
 
     private final String name;
 

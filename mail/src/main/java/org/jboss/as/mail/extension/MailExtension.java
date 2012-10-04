@@ -1,13 +1,14 @@
 package org.jboss.as.mail.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER_PATH;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER_PATH;
 import static org.jboss.as.mail.extension.MailSubsystemModel.TLS;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
@@ -16,17 +17,18 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 
 /**
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
+ * @since 7.1.0
  */
 public class MailExtension implements Extension {
 
@@ -55,7 +57,6 @@ public class MailExtension implements Extension {
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
 
-
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -71,24 +72,23 @@ public class MailExtension implements Extension {
         session.registerSubModel(MailServerDefinition.INSTANCE_POP3);
         // /subsystem=mail/mail-session=java:/Mail/server=smtp
         session.registerSubModel(MailServerDefinition.INSTANCE_SMTP);
+        // /subsystem=mail/mail-session=java:/Mail/custom=*
+        session.registerSubModel(MailServerDefinition.INSTANCE_CUSTOM);
+
+
         subsystem.registerXMLElementWriter(parser);
-        TransformersSubRegistration serverTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
-            @Override
-            protected ModelNode transformModel(TransformationContext context, ModelNode model) {
-                for (Property p : model.get(MAIL_SESSION_PATH.getKey()).asPropertyList()) {
-                    for (Property server : p.getValue().get(MailSubsystemModel.SERVER_TYPE).asPropertyList()) {
-                        ModelNode serverModel = server.getValue();
+        TransformersSubRegistration sessionTransformers = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), null)
+                .registerSubResource(MAIL_SESSION_PATH);
+        TransformersSubRegistration serverTransformers = sessionTransformers
+                .registerSubResource(SMTP_SERVER_PATH, new ResourceTransformer() {
+                    @Override
+                    public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
+                        ModelNode serverModel = resource.getModel();
                         if (serverModel.has(TLS)) {
                             serverModel.remove(TLS);
                         }
-                        model.get(MailSubsystemModel.MAIL_SESSION,p.getName(),MailSubsystemModel.SERVER_TYPE,server.getName()).set(serverModel);
                     }
-                }
-
-                return model;
-            }
-        })
-                .registerSubResource(MAIL_SESSION_PATH).registerSubResource(SMTP_SERVER_PATH);
+                });
         serverTransformers.registerOperationTransformer(ADD, new AbstractOperationTransformer() {
             @Override
             protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
@@ -98,8 +98,7 @@ public class MailExtension implements Extension {
                 return operation;
             }
         });
-
-
+        sessionTransformers.registerSubResource(CUSTOM_SERVER_PATH, true);
     }
 
 }

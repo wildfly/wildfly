@@ -84,6 +84,7 @@ public class JvmAttributes {
             .setXmlName(Element.VARIABLE.getLocalName())
             .setAllowNull(true)
             .setValidator(new StringLengthValidator(1, true))
+            .setWrapperElement(JvmAttributes.JVM_ENV_VARIABLES)
             .build();
 
     public static final SimpleAttributeDefinition JAVA_AGENT =

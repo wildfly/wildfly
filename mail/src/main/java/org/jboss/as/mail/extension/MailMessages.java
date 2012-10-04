@@ -22,13 +22,13 @@
 
 package org.jboss.as.mail.extension;
 
+import java.net.UnknownHostException;
+
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.msc.service.StartException;
-
-import java.net.UnknownHostException;
 
 /**
  * Date: 05.11.2011
@@ -62,4 +62,13 @@ interface MailMessages {
      */
     @Message(id = 15451, value = "Unknown host for outbound socket binding configuration '%s'.")
     RuntimeException unknownOutboundSocketBindingDestination(@Cause UnknownHostException cause, String outgoingSocketBindingRef);
+
+
+    /**
+     * Creates exception indicating that host was not configured properly
+     *
+     * @return a {@link RuntimeException} for the error.
+     */
+    @Message(id = 15452, value = "Host not configured")
+    RuntimeException serverHostNotSet();
 }

@@ -42,8 +42,6 @@ import org.jboss.dmr.ModelNode;
  */
 public class Util {
 
-    public static final String[] NO_LOCATION = new String[0];
-
     /**
      * Prevent instantiation
      */
@@ -71,11 +69,11 @@ public class Util {
         return getEmptyOperation(operationDefinition.getName(), address.toModelNode());
     }
 
-    public static ModelNode getEmptyOperation(String operationName, ModelNode address) {
+    public static ModelNode createEmptyOperation(String operationName, final PathAddress address) {
         ModelNode op = new ModelNode();
         op.get(OP).set(operationName);
         if (address != null) {
-            op.get(OP_ADDR).set(address);
+            op.get(OP_ADDR).set(address.toModelNode());
         } else {
             // Just establish the standard structure; caller can fill in address later
             op.get(OP_ADDR);
@@ -83,24 +81,32 @@ public class Util {
         return op;
     }
 
-    public static ModelNode getResourceRemoveOperation(ModelNode address) {
-        return getEmptyOperation(REMOVE, address);
+    public static ModelNode getEmptyOperation(String operationName, ModelNode address) {
+        return createEmptyOperation(operationName, address == null ? null : PathAddress.pathAddress(address));
+    }
+
+    public static ModelNode getResourceRemoveOperation(final PathAddress address) {
+        return createEmptyOperation(REMOVE, address);
     }
 
     public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, String value) {
         return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
     }
 
-    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, int value) {
+    public static ModelNode getWriteAttributeOperation(final PathAddress address, String attributeName, int value) {
         return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
     }
 
-    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, boolean value) {
+    public static ModelNode getWriteAttributeOperation(final PathAddress address, String attributeName, boolean value) {
         return getWriteAttributeOperation(address, attributeName, new ModelNode().set(value));
     }
 
-    public static ModelNode getWriteAttributeOperation(ModelNode address, String attributeName, ModelNode value) {
-        ModelNode op = getEmptyOperation(WRITE_ATTRIBUTE_OPERATION, address);
+    public static ModelNode getWriteAttributeOperation(final ModelNode address, String attributeName, ModelNode value) {
+        return getWriteAttributeOperation(PathAddress.pathAddress(address), attributeName, value);
+    }
+
+    public static ModelNode getWriteAttributeOperation(final PathAddress address, String attributeName, ModelNode value) {
+        ModelNode op = createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(attributeName);
         op.get(VALUE).set(value);
         return op;
@@ -125,8 +131,8 @@ public class Util {
         }
     }
 
-    public static ModelNode getOperation(String operationName, ModelNode address, ModelNode params) {
-        ModelNode op = getEmptyOperation(operationName, address);
+    public static ModelNode getOperation(final String operationName, final PathAddress address, final ModelNode params) {
+        ModelNode op = createEmptyOperation(operationName, address);
         Set<String> keys = params.keys();
         keys.remove(OP);
         keys.remove(OP_ADDR);
@@ -134,6 +140,10 @@ public class Util {
             op.get(key).set(params.get(key));
         }
         return op;
+    }
+
+    public static ModelNode getOperation(String operationName, ModelNode address, ModelNode params) {
+        return getOperation(operationName, PathAddress.pathAddress(address), params);
     }
 
     public static PathAddress getParentAddressByKey(PathAddress address, String parentKey) {

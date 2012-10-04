@@ -1,5 +1,6 @@
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM;
 import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.JNDI_NAME;
 import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
@@ -8,6 +9,7 @@ import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -25,6 +27,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -36,7 +39,7 @@ import org.jboss.msc.value.ImmediateValue;
  * @author Tomaz Cerar
  * @created 27.7.11 0:55
  */
-public class MailSessionAdd extends AbstractAddStepHandler {
+class MailSessionAdd extends AbstractAddStepHandler {
 
     static final MailSessionAdd INSTANCE = new MailSessionAdd();
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("mail-session");
@@ -88,6 +91,11 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
+        for (CustomServerConfig server:config.getCustomServers()){
+            if (server.getOutgoingSocketBinding()!=null){
+                addOutboundSocketDependency(service, mailSessionBuilder, server);
+            }
+        }
 
         final ManagedReferenceFactory valueManagedReferenceFactory = new ContextListAndJndiViewManagedReferenceFactory() {
 
@@ -158,7 +166,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
     }
 
 
-    private void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, MailSessionServer server) {
+    private void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, ServerConfig server) {
         if (server != null) {
             final String ref = server.getOutgoingSocketBinding();
             mailSessionBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(ref),
@@ -171,7 +179,7 @@ public class MailSessionAdd extends AbstractAddStepHandler {
 
         cfg.setJndiName(MailSessionDefinition.JNDI_NAME.resolveModelAttribute(operationContext, model).asString());
         cfg.setDebug(MailSessionDefinition.DEBUG.resolveModelAttribute(operationContext, model).asBoolean());
-        if (MailSessionDefinition.FROM.resolveModelAttribute(operationContext, model).isDefined()){
+        if (MailSessionDefinition.FROM.resolveModelAttribute(operationContext, model).isDefined()) {
             cfg.setFrom(MailSessionDefinition.FROM.resolveModelAttribute(operationContext, model).asString());
         }
         if (model.hasDefined(SERVER_TYPE)) {
@@ -186,15 +194,30 @@ public class MailSessionAdd extends AbstractAddStepHandler {
                 cfg.setImapServer(readServerConfig(operationContext, server.get(IMAP)));
             }
         }
+        if (model.hasDefined(CUSTOM)) {
+            for (Property server : model.get(CUSTOM).asPropertyList()) {
+                cfg.addCustomServer(readCustomServerConfig(server.getName(), operationContext, server.getValue()));
+            }
+        }
         return cfg;
     }
 
-    private static MailSessionServer readServerConfig(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
-        final String socket = MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(operationContext,model).asString();
+    private static ServerConfig readServerConfig(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
+        final String socket = MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF.resolveModelAttribute(operationContext, model).asString();
         final Credentials credentials = readCredentials(operationContext, model);
         boolean ssl = MailServerDefinition.SSL.resolveModelAttribute(operationContext, model).asBoolean();
         boolean tls = MailServerDefinition.TLS.resolveModelAttribute(operationContext, model).asBoolean();
-        return new MailSessionServer(socket, credentials, ssl,tls);
+        return new ServerConfig(socket, credentials, ssl, tls, null);
+    }
+
+    private static CustomServerConfig readCustomServerConfig(final String protocol, final OperationContext operationContext, final ModelNode model) throws OperationFailedException {
+        final ModelNode socketModel = MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL.resolveModelAttribute(operationContext, model);
+        final String socket = socketModel.isDefined() ? socketModel.asString() : null;
+        final Credentials credentials = readCredentials(operationContext, model);
+        boolean ssl = MailServerDefinition.SSL.resolveModelAttribute(operationContext, model).asBoolean();
+        boolean tls = MailServerDefinition.TLS.resolveModelAttribute(operationContext, model).asBoolean();
+        Map<String, String> properties = MailServerDefinition.PROPERTIES.unwrap(operationContext, model);
+        return new CustomServerConfig(protocol, socket, credentials, ssl, tls, properties);
     }
 
     private static Credentials readCredentials(final OperationContext operationContext, final ModelNode model) throws OperationFailedException {

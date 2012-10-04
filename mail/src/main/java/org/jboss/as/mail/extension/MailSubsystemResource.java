@@ -7,7 +7,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
  * @author Tomaz Cerar
  * @created 19.12.11 20:04
  */
-public class MailSubsystemResource extends SimpleResourceDefinition {
+class MailSubsystemResource extends SimpleResourceDefinition {
     public static final MailSubsystemResource INSTANCE = new MailSubsystemResource();
 
     private MailSubsystemResource() {
