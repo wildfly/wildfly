@@ -25,6 +25,8 @@ package org.jboss.as.patching.metadata;
 import java.util.List;
 
 /**
+ * The patch metadata.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface Patch {

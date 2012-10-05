@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * Task adding new a file.
+ *
  * @author Emanuel Muckenhuber
  */
 class FileAddTask extends AbstractFileTask {

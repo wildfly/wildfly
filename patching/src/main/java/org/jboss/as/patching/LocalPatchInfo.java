@@ -86,6 +86,33 @@ public class LocalPatchInfo implements PatchInfo {
         }
     }
 
+    /**
+     * Load the patch history for a given patch info.
+     *
+     * @param current the current patch info
+     * @param structure the directory structure
+     * @return the history
+     * @throws IOException
+     */
+    static PatchInfo loadHistory(final PatchInfo current, final DirectoryStructure structure) throws IOException {
+        final String currentId = current.getCumulativeID();
+        if(BASE.equals(currentId)) {
+            return null;
+        }
+        final File history = structure.getHistoryDir(currentId);
+        final File cumulative = new File(history, DirectoryStructure.CUMULATIVE);
+        if(cumulative.exists()) {
+            // Return the immediate persisted history
+            // this does not necessarily mean it is consistent with the .metadata/references/cumulative-id
+            final String ref = PatchUtils.readRef(cumulative);
+            final File refsFile = new File(history, DirectoryStructure.REFERENCES);
+            final List<String> refs = PatchUtils.readRefs(refsFile);
+            // TODO perhaps we can use the backed up patch.xml to get the version?
+            return new LocalPatchInfo("unknown", ref, refs, structure);
+        }
+        return null;
+    }
+
     @Override
     public File[] getPatchingPath() {
         final List<File> path = new ArrayList<File>();

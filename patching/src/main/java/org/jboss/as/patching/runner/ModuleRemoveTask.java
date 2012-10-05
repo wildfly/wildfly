@@ -24,9 +24,16 @@ package org.jboss.as.patching.runner;
 
 import org.jboss.as.patching.metadata.ModuleItem;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
+ * Removing a module will create a module.xml containing a <module-absent /> element, which
+ * will trigger a {@linkplain org.jboss.modules.ModuleNotFoundException} when the
+ * {@linkplan org.jboss.modules.ModuleLoader} tries to load the module.
+ *
  * @author Emanuel Muckenhuber
  */
 class ModuleRemoveTask extends AbstractModuleTask {
@@ -36,8 +43,27 @@ class ModuleRemoveTask extends AbstractModuleTask {
     }
 
     @Override
-    public void execute(PatchingContext context) throws IOException {
-        throw new IOException("TODO");
+    public void execute(final PatchingContext context) throws IOException {
+        final File targetDir = context.getModulePatchDirectory(item);
+        targetDir.mkdirs();
+
+        final File moduleXml = new File(targetDir, MODULE_XML);
+        final OutputStream os = new FileOutputStream(moduleXml);
+        try {
+            os.write(getFileContent(item));
+            os.close();
+        } finally {
+            PatchUtils.safeClose(os);
+        }
+    }
+
+    static byte[] getFileContent(final ModuleItem item) {
+        final StringBuilder builder = new StringBuilder(128);
+        builder.append("<?xml version='1.0' encoding='UTF-8'?>\n<module-absent xmlns=\"urn:jboss:module:1.2\"");
+        builder.append(" module=\"").append(item.getName()).append("\"");
+        builder.append(" slot=\"").append(item.getSlot()).append("\"");
+        builder.append(" />\n");
+        return builder.toString().getBytes();
     }
 
 }

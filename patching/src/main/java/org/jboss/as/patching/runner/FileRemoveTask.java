@@ -43,6 +43,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Task for removing a file. In case the removed file is a directory, this task will create multiple rollback operation
+ * for each file in this folder.
+ *
  * @author Emanuel Muckenhuber
  */
 class FileRemoveTask implements PatchingTask {

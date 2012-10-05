@@ -40,6 +40,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
+ * Adding or updating a module will add a module in the patch overlay directory {@linkplain org.jboss.as.boot.DirectoryStructure#getModulePatchDirectory(String)}.
+ *
  * @author Emanuel Muckenhuber
  */
 class ModuleUpdateTask extends AbstractModuleTask {
@@ -52,17 +54,16 @@ class ModuleUpdateTask extends AbstractModuleTask {
     public void execute(PatchingContext context) throws IOException {
 
         // Copy the new module resources to the patching directory
-        final File modulePatchDirectory = context.getModulePatchDirectory();
-        final File targetDir = PatchItemMapping.getModulePath(modulePatchDirectory, item);
+        final File targetDir = context.getModulePatchDirectory(item);
         final File sourceDir = context.getLoader().getFile(item);
         final File[] moduleResources = sourceDir.listFiles();
         for(final File file : moduleResources) {
             final File target = new File(targetDir, file.getName());
             copy(file, target);
         }
-
-        final ContentModification modification = new ContentModification(item, expected, ModificationType.MODIFY);
-        context.recordRollbackAction(modification);
+        // Hmm we actually don't need to do anything when rolling back the patch?
+        // final ContentModification modification = new ContentModification(item, expected, ModificationType.MODIFY);
+        // context.recordRollbackAction(modification);
     }
 
     static byte[] copy(File source, File target) throws IOException {

@@ -23,6 +23,9 @@
 package org.jboss.as.patching.metadata;
 
 /**
+ * A modification of a content item. The {@linkplain ModificationType} describes whether the content
+ * is added, modified or removed.
+ *
  * @author Emanuel Muckenhuber
  */
 public class ContentModification {
