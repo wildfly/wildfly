@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+	<sub-deployment name="web.war">
+		<dependencies>
+			<module name="org.jboss.remote-naming" />
+		</dependencies>
+	</sub-deployment>
+	<sub-deployment name="ejb.jar">
+		<dependencies>
+			<module name="org.jboss.remote-naming" />
+		</dependencies>
+	</sub-deployment>
+</jboss-deployment-structure>
