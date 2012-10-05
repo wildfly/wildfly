@@ -20,22 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata;
+package org.jboss.as.patching.generator;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchBuilder;
 
 /**
- * @author Emanuel Muckenhuber
+ * {@link PatchConfig} implementation.
+ *
+ * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-public class PatchBuilder implements Patch {
+class PatchConfigBuilder implements PatchConfig {
 
     private String patchId;
     private String description;
     private String resultingVersion;
-    private PatchType patchType;
+    private Patch.PatchType patchType;
+    private boolean generateByDiff;
     private List<String> appliesTo = new ArrayList<String>();
-    private List<ContentModification> modifications = new ArrayList<ContentModification>();
+    private Set<DistributionContentItem> runtimeUseItems = new HashSet<DistributionContentItem>();
 
     @Override
     public String getPatchId() {
@@ -48,7 +57,7 @@ public class PatchBuilder implements Patch {
     }
 
     @Override
-    public PatchType getPatchType() {
+    public Patch.PatchType getPatchType() {
         return patchType;
     }
 
@@ -63,32 +72,53 @@ public class PatchBuilder implements Patch {
     }
 
     @Override
-    public List<ContentModification> getModifications() {
-        return modifications;
+    public Set<DistributionContentItem> getInRuntimeUseItems() {
+        return Collections.unmodifiableSet(runtimeUseItems);
     }
 
-    public void setPatchId(String patchId) {
+    public boolean isGenerateByDiff() {
+        return generateByDiff;
+    }
+
+    @Override
+    public PatchBuilder toPatchBuilder() {
+        PatchBuilder pb = new PatchBuilder();
+        pb.setPatchId(getPatchId());
+        pb.setDescription(getDescription());
+        pb.setPatchType(getPatchType());
+        pb.setResultingVersion(getResultingVersion());
+        for (String applyTo : appliesTo) {
+            pb.addAppliesTo(applyTo);
+        }
+        return pb;
+    }
+
+    void setPatchId(String patchId) {
         this.patchId = patchId;
     }
 
-    public void setDescription(String description) {
+    void setDescription(String description) {
         this.description = description;
     }
 
-    public void setPatchType(PatchType patchType) {
+    void setPatchType(Patch.PatchType patchType) {
         this.patchType = patchType;
     }
 
-    public void setResultingVersion(String resultingVersion) {
+    void setResultingVersion(String resultingVersion) {
         this.resultingVersion = resultingVersion;
     }
 
-    public void addAppliesTo(String appliesTo) {
+    void addAppliesTo(String appliesTo) {
         this.appliesTo.add(appliesTo);
     }
 
-    public void addContentModification(ContentModification modification) {
-        this.modifications.add(modification);
+    void setGenerateByDiff(boolean generateByDiff) {
+        this.generateByDiff = generateByDiff;
+    }
+
+    public void addRuntimeUseItem(DistributionContentItem item) {
+        this.runtimeUseItems.add(item);
     }
 
 }
