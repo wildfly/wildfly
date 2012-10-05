@@ -49,7 +49,7 @@ public class ReplicationWebFailoverTestCase extends ClusteredWebFailoverAbstract
         war.addClass(SimpleServlet.class);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 
