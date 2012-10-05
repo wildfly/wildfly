@@ -51,7 +51,7 @@ public class JacORBExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JacORBExtension.class.getClassLoader(), true, false);
