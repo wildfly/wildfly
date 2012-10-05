@@ -1054,8 +1054,11 @@
             <maven-resource group="org.jboss.metadata" artifact="jboss-metadata-ear"/>
         </module-def>
 
+        <!--
+          starting with 3.4.x Netty has changed its groupId to io.netty.
+        -->
         <module-def name="org.jboss.netty">
-            <maven-resource group="org.jboss.netty" artifact="netty"/>
+            <maven-resource group="io.netty" artifact="netty"/>
         </module-def>
 
         <module-def name="org.jboss.osgi.deployment">
