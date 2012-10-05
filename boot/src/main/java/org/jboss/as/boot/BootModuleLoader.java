@@ -23,6 +23,7 @@
 package org.jboss.as.boot;
 
 import org.jboss.modules.LocalModuleLoader;
+import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -45,18 +46,14 @@ public final class BootModuleLoader extends ModuleLoader {
     }
 
     @Override
+    protected Module preloadModule(ModuleIdentifier identifier) throws ModuleLoadException {
+        return preloadModule(identifier, localModuleLoader);
+    }
+
+    @Override
     protected ModuleSpec findModule(final ModuleIdentifier moduleIdentifier) throws ModuleLoadException {
-        try {
-            final Method method = LocalModuleLoader.class.getDeclaredMethod("findModule", ModuleIdentifier.class);
-            method.setAccessible(true);
-            return (ModuleSpec) method.invoke(localModuleLoader, moduleIdentifier);
-        } catch (NoSuchMethodException e) {
-            throw new ModuleLoadException(e);
-        } catch (InvocationTargetException e) {
-            throw new ModuleLoadException(e);
-        } catch (IllegalAccessException e) {
-            throw new ModuleLoadException(e);
-        }
+        // we don't have any modules ourselves
+        return null;
     }
 
     @Override
