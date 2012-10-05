@@ -549,6 +549,7 @@ class CommandContextImpl implements CommandContext {
             Throwable t = e.getCause();
             while(t != null) {
                 buf.append(": ").append(t.getLocalizedMessage());
+                t = t.getCause();
             }
             error(buf.toString());
         }
