@@ -23,6 +23,8 @@
 package org.jboss.as.patching.generator;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Descriptive information about an item of content within a distribution.
@@ -30,6 +32,8 @@ import java.io.File;
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public class DistributionContentItem implements Comparable<DistributionContentItem> {
+
+    private static final String PATH_DELIMITER = "/";
 
     public enum Type {
         /** The root of a distribution */
@@ -64,6 +68,17 @@ public class DistributionContentItem implements Comparable<DistributionContentIt
 
     public static DistributionContentItem createDistributionRoot() {
         return new DistributionContentItem(null, Type.DISTRIBUTION_ROOT, null, true);
+    }
+
+    public static DistributionContentItem createMiscItemForPath(String path) {
+        DistributionContentItem result = createDistributionRoot();
+        final String[] s = path.split(PATH_DELIMITER);
+        final int length = s.length;
+        for (int i = 0; i < length; i++) {
+            boolean dir = i < length - 1;
+            result = new DistributionContentItem(s[i], Type.MISC, result, dir);
+        }
+        return result;
     }
 
     private final String name;
@@ -133,6 +148,22 @@ public class DistributionContentItem implements Comparable<DistributionContentIt
 
         if (name != null) {
             sb.append(name);
+        }
+    }
+
+    public List<String> getPathAsList() {
+        List<String> list = new ArrayList<String>();
+        recordPath(list);
+        return list;
+    }
+
+    private void recordPath(List<String> list) {
+        if (parent != null) {
+            parent.recordPath(list);
+        }
+
+        if (name != null) {
+            list.add(name);
         }
     }
 

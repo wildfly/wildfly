@@ -26,7 +26,6 @@ import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,8 +37,6 @@ import java.util.TreeMap;
 /**
  * Utilities related to patch file generation.
  *
- * TODO unify utility files.
- *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public class PatchUtils {
@@ -47,6 +44,8 @@ public class PatchUtils {
     private PatchUtils() {
         // no instantiation
     }
+
+    public static final byte[] NO_CONTENT = new byte[0];
 
     private static final char[] table = "0123456789abcdef".toCharArray();
 

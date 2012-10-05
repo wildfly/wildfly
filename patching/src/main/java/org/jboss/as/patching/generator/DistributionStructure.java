@@ -85,6 +85,8 @@ public interface DistributionStructure {
 
     String getBundleName(DistributionContentItem bundleRoot);
 
+    String getBundleSlot(DistributionContentItem bundleRoot);
+
     String getModuleName(DistributionContentItem moduleRoot);
 
     String getModuleSlot(DistributionContentItem moduleRoot);
@@ -180,8 +182,14 @@ public interface DistributionStructure {
         @Override
         public String getBundleName(DistributionContentItem bundleRoot) {
             assert bundleRoot.getType() == DistributionContentItem.Type.BUNDLE_ROOT : "Invalid type " + bundleRoot.getType();
-            DistributionContentItem moduleNamePath = bundleRoot.getRelativeItem(BUNDLES);
+            DistributionContentItem moduleNamePath = bundleRoot.getRelativeItem(BUNDLES).getParent();
             return moduleNamePath.getPath('.');
+        }
+
+        @Override
+        public String getBundleSlot(DistributionContentItem bundleRoot) {
+            assert bundleRoot.getType() == DistributionContentItem.Type.BUNDLE_ROOT : "Invalid type " + bundleRoot.getType();
+            return bundleRoot.getName();
         }
 
         @Override
