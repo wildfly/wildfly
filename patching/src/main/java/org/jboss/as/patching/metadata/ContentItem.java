@@ -23,6 +23,8 @@
 package org.jboss.as.patching.metadata;
 
 /**
+ * Base content item.
+ *
  * @author Emanuel Muckenhuber
  */
 public abstract class ContentItem {

@@ -26,46 +26,62 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.runner.PatchingException;
-import org.jboss.as.patching.runner.PatchingResult;
-import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.dmr.ModelNode;
 
-import java.io.InputStream;
+import java.io.File;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public final class LocalPatchOperationStepHandler implements OperationStepHandler {
-    public static final OperationStepHandler INSTANCE = new LocalPatchOperationStepHandler();
+public class LocalPatchGarbageCollectionHandler implements OperationStepHandler {
+
+    public static final LocalPatchGarbageCollectionHandler INSTANCE = new LocalPatchGarbageCollectionHandler();
+
+    private final String PATCH_ID = CommonAttributes.PATCH_ID.getName();
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        final String patchId = operation.require(PATCH_ID).asString();
+        //
         context.acquireControllerLock();
-        // Setup
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-
         final PatchInfo info = service.getPatchInfo();
-        final DirectoryStructure structure = service.getStructure();
-        final PatchingTaskRunner runner = new PatchingTaskRunner(info, structure);
-
-        final int index = operation.get(ModelDescriptionConstants.INPUT_STREAM_INDEX).asInt(0);
-        final InputStream is = context.getAttachmentStream(index);
-        try {
-            final PatchingResult result = runner.executeDirect(is);
-            final PatchInfo newInfo = result.getPatchInfo();
-            service.setPatchInfo(info, newInfo);
-            context.completeStep(new OperationContext.RollbackHandler() {
-                @Override
-                public void handleRollback(OperationContext context, ModelNode operation) {
-                    result.rollback();
-                }
-            });
-        } catch (PatchingException e) {
-            throw new OperationFailedException(e.getMessage(), e);
+        if(info.getCumulativeID().equals(patchId)) {
+            throw PatchMessages.MESSAGES.patchActive(patchId);
         }
+        if(info.getPatchIDs().contains(patchId)) {
+            throw PatchMessages.MESSAGES.patchActive(patchId);
+        }
+        final DirectoryStructure structure = service.getStructure();
+
+        // Remove directories
+        final File history = structure.getHistoryDir(patchId);
+        if(history.exists()) {
+            recursiveDelete(history);
+        }
+        // Remove patch contents
+        final File patchRoot = structure.getPatchDirectory(patchId);
+        if(patchRoot.exists()) {
+            recursiveDelete(patchRoot);
+        }
+
+        // TODO perhaps recursively remove one-off patches in case this targets a CP
+
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    static boolean recursiveDelete(File root) {
+        boolean ok = true;
+        if (root.isDirectory()) {
+            final File[] files = root.listFiles();
+            for (File file : files) {
+                ok &= recursiveDelete(file);
+            }
+            return ok && (root.delete() || !root.exists());
+        } else {
+            ok &= root.delete() || !root.exists();
+        }
+        return ok;
     }
 
 }

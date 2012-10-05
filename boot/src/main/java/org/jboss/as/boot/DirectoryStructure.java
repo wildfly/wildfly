@@ -49,7 +49,9 @@ import java.io.File;
  * |   |       `-- org/jboss/as/server/main/module.xml
  * |   `-- .metadata
  * |       |-- cumulative (links to given patchId)
- * |       |-- references [patch01, patch02] (list of one-off patches )
+ * |       |-- references
+ * |       |   |-- patch01 (list of one-off patches)
+ * |       |   `-- patch02 (list of one-off patches)
  * |       `-- history (rollback information for a patch)
  * |           |-- patch01
  * |           |   |-- cumulative (previous cp)
@@ -98,14 +100,14 @@ public final class DirectoryStructure {
     }
 
     // Directories
-    static String BUNDLES = "bundles";
-    static String HISTORY = "history";
-    static String METADATA = ".metadata";
-    static String MODULES = "modules";
-    static String PATCHES = "patches";
+    public static String BUNDLES = "bundles";
+    public static String HISTORY = "history";
+    public static String METADATA = ".metadata";
+    public static String MODULES = "modules";
+    public static String PATCHES = "patches";
     // Markers
-    static String CUMULATIVE = "cumulative";
-    static String REFERENCES = "references";
+    public static String CUMULATIVE = "cumulative";
+    public static String REFERENCES = "references";
 
     private final InstalledImage image;
 
@@ -169,8 +171,7 @@ public final class DirectoryStructure {
      * @param patchId the patch-id
      * @return the patch directory
      */
-    // TODO make public
-    File getPatchDirectory(final String patchId) {
+    public File getPatchDirectory(final String patchId) {
         return new File(getInstalledImage().getPatchesDir(), patchId);
     }
 

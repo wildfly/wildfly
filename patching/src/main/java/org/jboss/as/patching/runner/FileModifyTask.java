@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * Task modifying an existing file.
+ *
  * @author Emanuel Muckenhuber
  */
 final class FileModifyTask extends AbstractFileTask {

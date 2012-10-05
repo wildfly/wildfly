@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
+ * A generic patching task.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface PatchingTask {

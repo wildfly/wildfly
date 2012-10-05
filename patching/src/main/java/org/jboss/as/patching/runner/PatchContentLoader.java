@@ -22,7 +22,11 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentType;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModuleItem;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,20 +38,25 @@ import java.io.InputStream;
  */
 class PatchContentLoader {
 
-    private final PatchItemMapping mapping;
-    PatchContentLoader(File root) {
-        this.mapping = new PatchItemMapping(root);
+    public static final String MODULES = "modules";
+    public static final String BUNDLES = "modules";
+    public static final String MISC = "misc";
+
+    private final File miscRoot;
+    private final File bundlesRoot;
+    private final File modulesRoot;
+
+    static PatchContentLoader create(final File root) {
+        final File miscRoot = new File(root, PatchContentLoader.MISC);
+        final File bundlesRoot = new File(root, PatchContentLoader.BUNDLES);
+        final File modulesRoot = new File(root, PatchContentLoader.MODULES);
+        return new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
     }
 
-    /**
-     * Get a patch content file.
-     *
-     * @param item the content item
-     * @return the file
-     * @throws IOException
-     */
-    File getFile(final ContentItem item) throws IOException {
-        return mapping.getFile(item);
+    PatchContentLoader(final File miscRoot, final File bundlesRoot, final File modulesRoot) {
+        this.bundlesRoot  = bundlesRoot;
+        this.miscRoot = miscRoot;
+        this.modulesRoot = modulesRoot;
     }
 
     /**
@@ -59,6 +68,61 @@ class PatchContentLoader {
     InputStream openContentStream(final ContentItem item) throws IOException {
         final File file = getFile(item);
         return new FileInputStream(file);
+    }
+
+    /**
+     * Get a patch content file.
+     *
+     * @param item the content item
+     * @return the file
+     * @throws IOException
+     */
+    File getFile(final ContentItem item) throws IOException {
+        final ContentType content = item.getContentType();
+        switch (content) {
+            case MODULE:
+                return getModulePath((ModuleItem) item);
+            case MISC:
+                return getMiscPath((MiscContentItem) item);
+            case BUNDLE:
+                return getBundlePath((BundleItem) item);
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    File getMiscPath(final MiscContentItem item) {
+        return getMiscPath(miscRoot, item);
+    }
+
+    File getModulePath(final ModuleItem item) {
+        return getModulePath(modulesRoot, item);
+    }
+
+    File getBundlePath(final BundleItem item) {
+        return getModulePath(bundlesRoot, item.getName(), item.getSlot());
+    }
+
+    static File getMiscPath(final File miscRoot, final MiscContentItem item) {
+        File file = miscRoot;
+        for(final String path : item.getPath()) {
+            file = new File(file, path);
+        }
+        file = new File(file, item.getName());
+        return file;
+    }
+
+    static File getModulePath(File root, ModuleItem item) {
+        return getModulePath(root, item.getName(), item.getSlot());
+    }
+
+    static File getModulePath(File root, String name, String slot) {
+        final String[] ss = name.split("\\.");
+        File file = root;
+        for(final String s : ss) {
+            file = new File(file, s);
+        }
+        return new File(file, slot);
     }
 
 }

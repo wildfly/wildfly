@@ -35,6 +35,8 @@ import java.io.SyncFailedException;
 import java.util.Arrays;
 
 /**
+ * Base {@linkplain PatchingTask} for misc file updates.
+ *
  * @author Emanuel Muckenhuber
  */
 abstract class AbstractFileTask implements PatchingTask {

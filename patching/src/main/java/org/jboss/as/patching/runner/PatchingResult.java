@@ -25,6 +25,8 @@ package org.jboss.as.patching.runner;
 import org.jboss.as.patching.PatchInfo;
 
 /**
+ * The result when applying a patch.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface PatchingResult {

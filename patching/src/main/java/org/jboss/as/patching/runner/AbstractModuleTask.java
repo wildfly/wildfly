@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
+ * Base {@linkplain PatchingTask} for module updates.
+ *
  * @author Emanuel Muckenhuber
  */
 abstract class AbstractModuleTask implements PatchingTask {
@@ -60,7 +62,7 @@ abstract class AbstractModuleTask implements PatchingTask {
         final String slot = item.getSlot();
         for(final File path : repoRoots) {
 
-            final File modulePath = PatchItemMapping.getModulePath(path, moduleName, slot);
+            final File modulePath = PatchContentLoader.getModulePath(path, moduleName, slot);
             final File moduleXml = new File(modulePath, MODULE_XML);
             if(moduleXml.exists()) {
                 // We only care about the first match

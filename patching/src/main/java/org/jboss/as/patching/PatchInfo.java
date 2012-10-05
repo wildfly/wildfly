@@ -28,6 +28,8 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * Basic information about a patch.
+ *
  * @author Emanuel Muckenhuber
  */
 public interface PatchInfo {

@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageBundle;
@@ -45,5 +46,11 @@ public interface PatchMessages {
 
     @Message(id = 16841, value = "Failed to delete (%s)")
     IOException failedToDelete(String path);
+
+    @Message(id = 16842, value = "Failed to create directory (%s)")
+    IOException cannotCreateDirectory(String path);
+
+    @Message(id = 16843, value = "Cannot complete operation. Patch '%s' is currently active")
+    OperationFailedException patchActive(String patchId);
 
 }

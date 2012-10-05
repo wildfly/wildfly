@@ -22,32 +22,17 @@
 
 package org.jboss.as.patching;
 
-import org.jboss.as.patching.runner.PatchingException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.LogMessage;
-import org.jboss.logging.Logger;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelType;
 
 /**
- * 16800 - 16840
- *
  * @author Emanuel Muckenhuber
  */
-@MessageBundle(projectCode = "JBAS")
-public interface PatchLogger extends BasicLogger {
+class CommonAttributes {
 
-    PatchLogger ROOT_LOGGER = Logger.getMessageLogger(PatchLogger.class, PatchLogger.class.getPackage().getName());
+    static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING).build();
 
-    @LogMessage(level = WARN)
-    @Message(id = 16800, value = "detected modification to module (%s)")
-    void moduleContentChanged(String moduleIdentifier);
-
-    @LogMessage(level = INFO)
-    @Message(id = 16801, value = "cannot rollback patch (%s)")
-    void cannotRollbackPatch(String id);
 
 }
