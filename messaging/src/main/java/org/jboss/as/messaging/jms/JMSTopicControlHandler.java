@@ -144,6 +144,6 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
             context.getFailureDescription().set(e.toString());
         }
 
-        context.completeStep();
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 }

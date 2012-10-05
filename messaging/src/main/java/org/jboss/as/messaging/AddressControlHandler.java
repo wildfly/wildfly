@@ -105,7 +105,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
             context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void handleGetRolesAsJson(final OperationContext context, final ModelNode operation) {
@@ -113,7 +113,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
         try {
             String json = addressControl.getRolesAsJSON();
             reportRolesAsJSON(context, json);
-            context.completeStep();
+            context.stepCompleted();
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

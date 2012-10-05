@@ -75,12 +75,12 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
             modify = true;
         }
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
-        ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
+        final ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
         if (bridgeService == null) {
             throw new OperationFailedException(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
         }
 
-        JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());
+        final JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());
 
         if (READ_ATTRIBUTE_OPERATION.equals(operationName)) {
             readAttributeValidator.validate(operation);
@@ -124,23 +124,26 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
             throw MESSAGES.unsupportedOperation(operationName);
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-            try {
-                if (START.equals(operationName)) {
-                    bridge.stop();
-                } else if (STOP.equals(operationName)) {
-                    JMSBridgeService service = (JMSBridgeService) bridgeService.getService();
-                    service.startBridge();
-                } else if (PAUSE.equals(operationName)) {
-                    bridge.resume();
-                } else if (RESUME.equals(operationName)) {
-                    bridge.pause();
+        context.completeStep(new OperationContext.RollbackHandler() {
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                try {
+                    if (START.equals(operationName)) {
+                        bridge.stop();
+                    } else if (STOP.equals(operationName)) {
+                        JMSBridgeService service = (JMSBridgeService) bridgeService.getService();
+                        service.startBridge();
+                    } else if (PAUSE.equals(operationName)) {
+                        bridge.resume();
+                    } else if (RESUME.equals(operationName)) {
+                        bridge.pause();
+                    }
+                } catch (Exception e) {
+                    ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(), operation
+                            .require(ModelDescriptionConstants.OP).asString(), PathAddress.pathAddress(operation
+                            .require(ModelDescriptionConstants.OP_ADDR)));
                 }
-            } catch (Exception e) {
-                ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(), operation
-                        .require(ModelDescriptionConstants.OP).asString(), PathAddress.pathAddress(operation
-                                .require(ModelDescriptionConstants.OP_ADDR)));
             }
-        }
+        });
     }
 }

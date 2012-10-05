@@ -78,7 +78,7 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
         } catch (Exception e) {
             context.getFailureDescription().set(e.getLocalizedMessage());
         } finally {
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 

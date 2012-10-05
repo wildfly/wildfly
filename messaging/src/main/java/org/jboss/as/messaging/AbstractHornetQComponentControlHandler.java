@@ -113,21 +113,35 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
             appliedToRuntime = handback != null;
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && appliedToRuntime) {
-            try {
-                if (START.equals(operationName)) {
-                    control.stop();
-                } else if (STOP.equals(operationName)) {
-                    control.start();
-                } else {
-                    handleRevertOperation(operationName, context, operation, handback);
+
+        OperationContext.RollbackHandler rh;
+
+        if (appliedToRuntime)  {
+            final HornetQComponentControl rhControl = control;
+            final Object rhHandback = handback;
+            rh = new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    try {
+                        if (START.equals(operationName)) {
+                            rhControl.stop();
+                        } else if (STOP.equals(operationName)) {
+                            rhControl.start();
+                        } else {
+                            handleRevertOperation(operationName, context, operation, rhHandback);
+                        }
+                    } catch (Exception e) {
+                        ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
+                                operation.require(ModelDescriptionConstants.OP).asString(),
+                                PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+                    }
                 }
-            } catch (Exception e) {
-                ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
-                        operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
-            }
+            };
+        } else {
+            rh = OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
         }
+
+        context.completeStep(rh);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
@@ -210,7 +224,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
     /**
      * Return an ISE with a message saying support for the attribute was not properly implemented. This handler should
-     * only be called if for a "read-attribute" operation if {@link #registerOperations(org.jboss.as.controller.registry.ManagementResourceRegistration)}
+     * only be called if for a "read-attribute" operation if {@link #registerOperations(ManagementResourceRegistration, ResourceDescriptionResolver)}
      * registers the attribute, so a handler then not recognizing the attribute name would be a bug and this method
      * returns an exception highlighting that bug.
      *
@@ -224,7 +238,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
     /**
      * Return an ISE with a message saying support for the operation was not properly implemented. This handler should
-     * only be called if for a n operation if {@link #registerOperations(org.jboss.as.controller.registry.ManagementResourceRegistration)}
+     * only be called if for a n operation if {@link #registerOperations(ManagementResourceRegistration, ResourceDescriptionResolver)}
      * registers it as a handler, so a handler then not recognizing the operation name would be a bug and this method
      * returns an exception highlighting that bug.
      *

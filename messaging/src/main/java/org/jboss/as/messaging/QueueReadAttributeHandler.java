@@ -101,6 +101,6 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             throw MESSAGES.unsupportedAttribute(attributeName);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }
