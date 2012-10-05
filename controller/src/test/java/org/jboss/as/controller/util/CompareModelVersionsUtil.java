@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPRECATED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
@@ -53,6 +54,7 @@ import java.util.TreeMap;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -258,6 +260,7 @@ public class CompareModelVersionsUtil {
             compareAttributeOrOperationParameter(context, id, currentAttribute, legacyAttribute);
             compareAccessType(context, id, currentAttribute, legacyAttribute);
             compareStorage(context, id, currentAttribute, legacyAttribute);
+            compareDefault(context, id, currentAttribute, legacyAttribute);
         }
     }
 
@@ -300,7 +303,7 @@ public class CompareModelVersionsUtil {
         compareNillable(context, id, current, legacy);
         compareExpressionsAllowed(context, id, current, legacy);
         compareAlternatives(context, id, current, legacy);
-        compareDefault(context, id, current, legacy);
+        compareDeprecated(context, id, current, legacy);
         //TODO compare anything else?
     }
 
@@ -364,6 +367,12 @@ public class CompareModelVersionsUtil {
     private void compareDefault(CompareContext context, String id, ModelNode current, ModelNode legacy) {
         if (!current.get(DEFAULT).equals(legacy.get(DEFAULT))) {
             context.println("Different 'default' for " + id + ". Current: " + current.get(DEFAULT) + "; legacy: " + legacy.get(DEFAULT));
+        }
+    }
+
+    private void compareDeprecated(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(DEPRECATED).equals(legacy.get(DEPRECATED))) {
+            context.println("Different 'deprecated' for " + id + ". Current: " + current.get(DEPRECATED) + "; legacy: " + legacy.get(DEPRECATED));
         }
     }
 
