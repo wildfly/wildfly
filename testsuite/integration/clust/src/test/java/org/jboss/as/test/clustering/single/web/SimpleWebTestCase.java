@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -51,12 +52,14 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class SimpleWebTestCase {
 
+    private static final Logger log = Logger.getLogger(SimpleWebTestCase.class);
+
     @Deployment(name = "deployment-single")
     public static Archive<?> deployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         war.setWebXML(SimpleWebTestCase.class.getPackage(), "web.xml");
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 

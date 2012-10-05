@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.as.test.clustering.LocalEJBDirectory;
+import org.jboss.logging.Logger;
 
 /**
  * @author Paul Ferraro
@@ -46,6 +47,8 @@ import org.jboss.as.test.clustering.LocalEJBDirectory;
 @WebServlet(urlPatterns = { "/count" })
 public class StatefulServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
+
+    private static final Logger log = Logger.getLogger(StatefulServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -60,7 +63,7 @@ public class StatefulServlet extends HttpServlet {
         }
 
         String command = req.getParameter("command");
-        System.out.println(StatefulServlet.class.getName() + ": command = " + command);
+        log.info(StatefulServlet.class.getName() + ": command = " + command);
         String answer = null;
 
         if("createEmployee".equals(command)) {
@@ -118,6 +121,6 @@ public class StatefulServlet extends HttpServlet {
         }
         resp.getWriter().write("Success");
         session.setAttribute("bean", bean);
-        System.out.println(StatefulServlet.class.getName() + ": command = " + command + " finished");
+        log.info(StatefulServlet.class.getName() + ": command = " + command + " finished");
     }
 }

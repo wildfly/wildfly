@@ -287,7 +287,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             int frequency = Collections.frequency(results, entry);
             Assert.assertTrue(Integer.toString(frequency), frequency >= minCalls);
         }
-        System.out.println(String.format("All %d servers processed at least %f of calls", expectedServers, minCalls));
+        log.info(String.format("All %d servers processed at least %f of calls", expectedServers, minCalls));
     }
 
 }

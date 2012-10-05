@@ -52,7 +52,7 @@ public class DistributionWebFailoverTestCase extends ClusteredWebFailoverAbstrac
         war.addClass(SimpleServlet.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_dist.xml", "jboss-web.xml");
-        System.out.println(war.toString(true));
+        log.info(war.toString(true));
         return war;
     }
 

@@ -228,7 +228,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         String url1 = baseURL1.toString() + "home.jsf";
         String url2 = baseURL2.toString() + "home.jsf";
 
-        System.out.println("URLs are: " + url1 + ", " + url2);
+        log.info("URLs are: " + url1 + ", " + url2);
 
         try {
             HttpResponse response;
