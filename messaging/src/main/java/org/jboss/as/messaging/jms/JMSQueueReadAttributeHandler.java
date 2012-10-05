@@ -106,7 +106,7 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         } else {
             throw MESSAGES.unsupportedAttribute(attributeName);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private JMSQueueControl getControl(OperationContext context, ModelNode operation) {

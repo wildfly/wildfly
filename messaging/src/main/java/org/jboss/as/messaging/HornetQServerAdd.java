@@ -168,7 +168,7 @@ class HornetQServerAdd implements OperationStepHandler {
                             context.createResource(pathAddress);
                         }
                     }
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.MODEL);
             context.addStep(new OperationStepHandler() {
@@ -179,15 +179,18 @@ class HornetQServerAdd implements OperationStepHandler {
 
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
-                    if (context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                        for(ServiceController<?> controller : controllers) {
-                            context.removeService(controller.getName());
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            for(ServiceController<?> controller : controllers) {
+                                context.removeService(controller.getName());
+                            }
                         }
-                    }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     private void performRuntime(final OperationContext context, final HornetQServerResource resource,
@@ -290,7 +293,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 newControllers.add(hqServerServiceController);
                 newControllers.add(JMSService.addService(serviceTarget, hqServiceName, verificationHandler));
 
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
         }, OperationContext.Stage.RUNTIME);
     }

@@ -43,16 +43,9 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Emanuel Muckenhuber
  */
-class SecurityRoleAdd extends AbstractAddStepHandler {
+class SecurityRoleAdd implements OperationStepHandler {
 
     static final SecurityRoleAdd INSTANCE = new SecurityRoleAdd();
-
-    @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for(final AttributeDefinition attribute : SecurityRoleDefinition.ATTRIBUTES) {
-            attribute.validateAndSet(operation, model);
-        }
-    }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -74,11 +67,12 @@ class SecurityRoleAdd extends AbstractAddStepHandler {
                         roles.add(SecurityRoleDefinition.transform(context, role, subModel));
                         server.getSecurityRepository().addMatch(match, roles);
                     }
-                    context.completeStep();
+                    // TODO handle rollback https://issues.jboss.org/browse/AS7-5690
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     static HornetQServer getServer(final OperationContext context, ModelNode operation) {

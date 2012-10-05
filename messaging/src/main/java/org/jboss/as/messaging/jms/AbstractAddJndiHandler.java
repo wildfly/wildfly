@@ -88,13 +88,16 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler {
                         context.getResult();
                     }
 
-                    if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-                        // TODO is it possible to revert?
-                    }
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            // TODO is it possible to revert?
+                        }
+                    });
                 }
             }, OperationContext.Stage.RUNTIME);
         }
-        context.completeStep();
+        context.stepCompleted();
     }
 
     protected abstract void addJndiNameToControl(String toAdd, String resourceName, HornetQServer server, OperationContext context);

@@ -111,7 +111,7 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
 
                 newControllers.add(jmsBridgeServiceBuilder.install());
 
-                context.completeStep();
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }
 
         }, OperationContext.Stage.RUNTIME);

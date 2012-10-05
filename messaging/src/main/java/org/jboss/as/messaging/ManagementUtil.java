@@ -94,6 +94,6 @@ public class ManagementUtil {
     public static void rollbackOperationWithNoHandler(OperationContext context, ModelNode operation) {
         context.getFailureDescription().set(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
         context.setRollbackOnly();
-        context.completeStep();
+        context.stepCompleted();
     }
 }

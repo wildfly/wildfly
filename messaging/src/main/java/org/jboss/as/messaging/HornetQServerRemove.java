@@ -59,13 +59,17 @@ class HornetQServerRemove implements OperationStepHandler {
 
                 removeHornetQServer(serverName, context, resource);
 
-                if(context.completeStep() == OperationContext.ResultAction.ROLLBACK) {
-                    //  TODO recover
-                }
+                context.completeStep(new OperationContext.RollbackHandler() {
+                    @Override
+                    public void handleRollback(OperationContext context, ModelNode operation) {
+                        //  TODO recover
+                    }
+                });
+
             }
         }, OperationContext.Stage.RUNTIME);
 
-        context.completeStep();
+        context.stepCompleted();
     }
 
     static void removeHornetQServer(String serverName, OperationContext context, Resource resource) {

@@ -74,7 +74,7 @@ class TransportConfigOperationHandlers {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -92,10 +92,14 @@ class TransportConfigOperationHandlers {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
                     final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
+                    OperationContext.RollbackHandler rh;
                     if (controller != null) {
                         context.reloadRequired();
+                        rh = OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER;
+                    } else {
+                        rh = OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
                     }
-                    context.completeStep();
+                    context.completeStep(rh);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
@@ -240,7 +244,7 @@ class TransportConfigOperationHandlers {
             }
             // This needs a reload
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
 
         @Override

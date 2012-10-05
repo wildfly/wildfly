@@ -71,15 +71,13 @@ public class JMSBridgeWriteAttributeHandler extends WriteAttributeHandlers.Write
                     context.setRollbackOnly();
                     throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
                 }
-                context.completeStep();
+                context.stepCompleted();
             }
         }, OperationContext.Stage.VERIFY);
 
         context.reloadRequired();
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP) {
-            context.revertReloadRequired();
-        }
+        context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
     }
 
     @Override

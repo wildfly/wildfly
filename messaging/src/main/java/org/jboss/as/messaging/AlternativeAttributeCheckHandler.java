@@ -28,18 +28,15 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String attributeName = operation.get(ModelDescriptionConstants.NAME).asString();
-        if (!attributeDefinitions.containsKey(attributeName)) {
-            context.completeStep();
-            return;
+        if (attributeDefinitions.containsKey(attributeName)) {
+            AttributeDefinition attr = attributeDefinitions.get(attributeName);
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            if(attr.hasAlternative(resource.getModel())) {
+                context.setRollbackOnly();
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
+            }
         }
-        AttributeDefinition attr = attributeDefinitions.get(attributeName);
-        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        if(attr.hasAlternative(resource.getModel())) {
-            context.setRollbackOnly();
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
-        }
-
-        context.completeStep();
+        context.stepCompleted();
     }
 
     public static void checkAlternatives(ModelNode operation, String attr1, String attr2, boolean acceptNone) throws OperationFailedException {

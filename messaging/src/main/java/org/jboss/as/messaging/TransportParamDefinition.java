@@ -53,7 +53,7 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             VALUE.validateAndSet(operation, resource.getModel());
             TransportConfigOperationHandlers.reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
@@ -63,7 +63,7 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
             final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             VALUE.validateAndSet(operation, resource.getModel());
             TransportConfigOperationHandlers.reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 

@@ -285,7 +285,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
-        DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
+        final DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
 
         if (control == null) {
             rollbackOperationWithNoHandler(context, operation);
@@ -380,21 +380,32 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
             context.getFailureDescription().set(e.getLocalizedMessage());
         }
 
-        if (context.completeStep() != OperationContext.ResultAction.KEEP && reversible) {
-            try {
-                if (PAUSE.equals(operationName)) {
-                    control.resume();
-                } else if (RESUME.equals(operationName)) {
-                    control.pause();
-                } else {
-                    revertAdditionalOperation(operationName, operation, context, control.getDelegate(), handback);
+        OperationContext.RollbackHandler rh;
+        if (reversible) {
+            final Object rhHandback = handback;
+            rh = new OperationContext.RollbackHandler() {
+                @Override
+                public void handleRollback(OperationContext context, ModelNode operation) {
+                    try {
+                        if (PAUSE.equals(operationName)) {
+                            control.resume();
+                        } else if (RESUME.equals(operationName)) {
+                            control.pause();
+                        } else {
+                            revertAdditionalOperation(operationName, operation, context, control.getDelegate(), rhHandback);
+                        }
+                    } catch (Exception e) {
+                        ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
+                                operation.require(ModelDescriptionConstants.OP).asString(),
+                                PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
+                    }
                 }
-            } catch (Exception e) {
-                ROOT_LOGGER.revertOperationFailed(e, getClass().getSimpleName(),
-                        operation.require(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)));
-            }
+            };
+        } else {
+            rh = OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
         }
+
+        context.completeStep(rh);
     }
 
     protected abstract DelegatingQueueControl<T> getQueueControl(HornetQServer hqServer, String queueName);
