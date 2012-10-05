@@ -31,6 +31,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.logging.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,6 +42,8 @@ import org.junit.Test;
  * @version Oct 2012
  */
 public abstract class ClusterAbstractTestCase {
+
+    protected static final Logger log = Logger.getLogger(ClusterAbstractTestCase.class);
 
     @ArquillianResource
     protected ContainerController controller;
@@ -102,7 +105,7 @@ public abstract class ClusterAbstractTestCase {
     @BeforeClass
     public static void printSystemProperties() {
         Properties systemProperties = System.getProperties();
-        System.out.println("System properties:\n" + systemProperties);
+        log.info("System properties:\n" + systemProperties);
     }
 
 }

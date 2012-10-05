@@ -94,7 +94,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         String url1 = baseURL1.toString() + "service";
         String url2 = baseURL2.toString() + "service";
 
-        System.out.println("URLs are: " + url1 + ", " + url2);
+        log.info("URLs are: " + url1 + ", " + url2);
 
         try {
             HttpResponse response = client.execute(new HttpGet(url1));
