@@ -14,8 +14,6 @@ import org.jboss.dmr.ModelType;
 
 import java.util.EnumSet;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
@@ -69,6 +67,10 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
 
     }
 
+    @Override
+    public void registerAttributes(ManagementResourceRegistration registration) {
+        registration.registerReadWriteAttribute(ModClusterConfigResourceDefinition.getThisAttributeDefinition(), null, ModClusterConfigResourceDefinition.getThisAttributeHandler());
+    }
 
     public void registerRuntimeOperations(ManagementResourceRegistration registration) {
         EnumSet<OperationEntry.Flag> runtimeOnlyFlags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
