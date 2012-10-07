@@ -45,6 +45,7 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
@@ -211,9 +212,9 @@ public abstract class ModelTestModelControllerService extends AbstractController
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            resource = context.getRootResource();
+            resource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true);
             context.getResult().setEmptyObject();
-            context.completeStep();
+            context.stepCompleted();
         }
 
         @Override

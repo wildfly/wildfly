@@ -42,11 +42,12 @@ public class ModClusterEnable implements OperationStepHandler {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
                     modcluster.enable();
-                    context.completeStep();
+                    // TODO AS7-5695 handle rollback
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

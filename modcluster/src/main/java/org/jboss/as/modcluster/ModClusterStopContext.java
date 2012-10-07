@@ -48,15 +48,16 @@ public class ModClusterStopContext implements OperationStepHandler {
                     ContextHost contexthost = new ContextHost(operation);
 
                     try {
-                    modcluster.stopContext(contexthost.webhost, contexthost.webcontext, contexthost.waittime);
+                        modcluster.stopContext(contexthost.webhost, contexthost.webcontext, contexthost.waittime);
                     } catch(IllegalArgumentException e) {
                         throw new OperationFailedException(new ModelNode().set(MESSAGES.ContextorHostNotFound(contexthost.webhost, contexthost.webcontext)));
                     }
-                    context.completeStep();
+                    // TODO AS7-5695 handle rollback
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

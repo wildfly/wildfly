@@ -56,11 +56,12 @@ public class ModClusterStop implements OperationStepHandler {
                         }
                     }
                     modcluster.stop(waittime);
-                    context.completeStep();
+                    // TODO AS7-5695 handle rollback
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

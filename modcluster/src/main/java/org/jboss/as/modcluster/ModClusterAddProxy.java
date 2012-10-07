@@ -30,7 +30,6 @@ import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
-// implements ModelQueryOperationHandler, DescriptionProvider
 public class ModClusterAddProxy implements OperationStepHandler {
 
     static final ModClusterAddProxy INSTANCE = new ModClusterAddProxy();
@@ -50,11 +49,12 @@ public class ModClusterAddProxy implements OperationStepHandler {
                     Proxy proxy = new Proxy(operation);
                     modcluster.addProxy(proxy.host, proxy.port);
 
-                    context.completeStep();
+                    // TODO AS7-5695 handle rollback
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

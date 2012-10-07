@@ -107,7 +107,7 @@ public class DependencySubsystemExtension implements Extension {
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             context.getResult().add(createAddSubsystemOperation());
-            context.completeStep();
+            context.stepCompleted();
         }
 
         @Override

@@ -92,7 +92,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 context.getResult().set(true);
-                context.completeStep();
+                context.stepCompleted();
             }
         }, DESCRIPTION_PROVIDER, false, OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
 

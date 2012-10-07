@@ -59,11 +59,11 @@ public class ModClusterGetProxyConfiguration implements OperationStepHandler {
                         context.getResult().set(result);
                     }
 
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }
