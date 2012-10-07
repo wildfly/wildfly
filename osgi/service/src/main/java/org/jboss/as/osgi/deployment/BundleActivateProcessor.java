@@ -25,18 +25,21 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.osgi.management.OperationAssociation;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.Attachments.BundleState;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -45,7 +48,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
@@ -63,28 +65,19 @@ import org.osgi.framework.BundleException;
  */
 public class BundleActivateProcessor implements DeploymentUnitProcessor {
 
-    private final AttachmentKey<ServiceName> BUNDLE_ACTIVATE_SERVICE = AttachmentKey.create(ServiceName.class);
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
-        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-        if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
-            ServiceName serviceName = BundleActivateService.addService(phaseContext.getServiceTarget(), depUnit, bundle).getName();
-            depUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, serviceName);
-            depUnit.putAttachment(BUNDLE_ACTIVATE_SERVICE, serviceName);
-        }
+        if (bundle == null || bundle.isFragment())
+            return;
+
+        ServiceController<XBundle> controller = BundleActivateService.addService(phaseContext.getServiceTarget(), depUnit, bundle);
+        phaseContext.addDependency(controller.getName(), AttachmentKey.create(XBundle.class));
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        ServiceName serviceName = depUnit.getAttachment(BUNDLE_ACTIVATE_SERVICE);
-        ServiceController<?> controller = serviceName != null ? depUnit.getServiceRegistry().getService(serviceName) : null;
-        if (controller != null) {
-            controller.setMode(Mode.REMOVE);
-            depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
-        }
     }
 
     static class BundleActivateService implements Service<XBundle> {
@@ -123,34 +116,32 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         public void start(StartContext context) throws StartException {
             XBundle bundle = injectedBundle.getValue();
             Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-            if (bundle != null && deployment.isAutoStart() && bundle.isResolved()) {
-                Component activatorComponent = injectedComponent.getOptionalValue();
-                if (activatorComponent != null) {
-                    ComponentInstance componentInstance = activatorComponent.createInstance();
-                    BundleActivator instance = (BundleActivator) componentInstance.getInstance();
-                    deployment.addAttachment(BundleActivator.class, instance);
-                }
-                try {
-                    bundle.start(Bundle.START_ACTIVATION_POLICY);
-                    depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
-                } catch (BundleException ex) {
-                    throw MESSAGES.cannotStartBundle(ex, bundle);
-                }
+            Component activatorComponent = injectedComponent.getOptionalValue();
+            if (activatorComponent != null && deployment.getAttachment(BundleActivator.class) == null) {
+                ComponentInstance componentInstance = activatorComponent.createInstance();
+                BundleActivator instance = (BundleActivator) componentInstance.getInstance();
+                deployment.addAttachment(BundleActivator.class, instance);
+            }
+            OperationAssociation.INSTANCE.setAssociation(new ModelNode("deploy"));
+            try {
+                bundle.start(Bundle.START_ACTIVATION_POLICY);
+                depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
+            } catch (BundleException ex) {
+                throw MESSAGES.cannotStartBundle(ex, bundle);
+            } finally {
+                OperationAssociation.INSTANCE.removeAssociation();
             }
         }
 
         @Override
         public void stop(StopContext context) {
             XBundle bundle = injectedBundle.getValue();
-            Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
-            if (deployment.isAutoStart()) {
-                try {
-                    // Server shutdown should not modify the persistent start setting
-                    bundle.stop(Bundle.STOP_TRANSIENT);
-                    depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
-                } catch (BundleException ex) {
-                    LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
-                }
+            try {
+                // Server shutdown should not modify the persistent start setting
+                bundle.stop(Bundle.STOP_TRANSIENT);
+                depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
+            } catch (BundleException ex) {
+                LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);
             }
         }
 

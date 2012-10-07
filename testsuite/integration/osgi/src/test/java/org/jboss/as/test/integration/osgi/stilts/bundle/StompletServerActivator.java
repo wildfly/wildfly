@@ -17,7 +17,6 @@ package org.jboss.as.test.integration.osgi.stilts.bundle;
 
 import java.io.InputStream;
 
-import org.jboss.as.arquillian.api.DeploymentMarker;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.XRequirementBuilder;
@@ -31,7 +30,6 @@ import org.osgi.resource.Capability;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.repository.RepositoryContent;
 
-@DeploymentMarker(autoStart = false)
 public class StompletServerActivator implements BundleActivator {
 
     @Override

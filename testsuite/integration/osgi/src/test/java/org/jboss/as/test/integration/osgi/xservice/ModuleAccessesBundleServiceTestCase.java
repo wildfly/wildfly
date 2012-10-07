@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
-import static org.jboss.as.test.osgi.FrameworkUtils.getDeployedBundle;
-
 import java.io.InputStream;
 
 import javax.inject.Inject;
@@ -32,18 +30,18 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.osgi.FrameworkUtils;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.xservice.bundle.TargetBundleActivator;
 import org.jboss.as.test.integration.osgi.xservice.module.ClientModuleTwoActivator;
-import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.spi.ManifestBuilder;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.ManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -66,6 +64,18 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     private static final String TARGET_BUNDLE_NAME = "example-xservice-mab-target-bundle";
     private static final String CLIENT_MODULE_NAME = "example-xservice-mab-client-module";
 
+    @Inject
+    public ServiceContainer serviceContainer;
+
+    @ArquillianResource
+    public Deployer deployer;
+
+    @Inject
+    public BundleContext context;
+
+    @Inject
+    public PackageAdmin packageAdmin;
+
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
@@ -82,23 +92,14 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         return archive;
     }
 
-    @Inject
-    public ServiceContainer serviceContainer;
-
-    @ArquillianResource
-    public Deployer deployer;
-
-    @Inject
-    public BundleContext context;
-
     @Test
     public void moduleInvokesBundleService() throws Exception {
 
         // Deploy the bundle which contains the target service
         deployer.deploy(TARGET_BUNDLE_NAME);
         try {
-            // Find the installed bundle using PackageAdmin
-            Bundle targetBundle = getDeployedBundle(context, TARGET_BUNDLE_NAME, null);
+            // Find the deployed bundle
+            Bundle targetBundle = packageAdmin.getBundles(TARGET_BUNDLE_NAME, null)[0];
             targetBundle.start();
 
             // Install the client module

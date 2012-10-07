@@ -27,7 +27,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.osgi.core.bundle.SimpleActivator;
 import org.jboss.as.test.integration.osgi.core.bundle.SimpleService;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -78,6 +78,7 @@ public class BundleLifecycleTestCase {
         assertEquals(Version.emptyVersion, bundle.getVersion());
 
         // Assert that the bundle is in state ACTIVE
+        bundle.start();
         Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
 
         // Stop the bundle

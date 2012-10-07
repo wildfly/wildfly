@@ -46,7 +46,7 @@ import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfigAdminBundleAc
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,6 +56,8 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleReference;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
@@ -64,6 +66,15 @@ import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
  * Test {@link ConfigurationAdmin}/{@link ConfigAdmin} integration.
+ *
+ * This test needs to run against an AS instance that contains the following config
+ *
+   <subsystem xmlns="urn:jboss:domain:configadmin:1.0">
+     <configuration pid="a.test.pid">
+       <property name="testkey" value="test value"/>
+       <property name="test.key.2" value="nothing"/>
+     </configuration>
+   </subsystem>
  *
  * @author Thomas Diesler
  * @since 30-Sep-2012
@@ -77,6 +88,7 @@ public class ConfigAdminIntegrationTestCase {
     static final String CONFIG_ADMIN_PID_A = "config-admin-pid-a";
     static final String CONFIG_ADMIN_PID_B = "config-admin-pid-b";
     static final String CONFIG_ADMIN_PID_C = "config-admin-pid-c";
+    static final String CONFIG_ADMIN_PID_D = "a.test.pid";
 
     @ArquillianResource
     Deployer deployer;
@@ -279,6 +291,23 @@ public class ConfigAdminIntegrationTestCase {
         } finally {
             deployer.undeploy(CONFIG_ADMIN_BUNDLE_B);
         }
+    }
+
+    @Test
+    public void testManagedServiceConfiguredFromXML() throws Exception {
+
+        Bundle bundle = ((BundleReference)getClass().getClassLoader()).getBundle();
+        BundleContext context = bundle.getBundleContext();
+
+        // This configuration is present in the standalone.xml used for this test
+        ConfiguredService service = new ConfiguredService();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
+        props.put(Constants.SERVICE_PID, CONFIG_ADMIN_PID_D);
+        context.registerService(new String[] { ConfiguredService.class.getName(), ManagedService.class.getName() }, service, props);
+
+        // Wait a little for the update to happen
+        Assert.assertTrue(service.awaitUpdate(3, TimeUnit.SECONDS));
+        Assert.assertEquals("test value", service.getProperties().get("testkey"));
     }
 
     private ModelControllerClient getControllerClient() {

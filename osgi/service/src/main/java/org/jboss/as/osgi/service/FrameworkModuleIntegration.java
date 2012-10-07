@@ -44,8 +44,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.osgi.framework.FrameworkModulePlugin;
-import org.jboss.osgi.framework.IntegrationService;
+import org.jboss.osgi.framework.spi.FrameworkModulePlugin;
+import org.jboss.osgi.framework.spi.IntegrationService;
 import org.osgi.framework.Bundle;
 
 /**

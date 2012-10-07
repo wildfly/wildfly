@@ -48,8 +48,8 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.osgi.framework.IntegrationService.BootstrapPhase;
-import org.jboss.osgi.framework.util.ServiceTracker;
+import org.jboss.osgi.framework.spi.ServiceTracker;
+import org.jboss.osgi.framework.spi.IntegrationService.BootstrapPhase;
 
 /**
  * A service that tracks initial deployments.

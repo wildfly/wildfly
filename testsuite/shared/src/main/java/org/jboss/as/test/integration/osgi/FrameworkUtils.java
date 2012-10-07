@@ -19,22 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.osgi;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+package org.jboss.as.test.integration.osgi;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Assert;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -71,19 +66,6 @@ public final class FrameworkUtils {
             if (latch.await(timeout, units) == false)
                 throw new TimeoutException("Timeout changing start level");
         }
-    }
-
-    /**
-     * Use {@link PackageAdmin#getBundles(String, String)} to find a deployed bundle by
-     * symbolic name and version range
-     */
-    public static Bundle getDeployedBundle(BundleContext context, String symbolicName, String versionRange) {
-        ServiceReference sref = context.getServiceReference(PackageAdmin.class.getName());
-        PackageAdmin packageAdmin = (PackageAdmin) context.getService(sref);
-        Bundle[] bundles = packageAdmin.getBundles(symbolicName, versionRange);
-        assertNotNull("Bundles found", bundles);
-        assertEquals("One bundle found", 1, bundles.length);
-        return bundles[0];
     }
 
     public static <T> T waitForService(BundleContext context, Class<T> clazz) {

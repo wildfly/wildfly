@@ -22,39 +22,57 @@
 
 package org.jboss.as.osgi.deployment;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jboss.as.osgi.OSGiConstants;
+import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.modules.Module;
-import org.jboss.osgi.deployment.deployer.Deployment;
+import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XBundleRevision;
+import org.osgi.framework.Bundle;
 
 /**
- * Attach the {@link Module} for a resolved bundle sub deployment.
+ * Handle deferred deployemnt phases.
  *
  * @author Thomas.Diesler@jboss.com
- * @since 04-Jul-2012
+ * @since 25-Sep-2012
  */
-public class BundleResolveSubProcessor implements DeploymentUnitProcessor {
+public class DeferredPhaseProcessor implements DeploymentUnitProcessor {
+
+    public static final Phase DEFERRED_PHASE = Phase.FIRST_MODULE_USE;
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
         XBundle bundle = depUnit.getAttachment(OSGiConstants.BUNDLE_KEY);
-        if (bundle == null || deployment.isAutoStart() == false)
+        if (bundle == null || bundle.isFragment())
             return;
 
-        // Only process the sub deployments
-        if (depUnit.getParent() == null)
-            return;
+        // Add a dependency on the Bundle RESOLVED service
+        BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+        ServiceName bundleResolve = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
+        phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
 
-        BundleResolveProcessor.resolveBundle(phaseContext, bundle);
+        // Add a dependency on the Module service
+        XBundleRevision brev = bundle.getBundleRevision();
+        ServiceName moduleService = ServiceModuleLoader.moduleServiceName(brev.getModuleIdentifier());
+        phaseContext.addDeploymentDependency(moduleService, Attachments.MODULE);
+
+        // Deferr the module phase if the bundle is not resolved
+        if (bundle.isResolved() == false) {
+            depUnit.putAttachment(Attachments.DEFERRED_MODULE_PHASE, Boolean.TRUE);
+            depUnit.putAttachment(Attachments.DEFERRED_ACTIVATION_COUNT, new AtomicInteger());
+        }
     }
-
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {

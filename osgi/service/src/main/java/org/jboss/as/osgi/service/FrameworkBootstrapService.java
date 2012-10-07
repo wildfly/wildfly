@@ -57,9 +57,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.IntegrationService;
-import org.jboss.osgi.framework.SystemPathsPlugin;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
+import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.SystemPathsPlugin;
 import org.osgi.framework.Constants;
 
 /**
@@ -122,7 +122,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.setServiceTarget(serviceTarget);
 
             // Install the integration services
-            builder.installIntegrationService(serviceContainer, serviceTarget, new BundleInstallIntegration());
+            builder.installIntegrationService(serviceContainer, serviceTarget, new BundleLifecycleIntegration());
             builder.installIntegrationService(serviceContainer, serviceTarget, new FrameworkModuleIntegration(props));
             builder.installIntegrationService(serviceContainer, serviceTarget, new ModuleLoaderIntegration());
             builder.installIntegrationService(serviceContainer, serviceTarget, new SystemServicesIntegration(resource, extensions));

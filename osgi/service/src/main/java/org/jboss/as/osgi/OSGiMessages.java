@@ -26,10 +26,10 @@ import java.io.File;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.deployment.deployer.Deployment;
@@ -106,4 +106,10 @@ public interface OSGiMessages {
 
     @Message(id = 11968, value = "Cannot start bundle: %s")
     StartException cannotStartBundle(@Cause Throwable cause, Bundle bundle);
+
+    @Message(id = 11969, value = "Cannot activate deferred module phase for: %s")
+    BundleException cannotActivateDeferredModulePhase(@Cause Throwable cause, Bundle bundle);
+
+    @Message(id = 11970, value = "Cannot deactivate deferred module phase for: %s")
+    BundleException cannotDeactivateDeferredModulePhase(@Cause Throwable cause, Bundle bundle);
 }

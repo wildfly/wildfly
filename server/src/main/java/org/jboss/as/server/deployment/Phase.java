@@ -338,7 +338,7 @@ public enum Phase {
     // CONFIGURE_MODULE
     public static final int CONFIGURE_RESOLVE_BUNDLE                    = 0x0100;
     public static final int CONFIGURE_MODULE_SPEC                       = 0x0200;
-    public static final int CONFIGURE_RESOLVE_SUB_BUNDLE                = 0x0300;
+    public static final int CONFIGURE_DEFERRED_PHASE                    = 0x0300;
 
     // FIRST_MODULE_USE
     public static final int FIRST_MODULE_USE_PERSISTENCE_CLASS_FILE_TRANSFORMER = 0x0100; // need to be before POST_MODULE_REFLECTION_INDEX
