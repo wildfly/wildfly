@@ -119,7 +119,7 @@ public class OtherServicesSubsystemExtension implements Extension {
 
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             context.getResult().add(createAddSubsystemOperation());
-            context.completeStep();
+            context.stepCompleted();
         }
 
         @Override

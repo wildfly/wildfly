@@ -43,11 +43,11 @@ public class ModClusterReset implements OperationStepHandler {
                     ServiceController<?> controller = context.getServiceRegistry(false).getService(ModClusterService.NAME);
                     ModCluster modcluster = (ModCluster) controller.getValue();
                     modcluster.reset();
-                    context.completeStep();
+                    context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 }
             }, OperationContext.Stage.RUNTIME);
         }
 
-        context.completeStep();
+        context.stepCompleted();
     }
 }

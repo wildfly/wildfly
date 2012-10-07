@@ -115,7 +115,6 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                 def.validateAndSet(operation, targetOperation);
             }
             context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
 

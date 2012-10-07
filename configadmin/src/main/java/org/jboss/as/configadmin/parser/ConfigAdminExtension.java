@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -85,7 +86,7 @@ public class ConfigAdminExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ConfigAdminProviders.SUBSYSTEM);
         registration.registerOperationHandler(ADD, ConfigAdminAdd.INSTANCE, ConfigAdminAdd.DESCRIPTION, false);
-        registration.registerOperationHandler(DESCRIBE, ConfigAdminDescribeHandler.INSTANCE, ConfigAdminAdd.DESCRIPTION, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, ConfigAdminProviders.SUBSYSTEM_REMOVE, false);
 
         // Configuration Admin Settings
