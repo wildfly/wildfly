@@ -184,7 +184,7 @@
 		<sequential>
 			<echo>Generate subsystems definition for @{paramConfiguredSubsystems} to @{paramOutputFile}</echo>
 			<java classname="org.jboss.as.config.assembly.GenerateSubsystemsDefinition" fork="true">
-				<!--jvmarg value="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y"/-->
+				<!--jvmarg value="-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y"/-->
 				<classpath>
 					<path refid="maven.compile.classpath" />
 				</classpath>

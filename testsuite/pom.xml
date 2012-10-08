@@ -615,14 +615,14 @@
             <id>jpda.profile</id>
             <activation><property><name>jpda</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=y</surefire.jpda.args>
             </properties>
         </profile>
         <profile>
             <id>debug.profile</id>
             <activation><property><name>debug</name></property></activation>
             <properties>
-                <surefire.jpda.args>-Xrunjdwp:transport=dt_socket,address=${as.debug.port},server=y,suspend=n</surefire.jpda.args>
+                <surefire.jpda.args>-agentlib:jdwp=transport=dt_socket,address=${as.debug.port},server=y,suspend=n</surefire.jpda.args>
             </properties>
         </profile>
 

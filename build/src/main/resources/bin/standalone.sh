@@ -57,7 +57,7 @@ esac
 
 
 if [ "$DEBUG_MODE" = "true" ]; then
-    JAVA_OPTS="$JAVA_OPTS -Xrunjdwp:transport=dt_socket,address=$DEBUG_PORT,server=y,suspend=n"
+    JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=$DEBUG_PORT,server=y,suspend=n"
 fi
 
 # For Cygwin, ensure paths are in UNIX format before anything is touched

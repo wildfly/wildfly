@@ -76,7 +76,7 @@
                 <option value="-Xdebug"/>
                 <option value="-Xnoagent"/>
                 <option value="-Djava.compiler=NONE"/>
-                <option value="-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"/>
+                <option value="-agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"/>
 
             </jvm-options>
             -->
