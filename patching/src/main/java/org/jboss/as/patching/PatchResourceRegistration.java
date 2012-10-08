@@ -22,15 +22,16 @@
 
 package org.jboss.as.patching;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -39,9 +40,16 @@ import org.jboss.dmr.ModelType;
  */
 public class PatchResourceRegistration {
 
-    static final VersionReadHandler VERSION = new VersionReadHandler();
-    static final CumulativeReadHandler CUMULATIVE = new CumulativeReadHandler();
-    static final PatchesReadHandler PATCHES = new PatchesReadHandler();
+    static final AttributeDefinition VERSION = SimpleAttributeDefinitionBuilder.create("version", ModelType.STRING)
+            .build();
+    static final AttributeDefinition CUMULATIVE = SimpleAttributeDefinitionBuilder.create("cumulative", ModelType.STRING)
+            .build();
+    static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of("patches", ModelType.STRING)
+            .build();
+
+    static final OperationStepHandler VERSION_HANDLER = new VersionReadHandler();
+    static final OperationStepHandler CUMULATIVE_HANDLER = new CumulativeReadHandler();
+    static final OperationStepHandler PATCHES_HANDLER = new PatchesReadHandler();
 
     static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder("patch", PatchResourceDefinition.getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .build();
@@ -59,9 +67,9 @@ public class PatchResourceRegistration {
         registration.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
 
         // Read attributes
-        registration.registerReadOnlyAttribute(VERSION, VERSION);
-        registration.registerReadOnlyAttribute(CUMULATIVE, CUMULATIVE);
-        registration.registerReadOnlyAttribute(PATCHES, PATCHES);
+        registration.registerReadOnlyAttribute(VERSION, VERSION_HANDLER);
+        registration.registerReadOnlyAttribute(CUMULATIVE, CUMULATIVE_HANDLER);
+        registration.registerReadOnlyAttribute(PATCHES, PATCHES_HANDLER);
 
         return registration;
     }
@@ -72,14 +80,11 @@ public class PatchResourceRegistration {
      * @param parent the parent resource
      */
     public static void registerPatchResource(final Resource parent) {
+        System.out.println("PatchResourceRegistration.registerPatchResource()");
         parent.registerChild(PatchResourceDefinition.PATH, Resource.Factory.create());
     }
 
-    abstract static class AbstractReadAttribute extends SimpleAttributeDefinition implements OperationStepHandler {
-
-        protected AbstractReadAttribute(String name, ModelType type) {
-            super(name, type, false);
-        }
+    abstract static class AbstractReadAttributeHandler implements OperationStepHandler {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -94,11 +99,7 @@ public class PatchResourceRegistration {
         abstract void handle(ModelNode result, PatchInfo info);
     }
 
-    static class VersionReadHandler extends AbstractReadAttribute {
-
-        VersionReadHandler() {
-            super("version", ModelType.STRING);
-        }
+    static class VersionReadHandler extends AbstractReadAttributeHandler {
 
         @Override
         void handle(ModelNode result, PatchInfo info) {
@@ -106,11 +107,7 @@ public class PatchResourceRegistration {
         }
     }
 
-    static class CumulativeReadHandler extends AbstractReadAttribute {
-
-        CumulativeReadHandler() {
-            super("cumulative", ModelType.STRING);
-        }
+    static class CumulativeReadHandler extends AbstractReadAttributeHandler {
 
         @Override
         void handle(ModelNode result, PatchInfo info) {
@@ -118,11 +115,7 @@ public class PatchResourceRegistration {
         }
     }
 
-    static class PatchesReadHandler extends AbstractReadAttribute {
-
-        PatchesReadHandler() {
-            super("patches", ModelType.LIST);
-        }
+    static class PatchesReadHandler extends AbstractReadAttributeHandler {
 
         @Override
         void handle(ModelNode result, PatchInfo info) {
