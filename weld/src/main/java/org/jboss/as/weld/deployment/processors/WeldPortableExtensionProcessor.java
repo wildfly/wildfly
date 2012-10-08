@@ -46,6 +46,7 @@ import org.jboss.weld.metadata.MetadataImpl;
  * Deployment processor that loads CDI portable extensions.
  *
  * @author Stuart Douglas
+ * @author Ales Justin
  */
 public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
 
@@ -83,13 +84,13 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
         ClassLoader oldCl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(module.getClassLoader());
-            loadAttachments(services, module, topLevelDeployment);
+            loadAttachments(services, module, deploymentUnit, topLevelDeployment);
         } finally {
             SecurityActions.setContextClassLoader(oldCl);
         }
     }
 
-    private void loadAttachments(final ServicesAttachment servicesAttachment, Module module, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
+    private void loadAttachments(final ServicesAttachment servicesAttachment, Module module, DeploymentUnit deploymentUnit, DeploymentUnit topLevelDeployment) throws DeploymentUnitProcessingException {
         // now load extensions
         final DeploymentReflectionIndex index = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
         final List<String> services = servicesAttachment.getServiceImplementations(Extension.class.getName());
@@ -103,13 +104,14 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
             }
             Metadata<Extension> metadata = new MetadataImpl<Extension>(extension, deploymentUnit.getName());
             WeldLogger.DEPLOYMENT_LOGGER.debug("Loaded portable extension " + extension);
-            deploymentUnit.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
+            topLevelDeployment.addToAttachmentList(WeldAttachments.PORTABLE_EXTENSIONS, metadata);
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Extension loadExtension(String serviceClassName, final DeploymentReflectionIndex index, final ClassLoader loader) throws DeploymentUnitProcessingException {
-        Class<?> clazz = null;
-        Class<Extension> serviceClass = null;
+        Class<?> clazz;
+        Class<Extension> serviceClass;
         try {
             clazz = loader.loadClass(serviceClassName);
             serviceClass = (Class<Extension>) clazz;
