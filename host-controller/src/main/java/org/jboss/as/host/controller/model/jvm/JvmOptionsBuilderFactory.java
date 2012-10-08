@@ -111,13 +111,7 @@ public class JvmOptionsBuilderFactory {
                 command.add("-javaagent:" + jvmElement.getJavaagent());
             }
             if (jvmElement.isDebugEnabled() != null && jvmElement.isDebugEnabled() && jvmElement.getDebugOptions() != null) {
-                String debugOptions = jvmElement.getDebugOptions();
-                if(debugOptions != null) {
-                    if(! debugOptions.startsWith("-X")) {
-                        debugOptions = "-X" + debugOptions;
-                    }
-                    command.add(debugOptions);
-                }
+                command.add(jvmElement.getDebugOptions());
             }
             List<String> options = jvmElement.getJvmOptions().getOptions();
             if (options.size() > 0) {
@@ -131,6 +125,11 @@ public class JvmOptionsBuilderFactory {
                         continue;
                     }
                     if (!checkOption(jvmElement.getStack() != null && option.startsWith("-Xss"), jvmName, option, Element.STACK.toString())) {
+                        continue;
+                    }
+                    if (!checkOption(jvmElement.isDebugEnabled() != null && jvmElement.isDebugEnabled() && jvmElement.getDebugOptions() != null &&
+                            (option.startsWith("-Xrunjdwp") || option.startsWith("-agentlib:jdwp")),
+                            jvmName, option, Attribute.DEBUG_OPTIONS.toString())) {
                         continue;
                     }
                     if (!checkOption(jvmElement.getAgentPath() != null && option.startsWith("-agentpath:"), jvmName, option, Element.AGENT_PATH.toString())) {
@@ -149,11 +148,6 @@ public class JvmOptionsBuilderFactory {
                         continue;
                     }
                     if (!checkOption(jvmElement.getJavaagent() != null && option.startsWith("-XX:MaxPermSize"), jvmName, option, Element.PERMGEN.toString())) {
-                        continue;
-                    }
-                    if (!checkOption(jvmElement.isDebugEnabled() != null && jvmElement.isDebugEnabled()
-                            && jvmElement.getDebugOptions() != null && option.startsWith("-Xrunjdwp"), jvmName, option,
-                            Attribute.DEBUG_OPTIONS.toString())) {
                         continue;
                     }
                     command.add(option);

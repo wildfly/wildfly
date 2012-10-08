@@ -93,7 +93,7 @@ public abstract class TestProcessUtils {
         cmd.add(System.getProperty("java.class.path"));
 
         if (debugPort > 0)
-            cmd.add("-Xrunjdwp:transport=dt_socket,address=" + debugPort
+            cmd.add("-agentlib:jdwp=transport=dt_socket,address=" + debugPort
                     + ",server=y,suspend=" + (suspend ? "y" : "n"));
 
         cmd.add(classname);

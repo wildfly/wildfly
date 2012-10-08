@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
 
 /**
  * For managed debugging:
- * -Djboss.options="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y"
+ * -Djboss.options="-Djava.compiler=NONE -agentlib:jdwp=transport=dt_socket,address=5005,server=y,suspend=y"
  * <p/>
  * For embedded debugging:
  *  start AS standalone and attach debugger

@@ -59,7 +59,7 @@ rem $Id$
 )
 
 if "%DEBUG_MODE%" == "true" (
-   set "JAVA_OPTS=%JAVA_OPTS% -Xrunjdwp:transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
+   set "JAVA_OPTS=%JAVA_OPTS% -agentlib:jdwp=transport=dt_socket,address=%DEBUG_PORT%,server=y,suspend=n"
 )
 
 pushd %DIRNAME%..
