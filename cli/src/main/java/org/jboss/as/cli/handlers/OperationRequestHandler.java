@@ -81,12 +81,12 @@ public class OperationRequestHandler implements CommandHandler, OperationCommand
                 throw new CommandFormatException(result.toString());
             }
         } catch(NoSuchElementException e) {
-            throw new CommandFormatException("ModelNode request is incomplete: " + e.getMessage());
+            throw new CommandFormatException("ModelNode request is incomplete", e);
         } catch (CancellationException e) {
-            throw new CommandFormatException("The result couldn't be retrieved (perhaps the task was cancelled: " + e.getLocalizedMessage());
+            throw new CommandFormatException("The result couldn't be retrieved (perhaps the task was cancelled", e);
         } catch (IOException e) {
             ctx.disconnectController();
-            throw new CommandFormatException("Communication error: " + e.getLocalizedMessage());
+            throw new CommandFormatException("Communication error", e);
         } catch (RuntimeException e) {
             throw new CommandFormatException("Failed to execute operation.", e);
         }
