@@ -137,8 +137,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         }
 
         final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));
-        ModelNode deployNode = deployment.getModel();
-        byte[] originalHash = deployNode.get(CONTENT).get(0).hasDefined(HASH) ? deployNode.get(CONTENT).get(0).get(HASH).asBytes() : null;
+        final ModelNode deployNode = deployment.getModel();
+        final byte[] originalHash = deployNode.get(CONTENT).get(0).hasDefined(HASH) ? deployNode.get(CONTENT).get(0).get(HASH).asBytes() : null;
         deployNode.get(NAME).set(name);
         deployNode.get(RUNTIME_NAME).set(runtimeName);
         deployNode.get(CONTENT).set(content);
@@ -153,21 +153,27 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         }
         // the content repo will already have these, note that content should not be empty
         removeContentAdditions(replaceNode.getModel().require(CONTENT));
-        if (context.completeStep() == ResultAction.KEEP) {
-            if (originalHash != null && contentRepository != null) {
-                if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
-                    byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
-                    if (!Arrays.equals(originalHash, newHash)) {
-                        contentRepository.removeContent(originalHash);
+
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction == ResultAction.KEEP) {
+                    if (originalHash != null && contentRepository != null) {
+                        if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
+                            byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
+                            if (!Arrays.equals(originalHash, newHash)) {
+                                contentRepository.removeContent(originalHash);
+                            }
+                        }
+                    }
+                } else {
+                    if (contentRepository != null && operation.get(CONTENT).get(0).hasDefined(HASH)) {
+                        byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
+                        contentRepository.removeContent(newHash);
                     }
                 }
             }
-        } else {
-            if (contentRepository != null && operation.get(CONTENT).get(0).hasDefined(HASH)) {
-                byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
-                contentRepository.removeContent(newHash);
-            }
-        }
+        });
 
     }
 

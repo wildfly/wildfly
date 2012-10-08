@@ -230,13 +230,26 @@ abstract class AbstractOperationContext implements OperationContext {
         if (rollbackHandler == null) {
             throw MESSAGES.nullVar("rollbackHandler");
         }
-        this.activeStep.rollbackHandler = rollbackHandler;
+        if (rollbackHandler == RollbackHandler.NOOP_ROLLBACK_HANDLER) {
+            completeStep(ResultHandler.NOOP_RESULT_HANDLER);
+        } else {
+            completeStep(new RollbackDelegatingResultHandler(rollbackHandler));
+        }
+        // we return and executeStep picks it up
+    }
+
+    @Override
+    public final void completeStep(ResultHandler resultHandler) {
+        if (resultHandler == null) {
+            throw MESSAGES.nullVar("resultHandler");
+        }
+        this.activeStep.resultHandler = resultHandler;
         // we return and executeStep picks it up
     }
 
     @Override
     public final void stepCompleted() {
-        completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        completeStep(ResultHandler.NOOP_RESULT_HANDLER);
     }
 
     /**
@@ -281,7 +294,7 @@ abstract class AbstractOperationContext implements OperationContext {
                             resultAction = ResultAction.ROLLBACK;
                             respectInterruption = false;
                             Thread.currentThread().interrupt();
-                            if (activeStep != null && activeStep.rollbackHandler != null) {
+                            if (activeStep != null && activeStep.resultHandler != null) {
                                 // Finalize
                                 activeStep.finalizeStep(null);
                             }
@@ -299,7 +312,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 } catch (Error e) {
                     toThrow = e;
                 } finally {
-                    if (step.rollbackHandler == null) {
+                    if (step.resultHandler == null) {
                         // A recursive step executed
                         throwThrowable(toThrow);
                         return;
@@ -479,7 +492,7 @@ abstract class AbstractOperationContext implements OperationContext {
         boolean finalize = true;
         Throwable toThrow = null;
         try {
-            if (step.rollbackHandler != null) {
+            if (step.resultHandler != null) {
                 // A non-recursive step executed
                 if (!hasMoreSteps()) {
                     // this step was the last registered step;
@@ -663,7 +676,7 @@ abstract class AbstractOperationContext implements OperationContext {
         final ModelNode operation;
         final PathAddress address;
         private Object restartStamp;
-        private RollbackHandler rollbackHandler;
+        private ResultHandler resultHandler;
         Step predecessor;
 
         private Step(final OperationStepHandler handler, final ModelNode response, final ModelNode operation,
@@ -700,7 +713,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
             Step step = this.predecessor;
             while (step != null) {
-                if (step.rollbackHandler != null) {
+                if (step.resultHandler != null) {
                     try {
                         step.finalizeInternal();
                     } catch (RuntimeException t) {
@@ -765,28 +778,43 @@ abstract class AbstractOperationContext implements OperationContext {
         }
 
         private void handleRollback() {
-            if (rollbackHandler != null) {
+            if (resultHandler != null) {
                 try {
-                    if (resultAction == ResultAction.ROLLBACK) {
-                        ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
-                        try {
-                            rollbackHandler.handleRollback(AbstractOperationContext.this, operation);
-                        } finally {
-                            SecurityActions.setThreadContextClassLoader(oldTccl);
-                            waitForRemovals();
-                        }
+                    ClassLoader oldTccl = SecurityActions.setThreadContextClassLoader(handler.getClass());
+                    try {
+                        resultHandler.handleResult(resultAction, AbstractOperationContext.this, operation);
+                    } finally {
+                        SecurityActions.setThreadContextClassLoader(oldTccl);
+                        waitForRemovals();
                     }
                 } catch (Exception e) {
                     report(MessageSeverity.ERROR,
                             MESSAGES.stepHandlerFailedRollback(handler, operation.get(OP).asString(), address,
                                     e.getLocalizedMessage()));
                 } finally {
-                    // Clear the rollback handler so we never try and finalize
+                    // Clear the result handler so we never try and finalize
                     // this step again
-                    rollbackHandler = null;
+                    resultHandler = null;
                 }
             }
         }
 
+    }
+
+    private static class RollbackDelegatingResultHandler implements ResultHandler {
+
+        private final RollbackHandler delegate;
+
+        private RollbackDelegatingResultHandler(RollbackHandler delegate) {
+            this.delegate = delegate;
+        }
+
+
+        @Override
+        public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
+            if (resultAction == ResultAction.ROLLBACK) {
+                delegate.handleRollback(context, operation);
+            }
+        }
     }
 }

@@ -49,7 +49,7 @@ class IgnoredDomainTypeWriteAttributeHandler implements OperationStepHandler {
         ModelNode mockOp = new ModelNode();
         mockOp.get(attribute).set(value);
 
-        IgnoreDomainResourceTypeResource resource =
+        final IgnoreDomainResourceTypeResource resource =
             IgnoreDomainResourceTypeResource.class.cast(context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS));
 
         if (IgnoredDomainTypeResourceDefinition.NAMES.getName().equals(attribute)) {
@@ -65,17 +65,22 @@ class IgnoredDomainTypeWriteAttributeHandler implements OperationStepHandler {
             resource.setWildcard(wildcard);
         }
 
-        boolean booting = context.isBooting();
+        final boolean booting = context.isBooting();
         if (!booting) {
             context.reloadRequired();
         }
 
-        if (context.completeStep() == OperationContext.ResultAction.KEEP) {
-            if (booting) {
-                resource.publish();
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction == OperationContext.ResultAction.KEEP) {
+                    if (booting) {
+                        resource.publish();
+                    }
+                } else if (!booting) {
+                    context.revertReloadRequired();
+                }
             }
-        } else if (!booting) {
-            context.revertReloadRequired();
-        }
+        });
     }
 }

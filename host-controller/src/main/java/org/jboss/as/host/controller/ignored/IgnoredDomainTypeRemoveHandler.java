@@ -42,20 +42,25 @@ class IgnoredDomainTypeRemoveHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        IgnoreDomainResourceTypeResource resource =
+        final IgnoreDomainResourceTypeResource resource =
                 IgnoreDomainResourceTypeResource.class.cast(context.removeResource(PathAddress.EMPTY_ADDRESS));
 
-        boolean booting = context.isBooting();
+        final boolean booting = context.isBooting();
         if (!booting) {
             context.reloadRequired();
         }
 
-        if (context.completeStep() == OperationContext.ResultAction.KEEP) {
-            if (booting) {
-                resource.publish();
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction == OperationContext.ResultAction.KEEP) {
+                    if (booting) {
+                        resource.publish();
+                    }
+                } else if (!booting) {
+                    context.revertReloadRequired();
+                }
             }
-        } else if (!booting) {
-            context.revertReloadRequired();
-        }
+        });
     }
 }

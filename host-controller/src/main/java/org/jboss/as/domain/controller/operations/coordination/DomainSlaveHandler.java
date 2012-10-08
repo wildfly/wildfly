@@ -98,6 +98,7 @@ public class DomainSlaveHandler implements OperationStepHandler {
 
         // Wait for all hosts to reach the prepared state
         boolean interrupted = false;
+        boolean completeStepCalled = false;
         try {
             try {
                 while(outstanding.size() > 0) {
@@ -161,46 +162,63 @@ public class DomainSlaveHandler implements OperationStepHandler {
                 }
             }
 
-            context.completeStep();
+            final boolean interruptThread = interrupted;
+            context.completeStep(new OperationContext.ResultHandler() {
+                @Override
+                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                    finalizeOp(results, finalResults, interruptThread);
+                }
+            });
+
+            completeStepCalled = true;
 
         } finally {
-            try {
-                // Inform the remote hosts whether to commit or roll back their updates
-                // Do this in parallel
-                boolean rollback = domainOperationContext.isCompleteRollback();
-                for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
-                    if(prepared.isDone()) {
-                        continue;
-                    }
-                    if(! rollback) {
-                        prepared.commit();
-                    } else {
-                        prepared.rollback();
-                    }
-                }
-                // Now get the final results from the hosts
-                for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
-                    final String hostName = prepared.getOperation().getName();
-                    try {
-                        final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
-                        final ModelNode finalResult = prepared.getFinalResult().get();
-                        final ModelNode transformedResult = request.transformResult(finalResult);
-                        domainOperationContext.addHostControllerResult(hostName, transformedResult);
+            if (!completeStepCalled) {
+                finalizeOp(results, finalResults, interrupted);
+            }
+        }
+    }
 
-                        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-                            HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", hostName, finalResult);
-                        }
-                    } catch (InterruptedException e) {
-                        interrupted = true;
-                        CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(hostName);
-                    } catch (ExecutionException e) {
-                        CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), hostName);
+    private void finalizeOp(final List<TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation>> results,
+                            final Map<String, HostControllerUpdateTask.ExecutedHostRequest> finalResults,
+                            final boolean interrupted) {
+        boolean interruptThread = interrupted;
+        try {
+            // Inform the remote hosts whether to commit or roll back their updates
+            // Do this in parallel
+            boolean rollback = domainOperationContext.isCompleteRollback();
+            for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
+                if(prepared.isDone()) {
+                    continue;
+                }
+                if(! rollback) {
+                    prepared.commit();
+                } else {
+                    prepared.rollback();
+                }
+            }
+            // Now get the final results from the hosts
+            for(final TransactionalProtocolClient.PreparedOperation<HostControllerUpdateTask.ProxyOperation> prepared : results) {
+                final String hostName = prepared.getOperation().getName();
+                try {
+                    final HostControllerUpdateTask.ExecutedHostRequest request = finalResults.get(hostName);
+                    final ModelNode finalResult = prepared.getFinalResult().get();
+                    final ModelNode transformedResult = request.transformResult(finalResult);
+                    domainOperationContext.addHostControllerResult(hostName, transformedResult);
+
+                    if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
+                        HOST_CONTROLLER_LOGGER.tracef("Final result for remote host %s is %s", hostName, finalResult);
                     }
+                } catch (InterruptedException e) {
+                    interruptThread = true;
+                    CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(hostName);
+                } catch (ExecutionException e) {
+                    CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), hostName);
                 }
-            } finally {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
+            }
+        } finally {
+            if (interruptThread) {
+                Thread.currentThread().interrupt();
             }
         }
     }

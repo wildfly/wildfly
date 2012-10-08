@@ -170,7 +170,8 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
     /**
      * Hook to allow subclasses to handle read-attribute requests for attributes other than {@link CommonAttributes#STARTED}.
-     * Implementations must not call {@link org.jboss.as.controller.OperationContext#completeStep()}.
+     * Implementations must not call any of the
+     * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
      * <p>
      * This default implementation just throws the exception returned by {@link #unsupportedAttribute(String)}.
      * </p>
@@ -187,7 +188,8 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
 
     /**
      * Hook to allow subclasses to handle operations other than {@code read-attribute}, {@code start} and
-     * {@code stop}. Implementations must not call {@link org.jboss.as.controller.OperationContext#completeStep()}.
+     * {@code stop}. Implementations must not call any of the
+     * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}.
      * <p>
      * This default implementation just throws the exception returned by {@link #unsupportedOperation(String)}.
      * </p>

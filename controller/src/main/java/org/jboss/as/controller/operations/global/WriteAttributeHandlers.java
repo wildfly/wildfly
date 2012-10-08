@@ -102,8 +102,9 @@ public class WriteAttributeHandlers {
         /**
          * Notification that the model has been changed. Subclasses can override
          * to apply additional processing. Any subclass that overrides MUST ensure
-         * that either {@link org.jboss.as.controller.OperationContext#completeStep()} is invoked
-         * or {@link OperationFailedException} is thrown.
+         * that either one of the
+         * {@link org.jboss.as.controller.OperationContext#completeStep(OperationContext.ResultHandler) context.completeStep variants}
+         * is invoked or an {@link OperationFailedException} is thrown.
          *
          * @param context the context of the operation
          * @param operation the operation

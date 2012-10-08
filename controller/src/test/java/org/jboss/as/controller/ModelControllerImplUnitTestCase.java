@@ -716,7 +716,7 @@ public class ModelControllerImplUnitTestCase {
             context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("child", "one"))).getModel().set(child1);
             context.createResource(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement("child", "two"))).getModel().set(child2);
 
-            context.completeStep();
+            context.stepCompleted();
         }
     }
 

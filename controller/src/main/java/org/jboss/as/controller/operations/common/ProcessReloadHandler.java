@@ -81,23 +81,28 @@ public abstract class ProcessReloadHandler<T extends RunningModeControl> impleme
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final ReloadContext<T> reloadContext = initializeReloadContext(context, operation);
                 final ServiceController<?> service = context.getServiceRegistry(true).getRequiredService(rootService);
-                if(context.completeStep() == OperationContext.ResultAction.KEEP) {
-                    service.addListener(new AbstractServiceListener<Object>() {
-                        public void listenerAdded(final ServiceController<?> controller) {
-                            reloadContext.reloadInitiated(runningModeControl);
-                            processState.setStopping();
-                            controller.setMode(ServiceController.Mode.NEVER);
-                        }
+                context.completeStep(new OperationContext.ResultHandler() {
+                    @Override
+                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                        if(resultAction == OperationContext.ResultAction.KEEP) {
+                            service.addListener(new AbstractServiceListener<Object>() {
+                                public void listenerAdded(final ServiceController<?> controller) {
+                                    reloadContext.reloadInitiated(runningModeControl);
+                                    processState.setStopping();
+                                    controller.setMode(ServiceController.Mode.NEVER);
+                                }
 
-                        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                            if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
-                                controller.removeListener(this);
-                                reloadContext.doReload(runningModeControl);
-                                controller.setMode(ServiceController.Mode.ACTIVE);
-                            }
+                                public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                                    if (transition == ServiceController.Transition.STOPPING_to_DOWN) {
+                                        controller.removeListener(this);
+                                        reloadContext.doReload(runningModeControl);
+                                        controller.setMode(ServiceController.Mode.ACTIVE);
+                                    }
+                                }
+                            });
                         }
-                    });
-                }
+                    }
+                });
             }
         }, OperationContext.Stage.RUNTIME);
 
