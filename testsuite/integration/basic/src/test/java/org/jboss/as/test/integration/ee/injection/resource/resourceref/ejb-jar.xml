@@ -13,6 +13,7 @@
             <business-remote>org.jboss.as.test.integration.ee.injection.resource.resourceref.StatelessBeanRemote</business-remote>
             <ejb-class>org.jboss.as.test.integration.ee.injection.resource.resourceref.StatelessBean</ejb-class>
             <session-type>Stateless</session-type>
+            <transaction-type>Bean</transaction-type>
             
             <resource-env-ref>
                 <resource-env-ref-name>MyEJBContext</resource-env-ref-name>
