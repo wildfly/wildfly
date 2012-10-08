@@ -212,6 +212,18 @@ abstract class AbstractOperationContext implements OperationContext {
 
     @Override
     public final ResultAction completeStep() {
+        return completeStepInternal();
+    }
+
+    /**
+     * Package-protected method used to initiate operation execution.
+     * @return the result action
+     */
+    ResultAction executeOperation() {
+        return completeStepInternal();
+    }
+
+    private ResultAction completeStepInternal() {
         try {
             doCompleteStep();
             if (resultAction == ResultAction.KEEP) {
@@ -451,7 +463,7 @@ abstract class AbstractOperationContext implements OperationContext {
                         MGMT_OP_LOGGER.operationFailedOnClientError(step.operation.get(OP), step.operation.get(OP_ADDR),
                                 step.response.get(FAILURE_DESCRIPTION));
                     }
-                    completeStep();
+                    completeStepInternal();
                 } else {
                     // Handler threw OCE after calling completeStep()
                     // Throw it on and let standard error handling deal with it
@@ -498,7 +510,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     // this step was the last registered step;
                     // go ahead and shift back into recursive mode to wrap
                     // things up
-                    completeStep();
+                    completeStepInternal();
                 } else {
                     // Let doCompleteStep carry on with subsequent steps.
                     // If this step has failed in a way that will prevent
