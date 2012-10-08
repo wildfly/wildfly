@@ -25,7 +25,6 @@ import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +32,7 @@ import java.util.Map;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
+import org.jboss.as.osgi.management.OperationAssociation;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -44,19 +44,21 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleInstallPlugin;
+import org.jboss.osgi.framework.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.resolver.XBundle;
+import org.jboss.vfs.VFSUtils;
 import org.osgi.framework.BundleException;
 
 /**
- * An {@link IntegrationService} that can install bundle deployments through to the {@link ServerDeploymentManager}.
+ * An {@link IntegrationService} that that handles the bundle lifecycle.
  *
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public final class BundleInstallIntegration implements BundleInstallPlugin, IntegrationService<BundleInstallPlugin> {
+public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, IntegrationService<BundleLifecyclePlugin> {
 
     private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
@@ -66,12 +68,12 @@ public final class BundleInstallIntegration implements BundleInstallPlugin, Inte
 
     @Override
     public ServiceName getServiceName() {
-        return BUNDLE_INSTALL_PLUGIN;
+        return BUNDLE_LIFECYCLE_PLUGIN;
     }
 
     @Override
-    public ServiceController<BundleInstallPlugin> install(ServiceTarget serviceTarget) {
-        ServiceBuilder<BundleInstallPlugin> builder = serviceTarget.addService(getServiceName(), this);
+    public ServiceController<BundleLifecyclePlugin> install(ServiceTarget serviceTarget) {
+        ServiceBuilder<BundleLifecyclePlugin> builder = serviceTarget.addService(getServiceName(), this);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
@@ -93,58 +95,79 @@ public final class BundleInstallIntegration implements BundleInstallPlugin, Inte
     }
 
     @Override
-    public BundleInstallPlugin getValue() throws IllegalStateException, IllegalArgumentException {
+    public BundleLifecyclePlugin getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
-    public static Deployment getDeployment(String contextName) {
-        return deploymentMap.get(contextName);
+    public static Deployment getDeployment(String runtimeName) {
+        synchronized (deploymentMap) {
+            return deploymentMap.get(runtimeName);
+        }
     }
 
-    public static Deployment removeDeployment(String contextName) {
-        return deploymentMap.remove(contextName);
+    private void putDeployment(String runtimeName, final Deployment dep) {
+        synchronized (deploymentMap) {
+            deploymentMap.put(runtimeName, dep);
+        }
     }
 
-    @Override
-    public void installBundle(Deployment dep) throws BundleException {
-        LOGGER.tracef("Install deployment: %s", dep);
-        try {
-
-            // Install the {@link Deployment} holder service
-            String contextName = getContextName(dep);
-            deploymentMap.put(contextName, dep);
-
-            // Build and execute the deployment plan
-            InputStream input = dep.getRoot().openStream();
-            try {
-                ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
-                server.deploy(contextName, input);
-            } finally {
-                if(input != null) try {
-                    input.close();
-                } catch (IOException e) {
-                    LOGGER.debugf(e, "Failed to close resource %s", input);
-                }
-            }
-        } catch (RuntimeException rte) {
-            throw rte;
-        } catch (Exception ex) {
-            throw MESSAGES.cannotDeployBundle(ex, dep);
+    public static Deployment removeDeployment(String runtimeName) {
+        synchronized (deploymentMap) {
+            return deploymentMap.remove(runtimeName);
         }
     }
 
     @Override
-    public void uninstallBundle(Deployment dep) {
-        LOGGER.tracef("Uninstall deployment: %s", dep);
+    public void install(final Deployment dep, final DefaultHandler handler) throws BundleException {
+        // Do the install directly if we have a running management op
+        // https://issues.jboss.org/browse/AS7-5642
+        if (OperationAssociation.INSTANCE.getAssociation() != null) {
+            LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            bundleManager.installBundle(dep, null);
+        } else {
+            LOGGER.debugf("Install deployment: %s", dep);
+            String runtimeName = getRuntimeName(dep);
+            putDeployment(runtimeName, dep);
+            try {
+                InputStream input = dep.getRoot().openStream();
+                try {
+                    ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+                    server.deploy(runtimeName, input);
+                } finally {
+                    VFSUtils.safeClose(input);
+                }
+            } catch (RuntimeException rte) {
+                throw rte;
+            } catch (Exception ex) {
+                throw MESSAGES.cannotDeployBundle(ex, dep);
+            }
+        }
+    }
+
+    @Override
+    public void start(XBundle bundle, int options, DefaultHandler handler) throws BundleException {
+        handler.start(bundle, options);
+    }
+
+    @Override
+    public void stop(XBundle bundle, int options, DefaultHandler handler) throws BundleException {
+        handler.stop(bundle, options);
+    }
+
+    @Override
+    public void uninstall(XBundle bundle, DefaultHandler handler) {
+        LOGGER.tracef("Uninstall deployment: %s", bundle);
         try {
             ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
-            server.undeploy(getContextName(dep));
+            Deployment dep = bundle.adapt(Deployment.class);
+            server.undeploy(getRuntimeName(dep));
         } catch (Exception ex) {
-            LOGGER.warnCannotUndeployBundle(ex, dep);
+            LOGGER.warnCannotUndeployBundle(ex, bundle);
         }
     }
 
-    private String getContextName(Deployment dep) {
+    private String getRuntimeName(Deployment dep) {
         String name = dep.getLocation();
         if (name.endsWith("/"))
             name = name.substring(0, name.length() - 1);

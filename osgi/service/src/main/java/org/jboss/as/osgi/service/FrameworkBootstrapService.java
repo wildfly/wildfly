@@ -122,7 +122,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.setServiceTarget(serviceTarget);
 
             // Install the integration services
-            builder.installIntegrationService(serviceContainer, serviceTarget, new BundleInstallIntegration());
+            builder.installIntegrationService(serviceContainer, serviceTarget, new BundleLifecycleIntegration());
             builder.installIntegrationService(serviceContainer, serviceTarget, new FrameworkModuleIntegration(props));
             builder.installIntegrationService(serviceContainer, serviceTarget, new ModuleLoaderIntegration());
             builder.installIntegrationService(serviceContainer, serviceTarget, new SystemServicesIntegration(resource, extensions));
