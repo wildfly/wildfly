@@ -64,19 +64,13 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         if (bundle == null || !deployment.isAutoStart())
             return;
 
-        // Only process the top level deployment
-        if (depUnit.getParent() != null)
-            return;
-
-        resolveBundle(phaseContext, bundle);
+        resolveBundle(phaseContext, depUnit, bundle);
     }
 
-    static void resolveBundle(DeploymentPhaseContext phaseContext, XBundle bundle) {
+    private void resolveBundle(DeploymentPhaseContext phaseContext, DeploymentUnit depUnit, XBundle bundle) {
         XBundleRevision brev = bundle.getBundleRevision();
-        DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
-        BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
         XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
         try {
             LOGGER.debugf("Resolve: %s", depUnit.getName());
@@ -84,6 +78,7 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
 
             // Add a dependency on the Bundle RESOLVED service
+            BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             ServiceName bundleResolve = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
             phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
 
