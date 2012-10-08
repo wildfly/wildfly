@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -139,73 +140,88 @@ public class DomainRolloutStepHandler implements OperationStepHandler {
 
             final Map<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> submittedTasks = new HashMap<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest>();
             final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults = new ArrayList<ServerTaskExecutor.ServerPreparedResponse>();
+            boolean completeStepCalled = false;
             try {
                 pushToServers(context, submittedTasks, preparedResults);
-                context.completeStep();
+                context.completeStep(new OperationContext.ResultHandler() {
+                    @Override
+                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                        finalizeOp(submittedTasks, preparedResults);
+                    }
+                });
+
+                completeStepCalled = true;
             } finally {
-
-                // Inform the remote hosts whether to commit or roll back their updates
-                // Do them all before reading results so the commits/rollbacks can be executed in parallel
-                boolean completeRollback = domainOperationContext.isCompleteRollback();
-                final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
-                for(final ServerTaskExecutor.ServerPreparedResponse preparedResult : preparedResults) {
-                    boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(preparedResult.getServerGroupName());
-                    // Require a server reload, in case the operation failed, but the overall state was commit
-                    if(! preparedResult.finalizeTransaction(! rollback)) {
-                        final ServerIdentity identity = preparedResult.getServerIdentity();
-                        try {
-                            // Replace the original proxyTask with the requireReloadTask
-                            final ModelNode result = preparedResult.getPreparedOperation().getPreparedResult();
-                            ProxyController proxy = hostProxies.get(identity.getHostName());
-                            if (proxy == null) {
-                                if (localHostName.equals(identity.getHostName())) {
-                                    // Use our server proxies
-                                    proxy = serverProxies.get(identity.getServerName());
-                                    if (proxy == null) {
-                                        if (trace) {
-                                            HOST_CONTROLLER_LOGGER.tracef("No proxy for %s", identity);
-                                        }
-                                        continue;
-                                    }
-                                }
-                            }
-                            final Future<ModelNode> future = executorService.submit(new ServerRequireRestartTask(identity, proxy, result));
-                            // replace the existing future
-                            submittedTasks.put(identity, new ServerTaskExecutor.ExecutedServerRequest(identity, future));
-                        } catch (Exception ignore) {
-                            // getUncommittedResult() won't fail here
-                        }
-                    }
-                }
-                // Now read the final values. This ensures the operations are committed on the remote servers
-                // before we expose the servers to further requests
-                boolean interrupted = false;
-                try {
-                    for (Map.Entry<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> entry : submittedTasks.entrySet()) {
-                        final ServerTaskExecutor.ExecutedServerRequest request = entry.getValue();
-                        final Future<ModelNode> future = request.getFinalResult();
-                        try {
-                            final ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
-                            final ModelNode transformedResult = request.transformResult(finalResult);
-                            domainOperationContext.addServerResult(entry.getKey(), transformedResult);
-                        } catch (InterruptedException e) {
-                            interrupted = true;
-                            HOST_CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey().getServerName(), entry.getKey().getHostName());
-
-                        } catch (ExecutionException e) {
-                            HOST_CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), entry.getKey().getServerName(), entry.getKey().getHostName());
-                        }
-                    }
-                } finally {
-                    if (interrupted) {
-                        Thread.currentThread().interrupt();
-                    }
+                if (!completeStepCalled) {
+                    finalizeOp(submittedTasks, preparedResults);
                 }
             }
         } else {
             // There were failures on hosts, so gather them up and report them
             reportHostFailures(context, operation);
-            context.completeStep();
+            context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+        }
+    }
+
+    private void finalizeOp(final Map<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> submittedTasks,
+                            final List<ServerTaskExecutor.ServerPreparedResponse> preparedResults) {
+
+        // Inform the remote hosts whether to commit or roll back their updates
+        // Do them all before reading results so the commits/rollbacks can be executed in parallel
+        boolean completeRollback = domainOperationContext.isCompleteRollback();
+        final String localHostName = domainOperationContext.getLocalHostInfo().getLocalHostName();
+        for(final ServerTaskExecutor.ServerPreparedResponse preparedResult : preparedResults) {
+            boolean rollback = completeRollback || domainOperationContext.isServerGroupRollback(preparedResult.getServerGroupName());
+            // Require a server reload, in case the operation failed, but the overall state was commit
+            if(! preparedResult.finalizeTransaction(! rollback)) {
+                final ServerIdentity identity = preparedResult.getServerIdentity();
+                try {
+                    // Replace the original proxyTask with the requireReloadTask
+                    final ModelNode result = preparedResult.getPreparedOperation().getPreparedResult();
+                    ProxyController proxy = hostProxies.get(identity.getHostName());
+                    if (proxy == null) {
+                        if (localHostName.equals(identity.getHostName())) {
+                            // Use our server proxies
+                            proxy = serverProxies.get(identity.getServerName());
+                            if (proxy == null) {
+                                if (trace) {
+                                    HOST_CONTROLLER_LOGGER.tracef("No proxy for %s", identity);
+                                }
+                                continue;
+                            }
+                        }
+                    }
+                    final Future<ModelNode> future = executorService.submit(new ServerRequireRestartTask(identity, proxy, result));
+                    // replace the existing future
+                    submittedTasks.put(identity, new ServerTaskExecutor.ExecutedServerRequest(identity, future));
+                } catch (Exception ignore) {
+                    // getUncommittedResult() won't fail here
+                }
+            }
+        }
+        // Now read the final values. This ensures the operations are committed on the remote servers
+        // before we expose the servers to further requests
+        boolean interrupted = false;
+        try {
+            for (Map.Entry<ServerIdentity, ServerTaskExecutor.ExecutedServerRequest> entry : submittedTasks.entrySet()) {
+                final ServerTaskExecutor.ExecutedServerRequest request = entry.getValue();
+                final Future<ModelNode> future = request.getFinalResult();
+                try {
+                    final ModelNode finalResult = future.isCancelled() ? getCancelledResult() : future.get();
+                    final ModelNode transformedResult = request.transformResult(finalResult);
+                    domainOperationContext.addServerResult(entry.getKey(), transformedResult);
+                } catch (InterruptedException e) {
+                    interrupted = true;
+                    HOST_CONTROLLER_LOGGER.interruptedAwaitingFinalResponse(entry.getKey().getServerName(), entry.getKey().getHostName());
+
+                } catch (ExecutionException e) {
+                    HOST_CONTROLLER_LOGGER.caughtExceptionAwaitingFinalResponse(e.getCause(), entry.getKey().getServerName(), entry.getKey().getHostName());
+                }
+            }
+        } finally {
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

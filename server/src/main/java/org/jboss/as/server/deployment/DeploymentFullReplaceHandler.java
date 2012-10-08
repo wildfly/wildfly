@@ -88,7 +88,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
         boolean exists = root.hasChild(PathElement.pathElement(DEPLOYMENT, name));
         if (! exists) {
-            ServerMessages.MESSAGES.noSuchDeployment(name);
+            throw ServerMessages.MESSAGES.noSuchDeployment(name);
         }
 
         final ModelNode replaceNode = context.readResourceForUpdate(address).getModel();
@@ -100,7 +100,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final DeploymentHandlerUtil.ContentItem contentItem;
         ModelNode contentItemNode = content.require(0);
-        byte[] originalHash = replaceNode.get(CONTENT).get(0).hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, replaceNode.get(CONTENT).get(0)).asBytes() : null;
+        final byte[] originalHash = replaceNode.get(CONTENT).get(0).hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, replaceNode.get(CONTENT).get(0)).asBytes() : null;
         if (contentItemNode.hasDefined(CONTENT_HASH.getName())) {
             byte[] hash = CONTENT_HASH.resolveModelAttribute(context, contentItemNode).asBytes();
 
@@ -129,23 +129,21 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, vaultReader, contentItem);
         }
 
-        if (context.completeStep() == ResultAction.KEEP) {
-            if (originalHash != null) {
-                final ModelNode contentNode = replaceNode.get(CONTENT).get(0);
-                if (contentNode.hasDefined(CONTENT_HASH.getName())) {
-                    byte[] newHash = CONTENT_HASH.resolveModelAttribute(context, contentNode).asBytes();
-                    if (!Arrays.equals(originalHash, newHash)) {
+        ModelNode contentNode = replaceNode.get(CONTENT).get(0);
+        final byte[] newHash = contentNode.hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, contentNode).asBytes() : null;
+
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
+                if (resultAction == ResultAction.KEEP) {
+                    if (originalHash != null  && newHash != null && !Arrays.equals(originalHash, newHash)) {
                         contentRepository.removeContent(originalHash);
                     }
+                } else if (newHash != null) {
+                    contentRepository.removeContent(newHash);
                 }
             }
-        } else {
-            final ModelNode contentNode = replaceNode.get(CONTENT).get(0);
-            if (contentNode.hasDefined(CONTENT_HASH.getName())) {
-                byte[] newHash = CONTENT_HASH.resolveModelAttribute(context, contentNode).asBytes();
-                contentRepository.removeContent(newHash);
-            }
-        }
+        });
     }
 
     private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {

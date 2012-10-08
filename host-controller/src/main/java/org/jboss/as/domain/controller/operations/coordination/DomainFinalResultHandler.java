@@ -72,24 +72,27 @@ public class DomainFinalResultHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        context.completeStep();
-
-        // On the way out, fix up the response
-        final boolean isDomain = isDomainOperation(operation);
-        boolean shouldContinue = collectDomainFailure(context, isDomain);
-        shouldContinue = shouldContinue && collectContextFailure(context, isDomain);
-        shouldContinue = shouldContinue && collectHostFailures(context, isDomain);
-        if(shouldContinue){
-            ModelNode contextResult = context.getResult();
-            contextResult.setEmptyObject(); // clear out any old data
-            contextResult.set(getDomainResults(operation));
-            if (domainOperationContext.getServerResults().size() > 0) {
-                populateServerGroupResults(context);
-            } else {
-                // Just make sure there's an 'undefined' server-groups node
-                context.getServerResults();
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                // On the way out, fix up the response
+                final boolean isDomain = isDomainOperation(operation);
+                boolean shouldContinue = collectDomainFailure(context, isDomain);
+                shouldContinue = shouldContinue && collectContextFailure(context, isDomain);
+                shouldContinue = shouldContinue && collectHostFailures(context, isDomain);
+                if(shouldContinue){
+                    ModelNode contextResult = context.getResult();
+                    contextResult.setEmptyObject(); // clear out any old data
+                    contextResult.set(getDomainResults(operation));
+                    if (domainOperationContext.getServerResults().size() > 0) {
+                        populateServerGroupResults(context);
+                    } else {
+                        // Just make sure there's an 'undefined' server-groups node
+                        context.getServerResults();
+                    }
+                }
             }
-        }
+        });
     }
 
     private boolean collectDomainFailure(OperationContext context, final boolean isDomain) {

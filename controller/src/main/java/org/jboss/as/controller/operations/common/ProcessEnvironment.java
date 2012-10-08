@@ -148,9 +148,9 @@ public abstract class ProcessEnvironment {
 
             NAME.validateAndSet(mockOp, model);
 
-            boolean booting = context.isBooting();
+            final boolean booting = context.isBooting();
             String resolved = null;
-            if (context.isBooting()) {
+            if (booting) {
                 final ModelNode resolvedNode = NAME.resolveModelAttribute(context, model);
                 resolved = resolvedNode.isDefined() ? resolvedNode.asString() : null;
                 resolved = resolved == null ? null : resolveGUID(resolved);
@@ -158,13 +158,19 @@ public abstract class ProcessEnvironment {
                 context.reloadRequired();
             }
 
-            if (context.completeStep() == OperationContext.ResultAction.KEEP) {
-                if (booting) {
-                    ProcessEnvironment.this.setProcessName(resolved);
+            final String processName = resolved;
+            context.completeStep(new OperationContext.ResultHandler() {
+                @Override
+                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                    if (resultAction == OperationContext.ResultAction.KEEP) {
+                        if (booting) {
+                            ProcessEnvironment.this.setProcessName(processName);
+                        }
+                    } else if (!booting) {
+                        context.revertReloadRequired();
+                    }
                 }
-            } else if (!booting) {
-                context.revertReloadRequired();
-            }
+            });
         }
     }
 

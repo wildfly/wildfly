@@ -220,10 +220,16 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
                 context.stepCompleted();
                 return;
             }
-            if(context.completeStep() == OperationContext.ResultAction.KEEP) {
-                // Register the server proxy
-                domainController.registerRunningServer(controller);
-            }
+
+            context.completeStep(new OperationContext.ResultHandler() {
+                @Override
+                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                    if(resultAction == OperationContext.ResultAction.KEEP) {
+                        // Register the server proxy
+                        domainController.registerRunningServer(controller);
+                    }
+                }
+            });
         }
     }
 

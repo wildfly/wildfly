@@ -158,17 +158,21 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         }
 
         // Continue boot
-        OperationContext.ResultAction resultAction = context.completeStep();
+        context.completeStep(new OperationContext.ResultHandler() {
+            @Override
+            public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
 
-        // Tell all the subsystem tasks the result of the operations
-        notifySubsystemTransactions(transactionControls, resultAction == OperationContext.ResultAction.ROLLBACK, committedLatch, OperationContext.Stage.RUNTIME);
+                // Tell all the subsystem tasks the result of the operations
+                notifySubsystemTransactions(transactionControls, resultAction == OperationContext.ResultAction.ROLLBACK, committedLatch, OperationContext.Stage.RUNTIME);
 
-        // Make sure all the subsystems have completed the out path before we return
-        try {
-            completeLatch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+                // Make sure all the subsystems have completed the out path before we return
+                try {
+                    completeLatch.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
 
     }
 
@@ -259,17 +263,21 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
 
                 // Continue boot
-                OperationContext.ResultAction resultAction = context.completeStep();
+                context.completeStep(new OperationContext.ResultHandler() {
+                    @Override
+                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
 
-                // Tell all the subsystem tasks the result of the operations
-                notifySubsystemTransactions(transactionControls, resultAction == OperationContext.ResultAction.ROLLBACK, committedLatch, OperationContext.Stage.MODEL);
+                        // Tell all the subsystem tasks the result of the operations
+                        notifySubsystemTransactions(transactionControls, resultAction == OperationContext.ResultAction.ROLLBACK, committedLatch, OperationContext.Stage.MODEL);
 
-                // Make sure all the subsystems have completed the out path before we return
-                try {
-                    completeLatch.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+                        // Make sure all the subsystems have completed the out path before we return
+                        try {
+                            completeLatch.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                });
             }
         };
     }
@@ -303,6 +311,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         public void run() {
             boolean interrupted = false;
             ParallelBootOperationContext operationContext = null;
+            boolean completeStepCalled = false;
             try {
                 operationContext = new ParallelBootOperationContext(transactionControl, processState,
                         primaryContext, runtimeOps, controllingThread);
@@ -310,6 +319,15 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     final OperationStepHandler osh = op.handler == null ? rootRegistration.getOperationHandler(op.address, op.operationName) : op.handler;
                     operationContext.addStep(op.response, op.operation, osh, executionStage);
                 }
+
+//                final ParallelBootOperationContext handleResultContext = operationContext;
+//                operationContext.completeStep(new OperationContext.ResultHandler() {
+//                    @Override
+//                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+//                        finalizeRun(handleResultContext, false);
+//                    }
+//                });
+//                completeStepCalled = true;
                 operationContext.completeStep();
             } catch (Throwable t) {
                 interrupted = (t instanceof InterruptedException);
@@ -321,33 +339,40 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     transactionControl.operationFailed(failure);
                 }
             } finally {
-                if (!transactionControl.signalled) {
-
-                    for (ParsedBootOp op : bootOperations) {
-                        if (op.response.hasDefined(ModelDescriptionConstants.SUCCESS) && !op.response.get(ModelDescriptionConstants.SUCCESS).asBoolean()) {
-                            transactionControl.operationFailed(op.response);
-                            break;
-                        }
-                    }
-                    if (!transactionControl.signalled) {
-                        ModelNode failure = new ModelNode();
-                        failure.get(ModelDescriptionConstants.SUCCESS).set(false);
-                        failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
-                        transactionControl.operationFailed(failure);
-                    }
-                } else {
-                    transactionControl.operationCompleted(transactionControl.response);
-                }
-
-                if (operationContext != null) {
-                    operationContext.close();
-                }
-
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
+                if (!completeStepCalled) {
+                    finalizeRun(operationContext, interrupted);
                 }
 
             }
+        }
+
+        private void finalizeRun(ParallelBootOperationContext operationContext, boolean interrupted) {
+            if (!transactionControl.signalled) {
+
+                for (ParsedBootOp op : bootOperations) {
+                    if (op.response.hasDefined(ModelDescriptionConstants.SUCCESS) && !op.response.get(ModelDescriptionConstants.SUCCESS).asBoolean()) {
+                        transactionControl.operationFailed(op.response);
+                        break;
+                    }
+                }
+                if (!transactionControl.signalled) {
+                    ModelNode failure = new ModelNode();
+                    failure.get(ModelDescriptionConstants.SUCCESS).set(false);
+                    failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
+                    transactionControl.operationFailed(failure);
+                }
+            } else {
+                transactionControl.operationCompleted(transactionControl.response);
+            }
+
+            if (operationContext != null) {
+                operationContext.close();
+            }
+
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+
         }
     }
 
