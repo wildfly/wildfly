@@ -48,6 +48,7 @@ public class ArgumentValueState extends DefaultParsingState {
                 }
             }});
         setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        enterState('\\', EscapeCharacterState.INSTANCE);
         enterState('=', NameValueSeparatorState.INSTANCE);
         enterState(',', ListItemSeparatorState.INSTANCE);
         enterState('[', new ListState(this));

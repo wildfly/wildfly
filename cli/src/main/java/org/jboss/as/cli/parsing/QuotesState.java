@@ -27,6 +27,8 @@ package org.jboss.as.cli.parsing;
  */
 public class QuotesState extends DefaultParsingState {
 
+    public static final String ID = "QUOTES";
+
     public static final QuotesState QUOTES_EXCLUDED = new QuotesState(false);
     public static final QuotesState QUOTES_INCLUDED = new QuotesState(true);
 
@@ -35,7 +37,7 @@ public class QuotesState extends DefaultParsingState {
     }
 
     public QuotesState(boolean quotesInContent, boolean escapeEnabled) {
-        super("QUOTES", quotesInContent);
+        super(ID, quotesInContent);
 
         this.setEndContentHandler(new ErrorCharacterHandler("The closing '\"' is missing."));
         this.putHandler('"', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);

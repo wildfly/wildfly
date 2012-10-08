@@ -276,6 +276,28 @@ public class ArgumentValueParsingTestCase {
         assertEquals("h", gh.get("g").asString());
     }
 
+    @Test
+    public void testAny() throws Exception {
+        ModelNode value = parse("\"any(not(match(\\\"Prepared response is\\\")),match(\\\"Scanning\\\"))\"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals("any(not(match(\"Prepared response is\")),match(\"Scanning\"))", value.asString());
+
+        value = parse("any(not(match(\"Prepared response is\")),match(\"Scanning\"))");
+        assertNotNull(value);
+        assertEquals(ModelType.LIST, value.getType());
+        final List<ModelNode> list = value.asList();
+        assertEquals(2, list.size());
+
+        ModelNode item = list.get(0);
+        assertEquals(ModelType.STRING, item.getType());
+        assertEquals("any(not(match(\"Prepared response is\"))", item.asString());
+
+        item = list.get(1);
+        assertEquals(ModelType.STRING, item.getType());
+        assertEquals("match(\"Scanning\"))", item.asString());
+    }
+
     protected ModelNode parse(String str) throws CommandFormatException {
         final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
         StateParser.parse(str, handler, ArgumentValueInitialState.INSTANCE);
