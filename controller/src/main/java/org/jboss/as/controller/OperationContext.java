@@ -183,7 +183,9 @@ public interface OperationContext extends ExpressionResolver {
      *
      * @return the operation result action to take
      *
+     * @deprecated use {@link #completeStep(ResultHandler)}, {@link #completeStep(RollbackHandler)} or {@link #stepCompleted()}
      */
+    @Deprecated
     ResultAction completeStep();
 
     /**

@@ -132,7 +132,7 @@ class ModelControllerImpl implements ModelController {
 
         OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(), contextFlags, handler, attachments, model, originalResultTxControl, processState, bootingFlag.get());
         context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
-        context.completeStep();
+        context.executeOperation();
 
         if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
             ControlledProcessState.State state = processState.getState();
@@ -162,7 +162,7 @@ class ModelControllerImpl implements ModelController {
         List<ParsedBootOp> postExtensionOps = organizeBootOperations(bootList, context);
 
         // Run the steps up to the last ExtensionAddHandler
-        OperationContext.ResultAction resultAction = context.completeStep();
+        OperationContext.ResultAction resultAction = context.executeOperation();
         if (resultAction == OperationContext.ResultAction.KEEP && postExtensionOps != null) {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
@@ -181,7 +181,7 @@ class ModelControllerImpl implements ModelController {
                 }
             }
 
-            resultAction = postExtContext.completeStep();
+            resultAction = postExtContext.executeOperation();
         }
 
         return  resultAction == OperationContext.ResultAction.KEEP;
@@ -479,7 +479,7 @@ class ModelControllerImpl implements ModelController {
             } else {
                 context.getFailureDescription().set(MESSAGES.noHandler(operationName, address));
             }
-            context.completeStep();
+            context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
     }
 

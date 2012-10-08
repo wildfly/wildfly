@@ -311,7 +311,6 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         public void run() {
             boolean interrupted = false;
             ParallelBootOperationContext operationContext = null;
-            boolean completeStepCalled = false;
             try {
                 operationContext = new ParallelBootOperationContext(transactionControl, processState,
                         primaryContext, runtimeOps, controllingThread);
@@ -320,15 +319,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     operationContext.addStep(op.response, op.operation, osh, executionStage);
                 }
 
-//                final ParallelBootOperationContext handleResultContext = operationContext;
-//                operationContext.completeStep(new OperationContext.ResultHandler() {
-//                    @Override
-//                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
-//                        finalizeRun(handleResultContext, false);
-//                    }
-//                });
-//                completeStepCalled = true;
-                operationContext.completeStep();
+                operationContext.executeOperation();
             } catch (Throwable t) {
                 interrupted = (t instanceof InterruptedException);
                 MGMT_OP_LOGGER.failedSubsystemBootOperations(t, subsystemName);
@@ -339,40 +330,33 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     transactionControl.operationFailed(failure);
                 }
             } finally {
-                if (!completeStepCalled) {
-                    finalizeRun(operationContext, interrupted);
-                }
-
-            }
-        }
-
-        private void finalizeRun(ParallelBootOperationContext operationContext, boolean interrupted) {
-            if (!transactionControl.signalled) {
-
-                for (ParsedBootOp op : bootOperations) {
-                    if (op.response.hasDefined(ModelDescriptionConstants.SUCCESS) && !op.response.get(ModelDescriptionConstants.SUCCESS).asBoolean()) {
-                        transactionControl.operationFailed(op.response);
-                        break;
-                    }
-                }
                 if (!transactionControl.signalled) {
-                    ModelNode failure = new ModelNode();
-                    failure.get(ModelDescriptionConstants.SUCCESS).set(false);
-                    failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
-                    transactionControl.operationFailed(failure);
+
+                    for (ParsedBootOp op : bootOperations) {
+                        if (op.response.hasDefined(ModelDescriptionConstants.SUCCESS) && !op.response.get(ModelDescriptionConstants.SUCCESS).asBoolean()) {
+                            transactionControl.operationFailed(op.response);
+                            break;
+                        }
+                    }
+                    if (!transactionControl.signalled) {
+                        ModelNode failure = new ModelNode();
+                        failure.get(ModelDescriptionConstants.SUCCESS).set(false);
+                        failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
+                        transactionControl.operationFailed(failure);
+                    }
+                } else {
+                    transactionControl.operationCompleted(transactionControl.response);
                 }
-            } else {
-                transactionControl.operationCompleted(transactionControl.response);
-            }
 
-            if (operationContext != null) {
-                operationContext.close();
-            }
+                if (operationContext != null) {
+                    operationContext.close();
+                }
 
-            if (interrupted) {
-                Thread.currentThread().interrupt();
-            }
+                if (interrupted) {
+                    Thread.currentThread().interrupt();
+                }
 
+            }
         }
     }
 
