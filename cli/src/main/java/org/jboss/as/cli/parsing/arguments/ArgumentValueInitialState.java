@@ -23,6 +23,7 @@ package org.jboss.as.cli.parsing.arguments;
 
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.QuotesState;
 
 /**
  *
@@ -37,5 +38,6 @@ public class ArgumentValueInitialState extends DefaultParsingState {
         setDefaultHandler(new EnterStateCharacterHandler(new ArgumentValueState()));
         enterState('[', new ListState(new ArgumentValueState()));
         enterState('{', new ArgumentValueState());
+        enterState('"', new QuotesState(false, true));
     }
 }
