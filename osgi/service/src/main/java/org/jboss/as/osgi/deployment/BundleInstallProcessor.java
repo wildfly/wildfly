@@ -22,7 +22,7 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.service.InitialDeploymentTracker.REGISTER_PHASE_SERVICES_COMPLETE;
+import static org.jboss.as.osgi.service.InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE;
 import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
 
 import org.jboss.as.osgi.OSGiConstants;
@@ -82,7 +82,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
         // Add a dependency on the next phase for all persisten bundles to be installed
         if (deploymentTracker.isComplete() == false) {
-            phaseContext.addDeploymentDependency(REGISTER_PHASE_SERVICES_COMPLETE, AttachmentKey.create(Object.class));
+            phaseContext.addDeploymentDependency(INITIAL_DEPLOYMENTS_COMPLETE, AttachmentKey.create(Object.class));
         }
 
         depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);

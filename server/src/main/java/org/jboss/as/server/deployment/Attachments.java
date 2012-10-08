@@ -23,6 +23,7 @@
 package org.jboss.as.server.deployment;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Manifest;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -221,8 +222,13 @@ public final class Attachments {
     /**
      * The module identifier.
      */
-
     public static final AttachmentKey<ModuleIdentifier> MODULE_IDENTIFIER = AttachmentKey.create(ModuleIdentifier.class);
+
+    /**
+     * The flag that indicates that the respective phase should be deferred.
+     */
+    public static final AttachmentKey<Boolean> DEFERRED_MODULE_PHASE = AttachmentKey.create(Boolean.class);
+    public static final AttachmentKey<AtomicInteger> DEFERRED_ACTIVATION_COUNT = AttachmentKey.create(AtomicInteger.class);
 
     //
     // MODULARIZE

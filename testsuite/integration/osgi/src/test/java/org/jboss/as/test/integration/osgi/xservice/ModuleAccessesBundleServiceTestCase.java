@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.integration.osgi.xservice;
 
-import static org.jboss.as.test.osgi.FrameworkUtils.getDeployedBundle;
-
 import java.io.InputStream;
 
 import javax.inject.Inject;
@@ -66,6 +64,18 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     private static final String TARGET_BUNDLE_NAME = "example-xservice-mab-target-bundle";
     private static final String CLIENT_MODULE_NAME = "example-xservice-mab-client-module";
 
+    @Inject
+    public ServiceContainer serviceContainer;
+
+    @ArquillianResource
+    public Deployer deployer;
+
+    @Inject
+    public BundleContext context;
+
+    @Inject
+    public PackageAdmin packageAdmin;
+
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
@@ -82,23 +92,14 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
         return archive;
     }
 
-    @Inject
-    public ServiceContainer serviceContainer;
-
-    @ArquillianResource
-    public Deployer deployer;
-
-    @Inject
-    public BundleContext context;
-
     @Test
     public void moduleInvokesBundleService() throws Exception {
 
         // Deploy the bundle which contains the target service
         deployer.deploy(TARGET_BUNDLE_NAME);
         try {
-            // Find the installed bundle using PackageAdmin
-            Bundle targetBundle = getDeployedBundle(context, TARGET_BUNDLE_NAME, null);
+            // Find the deployed bundle
+            Bundle targetBundle = packageAdmin.getBundles(TARGET_BUNDLE_NAME, null)[0];
             targetBundle.start();
 
             // Install the client module

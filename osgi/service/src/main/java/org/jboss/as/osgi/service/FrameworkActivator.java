@@ -109,10 +109,10 @@ public final class FrameworkActivator {
 
         // The {@link EagerActivatorService} has a dependency on {@link Services#FRAMEWORK_ACTIVE}
         static void addService (ServiceTarget serviceTarget, ServiceName serviceName, ServiceVerificationHandler verificationHandler) {
-            ServiceBuilder<Void> eagerbuilder = serviceTarget.addService(serviceName, new EagerActivatorService());
-            eagerbuilder.addDependency(Services.FRAMEWORK_ACTIVE);
-            eagerbuilder.addListener(verificationHandler);
-            eagerbuilder.install();
+            ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new EagerActivatorService());
+            builder.addDependency(Services.FRAMEWORK_ACTIVE);
+            builder.addListener(verificationHandler);
+            builder.install();
         }
     }
 
@@ -121,9 +121,10 @@ public final class FrameworkActivator {
         // The {@link LazyActivatorService} has no framework dependency.
         // Instead it explicitly activates {@link Services#FRAMEWORK_ACTIVE}
         static void addService (ServiceTarget serviceTarget, ServiceName serviceName, ServiceVerificationHandler verificationHandler) {
-            ServiceBuilder<Void> eagerbuilder = serviceTarget.addService(serviceName, new LazyActivatorService());
-            eagerbuilder.addListener(verificationHandler);
-            eagerbuilder.install();
+            ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new LazyActivatorService());
+            builder.addDependency(FrameworkBootstrapService.FRAMEWORK_BOOTSTRAP_NAME);
+            builder.addListener(verificationHandler);
+            builder.install();
         }
 
         @Override
