@@ -27,7 +27,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.jboss.threads.JBossExecutors;
 
 /**
@@ -91,5 +90,9 @@ public class ManagedScheduledExecutorService extends ManagedExecutorService impl
 
     public long getTaskCount() {
         return executor.getTaskCount();
+    }
+    
+    public int getQueueSize() {
+        return executor.getQueue().size();
     }
 }

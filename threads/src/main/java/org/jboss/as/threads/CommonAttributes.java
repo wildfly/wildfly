@@ -47,6 +47,7 @@ public class CommonAttributes {
     public static final String PROPERTY = "property";
     public static final String QUEUELESS_THREAD_POOL = "queueless-thread-pool";
     public static final String QUEUE_LENGTH = "queue-length";
+    public static final String QUEUE_SIZE = "queue-size";
     public static final String REJECTED_COUNT = "rejected-count";
     public static final String SCHEDULED_THREAD_POOL = "scheduled-thread-pool";
     public static final String TASK_COUNT = "task-count";

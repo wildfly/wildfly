@@ -24,7 +24,6 @@ package org.jboss.as.threads;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-
 import org.jboss.threads.BlockingExecutor;
 import org.jboss.threads.EventListener;
 import org.jboss.threads.JBossExecutors;
@@ -120,6 +119,10 @@ public class ManagedJBossThreadPoolExecutorService extends ManagedExecutorServic
 
     public int getActiveCount() {
         return executor.getActiveCount();
+    }
+    
+    public int getQueueSize() {
+        return executor.getQueueSize();
     }
 
     <A> void addShutdownListener(final EventListener<A> shutdownListener, final A attachment) {

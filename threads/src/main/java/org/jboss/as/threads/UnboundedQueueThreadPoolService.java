@@ -25,7 +25,6 @@ package org.jboss.as.threads;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -133,6 +132,11 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
     public long getTaskCount() {
         final ManagedJBossThreadPoolExecutorService executor = getValue();
         return executor.getTaskCount();
+    }
+    
+    public int getQueueSize() {
+        final ManagedJBossThreadPoolExecutorService executor = getValue();
+        return executor.getQueueSize();
     }
 
     TimeUnit getKeepAliveUnit() {
