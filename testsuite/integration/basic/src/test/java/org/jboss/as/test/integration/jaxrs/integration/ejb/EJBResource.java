@@ -26,7 +26,7 @@ import javax.ejb.Stateless;
 import javax.interceptor.Interceptors;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
+import javax.transaction.TransactionSynchronizationRegistry;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -38,11 +38,11 @@ import javax.ws.rs.Produces;
 public class EJBResource implements EjbInterface {
 
     @Resource
-    private UserTransaction userTransaction;
+    private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
 
     @GET
     public String getMessage() throws SystemException {
-        if(userTransaction.getStatus() != Status.STATUS_ACTIVE) {
+        if(transactionSynchronizationRegistry.getTransactionStatus() != Status.STATUS_ACTIVE) {
             throw new RuntimeException("Transaction not active, not an EJB invocation");
         }
         return "Hello";
