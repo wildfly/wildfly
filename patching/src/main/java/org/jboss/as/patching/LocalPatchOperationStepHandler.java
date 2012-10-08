@@ -22,18 +22,17 @@
 
 package org.jboss.as.patching;
 
+import java.io.InputStream;
+
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.dmr.ModelNode;
-
-import java.io.InputStream;
 
 /**
  * @author Emanuel Muckenhuber

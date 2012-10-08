@@ -22,30 +22,84 @@
 
 package org.jboss.as.patching;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchResourceDefinition extends SimpleResourceDefinition {
+public class PatchResourceDefinition extends SimpleResourceDefinition {
 
     static final String NAME = "patching";
     static final String RESOURCE_NAME = PatchResourceDefinition.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, NAME);
 
-    static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
-
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+    private static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, PatchResourceDefinition.class.getClassLoader(), true, false);
     }
 
-    public PatchResourceDefinition() {
+    static final AttributeDefinition VERSION = SimpleAttributeDefinitionBuilder.create("version", ModelType.STRING)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition CUMULATIVE = SimpleAttributeDefinitionBuilder.create("cumulative", ModelType.STRING)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of("patches", ModelType.STRING)
+            .setStorageRuntime()
+            .build();
+
+    static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder("patch", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+            .build();
+
+    public static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
+
+    private PatchResourceDefinition() {
         super(PATH, getResourceDescriptionResolver(NAME));
     }
 
+    @Override
+    public void registerAttributes(ManagementResourceRegistration registry) {
+        super.registerAttributes(registry);
+
+        registry.registerReadOnlyAttribute(VERSION, new PatchAttributeReadHandler() {
+            @Override
+            void handle(ModelNode result, PatchInfo info) {
+                result.set(info.getVersion());
+            }
+        });
+        registry.registerReadOnlyAttribute(CUMULATIVE, new PatchAttributeReadHandler() {
+            @Override
+            void handle(ModelNode result, PatchInfo info) {
+                result.set(info.getCumulativeID());
+            }
+        });
+        registry.registerReadOnlyAttribute(PATCHES, new PatchAttributeReadHandler() {
+            @Override
+            void handle(ModelNode result, PatchInfo info) {
+                result.setEmptyList();
+                for(final String id : info.getPatchIDs()) {
+                    result.add(id);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration registry) {
+        super.registerOperations(registry);
+
+        registry.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
+    }
 }
