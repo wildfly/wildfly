@@ -6,6 +6,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -88,7 +90,18 @@ public class MailSessionAdd extends AbstractAddStepHandler {
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
 
-        final ManagedReferenceFactory valueManagedReferenceFactory = new ManagedReferenceFactory() {
+        final ManagedReferenceFactory valueManagedReferenceFactory = new ContextListAndJndiViewManagedReferenceFactory() {
+
+            @Override
+            public String getJndiViewInstanceValue() {
+                return String.valueOf(getReference().getInstance());
+            }
+
+            @Override
+            public String getInstanceClassName() {
+                final Object value = getReference().getInstance();
+                return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+            }
 
             @Override
             public ManagedReference getReference() {

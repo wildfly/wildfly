@@ -10,8 +10,9 @@ import org.jboss.msc.value.InjectedValue;
  * Managed reference factory used for binding a context.
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
-public class ContextManagedReferenceFactory implements ManagedReferenceFactory {
+public class ContextManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
 
     private final String name;
     private final InjectedValue<NamingStore> namingStoreInjectedValue = new InjectedValue<NamingStore>();
@@ -44,5 +45,15 @@ public class ContextManagedReferenceFactory implements ManagedReferenceFactory {
 
     public InjectedValue<NamingStore> getNamingStoreInjectedValue() {
         return namingStoreInjectedValue;
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        return NamingContext.class.getName();
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        return name;
     }
 }

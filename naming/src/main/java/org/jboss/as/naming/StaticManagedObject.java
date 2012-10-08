@@ -26,8 +26,9 @@ package org.jboss.as.naming;
  * A JNDI injectable which returns a static object and takes no action when the value is returned.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Eduardo Martins
  */
-public final class StaticManagedObject implements ManagedReferenceFactory {
+public final class StaticManagedObject implements ContextListManagedReferenceFactory,JndiViewManagedReferenceFactory {
     private final Object value;
 
     /**
@@ -52,6 +53,25 @@ public final class StaticManagedObject implements ManagedReferenceFactory {
                 return value;
             }
         };
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        if (value == null) {
+            return "null";
+        }
+        final ClassLoader cl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(value.getClass().getClassLoader());
+            return value.toString();
+        } finally {
+            SecurityActions.setContextClassLoader(cl);
+        }
     }
 
 }

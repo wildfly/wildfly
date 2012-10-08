@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.ee.EeMessages;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.inject.InjectionException;
@@ -32,7 +33,7 @@ import org.jboss.msc.inject.InjectionException;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ViewManagedReferenceFactory implements ManagedReferenceFactory {
+public final class ViewManagedReferenceFactory implements ContextListManagedReferenceFactory {
     private final ComponentView view;
 
     /**
@@ -42,6 +43,11 @@ public final class ViewManagedReferenceFactory implements ManagedReferenceFactor
      */
     public ViewManagedReferenceFactory(final ComponentView view) {
         this.view = view;
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        return view.getComponent().getComponentClass().getName();
     }
 
     /** {@inheritDoc} */
