@@ -28,7 +28,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * {@link UserTransactionAccessRightService} allows enabling/disabling access to the {@link javax.transaction.UserTransaction}
@@ -54,10 +55,10 @@ public class UserTransactionAccessRightService implements Service<UserTransactio
     }
 
     // The stack of current permissions associated with the thread
-    private final ThreadLocal<Stack<UserTransactionAccessPermission>> currentPermissions = new ThreadLocal<Stack<UserTransactionAccessPermission>>() {
+    private final ThreadLocal<Deque<UserTransactionAccessPermission>> currentPermissions = new ThreadLocal<Deque<UserTransactionAccessPermission>>() {
         @Override
-        protected Stack<UserTransactionAccessPermission> initialValue() {
-            return new Stack<UserTransactionAccessPermission>();
+        protected Deque<UserTransactionAccessPermission> initialValue() {
+            return new ArrayDeque<UserTransactionAccessPermission>();
         }
     };
 
@@ -82,7 +83,7 @@ public class UserTransactionAccessRightService implements Service<UserTransactio
      * @param permission
      */
     public void pushAccessPermission(final UserTransactionAccessPermission permission) {
-        final Stack<UserTransactionAccessPermission> permissions = this.currentPermissions.get();
+        final Deque<UserTransactionAccessPermission> permissions = this.currentPermissions.get();
         permissions.push(permission);
     }
 
@@ -92,7 +93,7 @@ public class UserTransactionAccessRightService implements Service<UserTransactio
      * @return
      */
     public UserTransactionAccessPermission popAccessPermission() {
-        final Stack<UserTransactionAccessPermission> permissions = this.currentPermissions.get();
+        final Deque<UserTransactionAccessPermission> permissions = this.currentPermissions.get();
         return permissions.pop();
     }
 
@@ -103,7 +104,7 @@ public class UserTransactionAccessRightService implements Service<UserTransactio
      * @return
      */
     public boolean isUserTransactionAccessDisAllowed() {
-        final Stack<UserTransactionAccessPermission> permissions = this.currentPermissions.get();
+        final Deque<UserTransactionAccessPermission> permissions = this.currentPermissions.get();
         if (permissions.isEmpty()) {
             return false;
         }
