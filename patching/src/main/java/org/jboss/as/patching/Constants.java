@@ -23,17 +23,18 @@
 package org.jboss.as.patching;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class Constants {
+public class Constants {
 
     static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING).build();
     static final AttributeDefinition OVERRIDE_ALL = SimpleAttributeDefinitionBuilder.create("override-all", ModelType.BOOLEAN).build();
 
 
+    public static final String TIMESTAMP = "timestamp";
+    public static final String APPLIED_AT = "applied-at";
 }

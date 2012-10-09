@@ -63,6 +63,9 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder("patch", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .build();
 
+    static final OperationDefinition SHOW_HISTORY = new SimpleOperationDefinitionBuilder("show-history", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+            .build();
+
     public static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
 
     private PatchResourceDefinition() {
@@ -101,5 +104,6 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         registry.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
+        registry.registerOperationHandler(SHOW_HISTORY, LocalShowHistoryHandler.INSTANCE);
     }
 }

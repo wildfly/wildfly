@@ -35,8 +35,10 @@ import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -315,20 +317,8 @@ public final class PatchUtils {
         }
    }
 
-    private static final char[] table = "0123456789abcdef".toCharArray();
-
-    /**
-     * Convert a byte array into a hex string.
-     *
-     * @param bytes the bytes
-     * @return the string
-     */
-    public static String bytesToHexString(final byte[] bytes) {
-        final StringBuilder builder = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            builder.append(table[b >> 4 & 0x0f]).append(table[b & 0x0f]);
-        }
-        return builder.toString();
+    // FIXME do we need to i18nize the timestamp?
+    static String generateTimestamp() {
+        return DateFormat.getInstance().format(new Date());
     }
-
 }

@@ -32,9 +32,19 @@ import java.util.List;
 public interface Patch {
 
     public enum PatchType {
-        CUMULATIVE,
-        ONE_OFF,
+        CUMULATIVE("cumulative"),
+        ONE_OFF("one-off"),
         ;
+
+        private final String name;
+
+        private PatchType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     /**
@@ -59,7 +69,7 @@ public interface Patch {
     PatchType getPatchType();
 
     /**
-     * Get the resulting version of a CP.
+     * Get the resulting version of a CP or {@code null} for a one-off patch
      *
      * @return the resulting version
      */
