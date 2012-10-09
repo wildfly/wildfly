@@ -27,6 +27,7 @@ import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.Cause;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,4 +54,6 @@ public interface PatchMessages {
     @Message(id = 16843, value = "Cannot complete operation. Patch '%s' is currently active")
     OperationFailedException patchActive(String patchId);
 
+    @Message(id = 16845, value = "Failed to show history of patches")
+    OperationFailedException failedToShowHistory(@Cause Throwable cause);
 }

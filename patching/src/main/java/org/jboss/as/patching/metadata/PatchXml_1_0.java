@@ -57,6 +57,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         ADDED_BUNDLE("added-bundle"),
         ADDED_MISC_CONTENT("added-misc-content"),
         ADDED_MODULE("added-module"),
+        APPLIES_TO_VERSION("applies-to-version"),
         BUNDLES("bundles"),
         CUMULATIVE("cumulative"),
         DESCRIPTION("description"),
@@ -99,7 +100,6 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
 
     enum Attribute {
 
-        APPLIES_TO_VERSION("applies-to-version"),
         DIRECTORY("directory"),
         EXISTING_HASH("existing-hash"),
         EXISTING_PATH("existing-path"),
@@ -154,14 +154,14 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
 
         // Type
         final Patch.PatchType type = patch.getPatchType();
-        final List<String> appliesTo = patch.getAppliesTo();
         if(type == Patch.PatchType.ONE_OFF) {
-            writer.writeEmptyElement(Element.ONE_OFF.name);
+            writer.writeStartElement(Element.ONE_OFF.name);
         } else {
-            writer.writeEmptyElement(Element.CUMULATIVE.name);
+            writer.writeStartElement(Element.CUMULATIVE.name);
             writer.writeAttribute(Attribute.RESULTING_VERSION.name, patch.getResultingVersion());
         }
-        writer.writeAttribute(Attribute.APPLIES_TO_VERSION.name, appliesTo);
+        writeAppliesToVersions(writer, patch.getAppliesTo());
+        writer.writeEndElement(); // </one-off> or </cumulative>
 
         // Sort by content and modification type
         final List<ContentModification> bundlesAdd  = new ArrayList<ContentModification>();
@@ -223,25 +223,37 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         }
 
         // Modules
-        writer.writeStartElement(Element.MODULES.name);
-        writeSlottedItems(writer, Element.ADDED_MODULE, modulesAdd);
-        writeSlottedItems(writer, Element.UPDATED_MODULE, modulesUpdate);
-        writeSlottedItems(writer, Element.REMOVED_MODULE, modulesRemove);
-        writer.writeEndElement();
+        if (!modulesAdd.isEmpty() ||
+                !modulesUpdate.isEmpty() ||
+                !modulesRemove.isEmpty()) {
+            writer.writeStartElement(Element.MODULES.name);
+            writeSlottedItems(writer, Element.ADDED_MODULE, modulesAdd);
+            writeSlottedItems(writer, Element.UPDATED_MODULE, modulesUpdate);
+            writeSlottedItems(writer, Element.REMOVED_MODULE, modulesRemove);
+            writer.writeEndElement();
+        }
 
         // Bundles
-        writer.writeStartElement(Element.BUNDLES.name);
-        writeSlottedItems(writer, Element.ADDED_BUNDLE, bundlesAdd);
-        writeSlottedItems(writer, Element.UPDATED_BUNDLE, bundlesUpdate);
-        writeSlottedItems(writer, Element.REMOVED_BUNDLE, bundlesRemove);
-        writer.writeEndElement();
+        if (!bundlesAdd.isEmpty() ||
+                !bundlesUpdate.isEmpty() ||
+                !bundlesRemove.isEmpty()) {
+            writer.writeStartElement(Element.BUNDLES.name);
+            writeSlottedItems(writer, Element.ADDED_BUNDLE, bundlesAdd);
+            writeSlottedItems(writer, Element.UPDATED_BUNDLE, bundlesUpdate);
+            writeSlottedItems(writer, Element.REMOVED_BUNDLE, bundlesRemove);
+            writer.writeEndElement();
+        }
 
         // Misc
-        writer.writeStartElement(Element.MISC_FILES.name);
-        writeMiscItems(writer, Element.ADDED_MISC_CONTENT, miscAdd);
-        writeMiscItems(writer, Element.UPDATED_MISC_CONTENT, miscUpdate);
-        writeMiscItems(writer, Element.REMOVED_MISC_CONTENT, miscRemove);
-        writer.writeEndElement();
+        if (!miscAdd.isEmpty() ||
+                !miscUpdate.isEmpty() ||
+                !miscRemove.isEmpty()) {
+            writer.writeStartElement(Element.MISC_FILES.name);
+            writeMiscItems(writer, Element.ADDED_MISC_CONTENT, miscAdd);
+            writeMiscItems(writer, Element.UPDATED_MISC_CONTENT, miscUpdate);
+            writeMiscItems(writer, Element.REMOVED_MISC_CONTENT, miscRemove);
+            writer.writeEndElement();
+        }
 
         // Done
         writer.writeEndElement();
@@ -289,9 +301,6 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case APPLIES_TO_VERSION:
-                    builder.addAppliesTo(value);
-                    break;
                 case RESULTING_VERSION:
                     if(type == Patch.PatchType.CUMULATIVE) {
                         builder.setResultingVersion(value);
@@ -301,7 +310,16 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     throw unexpectedAttribute(reader, i);
             }
         }
-        requireNoContent(reader);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case APPLIES_TO_VERSION:
+                    builder.addAppliesTo(reader.getElementText());
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
     }
 
     static void parseModules(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
@@ -447,6 +465,14 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         return new ContentModification(item, targetHash, type);
     }
 
+    protected void writeAppliesToVersions(XMLExtendedStreamWriter writer, List<String> appliesTo) throws XMLStreamException {
+        for (String version : appliesTo) {
+            writer.writeStartElement(Element.APPLIES_TO_VERSION.name);
+            writer.writeCharacters(version);
+            writer.writeEndElement();
+        }
+    }
+
     protected void writeSlottedItems(final XMLExtendedStreamWriter writer, final Element element, final List<ContentModification> modifications) throws XMLStreamException {
         for(final ContentModification modification : modifications) {
             writeSlottedItem(writer, element, modification);
@@ -498,6 +524,9 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         path.append(item.getName());
 
         writer.writeAttribute(Attribute.PATH.name, path.toString());
+        if (item.isDirectory()) {
+            writer.writeAttribute(Attribute.DIRECTORY.name, "true");
+        }
 
         if(type != ModificationType.REMOVE) {
             writer.writeAttribute(Attribute.HASH.name, bytesToHexString(item.getContentHash()));

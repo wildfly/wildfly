@@ -23,9 +23,12 @@
 
 <patch xmlns="urn:jboss:patch:1.0">
 
-    <name>patch-12345</name>
+    <name>patch-01</name>
     <description>patch description</description>
-    <cumulative applies-to-version="1.2.3" resulting-version="2.3.4" />
+    <cumulative resulting-version="2.3.4">
+        <applies-to-version>1.2.3</applies-to-version>
+        <applies-to-version>4.5.6</applies-to-version>
+    </cumulative>
 
     <modules>
         <added-module name="org.jboss.as.test" slot="prod" />
@@ -47,11 +50,11 @@
 
     <misc-files>
         <added-misc-content path="test/file" hash="1a2b3c4d" />
-        <added-misc-content path="test/file2" hash="5e6f7a" />
+        <added-misc-content path="test/file2" hash="5e6f7a" directory="true" />
         <updated-misc-content path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
-        <updated-misc-content path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" />
+        <updated-misc-content path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" directory="true" />
         <removed-misc-content path="test/file" existing-hash="1a2b3c4d" in-runtime-use="true" />
-        <removed-misc-content path="test/file4" existing-hash="5e6f7a" />
+        <removed-misc-content path="test/file4" existing-hash="5e6f7a" directory="true" />
     </misc-files>
 
 </patch>

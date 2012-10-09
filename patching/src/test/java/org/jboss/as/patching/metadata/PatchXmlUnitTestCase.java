@@ -24,6 +24,7 @@ package org.jboss.as.patching.metadata;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +32,6 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.util.Scanner;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -40,11 +40,11 @@ import org.junit.Test;
 public class PatchXmlUnitTestCase {
 
     @Test
-    public void testParse() throws Exception {
+    public void testParseCP() throws Exception {
 
-        final InputStream is = getResource("test01.xml");
+        final InputStream is = getResource("patch-01-CP.xml");
         final Patch patch = PatchXml.parse(is);
-        // Patch
+        // Cumulative Patch
         assertNotNull(patch);
         assertNotNull(patch.getPatchId());
         assertNotNull(patch.getDescription());
@@ -54,10 +54,36 @@ public class PatchXmlUnitTestCase {
         assertNotNull(patch.getAppliesTo().get(0));
     }
 
+
     @Test
-    public void testMarshall() throws Exception {
-        final InputStream is = getResource("test01.xml");
-        final String original = toString(is);
+    public void testParseOneOff() throws Exception {
+
+        final InputStream is = getResource("patch-02-ONE-OFF.xml");
+        final Patch patch = PatchXml.parse(is);
+        // One-off Patch
+        assertNotNull(patch);
+        assertNotNull(patch.getPatchId());
+        assertNotNull(patch.getDescription());
+        assertNotNull(patch.getPatchType());
+        assertEquals(Patch.PatchType.ONE_OFF, patch.getPatchType());
+        assertNull(patch.getResultingVersion());
+        assertNotNull(patch.getAppliesTo().get(0));
+    }
+
+    @Test
+    public void testMarshallCP() throws Exception {
+        doMarshall("patch-01-CP.xml");
+    }
+
+    @Test
+    public void testMarshallOneOff() throws Exception {
+        doMarshall("patch-02-ONE-OFF.xml");
+    }
+
+    private void doMarshall(String fileName) throws Exception {
+        final String original = toString(fileName);
+
+        final InputStream is = getResource(fileName);
         final Patch patch = PatchXml.parse(is);
 
         final StringWriter writer = new StringWriter();
@@ -73,7 +99,8 @@ public class PatchXmlUnitTestCase {
         return resource.openStream();
     }
 
-    private String toString(InputStream is) {
+    private String toString(String fileName) throws Exception {
+        final InputStream is = getResource(fileName);
         assertNotNull(is);
         try {
             is.mark(0);
@@ -84,5 +111,4 @@ public class PatchXmlUnitTestCase {
             return "";
         }
     }
-
 }
