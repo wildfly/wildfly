@@ -46,8 +46,8 @@ import java.util.Arrays;
  */
 class ModuleUpdateTask extends AbstractModuleTask {
 
-    ModuleUpdateTask(ModuleItem item, byte[] expected) {
-        super(item, expected);
+    ModuleUpdateTask(ModuleItem item, byte[] expected, boolean add) {
+        super(item, expected, add);
     }
 
     @Override

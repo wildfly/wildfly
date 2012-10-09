@@ -39,6 +39,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -63,6 +66,10 @@ public class PatchingTaskRunner {
     }
 
     public PatchingResult executeDirect(final InputStream content) throws PatchingException {
+        return executeDirect(content, ContentVerificationPolicy.STRICT);
+    }
+
+    public PatchingResult executeDirect(final InputStream content, final ContentVerificationPolicy policy) throws PatchingException {
         File workDir = null;
         try {
             // Create a working dir
@@ -84,7 +91,7 @@ public class PatchingTaskRunner {
             unpack(cachedContent, workDir);
 
             // Execute
-            return execute(workDir, ContentVerificationPolicy.STRICT);
+            return execute(workDir, policy);
         } catch (IOException e) {
             throw new PatchingException(e);
         } finally {
@@ -116,9 +123,16 @@ public class PatchingTaskRunner {
             }
 
             // Check if we can apply this patch
+            final String patchId = patch.getPatchId();
             final List<String> appliesTo = patch.getAppliesTo();
             if(! appliesTo.contains(patchInfo.getVersion())) {
                 throw PatchMessages.MESSAGES.doesNotApply(appliesTo, patchInfo.getVersion());
+            }
+            if(patchInfo.getCumulativeID().equals(patchId)) {
+                throw new PatchingException("already applied " + patchId);
+            }
+            if(patchInfo.getPatchIDs().contains(patchId)) {
+                throw new PatchingException("already applied " + patchId);
             }
 
             // Execute the patch itself
@@ -158,7 +172,7 @@ public class PatchingTaskRunner {
                     // In case the file was modified we report a problem
                     final ContentItem item = modification.getItem();
                     // Unless it was ignored (or excluded)
-                    if(context.isIgnored(item)) {
+                    if(! context.isIgnored(item)) {
                         problems.add(item);
                     }
                 }
@@ -169,18 +183,19 @@ public class PatchingTaskRunner {
         }
         // If there were problems report them
         if(! problems.isEmpty()) {
-            // TODO
-            throw new PatchingException("...");
+            // TODO handle patch cleanup
+            return new FailedResult(patch.getPatchId(), context.getPatchInfo(), problems);
         }
         //
         try {
             // Execute the tasks
             for(final PatchingTask task : tasks) {
                 // Unless it's excluded by the user
-                if(context.isExcluded(task.getContentItem())) {
+                final ContentItem item = task.getContentItem();
+                if(item != null && context.isExcluded(item)) {
                     continue;
                 }
-                // Record the rollback task
+                // Run the task
                 task.execute(context);
             }
         } catch (Exception e) {
@@ -194,25 +209,27 @@ public class PatchingTaskRunner {
      * Rollback an active patch.
      *
      * @param patchId the patch id to rollback
+     * @param overrideAll override all conflicting files
+     * @return the result
      * @throws PatchingException
      */
-    public void rollback(final String patchId) throws PatchingException {
+    public PatchingResult rollback(final String patchId, final boolean overrideAll) throws PatchingException {
         // Check if the patch is currently active
         if(! patchInfo.getCumulativeID().equals(patchId)) {
             if(! patchInfo.getPatchIDs().contains(patchId)) {
                 PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-                return;
+                return new FailedResult(patchId, patchInfo);
             }
         }
         final File historyDir = structure.getHistoryDir(patchId);
         if(! historyDir.exists()) {
             PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-            return;
+            return new FailedResult(patchId, patchInfo);
         }
         final File patchXml = new File(historyDir, PatchXml.PATCH_XML);
         if(! patchXml.exists()) {
             PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-            return;
+            return new FailedResult(patchId, patchInfo);
         }
         File workDir = createTempDir();
         try {
@@ -237,9 +254,9 @@ public class PatchingTaskRunner {
                     throw new PatchingException("inconsistent patches for '%s' expected: %s, was: %s", cumulative, historyDir, cumulativePatches);
                 }
 
-                final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, workDir);
+                final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, overrideAll, workDir);
                 // Rollback
-                executeTasks(patch, context);
+                return executeTasks(patch, context);
 
             } finally {
                 PatchUtils.safeClose(is);
@@ -340,7 +357,7 @@ public class PatchingTaskRunner {
             workDir = new File(TEMP_DIR, DIRECTORY_SUFFIX + count);
         }
         if (!workDir.mkdirs()) {
-            throw new PatchingException("Cannot create tmp dir for patch creation at " + workDir);
+            throw new PatchingException(PatchMessages.MESSAGES.cannotCreateDirectory(workDir.getAbsolutePath()));
         }
         return workDir;
     }
@@ -350,6 +367,48 @@ public class PatchingTaskRunner {
             return (PatchingException) e;
         } else {
             return new PatchingException(e);
+        }
+    }
+
+    static class FailedResult implements PatchingResult {
+
+        private final String patch;
+        private final PatchInfo info;
+        private final Collection<ContentItem> problems;
+
+        FailedResult(String patch, PatchInfo info) {
+            this(patch, info, Collections.<ContentItem>emptyList());
+        }
+
+        FailedResult(String patch, PatchInfo info, Collection<ContentItem> problems) {
+            this.patch = patch;
+            this.info = info;
+            this.problems = problems;
+        }
+
+        @Override
+        public String getPatchId() {
+            return patch;
+        }
+
+        @Override
+        public boolean hasFailures() {
+            return true;
+        }
+
+        @Override
+        public Collection<ContentItem> getProblems() {
+            return problems;
+        }
+
+        @Override
+        public PatchInfo getPatchInfo() {
+            return info;
+        }
+
+        @Override
+        public void rollback() {
+            throw new IllegalStateException();
         }
     }
 

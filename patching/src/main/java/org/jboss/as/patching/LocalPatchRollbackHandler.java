@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.dmr.ModelNode;
 
@@ -37,11 +38,13 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
 
     public static final LocalPatchRollbackHandler INSTANCE = new LocalPatchRollbackHandler();
 
-    private final String PATCH_ID = CommonAttributes.PATCH_ID.getName();
+    private final String PATCH_ID = Constants.PATCH_ID.getName();
+    private final String OVERRIDE_ALL = Constants.OVERRIDE_ALL.getName();
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String patchId = operation.require(PATCH_ID).asString();
+        final boolean overrideAll = operation.get(OVERRIDE_ALL).asBoolean(false);
         //
         context.acquireControllerLock();
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
@@ -51,7 +54,13 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         final PatchingTaskRunner taskRunner = new PatchingTaskRunner(info, structure);
         try {
             // Rollback
-            taskRunner.rollback(patchId);
+            final PatchingResult result = taskRunner.rollback(patchId, overrideAll);
+            if(result.hasFailures()) {
+                final ModelNode failureDescription = context.getFailureDescription();
+                failureDescription.get("content-items").set("TODO");
+                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+                return;
+            }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (PatchingException e) {
             throw new OperationFailedException(e.getMessage(), e);

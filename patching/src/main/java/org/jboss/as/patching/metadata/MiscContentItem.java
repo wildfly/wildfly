@@ -75,4 +75,15 @@ public class MiscContentItem extends ContentItem {
         return path;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(MiscContentItem.class.getSimpleName()).append("{");
+        for(final String path : getPath()) {
+            builder.append(path).append("/");
+        }
+        builder.append(getName()).append("}");
+        return builder.toString();
+    }
+
 }

@@ -23,6 +23,10 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.Patch;
+
+import java.util.Collection;
 
 /**
  * The result when applying a patch.
@@ -30,6 +34,27 @@ import org.jboss.as.patching.PatchInfo;
  * @author Emanuel Muckenhuber
  */
 public interface PatchingResult {
+
+    /**
+     * Get the patch id.
+     *
+     * @return the patch id
+     */
+    String getPatchId();
+
+    /**
+     * Has failures.
+     *
+     * @return
+     */
+    boolean hasFailures();
+
+    /**
+     * Get the content items which failed content verification.
+     *
+     * @return the content items
+     */
+    Collection<ContentItem> getProblems();
 
     /**
      * Get the patch info.

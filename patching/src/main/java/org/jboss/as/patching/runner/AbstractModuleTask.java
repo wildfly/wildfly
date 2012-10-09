@@ -41,10 +41,16 @@ abstract class AbstractModuleTask implements PatchingTask {
 
     protected final ModuleItem item;
     protected final byte[] expected;
+    protected final boolean add;
 
     protected AbstractModuleTask(ModuleItem item, byte[] expected) {
+        this(item, expected, false);
+    }
+
+    protected AbstractModuleTask(ModuleItem item, byte[] expected, boolean add) {
         this.item = item;
         this.expected = expected;
+        this.add = add;
     }
 
     @Override
@@ -56,7 +62,7 @@ abstract class AbstractModuleTask implements PatchingTask {
     public boolean prepare(PatchingContext context) throws IOException {
         // Check the module.xml hash
         final PatchInfo patchInfo = context.getPatchInfo();
-        final File[] repoRoots = patchInfo.getPatchingPath();
+        final File[] repoRoots = patchInfo.getModulePath();
         //
         final String moduleName = item.getName();
         final String slot = item.getSlot();
@@ -65,16 +71,19 @@ abstract class AbstractModuleTask implements PatchingTask {
             final File modulePath = PatchContentLoader.getModulePath(path, moduleName, slot);
             final File moduleXml = new File(modulePath, MODULE_XML);
             if(moduleXml.exists()) {
+                PatchLogger.ROOT_LOGGER.debugf("found in path (%s)", moduleXml.getAbsolutePath());
                 // We only care about the first match
                 // Calculate the hash over the complete directory
                 final byte[] hash = PatchUtils.calculateHash(modulePath);
-                if(Arrays.equals(expected, hash)) {
-                    // Only log
-                    PatchLogger.ROOT_LOGGER.moduleContentChanged(moduleName);
+                if(! Arrays.equals(expected, hash)) {
+                    PatchLogger.ROOT_LOGGER.moduleContentChanged(moduleName, PatchUtils.bytesToHexString(hash));
+                    return false;
+                } else {
+                    return true;
                 }
             }
         }
-        return true;
+        return add;
     }
 
 }

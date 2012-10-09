@@ -84,18 +84,20 @@ public interface PatchingTask {
         }
 
         static PatchingTask createBundleTask(final ContentModification modification, final BundleItem item, final PatchingContext context) {
-            if(modification.getType() == ModificationType.REMOVE) {
+            final ModificationType type = modification.getType();
+            if(type == ModificationType.REMOVE) {
                 return new ModuleRemoveTask(item, modification.getTargetHash());
             } else {
-                return new ModuleUpdateTask(item, modification.getTargetHash());
+                return new ModuleUpdateTask(item, modification.getTargetHash(), type == ModificationType.ADD);
             }
         }
 
         static PatchingTask createModuleTask(final ContentModification modification, final ModuleItem item, final PatchingContext context) {
-            if(modification.getType() == ModificationType.REMOVE) {
+            final ModificationType type = modification.getType();
+            if(type == ModificationType.REMOVE) {
                 return new ModuleRemoveTask(item, modification.getTargetHash());
             } else {
-                return new ModuleUpdateTask(item, modification.getTargetHash());
+                return new ModuleUpdateTask(item, modification.getTargetHash(), type == ModificationType.ADD);
             }
         }
 
