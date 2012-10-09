@@ -83,6 +83,42 @@ public class WSBAParticipantCompletionTestCase {
             log.info("[CLIENT] invoking addValueToSet(1) on WS");
             client.addValueToSet(value);
 
+            /*
+                AS7-5700
+
+                When a WSBA participant employs the ParticipantCompletion protocol, it is the responsibility of the participant
+                to notify the coordinator when it has completed its work. This notification is asynchronous.
+
+                In the 'WSBAParticipantCompletionTestCase' test, the client invokes the participant's web service who notifies
+                completion just before returning from the invocation. The client then sends a message to the coordinator requesting
+                to close (complete) the activity.
+
+                As the "complete" message (from the participant to coordinator) is asynchronous, we now have a race. If the
+                Client's close message is processed by the coordinator before the participant's "complete" message, then the coordinator
+                cancels the BA as not all participants have completed.
+                This results in the client receiving a TransactionRolledBackException and the completed participant
+                is (eventually) compensated. The outcome is atomic, but a BA that would have otherwise succeeded, is unsuccessful.
+
+                In reality we only expect this scenario to happen in the rather artificial scenario where all parties (client,
+                coordinator and participants) are on the same server. It also only seems to happen on very slow machines. Therefore,
+                it's fine to fix the test to prevent this scenario from arising, rather than to somehow change the protocol
+                (without breaking the WS-BA standard) to prevent it.
+
+                We have two options, that I can see to fix the test:
+
+                1) Byteman Rendezvous. Here we would introduce a dependency on Byteman and write a script that delays the client's
+                    close message until all participants' 'complete' messages have been acknowledged by the coordinator. This is
+                    probably an over-engineered solution as we would be introducing Byteman, to these tests, for this single case.
+
+                2) We add a Thread.sleep(10000) to the test, just before the client sends the 'close' message to the coordinator.
+                    This is what we did to the XTS tests in the JBossTS project as a stop-gap until we decided how to do it "properly".
+
+                I suggest we go with 2) as it is the simplest solution. The extra time added to the test is just 10s as there is only
+                one test affected by this. In the future, when we have more tests we should reduce this sleep period or consider
+                using another solution (such as Byteman), in order to keep the test duration acceptable.
+             */
+            Thread.sleep(10000);
+
             log.info("[CLIENT] Closing Business Activity (This will cause the BA to complete successfully)");
             uba.close();
 
