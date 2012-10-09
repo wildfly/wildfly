@@ -19,24 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.osgi.classloading.bundle;
+package org.jboss.as.test.integration.osgi.classloading.suba;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.log.LogService;
-
-public class LoggingActivator implements BundleActivator {
-
-    @Override
-    public void start(BundleContext context) throws Exception {
-        ServiceReference sref = context.getServiceReference(LogService.class.getName());
-        LogService logservice = (LogService) context.getService(sref);
-        logservice.log(LogService.LOG_INFO, "Hello from " + context.getBundle());
-    }
-
-    @Override
-    public void stop(BundleContext context) throws Exception {
-    }
+public class WebInfLibClass {
 
 }
