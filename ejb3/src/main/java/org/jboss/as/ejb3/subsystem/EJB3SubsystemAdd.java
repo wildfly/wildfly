@@ -113,6 +113,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.as.txn.service.UserTransactionAccessRightService;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
@@ -304,6 +305,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, utilities.getTransactionManagerInjector())
                     .addDependency(TxnServices.JBOSS_TXN_SYNCHRONIZATION_REGISTRY, TransactionSynchronizationRegistry.class, utilities.getTransactionSynchronizationRegistryInjector())
                     .addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, utilities.getUserTransactionInjector())
+                    .addDependency(UserTransactionAccessRightService.SERVICE_NAME, UserTransactionAccessRightService.class, utilities.getUserTransactionAccessRightServiceInjector())
                     .addListener(verificationHandler)
                     .setInitialMode(ServiceController.Mode.ACTIVE)
                     .install());

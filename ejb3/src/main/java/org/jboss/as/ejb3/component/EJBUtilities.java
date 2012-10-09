@@ -37,6 +37,8 @@ import javax.transaction.UserTransaction;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ejb3.inflow.EndpointDeployer;
+import org.jboss.as.txn.service.UserTransactionAccessRightService;
+import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.jca.core.spi.rar.Activation;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.jboss.jca.core.spi.rar.MessageListener;
@@ -44,6 +46,7 @@ import org.jboss.jca.core.spi.rar.NotFoundException;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -70,6 +73,7 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
     private final InjectedValue<TransactionManager> transactionManagerValue = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> transactionSynchronizationRegistryValue = new InjectedValue<TransactionSynchronizationRegistry>();
     private final InjectedValue<UserTransaction> userTransactionValue = new InjectedValue<UserTransaction>();
+    private final InjectedValue<UserTransactionAccessRightService> userTxAccessRightService = new InjectedValue<UserTransactionAccessRightService>();
 
     private volatile boolean statisticsEnabled = false;
 
@@ -191,6 +195,14 @@ public class EJBUtilities implements EndpointDeployer, Service<EJBUtilities> {
 
     public Injector<UserTransaction> getUserTransactionInjector() {
         return userTransactionValue;
+    }
+
+    UserTransactionAccessRightService getUserTransactionAccessRightService() {
+        return this.userTxAccessRightService.getValue();
+    }
+
+    public Injector<UserTransactionAccessRightService> getUserTransactionAccessRightServiceInjector() {
+        return this.userTxAccessRightService;
     }
 
     @Override

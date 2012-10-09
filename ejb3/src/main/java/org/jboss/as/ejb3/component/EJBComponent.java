@@ -21,12 +21,29 @@
  */
 package org.jboss.as.ejb3.component;
 
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.Collections;
-import java.util.Map;
+import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.ee.component.BasicComponent;
+import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
+import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
+import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
+import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.security.EJBSecurityMetaData;
+import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.txn.service.UserTransactionAccessRightService;
+import org.jboss.ejb.client.EJBClient;
+import org.jboss.ejb.client.EJBHomeLocator;
+import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
+import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -41,30 +58,12 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
-
-import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.ee.component.BasicComponent;
-import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
-import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
-import org.jboss.as.ejb3.component.invocationmetrics.InvocationMetrics;
-import org.jboss.as.ejb3.context.CurrentInvocationContext;
-import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
-import org.jboss.as.ejb3.security.EJBSecurityMetaData;
-import org.jboss.as.ejb3.tx.ApplicationExceptionDetails;
-import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.ejb.client.EJBClient;
-import org.jboss.ejb.client.EJBHomeLocator;
-import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.proxy.MethodIdentifier;
-import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.Collections;
+import java.util.Map;
 
 import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
@@ -358,7 +357,7 @@ public abstract class EJBComponent extends BasicComponent {
         return utilities.getUserTransaction();
     }
 
-    private boolean isBeanManagedTransaction() {
+    boolean isBeanManagedTransaction() {
         return isBeanManagedTransaction;
     }
 
@@ -498,5 +497,9 @@ public abstract class EJBComponent extends BasicComponent {
 
     protected ShutDownInterceptorFactory getShutDownInterceptorFactory() {
         return shutDownInterceptorFactory;
+    }
+
+    UserTransactionAccessRightService getUserTransactionAccessRightService() {
+        return this.utilities.getUserTransactionAccessRightService();
     }
 }

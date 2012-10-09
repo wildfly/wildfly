@@ -103,5 +103,8 @@ public interface TransactionMessages {
     @Message(id = 10106, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
     RuntimeException jmxSubsystemNotInstalled();
 
+    @Message(id = 10107, value = "Access to javax.transaction.UserTransaction is not allowed")
+    IllegalStateException userTransactionAccessNotAllowed();
+
 
 }
