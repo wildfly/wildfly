@@ -29,20 +29,29 @@
 
     <modules>
         <added-module name="org.jboss.as.test" slot="prod" />
+        <added-module name="org.jboss.as.test2" slot="prod" />
         <updated-module name="org.jboss.as.test" existing-hash="1a2b3c4d" />
+        <updated-module name="org.jboss.as.test3" existing-hash="5e6f7a" />
         <removed-module name="org.jboss.as.test" existing-hash="1a2b3c4d" />
+        <removed-module name="org.jboss.as.test4" existing-hash="5e6f7a" />
     </modules>
 
     <bundles>
         <added-bundle name="org.jboss.as.test" slot="prod" />
+        <added-bundle name="org.jboss.as.test2" slot="prod" />
         <updated-bundle name="org.jboss.as.test" existing-hash="1a2b3c4d" />
+        <updated-bundle name="org.jboss.as.test3" existing-hash="5e6f7a" />
         <removed-bundle name="org.jboss.as.test" existing-hash="1a2b3c4d" />
+        <removed-bundle name="org.jboss.as.test4" existing-hash="5e6f7a" />
     </bundles>
 
     <misc-files>
         <added-misc-content path="test/file" hash="1a2b3c4d" />
+        <added-misc-content path="test/file2" hash="5e6f7a" />
         <updated-misc-content path="test/file" hash="1a2b3c4d" existing-hash="2b3c4d5e" />
-        <removed-misc-content path="test/file" hash="1a2b3c4d" in-runtime-use="true" />
+        <updated-misc-content path="test/file3" hash="5e6f7a" existing-hash="6e7f8e" />
+        <removed-misc-content path="test/file" existing-hash="1a2b3c4d" in-runtime-use="true" />
+        <removed-misc-content path="test/file4" existing-hash="5e6f7a" />
     </misc-files>
 
 </patch>

@@ -48,10 +48,7 @@ public class PatchUtils {
         // no instantiation
     }
 
-    private static final char[] table = {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-    };
+    private static final char[] table = "0123456789abcdef".toCharArray();
 
     private static final int DEFAULT_BUFFER_SIZE = 65536;
 

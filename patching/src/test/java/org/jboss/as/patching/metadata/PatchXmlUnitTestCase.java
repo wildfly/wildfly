@@ -22,14 +22,17 @@
 
 package org.jboss.as.patching.metadata;
 
-import junit.framework.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.StringWriter;
 import java.net.URL;
+import java.util.Scanner;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author Emanuel Muckenhuber
@@ -37,28 +40,49 @@ import java.net.URL;
 public class PatchXmlUnitTestCase {
 
     @Test
-    public void test01() throws Exception {
+    public void testParse() throws Exception {
 
         final InputStream is = getResource("test01.xml");
         final Patch patch = PatchXml.parse(is);
         // Patch
-        Assert.assertNotNull(patch);
-        Assert.assertNotNull(patch.getPatchId());
-        Assert.assertNotNull(patch.getDescription());
-        Assert.assertNotNull(patch.getPatchType());
-        Assert.assertEquals(Patch.PatchType.CUMULATIVE, patch.getPatchType());
-        Assert.assertNotNull(patch.getResultingVersion());
-        Assert.assertNotNull(patch.getAppliesTo().get(0));
+        assertNotNull(patch);
+        assertNotNull(patch.getPatchId());
+        assertNotNull(patch.getDescription());
+        assertNotNull(patch.getPatchType());
+        assertEquals(Patch.PatchType.CUMULATIVE, patch.getPatchType());
+        assertNotNull(patch.getResultingVersion());
+        assertNotNull(patch.getAppliesTo().get(0));
+    }
 
-        final Writer writer =  new PrintWriter(System.out);
+    @Test
+    public void testMarshall() throws Exception {
+        final InputStream is = getResource("test01.xml");
+        final String original = toString(is);
+        final Patch patch = PatchXml.parse(is);
+
+        final StringWriter writer = new StringWriter();
         PatchXml.marshal(writer, patch);
+        final String marshalled = writer.toString();
 
+        XMLUtils.compareXml(original, marshalled, false);
     }
 
     static InputStream getResource(String name) throws IOException {
         final URL resource = PatchXmlUnitTestCase.class.getClassLoader().getResource(name);
-        Assert.assertNotNull(name, resource);
+        assertNotNull(name, resource);
         return resource.openStream();
+    }
+
+    private String toString(InputStream is) {
+        assertNotNull(is);
+        try {
+            is.mark(0);
+            String out = new Scanner(is).useDelimiter("\\A").next();
+            is.reset();
+            return out;
+        } catch (Exception e) {
+            return "";
+        }
     }
 
 }
