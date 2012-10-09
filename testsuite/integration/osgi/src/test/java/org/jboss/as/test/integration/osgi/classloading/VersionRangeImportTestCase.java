@@ -29,8 +29,6 @@ import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.integration.osgi.classloading.suba.TestA;
-import org.jboss.as.test.integration.osgi.classloading.subb.TestBA;
 import org.jboss.osgi.spi.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -40,19 +38,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.BundleException;
 
 /**
- * Test optional imports
+ * Test imports with version range
  *
  * @author thomas.diesler@jboss.com
  * @since 23-Aug-2011
  */
 @RunWith(Arquillian.class)
-public class OptionalImportTestCase {
+public class VersionRangeImportTestCase {
 
-    static final String BUNDLE_A = "optional-import-a";
-    static final String BUNDLE_B = "optional-import-b";
+    static final String BUNDLE_A = "version-range-a";
+    static final String BUNDLE_B = "version-range-b";
+    static final String BUNDLE_C = "version-range-c";
 
     @ArquillianResource
     Deployer deployer;
@@ -60,65 +59,32 @@ public class OptionalImportTestCase {
     @Inject
     public BundleContext context;
 
-    @Inject
-    public PackageAdmin packageAdmin;
-
     @Deployment
     public static JavaArchive deployment() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "optional-import-tests");
-        archive.addClasses(TestBA.class);
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "version-range-tests");
         return archive;
     }
 
     @Test
-    public void testUnresolvedOptionalImport() throws Exception {
-        deployer.deploy(BUNDLE_A);
-        Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
-        try {
-            Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
-            try {
-                bundleA.loadClass(TestBA.class.getName()).newInstance();
-                Assert.fail("NoClassDefFoundError expected");
-            } catch (NoClassDefFoundError ex) {
-                // expected
-            }
-        } finally {
-            deployer.undeploy(BUNDLE_A);
-        }
-    }
-
-    @Test
-    public void testResolvedOptionalImport() throws Exception {
-        deployer.deploy(BUNDLE_B);
-        Bundle bundleB = packageAdmin.getBundles(BUNDLE_B, null)[0];
-        try {
-            Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
-            deployer.deploy(BUNDLE_A);
-            Bundle bundleA = packageAdmin.getBundles(BUNDLE_A, null)[0];
-            try {
-                Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
-                bundleA.loadClass(TestBA.class.getName()).newInstance();
-            } finally {
-                deployer.undeploy(BUNDLE_A);
-            }
-        } finally {
-            deployer.undeploy(BUNDLE_B);
-        }
-    }
-
-    @Test
-    public void testUnresolvedOptionalImportAPI() throws Exception {
+    public void testVersionNotInRange() throws Exception {
         InputStream inputA = deployer.getDeployment(BUNDLE_A);
         Bundle bundleA = context.installBundle(BUNDLE_A, inputA);
         try {
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
-            bundleA.start();
-            Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
+            InputStream inputB = deployer.getDeployment(BUNDLE_B);
+            Bundle bundleB = context.installBundle(BUNDLE_B, inputB);
             try {
-                bundleA.loadClass(TestBA.class.getName()).newInstance();
-                Assert.fail("NoClassDefFoundError expected");
-            } catch (NoClassDefFoundError ex) {
-                // expected
+                Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleB.getState());
+                try {
+                    bundleB.start();
+                    Assert.fail("BundleException expected");
+                } catch (BundleException ex) {
+                    // expected
+                }
+                Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
+                Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleB.getState());
+            } finally {
+                bundleB.uninstall();
             }
         } finally {
             bundleA.uninstall();
@@ -126,38 +92,36 @@ public class OptionalImportTestCase {
     }
 
     @Test
-    public void testResolvedOptionalImportAPI() throws Exception {
-        InputStream inputB = deployer.getDeployment(BUNDLE_B);
-        Bundle bundleB = context.installBundle(BUNDLE_B, inputB);
+    public void testVersionInRange() throws Exception {
+        InputStream inputA = deployer.getDeployment(BUNDLE_A);
+        Bundle bundleA = context.installBundle(BUNDLE_A, inputA);
         try {
-            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleB.getState());
-            InputStream inputA = deployer.getDeployment(BUNDLE_A);
-            Bundle bundleA = context.installBundle(BUNDLE_A, inputA);
+            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
+            InputStream inputC = deployer.getDeployment(BUNDLE_C);
+            Bundle bundleC = context.installBundle(BUNDLE_C, inputC);
             try {
-                Assert.assertEquals(Bundle.INSTALLED, bundleA.getState());
-                bundleA.start();
-                Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
-                Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleB.getState());
-                bundleA.loadClass(TestBA.class.getName()).newInstance();
+                Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleC.getState());
+                bundleC.start();
+                Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleC.getState());
+                Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
             } finally {
-                bundleA.uninstall();
+                bundleC.uninstall();
             }
         } finally {
-            bundleB.uninstall();
+            bundleA.uninstall();
         }
     }
 
     @Deployment(name = BUNDLE_A, managed = false, testable = false)
     public static JavaArchive getBundleA() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_A);
-        archive.addClasses(TestBA.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(TestA.class.getPackage().getName() + ";resolution:=optional");
+                builder.addExportPackages("org.acme.foo;version=2.0.0");
                 return builder.openStream();
             }
         });
@@ -167,14 +131,29 @@ public class OptionalImportTestCase {
     @Deployment(name = BUNDLE_B, managed = false, testable = false)
     public static JavaArchive getBundleB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B);
-        archive.addClasses(TestA.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addExportPackages(TestA.class);
+                builder.addImportPackages("org.acme.foo;version='[1.0,2.0)'");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_C, managed = false, testable = false)
+    public static JavaArchive getBundleC() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C);
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages("org.acme.foo;version='[2.0,3.0)'");
                 return builder.openStream();
             }
         });
