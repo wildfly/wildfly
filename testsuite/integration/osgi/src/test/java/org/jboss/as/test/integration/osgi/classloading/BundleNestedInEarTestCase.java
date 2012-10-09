@@ -26,7 +26,7 @@ import java.io.InputStream;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.osgi.classloading.bundle.TestCC;
+import org.jboss.as.test.integration.osgi.classloading.suba.TestA;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
 public class BundleNestedInEarTestCase {
 
     private static final String TEST_CLASS = BundleNestedInEarTestCase.class.getName();
-    private static final String TEST_CC = "org.jboss.as.test.integration.osgi.classloading.bundle.TestCC";
+    private static final String TEST_A = "org.jboss.as.test.integration.osgi.classloading.suba.TestA";
 
     private static final String SIMPLE_EAR = "simple.ear";
     private static final String NESTED_BUNDLE_AS_LIB_EAR = "nested-bundle-as-lib.ear";
@@ -63,7 +63,7 @@ public class BundleNestedInEarTestCase {
         jarA.addClass(BundleNestedInEarTestCase.class);
 
         JavaArchive jarB = ShrinkWrap.create(JavaArchive.class, "jarB.jar");
-        jarB.addClass(TestCC.class);
+        jarB.addClass(TestA.class);
 
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, SIMPLE_EAR);
         ear.addAsLibrary(jarA);
@@ -77,7 +77,7 @@ public class BundleNestedInEarTestCase {
         jarA.addClass(BundleNestedInEarTestCase.class);
 
         final JavaArchive bundle = ShrinkWrap.create(JavaArchive.class, "nested-bundle.jar");
-        bundle.addClass(TestCC.class);
+        bundle.addClass(TestA.class);
         bundle.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -98,7 +98,7 @@ public class BundleNestedInEarTestCase {
         jarA.addClass(BundleNestedInEarTestCase.class);
 
         final JavaArchive bundle = ShrinkWrap.create(JavaArchive.class, "nested-bundle.jar");
-        bundle.addClass(TestCC.class);
+        bundle.addClass(TestA.class);
         bundle.setManifest(new Asset() {
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
@@ -121,7 +121,7 @@ public class BundleNestedInEarTestCase {
         Class<?> testClass = earModule.getClassLoader().loadClass(TEST_CLASS);
         ModuleClassLoader testClassLoader = (ModuleClassLoader) testClass.getClassLoader();
         Assert.assertEquals(earModuleId, testClassLoader.getModule().getIdentifier());
-        Class<?> classCC = testClassLoader.loadClass(TEST_CC);
+        Class<?> classCC = testClassLoader.loadClass(TEST_A);
         ModuleClassLoader classLoaderCC = (ModuleClassLoader) classCC.getClassLoader();
         Assert.assertEquals(earModuleId, classLoaderCC.getModule().getIdentifier());
     }
@@ -134,7 +134,7 @@ public class BundleNestedInEarTestCase {
         Class<?> testClass = earModule.getClassLoader().loadClass(TEST_CLASS);
         ModuleClassLoader testClassLoader = (ModuleClassLoader) testClass.getClassLoader();
         Assert.assertEquals(earModuleId, testClassLoader.getModule().getIdentifier());
-        Class<?> classCC = testClassLoader.loadClass(TEST_CC);
+        Class<?> classCC = testClassLoader.loadClass(TEST_A);
         ModuleClassLoader classLoaderCC = (ModuleClassLoader) classCC.getClassLoader();
         Assert.assertEquals(earModuleId, classLoaderCC.getModule().getIdentifier());
     }
@@ -148,14 +148,14 @@ public class BundleNestedInEarTestCase {
         ModuleClassLoader testClassLoader = (ModuleClassLoader) testClass.getClassLoader();
         Assert.assertEquals(earModuleId, testClassLoader.getModule().getIdentifier());
         try {
-            testClassLoader.loadClass(TEST_CC);
+            testClassLoader.loadClass(TEST_A);
             Assert.fail("ClassNotFoundException expected");
         } catch (ClassNotFoundException ex) {
             // expected
         }
         ModuleIdentifier bundleModuleId = ModuleIdentifier.fromString("deployment.nested-bundle-as-module.ear.nested-bundle.jar:main");
         Module bundleModule = getModuleLoader().loadModule(bundleModuleId);
-        Class<?> classCC = bundleModule.getClassLoader().loadClass(TEST_CC);
+        Class<?> classCC = bundleModule.getClassLoader().loadClass(TEST_A);
         ModuleClassLoader classLoaderCC = (ModuleClassLoader) classCC.getClassLoader();
         Assert.assertEquals(bundleModuleId, classLoaderCC.getModule().getIdentifier());
     }

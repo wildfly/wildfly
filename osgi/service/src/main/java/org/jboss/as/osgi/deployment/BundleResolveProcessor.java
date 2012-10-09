@@ -25,6 +25,8 @@ package org.jboss.as.osgi.deployment;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -42,9 +44,12 @@ import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XPackageRequirement;
 import org.jboss.osgi.resolver.XResolveContext;
 import org.jboss.osgi.resolver.XResolver;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.service.resolver.ResolutionException;
 
 /**
@@ -71,14 +76,16 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         XBundleRevision brev = bundle.getBundleRevision();
         XEnvironment env = depUnit.getAttachment(OSGiConstants.ENVIRONMENT_KEY);
         XResolver resolver = depUnit.getAttachment(OSGiConstants.RESOLVER_KEY);
-        XResolveContext context = resolver.createResolveContext(env, Collections.singleton(brev), null);
+        BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+        Set<XBundleRevision> mandatoryResources = Collections.singleton(brev);
+        Set<XBundleRevision> optionalResources = getOptionalResources(bundleManager, brev);
+        XResolveContext context = resolver.createResolveContext(env, mandatoryResources, optionalResources);
         try {
             LOGGER.debugf("Resolve: %s", depUnit.getName());
             resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
 
             // Add a dependency on the Bundle RESOLVED service
-            BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             ServiceName bundleResolve = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
             phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
 
@@ -88,6 +95,21 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
         } catch (ResolutionException ex) {
             LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());
         }
+    }
+
+    private Set<XBundleRevision> getOptionalResources(BundleManager bundleManager, XBundleRevision brev) {
+        Set<XBundleRevision> result = null;
+        for (BundleRequirement req : brev.getDeclaredRequirements(PackageNamespace.PACKAGE_NAMESPACE)) {
+            XPackageRequirement preq = (XPackageRequirement) req;
+            if (preq.isOptional()) {
+                result = new HashSet<XBundleRevision>();
+                for (XBundle bundle : bundleManager.getBundles(Bundle.INSTALLED)) {
+                    result.add(bundle.getBundleRevision());
+                }
+                break;
+            }
+        }
+        return result;
     }
 
     @Override
