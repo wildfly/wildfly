@@ -78,7 +78,7 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
         }
     }
 
-    static interface RevertHandback {
+    interface RevertHandback {
         void doRevertUpdateToRuntime();
     }
 

@@ -129,7 +129,7 @@ public class ProtocolConnectionManager {
         }
     }
 
-    public static interface ConnectionOpenHandler {
+    public interface ConnectionOpenHandler {
 
         /**
          * Connection opened notification
@@ -144,7 +144,7 @@ public class ProtocolConnectionManager {
     /**
      * Task used to establish the connection.
      */
-    public static interface ConnectTask {
+    public interface ConnectTask {
 
         /**
          * Get the connection opened handler.

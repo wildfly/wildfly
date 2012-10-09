@@ -311,11 +311,11 @@ public abstract class AbstractQueryCommand implements QueryCommand {
 
     // Inner
 
-    static interface CollectionFactory {
+    interface CollectionFactory {
         Collection newCollection();
     }
 
-    static interface ResultReader {
+    interface ResultReader {
         Object readRow(ResultSet rs, JDBCQueryCommand.EntityProxyFactory factory) throws SQLException;
     }
 
@@ -333,8 +333,6 @@ public abstract class AbstractQueryCommand implements QueryCommand {
             return pk == null ? null : factory.getEntityObject(pk);
         }
     }
-
-    ;
 
     static class FieldReader implements ResultReader {
         private final JDBCCMPFieldBridge2 field;

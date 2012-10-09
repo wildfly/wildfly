@@ -69,7 +69,7 @@ public class TransactionWrappingSessionBean {
         }
     }
 
-    public static interface Task<T> {
+    public interface Task<T> {
         T execute() throws Throwable;
     }
 }

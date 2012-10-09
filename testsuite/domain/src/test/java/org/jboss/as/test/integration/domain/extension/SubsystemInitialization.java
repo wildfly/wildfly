@@ -147,7 +147,7 @@ class SubsystemInitialization {
         }
     }
 
-    static interface RegistrationResult {
+    interface RegistrationResult {
 
         SubsystemRegistration getSubsystemRegistration();
         ManagementResourceRegistration getResourceRegistration();

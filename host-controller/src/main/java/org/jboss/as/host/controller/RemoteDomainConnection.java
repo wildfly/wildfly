@@ -272,7 +272,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
         scheduledExecutorService.schedule(task, INTERVAL, TimeUnit.MILLISECONDS);
     }
 
-    static interface HostRegistrationCallback {
+    interface HostRegistrationCallback {
 
         /**
          * Get the versions for all registered subsystems.

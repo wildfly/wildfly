@@ -24,38 +24,18 @@
         <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
-        <version.saxon>8.7</version.saxon>
     </properties>
-    
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
+                <artifactId>maven-enforcer-plugin</artifactId>
                 <configuration>
-                    <!-- TODO: Don't fail on checkstyle until AS7-2954 is fixed.  -->
-                    <failsOnError>false</failsOnError>
+                    <skip>true</skip>
                 </configuration>
-                
-                <executions>
-                    <execution>
-                        <id>check-style-ts-shared</id>
-                        <phase>compile</phase>
-                        <goals><goal>checkstyle</goal></goals>
-                        <configuration>
-                            <configLocation>${basedir}/src/main/config/checkstyle.xml</configLocation>
-                            <consoleOutput>true</consoleOutput>
-                            <failsOnError>false</failsOnError>
-                            <useFile/>
-                        </configuration>
-                    </execution>
-                </executions>
-                
             </plugin>
         </plugins>
     </build>
-
-
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>

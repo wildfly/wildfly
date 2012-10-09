@@ -1760,7 +1760,7 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
         }
     }
 
-    public static interface RelationDataManager {
+    public interface RelationDataManager {
         void addRelation(JDBCCMRFieldBridge field, Object id, JDBCCMRFieldBridge relatedField, Object relatedId);
 
         void removeRelation(JDBCCMRFieldBridge field, Object id, JDBCCMRFieldBridge relatedField, Object relatedId);

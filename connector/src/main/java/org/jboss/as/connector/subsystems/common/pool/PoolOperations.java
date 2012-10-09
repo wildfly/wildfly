@@ -128,7 +128,7 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     }
 
-    private static interface PoolMatcher {
+    private interface PoolMatcher {
         List<Pool> match(String jndiName, ManagementRepository repository);
     }
 

@@ -1289,7 +1289,7 @@ public class EntityTable implements Table {
         }
     }
 
-    public static interface CommitStrategy {
+    public interface CommitStrategy {
         void executeUpdate(PreparedStatement ps) throws SQLException;
 
         void executeBatch(PreparedStatement ps) throws SQLException;

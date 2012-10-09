@@ -18,7 +18,7 @@ public interface DeploymentOperations extends Closeable {
 
     Map<String, Boolean> getDeploymentsStatus();
 
-    static interface Factory {
+    interface Factory {
         DeploymentOperations create();
     }
 

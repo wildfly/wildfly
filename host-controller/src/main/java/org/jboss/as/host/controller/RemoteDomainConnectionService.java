@@ -506,7 +506,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
     }
 
-    static interface RemoteFileRepositoryExecutor {
+    interface RemoteFileRepositoryExecutor {
         File getFile(final String relativePath, final byte repoId, HostFileRepository localFileRepository);
     }
 

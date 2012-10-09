@@ -69,7 +69,7 @@ public abstract class AbstractResourceModelTransformer implements ResourceTransf
         context.addTransformedRecursiveResource(PathAddress.EMPTY_ADDRESS, transformed);
     }
 
-    public static interface ResourceDefinitionLoader {
+    public interface ResourceDefinitionLoader {
 
         /**
          * Load the resource definition.

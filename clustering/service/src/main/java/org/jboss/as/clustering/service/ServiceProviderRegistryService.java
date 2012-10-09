@@ -230,7 +230,7 @@ public class ServiceProviderRegistryService implements ServiceProviderRegistry, 
         this.notifyListeners(Collections.singletonMap(event.getKey(), event.getValue().keySet()), false);
     }
 
-    static interface Operation<R> extends CacheInvoker.Operation<String, Map<ClusterNode, Void>, R> {
+    interface Operation<R> extends CacheInvoker.Operation<String, Map<ClusterNode, Void>, R> {
     }
 
     class RpcDispatcher implements ServiceProviderRegistryRpcHandler {
