@@ -56,7 +56,7 @@ import org.jboss.as.server.services.security.AbstractVaultReader;
  */
 public class HostModelUtil {
 
-    public static interface HostModelRegistrar {
+    public interface HostModelRegistrar {
         void registerHostModel(final String hostName, final ManagementResourceRegistration root);
     }
 

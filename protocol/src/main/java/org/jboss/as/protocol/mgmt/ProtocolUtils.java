@@ -115,7 +115,7 @@ public final class ProtocolUtils {
         return (byte) b;
     }
 
-    public static interface ResponseWriter {
+    public interface ResponseWriter {
 
         ResponseWriter EMPTY = new ResponseWriter() {
             @Override

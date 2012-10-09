@@ -151,7 +151,7 @@ public abstract class AbstractDeploymentUnitProcessor implements DeploymentUnitP
         // do nothing
     }
 
-    private static interface SimpleSet<E> {
+    private interface SimpleSet<E> {
         boolean contains(Object o);
     }
 }

@@ -157,7 +157,7 @@ public class ContainerResourceTestEnricher implements TestEnricher {
         return filtered.toArray(new Annotation[0]);
     }
 
-    private static interface ContainerResourceProvider {
+    private interface ContainerResourceProvider {
         Object lookup(Class<?> type, ContainerResource resource, Annotation... qualifiers);
     }
 }

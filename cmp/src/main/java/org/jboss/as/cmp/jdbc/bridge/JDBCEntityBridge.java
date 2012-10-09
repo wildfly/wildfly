@@ -1189,7 +1189,7 @@ public class JDBCEntityBridge implements JDBCAbstractEntityBridge {
         }
     };
 
-    public static interface FieldIterator {
+    public interface FieldIterator {
         /**
          * @return true if there are more fields to iterate through.
          */

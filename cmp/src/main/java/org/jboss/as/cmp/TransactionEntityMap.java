@@ -92,7 +92,7 @@ public class TransactionEntityMap implements Service<TransactionEntityMap> {
      * </ul>
      * Implementations of TxAssociation implement these states.
      */
-    public static interface TxAssociation {
+    public interface TxAssociation {
         /**
          * Schedules the instance for synchronization. The instance might or might not be associated with the tx.
          *

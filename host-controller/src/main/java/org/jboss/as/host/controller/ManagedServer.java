@@ -500,7 +500,7 @@ class ManagedServer {
     /**
      * The managed server boot configuration.
      */
-    public static interface ManagedServerBootConfiguration {
+    public interface ManagedServerBootConfiguration {
         /**
          * Get the server launch environment.
          *
@@ -568,7 +568,7 @@ class ManagedServer {
         }
     }
 
-    static interface TransitionTask {
+    interface TransitionTask {
 
         void execute(ManagedServer server) throws Exception;
 

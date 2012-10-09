@@ -64,7 +64,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 /**
  * Base class for tests of web app single sign-on
- * 
+ *
  * @author Brian Stansberry
  * @author lbarreiro@redhat.com
  */

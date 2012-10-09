@@ -19,7 +19,9 @@
         <property name="cacheFile" value="${checkstyle.cache.file}"/>
 
         <!-- Checks for imports                              -->
-        <module name="AvoidStarImport"/>
+        <module name="AvoidStarImport">
+            <property name="allowStaticMemberImports" value="true"/>
+        </module>
         <module name="RedundantImport"/>
         <!-- Disabled until checkstyle can recognize imports which are used only by javadoc -->
         <!--<module name="UnusedImports"/>-->

@@ -62,6 +62,7 @@
         <!-- Build configuration -->
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
+        <version.checkstyle.plugin>2.9.1</version.checkstyle.plugin>
 
         <!--
             Dependency versions. Please keep alphabetical.
