@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.domain.management.cli;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
@@ -37,34 +36,19 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.DomainTestSuite;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.After;
@@ -74,7 +58,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+
 
 /**
  * @author Alexey Loubyansky
@@ -169,99 +153,64 @@ public class DomainDeploymentOverlayTestCase {
     @Test
     public void testSimpleOverride() throws Exception {
 
+        ctx.handle("deploy --server-groups=main-server-group,other-server-group " + war1.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group,other-server-group " + war2.getAbsolutePath());
+
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --deployments=" + war1.getName() + " --server-groups=main-server-group");
-
-/*        ModelNode op = new ModelNode();
-        op.get(ModelDescriptionConstants.OP_ADDR).set(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, "overlay-test");
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
-
-        op = new ModelNode();
-        OperationBuilder builder = new OperationBuilder(op, true);
-        ModelNode addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, "overlay-test");
-        addr.add(ModelDescriptionConstants.CONTENT, "WEB-INF/web.xml");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        op.get(ModelDescriptionConstants.CONTENT).get(INPUT_STREAM_INDEX).set(0);
-        builder.addInputStream(overrideXml.openStream());
-        executeOnMaster(builder.build());
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, "overlay-test");
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
-
-        op = new ModelNode();
-        addr = new ModelNode();
-        addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
-        addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, "overlay-test");
-        addr.add(ModelDescriptionConstants.DEPLOYMENT, war1.getName());
-        op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
-        op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
-        executeOnMaster(op);
-*/
-        ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
-        ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
-
+                + " --deployments=" + war1.getName() + " --server-groups=main-server-group,other-server-group");
 
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+//        assertEquals("NON OVERRIDDEN", performHttpCall("master", "other-one", "deployment0"));
+//        assertEquals("NON OVERRIDDEN", performHttpCall("master", "other-one", "deployment1"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
-        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+//        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "other-two", "deployment0"));
+//        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "other-two", "deployment1"));
 
-//        ctx.handle("deployment-overlay redeploy-affected --name=overlay-test");
-/*
+        ctx.handle("deployment-overlay redeploy-affected --name=overlay-test");
+
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
-        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+//        assertEquals("OVERRIDDEN", performHttpCall("master", "other-one", "deployment0"));
+//        assertEquals("NON OVERRIDDEN", performHttpCall("master", "other-one", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
-*/    }
-
-    private static ModelNode executeOnMaster(ModelNode op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
+//        assertEquals("OVERRIDDEN", performHttpCall("slave", "other-two", "deployment0"));
+//        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "other-two", "deployment1"));
     }
 
-    private static ModelNode executeOnMaster(Operation op) throws IOException {
-        return validateResponse(testSupport.getDomainMasterLifecycleUtil().getDomainClient().execute(op));
-    }
-
-/*
     @Test
     public void testSimpleOverrideWithRedeployAffected() throws Exception {
 
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --deployments=" + war1.getName() + " --redeploy-affected");
+                + " --deployments=" + war1.getName() + " --server-groups=main-server-group --redeploy-affected");
 
-        String response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
     }
 
     @Test
     public void testWildcardOverride() throws Exception {
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --wildcards=deployment.*\\.war");
+                + " --wildcards=deployment.*\\.war --server-groups=main-server-group --redeploy-affected");
 
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
-        ctx.handle("deploy " + war3.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
-        String response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
     }
 
     @Test
@@ -270,145 +219,135 @@ public class DomainDeploymentOverlayTestCase {
     // to determine the matching deployments
     public void testWildcardOverrideWithRedeployAffected() throws Exception {
 
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
-        ctx.handle("deploy " + war3.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --wildcards=deployment.*\\.war --redeploy-affected");
+                + " --wildcards=deployment.*\\.war --server-groups=main-server-group --redeploy-affected");
 
-        Thread.sleep(2000);
-        String response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
     }
 
     @Test
     public void testMultipleLinks() throws Exception {
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --deployments=" + war1.getName());
+                + " --deployments=" + war1.getName() + " --server-groups=main-server-group");
 
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
-        ctx.handle("deploy " + war3.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
-        String response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a.*\\.war");
+        ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a.*\\.war --server-groups=main-server-group");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
-        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
-        ctx.handle("/deployment=" + war3.getName() + ":redeploy");
+        ctx.handle("/server-group=main-server-group/deployment=" + war1.getName() + ":redeploy");
+        ctx.handle("/server-group=main-server-group/deployment=" + war2.getName() + ":redeploy");
+        ctx.handle("/server-group=main-server-group/deployment=" + war3.getName() + ":redeploy");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay link --name=overlay-test --deployments=" + war2.getName() + " --redeploy-affected");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=" + war2.getName() + " --redeploy-affected --server-groups=main-server-group");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --deployments=" + war2.getName() + " --redeploy-affected");
+        ctx.handle("deployment-overlay remove --name=overlay-test --deployments=" + war2.getName() + " --redeploy-affected --server-groups=main-server-group");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a.*\\.war");
+        ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a.*\\.war --server-groups=main-server-group");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
-        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
-        ctx.handle("/deployment=" + war3.getName() + ":redeploy");
-
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
-
+        ctx.handle("/server-group=main-server-group/deployment=" + war1.getName() + ":redeploy");
+        ctx.handle("/server-group=main-server-group/deployment=" + war2.getName() + ":redeploy");
+        ctx.handle("/server-group=main-server-group/deployment=" + war3.getName() + ":redeploy");
+/* TODO this below fails
         ctx.handle("deployment-overlay remove --name=overlay-test --content=WEB-INF/web.xml --redeploy-affected");
 
-        response = readResponse("deployment0");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
         ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath() + " --redeploy-affected");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
-    }
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
+*/    }
 
     @Test
     public void testRedeployAffected() throws Exception {
 
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
-        ctx.handle("deploy " + war3.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
+        ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath());
-        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a.*\\.war");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a.*\\.war --server-groups=main-server-group");
 
-        String response = readResponse("deployment0");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
         ctx.handle("deployment-overlay redeploy-affected --name=overlay-test");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        // TODO the below will fail because CLI uses simple wildcards to determine the target deployments
-        // instead of true regexp
-//        response = readResponse("another");
-//        assertEquals("OVERRIDDEN", response);
+        assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
+        // TODO wildcard in cli vs regexp in the model assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "another"));
+        assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
+        assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
+        // TODO wildcard in cli vs regexp in the model assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
     }
-*/
+
     private String performHttpCall(String host, String server, String deployment) throws Exception {
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_RESOURCE_OPERATION);
@@ -420,12 +359,7 @@ public class DomainDeploymentOverlayTestCase {
                 org.jboss.as.arquillian.container.NetworkUtils.formatPossibleIpv6Address(socketBinding.get("bound-address").asString()),
                 socketBinding.get("bound-port").asInt(),
                 "/" + deployment + "/SimpleServlet?env-entry=overlay-test");
-        System.err.println("url: " + url);
         return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS).trim();
-//        HttpGet get = new HttpGet(url.toURI());
-//        HttpClient httpClient = new DefaultHttpClient();
-//        HttpResponse response = httpClient.execute(get);
-//        return getContent(response);
     }
 
     public static String getContent(HttpResponse response) throws IOException {
