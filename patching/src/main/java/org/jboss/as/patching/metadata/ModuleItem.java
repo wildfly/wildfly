@@ -27,10 +27,12 @@ package org.jboss.as.patching.metadata;
  */
 public class ModuleItem extends ContentItem {
 
+    public static final String MAIN_SLOT = "main";
+
     private final String slot;
 
     public ModuleItem(String name, byte[] contentHash) {
-        this(name, "main", contentHash);
+        this(name, MAIN_SLOT, contentHash);
     }
 
     public ModuleItem(String name, String slot, byte[] contentHash) {

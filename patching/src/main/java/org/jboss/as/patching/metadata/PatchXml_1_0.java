@@ -25,19 +25,24 @@ package org.jboss.as.patching.metadata;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import org.jboss.as.patching.runner.PatchingTask;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import static org.jboss.as.patching.generator.PatchUtils.bytesToHexString;
+import static org.jboss.as.patching.generator.PatchUtils.hexStringToByteArray;
+import static org.jboss.as.patching.metadata.ModuleItem.MAIN_SLOT;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.patching.runner.PatchingTask;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author Emanuel Muckenhuber
@@ -383,10 +388,10 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     slot = value;
                     break;
                 case HASH:
-                    hash = value.getBytes();
+                    hash = hexStringToByteArray(value);
                     break;
                 case EXISTING_HASH:
-                    targetHash = value.getBytes();
+                    targetHash = hexStringToByteArray(value);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -418,10 +423,10 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     path = value;
                     break;
                 case HASH:
-                    hash = value.getBytes();
+                    hash = hexStringToByteArray(value);
                     break;
                 case EXISTING_HASH:
-                    targetHash = value.getBytes();
+                    targetHash = hexStringToByteArray(value);
                     break;
                 case IN_RUNTIME_USE:
                     affectsRuntime = Boolean.parseBoolean(value);
@@ -456,13 +461,20 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         final ModificationType type = modification.getType();
 
         writer.writeAttribute(Attribute.NAME.name, item.getName());
-        writer.writeAttribute(Attribute.SLOT.name, item.getSlot());
-
+        if (!MAIN_SLOT.equals(item.getSlot())) {
+            writer.writeAttribute(Attribute.SLOT.name, item.getSlot());
+        }
         if(type != ModificationType.REMOVE) {
-            writer.writeAttribute(Attribute.HASH.name, bytesToHexString(item.getContentHash()));
+            byte[] hash = item.getContentHash();
+            if (hash.length > 0) {
+                writer.writeAttribute(Attribute.HASH.name,  bytesToHexString(hash));
+            }
         }
         if(type != ModificationType.ADD) {
-            writer.writeAttribute(Attribute.EXISTING_HASH.name, bytesToHexString(modification.getTargetHash()));
+            final byte[] existingHash = modification.getTargetHash();
+            if (existingHash.length > 0) {
+                writer.writeAttribute(Attribute.EXISTING_HASH.name, bytesToHexString(existingHash));
+            }
         }
     }
 
@@ -497,24 +509,4 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
             }
         }
     }
-
-    private static char[] table = {
-            '0', '1', '2', '3', '4', '5', '6', '7',
-            '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
-    };
-
-    /**
-     * Convert a byte array into a hex string.
-     *
-     * @param bytes the bytes
-     * @return the string
-     */
-    public static String bytesToHexString(final byte[] bytes) {
-        final StringBuilder builder = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            builder.append(table[b >> 4 & 0x0f]).append(table[b & 0x0f]);
-        }
-        return builder.toString();
-    }
-
 }
