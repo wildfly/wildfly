@@ -30,9 +30,10 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Emanuel Muckenhuber
  */
-class CommonAttributes {
+class Constants {
 
     static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING).build();
+    static final AttributeDefinition OVERRIDE_ALL = SimpleAttributeDefinitionBuilder.create("override-all", ModelType.BOOLEAN).build();
 
 
 }

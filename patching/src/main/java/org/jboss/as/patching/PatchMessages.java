@@ -24,9 +24,9 @@ package org.jboss.as.patching;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.patching.runner.PatchingException;
-import org.jboss.logging.Message;
-import org.jboss.logging.MessageBundle;
 import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +42,7 @@ public interface PatchMessages {
     PatchMessages MESSAGES = Messages.getBundle(PatchMessages.class);
 
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
-    PatchingException doesNotApply(List < String > appliesTo, String version);
+    PatchingException doesNotApply(List<String> appliesTo, String version);
 
     @Message(id = 16841, value = "Failed to delete (%s)")
     IOException failedToDelete(String path);

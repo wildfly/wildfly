@@ -39,4 +39,11 @@ public class BundleItem extends ModuleItem {
         super(name, slot, contentHash, BUNDLE);
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(BundleItem.class.getSimpleName()).append("{");
+        builder.append(getName()).append(":").append(getSlot()).append("}");
+        return builder.toString();
+    }
 }

@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.patching.PatchInfo;
 
 import java.io.BufferedInputStream;
 import java.io.Closeable;
@@ -61,6 +61,9 @@ public final class PatchUtils {
     };
 
     public static String readRef(final File file) throws IOException {
+        if(! file.exists()) {
+            return PatchInfo.BASE;
+        }
         final InputStream is = new FileInputStream(file);
         try {
             return readRef(is);
@@ -307,8 +310,25 @@ public final class PatchUtils {
                 PatchUtils.copyStream(is, os);
                 is.close();
             } finally {
-                StreamUtils.safeClose(is);
+                safeClose(is);
             }
         }
    }
+
+    private static final char[] table = "0123456789abcdef".toCharArray();
+
+    /**
+     * Convert a byte array into a hex string.
+     *
+     * @param bytes the bytes
+     * @return the string
+     */
+    public static String bytesToHexString(final byte[] bytes) {
+        final StringBuilder builder = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            builder.append(table[b >> 4 & 0x0f]).append(table[b & 0x0f]);
+        }
+        return builder.toString();
+    }
+
 }

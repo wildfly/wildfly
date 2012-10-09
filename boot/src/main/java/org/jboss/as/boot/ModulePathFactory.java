@@ -40,7 +40,7 @@ class ModulePathFactory {
         final String jbossHome = System.getProperty("jboss.home", System.getenv("JBOSS_HOME"));
         final File root = jbossHome == null ? new File(".") : new File(jbossHome); // TODO
         try {
-            return load(root, modulePath);
+            return load(root.getAbsoluteFile(), modulePath);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

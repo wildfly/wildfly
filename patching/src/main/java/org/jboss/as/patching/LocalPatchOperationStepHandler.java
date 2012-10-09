@@ -54,6 +54,12 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final InputStream is = context.getAttachmentStream(index);
         try {
             final PatchingResult result = runner.executeDirect(is);
+            if(result.hasFailures()) {
+                final ModelNode failureDescription = context.getFailureDescription();
+                failureDescription.get("content-items").set("TODO");
+                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
+                return;
+            }
             final PatchInfo newInfo = result.getPatchInfo();
             service.setPatchInfo(info, newInfo);
             context.completeStep(new OperationContext.RollbackHandler() {

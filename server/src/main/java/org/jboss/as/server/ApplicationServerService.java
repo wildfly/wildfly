@@ -44,7 +44,7 @@ import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.version.Version;
+import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
@@ -90,7 +90,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
 
-        String prettyVersion = serverEnvironment.getProductConfig().getPrettyVersionString();
+        final ProductConfig config = serverEnvironment.getProductConfig();
+        final String prettyVersion = config.getPrettyVersionString();
         AS_ROOT_LOGGER.serverStarting(prettyVersion);
         if (CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
@@ -166,7 +167,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServerPathManagerService.addService(serviceTarget, serverPathManagerService, serverEnvironment);
 
         // Install the patch service
-        serviceTarget.addService(PatchInfoService.NAME, new PatchInfoService(Version.AS_VERSION, serverEnvironment.getHomeDir()))
+        serviceTarget.addService(PatchInfoService.NAME, new PatchInfoService(config, serverEnvironment.getHomeDir()))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 

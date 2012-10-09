@@ -23,6 +23,7 @@
 package org.jboss.as.patching;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.version.ProductConfig;
 
 import java.io.File;
 import java.util.List;
@@ -72,5 +73,12 @@ public interface PatchInfo {
      * @return the module path
      */
     File[] getPatchingPath();
+
+    /**
+     * Get the resolved module path.
+     *
+     * @return the module path
+     */
+    File[] getModulePath();
 
 }

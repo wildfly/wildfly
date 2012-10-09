@@ -53,4 +53,11 @@ public class ModuleItem extends ContentItem {
         return slot;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(ModuleItem.class.getSimpleName()).append("{");
+        builder.append(getName()).append(":").append(slot).append("}");
+        return builder.toString();
+    }
 }

@@ -24,12 +24,14 @@ package org.jboss.as.patching;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.runner.PatchUtils;
+import org.jboss.as.version.ProductConfig;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * @author Emanuel Muckenhuber
@@ -69,6 +71,18 @@ public class LocalPatchInfo implements PatchInfo {
     }
 
     /**
+     * Load the local patch information.
+     *
+     * @param config the product config
+     * @param environment the directory structure
+     * @return the local patch info
+     * @throws IOException
+     */
+    public static LocalPatchInfo load(final ProductConfig config, final DirectoryStructure environment) throws IOException {
+        return load(config.resolveVersion(), environment);
+    }
+
+    /**
      * Load the information from the disk.
      *
      * @param version the current version
@@ -77,13 +91,9 @@ public class LocalPatchInfo implements PatchInfo {
      * @throws IOException
      */
     static LocalPatchInfo load(final String version, final DirectoryStructure environment) throws IOException {
-        if(environment.getCumulativeLink().exists()) {
-            final String ref = PatchUtils.readRef(environment.getCumulativeLink());
-            final List<String> patches = PatchUtils.readRefs(environment.getCumulativeRefs(ref));
-            return new LocalPatchInfo(version, ref, patches, environment);
-        } else {
-            return new LocalPatchInfo(version, BASE, Collections.<String>emptyList(), environment);
-        }
+        final String ref = PatchUtils.readRef(environment.getCumulativeLink());
+        final List<String> patches = PatchUtils.readRefs(environment.getCumulativeRefs(ref));
+        return new LocalPatchInfo(version, ref, patches, environment);
     }
 
     /**
@@ -96,9 +106,6 @@ public class LocalPatchInfo implements PatchInfo {
      */
     static PatchInfo loadHistory(final PatchInfo current, final DirectoryStructure structure) throws IOException {
         final String currentId = current.getCumulativeID();
-        if(BASE.equals(currentId)) {
-            return null;
-        }
         final File history = structure.getHistoryDir(currentId);
         final File cumulative = new File(history, DirectoryStructure.CUMULATIVE);
         if(cumulative.exists()) {
@@ -115,13 +122,33 @@ public class LocalPatchInfo implements PatchInfo {
 
     @Override
     public File[] getPatchingPath() {
+        final List<File> path = getPatchingPathInternal();
+        return path.toArray(new File[path.size()]);
+    }
+
+    @Override
+    public File[] getModulePath() {
+        final List<File> path = getPatchingPathInternal();
+        final String modulePath = System.getProperty("module.path", System.getenv("JAVA_MODULEPATH"));
+        if(modulePath != null) {
+            final String[] paths = modulePath.split(Pattern.quote(File.pathSeparator));
+            for(final String s : paths) {
+                final File file = new File(s);
+                path.add(file);
+            }
+        }
+        return path.toArray(new File[path.size()]);
+    }
+
+    List<File> getPatchingPathInternal() {
         final List<File> path = new ArrayList<File>();
-        for(final String patch :patches) {
+        for(final String patch : patches) {
             path.add(environment.getModulePatchDirectory(patch));
         }
         if(cumulativeId != BASE) {
             path.add(environment.getModulePatchDirectory(cumulativeId));
         }
-        return path.toArray(new File[path.size()]);
+        return path;
     }
+
 }

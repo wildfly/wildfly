@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * @author Emanuel Muckenhuber
  */
-interface ContentVerificationPolicy {
+public interface ContentVerificationPolicy {
 
     /**
      * Update existing Policy.
@@ -71,7 +71,7 @@ interface ContentVerificationPolicy {
 
         @Override
         public boolean ignoreContentValidation(ContentItem item) {
-            return item.getContentType() == ContentType.MISC;
+            return true;
         }
 
         @Override

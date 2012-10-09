@@ -67,7 +67,7 @@ import java.io.File;
  */
 public final class DirectoryStructure {
 
-    public static interface InstalledImage {
+    public interface InstalledImage {
 
         /**
          * Get the jboss home.
@@ -77,11 +77,25 @@ public final class DirectoryStructure {
         File getJbossHome();
 
         /**
+         * Get the app-client directory.
+         *
+         * @return the app client dir
+         */
+        File getAppClientDir();
+
+        /**
          * Get the bundles directory.
          *
          * @return the bundles directory
          */
         File getBundlesDir();
+
+        /**
+         * Get the domain directory.
+         *
+         * @return the domain dir
+         */
+        File getDomainDir();
 
         /**
          * Get the modules directory.
@@ -97,14 +111,25 @@ public final class DirectoryStructure {
          */
         File getPatchesDir();
 
+        /**
+         * Get the standalone dir.
+         *
+         * @return the standalone dir
+         */
+        File getStandaloneDir();
+
     }
 
     // Directories
+    public static String APP_CLIENT = "appclient";
+    public static String CONFIGURATION = "configuration";
     public static String BUNDLES = "bundles";
+    public static String DOMAIN = "domain";
     public static String HISTORY = "history";
     public static String METADATA = ".metadata";
     public static String MODULES = "modules";
     public static String PATCHES = "patches";
+    public static String STANDALONE = "standalone";
     // Markers
     public static String CUMULATIVE = "cumulative";
     public static String REFERENCES = "references";
@@ -202,9 +227,12 @@ public final class DirectoryStructure {
      * @return the patch environment
      */
     public static DirectoryStructure createDefault(final File jbossHome) {
+        final File appClient = new File(jbossHome, APP_CLIENT);
         final File bundles = new File(jbossHome, BUNDLES);
+        final File domain = new File(jbossHome, DOMAIN);
         final File modules = new File(jbossHome, MODULES);
         final File patches = new File(jbossHome, PATCHES);
+        final File standalone = new File(jbossHome, STANDALONE);
         return new DirectoryStructure(new InstalledImage() {
 
             @Override
@@ -225,6 +253,21 @@ public final class DirectoryStructure {
             @Override
             public File getPatchesDir() {
                 return patches;
+            }
+
+            @Override
+            public File getAppClientDir() {
+                return appClient;
+            }
+
+            @Override
+            public File getDomainDir() {
+                return domain;
+            }
+
+            @Override
+            public File getStandaloneDir() {
+                return standalone;
             }
         });
     }
