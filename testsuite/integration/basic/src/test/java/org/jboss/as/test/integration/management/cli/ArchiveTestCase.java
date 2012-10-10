@@ -67,7 +67,7 @@ public class ArchiveTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(ArchiveTestCase.class);
+        ja.addClass(DeployTestCase.class);
         return ja;
     }
 

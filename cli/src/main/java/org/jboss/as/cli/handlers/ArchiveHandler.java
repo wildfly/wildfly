@@ -41,7 +41,6 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
-import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.protocol.StreamUtils;
@@ -60,7 +59,19 @@ public class ArchiveHandler extends BatchModeCommandHandler {
     public ArchiveHandler(CommandContext ctx) {
         super(ctx, "archive", true);
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
-        path = new FileSystemPathArgument(this, pathCompleter, 0, "--path");
+        path = new ArgumentWithValue(this, pathCompleter, 0, "--path") {
+            @Override
+            public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
+                String value = super.getValue(args, required);
+                if(value != null) {
+                    if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
+                        value = value.substring(1, value.length() - 1);
+                    }
+                    value = pathCompleter.translatePath(value);
+                }
+                return value;
+            }
+        };
 
         script = new ArgumentWithValue(this, "--script");
         path.addCantAppearAfter(script);
