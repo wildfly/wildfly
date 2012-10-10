@@ -230,6 +230,10 @@ public class DeployHandler extends DeploymentHandler {
             if(request == null) {
                 throw new CommandFormatException("Operation request wasn't built.");
             }
+
+            // if script had no server-side commands, just return
+            if (!request.get("steps").isDefined()) return;
+
             try {
                 final ModelNode result = client.execute(request);
                 if(Util.isSuccess(result)) {
@@ -516,7 +520,7 @@ public class DeployHandler extends DeploymentHandler {
                     }
                 }
 
-                return ctx.getBatchManager().getActiveBatch().toRequest();
+                    return ctx.getBatchManager().getActiveBatch().toRequest();
             } finally {
                 // reset current dir in context
                 ctx.setCurrentDir(currentDir);
