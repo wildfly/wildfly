@@ -46,6 +46,12 @@
 
     <dependencies>
 
+        <!-- required until HORNETQ-1053 is fixed -->
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-commons</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.hornetq</groupId>
             <artifactId>hornetq-core-client</artifactId>
