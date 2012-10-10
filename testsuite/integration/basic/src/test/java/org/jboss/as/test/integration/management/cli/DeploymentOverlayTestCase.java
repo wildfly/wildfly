@@ -50,7 +50,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -156,24 +155,8 @@ public class DeploymentOverlayTestCase {
         assertEquals("NON OVERRIDDEN", response);
 
         ctx.handle("/deployment=" + war1.getName() + ":redeploy");
-        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
 
         response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-    }
-
-    @Test
-    public void testSimpleOverrideWithRedeployAffected() throws Exception {
-
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
-
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --deployments=" + war1.getName() + " --redeploy-affected");
-
-        String response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
         assertEquals("NON OVERRIDDEN", response);
@@ -189,28 +172,6 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war2.getAbsolutePath());
         ctx.handle("deploy " + war3.getAbsolutePath());
 
-        String response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
-    }
-
-    @Test
-    @Ignore
-    // TODO this because the cli is using wildcards instead of regexp
-    // to determine the matching deployments
-    public void testWildcardOverrideWithRedeployAffected() throws Exception {
-
-        ctx.handle("deploy " + war1.getAbsolutePath());
-        ctx.handle("deploy " + war2.getAbsolutePath());
-        ctx.handle("deploy " + war3.getAbsolutePath());
-
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
-                + " --wildcards=deployment.*\\.war --redeploy-affected");
-
-        Thread.sleep(2000);
         String response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
@@ -236,15 +197,21 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
 
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=" + war2.getName());
+
+        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war3.getName() + ":redeploy");
+
+        response = readResponse("deployment0");
+        assertEquals("OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("OVERRIDDEN", response);
+        response = readResponse("another");
+        assertEquals("NON OVERRIDDEN", response);
+
         ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a.*\\.war");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
-
         ctx.handle("/deployment=" + war1.getName() + ":redeploy");
         ctx.handle("/deployment=" + war2.getName() + ":redeploy");
         ctx.handle("/deployment=" + war3.getName() + ":redeploy");
@@ -252,37 +219,13 @@ public class DeploymentOverlayTestCase {
         response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
-
-        ctx.handle("deployment-overlay link --name=overlay-test --deployments=" + war2.getName() + " --redeploy-affected");
-
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
         assertEquals("OVERRIDDEN", response);
         response = readResponse("another");
         assertEquals("OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --deployments=" + war2.getName() + " --redeploy-affected");
-
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
-
+        ctx.handle("deployment-overlay remove --name=overlay-test --deployments=" + war2.getName());
         ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a.*\\.war");
 
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("OVERRIDDEN", response);
-
         ctx.handle("/deployment=" + war1.getName() + ":redeploy");
         ctx.handle("/deployment=" + war2.getName() + ":redeploy");
         ctx.handle("/deployment=" + war3.getName() + ":redeploy");
@@ -294,19 +237,15 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --content=WEB-INF/web.xml --redeploy-affected");
+        ctx.handle("deployment-overlay remove --name=overlay-test --content=WEB-INF/web.xml");
+        ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + webXml.getPath());
+
+        ctx.handle("/deployment=" + war1.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war2.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war3.getName() + ":redeploy");
 
         response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("deployment1");
-        assertEquals("NON OVERRIDDEN", response);
-        response = readResponse("another");
-        assertEquals("NON OVERRIDDEN", response);
-
-        ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath() + " --redeploy-affected");
-
-        response = readResponse("deployment0");
-        assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
         assertEquals("NON OVERRIDDEN", response);
         response = readResponse("another");
