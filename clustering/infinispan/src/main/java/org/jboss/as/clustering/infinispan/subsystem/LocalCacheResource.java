@@ -1,6 +1,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/local-cache=*
@@ -13,11 +14,11 @@ public class LocalCacheResource extends CacheResource {
 
     // attributes
 
-    public LocalCacheResource() {
+    public LocalCacheResource(final ResolvePathHandler resolvePathHandler) {
         super(LOCAL_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCAL_CACHE),
                 LocalCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, resolvePathHandler);
     }
 
 

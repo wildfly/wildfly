@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import org.apache.commons.io.FileUtils;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -420,7 +421,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         ModelNode op = Operations.createAddOperation(parseAddress(String.format("%s=%s", CommonAttributes.FILE_HANDLER, name), loggingProfile));
         op.get(CommonAttributes.NAME.getName()).set(name);
         op.get(CommonAttributes.LEVEL.getName()).set(level.getName());
-        op.get(CommonAttributes.FILE.getName()).get(CommonAttributes.PATH.getName()).set(file.getAbsolutePath());
+        op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(file.getAbsolutePath());
         executeOperation(kernelServices, op);
 
         if (!assign) return;

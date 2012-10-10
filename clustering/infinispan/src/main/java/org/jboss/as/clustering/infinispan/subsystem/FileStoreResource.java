@@ -14,6 +14,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -53,11 +54,14 @@ public class FileStoreResource extends BaseStoreResource {
         .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
         .build();
 
-    public FileStoreResource() {
+    private final ResolvePathHandler resolvePathHandler;
+
+    public FileStoreResource(final ResolvePathHandler resolvePathHandler) {
         super(FILE_STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE),
                 CacheConfigOperationHandlers.FILE_STORE_ADD,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.resolvePathHandler = resolvePathHandler;
     }
 
     @Override
@@ -80,6 +84,9 @@ public class FileStoreResource extends BaseStoreResource {
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
         registration.registerOperationHandler(FILE_STORE_ADD_DEFINITION, handler);
+        if (resolvePathHandler != null) {
+            registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        }
     }
 
 }

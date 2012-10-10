@@ -30,6 +30,7 @@ import static org.jboss.as.logging.CommonAttributes.ROTATE_SIZE;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.logmanager.handlers.SizeRotatingFileHandler;
 
 /**
@@ -40,8 +41,8 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
     static final PathElement SIZE_ROTATING_HANDLER_PATH = PathElement.pathElement(CommonAttributes.SIZE_ROTATING_FILE_HANDLER);
     static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE);
 
-    public SizeRotatingHandlerResourceDefinition(final boolean includeLegacyAttributes) {
-        super(SIZE_ROTATING_HANDLER_PATH, SizeRotatingFileHandler.class,
+    public SizeRotatingHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
+        super(SIZE_ROTATING_HANDLER_PATH, SizeRotatingFileHandler.class, resolvePathHandler,
                 (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 

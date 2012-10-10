@@ -1,6 +1,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/replicated-cache=*
@@ -13,10 +14,10 @@ public class ReplicatedCacheResource extends SharedCacheResource {
 
     // attributes
 
-    public ReplicatedCacheResource() {
+    public ReplicatedCacheResource(final ResolvePathHandler resolvePathHandler) {
         super(REPLICATED_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REPLICATED_CACHE),
                 ReplicatedCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, resolvePathHandler);
     }
 }

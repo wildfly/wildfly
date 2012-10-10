@@ -7,7 +7,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public final class ControllerResolver {
-    static final String RESOURCE_NAME = ControllerResolver.class.getPackage().getName() + ".LocalDescriptions";
+    public static final String RESOURCE_NAME = ControllerResolver.class.getPackage().getName() + ".LocalDescriptions";
 
 
     public static ResourceDescriptionResolver getResolver(final String... keyPrefix) {

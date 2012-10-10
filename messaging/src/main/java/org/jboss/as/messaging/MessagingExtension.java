@@ -73,6 +73,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
@@ -212,6 +213,14 @@ public class MessagingExtension implements Extension {
             ManagementResourceRegistration bindings = serverRegistration.registerSubModel(PathElement.pathElement(PATH, path),
                     new MessagingSubsystemProviders.PathProvider(path));
             MessagingPathHandlers.register(bindings, path);
+            // Create the path resolver operation
+            if (context.getProcessType().isServer()) {
+                final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+                        .setPathAttribute(MessagingPathHandlers.PATHS.get(path))
+                        .setRelativeToAttribute(MessagingPathHandlers.RELATIVE_TO)
+                        .build();
+                bindings.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+            }
         }
 
         // Connection factories

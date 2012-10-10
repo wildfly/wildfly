@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging.resolvers;
 
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;

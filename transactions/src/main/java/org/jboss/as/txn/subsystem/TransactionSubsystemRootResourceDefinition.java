@@ -38,6 +38,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -95,14 +96,15 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setXmlName(Attribute.SOCKET_PROCESS_ID_MAX_PORTS.getLocalName())
             .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.RELATIVE_TO)
             .setDefaultValue(new ModelNode().set("jboss.server.data.dir"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, true)
+    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(PathResourceDefinition.PATH)
             .setDefaultValue(new ModelNode().set("var"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowNull(true)
             .setAllowExpression(true).build();
 
     //coordinator environment
