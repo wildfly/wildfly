@@ -64,6 +64,8 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName,
                                            final ModelNode newValue, final ModelNode currentValue,
                                            final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        checkDeprecatedAttributes(attributeName);
+
         AttributeDefinition attr = getAttributeDefinition(attributeName);
         if (attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
             // Restart required
@@ -138,4 +140,11 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
 
     }
 
+    private void checkDeprecatedAttributes(String attributeName) {
+        if (attributeName.equals(CommonAttributes.LIVE_CONNECTOR_REF.getName())) {
+            throw MESSAGES.canNotWriteDeprecatedAttribute(attributeName);
+        } else if (attributeName.equals(CommonAttributes.CLUSTERED.getName())) {
+            throw MESSAGES.canNotWriteClusteredAttribute();
+        }
+    }
 }
