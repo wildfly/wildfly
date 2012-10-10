@@ -23,6 +23,9 @@ package org.jboss.as.test.integration.management.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -39,11 +42,30 @@ public class SimpleServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        out.println("<html>");
-        out.println("<head><title>SimpleServlet</title></head>");
-        out.println("<body>Done</body>");
-        out.println("</html>");
+        final PrintWriter out = response.getWriter();
+        final String envEntry = request.getParameter("env-entry");
+        if(envEntry == null) {
+            out.println("<html>");
+            out.println("<head><title>SimpleServlet</title></head>");
+            out.println("<body>Done</body>");
+            out.println("</html>");
+        } else {
+            InitialContext ctx = null;
+            try {
+                ctx = new InitialContext();
+                out.println(ctx.lookup("java:comp//env/" + envEntry));
+                ctx.close();
+            } catch (NamingException e) {
+                e.printStackTrace(out);
+            } finally {
+                if(ctx != null) {
+                    try {
+                        ctx.close();
+                    } catch (NamingException e) {
+                    }
+                }
+            }
+        }
         out.close();
     }
 
