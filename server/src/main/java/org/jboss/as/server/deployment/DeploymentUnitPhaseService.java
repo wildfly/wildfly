@@ -52,6 +52,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 final class DeploymentUnitPhaseService<T> implements Service<T> {
 
+    private static final AttachmentKey<AttachmentList<DeploymentUnit>> UNVISITED_DEFERRED_MODULES = AttachmentKey.createList(DeploymentUnit.class);
+
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
     private final DeploymentUnit deploymentUnit;
     private final Phase phase;
@@ -85,15 +87,16 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final DeploymentUnit parent = deploymentUnit.getParent();
         final ServiceBuilder<?> phaseServiceBuilder;
         final DeploymentUnitPhaseService<?> phaseService;
-        if(nextPhase != null) {
-            final ServiceName serviceName = parent == null ? Services.deploymentUnitName(name, nextPhase) : Services.deploymentUnitName(parent.getName(), name, nextPhase);
+        if (nextPhase != null) {
+            final ServiceName serviceName = DeploymentUtils.getDeploymentUnitPhaseServiceName(deploymentUnit, nextPhase);
             phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
             phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
         } else {
             phaseServiceBuilder = null;
             phaseService = null;
         }
-        final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), phaseServiceBuilder, deploymentUnit, phase);
+        final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), phaseServiceBuilder,
+                deploymentUnit, phase);
 
         // attach any injected values from the last phase
         for (AttachedDependency attachedDependency : injectedAttachedDependencies) {
@@ -104,18 +107,16 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                 target = processorContext;
             }
             if (attachedDependency.getAttachmentKey() instanceof ListAttachmentKey) {
-                target.addToAttachmentList((AttachmentKey) attachedDependency.getAttachmentKey(), attachedDependency.getValue()
-                        .getValue());
+                target.addToAttachmentList((AttachmentKey) attachedDependency.getAttachmentKey(), attachedDependency.getValue().getValue());
             } else {
-                target.putAttachment((AttachmentKey) attachedDependency.getAttachmentKey(), attachedDependency.getValue()
-                        .getValue());
+                target.putAttachment((AttachmentKey) attachedDependency.getAttachmentKey(), attachedDependency.getValue().getValue());
             }
         }
 
         while (iterator.hasNext()) {
             final RegisteredDeploymentUnitProcessor processor = iterator.next();
             try {
-                if(shouldRun(deploymentUnit, processor)) {
+                if (shouldRun(deploymentUnit, processor)) {
                     processor.getProcessor().deploy(processorContext);
                 }
             } catch (Throwable e) {
@@ -131,7 +132,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             phaseServiceBuilder.addDependency(context.getController().getName());
 
             final List<ServiceName> nextPhaseDeps = processorContext.getAttachment(Attachments.NEXT_PHASE_DEPS);
-            if(nextPhaseDeps != null) {
+            if (nextPhaseDeps != null) {
                 phaseServiceBuilder.addDependencies(nextPhaseDeps);
             }
             final List<AttachableDependency> nextPhaseAttachableDeps = processorContext.getAttachment(Attachments.NEXT_PHASE_ATTACHABLE_DEPS);
@@ -156,10 +157,13 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             }
 
             // Defer the {@link Phase.FIRST_MODULE_USE} phase
-            Boolean deferredPhase = deploymentUnit.getAttachment(Attachments.DEFERRED_MODULE_PHASE);
-            if (Boolean.TRUE.equals(deferredPhase) && nextPhase == Phase.FIRST_MODULE_USE) {
-                DEPLOYMENT_LOGGER.infoDeferredModulePhase(name);
-                phaseServiceBuilder.setInitialMode(Mode.NEVER);
+            List<String> deferredModules = DeploymentUtils.getDeferredModules(deploymentUnit);
+            if (nextPhase == Phase.FIRST_MODULE_USE) {
+                Mode initialMode = getDeferableInitialMode(deploymentUnit, deferredModules);
+                if (initialMode != Mode.ACTIVE) {
+                    DEPLOYMENT_LOGGER.infoDeferDeploymentPhase(nextPhase, name, initialMode);
+                    phaseServiceBuilder.setInitialMode(initialMode);
+                }
             }
 
             phaseServiceBuilder.install();
@@ -177,9 +181,44 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         }
     }
 
+    private Mode getDeferableInitialMode(final DeploymentUnit deploymentUnit, List<String> deferredModules) {
+        // Make the deferred module NEVER
+        if (deferredModules.contains(deploymentUnit.getName())) {
+            return Mode.NEVER;
+        }
+        Mode initialMode = Mode.ACTIVE;
+        DeploymentUnit parent = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        if (parent == deploymentUnit) {
+            List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+            for (DeploymentUnit du : subDeployments) {
+                // Always make the EAR LAZY if it could contain deferrable sub-deployments
+                if (du.hasAttachment(Attachments.OSGI_MANIFEST)) {
+                    initialMode = Mode.LAZY;
+                    break;
+                }
+            }
+            // Initialize the list of unvisited deferred modules
+            if (initialMode == Mode.LAZY) {
+                for (DeploymentUnit du : subDeployments) {
+                    parent.addToAttachmentList(UNVISITED_DEFERRED_MODULES, du);
+                }
+            }
+        } else {
+            // Make the non-deferred sibling PASSIVE if it is not the last to visit
+            List<DeploymentUnit> unvisited = parent.getAttachmentList(UNVISITED_DEFERRED_MODULES);
+            synchronized (unvisited) {
+                unvisited.remove(deploymentUnit);
+                if (!deferredModules.isEmpty() || !unvisited.isEmpty()) {
+                    initialMode = Mode.PASSIVE;
+                }
+            }
+        }
+        return initialMode;
+    }
+
     private static void safeUndeploy(final DeploymentUnit deploymentUnit, final Phase phase, final RegisteredDeploymentUnitProcessor prev) {
         try {
-            if(shouldRun(deploymentUnit, prev)) {
+            if (shouldRun(deploymentUnit, prev)) {
                 prev.getProcessor().undeploy(deploymentUnit);
             }
         } catch (Throwable t) {
@@ -197,11 +236,11 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     private static boolean shouldRun(final DeploymentUnit unit, final RegisteredDeploymentUnitProcessor deployer) {
         Set<String> shouldNotRun = unit.getAttachment(Attachments.EXCLUDED_SUBSYSTEMS);
-        if(shouldNotRun == null) {
-            if(unit.getParent() != null) {
+        if (shouldNotRun == null) {
+            if (unit.getParent() != null) {
                 shouldNotRun = unit.getParent().getAttachment(Attachments.EXCLUDED_SUBSYSTEMS);
             }
-            if(shouldNotRun == null) {
+            if (shouldNotRun == null) {
                 return true;
             }
         }

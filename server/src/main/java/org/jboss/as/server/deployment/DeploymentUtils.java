@@ -32,6 +32,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Helper class with static methods related to deployment
@@ -80,6 +81,25 @@ public final class DeploymentUtils {
     public static boolean skipRepeatedActivation(DeploymentUnit unit, int maxValue) {
         AtomicInteger count = unit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT);
         return count != null && count.get() > maxValue;
+    }
+
+    public static ServiceName getDeploymentUnitPhaseServiceName(final DeploymentUnit depUnit, final Phase phase) {
+        DeploymentUnit parent = depUnit.getParent();
+        if (parent == null) {
+            return Services.deploymentUnitName(depUnit.getName(), phase);
+        } else {
+            return Services.deploymentUnitName(parent.getName(), depUnit.getName(), phase);
+        }
+    }
+
+    public static void addDeferredModule(DeploymentUnit depUnit) {
+        DeploymentUnit topUnit = getTopDeploymentUnit(depUnit);
+        topUnit.addToAttachmentList(Attachments.DEFERRED_MODULES, depUnit.getName());
+    }
+
+    public static List<String> getDeferredModules(DeploymentUnit depUnit) {
+        DeploymentUnit topUnit = getTopDeploymentUnit(depUnit);
+        return topUnit.getAttachmentList(Attachments.DEFERRED_MODULES);
     }
 
     public static List<byte[]> getDeploymentHash(Resource deployment) {

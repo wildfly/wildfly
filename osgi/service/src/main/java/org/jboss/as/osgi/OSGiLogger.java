@@ -124,8 +124,4 @@ public interface OSGiLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11917, value = "Deactivate deferred module phase for: %s")
     void warnDeactivateDeferredModulePhase(Bundle bundle);
-
-    @LogMessage(level = WARN)
-    @Message(id = 11918, value = "Deferred module in sub deployment not supported: %s")
-    void warnDeferredModuleNotSupported(DeploymentUnit deploymentUnit);
 }
