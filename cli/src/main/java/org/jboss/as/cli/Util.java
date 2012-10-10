@@ -503,14 +503,11 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static List<String> getMatchingDeployments(ModelControllerClient client, String wildcardExpr, String serverGroup) {
+    public static List<String> getMatchingDeployments(ModelControllerClient client, String wildcardExpr) {
 
         final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
-            if(serverGroup != null) {
-                builder.addNode(Util.SERVER_GROUP, serverGroup);
-            }
             builder.setOperationName(Util.READ_CHILDREN_NAMES);
             builder.addProperty(Util.CHILD_TYPE, Util.DEPLOYMENT);
             request = builder.buildRequest();
