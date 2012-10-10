@@ -43,8 +43,8 @@ interface ProcessMessages {
      */
     ProcessMessages MESSAGES = Messages.getBundle(ProcessMessages.class);
 
-    @Message(id = Message.NONE, value = "Usage: ./domain.sh [args...]%nwhere args include:")
-    String argUsage();
+    @Message(id = Message.NONE, value = "Usage: %s [args...]%nwhere args include:")
+    String argUsage(String executableName);
 
     /**
      * Instructions for the {@link CommandLineConstants#BACKUP_DC} command line argument.

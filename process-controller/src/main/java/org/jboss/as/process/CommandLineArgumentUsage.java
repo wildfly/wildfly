@@ -4,6 +4,7 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class CommandLineArgumentUsage {
 
@@ -113,11 +114,13 @@ public abstract class CommandLineArgumentUsage {
         }
     }
 
-    protected static String usage() {
+    protected static String usage(String executableBaseName) {
+        boolean isWindows = (SecurityActions.getSystemProperty("os.name")).toLowerCase(Locale.ENGLISH).contains("windows");
+        String executableName = isWindows ? executableBaseName : executableBaseName + ".sh";
+
         if (USAGE == null) {
             final StringBuilder sb = new StringBuilder();
-            sb.append(MESSAGES.argUsage()).append(NEW_LINE);
-
+            sb.append(NEW_LINE).append(MESSAGES.argUsage(executableName)).append(NEW_LINE);
 
             for (int i = 0; i < arguments.size(); i++) {
                 sb.append(getCommand(i)).append(NEW_LINE);
