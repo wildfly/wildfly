@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -779,7 +781,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         // Treat no progress for an extended period as a failed deployment
                         String suffix = deployed.containsKey(deploymentName) ? MESSAGES.previousContentDeployed() : "";
                         String msg = MESSAGES.deploymentContentIncomplete(incompleteFile, suffix);
-                        writeFailedMarker(incompleteFile, new ModelNode().set(msg), status.timestamp);
+                        writeFailedMarker(incompleteFile, msg, status.timestamp);
                         ROOT_LOGGER.error(msg);
                         status.warned = true;
                         warnLogged = true;
@@ -824,7 +826,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     NonScannableStatus nonScannableStatus = entry.getValue();
                     NonScannableZipException e = nonScannableStatus.exception;
                     String msg = MESSAGES.unsafeAutoDeploy(e.getLocalizedMessage(), fileName, DO_DEPLOY);
-                    writeFailedMarker(nonScannable, new ModelNode().set(msg), nonScannableStatus.timestamp);
+                    writeFailedMarker(nonScannable, msg, nonScannableStatus.timestamp);
                     ROOT_LOGGER.error(msg);
                     warnLogged = true;
 
@@ -914,7 +916,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private void writeFailedMarker(final File deploymentFile, final ModelNode failureDescription, long failureTimestamp) {
+    private void writeFailedMarker(final File deploymentFile, final String failureDescription, long failureTimestamp) {
         final File failedMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + FAILED_DEPLOY);
         final File deployMarker = new File(deploymentFile.getParent(), deploymentFile.getName() + DO_DEPLOY);
         if (deployMarker.exists() && !deployMarker.delete()) {
@@ -932,7 +934,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         try {
             // failedMarker.createNewFile();
             fos = new FileOutputStream(failedMarker);
-            fos.write(failureDescription.asString().getBytes());
+            fos.write(failureDescription.getBytes());
         } catch (IOException io) {
             ROOT_LOGGER.errorWritingDeploymentMarker(io, failedMarker.getAbsolutePath());
         } finally {
@@ -1066,12 +1068,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleFailureResult(final ModelNode result) {
-            ROOT_LOGGER.error(result.get(FAILURE_DESCRIPTION).asString());
 
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION), doDeployTimestamp);
+            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION).toString(), doDeployTimestamp);
         }
     }
 
@@ -1095,7 +1096,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION), doDeployTimestamp);
+            writeFailedMarker(deploymentFile, result.get(FAILURE_DESCRIPTION).toString(), doDeployTimestamp);
         }
     }
 
@@ -1132,7 +1133,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION), markerLastModified);
+            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION).toString(), markerLastModified);
         }
     }
 
@@ -1174,7 +1175,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION), scanStartTime);
+            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION).toString(), scanStartTime);
         }
     }
 

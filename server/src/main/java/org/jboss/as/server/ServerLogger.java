@@ -126,11 +126,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15855, value = "Two unique criteria addresses were seen: %s")
     void twoUniqueCriteriaAddresses(String addresses);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15856, value = "Undeploy of deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15856, value = "Undeploy of deployment \"%s\" was rolled back with the following failure message: %s")
     void undeploymentRolledBack(String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15857, value = "Undeploy of deployment \"%s\" was rolled back with no failure message")
     void undeploymentRolledBackWithNoMessage(String deployment);
 
@@ -142,11 +142,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18559, value = "Deployed \"%s\"")
     void deploymentDeployed(String deploymentUnitName);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15860, value = "Redeploy of deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15860, value = "Redeploy of deployment \"%s\" was rolled back with the following failure message: %s")
     void redeployRolledBack(String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15861, value = "Redeploy of deployment \"%s\" was rolled back with no failure message")
     void redeployRolledBackWithNoMessage(String deployment);
 
@@ -154,11 +154,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18562, value = "Redeployed \"%s\"")
     void deploymentRedeployed(String deploymentName);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15863, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15863, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with the following failure message: %s")
     void replaceRolledBack(String replaced, String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15864, value = "Replacement of deployment \"%s\" by deployment \"%s\" was rolled back with no failure message")
     void replaceRolledBackWithNoMessage(String replaced, String deployment);
 
@@ -182,11 +182,11 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 18569, value = "Exception occurred removing deployment content %s")
     void failedToRemoveDeploymentContent(@Cause Throwable cause, String hash);
 
-    @LogMessage(level = INFO)
-    @Message(id = 15870, value = "Deploy of deployment \"%s\" was rolled back with failure message %s")
+    @LogMessage(level = ERROR)
+    @Message(id = 15870, value = "Deploy of deployment \"%s\" was rolled back with the following failure message: %s")
     void deploymentRolledBack(String deployment, String message);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = ERROR)
     @Message(id = 15871, value = "Deploy of deployment \"%s\" was rolled back with no failure message")
     void deploymentRolledBackWithNoMessage(String deployment);
 
