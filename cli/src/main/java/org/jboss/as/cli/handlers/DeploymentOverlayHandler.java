@@ -964,7 +964,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ModelNode result = response.get(Util.RESULT);
         if(!result.isDefined()) {
             final String descr = Util.getFailureDescription(response);
-            if(descr != null && (descr.contains("JBAS014807") || descr.contains("JBAS014793"))) {
+            if(descr != null && descr.contains("JBAS014807")) {
                 // resource doesn't exist
                 return null;
             }
