@@ -483,27 +483,7 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static List<String> getDeployments(ModelControllerClient client, String serverGroup) {
-
-        final ModelNode request = new ModelNode();
-        ModelNode address = request.get(ADDRESS);
-        if(serverGroup != null) {
-            address.add(SERVER_GROUP, serverGroup);
-        }
-        request.get(OPERATION).set(READ_CHILDREN_NAMES);
-        request.get(CHILD_TYPE).set(DEPLOYMENT);
-        try {
-            final ModelNode outcome = client.execute(request);
-            if (isSuccess(outcome)) {
-                return getList(outcome);
-            }
-        } catch (Exception e) {
-        }
-
-        return Collections.emptyList();
-    }
-
-    public static List<String> getMatchingDeployments(ModelControllerClient client, String wildcardExpr) {
+    public static List<String> getDeployments(ModelControllerClient client, String wildcardExpr) {
 
         final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
