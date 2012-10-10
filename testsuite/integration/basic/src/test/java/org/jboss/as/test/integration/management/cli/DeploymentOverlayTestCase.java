@@ -70,8 +70,6 @@ public class DeploymentOverlayTestCase {
 
     @ArquillianResource URL url;
 
-    private String baseUrl;
-
     private CommandContext ctx;
 
     @Deployment
@@ -120,7 +118,6 @@ public class DeploymentOverlayTestCase {
     public static void after() throws Exception {
         war1.delete();
         war2.delete();
-        war3.delete();
     }
 
     protected final String getBaseURL(URL url) throws MalformedURLException {
@@ -131,7 +128,6 @@ public class DeploymentOverlayTestCase {
     public void setUp() throws Exception {
         ctx = CLITestUtil.getCommandContext();
         ctx.connectController();
-        baseUrl = getBaseURL(url);
     }
 
     @After
@@ -348,6 +344,6 @@ public class DeploymentOverlayTestCase {
 
     protected String readResponse(String warName) throws IOException, ExecutionException, TimeoutException,
             MalformedURLException {
-        return HttpRequest.get(baseUrl + warName + "/SimpleServlet?env-entry=overlay-test", 10, TimeUnit.SECONDS).trim();
+        return HttpRequest.get(getBaseURL(url) + warName + "/SimpleServlet?env-entry=overlay-test", 10, TimeUnit.SECONDS).trim();
     }
 }

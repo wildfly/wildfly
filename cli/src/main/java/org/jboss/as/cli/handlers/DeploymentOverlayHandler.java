@@ -443,8 +443,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             ctx.printLine("redeploy request: " + redeployOp);
             final ModelNode result = client.execute(redeployOp);
             if (!Util.isSuccess(result)) {
-                ctx.printLine(result.toString());
-                throw new CommandLineException(Util.getFailureDescription(result));
+                throw new CommandFormatException(Util.getFailureDescription(result));
             }
         } catch (IOException e) {
             throw new CommandFormatException("Failed to redeploy affected deployments", e);
