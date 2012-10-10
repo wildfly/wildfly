@@ -23,12 +23,10 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-import static org.jboss.as.osgi.deployment.DeferredPhaseProcessor.DEFERRED_PHASE;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
-import static org.jboss.as.server.deployment.Services.deploymentUnitName;
-
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -42,6 +40,7 @@ import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager
 import org.jboss.as.osgi.management.OperationAssociation;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.msc.service.ServiceBuilder;
@@ -172,7 +171,8 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
         }
 
         // There is no deferred phase, activate using the default
-        if (!depUnit.hasAttachment(Attachments.DEFERRED_MODULE_PHASE)) {
+        List<String> deferredModules = DeploymentUtils.getDeferredModules(depUnit);
+        if (!deferredModules.contains(depUnit.getName())) {
             handler.start(bundle, options);
             return;
         }
@@ -297,9 +297,7 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
 
     @SuppressWarnings("unchecked")
     private ServiceController<Phase> getDeferredPhaseService(DeploymentUnit depUnit) {
-        String name = depUnit.getName();
-        DeploymentUnit parent = depUnit.getParent();
-        ServiceName serviceName = parent == null ? deploymentUnitName(name, DEFERRED_PHASE) : deploymentUnitName(parent.getName(), name, DEFERRED_PHASE);
+        ServiceName serviceName = DeploymentUtils.getDeploymentUnitPhaseServiceName(depUnit, Phase.FIRST_MODULE_USE);
         BundleManager bundleManager = injectedBundleManager.getValue();
         ServiceContainer serviceContainer = bundleManager.getServiceContainer();
         return (ServiceController<Phase>) serviceContainer.getRequiredService(serviceName);
