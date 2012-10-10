@@ -42,6 +42,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -128,7 +129,7 @@ public class DeploymentHandlerUtil {
                                         context.removeService(controller.getName());
                                     }
                                     if (context.hasFailureDescription()) {
-                                        ServerLogger.ROOT_LOGGER.deploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                                        ServerLogger.ROOT_LOGGER.deploymentRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
                                     } else {
                                         ServerLogger.ROOT_LOGGER.deploymentRolledBackWithNoMessage(deploymentUnitName);
                                     }
@@ -212,7 +213,7 @@ public class DeploymentHandlerUtil {
                                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                                     if (resultAction == OperationContext.ResultAction.ROLLBACK) {
                                         if (context.hasFailureDescription()) {
-                                            ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                                            ServerLogger.ROOT_LOGGER.redeployRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
                                             logged.set(true);
                                         } else {
                                             ServerLogger.ROOT_LOGGER.redeployRolledBackWithNoMessage(deploymentUnitName);
@@ -285,7 +286,7 @@ public class DeploymentHandlerUtil {
                                 doDeploy(context, runtimeName, name, svh, deployment, registration, mutableRegistration, vaultReader, contents);
 
                                 if (context.hasFailureDescription()) {
-                                    ServerLogger.ROOT_LOGGER.replaceRolledBack(replacedDeploymentUnitName, deploymentUnitName, context.getFailureDescription().asString());
+                                    ServerLogger.ROOT_LOGGER.replaceRolledBack(replacedDeploymentUnitName, deploymentUnitName, getFormattedFailureDescription(context));
                                 } else {
                                     ServerLogger.ROOT_LOGGER.replaceRolledBackWithNoMessage(replacedDeploymentUnitName, deploymentUnitName);
                                 }
@@ -325,7 +326,7 @@ public class DeploymentHandlerUtil {
                                 doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
 
                                 if (context.hasFailureDescription()) {
-                                    ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
+                                    ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
                                 } else {
                                     ServerLogger.ROOT_LOGGER.undeploymentRolledBackWithNoMessage(deploymentUnitName);
                                 }
@@ -337,5 +338,20 @@ public class DeploymentHandlerUtil {
                 }
             }, OperationContext.Stage.RUNTIME);
         }
+    }
+
+    private static String getFormattedFailureDescription(OperationContext context) {
+        ModelNode failureDescNode = context.getFailureDescription();
+        String failureDesc = failureDescNode.toString();
+//        // Strip the wrapping {} from ModelType.OBJECT types
+//        if (failureDescNode.getType() == ModelType.OBJECT && failureDesc.length() > 2
+//                && failureDesc.charAt(0) == '{' && failureDesc.charAt(failureDesc.length() - 1) == '}') {
+//            failureDesc = failureDesc.substring(1, failureDesc.length() - 1);
+//        }
+
+        if (failureDesc.contains("\n") && failureDesc.charAt(0) != '\n') {
+            failureDesc = "\n" + failureDesc;
+        }
+        return failureDesc;
     }
 }
