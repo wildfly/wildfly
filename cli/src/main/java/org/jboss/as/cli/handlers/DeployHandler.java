@@ -520,7 +520,7 @@ public class DeployHandler extends DeploymentHandler {
                     }
                 }
 
-                    return ctx.getBatchManager().getActiveBatch().toRequest();
+                return ctx.getBatchManager().getActiveBatch().toRequest();
             } finally {
                 // reset current dir in context
                 ctx.setCurrentDir(currentDir);
