@@ -289,7 +289,6 @@
 			     <max-retry-interval>10000</max-retry-interval>
 			     <reconnect-attempts>2</reconnect-attempts>
 			     <failover-on-initial-connection>true</failover-on-initial-connection>
-			     <failover-on-server-shutdown>true</failover-on-server-shutdown>
 				 <connection-load-balancing-policy-class-name>not.a.real.Class</connection-load-balancing-policy-class-name>
 				 <use-global-pools>true</use-global-pools>
 				 <scheduled-thread-pool-max-size>24</scheduled-thread-pool-max-size>
@@ -332,7 +331,6 @@
 			     <max-retry-interval>10000</max-retry-interval>
 			     <reconnect-attempts>2</reconnect-attempts>
 			     <failover-on-initial-connection>true</failover-on-initial-connection>
-			     <failover-on-server-shutdown>true</failover-on-server-shutdown>
 				 <connection-load-balancing-policy-class-name>not.a.real.Class</connection-load-balancing-policy-class-name>
 				 <use-global-pools>true</use-global-pools>
 				 <scheduled-thread-pool-max-size>24</scheduled-thread-pool-max-size>

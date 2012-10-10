@@ -500,4 +500,12 @@ public interface MessagingMessages {
     @Message(id = 11672, value = "Attribute(s) %s are not supported by messaging management model %s")
     String unsupportedAttributeInVersion(String attributes, ModelVersion version);
 
+    /**
+     * Create an failure description message indicating that the clustered attribute is deprecated.
+     *
+     * @return an {@link UnsupportedOperationException} for the error.
+     */
+    @Message(id = 11673, value = "The clustered attribute is deprecated. To create a clustered HornetQ server, define at least one cluster-connection")
+    UnsupportedOperationException canNotWriteClusteredAttribute();
+
 }

@@ -36,6 +36,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.DeprecatedAttributeWriteHandler;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
@@ -98,8 +99,14 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
         //FIXME how to set these flags to the pooled CF attributes?
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
         for (AttributeDefinition attr : getDefinitions(ATTRIBUTES)) {
-            if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, flags);
+            // deprecated attribute
+            if (attr == Common.DISCOVERY_INITIAL_WAIT_TIMEOUT ||
+                    attr == Common.FAILOVER_ON_SERVER_SHUTDOWN) {
+                registry.registerReadWriteAttribute(attr, null, new DeprecatedAttributeWriteHandler(attr.getName()));
+            } else {
+                if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
+                    registry.registerReadWriteAttribute(attr.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, flags);
+                }
             }
         }
     }

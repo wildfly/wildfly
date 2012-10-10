@@ -33,20 +33,14 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-
 
 /**
  * Bridge resource definition
@@ -143,17 +137,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             BridgeControlHandler.INSTANCE.registerAttributes(registry);
         }
 
-        registry.registerReadWriteAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN, null, new OperationStepHandler() {
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                if (operation.hasDefined(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName())) {
-                    PathAddress pa = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-                    MessagingLogger.MESSAGING_LOGGER.deprecatedAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName(), pa);
-                }
-            }
-        });
+        registry.registerReadWriteAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN, null, new DeprecatedAttributeWriteHandler(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName()));
     }
 
     @Override

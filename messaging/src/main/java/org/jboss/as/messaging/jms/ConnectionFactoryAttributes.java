@@ -29,6 +29,8 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PER_SECOND;
+import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.create;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -133,6 +135,8 @@ public interface ConnectionFactoryAttributes {
                 .setMeasurementUnit(MILLISECONDS)
                 .setAllowNull(true)
                 .setRestartAllServices()
+                .setDeprecated(VERSION_1_1_0)
+                .setAttributeMarshaller(NOOP_MARSHALLER)
                 .build();
 
         AttributeDefinition DUPS_OK_BATCH_SIZE = SimpleAttributeDefinitionBuilder.create("dups-ok-batch-size", INT)
@@ -155,6 +159,8 @@ public interface ConnectionFactoryAttributes {
         AttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = SimpleAttributeDefinitionBuilder.create("failover-on-server-shutdown", BOOLEAN)
                 .setAllowNull(true)
                 .setRestartAllServices()
+                .setDeprecated(VERSION_1_1_0)
+                .setAttributeMarshaller(NOOP_MARSHALLER)
                 .build();
 
         AttributeDefinition GROUP_ID = SimpleAttributeDefinitionBuilder.create("group-id", STRING)
