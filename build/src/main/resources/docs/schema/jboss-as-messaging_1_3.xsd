@@ -745,7 +745,13 @@
          <xs:element name="max-retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="reconnect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="failover-on-initial-connection" type="xs:boolean" maxOccurs="1" minOccurs="0" />
-         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0">
+             <xs:annotation>
+                <xs:documentation>
+                   Deprecated. the failover-on-server-shutdown attribute is no longer taken into account when configuring a connector-ref.
+                </xs:documentation>
+             </xs:annotation>
+         </xs:element>
          <xs:element name="connection-load-balancing-policy-class-name" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="use-global-pools" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
@@ -838,7 +844,13 @@
          <xs:element name="max-retry-interval" type="xs:long" maxOccurs="1" minOccurs="0" />
          <xs:element name="reconnect-attempts" type="xs:int" maxOccurs="1" minOccurs="0" />
          <xs:element name="failover-on-initial-connection" type="xs:boolean" maxOccurs="1" minOccurs="0" />
-         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0" />
+         <xs:element name="failover-on-server-shutdown" type="xs:boolean" maxOccurs="1" minOccurs="0">
+             <xs:annotation>
+                <xs:documentation>
+                   Deprecated. the failover-on-server-shutdown attribute is no longer taken into account when configuring a connector-ref.
+                </xs:documentation>
+             </xs:annotation>
+         </xs:element>
          <xs:element name="connection-load-balancing-policy-class-name" type="xs:string" maxOccurs="1" minOccurs="0" />
          <xs:element name="use-global-pools" type="xs:boolean" maxOccurs="1" minOccurs="0" />
          <xs:element name="scheduled-thread-pool-max-size" type="xs:int" maxOccurs="1" minOccurs="0" />
