@@ -1635,7 +1635,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Missing[%s]")
+    @Message(id = Message.NONE, value = "is missing [%s]")
     String servicesMissing(StringBuilder sb);
 
     /**
@@ -2528,4 +2528,13 @@ public interface ControllerMessages {
 
     @Message(id = 14878, value = "Operation %s invoked against multiple target addresses failed at addresses %s. See the operation result for details.")
     String wildcardOperationFailedAtMultipleAddresses(String operation, Set<PathAddress> addresses);
+
+    @Message(id = 14879, value = "One or more services were unable to start due to one or more indirect dependencies not being available.")
+    String missingTransitiveDependencyProblem();
+
+    @Message(id = 14880, value = "Services that were unable to start:")
+    String missingTransitiveDependendents();
+
+    @Message(id = 14881, value = "Services that may be the cause:")
+    String missingTransitiveDependencies();
 }

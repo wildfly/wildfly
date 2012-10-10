@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
@@ -32,6 +33,8 @@ import org.jboss.msc.service.StartException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
@@ -80,45 +83,72 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
         }
 
         if (!failed.isEmpty() || !problem.isEmpty()) {
+            Set<ServiceController<?>> missingTransitive = null;
+            Set<ServiceName> trackedServices = new HashSet<ServiceName>();
             final ModelNode failureDescription = context.getFailureDescription();
             ModelNode failedList = null;
             for (ServiceController<?> controller : failed) {
                 if (failedList == null) {
                     failedList = failureDescription.get(MESSAGES.failedServices());
                 }
-                failedList.get(controller.getName().getCanonicalName()).set(getServiceFailureDescription(controller.getStartException()));
+                ServiceName serviceName = controller.getName();
+                trackedServices.add(serviceName);
+                failedList.get(serviceName.getCanonicalName()).set(getServiceFailureDescription(controller.getStartException()));
             }
             ModelNode problemList = null;
             for (ServiceController<?> controller : problem) {
-                if (problemList == null) {
-                    problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
-                }
 
-                final StringBuilder problem = new StringBuilder();
-                problem.append(controller.getName().getCanonicalName());
-
-                final StringBuilder missing = new StringBuilder();
                 Set<ServiceName> immediatelyUnavailable = controller.getImmediateUnavailableDependencies();
                 if (!immediatelyUnavailable.isEmpty()) {
+                    if (problemList == null) {
+                        problemList = failureDescription.get(MESSAGES.servicesMissingDependencies());
+                    }
 
+                    StringBuilder missing = new StringBuilder();
                     for(Iterator<ServiceName> i = immediatelyUnavailable.iterator(); i.hasNext(); ) {
                         ServiceName missingSvc = i.next();
+                        trackedServices.add(missingSvc);
                         missing.append(missingSvc.getCanonicalName());
                         if(i.hasNext()) {
                             missing.append(", ");
                         }
                     }
+
+                    final StringBuilder problem = new StringBuilder();
+                    problem.append(controller.getName().getCanonicalName());
+                    problem.append(" ").append(MESSAGES.servicesMissing(missing));
+                    problemList.add(problem.toString());
+
                 } else {
-                    // Record that unknown transitive dependencies are missing.
-                    // TODO this is uninformative so not very nice, but MSC provides no hooks to track from
-                    // a ServiceController back to a missing/failed transitive dependency or from a failed
-                    // dependency down its dependents tree to this service. If that ever changes, update
-                    // this to make use of it
-                    missing.append(MESSAGES.transitiveDependencies());
+                    if (missingTransitive == null) {
+                        missingTransitive = new HashSet<ServiceController<?>>();
+                    }
+                    missingTransitive.add(controller);
                 }
-                problem.append(" ").append(MESSAGES.servicesMissing(missing));
-                problemList.add(problem.toString());
             }
+
+            if (missingTransitive != null) {
+                // See if any other services are known to the service container as being missing and aren't already
+                // tracked by this SVH as failed or directly missing. If any are found, that is some additional
+                // info to the user, so report that
+                SortedSet<ServiceName> allMissing = findAllMissingServices(missingTransitive, trackedServices);
+                if (!allMissing.isEmpty()) {
+                    ModelNode missingTransitiveDesc = failureDescription.get(MESSAGES.missingTransitiveDependencyProblem());
+                    ModelNode missingTransitiveDeps = missingTransitiveDesc.get(MESSAGES.missingTransitiveDependendents());
+                    Set<ServiceName> sortedNames = new TreeSet<ServiceName>();
+                    for (ServiceController<?> serviceController : missingTransitive) {
+                        sortedNames.add(serviceController.getName());
+                    }
+                    for (ServiceName serviceName : sortedNames) {
+                        missingTransitiveDeps.add(serviceName.getCanonicalName());
+                    }
+                    ModelNode allMissingList = missingTransitiveDesc.get(MESSAGES.missingTransitiveDependencies());
+                    for (ServiceName serviceName : allMissing) {
+                        allMissingList.add(serviceName.getCanonicalName());
+                    }
+                }
+            }
+
             if (context.isRollbackOnRuntimeFailure()) {
                 context.setRollbackOnly();
             }
@@ -177,5 +207,41 @@ public final class ServiceVerificationHandler extends AbstractServiceListener<Ob
             result.set(sb.toString());
         }
         return result;
+    }
+
+    private static SortedSet<ServiceName> findAllMissingServices(Set<ServiceController<?>> missingTransitive, Set<ServiceName> alreadyTracked) {
+        // Check all relevant service containers. This is a bit silly since in reality there
+        // should only be one that is associated with every SC that is passed in,
+        // but I'm being anal and vaguely future-proofing a bit
+        Set<ServiceContainer> examined = new HashSet<ServiceContainer>();
+        SortedSet<ServiceName> result = new TreeSet<ServiceName>();
+        for (ServiceController<?> controller : missingTransitive) {
+            ServiceContainer container = controller.getServiceContainer();
+            if (examined.add(container)) {
+                result.addAll(findAllMissingServices(container));
+            }
+        }
+
+        // Only report the missing services if the list includes ones not already tracked
+        // as failed or directly missing
+        Set<ServiceName> retain = new HashSet<ServiceName>(result);
+        retain.removeAll(alreadyTracked);
+        if (retain.size() == 0) {
+            result.clear();
+        }
+
+        return result;
+    }
+
+    private static Set<ServiceName> findAllMissingServices(ServiceContainer container) {
+        Set<ServiceName> result = new HashSet<ServiceName>();
+        for (ServiceName serviceName : container.getServiceNames()) {
+            ServiceController<?> controller = container.getService(serviceName);
+            if (controller != null && controller.getMode() != ServiceController.Mode.NEVER && controller.getMode() != ServiceController.Mode.REMOVE
+                    && controller.getSubstate() == ServiceController.Substate.PROBLEM) {
+                result.addAll(controller.getImmediateUnavailableDependencies());
+            }
+        }
+        return  result;
     }
 }
