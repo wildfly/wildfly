@@ -29,10 +29,12 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
@@ -67,6 +69,12 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                                            final String attributeName, final ModelNode newValue,
                                            final ModelNode currentValue,
                                            final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+        AttributeDefinition attr = getAttributeDefinition(attributeName);
+        if (attr.getFlags().contains(AttributeAccess.Flag.RESTART_ALL_SERVICES)) {
+            // Restart required
+            return true;
+        }
+
         ServiceRegistry registry = context.getServiceRegistry(true);
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = registry.getService(hqServiceName);
