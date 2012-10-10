@@ -29,16 +29,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.Attachments.BundleState;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
@@ -84,14 +81,6 @@ public class BundleResolveProcessor implements DeploymentUnitProcessor {
             LOGGER.debugf("Resolve: %s", depUnit.getName());
             resolver.resolveAndApply(context);
             depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
-
-            // Add a dependency on the Bundle RESOLVED service
-            ServiceName bundleResolve = bundleManager.getServiceName(bundle, Bundle.RESOLVED);
-            phaseContext.addDeploymentDependency(bundleResolve, AttachmentKey.create(Object.class));
-
-            // Add a dependency on the Module service
-            ServiceName moduleService = ServiceModuleLoader.moduleServiceName(brev.getModuleIdentifier());
-            phaseContext.addDeploymentDependency(moduleService, Attachments.MODULE);
         } catch (ResolutionException ex) {
             LOGGER.warnCannotResolve(ex.getUnresolvedRequirements());
         }

@@ -62,6 +62,9 @@ public class BundleDeploymentCaseTwoTestCase {
     @Inject
     public BundleContext context;
 
+    @Inject
+    public PackageAdmin packageAdmin;
+
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "bundle-deployment-casetwo");
@@ -84,7 +87,7 @@ public class BundleDeploymentCaseTwoTestCase {
         deployer.deploy(BUNDLE_DEPLOYMENT_NAME);
 
         // Find the deployed bundle
-        Bundle bundle = FrameworkUtils.getDeployedBundle(context, BUNDLE_DEPLOYMENT_NAME, null);
+        Bundle bundle = packageAdmin.getBundles(BUNDLE_DEPLOYMENT_NAME, null)[0];
 
         // Start the bundle. Note, it may have started already
         bundle.start();

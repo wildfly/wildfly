@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
@@ -74,6 +75,11 @@ public final class DeploymentUtils {
             parent = unit.getParent();
         }
         return unit;
+    }
+
+    public static boolean skipRepeatedActivation(DeploymentUnit unit, int maxValue) {
+        AtomicInteger count = unit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT);
+        return count != null && count.get() > maxValue;
     }
 
     public static List<byte[]> getDeploymentHash(Resource deployment) {

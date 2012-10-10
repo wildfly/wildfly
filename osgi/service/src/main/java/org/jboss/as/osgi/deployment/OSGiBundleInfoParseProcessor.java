@@ -49,10 +49,10 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        final String contextName = depUnit.getName();
+        final String runtimeName = depUnit.getName();
 
         // Check if we already have a bundle {@link Deployment}
-        if (BundleLifecycleIntegration.getDeployment(contextName) != null)
+        if (BundleLifecycleIntegration.getDeployment(runtimeName) != null)
             return;
 
         // Get the manifest from the deployment's virtual file
@@ -61,7 +61,7 @@ public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
             try {
                 // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
                 VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-                BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), contextName, metadata);
+                BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), runtimeName, metadata);
                 depUnit.putAttachment(OSGiConstants.BUNDLE_INFO_KEY, info);
             } catch (BundleException ex) {
                 throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);

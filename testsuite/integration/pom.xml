@@ -53,9 +53,9 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
+                <module>osgi</module>
                 <module>clust</module>
                 <module>iiop</module>
-                <module>osgi</module>
                 <module>xts</module>
                 <module>multinode</module>
                 <module>manualmode</module>

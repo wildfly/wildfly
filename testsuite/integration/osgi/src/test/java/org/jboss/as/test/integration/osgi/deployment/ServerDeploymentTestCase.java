@@ -68,6 +68,9 @@ public class ServerDeploymentTestCase {
     public StartLevel startLevel;
 
     @Inject
+    public PackageAdmin packageAdmin;
+
+    @Inject
     public BundleContext context;
 
     @Inject
@@ -100,7 +103,8 @@ public class ServerDeploymentTestCase {
         String runtimeName = server.deploy("auto-start", input);
 
         // Find the deployed bundle
-        Bundle bundle = FrameworkUtils.getDeployedBundle(context, GOOD_BUNDLE, null);
+        // Find the deployed bundle
+        Bundle bundle = packageAdmin.getBundles(GOOD_BUNDLE, null)[0];
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
 
         server.undeploy(runtimeName);
