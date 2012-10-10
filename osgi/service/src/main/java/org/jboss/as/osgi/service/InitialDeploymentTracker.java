@@ -25,6 +25,7 @@ import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +59,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
 
     public static final ServiceName INITIAL_DEPLOYMENTS_COMPLETE = BootstrapPhase.serviceName(INITIAL_DEPLOYMENTS, BootstrapPhase.COMPLETE);
 
-    private final Set<ServiceName> expectedServices = new HashSet<ServiceName>();
+    private final Set<ServiceName> expectedServices = Collections.synchronizedSet(new HashSet<ServiceName>());
     private final ServiceTarget serviceTarget;
     private final Set<String> deploymentNames;
 
