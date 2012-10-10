@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -130,11 +131,13 @@ public class CacheContainerResource extends SimpleResourceDefinition {
             .setParameters(NAME)
             .build();
 
-    public CacheContainerResource() {
+    private final ResolvePathHandler resolvePathHandler;
+    public CacheContainerResource(final ResolvePathHandler resolvePathHandler) {
         super(CONTAINER_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER),
                 CacheContainerAdd.INSTANCE,
                 CacheContainerRemove.INSTANCE);
+        this.resolvePathHandler = resolvePathHandler;
     }
 
     @Override
@@ -162,9 +165,9 @@ public class CacheContainerResource extends SimpleResourceDefinition {
 
         // child resources
         resourceRegistration.registerSubModel(new TransportResource());
-        resourceRegistration.registerSubModel(new LocalCacheResource());
-        resourceRegistration.registerSubModel(new InvalidationCacheResource());
-        resourceRegistration.registerSubModel(new ReplicatedCacheResource());
-        resourceRegistration.registerSubModel(new DistributedCacheResource());
+        resourceRegistration.registerSubModel(new LocalCacheResource(resolvePathHandler));
+        resourceRegistration.registerSubModel(new InvalidationCacheResource(resolvePathHandler));
+        resourceRegistration.registerSubModel(new ReplicatedCacheResource(resolvePathHandler));
+        resourceRegistration.registerSubModel(new DistributedCacheResource(resolvePathHandler));
     }
 }

@@ -30,6 +30,7 @@ import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
 
 /**
@@ -40,8 +41,8 @@ class PeriodicHandlerResourceDefinition extends AbstractFileHandlerDefinition {
     static final PathElement PERIODIC_HANDLER_PATH = PathElement.pathElement(PERIODIC_ROTATING_FILE_HANDLER);
     static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE, SUFFIX);
 
-    public PeriodicHandlerResourceDefinition(final boolean includeLegacyAttributes) {
-        super(PERIODIC_HANDLER_PATH, PeriodicRotatingFileHandler.class,
+    public PeriodicHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
+        super(PERIODIC_HANDLER_PATH, PeriodicRotatingFileHandler.class, resolvePathHandler,
                 (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 

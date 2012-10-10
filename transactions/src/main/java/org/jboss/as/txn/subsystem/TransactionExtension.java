@@ -23,7 +23,6 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
@@ -33,18 +32,21 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.txn.TransactionMessages;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -59,6 +61,10 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class TransactionExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "transactions";
+    /**
+     * The operation name to resolve the object store path
+     */
+    public static final String RESOLVE_OBJECT_STORE_PATH = "resolve-object-store-path";
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -100,8 +106,25 @@ public class TransactionExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new TransactionSubsystemRootResourceDefinition(registerRuntimeOnly));
+        final TransactionSubsystemRootResourceDefinition rootResourceDefinition = new TransactionSubsystemRootResourceDefinition(registerRuntimeOnly);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResourceDefinition);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        // Create the path resolver handlers
+        if (context.getProcessType().isServer()) {
+            // It's less than ideal to create a separate operation here, but this extension contains two relative-to attributes
+            final ResolvePathHandler objectStorePathHandler = ResolvePathHandler.Builder.of(RESOLVE_OBJECT_STORE_PATH, context.getPathManager())
+                   .setPathAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH)
+                   .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO)
+                   .build();
+            registration.registerOperationHandler(objectStorePathHandler.getOperationDefinition(), objectStorePathHandler);
+
+            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+                    .setPathAttribute(TransactionSubsystemRootResourceDefinition.PATH)
+                    .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.RELATIVE_TO)
+                    .build();
+            registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        }
 
 
         ManagementResourceRegistration logStoreChild = registration.registerSubModel(new LogStoreDefinition(resource));

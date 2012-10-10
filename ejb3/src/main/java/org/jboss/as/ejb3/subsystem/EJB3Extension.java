@@ -34,7 +34,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.ejb3.subsystem.deployment.EntityBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.MessageDrivenBeanResourceDefinition;
 import org.jboss.as.ejb3.subsystem.deployment.SingletonBeanDeploymentResourceDefinition;
@@ -43,8 +43,6 @@ import org.jboss.as.ejb3.subsystem.deployment.StatelessSessionBeanDeploymentReso
 import org.jboss.as.threads.ThreadFactoryResolver;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 
 /**
  * Extension that provides the EJB3 subsystem.
@@ -103,7 +101,15 @@ public class EJB3Extension implements Extension {
         subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/service=timerservice
-        subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
+        final ManagementResourceRegistration timerService = subsystemRegistration.registerSubModel(TimerServiceResourceDefinition.INSTANCE);
+        // Create the path resolver handler
+        if (context.getProcessType().isServer()) {
+            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+                    .setPathAttribute(TimerServiceResourceDefinition.PATH)
+                    .setRelativeToAttribute(TimerServiceResourceDefinition.RELATIVE_TO)
+                    .build();
+            timerService.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        }
 
         // subsystem=ejb3/thread-pool=*
         subsystemRegistration.registerSubModel(UnboundedQueueThreadPoolResourceDefinition.create(EJB3SubsystemModel.THREAD_POOL,

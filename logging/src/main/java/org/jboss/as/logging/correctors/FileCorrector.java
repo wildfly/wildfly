@@ -22,8 +22,8 @@
 
 package org.jboss.as.logging.correctors;
 
-import static org.jboss.as.logging.CommonAttributes.PATH;
-import static org.jboss.as.logging.CommonAttributes.RELATIVE_TO;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 
 import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.services.path.AbstractPathService;
@@ -31,11 +31,12 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Corrects the {@link org.jboss.as.logging.CommonAttributes#RELATIVE_TO relative-to} attribute.
+ * Corrects the {@link org.jboss.as.controller.services.path.PathResourceDefinition#RELATIVE_TO relative-to} attribute.
  * <p/>
- * Checks the {@link org.jboss.as.logging.CommonAttributes#PATH path} attribute for an absolute path. If the path is absolute, the current
- * {@link org.jboss.as.logging.CommonAttributes#RELATIVE_TO relative-to} attribute is not copied over. If the path is not absolute the
- * current {@link org.jboss.as.logging.CommonAttributes#RELATIVE_TO relative-to} attribute is copied over.
+ * Checks the {@link org.jboss.as.controller.services.path.PathResourceDefinition#PATH path} attribute for an absolute
+ * path. If the path is absolute, the current {@link org.jboss.as.controller.services.path.PathResourceDefinition#RELATIVE_TO
+ * relative-to} attribute is not copied over. If the path is not absolute the current {@link
+ * org.jboss.as.controller.services.path.PathResourceDefinition#RELATIVE_TO relative-to} attribute is copied over.
  * <p/>
  * Date: 29.11.2011
  *

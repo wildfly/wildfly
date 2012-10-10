@@ -29,6 +29,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
  * The root resource of the Infinispan subsystem.
@@ -37,11 +38,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class InfinispanSubsystemRootResource extends SimpleResourceDefinition {
 
-    public InfinispanSubsystemRootResource() {
+    private final ResolvePathHandler resolvePathHandler;
+    public InfinispanSubsystemRootResource(final ResolvePathHandler resolvePathHandler) {
         super(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
                 InfinispanExtension.getResourceDescriptionResolver(),
                 InfinispanSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.resolvePathHandler = resolvePathHandler;
     }
 
     @Override
@@ -58,7 +61,7 @@ public class InfinispanSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new CacheContainerResource());
+        resourceRegistration.registerSubModel(new CacheContainerResource(resolvePathHandler));
     }
 
 

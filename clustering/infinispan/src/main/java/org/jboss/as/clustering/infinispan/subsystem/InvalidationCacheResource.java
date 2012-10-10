@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/invalidation-cache=*
@@ -35,10 +36,10 @@ public class InvalidationCacheResource extends ClusteredCacheResource {
 
     // attributes
 
-    public InvalidationCacheResource() {
+    public InvalidationCacheResource(final ResolvePathHandler resolvePathHandler) {
         super(INVALIDATION_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.INVALIDATION_CACHE),
                 InvalidationCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, resolvePathHandler);
     }
 }

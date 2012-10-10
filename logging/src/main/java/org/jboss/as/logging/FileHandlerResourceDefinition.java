@@ -29,6 +29,7 @@ import static org.jboss.as.logging.CommonAttributes.FILE_HANDLER;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.logmanager.handlers.FileHandler;
 
 /**
@@ -39,8 +40,8 @@ class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
     static final PathElement FILE_HANDLER_PATH = PathElement.pathElement(FILE_HANDLER);
     static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE);
 
-    public FileHandlerResourceDefinition(final boolean includeLegacyAttributes) {
-        super(FILE_HANDLER_PATH, FileHandler.class, (
+    public FileHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
+        super(FILE_HANDLER_PATH, FileHandler.class, resolvePathHandler, (
                 includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 }

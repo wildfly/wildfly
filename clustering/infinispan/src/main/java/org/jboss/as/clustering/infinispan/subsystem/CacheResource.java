@@ -38,6 +38,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -120,8 +121,10 @@ public class CacheResource extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    public CacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler) {
+    private final ResolvePathHandler resolvePathHandler;
+    public CacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
+        this.resolvePathHandler = resolvePathHandler;
     }
 
     @Override
@@ -149,7 +152,7 @@ public class CacheResource extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new EvictionResource());
         resourceRegistration.registerSubModel(new ExpirationResource());
         resourceRegistration.registerSubModel(new StoreResource());
-        resourceRegistration.registerSubModel(new FileStoreResource());
+        resourceRegistration.registerSubModel(new FileStoreResource(resolvePathHandler));
         resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResource());
         resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResource());
         resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResource());

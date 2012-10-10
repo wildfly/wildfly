@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 
 /**
  * Base class for cache resources which require common cache attributes, clustered cache attributes
@@ -36,8 +37,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class SharedCacheResource extends ClusteredCacheResource {
 
-    public SharedCacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler);
+    public SharedCacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler);
     }
 
     @Override

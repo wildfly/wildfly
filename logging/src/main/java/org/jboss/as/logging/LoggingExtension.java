@@ -44,6 +44,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -91,11 +92,20 @@ public class LoggingExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingRootResource.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
-        registerSubModels(registration, true);
+
+        final ResolvePathHandler resolvePathHandler;
+        if (context.getProcessType().isServer()) {
+            resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+                    .setParentAttribute(CommonAttributes.FILE)
+                    .build();
+        } else {
+            resolvePathHandler = null;
+        }
+        registerSubModels(registration, resolvePathHandler, true);
         registerSubModels(registration.registerSubModel(new SimpleResourceDefinition(LOGGING_PROFILE_PATH,
                 getResourceDescriptionResolver(),
                 LoggingProfileOperations.ADD_PROFILE,
-                LoggingProfileOperations.REMOVE_PROFILE)), false);
+                LoggingProfileOperations.REMOVE_PROFILE)), resolvePathHandler, false);
 
         final TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
             @Override
@@ -121,14 +131,14 @@ public class LoggingExtension implements Extension {
         }
     }
 
-    private void registerSubModels(final ManagementResourceRegistration registration, final boolean includeLegacyAttributes) {
+    private void registerSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
         registration.registerSubModel(new RootLoggerResourceDefinition(includeLegacyAttributes));
         registration.registerSubModel(new LoggerResourceDefinition(includeLegacyAttributes));
         registration.registerSubModel(new AsyncHandlerResourceDefinition(includeLegacyAttributes));
         registration.registerSubModel(new ConsoleHandlerResourceDefinition(includeLegacyAttributes));
-        registration.registerSubModel(new FileHandlerResourceDefinition(includeLegacyAttributes));
-        registration.registerSubModel(new PeriodicHandlerResourceDefinition(includeLegacyAttributes));
-        registration.registerSubModel(new SizeRotatingHandlerResourceDefinition(includeLegacyAttributes));
+        registration.registerSubModel(new FileHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes));
+        registration.registerSubModel(new PeriodicHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes));
+        registration.registerSubModel(new SizeRotatingHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes));
         registration.registerSubModel(new CustomHandlerResourceDefinition(includeLegacyAttributes));
     }
 

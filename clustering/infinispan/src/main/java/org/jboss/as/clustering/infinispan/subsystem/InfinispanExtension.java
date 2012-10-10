@@ -39,6 +39,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -78,8 +79,18 @@ public class InfinispanExtension implements Extension {
         // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        // Create the path resolver handler
+        final ResolvePathHandler resolvePathHandler;
+        if (context.getProcessType().isServer()) {
+            resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+                    .setPathAttribute(FileStoreResource.PATH)
+                    .setRelativeToAttribute(FileStoreResource.RELATIVE_TO)
+                    .build();
+        } else {
+            resolvePathHandler = null;
+        }
 
-        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource());
+        subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource(resolvePathHandler));
 
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
 

@@ -29,11 +29,10 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
 
 /**
@@ -67,7 +66,14 @@ public class DeploymentScannerExtension implements Extension {
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DeploymentScannerSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        registration.registerSubModel(new DeploymentScannerDefinition(context.getPathManager()));
+        final ManagementResourceRegistration scanner = registration.registerSubModel(new DeploymentScannerDefinition(context.getPathManager()));
+        if (context.getProcessType().isServer()) {
+            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
+                    .setRelativeToAttribute(DeploymentScannerDefinition.RELATIVE_TO)
+                    .setPathAttribute(DeploymentScannerDefinition.PATH)
+                    .build();
+            scanner.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        }
     }
 
     /**

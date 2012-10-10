@@ -61,16 +61,24 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
                 .setValidator(new StringLengthValidator(1, true))
                 .build();
 
-    static final SimpleAttributeDefinition RELATIVE_TO =
-            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
-                .setValidator(new StringLengthValidator(1, true))
-                .build();
-
     static final SimpleAttributeDefinition READ_ONLY =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.READ_ONLY, ModelType.BOOLEAN, true)
                 .setDefaultValue(new ModelNode(false))
                 .setStorageRuntime()
                 .build();
+
+    /**
+     * A path attribute definition
+     */
+    public static final SimpleAttributeDefinition PATH = SimpleAttributeDefinitionBuilder.create(PATH_SPECIFIED).build();
+
+    /**
+     * A relative-to attribute definition
+     */
+    public static final SimpleAttributeDefinition RELATIVE_TO =
+            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RELATIVE_TO, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(1, true))
+                    .build();
 
 
     protected final PathManagerService pathManager;
