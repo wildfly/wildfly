@@ -63,6 +63,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <version.checkstyle.plugin>2.9.1</version.checkstyle.plugin>
+        <version.compiler.plugin>2.5.1-jboss-2</version.compiler.plugin>
 
         <!--
             Dependency versions. Please keep alphabetical.
@@ -1126,7 +1127,7 @@
                 <artifactId>jboss-as-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-sos</artifactId>
@@ -3060,7 +3061,7 @@
                         <artifactId>wagon-http-shared</artifactId>
                    </exclusion>
                 </exclusions>
-		      </dependency>      
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.neethi</groupId>
@@ -6117,37 +6118,37 @@
                 <artifactId>aether-api</artifactId>
                 <version>${version.org.sonatype.aether}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-spi</artifactId>
                 <version>${version.org.sonatype.aether}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-util</artifactId>
                 <version>${version.org.sonatype.aether}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-impl</artifactId>
                 <version>${version.org.sonatype.aether}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-connector-file</artifactId>
                 <version>${version.org.sonatype.aether}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-connector-asynchttpclient</artifactId>
                 <version>${version.org.sonatype.aether}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.sonatype.aether</groupId>
                 <artifactId>aether-connector-wagon</artifactId>
