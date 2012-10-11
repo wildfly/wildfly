@@ -47,7 +47,9 @@ import org.junit.runners.Suite;
         ValidateOperationOperationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
         ExtensionManagementTestCase.class,
-        OperationTransformationTestCase.class
+        OperationTransformationTestCase.class,
+        OSGiBundleLifecyleTestCase.class,
+        OSGiBundleStartLevelTestCase.class
 })
 public class DomainTestSuite {
 

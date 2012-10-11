@@ -1242,6 +1242,13 @@
                         <xs:element name="content" type="contentType"/>
                         <xs:element name="fs-archive" type="fs-archiveType"/>
                         <xs:element name="fs-exploded" type="fs-explodedType"/>
+			            <xs:element name="properties" type="properties">
+			                <xs:annotation>
+			                    <xs:documentation>
+			                        The properties to be made available on the deployment unit.
+			                    </xs:documentation>
+			                </xs:annotation>
+			            </xs:element>
                     </xs:choice>
                 </xs:sequence>
             </xs:extension>

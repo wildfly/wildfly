@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.test.integration.domain.osgi.bundle;
 
-package org.jboss.as.controller.operations;
+import java.io.BufferedReader;
+import java.io.StringReader;
 
-import java.util.List;
-
-import org.jboss.as.controller.OperationContext.AttachmentKey;
-import org.jboss.as.controller.client.DeploymentMetadata;
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 /**
- * @author Stuart Douglas
+ * A simple BundleActivator.
+ *
+ * @author thomas.diesler@jboss.com
  */
-public class OperationAttachments {
+public class FeedbackActivator implements BundleActivator {
 
-    public static final AttachmentKey<List<DomainOperationTransformer>> SLAVE_SERVER_OPERATION_TRANSFORMERS = AttachmentKey.create(List.class);
-    public static final AttachmentKey<DeploymentMetadata> DEPLOYMENT_METADATA = AttachmentKey.create(DeploymentMetadata.class);
-
-    private OperationAttachments() {
+    @Override
+    public void start(final BundleContext context) throws Exception {
+        StringReader sr = new StringReader(context.getBundle().toString());
+        context.registerService(BufferedReader.class.getName(), new BufferedReader(sr), null);
     }
 
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        // do nothing
+    }
 }

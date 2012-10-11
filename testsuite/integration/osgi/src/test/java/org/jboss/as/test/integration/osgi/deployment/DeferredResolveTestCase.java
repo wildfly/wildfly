@@ -266,7 +266,7 @@ public class DeferredResolveTestCase {
     }
 
     @Test
-    public void testAggregateWithOneDeferredModule() throws Exception {
+    public void testAggregateWithDeferredModule() throws Exception {
         try {
             deployer.deploy(DEFERRED_AGGREGATE_A);
             Assert.fail("RuntimeException expected");
@@ -277,7 +277,7 @@ public class DeferredResolveTestCase {
 
     @Test
     @Ignore
-    public void testAggregateWithOneDeferredModuleAndOneGoodModule() throws Exception {
+    public void testAggregateWithUndeferredModule() throws Exception {
         deployer.deploy(DEFERRED_AGGREGATE_B);
         try {
             Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];

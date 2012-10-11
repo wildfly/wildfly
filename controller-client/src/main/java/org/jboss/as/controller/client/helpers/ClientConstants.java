@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.client.helpers;
 
+import java.util.Locale;
+
 /**
  * Constants for strings frequently used in management operations.
  *
@@ -31,6 +33,7 @@ public class ClientConstants {
     public static final String COMPOSITE = "composite";
     public static final String CONTENT = "content";
     public static final String DEPLOYMENT = "deployment";
+    public static final String METADATA = "metadata";
     public static final String EXTENSION = "extension";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String FAILURE_DESCRIPTION = "failure-description";
@@ -54,4 +57,34 @@ public class ClientConstants {
     public static final String DEPLOYMENT_REPLACE_OPERATION = "replace-deployment";
     public static final String DEPLOYMENT_UNDEPLOY_OPERATION = "undeploy";
 
+    public static final String DEPLOYMENT_METADATA_START_POLICY = "start.policy";
+    public static final String DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL = "bundle.startlevel";
+
+    public enum StartPolicy {
+        /**
+         * Deployment is automatically started (default).
+         */
+        AUTO,
+        /**
+         * Deployment activation is deferred until explicitly started.
+         */
+        DEFERRED;
+
+        /**
+         * Get the default policy
+         * @return The default policy: {@link AUTO}
+         */
+        public static StartPolicy defaultPolicy() {
+            return AUTO;
+        }
+
+        /**
+         * Parse the policy string
+         * @param value A policy string value or null
+         * @return The policy or the default if value is null
+         */
+        public static StartPolicy parse(String value) {
+            return value != null ? valueOf(value.toUpperCase(Locale.ENGLISH)) : defaultPolicy();
+        }
+    }
 }
