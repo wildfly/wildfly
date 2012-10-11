@@ -65,8 +65,8 @@ public class DeploymentOverlayTestCase {
     private static File war1;
     private static File war2;
     private static File war3;
-    private static URL webXml;
-    private static URL overrideXml;
+    private static File webXml;
+    private static File overrideXml;
 
     @ArquillianResource URL url;
 
@@ -106,12 +106,21 @@ public class DeploymentOverlayTestCase {
         war3 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war3, true);
 
-        overrideXml = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
-        if(overrideXml == null) {
+        final URL overrideXmlUrl = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
+        if(overrideXmlUrl == null) {
             Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
         }
-        webXml = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
-        if(webXml == null) {
+        overrideXml = new File(overrideXmlUrl.toURI());
+        if(!overrideXml.exists()) {
+            Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
+        }
+
+        final URL webXmlUrl = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
+        if(webXmlUrl == null) {
+            Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
+        }
+        webXml = new File(webXmlUrl.toURI());
+        if(!webXml.exists()) {
             Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
         }
     }
@@ -151,7 +160,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=" + war1.getName());
 
         String response = readResponse("deployment0");
@@ -174,7 +183,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=" + war1.getName() + " --redeploy-affected");
 
         String response = readResponse("deployment0");
@@ -186,7 +195,7 @@ public class DeploymentOverlayTestCase {
     @Test
     public void testWildcardOverride() throws Exception {
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --wildcards=deployment.*\\.war");
 
         ctx.handle("deploy " + war1.getAbsolutePath());
@@ -211,7 +220,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war2.getAbsolutePath());
         ctx.handle("deploy " + war3.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --wildcards=deployment.*\\.war --redeploy-affected");
 
         Thread.sleep(2000);
@@ -226,7 +235,7 @@ public class DeploymentOverlayTestCase {
     @Test
     public void testMultipleLinks() throws Exception {
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=" + war1.getName());
 
         ctx.handle("deploy " + war1.getAbsolutePath());
@@ -307,7 +316,7 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath() + " --redeploy-affected");
+        ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + " --redeploy-affected");
 
         response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
@@ -324,7 +333,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war2.getAbsolutePath());
         ctx.handle("deploy " + war3.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath());
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath());
         ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a.*\\.war");
 
         String response = readResponse("deployment0");

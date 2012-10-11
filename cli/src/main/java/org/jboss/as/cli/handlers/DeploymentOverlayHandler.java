@@ -670,11 +670,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             if(path.length() == 0) {
                 throw new CommandFormatException("The filesystem paths is missing for the content '" + pair + "'");
             }
-            String originalPath = path;
             path = pathCompleter.translatePath(path);
             final File f = new File(path);
             if(!f.exists()) {
-                throw new CommandFormatException("Content file doesn't exist " + f.getAbsolutePath() + ", " + originalPath + ", " + path);
+                throw new CommandFormatException("Content file doesn't exist " + f.getAbsolutePath());
             }
             contentPaths[i] = f;
         }

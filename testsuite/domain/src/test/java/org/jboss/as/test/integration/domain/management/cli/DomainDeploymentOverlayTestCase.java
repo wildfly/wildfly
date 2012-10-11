@@ -70,8 +70,8 @@ public class DomainDeploymentOverlayTestCase {
     private static File war1;
     private static File war2;
     private static File war3;
-    private static URL webXml;
-    private static URL overrideXml;
+    private static File webXml;
+    private static File overrideXml;
 
     private static DomainTestSupport testSupport;
 
@@ -104,12 +104,21 @@ public class DomainDeploymentOverlayTestCase {
         war3 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war3, true);
 
-        overrideXml = DomainDeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
-        if(overrideXml == null) {
+        final URL overrideXmlUrl = DomainDeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
+        if(overrideXmlUrl == null) {
             Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
         }
-        webXml = DomainDeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
-        if(webXml == null) {
+        overrideXml = new File(overrideXmlUrl.toURI());
+        if(!overrideXml.exists()) {
+            Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
+        }
+
+        final URL webXmlUrl = DomainDeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
+        if(webXmlUrl == null) {
+            Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
+        }
+        webXml = new File(webXmlUrl.toURI());
+        if(!webXml.exists()) {
             Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
         }
 
@@ -156,7 +165,7 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("deploy --server-groups=main-server-group,other-server-group " + war1.getAbsolutePath());
         ctx.handle("deploy --server-groups=main-server-group,other-server-group " + war2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=" + war1.getName() + " --server-groups=main-server-group,other-server-group");
 
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
@@ -186,7 +195,7 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
         ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=" + war1.getName() + " --server-groups=main-server-group --redeploy-affected");
 
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
@@ -198,7 +207,7 @@ public class DomainDeploymentOverlayTestCase {
     @Test
     public void testWildcardOverride() throws Exception {
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --wildcards=deployment.*\\.war --server-groups=main-server-group --redeploy-affected");
 
         ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
@@ -223,7 +232,7 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
         ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --wildcards=deployment.*\\.war --server-groups=main-server-group --redeploy-affected");
 
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
@@ -237,7 +246,7 @@ public class DomainDeploymentOverlayTestCase {
     @Test
     public void testMultipleLinks() throws Exception {
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath()
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + " --deployments=" + war1.getName() + " --server-groups=main-server-group");
 
         ctx.handle("deploy --server-groups=main-server-group " + war1.getAbsolutePath());
@@ -311,7 +320,7 @@ public class DomainDeploymentOverlayTestCase {
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
 
-        ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath() + " --redeploy-affected");
+        ctx.handle("deployment-overlay upload --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath() + " --redeploy-affected");
 
         assertEquals("OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment1"));
@@ -328,7 +337,7 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("deploy --server-groups=main-server-group " + war2.getAbsolutePath());
         ctx.handle("deploy --server-groups=main-server-group " + war3.getAbsolutePath());
 
-        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getPath());
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath());
         ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a.*\\.war --server-groups=main-server-group");
 
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
