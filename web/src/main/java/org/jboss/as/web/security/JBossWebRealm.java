@@ -208,17 +208,18 @@ public class JBossWebRealm extends RealmBase {
         if (authorizationManager == null)
             throw new IllegalStateException("Authorization Manager has not been set");
 
-        Principal userPrincipal = getPrincipal(username);
+        Principal incomingPrincipal = getPrincipal(username);
+        Principal userPrincipal;
         Subject subject = new Subject();
         try {
-            boolean isValid = authenticationManager.isValid(userPrincipal, credentials, subject);
+            boolean isValid = authenticationManager.isValid(incomingPrincipal, credentials, subject);
             if (isValid) {
-                WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is authenticated");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + incomingPrincipal + " is authenticated");
                 SecurityContext sc = SecurityActions.getSecurityContext();
                 if (sc == null)
                     throw new IllegalStateException("No SecurityContext found!");
+                sc.getUtil().createSubjectInfo(incomingPrincipal, credentials, subject);
                 userPrincipal = getPrincipal(subject);
-                sc.getUtil().createSubjectInfo(userPrincipal, credentials, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
                 if (mappingManager != null) {
                     // if there are mapping modules let them handle the role mapping
@@ -245,12 +246,12 @@ public class JBossWebRealm extends RealmBase {
                 if (authenticationManager instanceof CacheableManager) {
                     @SuppressWarnings("unchecked")
                     CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, credentials, cm, subject);
                     successAudit(userPrincipal, null);
                     return userPrincipal;
                 } else {
-                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, credentials, null, subject);
                     successAudit(userPrincipal, null);
                     return userPrincipal;
@@ -280,18 +281,18 @@ public class JBossWebRealm extends RealmBase {
         if (authorizationManager == null)
             throw MESSAGES.noAuthorizationManager();
 
+        Principal incomingPrincipal = certMapping.toPrincipal(certs);
         Principal userPrincipal = null;
         try {
-            userPrincipal = certMapping.toPrincipal(certs);
             Subject subject = new Subject();
-            boolean isValid = authenticationManager.isValid(userPrincipal, certs, subject);
+            boolean isValid = authenticationManager.isValid(incomingPrincipal, certs, subject);
             if (isValid) {
-                WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is authenticated");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + incomingPrincipal + " is authenticated");
                 SecurityContext sc = SecurityActions.getSecurityContext();
                 if (sc == null)
                     throw new IllegalStateException("No SecurityContext found!");
+                sc.getUtil().createSubjectInfo(incomingPrincipal, certs, subject);
                 userPrincipal = getPrincipal(subject);
-                sc.getUtil().createSubjectInfo(userPrincipal, certs, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
                 if (mappingManager != null) {
                     // if there are mapping modules let them handle the role mapping
@@ -318,10 +319,10 @@ public class JBossWebRealm extends RealmBase {
                 if (authenticationManager instanceof CacheableManager) {
                     @SuppressWarnings("unchecked")
                     CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, certs, cm, subject);
                 } else
-                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, certs, null, subject);
             } else {
                 WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is NOT authenticated");
@@ -351,6 +352,8 @@ public class JBossWebRealm extends RealmBase {
             throw MESSAGES.noAuthenticationManager();
         if (authorizationManager == null)
             throw MESSAGES.noAuthorizationManager();
+
+        Principal incomingPrincipal = getPrincipal(username);
         Principal userPrincipal = null;
         SecurityContext sc = SecurityActions.getSecurityContext();
         if (sc == null)
@@ -362,13 +365,12 @@ public class JBossWebRealm extends RealmBase {
         try {
             DigestCallbackHandler handler = new DigestCallbackHandler(username, nOnce, nc, cnonce, qop, realm, md5a2);
             CallbackHandlerPolicyContextHandler.setCallbackHandler(handler);
-            userPrincipal = getPrincipal(username);
             Subject subject = new Subject();
-            boolean isValid = authenticationManager.isValid(userPrincipal, clientDigest, subject);
+            boolean isValid = authenticationManager.isValid(incomingPrincipal, clientDigest, subject);
             if (isValid) {
-                WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is authenticated");
+                WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + incomingPrincipal + " is authenticated");
+                sc.getUtil().createSubjectInfo(incomingPrincipal, clientDigest, subject);
                 userPrincipal = getPrincipal(subject);
-                sc.getUtil().createSubjectInfo(userPrincipal, clientDigest, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
                 if (mappingManager != null) {
                     // if there are mapping modules let them handle the role mapping
@@ -395,10 +397,10 @@ public class JBossWebRealm extends RealmBase {
                 if (authenticationManager instanceof CacheableManager) {
                     @SuppressWarnings("unchecked")
                     CacheableManager<?, Principal> cm = (CacheableManager<?, Principal>) authenticationManager;
-                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, clientDigest, cm, subject);
                 } else
-                    userPrincipal = new JBossGenericPrincipal(this, userPrincipal.getName(), null, rolesAsStringList,
+                    userPrincipal = new JBossGenericPrincipal(this, incomingPrincipal.getName(), null, rolesAsStringList,
                             userPrincipal, null, clientDigest, null, subject);
             } else {
                 WebLogger.WEB_SECURITY_LOGGER.tracef("User: " + userPrincipal + " is NOT authenticated");
