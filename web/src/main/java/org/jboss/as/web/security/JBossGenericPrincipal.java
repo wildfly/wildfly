@@ -31,6 +31,7 @@ import javax.security.auth.login.LoginContext;
 import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.jboss.security.CacheableManager;
+import org.jboss.security.SimplePrincipal;
 
 /**
  *
@@ -89,8 +90,8 @@ public class JBossGenericPrincipal extends GenericPrincipal {
      */
     @Override
     public void logout() throws Exception {
-        if (cm != null && userPrincipal != null)
-            cm.flushCache(userPrincipal);
+        if (cm != null && super.name != null)
+            cm.flushCache(new SimplePrincipal(super.name));
         super.logout();
     }
 

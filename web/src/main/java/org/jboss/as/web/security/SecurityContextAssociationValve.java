@@ -47,6 +47,7 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SecurityUtil;
+import org.jboss.security.SimplePrincipal;
 
 /**
  * A {@code Valve} that creates a {@code SecurityContext} if one doesn't exist and sets the security information based on the
@@ -150,7 +151,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                 if (principal != null) {
                     WebLogger.WEB_SECURITY_LOGGER.tracef("Restoring principal info from cache");
                     if (createdSecurityContext) {
-                        sc.getUtil().createSubjectInfo(principal.getUserPrincipal(), principal.getCredentials(),
+                        sc.getUtil().createSubjectInfo(new SimplePrincipal(principal.getName()), principal.getCredentials(),
                                 principal.getSubject());
                     }
                 }
