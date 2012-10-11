@@ -304,6 +304,7 @@
         <module>server</module>
         <module>subsystem-test</module>
         <module>threads</module>
+        <module>version</module>
     </modules>
 
     <build>
@@ -1153,6 +1154,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-transactions</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-version</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
