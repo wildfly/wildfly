@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Manifest;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.client.DeploymentMetadata;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.AdditionalModuleSpecification;
 import org.jboss.as.server.deployment.module.ExtensionInfo;
@@ -86,6 +87,11 @@ public final class Attachments {
      * The deployment contents
      */
     public static final AttachmentKey<VirtualFile> DEPLOYMENT_CONTENTS = AttachmentKey.create(VirtualFile.class);
+
+    /**
+     * The deployment metadata
+     */
+    public static final AttachmentKey<DeploymentMetadata> DEPLOYMENT_METADATA = AttachmentKey.create(DeploymentMetadata.class);
 
     /**
      * This should be added as a listener to all non child services

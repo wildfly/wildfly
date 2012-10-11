@@ -63,4 +63,12 @@ public interface ControllerClientLogger extends BasicLogger {
     @Message(id = 10601, value = "Cannot delete temp file %s, will be deleted on exit")
     void cannotDeleteTempFile(String name);
 
+    /**
+     * A message indicating an invalid metadata type on the deployment.
+     *
+     * @param key the key of the metadata entry.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10602, value = "Invalid metadata type for key: %s")
+    void invalidMetadataType(String key);
 }

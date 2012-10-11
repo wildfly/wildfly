@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.client.helpers;
 
+import java.util.Locale;
+
 /**
  * Constants for strings frequently used in management operations.
  *
@@ -45,6 +47,7 @@ public class ClientConstants {
     public static final String HOST = "host";
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
+    public static final String METADATA = "metadata";
     public static final String NAME = "name";
     public static final String OP = "operation";
     public static final String OPERATION_HEADERS = "operation-headers";
@@ -79,4 +82,35 @@ public class ClientConstants {
     public static final String CONTROLLER_PROCESS_STATE_RELOAD_REQUIRED = "reload-required";
     public static final String CONTROLLER_PROCESS_STATE_RESTART_REQUIRED = "restart-required";
     public static final String CONTROLLER_PROCESS_STATE_STOPPING = "stopping";
+
+    public static final String DEPLOYMENT_METADATA_START_POLICY = "start.policy";
+    public static final String DEPLOYMENT_METADATA_BUNDLE_STARTLEVEL = "bundle.startlevel";
+
+    public enum StartPolicy {
+        /**
+         * Deployment is automatically started (default).
+         */
+        AUTO,
+        /**
+         * Deployment activation is deferred until explicitly started.
+         */
+        DEFERRED;
+
+        /**
+         * Get the default policy
+         * @return The default policy: {@link AUTO}
+         */
+        public static StartPolicy defaultPolicy() {
+            return AUTO;
+        }
+
+        /**
+         * Parse the policy string
+         * @param value A policy string value or null
+         * @return The policy or the default if value is null
+         */
+        public static StartPolicy parse(String value) {
+            return value != null ? valueOf(value.toUpperCase(Locale.ENGLISH)) : defaultPolicy();
+        }
+    }
 }
