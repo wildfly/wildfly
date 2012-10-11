@@ -109,7 +109,7 @@
         <jvm.args.securityPolicy></jvm.args.securityPolicy>
         <jvm.args.securityManagerOther></jvm.args.securityManagerOther>
         <jvm.args.security>${jvm.args.securityManager} ${jvm.args.securityPolicy} ${jvm.args.securityManagerOther}</jvm.args.security>
-        
+
         <!-- Additional JVM args, like those for EC2. -->
         <jvm.args.other></jvm.args.other>
 
@@ -546,8 +546,10 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
+            <!-- Disable empty benchmark and stress modules
                 <module>benchmark</module>
                 <module>stress</module>
+             -->
             </modules>
         </profile>
 
