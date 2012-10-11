@@ -484,6 +484,10 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             session.expire();
         }
 
+        if (ssoClusterManager != null) {
+            ssoClusterManager.logout(ssoId);
+        }
+
         // NOTE: Clients may still possess the old single sign on cookie,
         // but it will be removed on the next request since it is no longer
         // in the cache
