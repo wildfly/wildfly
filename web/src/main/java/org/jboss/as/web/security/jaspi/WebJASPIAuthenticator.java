@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.message.callback.CallerPrincipalCallback;
+import javax.security.auth.message.callback.GroupPrincipalCallback;
 import javax.security.auth.message.callback.PasswordValidationCallback;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -121,6 +122,7 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
         if (result) {
             PasswordValidationCallback pvc = cbh.getPasswordValidationCallback();
             CallerPrincipalCallback cpc = cbh.getCallerPrincipalCallback();
+            GroupPrincipalCallback gpc = cbh.getGroupPrincipalCallback();
 
             // get the client principal from the callback.
             Principal clientPrincipal = cpc.getPrincipal();
@@ -130,10 +132,11 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
 
             // if the client principal is not a jboss generic principal, we need to build one before registering.
             if (!(clientPrincipal instanceof JBossGenericPrincipal))
-                clientPrincipal = this.buildJBossPrincipal(clientSubject, clientPrincipal);
+                clientPrincipal = this.buildJBossPrincipal(clientSubject, clientPrincipal, gpc);
 
-            this.register(request, response, clientPrincipal, authMethod, pvc.getUsername(),
-                    new String(pvc.getPassword()));
+            String passwordString = (pvc != null && pvc.getPassword() != null) ? new String(pvc.getPassword()) : null;
+            String passwordUsername = (pvc != null && pvc.getUsername() != null) ? pvc.getUsername() : null;
+            this.register(request, response, clientPrincipal, authMethod, passwordUsername, passwordString);
 
             if (this.secureResponse)
                 sam.secureResponse(messageInfo, new Subject(), messageLayer, appContext, cbh);
@@ -308,7 +311,7 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
         sso.associate(ssoId, session);
     }
 
-    protected Principal buildJBossPrincipal(Subject subject, Principal principal) {
+    protected Principal buildJBossPrincipal(Subject subject, Principal principal, GroupPrincipalCallback gpc) {
 
         List<String> roles = new ArrayList<String>();
         // look for roles in the subject first.
@@ -320,7 +323,13 @@ public class WebJASPIAuthenticator extends AuthenticatorBase {
             }
         }
 
-        // if the subject didn't contain any roles, look for the roles declared in the deployment descriptor.
+        // check if the group callback contains any roles.
+        if (gpc != null && gpc.getGroups() != null) {
+            for (String group : gpc.getGroups())
+                roles.add(group);
+        }
+
+        // if no roles were retrieved yet, look for the roles declared in the deployment descriptor.
         JBossWebRealm realm = (JBossWebRealm) this.getContainer().getRealm();
         Set<String> descriptorRoles = realm.getPrincipalVersusRolesMap().get(principal.getName());
         if (roles.isEmpty() && descriptorRoles != null)
