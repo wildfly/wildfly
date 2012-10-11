@@ -173,7 +173,9 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
     private boolean elected(Set<ClusterNode> candidates) {
         ClusterNode elected = this.election(candidates);
-        SingletonLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
+        if (elected != null) {
+            SingletonLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
+        }
         return (elected != null) ? elected.equals(this.dispatcher.getClusterNode()) : false;
     }
 
