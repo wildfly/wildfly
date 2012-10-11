@@ -64,6 +64,7 @@
         <module name="org.jboss.as.protocol"/>
         <module name="org.jboss.as.remoting"/>
         <module name="org.jboss.as.security" optional="true" services="import"/>
+        <module name="org.jboss.as.version"/>
         <module name="org.picketbox" optional="true"/>
     </dependencies>
 </module>
