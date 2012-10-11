@@ -110,6 +110,7 @@ public class Util {
     public static final String READ_WRITE = "read-write";
     public static final String READ_RESOURCE = "read-resource";
     public static final String READ_RESOURCE_DESCRIPTION = "read-resource-description";
+    public static final String REDEPLOY = "redeploy";
     public static final String REGULAR_EXPRESSION = "regular-expression";
     public static final String RELEASE_CODENAME = "release-codename";
     public static final String RELEASE_VERSION = "release-version";
@@ -219,7 +220,7 @@ public class Util {
         return list;
     }
 
-    protected static String wildcardToJavaRegex(String expr) {
+    public static String wildcardToJavaRegex(String expr) {
         if(expr == null) {
             throw new IllegalArgumentException("expr is null");
         }
@@ -482,11 +483,34 @@ public class Util {
         return Collections.emptyList();
     }
 
-    public static List<String> getDeployments(ModelControllerClient client, String wildcardExpr) {
+    public static List<String> getDeployments(ModelControllerClient client, String serverGroup) {
+
+        final ModelNode request = new ModelNode();
+        ModelNode address = request.get(ADDRESS);
+        if(serverGroup != null) {
+            address.add(SERVER_GROUP, serverGroup);
+        }
+        request.get(OPERATION).set(READ_CHILDREN_NAMES);
+        request.get(CHILD_TYPE).set(DEPLOYMENT);
+        try {
+            final ModelNode outcome = client.execute(request);
+            if (isSuccess(outcome)) {
+                return getList(outcome);
+            }
+        } catch (Exception e) {
+        }
+
+        return Collections.emptyList();
+    }
+
+    public static List<String> getMatchingDeployments(ModelControllerClient client, String wildcardExpr, String serverGroup) {
 
         final DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
         final ModelNode request;
         try {
+            if(serverGroup != null) {
+                builder.addNode(Util.SERVER_GROUP, serverGroup);
+            }
             builder.setOperationName(Util.READ_CHILDREN_NAMES);
             builder.addProperty(Util.CHILD_TYPE, Util.DEPLOYMENT);
             request = builder.buildRequest();

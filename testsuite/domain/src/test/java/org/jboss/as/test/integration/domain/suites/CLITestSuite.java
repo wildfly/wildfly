@@ -32,6 +32,7 @@ import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
+import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
@@ -48,6 +49,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     BasicOpsTestCase.class,
     DeployAllServerGroupsTestCase.class,
+    DomainDeploymentOverlayTestCase.class,
     DeploySingleServerGroupTestCase.class,
     UndeployWildcardDomainTestCase.class,
     JmsTestCase.class,
