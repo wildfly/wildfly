@@ -673,7 +673,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             path = pathCompleter.translatePath(path);
             final File f = new File(path);
             if(!f.exists()) {
-                throw new CommandFormatException("Content file doesn't exist " + f.getAbsolutePath());
+                throw new CommandFormatException("Content file doesn't exist " + f.getAbsolutePath() + ", " + pathCompleter + ", windows=" + Util.isWindows());
             }
             contentPaths[i] = f;
         }
