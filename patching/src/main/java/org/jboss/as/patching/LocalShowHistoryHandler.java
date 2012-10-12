@@ -77,9 +77,9 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
         ModelNode history = new ModelNode();
         history.get(type.getName()).set(oneOffPatchID);
 
-        File timestampFile = new File(historyDir, CommonAttributes.TIMESTAMP);
+        File timestampFile = new File(historyDir, Constants.TIMESTAMP);
         String timestamp = PatchUtils.readRef(timestampFile);
-        history.get(CommonAttributes.APPLIED_AT).set(timestamp);
+        history.get(Constants.APPLIED_AT).set(timestamp);
         result.add(history);
     }
 
