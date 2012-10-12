@@ -30,7 +30,6 @@ import junit.framework.Assert;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
-import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -83,7 +82,7 @@ public class CLIWrapper {
         consoleOut = new ByteArrayOutputStream();
         final char[] password = getPassword() == null ? null : getPassword().toCharArray();
         System.setProperty("jreadline.terminal","org.jboss.jreadline.terminal.TestTerminal");
-        ctx = CommandContextFactory.getInstance().newCommandContext(
+        ctx = CLITestUtil.getCommandContext(
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), getUsername(), password,
                 createConsoleInput(), consoleOut);
 
