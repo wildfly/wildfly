@@ -49,6 +49,10 @@ import org.jboss.staxmapper.XMLMapper;
  */
 class CliConfigImpl implements CliConfig {
 
+    private static final String JBOSS_XML_CONFIG = "jboss.cli.config";
+    private static final String CURRENT_WORKING_DIRECTORY = "user.dir";
+    private static final String JBOSS_CLI_FILE = "jboss-cli.xml";
+
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String ENABLED = "enabled";
     private static final String FILE_DIR = "file-dir";
@@ -61,12 +65,51 @@ class CliConfigImpl implements CliConfig {
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
-        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
-        if(jbossHome == null) {
-            System.err.println("WARN: can't load the config file because JBOSS_HOME environment variable is not set.");
+        File jbossCliFile = findCLIFileFromSystemProperty();
+
+        if (jbossCliFile == null) {
+            jbossCliFile = findCLIFileInCurrentDirectory();
+        }
+
+        if (jbossCliFile == null) {
+            jbossCliFile = findCLIFileInJBossHome();
+        }
+
+        if (jbossCliFile == null) {
+            System.err.println("WARN: can't find " + JBOSS_CLI_FILE + ". Using default configuration values.");
             return new CliConfigImpl();
         }
-        return parse(ctx, new File(jbossHome + File.separatorChar + "bin", "jboss-cli.xml"));
+
+        return parse(ctx, jbossCliFile);
+    }
+
+    private static File findCLIFileFromSystemProperty() {
+        final String jbossCliConfig = SecurityActions.getSystemProperty(JBOSS_XML_CONFIG);
+        if (jbossCliConfig == null) return null;
+
+        return new File(jbossCliConfig);
+    }
+
+    private static File findCLIFileInCurrentDirectory() {
+        final String currentDir = SecurityActions.getSystemProperty(CURRENT_WORKING_DIRECTORY);
+        if (currentDir == null) return null;
+
+        File jbossCliFile = new File(currentDir, JBOSS_CLI_FILE);
+
+        if (!jbossCliFile.exists()) return null;
+
+        return jbossCliFile;
+    }
+
+    private static File findCLIFileInJBossHome() {
+        final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+        if (jbossHome == null) return null;
+
+        File jbossCliFile = new File(jbossHome + File.separatorChar + "bin", JBOSS_CLI_FILE);
+
+        if (!jbossCliFile.exists()) return null;
+
+        return jbossCliFile;
     }
 
     static CliConfig parse(final CommandContext ctx, File f) throws CliInitializationException {
