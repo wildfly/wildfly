@@ -25,7 +25,6 @@ package org.jboss.as.controller;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -191,6 +190,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
          * Reintroduced since some legacy subsystems require this method, and they now get booted up
          * for transformers subsystem testing.
          */
+        @Deprecated
         public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
             return new Builder(name, valueType);
         }
@@ -217,11 +217,21 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
 
         /*
         --------------------------
-        added for binary compatibility for running compatibilty tests
+        added for binary compatibility with older versions
          */
         @Override
         public Builder setAllowNull(boolean allowNull) {
             return super.setAllowNull(allowNull);
+        }
+
+        @Override
+        public Builder setMaxSize(final int maxSize) {
+            return super.setMaxSize(maxSize);
+        }
+
+        @Override
+        public Builder setMinSize(final int minSize) {
+            return super.setMinSize(minSize);
         }
     }
 }
