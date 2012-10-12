@@ -40,7 +40,7 @@ import org.jboss.as.test.integration.osgi.cdi.impl.PaymentProviderActivatorPaypa
 import org.jboss.as.test.integration.osgi.cdi.impl.PaymentProviderActivatorVisa;
 import org.jboss.as.test.integration.osgi.cdi.impl.SimpleBeanServlet;
 import org.jboss.as.test.integration.osgi.cdi.impl.SimpleManagedBean;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;

@@ -24,6 +24,7 @@ package org.jboss.as.osgi.service;
 import static org.jboss.as.network.SocketBinding.JBOSS_BINDING_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
+
 import java.net.InetSocketAddress;
 import java.util.Dictionary;
 import java.util.HashSet;
@@ -53,9 +54,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.framework.IntegrationService;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.framework.SystemServicesPlugin;
+import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.SystemServicesPlugin;
 import org.jboss.osgi.repository.XRepository;
 import org.osgi.framework.BundleContext;
 

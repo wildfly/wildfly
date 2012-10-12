@@ -39,7 +39,7 @@ import org.jboss.as.test.integration.osgi.jaxb.bundle.ContactType;
 import org.jboss.as.test.integration.osgi.jaxb.bundle.CourseBooking;
 import org.jboss.as.test.integration.osgi.jaxb.bundle.ObjectFactory;
 import org.jboss.as.test.integration.osgi.jaxb.bundle.StudentType;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

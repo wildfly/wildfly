@@ -26,6 +26,7 @@ import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.osgi.parser.SubsystemState.PROP_JBOSS_OSGI_SYSTEM_MODULES;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -57,9 +58,9 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.IntegrationService;
-import org.jboss.osgi.framework.SystemPathsPlugin;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
+import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.SystemPathsPlugin;
 import org.osgi.framework.Constants;
 
 /**

@@ -28,11 +28,11 @@ import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationService;
 import org.osgi.framework.BundleContext;
 
 /**

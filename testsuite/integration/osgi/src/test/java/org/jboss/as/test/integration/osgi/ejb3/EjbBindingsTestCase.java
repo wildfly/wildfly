@@ -39,7 +39,7 @@ import org.jboss.as.test.integration.osgi.ejb3.bundle.BeansService;
 import org.jboss.as.test.integration.osgi.ejb3.bundle.RemoteEcho;
 import org.jboss.as.test.integration.osgi.ejb3.bundle.SampleSFSB;
 import org.jboss.as.test.integration.osgi.ejb3.bundle.SampleSLSB;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
