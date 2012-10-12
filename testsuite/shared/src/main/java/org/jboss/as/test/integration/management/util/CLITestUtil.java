@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.util;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.jboss.as.cli.CliInitializationException;
@@ -47,6 +48,12 @@ public class CLITestUtil {
     public static CommandContext getCommandContext() throws CliInitializationException {
         setJBossCliConfig();
         return CommandContextFactory.getInstance().newCommandContext(serverAddr, serverPort, null, null);
+    }
+
+    public static CommandContext getCommandContext(String address, int port, String user, char[] pwd, InputStream in, OutputStream out)
+            throws CliInitializationException {
+        setJBossCliConfig();
+        return CommandContextFactory.getInstance().newCommandContext(address, port, user, pwd, in, out);
     }
 
     public static CommandContext getCommandContext(OutputStream out) throws CliInitializationException {
