@@ -47,6 +47,9 @@
                         <include>**/*TestCase.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
+                    <systemPropertyVariables>
+                        <jboss.cli.config>${project.basedir}/../build/src/main/resources/bin/jboss-cli.xml</jboss.cli.config>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>

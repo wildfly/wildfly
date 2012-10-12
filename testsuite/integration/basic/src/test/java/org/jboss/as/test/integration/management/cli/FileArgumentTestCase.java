@@ -171,6 +171,7 @@ public class FileArgumentTestCase {
         final List<String> command = new ArrayList<String>();
         command.add("java");
         TestSuiteEnvironment.getIpv6Args(command);
+        command.add("-Djboss.cli.config=" + jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");
         command.add("-jar");
         command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
         command.add("-mp");
