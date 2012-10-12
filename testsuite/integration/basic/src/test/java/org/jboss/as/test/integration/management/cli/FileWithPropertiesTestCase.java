@@ -240,6 +240,8 @@ public class FileWithPropertiesTestCase {
         TestSuiteEnvironment.getIpv6Args(command);
         if(resolveProps) {
             command.add("-Djboss.cli.config=" + TMP_JBOSS_CLI_FILE.getAbsolutePath());
+        } else {
+            command.add("-Djboss.cli.config=" + jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");
         }
         command.add("-jar");
         command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
