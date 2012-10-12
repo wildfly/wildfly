@@ -37,8 +37,8 @@ import org.osgi.framework.BundleContext;
 public class BeansService implements Callable<Boolean> {
 
     private static final String JAVA_GLOBAL_NAMESPACE_PREFIX = "java:global/";
-    private static final String JAVA_APP_NAMESPACE_PREFIX = "java:app/";
-    private static final String JAVA_MODULE_NAMESPACE_PREFIX = "java:module/";
+    //private static final String JAVA_APP_NAMESPACE_PREFIX = "java:app/";
+    //private static final String JAVA_MODULE_NAMESPACE_PREFIX = "java:module/";
 
     private final BundleContext context;
 

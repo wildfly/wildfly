@@ -38,7 +38,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -62,12 +62,7 @@ public class EJBClientDescriptorTestCase {
     private static final String APP_NAME = "";
     private static final String DISTINCT_NAME = "";
 
-    private static final String MODULE_NAME_ONE = "ejb-client-descriptor-test";
-    private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
-    private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
     private static final String BUNDLE_NAME_ONE = "ejb-client-descriptor-bundle";
-    private static final String JBOSS_EJB_CLIENT_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_2_xml";
-
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
     private static final String outboundConnectionName = "ejb-client-descriptor-test-remote-outbound-connection";
