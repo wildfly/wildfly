@@ -21,12 +21,12 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleClassLoaderFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
-
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 
 /**
  * A {@link ModuleClassLoader} that holds a reference to the underlying bundle.

@@ -33,7 +33,7 @@ import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;

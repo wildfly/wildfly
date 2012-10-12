@@ -36,7 +36,7 @@ import org.jboss.as.test.integration.osgi.jpa.bundle.Employee;
 import org.jboss.as.test.integration.osgi.jpa.bundle.PersistenceActivatorA;
 import org.jboss.as.test.integration.osgi.jpa.bundle.PersistenceActivatorB;
 import org.jboss.as.test.integration.osgi.jpa.bundle.PersistenceService;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;

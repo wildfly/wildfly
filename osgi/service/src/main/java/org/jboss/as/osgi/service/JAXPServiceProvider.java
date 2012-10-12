@@ -21,6 +21,11 @@
  */
 package org.jboss.as.osgi.service;
 
+import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
+import static org.jboss.as.osgi.OSGiLogger.LOGGER;
+
+import java.net.URL;
+
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -35,11 +40,6 @@ import org.jboss.osgi.framework.Services;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.xml.XMLParserActivator;
-
-import java.net.URL;
-
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-import static org.jboss.as.osgi.OSGiConstants.SERVICE_BASE_NAME;
 
 /**
  * An service that provides {@link javax.xml.parsers.SAXParserFactory} and {@link javax.xml.parsers.DocumentBuilderFactory}
