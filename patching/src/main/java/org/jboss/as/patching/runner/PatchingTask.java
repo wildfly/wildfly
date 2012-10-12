@@ -110,7 +110,7 @@ public interface PatchingTask {
                 case ADD:
                     return new FileAddTask(item, target, backup, modification);
                 case MODIFY:
-                    return new FileModifyTask(item, target, backup, modification);
+                    return new FileUpdateTask(item, target, backup, modification);
                 case REMOVE:
                     return new FileRemoveTask(item, target, backup, modification);
                 default:

@@ -36,9 +36,9 @@ import java.io.InputStream;
  *
  * @author Emanuel Muckenhuber
  */
-final class FileModifyTask extends AbstractFileTask {
+final class FileUpdateTask extends AbstractFileTask {
 
-    FileModifyTask(MiscContentItem item, File target, File backup, ContentModification modification) {
+    FileUpdateTask(MiscContentItem item, File target, File backup, ContentModification modification) {
         super(target, backup, item, modification);
     }
 

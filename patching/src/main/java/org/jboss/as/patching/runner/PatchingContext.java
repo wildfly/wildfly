@@ -22,10 +22,10 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.Constants;
 import static org.jboss.as.patching.runner.PatchUtils.generateTimestamp;
 
 import org.jboss.as.boot.DirectoryStructure;
-import org.jboss.as.patching.CommonAttributes;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
@@ -236,7 +236,7 @@ class PatchingContext {
         // Backup the current active patch Info
         final File cumulativeBackup = new File(backup, DirectoryStructure.CUMULATIVE);
         final File referencesBackup = new File(backup, DirectoryStructure.REFERENCES);
-        final File timestamp = new File(backup, CommonAttributes.TIMESTAMP);
+        final File timestamp = new File(backup, Constants.TIMESTAMP);
         try {
             PatchUtils.writeRef(cumulativeBackup, info.getCumulativeID());
             PatchUtils.writeRefs(referencesBackup, info.getPatchIDs());
