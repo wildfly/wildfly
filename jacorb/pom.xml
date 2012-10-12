@@ -30,12 +30,12 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-parent</artifactId>
-        <version>7.1.3.Final-SNAPSHOT</version>
+        <version>7.1.4.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-jacorb</artifactId>
-    <version>7.1.3.Final-SNAPSHOT</version>
+    <version>7.1.4.Final-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>JBoss Application Server: JacORB Subsystem</name>
