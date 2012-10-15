@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.Locale;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -79,7 +78,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
             }
         });
         ModelNode operation = createAddOperation();
-        KernelServices services = installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operation)
+                .build();
 
         services.validateOperation(operation);
     }
@@ -106,7 +107,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         });
         ModelNode operation = createAddOperation();
         operation.get("test").set(1);
-        KernelServices services = installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(Collections.singletonList(operation))
+                .build();
 
         services.validateOperation(operation);
     }
@@ -126,7 +129,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(1);
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(Collections.singletonList(operation))
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -148,7 +153,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         });
         ModelNode operation = createAddOperation();
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(Collections.singletonList(operation))
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -169,7 +176,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         });
         ModelNode operation = createAddOperation();
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(Collections.singletonList(operation))
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -191,7 +200,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
             }
         });
         ModelNode operation = createAddOperation();
-        installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(Collections.singletonList(operation))
+                .build();
     }
 
     @Test
@@ -210,7 +221,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set("Hello");
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(Collections.singletonList(operation))
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -233,7 +246,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(new BigDecimal("5"));
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(Collections.singletonList(operation))
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -256,7 +271,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(new BigDecimal("15"));
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(Collections.singletonList(operation))
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -279,7 +296,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(5);
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -302,7 +321,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(15);
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -325,7 +346,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set("Yo");
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -348,7 +371,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set("Yo");
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -372,7 +397,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         });
         ModelNode operation = createAddOperation();
         operation.get("test").set("Yo");
-        installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operation)
+                .build();
     }
 
     @Test
@@ -392,7 +419,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(new byte[] {1, 2});
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -415,7 +444,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").set(new byte[] {1, 2});
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -439,7 +470,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         });
         ModelNode operation = createAddOperation();
         operation.get("test").set(new byte[] {1, 2});
-        installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operation)
+                .build();
     }
 
     @Test
@@ -460,7 +493,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         operation.get("test").add("1");
         operation.get("test").add("2");
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -484,7 +519,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         operation.get("test").add("1");
         operation.get("test").add("2");
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }
@@ -510,7 +547,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").add("1");
         operation.get("test").add("2");
-        installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operation)
+                .build();
     }
 
     @Test
@@ -531,7 +570,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         ModelNode operation = createAddOperation();
         operation.get("test").add(1);
         operation.get("test").add(2);
-        installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+        createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operation)
+                .build();
     }
 
     @Test
@@ -552,7 +593,9 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
         operation.get("test").add(1);
         operation.get("test").add("Hello");
         try {
-            installInController(AdditionalInitialization.MANAGEMENT, Collections.singletonList(operation));
+            createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                    .setBootOperations(operation)
+                    .build();
             Assert.fail("Not valid");
         } catch (Exception expected) {
         }

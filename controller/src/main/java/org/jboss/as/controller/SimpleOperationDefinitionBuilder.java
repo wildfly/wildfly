@@ -25,6 +25,7 @@
 package org.jboss.as.controller;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -61,6 +62,16 @@ public class SimpleOperationDefinitionBuilder {
         return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
 
+    protected static EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
+        if (vararg == null || vararg.length == 0) {
+            return EnumSet.noneOf(OperationEntry.Flag.class);
+        } else {
+            EnumSet<OperationEntry.Flag> result = EnumSet.noneOf(OperationEntry.Flag.class);
+            Collections.addAll(result, vararg);
+            return result;
+        }
+    }
+
     public SimpleOperationDefinitionBuilder setEntryType(OperationEntry.EntryType entryType) {
         this.entryType = entryType;
         return this;
@@ -73,6 +84,11 @@ public class SimpleOperationDefinitionBuilder {
 
     public SimpleOperationDefinitionBuilder withFlags(EnumSet<OperationEntry.Flag> flags) {
         this.flags = flags;
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder withFlags(OperationEntry.Flag... flags) {
+        this.flags = getFlagsSet(flags);
         return this;
     }
 

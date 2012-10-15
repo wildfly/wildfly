@@ -23,15 +23,11 @@
 package org.jboss.as.subsystem.test.transformers.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -41,7 +37,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -51,6 +46,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -71,7 +67,7 @@ public abstract class VersionedExtensionCommon implements Extension {
 
     public static final String SUBSYSTEM_NAME = "test-subsystem";
     public static final String EXTENSION_NAME = "org.jboss.as.test.transformers";
-    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM,  SUBSYSTEM_NAME);
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     static final AttributeDefinition TEST_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("test-attribute", ModelType.STRING).build();
 
     private SubsystemParser parser = new SubsystemParser(EXTENSION_NAME);
@@ -113,7 +109,7 @@ public abstract class VersionedExtensionCommon implements Extension {
             this(element, new TestModelOnlyAddHandler());
         }
 
-        protected TestResourceDefinition(PathElement element, OperationStepHandler addHandler) {
+        protected TestResourceDefinition(PathElement element, AbstractAddStepHandler addHandler) {
             super(element, TEST_RESOURCE_DESCRIPTION_RESOLVER, addHandler, NOOP_REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
         }
     }
@@ -121,20 +117,19 @@ public abstract class VersionedExtensionCommon implements Extension {
     private static class TestModelOnlyAddHandler extends AbstractAddStepHandler {
         AttributeDefinition[] attributes;
 
-        public TestModelOnlyAddHandler(AttributeDefinition...attributes) {
+        public TestModelOnlyAddHandler(AttributeDefinition... attributes) {
             this.attributes = attributes;
         }
 
         @Override
         protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            model.setEmptyObject();
             for (AttributeDefinition def : attributes) {
                 def.validateAndSet(operation, model);
             }
         }
-    };
+    }
 
-    private static OperationStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
+    private static AbstractRemoveStepHandler NOOP_REMOVE_HANDLER = new AbstractRemoveStepHandler() {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
             super.performRuntime(context, operation, model);
@@ -171,7 +166,7 @@ public abstract class VersionedExtensionCommon implements Extension {
             ParseUtils.requireNoAttributes(reader);
             ParseUtils.requireNoContent(reader);
 
-            ModelNode subsystemAdd = createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH));
+            ModelNode subsystemAdd = Util.createAddOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME)));
             subsystemAdd.get("test-attribute").set("This is only a test");
             list.add(subsystemAdd);
 

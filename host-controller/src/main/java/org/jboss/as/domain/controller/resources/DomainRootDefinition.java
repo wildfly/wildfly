@@ -78,7 +78,7 @@ import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.domain.controller.DomainTransformers;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
 import org.jboss.as.domain.controller.operations.ApplyRemoteMasterDomainModelHandler;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
@@ -187,7 +187,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final LocalHostControllerInfo hostControllerInfo,
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
             final PathManagerService pathManager) {
-        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), DomainRootDescription.getResourceDescriptionResolver(DOMAIN, false));
+        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), DomainResolver.getResolver(DOMAIN, false));
         this.isMaster = isMaster;
         this.environment = environment;
         this.hostControllerInfo = hostControllerInfo;
@@ -304,7 +304,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         //TODO perhaps all these desriptions and the validator log messages should be moved into management-client-content?
         resourceRegistration.registerSubModel(
                 new ManagedDMRContentTypeResourceDefinition(contentRepo, ROLLOUT_PLAN,
-                PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS), new RolloutPlanValidator(), DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLANS), DomainRootDescription.getResourceDescriptionResolver(ROLLOUT_PLAN)));
+                PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS), new RolloutPlanValidator(), DomainResolver.getResolver(ROLLOUT_PLANS), DomainResolver.getResolver(ROLLOUT_PLAN)));
 
         // Extensions
         resourceRegistration.registerSubModel(new ExtensionResourceDefinition(extensionRegistry, true, !isMaster));

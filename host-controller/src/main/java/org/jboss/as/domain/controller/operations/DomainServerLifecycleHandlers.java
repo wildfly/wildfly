@@ -45,7 +45,7 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.dmr.ModelNode;
@@ -86,7 +86,7 @@ public class DomainServerLifecycleHandlers {
     }
 
     private static OperationDefinition getOperationDefinition(boolean serverGroup, String operationName) {
-        return new SimpleOperationDefinition(operationName, DomainRootDescription.getResourceDescriptionResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN));
+        return new SimpleOperationDefinition(operationName, DomainResolver.getResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN));
     }
 
     private abstract static class AbstractHackLifecycleHandler implements OperationStepHandler {

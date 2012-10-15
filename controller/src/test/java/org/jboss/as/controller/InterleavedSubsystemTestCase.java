@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
@@ -139,8 +140,16 @@ public class InterleavedSubsystemTestCase {
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
-            ManagementResourceRegistration extensions = rootRegistration.registerSubModel(PathElement.pathElement(EXTENSION), ModelControllerImplUnitTestCase.DESC_PROVIDER);
-            extensions.registerOperationHandler("add", new FakeExtensionAddHandler(rootRegistration), ModelControllerImplUnitTestCase.DESC_PROVIDER);
+            /*ManagementResourceRegistration extensions = rootRegistration.registerSubModel(PathElement.pathElement(EXTENSION), ModelControllerImplUnitTestCase.DESC_PROVIDER);
+            extensions.registerOperationHandler("add", new FakeExtensionAddHandler(rootRegistration), ModelControllerImplUnitTestCase.DESC_PROVIDER);*/
+            SimpleResourceDefinition subsystemResource = new SimpleResourceDefinition(
+                    PathElement.pathElement(EXTENSION),
+                    new NonResolvingResourceDescriptionResolver(),
+                    new FakeExtensionAddHandler(rootRegistration),
+                    ReloadRequiredRemoveStepHandler.INSTANCE
+            );
+            rootRegistration.registerSubModel(subsystemResource);
+
 
         }
 
@@ -163,8 +172,13 @@ public class InterleavedSubsystemTestCase {
             String module = address.getLastElement().getValue();
             resource.getModel().get(MODULE).set(module);
 
-            ManagementResourceRegistration subsystem = rootRegistration.registerSubModel(PathElement.pathElement(SUBSYSTEM, module), ModelControllerImplUnitTestCase.DESC_PROVIDER);
-            subsystem.registerOperationHandler("add", new FakeSubsystemAddHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER);
+            SimpleResourceDefinition subsystemResource = new SimpleResourceDefinition(
+                    PathElement.pathElement(SUBSYSTEM, module),
+                    new NonResolvingResourceDescriptionResolver(),
+                    new FakeSubsystemAddHandler(),
+                    ReloadRequiredRemoveStepHandler.INSTANCE
+            );
+            rootRegistration.registerSubModel(subsystemResource);
 
             context.stepCompleted();
         }

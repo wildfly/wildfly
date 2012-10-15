@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.descriptions;
 
+import org.jboss.as.controller.DeprecationData;
+
 /**
  * Default provider for a resource "remove" operation.
  *
@@ -31,5 +33,9 @@ public class DefaultResourceRemoveDescriptionProvider extends DefaultOperationDe
 
     public DefaultResourceRemoveDescriptionProvider(final ResourceDescriptionResolver descriptionResolver) {
         super(ModelDescriptionConstants.REMOVE, descriptionResolver);
+    }
+
+    public DefaultResourceRemoveDescriptionProvider(ResourceDescriptionResolver resolver, DeprecationData deprecationData) {
+        super(ModelDescriptionConstants.REMOVE, resolver, deprecationData);
     }
 }

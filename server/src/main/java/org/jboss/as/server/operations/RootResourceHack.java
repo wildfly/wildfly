@@ -23,15 +23,15 @@ package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
@@ -42,8 +42,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class RootResourceHack implements OperationStepHandler, DescriptionProvider {
-
+public class RootResourceHack implements OperationStepHandler {
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(RootResourceHack.NAME, new NonResolvingResourceDescriptionResolver())
+            .setPrivateEntry()
+            .setRuntimeOnly()
+            .build();
     public static final RootResourceHack INSTANCE = new RootResourceHack();
     public static final String NAME = "root-resource-hack";
     private static final ModelNode OPERATION;
@@ -55,12 +58,6 @@ public class RootResourceHack implements OperationStepHandler, DescriptionProvid
     private ThreadLocal<ResourceAndRegistration> resource = new ThreadLocal<ResourceAndRegistration>();
 
     private RootResourceHack() {
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //private operation so no description needed
-        return new ModelNode();
     }
 
     @Override

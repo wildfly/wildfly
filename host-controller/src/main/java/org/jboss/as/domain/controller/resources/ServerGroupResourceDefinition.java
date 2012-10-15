@@ -34,7 +34,7 @@ import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupRemoveHandler;
@@ -78,7 +78,7 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
     private final HostFileRepository fileRepository;
 
     public ServerGroupResourceDefinition(final ContentRepository contentRepo, final HostFileRepository fileRepository) {
-        super(PathElement.pathElement(SERVER_GROUP), DomainRootDescription.getResourceDescriptionResolver(SERVER_GROUP, false), ServerGroupAddHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE);
+        super(PathElement.pathElement(SERVER_GROUP), DomainResolver.getResolver(SERVER_GROUP, false), ServerGroupAddHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE);
         this.contentRepo = contentRepo;
         this.fileRepository = fileRepository;
     }

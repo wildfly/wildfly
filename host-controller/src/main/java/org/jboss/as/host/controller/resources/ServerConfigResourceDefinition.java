@@ -170,24 +170,14 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
         //server paths
         resourceRegistration.registerSubModel(PathResourceDefinition.createSpecifiedNoServices(pathManager));
 
-        //server interfaces  TODO convert to ResourceDefinition
-        //ManagementResourceRegistration serverInterfaces = resourceRegistration.registerSubModel(PathElement.pathElement(INTERFACE), CommonProviders.SPECIFIED_INTERFACE_PROVIDER);
-        ManagementResourceRegistration serverInterfaces = resourceRegistration.registerSubModel(new InterfaceDefinition(
+         ManagementResourceRegistration serverInterfaces = resourceRegistration.registerSubModel(new InterfaceDefinition(
                 SpecifiedInterfaceAddHandler.INSTANCE,
                 SpecifiedInterfaceRemoveHandler.INSTANCE,
                 true
         ));
-        /*serverInterfaces.registerOperationHandler(InterfaceAddHandler.OPERATION_NAME, SpecifiedInterfaceAddHandler.INSTANCE, new DefaultResourceAddDescriptionProvider(serverInterfaces, CommonDescriptions.getResourceDescriptionResolver()), false);
-        serverInterfaces.registerOperationHandler(InterfaceRemoveHandler.OPERATION_NAME, SpecifiedInterfaceRemoveHandler.INSTANCE, new DefaultResourceRemoveDescriptionProvider(CommonDescriptions.getResourceDescriptionResolver()), false);*/
 
         // Server system properties  TODO convert to ResourceDefinition
         resourceRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.SERVER_CONFIG));
-//        ManagementResourceRegistration serverSysProps = resourceRegistration.registerSubModel(PathElement.pathElement(SYSTEM_PROPERTY), HostDescriptionProviders.SERVER_SYSTEM_PROPERTIES_PROVIDER);
-//        serverSysProps.registerOperationHandler(SystemPropertyAddHandler.OPERATION_NAME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, SystemPropertyAddHandler.INSTANCE_WITH_BOOTTIME, false);
-//        serverSysProps.registerOperationHandler(SystemPropertyRemoveHandler.OPERATION_NAME, SystemPropertyRemoveHandler.INSTANCE, SystemPropertyRemoveHandler.INSTANCE, false);
-//        serverSysProps.registerReadWriteAttribute(VALUE, null, SystemPropertyValueWriteAttributeHandler.INSTANCE, AttributeAccess.Storage.CONFIGURATION);
-//        serverSysProps.registerReadWriteAttribute(BOOT_TIME, null, new WriteAttributeHandlers.ModelTypeValidatingHandler(ModelType.BOOLEAN), AttributeAccess.Storage.CONFIGURATION);
-
         // Server jvm
         resourceRegistration.registerSubModel(JvmResourceDefinition.SERVER);
     }

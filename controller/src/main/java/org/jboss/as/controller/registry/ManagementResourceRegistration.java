@@ -80,6 +80,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      * @deprecated use {@link ManagementResourceRegistration#registerSubModel(org.jboss.as.controller.ResourceDefinition)}
      */
     @Deprecated
+    @SuppressWarnings("deprecation")
     ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider);
 
     /**

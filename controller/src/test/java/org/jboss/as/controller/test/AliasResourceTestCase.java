@@ -658,6 +658,7 @@ public class AliasResourceTestCase extends AbstractControllerTestBase {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
 

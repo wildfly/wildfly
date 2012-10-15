@@ -32,10 +32,12 @@ import java.util.Properties;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.OperationValidation;
@@ -50,7 +52,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class TestModelControllerService extends ModelTestModelControllerService {
@@ -62,8 +63,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ContentRepository contentRepository = new MockContentRepository();
 
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
-            final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
-            final StringConfigurationPersister persister, boolean validateOps) {
+                                         final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
+                                         final StringConfigurationPersister persister, boolean validateOps) {
         super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
@@ -73,8 +74,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
     }
 
     static TestModelControllerService create(final Extension mainExtension, final ControllerInitializer controllerInitializer,
-            final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
-            final StringConfigurationPersister persister, boolean validateOps) {
+                                             final AdditionalInitialization additionalInit, final ExtensionRegistry extensionRegistry,
+                                             final StringConfigurationPersister persister, boolean validateOps) {
         return new TestModelControllerService(mainExtension, controllerInitializer, additionalInit, new RunningModeControl(additionalInit.getRunningMode()), extensionRegistry, persister, validateOps);
     }
 
@@ -85,7 +86,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
         ManagementResourceRegistration deployments = rootRegistration.registerSubModel(ServerDeploymentResourceDescription.create(contentRepository, null));
 
         //Hack to be able to access the registry for the jmx facade
-        rootRegistration.registerOperationHandler(RootResourceHack.NAME, RootResourceHack.INSTANCE, RootResourceHack.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+
+        rootRegistration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
 
         extensionRegistry.setSubsystemParentResourceRegistrations(rootRegistration, deployments);
         controllerInitializer.setTestModelControllerService(this);
