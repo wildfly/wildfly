@@ -49,14 +49,18 @@ class SecurityRoleRemove extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
         final HornetQServer server = getServer(context, operation);
-        if(server != null) {
-            final String match = address.getElement(address.size() - 2).getValue();
-            final String roleName = address.getLastElement().getValue();
-            final Set<Role> newRoles = new HashSet<Role>();
+        final String match = address.getElement(address.size() - 2).getValue();
+        final String roleName = address.getLastElement().getValue();
+        removeRole(server, match, roleName);
+    }
+
+    static void removeRole(HornetQServer server, String match, String roleName) {
+        if (server != null) {
             final Set<Role> roles = server.getSecurityRepository().getMatch(match);
-            for(final Role role : roles) {
-                if(! roleName.equals(role.getName())) {
-                     newRoles.add(role);
+            final Set<Role> newRoles = new HashSet<Role>();
+            for (final Role role : roles) {
+                if (!roleName.equals(role.getName())) {
+                    newRoles.add(role);
                 }
             }
             server.getSecurityRepository().addMatch(match, newRoles);
