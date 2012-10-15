@@ -22,8 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.OSGiLogger.LOGGER;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.osgi.OSGiConstants;
@@ -33,7 +31,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.BundleManager;
@@ -48,8 +46,6 @@ import org.osgi.framework.Bundle;
  * @since 25-Sep-2012
  */
 public class DeferredPhaseProcessor implements DeploymentUnitProcessor {
-
-    public static final Phase DEFERRED_PHASE = Phase.FIRST_MODULE_USE;
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -71,12 +67,8 @@ public class DeferredPhaseProcessor implements DeploymentUnitProcessor {
 
         // Defer the module phase if the bundle is not resolved
         if (bundle.isResolved() == false) {
-            if (depUnit.getParent() == null) {
-                depUnit.putAttachment(Attachments.DEFERRED_MODULE_PHASE, Boolean.TRUE);
-                depUnit.putAttachment(Attachments.DEFERRED_ACTIVATION_COUNT, new AtomicInteger());
-            } else {
-                LOGGER.warnDeferredModuleNotSupported(depUnit);
-            }
+            depUnit.putAttachment(Attachments.DEFERRED_ACTIVATION_COUNT, new AtomicInteger());
+            DeploymentUtils.addDeferredModule(depUnit);
         }
     }
 
