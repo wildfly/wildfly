@@ -38,6 +38,7 @@
 
     <modules>
         <module>common</module>
+        <module>container-embedded</module>
         <module>container-managed</module>
         <module>container-remote</module>
         <module>protocol-jmx</module>
@@ -49,7 +50,6 @@
         <module>container-managed-domain</module>
 
         <!--
-        <module>container-embedded</module>
         <module>protocol-servlet</module>
         <module>processor-jsfunit</module>
         -->

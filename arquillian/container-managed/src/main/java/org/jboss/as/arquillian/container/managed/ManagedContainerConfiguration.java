@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.arquillian.container.spi.client.deployment.Validate;
-import org.jboss.as.arquillian.container.CommonContainerConfiguration;
+import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
 
 /**
  * The managed container configuration
@@ -31,20 +30,12 @@ import org.jboss.as.arquillian.container.CommonContainerConfiguration;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Thomas.Diesler@jboss.com
  */
-public class ManagedContainerConfiguration extends CommonContainerConfiguration {
+public class ManagedContainerConfiguration extends DistributionContainerConfiguration {
 
     /**
      * Default timeout value waiting on ports is 10 seconds
      */
     private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
-
-    private String jbossHome = System.getenv("JBOSS_HOME");
-
-    private String javaHome = System.getenv("JAVA_HOME");
-
-    private String modulePath = System.getProperty("module.path");
-
-    private String bundlePath = System.getProperty("bundle.path");
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
@@ -52,9 +43,10 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
 
     private boolean outputToConsole = true;
 
-    private String serverConfig = System.getProperty("jboss.server.config.file.name",  "standalone.xml");
+    private String serverConfig = System.getProperty("jboss.server.config.file.name", "standalone.xml");
 
-    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty("allowConnectingToRunningServer", "false"));
+    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty(
+        "allowConnectingToRunningServer", "false"));
 
     private boolean enableAssertions = true;
 
@@ -65,52 +57,12 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     private Integer waitForPortsTimeoutInSeconds;
 
     public ManagedContainerConfiguration() {
-        // if no javaHome is set use java.home of already running jvm
-        if (javaHome == null || javaHome.isEmpty()) {
-            javaHome = System.getProperty("java.home");
-        }
-        // if no jbossHome is set use jboss.home of already running jvm
-        if (jbossHome == null || jbossHome.isEmpty()) {
-            jbossHome = System.getProperty("jboss.home");
-        }
+        super();
     }
 
     @Override
     public void validate() throws ConfigurationException {
         super.validate();
-
-        Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
-        if (javaHome != null) {
-            Validate.configurationDirectoryExists(javaHome, "javaHome must exist");
-        }
-    }
-
-    /**
-     * @return the jbossHome
-     */
-    public String getJbossHome() {
-        return jbossHome;
-    }
-
-    /**
-     * @param jbossHome the jbossHome to set
-     */
-    public void setJbossHome(String jbossHome) {
-        this.jbossHome = jbossHome;
-    }
-
-    /**
-     * @return the javaHome
-     */
-    public String getJavaHome() {
-        return javaHome;
-    }
-
-    /**
-     * @param javaHome the javaHome to set
-     */
-    public void setJavaHome(String javaHome) {
-        this.javaHome = javaHome;
     }
 
     /**
@@ -121,14 +73,16 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     }
 
     /**
-     * @param javaVmArguments the javaVmArguments to set
+     * @param javaVmArguments
+     *            the javaVmArguments to set
      */
     public void setJavaVmArguments(String javaVmArguments) {
         this.javaVmArguments = javaVmArguments;
     }
 
     /**
-     * @param startupTimeoutInSeconds the startupTimeoutInSeconds to set
+     * @param startupTimeoutInSeconds
+     *            the startupTimeoutInSeconds to set
      */
     public void setStartupTimeoutInSeconds(int startupTimeoutInSeconds) {
         this.startupTimeoutInSeconds = startupTimeoutInSeconds;
@@ -142,7 +96,8 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     }
 
     /**
-     * @param outputToConsole the outputToConsole to set
+     * @param outputToConsole
+     *            the outputToConsole to set
      */
     public void setOutputToConsole(boolean outputToConsole) {
         this.outputToConsole = outputToConsole;
@@ -156,7 +111,7 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     }
 
     /**
-     * Get the server configuration file name.  Equivalent to [-server-config=...] on the command line.
+     * Get the server configuration file name. Equivalent to [-server-config=...] on the command line.
      *
      * @return the server config
      */
@@ -165,28 +120,13 @@ public class ManagedContainerConfiguration extends CommonContainerConfiguration 
     }
 
     /**
-     * Set the server configuration file name.  Equivalent to [-server-config=...] on the command line.
+     * Set the server configuration file name. Equivalent to [-server-config=...] on the command line.
      *
-     * @param serverConfig the server config
+     * @param serverConfig
+     *            the server config
      */
     public void setServerConfig(String serverConfig) {
         this.serverConfig = serverConfig;
-    }
-
-    public String getModulePath() {
-        return modulePath;
-    }
-
-    public void setModulePath(final String modulePath) {
-        this.modulePath = modulePath;
-    }
-
-    public String getBundlePath() {
-        return bundlePath;
-    }
-
-    public void setBundlePath(String bundlePath) {
-        this.bundlePath = bundlePath;
     }
 
     public boolean isAllowConnectingToRunningServer() {
