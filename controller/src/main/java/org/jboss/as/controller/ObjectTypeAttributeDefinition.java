@@ -111,9 +111,12 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             // get the value type description of the attribute
             final ModelNode valueTypeDesc = getValueTypeDescription(valueType, false);
             final String p;
-            if ((prefix == null || prefix.isEmpty()) && (suffix != null && suffix.isEmpty())) {
+            boolean prefixUnuseable = prefix == null || prefix.isEmpty() ;
+            boolean suffixUnuseable = suffix == null || suffix.isEmpty() ;
+
+            if (prefixUnuseable && !suffixUnuseable) {
                 p = suffix;
-            } else if (suffix == null || suffix.isEmpty()) {
+            } else if (!prefixUnuseable && suffixUnuseable) {
                 p = prefix;
             } else {
                 p = String.format("%s.%s", prefix, suffix);

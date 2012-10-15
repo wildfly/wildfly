@@ -22,8 +22,8 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +66,7 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_STACK: {
-                    CommonAttributes.DEFAULT_STACK.parseAndSetParameter(value, subsystem, reader);
+                    JGroupsSubsystemRootResource.DEFAULT_STACK.parseAndSetParameter(value, subsystem, reader);
                     break;
                 }
                 default: {
@@ -174,50 +174,50 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                 case TYPE: {
                     try {
                         TP.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(TP.class).newInstance();
-                        CommonAttributes.TYPE.parseAndSetParameter(value, transport, reader);
+                        TransportResource.TYPE.parseAndSetParameter(value, transport, reader);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
                     break;
                 }
                 case SHARED: {
-                    CommonAttributes.SHARED.parseAndSetParameter(value, transport, reader);
+                    TransportResource.SHARED.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case SOCKET_BINDING: {
-                    CommonAttributes.SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
+                    TransportResource.SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case DIAGNOSTICS_SOCKET_BINDING: {
-                    CommonAttributes.DIAGNOSTICS_SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
+                    TransportResource.DIAGNOSTICS_SOCKET_BINDING.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case DEFAULT_EXECUTOR: {
-                    CommonAttributes.DEFAULT_EXECUTOR.parseAndSetParameter(value, transport, reader);
+                    TransportResource.DEFAULT_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case OOB_EXECUTOR: {
-                    CommonAttributes.OOB_EXECUTOR.parseAndSetParameter(value, transport, reader);
+                    TransportResource.OOB_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case TIMER_EXECUTOR: {
-                    CommonAttributes.TIMER_EXECUTOR.parseAndSetParameter(value, transport, reader);
+                    TransportResource.TIMER_EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case THREAD_FACTORY: {
-                    CommonAttributes.THREAD_FACTORY.parseAndSetParameter(value, transport, reader);
+                    TransportResource.THREAD_FACTORY.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case SITE: {
-                    CommonAttributes.SITE.parseAndSetParameter(value, transport, reader);
+                    TransportResource.SITE.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case RACK: {
-                    CommonAttributes.RACK.parseAndSetParameter(value, transport, reader);
+                    TransportResource.RACK.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case MACHINE: {
-                    CommonAttributes.MACHINE.parseAndSetParameter(value, transport, reader);
+                    TransportResource.MACHINE.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 default: {
@@ -230,32 +230,24 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
         }
 
+        List<ModelNode> propertyOperations = new ArrayList<ModelNode>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
-                throw ParseUtils.unexpectedElement(reader);
-            }
-            int attributes = reader.getAttributeCount();
-            String property = null;
-            for (int i = 0; i < attributes; i++) {
-                String value = reader.getAttributeValue(i);
-                Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        property = value;
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    this.parseProperty(reader, transportAddress, propertyOperations);
+                     break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
-            if (property == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-            String value = reader.getElementText();
-            transport.get(ModelKeys.PROPERTIES).add(property, value);
         }
         operations.add(transport);
+        // add operations to create associated properties
+        for (ModelNode propertyOperation : propertyOperations) {
+            operations.add(propertyOperation);
+        }
     }
 
     private void parseProtocol(XMLExtendedStreamReader reader, ModelNode stackAddress, List<ModelNode> operations) throws XMLStreamException {
@@ -269,14 +261,14 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                 case TYPE: {
                     try {
                         Protocol.class.getClassLoader().loadClass(org.jgroups.conf.ProtocolConfiguration.protocol_prefix + '.' + value).asSubclass(Protocol.class).newInstance();
-                        CommonAttributes.TYPE.parseAndSetParameter(value, protocol, reader);
+                        ProtocolResource.TYPE.parseAndSetParameter(value, protocol, reader);
                     } catch (Exception e) {
                         throw ParseUtils.invalidAttributeValue(reader, i);
                     }
                     break;
                 }
                 case SOCKET_BINDING: {
-                    CommonAttributes.SOCKET_BINDING.parseAndSetParameter(value, protocol, reader);
+                    ProtocolResource.SOCKET_BINDING.parseAndSetParameter(value, protocol, reader);
                     break;
                 }
                 default: {
@@ -291,32 +283,62 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
 
         protocol.get(OP_ADDR).set(stackAddress);
 
+        // in order to add any property, we need the protocol address which will be generated
+        ModelNode protocolAddress = stackAddress.clone() ;
+        protocolAddress.add(ModelKeys.PROTOCOL, protocol.get(ModelKeys.TYPE).asString());
+
+        List<ModelNode> propertyOperations = new ArrayList<ModelNode>();
         while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-            if (Element.forName(reader.getLocalName()) != Element.PROPERTY) {
-                throw ParseUtils.unexpectedElement(reader);
-            }
-            int attributes = reader.getAttributeCount();
-            String property = null;
-            for (int i = 0; i < attributes; i++) {
-                String value = reader.getAttributeValue(i);
-                Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        property = value;
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
+            Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    this.parseProperty(reader, protocolAddress, propertyOperations);
+                     break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedElement(reader);
                 }
             }
-            if (property == null) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-            String value = reader.getElementText();
-            protocol.get(ModelKeys.PROPERTIES).add(property, value);
         }
-
         operations.add(protocol);
+        // add operations to create associated properties
+        for (ModelNode propertyOperation : propertyOperations) {
+            operations.add(propertyOperation);
+        }
+    }
+
+    private void parseProperty(XMLExtendedStreamReader reader, ModelNode transportOrProtocolAddress, List<ModelNode> operations) throws XMLStreamException {
+
+        ModelNode property = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+
+        String propertyName = null;
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            String value = reader.getAttributeValue(i);
+            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    propertyName = value;
+                    break;
+                }
+                default: {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (property == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        String propertyValue = reader.getElementText();
+
+        // ModelNode for the property add operation
+        ModelNode propertyAddress = transportOrProtocolAddress.clone();
+        propertyAddress.add(ModelKeys.PROPERTY, propertyName);
+        propertyAddress.protect();
+        property.get(OP_ADDR).set(propertyAddress);
+
+        // assign the value
+        PropertyResource.VALUE.parseAndSetParameter(propertyValue, property, reader);
+
+        operations.add(property);
     }
 }
