@@ -22,6 +22,8 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -43,14 +45,12 @@ import org.jboss.as.server.deployment.RegisteredDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-
 /**
  * @author John Bailey
  */
 public class DeployerChainAddHandler implements OperationStepHandler {
     static final String NAME = "add-deployer-chains";
-    static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver())
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver())
             .setPrivateEntry()
             .build();
     public static final DeployerChainAddHandler INSTANCE = new DeployerChainAddHandler();
