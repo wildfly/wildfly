@@ -16,20 +16,17 @@
  */
 package org.jboss.as.arquillian.container;
 
-import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
-
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
 /**
  * JBossAS7 server configuration
  *
  * @author Thomas.Diesler@jboss.com
- * @since 17-Nov-2010
+ * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 public class CommonContainerConfiguration implements ContainerConfiguration {
 

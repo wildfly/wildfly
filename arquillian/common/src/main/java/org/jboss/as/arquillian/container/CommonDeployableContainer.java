@@ -51,7 +51,6 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     private static final String JBOSS_URL_PKG_PREFIX = "org.jboss.ejb.client.naming";
 
-    private final Logger log = Logger.getLogger(CommonDeployableContainer.class.getName());
     private T containerConfig;
 
     @Inject
@@ -164,8 +163,9 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     private void safeCloseClient() {
         try {
             getManagementClient().close();
-        } catch (Exception e) {
-            log.log(Level.WARNING, "Caught exception closing ModelControllerClient", e);
+        } catch (final Exception e) {
+            Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
+                "Caught exception closing ModelControllerClient", e);
         }
     }
 }
