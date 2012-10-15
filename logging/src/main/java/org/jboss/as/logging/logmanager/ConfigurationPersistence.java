@@ -511,7 +511,7 @@ public final class ConfigurationPersistence implements Configurator {
      *
      * @throws IOException if an error occurs
      */
-    private void configure(final Properties properties) throws IOException {
+    public void configure(final Properties properties) throws IOException {
         synchronized (config) {
             try {
                 // Start with the list of loggers to configure.  The root logger is always on the list.

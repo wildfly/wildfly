@@ -132,4 +132,14 @@ public interface LoggingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11509, value = "Logging profile '%s' was specified for deployment '%s' but was not found. Using system logging configuration.")
     void loggingProfileNotFound(String loggingProfile, ResourceRoot deployment);
+
+    /**
+     * Logs a warning message indicating the configuration file found appears to be a {@link
+     * java.util.logging.LogManager J.U.L.} configuration file and the log manager does not allow this configuration.
+     *
+     * @param fileName the configuration file name
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11510, value = "The configuration file in '%s' appears to be a J.U.L. configuration file. The log manager does not allow this type of configuration file.")
+    void julConfigurationFileFound(String fileName);
 }
