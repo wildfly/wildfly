@@ -124,8 +124,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
             moduleId = ModuleIdentifier.create(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
-            context.getFailureDescription().set(MESSAGES.failedToLoadModuleDriver(moduleName));
-            return;
+            throw new OperationFailedException(MESSAGES.failedToLoadModuleDriver(moduleName), e);
         }
 
         if (driverClassName == null) {
