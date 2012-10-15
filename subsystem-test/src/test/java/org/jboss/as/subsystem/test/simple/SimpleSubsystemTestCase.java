@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.util.List;
 
 import junit.framework.Assert;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -85,7 +84,9 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController(subsystemXml);
+        KernelServices services = createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -112,7 +113,9 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml)
+                .build();
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -140,13 +143,17 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
 
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(null)
+                .setSubsystemXml(marshalled)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -163,7 +170,9 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         String subsystemXml =
                 "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
-        KernelServices servicesA = super.installInController(subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(null)
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the describe operations from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
@@ -171,11 +180,13 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, SimpleSubsystemExtension.SUBSYSTEM_NAME)).toModelNode());
-        List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+        List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
 
         //Install the describe options from the first controller into a second controller
-        KernelServices servicesB = super.installInController(operations);
+        KernelServices servicesB = createKernelServicesBuilder(null)
+                .setBootOperations(operations)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -195,7 +206,9 @@ public class SimpleSubsystemTestCase extends AbstractSubsystemTest {
         testModel.get(SUBSYSTEM).get(SimpleSubsystemExtension.SUBSYSTEM_NAME).setEmptyObject();
         String triggered = outputModel(testModel);
 
-        KernelServices services = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml)
+                .build();
         //Get the model and the persisted xml from the controller
         services.readWholeModel();
         String marshalled = services.getPersistedSubsystemXml();

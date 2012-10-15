@@ -18,10 +18,8 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */package org.jboss.as.domain.controller.descriptions;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
+ */
+package org.jboss.as.domain.controller.descriptions;
 
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -31,24 +29,16 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  *
  * @author Brian Stansberry
  */
-@Deprecated
-public class DomainRootDescription {
+public class DomainResolver {
 
-    private static final String RESOURCE_NAME = DomainRootDescription.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = DomainResolver.class.getPackage().getName() + ".LocalDescriptions";
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return getResourceDescriptionResolver(keyPrefix, true);
+    public static ResourceDescriptionResolver getResolver(final String keyPrefix) {
+        return getResolver(keyPrefix, true);
     }
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DomainRootDescription.class.getClassLoader(), true, useUnprefixedChildTypes);
+    public static ResourceDescriptionResolver getResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DomainResolver.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
-
-    private static ResourceBundle getResourceBundle(Locale locale) {
-        if (locale == null) {
-            locale = Locale.getDefault();
-        }
-        return ResourceBundle.getBundle(RESOURCE_NAME, locale);
-    }
 }

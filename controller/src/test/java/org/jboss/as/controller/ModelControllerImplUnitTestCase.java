@@ -26,6 +26,7 @@
 package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -59,6 +60,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -170,8 +172,11 @@ public class ModelControllerImplUnitTestCase {
             rootRegistration.registerOperationHandler("read-wildcards", new WildcardReadHandler(), DESC_PROVIDER, true);
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-
-            rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
+            SimpleResourceDefinition childResource = new SimpleResourceDefinition(
+                                    PathElement.pathElement("child"),
+                                new NonResolvingResourceDescriptionResolver()
+                        );
+            rootRegistration.registerSubModel(childResource);
         }
 
         @Override

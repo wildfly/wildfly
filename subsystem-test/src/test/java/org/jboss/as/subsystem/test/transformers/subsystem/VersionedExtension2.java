@@ -37,15 +37,15 @@ import java.util.List;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
@@ -72,7 +72,10 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         final ManagementResourceRegistration registration = initializeSubsystem(subsystem);
 
         // Register a update operation, which requires the transformer to create composite operation
-        registration.registerOperationHandler("update", new OperationStepHandler() {
+        OperationDefinition def = new SimpleOperationDefinitionBuilder("update", TEST_RESOURCE_DESCRIPTION_RESOLVER)
+                .build();
+
+        registration.registerOperationHandler(def, new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -81,7 +84,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
                 context.getResult().set(model);
                 context.stepCompleted();
             }
-        }, new DefaultOperationDescriptionProvider("update", TEST_RESOURCE_DESCRIPTION_RESOLVER)); //Need description provider
+        });
 
         // Add a new model, which does not exist in the old model
         registration.registerSubModel(new TestResourceDefinition(NEW_ELEMENT));
@@ -116,7 +119,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
     protected void addChildElements(List<ModelNode> list) {
         list.add(createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH, RENAMED)));
         list.add(createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH, PathElement.pathElement(NEW_ELEMENT.getKey(), "test"))));
-    };
+    }
 
     static class UpdateTransformer implements OperationTransformer {
 

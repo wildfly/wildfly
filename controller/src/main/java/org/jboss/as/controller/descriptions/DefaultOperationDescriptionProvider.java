@@ -50,7 +50,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
     private final ResourceDescriptionResolver attributeDescriptionResolver;
     private final ModelType replyType;
     private final ModelType replyValueType;
-    private final DeprecationData deprecationData;
+    private DeprecationData deprecationData;
     private final AttributeDefinition[] replyParameters;
     private final AttributeDefinition[] parameters;
 
@@ -58,6 +58,14 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final ResourceDescriptionResolver descriptionResolver,
                                                final AttributeDefinition... parameters) {
         this(operationName, descriptionResolver, null, null, parameters);
+    }
+
+    public DefaultOperationDescriptionProvider(final String operationName,
+                                               final ResourceDescriptionResolver descriptionResolver,
+                                               final DeprecationData deprecationData,
+                                               final AttributeDefinition... parameters) {
+        this(operationName, descriptionResolver, null, null, parameters);
+        this.deprecationData = deprecationData;
     }
 
     public DefaultOperationDescriptionProvider(final String operationName,
@@ -145,7 +153,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             } else {
                 reply.get(TYPE).set(ModelType.OBJECT);
                 for (AttributeDefinition ad : replyParameters) {
-                    final ModelNode param = ad.addOperationParameterDescription(new ModelNode(), operationName,attributeDescriptionResolver,locale,bundle);
+                    final ModelNode param = ad.addOperationParameterDescription(new ModelNode(), operationName, attributeDescriptionResolver, locale, bundle);
                     reply.get(VALUE_TYPE, ad.getName()).set(param);
                 }
             }

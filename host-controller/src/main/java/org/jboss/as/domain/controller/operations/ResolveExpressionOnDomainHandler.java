@@ -31,7 +31,7 @@ import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -62,7 +62,7 @@ public class ResolveExpressionOnDomainHandler implements OperationStepHandler, D
     public ModelNode getModelDescription(Locale locale) {
         ModelType valueType = null;
         DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME,
-                DomainRootDescription.getResourceDescriptionResolver("domain"), ModelType.STRING, valueType, ResolveExpressionHandler.EXPRESSION);
+                DomainResolver.getResolver("domain"), ModelType.STRING, valueType, ResolveExpressionHandler.EXPRESSION);
         ModelNode result = delegate.getModelDescription(locale);
         result.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.NILLABLE).set(true);
         return result;

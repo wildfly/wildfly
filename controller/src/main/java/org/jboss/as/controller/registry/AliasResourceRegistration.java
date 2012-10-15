@@ -48,6 +48,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Kabir Khan
  */
+@SuppressWarnings("deprecation")
 final class AliasResourceRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
     private final AliasEntry aliasEntry;
@@ -182,7 +183,7 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
 
     @Override
     public void unregisterAttribute(String attributeName) {
-        alreadyRegistered();
+       throw alreadyRegistered();
     }
 
     @Override

@@ -165,15 +165,6 @@ public class HibernateDescriptions {
         return subsystem;
     }
 
-    public static ModelNode describeSecondLevelCacheAttributes(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-
-        ModelNode subsystem = new ModelNode();
-
-        return subsystem;
-    }
-
-
     private static ResourceBundle getResourceBundle(Locale locale) {
         if (locale == null) {
             locale = Locale.getDefault();
@@ -181,41 +172,10 @@ public class HibernateDescriptions {
         return ResourceBundle.getBundle(RESOURCE_NAME, locale);
     }
 
-    public static ModelNode getNoArgSimpleReplyOperation(final Locale locale, final String operationName,
-                                                         final String descriptionPrefix, final ModelType replyType,
-                                                         final boolean describeReply) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getNoArgSimpleReplyOperation(bundle, operationName, descriptionPrefix, replyType, describeReply);
-    }
-
     public static ModelNode getDescriptionOnlyOperation(final Locale locale, final String operationName, final String descriptionPrefix) {
         final ResourceBundle bundle = getResourceBundle(locale);
 
         return CommonDescriptions.getDescriptionOnlyOperation(bundle, operationName, descriptionPrefix);
-    }
-
-    public static ModelNode getSingleParamSimpleReplyOperation(final Locale locale, final String operationName,
-                                                               final String descriptionPrefix, final String paramName,
-                                                               final ModelType paramType, final boolean paramNillable,
-                                                               final ModelType replyType, final boolean describeReply) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName, paramType, paramNillable, replyType, describeReply);
-    }
-
-    public static ModelNode getSingleParamSimpleListReplyOperation(final Locale locale, final String operationName,
-                                                                   final String descriptionPrefix, final String paramName,
-                                                                   final ModelType paramType, final boolean paramNillable,
-                                                                   final ModelType listValueType, final boolean describeReply) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getSingleParamSimpleReplyOperation(bundle, operationName, descriptionPrefix, paramName,
-            paramType, paramNillable, listValueType, describeReply);
-    }
-
-    public static ModelNode getNoArgSimpleListReplyOperation(final Locale locale, final String operationName,
-                                                             final String descriptionPrefix, final ModelType listValueType,
-                                                             final boolean describeReply) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        return CommonDescriptions.getNoArgSimpleListReplyOperation(bundle, operationName, descriptionPrefix, listValueType, describeReply);
     }
 
     //

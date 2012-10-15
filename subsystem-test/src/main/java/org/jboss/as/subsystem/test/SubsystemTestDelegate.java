@@ -21,7 +21,6 @@
 */
 package org.jboss.as.subsystem.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -36,13 +35,13 @@ import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -550,15 +549,6 @@ final class SubsystemTestDelegate {
     }
 
 
-    static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode model = new ModelNode();
-            model.get(DESCRIPTION).set("The test model controller");
-            return model;
-        }
-    };
-
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
         private final ModelTestBootOperationsBuilder bootOperationBuilder;
         private final AdditionalInitialization additionalInit;
@@ -583,6 +573,12 @@ final class SubsystemTestDelegate {
 
         public KernelServicesBuilder setBootOperations(List<ModelNode> bootOperations) {
             bootOperationBuilder.setBootOperations(bootOperations);
+            return this;
+        }
+
+        @Override
+        public KernelServicesBuilder setBootOperations(ModelNode... bootOperations) {
+            bootOperationBuilder.setBootOperations(Arrays.asList(bootOperations));
             return this;
         }
 

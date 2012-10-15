@@ -160,12 +160,14 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public ModelNode readModel(PathAddress address) {
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.readModel(fullAddress);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public ModelNode readModelForUpdate(PathAddress address) {
         PathAddress fullAddress = activeStep.address.append(address);
         return primaryContext.readModelForUpdate(fullAddress);
@@ -222,6 +224,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public Resource getRootResource() {
         return primaryContext.getRootResource();
     }

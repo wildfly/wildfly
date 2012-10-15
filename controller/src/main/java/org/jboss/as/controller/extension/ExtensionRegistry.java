@@ -69,7 +69,6 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.SubsystemTransformer;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
@@ -83,6 +82,7 @@ import org.jboss.staxmapper.XMLMapper;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+@SuppressWarnings("deprecation")
 public class ExtensionRegistry {
 
     private final ProcessType processType;
@@ -99,8 +99,6 @@ public class ExtensionRegistry {
     // protected by extensions
     private boolean unnamedMerged;
     private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<String, SubsystemInformation>();
-    /*private ModelTransformer modelTransformer = new SimpleModelTransformer();
-    private Map<String,SubsystemModelTransformer> subsystemTransformers = new HashMap<String, SubsystemModelTransformer>();*/
     private volatile TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
 
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
@@ -403,6 +401,7 @@ public class ExtensionRegistry {
 
 
         @Override
+        @SuppressWarnings("deprecation")
         public void setSubsystemXmlMapping(String namespaceUri, XMLElementReader<List<ModelNode>> reader) {
             assert namespaceUri != null : "namespaceUri is null";
             synchronized (extensions) { // we synchronize just to protect unnamedMerged
@@ -429,11 +428,13 @@ public class ExtensionRegistry {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void setDeploymentXmlMapping(String namespaceUri, XMLElementReader<ModelNode> reader) {
             // ignored
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void setDeploymentXmlMapping(String subsystemName, String namespaceUri, XMLElementReader<ModelNode> reader) {
             // ignored
         }
@@ -552,6 +553,7 @@ public class ExtensionRegistry {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public ManagementResourceRegistration registerSubsystemModel(final DescriptionProvider descriptionProvider) {
             assert descriptionProvider != null : "descriptionProvider is null";
             PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
@@ -573,6 +575,7 @@ public class ExtensionRegistry {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public ManagementResourceRegistration registerDeploymentModel(final DescriptionProvider descriptionProvider) {
             assert descriptionProvider != null : "descriptionProvider is null";
             PathElement pathElement = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, name);
@@ -774,36 +777,42 @@ public class ExtensionRegistry {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider);
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, EnumSet<OperationEntry.Flag> flags) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, flags);
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited);
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType);
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType, flags);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, entryType, flags);
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerOperationHandler(String operationName, OperationStepHandler handler, DescriptionProvider descriptionProvider, boolean inherited, EnumSet<OperationEntry.Flag> flags) {
             deployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, flags);
             subdeployments.registerOperationHandler(operationName, handler, descriptionProvider, inherited, flags);
@@ -905,6 +914,7 @@ public class ExtensionRegistry {
         }
 
         @Override
+        @SuppressWarnings("deprecation")
         public void registerAlias(PathElement address, AliasEntry alias) {
             deployments.registerAlias(address, alias);
             subdeployments.registerAlias(address, alias);

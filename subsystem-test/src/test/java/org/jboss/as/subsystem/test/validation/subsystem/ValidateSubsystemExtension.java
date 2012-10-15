@@ -1,14 +1,11 @@
 package org.jboss.as.subsystem.test.validation.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.List;
-import java.util.Locale;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -17,15 +14,16 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -63,7 +61,10 @@ public class ValidateSubsystemExtension implements Extension {
     @Override
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ValidateSubsystemProviders.SUBSYSTEM);
+        SimpleResourceDefinition subsystemResource = new SimpleResourceDefinition(
+                PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME),
+                new NonResolvingResourceDescriptionResolver());
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(subsystemResource);
         //We always need to add an 'add' operation
         registration.registerOperationHandler(ADD,
                 new OperationStepHandler() {
@@ -73,8 +74,9 @@ public class ValidateSubsystemExtension implements Extension {
                 },
                 addDescriptionProvider,
                 false);
+
         //We always need to add a 'describe' operation
-        registration.registerOperationHandler(DESCRIBE, SubsystemDescribeHandler.INSTANCE, SubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         subsystem.registerXMLElementWriter(parser);
     }
@@ -104,26 +106,6 @@ public class ValidateSubsystemExtension implements Extension {
             // Require no content
             ParseUtils.requireNoContent(reader);
             list.add(createAddSubsystemOperation());
-        }
-    }
-
-
-    /**
-     * Recreate the steps to put the subsystem in the same state it was in.
-     * This is used in domain mode to query the profile being used, in order to
-     * get the steps needed to create the servers
-     */
-    private static class SubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final SubsystemDescribeHandler INSTANCE = new SubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.getResult().add(createAddSubsystemOperation());
-            context.stepCompleted();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return GenericSubsystemDescribeHandler.DEFINITION.getDescriptionProvider().getModelDescription(locale);
         }
     }
 

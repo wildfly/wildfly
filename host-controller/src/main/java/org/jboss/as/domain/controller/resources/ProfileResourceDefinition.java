@@ -34,7 +34,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.domain.controller.descriptions.DomainRootDescription;
+import org.jboss.as.domain.controller.descriptions.DomainResolver;
 import org.jboss.as.domain.controller.operations.ProfileAddHandler;
 import org.jboss.as.domain.controller.operations.ProfileDescribeHandler;
 import org.jboss.as.domain.controller.operations.ProfileRemoveHandler;
@@ -50,7 +50,7 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
             .setResourceOnly()
             .build();
 
-    private static OperationDefinition DESCRIBE = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, DomainRootDescription.getResourceDescriptionResolver(PROFILE, false))
+    private static OperationDefinition DESCRIBE = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, DomainResolver.getResolver(PROFILE, false))
             .setReplyType(ModelType.LIST)
             .setReplyValueType(ModelType.OBJECT)
             .setPrivateEntry()
@@ -60,7 +60,7 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
     private final ExtensionRegistry extensionRegistry;
 
     public ProfileResourceDefinition(ExtensionRegistry extensionRegistry) {
-        super(PathElement.pathElement(PROFILE), DomainRootDescription.getResourceDescriptionResolver(PROFILE, false), ProfileAddHandler.INSTANCE, ProfileRemoveHandler.INSTANCE);
+        super(PathElement.pathElement(PROFILE), DomainResolver.getResolver(PROFILE, false), ProfileAddHandler.INSTANCE, ProfileRemoveHandler.INSTANCE);
         this.extensionRegistry = extensionRegistry;
     }
 
