@@ -21,12 +21,9 @@
 */
 package org.jboss.as.controller.util;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-
 import java.io.File;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,11 +33,11 @@ import org.jboss.dmr.ModelNode;
  * {@code src/test/resources/legacy-models/standalone-resource-definition-7.1.2.Final}.
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class DumpHostResourceDefinitionUtil {
+public class DumpStandaloneResourceDefinitionUtil {
 
     public static void main(String[] args) throws Exception {
-        ModelNode resourceDefinition = Tools.getCurrentRunningResourceDefinition(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")));
-        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.HOST.toString().toLowerCase() +
+        ModelNode resourceDefinition = Tools.getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
+        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.STANDALONE.toString().toLowerCase() +
         		"-resource-definition-running.dmr"));
     }
 }

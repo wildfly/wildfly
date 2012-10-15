@@ -54,14 +54,13 @@ import java.util.TreeMap;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
  * Compares the current running server with the passed in version. The passed in version
  * must have model and resource definition dumps in {@code src/test/resources/legacy-models} as
- * outlined in {@link DumpResourceDefinitionUtil} and {@link GrabModelVersionsUtil}.
+ * outlined in {@link DumpStandaloneResourceDefinitionUtil}, {@link DumpDomainResourceDefinitionUtil} and {@link GrabModelVersionsUtil}.
  * <p>
  * To run this a big heap size is needed, e.g. -Xmx1024m
  *
@@ -93,6 +92,7 @@ public class CompareModelVersionsUtil {
     public static void main(String[] args) throws Exception {
 
         String version = System.getProperty("jboss.as.compare.version", null);
+        String fromTgt = System.getProperty("jboss.as.compare.from.target", null);
         String diff = System.getProperty("jboss.as.compare.different.versions", null);
         String type = System.getProperty("jboss.as.compare.type", null);
 
@@ -103,21 +103,35 @@ public class CompareModelVersionsUtil {
         System.out.println("Using target model: " + version);
 
         if (type == null) {
-            System.out.print("Enter type [S](standalone)/H(host)/D(domain):");
+            System.out.print("Enter type [S](standalone)/H(host)/D(domain)/F(domain + host):");
             type = readInput("S");
         }
-        final ResourceType resourceType;
+        final ResourceType[] resourceTypes;
         if (ResourceType.STANDALONE.toString().startsWith(type.toUpperCase())) {
-            resourceType = ResourceType.STANDALONE;
+            resourceTypes = new ResourceType[]{ResourceType.STANDALONE};
         } else if (ResourceType.HOST.toString().startsWith(type.toUpperCase())) {
-            resourceType = ResourceType.HOST;
+            resourceTypes = new ResourceType[]{ResourceType.HOST};
         }  else if (ResourceType.DOMAIN.toString().startsWith(type.toUpperCase())) {
-            resourceType = ResourceType.DOMAIN;
+            resourceTypes = new ResourceType[]{ResourceType.DOMAIN};
+        } else if (type.toUpperCase().equals("F")) {
+            resourceTypes = new ResourceType[]{ResourceType.DOMAIN, ResourceType.HOST};
         } else {
             throw new IllegalArgumentException("Could not determine type for: '" + type + "'");
         }
 
+        if (fromTgt == null) {
+            System.out.print("Read from target directory or from the legacy-models directory - t/[l]:");
+            fromTgt = readInput("l");
+        }
 
+        final String fromDirectory;
+        if (fromTgt.equals("l")) {
+            fromDirectory = "target/test-classes/legacy-models/";
+        } else if (fromTgt.equals("t")) {
+            fromDirectory = "target/";
+        } else {
+            throw new IllegalArgumentException("Please enter 'l' for legacy-models directory or 't' for target directory");
+        }
 
         if (diff == null) {
             System.out.print("Report on differences in the model when the management versions are different? y/[n]: ");
@@ -135,18 +149,30 @@ public class CompareModelVersionsUtil {
         }
 
         System.out.println("Loading legacy model versions for " + version + "....");
-        ModelNode legacyModelVersions = Tools.loadModelNodeFromFile(new File("target/test-classes/legacy-models/standalone-model-versions-" + version + ".dmr"));
+        ModelNode legacyModelVersions = Tools.loadModelNodeFromFile(new File(fromDirectory + "standalone-model-versions-" + version + ".dmr"));
         System.out.println("Loaded legacy model versions");
-
-        System.out.println("Loading legacy resource descriptions for " + version + "....");
-        ModelNode legacyResourceDefinitions = Tools.loadModelNodeFromFile(new File("target/test-classes/legacy-models/" + resourceType.toString().toLowerCase() + "-resource-definition-" + version + ".dmr"));
-        System.out.println("Loaded legacy resource descriptions");
 
         System.out.println("Loading model versions for currently running server...");
         ModelNode currentModelVersions = Tools.getCurrentModelVersions();
         System.out.println("Loaded current model versions");
 
-        System.out.println("Loading resource descriptions for currently running server...");
+        for (ResourceType resourceType : resourceTypes) {
+            doCompare(resourceType, fromDirectory, compareDifferentVersions, version, legacyModelVersions, currentModelVersions);
+        }
+    }
+
+    private static void doCompare(ResourceType resourceType,
+            String fromDirectory,
+            boolean compareDifferentVersions,
+            String targetVersion,
+            ModelNode legacyModelVersions,
+            ModelNode currentModelVersions) throws Exception {
+        System.out.println("Loading legacy resource descriptions for " + targetVersion + "....");
+        ModelNode legacyResourceDefinitions = Tools.loadModelNodeFromFile(new File(fromDirectory + resourceType.toString().toLowerCase() + "-resource-definition-" + targetVersion + ".dmr"));
+        System.out.println("Loaded legacy resource descriptions");
+
+
+        System.out.println("Loading resource descriptions for currently running " + resourceType + "...");
         final ModelNode currentResourceDefinitions;
         if (resourceType == ResourceType.STANDALONE) {
             currentResourceDefinitions = Tools.getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
@@ -157,13 +183,12 @@ public class CompareModelVersionsUtil {
         }
         System.out.println("Loaded current resource descriptions");
 
-        CompareModelVersionsUtil compareModelVersionsUtil = new CompareModelVersionsUtil(compareDifferentVersions, version, legacyModelVersions, legacyResourceDefinitions, currentModelVersions, currentResourceDefinitions);
+        CompareModelVersionsUtil compareModelVersionsUtil = new CompareModelVersionsUtil(compareDifferentVersions, targetVersion, legacyModelVersions, legacyResourceDefinitions, currentModelVersions, currentResourceDefinitions);
 
         System.out.println("Starting comparison of the current....\n");
         compareModelVersionsUtil.compareModels();
-        System.out.println("\nDone comparison!");
+        System.out.println("\nDone comparison of " + resourceType + "!");
     }
-
 
     private static String readInput(String defaultAnswer) throws IOException {
         StringBuilder sb = new StringBuilder();
