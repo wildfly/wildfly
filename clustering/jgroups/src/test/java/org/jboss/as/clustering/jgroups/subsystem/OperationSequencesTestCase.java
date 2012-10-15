@@ -1,6 +1,15 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,11 +41,25 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
 
     static final String SUBSYSTEM_XML_FILE = "subsystem-jgroups-test.xml" ;
 
+    // stack test operations
     static final ModelNode addStackOp = getProtocolStackAddOperation("maximal2");
+    // addStackOpWithParams calls the operation  below to check passing optional parameters
+    //  /subsystem=jgroups/stack=maximal2:add(transport={type=UDP},protocols=[{type=MPING},{type=FLUSH}])
+    static final ModelNode addStackOpWithParams = getProtocolStackAddOperationWithParameters("maximal2");
     static final ModelNode removeStackOp = getProtocolStackRemoveOperation("maximal2");
+
+    // transport test operations
     static final ModelNode addTransportOp = getTransportAddOperation("maximal2", "UDP");
+    // addTransportOpWithProps calls the operation below to check passing optional parameters
+    //   /subsystem=jgroups/stack=maximal2/transport=UDP:add(properties=[{A=>a},{B=>b}])
+    static final ModelNode addTransportOpWithProps = getTransportAddOperationWithProperties("maximal2", "UDP");
     static final ModelNode removeTransportOp = getTransportRemoveOperation("maximal2", "UDP");
+
+    // protocol test operations
     static final ModelNode addProtocolOp = getProtocolAddOperation("maximal2", "MPING");
+    // addProtocolOpWithProps calls the operation below to check passing optional parameters
+    //   /subsystem=jgroups/stack=maximal2:add-protocol(type=MPING, properties=[{A=>a},{B=>b}])
+    static final ModelNode addProtocolOpWithProps = getProtocolAddOperationWithProperties("maximal2", "MPING");
     static final ModelNode removeProtocolOp = getProtocolRemoveOperation("maximal2", "MPING");
 
     public OperationSequencesTestCase() {
@@ -79,6 +102,31 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         // add a protocol stack
         ModelNode result = servicesA.executeOperation(compositeOp);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the protocol stack
+        result = servicesA.executeOperation(removeStackOp);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // remove the protocol stack again
+        result = servicesA.executeOperation(removeStackOp);
+        Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
+    }
+
+    /*
+     * Tests the ability of the /subsystem=jgroups/stack=X:add() operation
+     * to correctly process the optional TRANSPORT and PROTOCOLS parameters.
+     */
+    @Test
+    public void testProtocolStackAddRemoveSequenceWithParameters() throws Exception {
+        // Parse and install the XML into the controller
+        String subsystemXml = getSubsystemXml() ;
+        KernelServices servicesA = super.installInController(subsystemXml) ;
+
+        // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
+        ModelNode result = servicesA.executeOperation(addStackOpWithParams);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
+        // check some random values
 
         // remove the protocol stack
         result = servicesA.executeOperation(removeStackOp);
@@ -158,6 +206,32 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         return addOp ;
     }
 
+    private static ModelNode getProtocolStackAddOperationWithParameters(String stackName) {
+
+        ModelNode addOp = getProtocolStackAddOperation(stackName);
+
+        // add optional TRANSPORT attribute
+        ModelNode transport = new ModelNode();
+        transport.get(ModelKeys.TYPE).set("UDP");
+        addOp.get(ModelKeys.TRANSPORT).set(transport);
+
+        // add optional PROTOCOLS attribute
+        ModelNode protocolsList = new ModelNode();
+
+        ModelNode mping = new ModelNode() ;
+        mping.get(ModelKeys.TYPE).set("MPING");
+        protocolsList.add(mping);
+
+        ModelNode flush = new ModelNode() ;
+        flush.get(ModelKeys.TYPE).set("pbcast.FLUSH");
+        protocolsList.add(flush);
+
+        addOp.get(ModelKeys.PROTOCOLS).set(protocolsList);
+
+        return addOp ;
+    }
+
+
     private static ModelNode getProtocolStackRemoveOperation(String stackName) {
         // create the address of the cache
         PathAddress stackAddr = getProtocolStackAddress(stackName);
@@ -180,6 +254,28 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
         return addOp ;
     }
 
+    private static ModelNode getTransportAddOperationWithProperties(String stackName, String protocolType) {
+
+        ModelNode addOp = getTransportAddOperation(stackName, protocolType);
+
+        // add optional PROPERTIES attribute
+        ModelNode propertyList = new ModelNode();
+
+        ModelNode propA = new ModelNode();
+        propA.add("A","a");
+        propertyList.add(propA);
+
+        ModelNode propB = new ModelNode();
+        propB.add("B","b");
+        propertyList.add(propB);
+
+        addOp.get(ModelKeys.PROPERTIES).set(propertyList);
+
+        return addOp ;
+    }
+
+
+
     private static ModelNode getTransportRemoveOperation(String stackName, String protocolType) {
         // create the address of the cache
         PathAddress transportAddr = getTransportAddress(stackName);
@@ -201,6 +297,27 @@ public class OperationSequencesTestCase extends AbstractSubsystemTest {
 
         return addOp ;
     }
+
+    private static ModelNode getProtocolAddOperationWithProperties(String stackName, String protocolType) {
+
+        ModelNode addOp = getProtocolAddOperation(stackName, protocolType);
+
+        // add optional PROPERTIES attribute
+        ModelNode propertyList = new ModelNode();
+
+        ModelNode propA = new ModelNode();
+        propA.add("A","a");
+        propertyList.add(propA);
+
+        ModelNode propB = new ModelNode();
+        propB.add("B","b");
+        propertyList.add(propB);
+
+        addOp.get(ModelKeys.PROPERTIES).set(propertyList);
+
+        return addOp ;
+    }
+
 
     private static ModelNode getProtocolRemoveOperation(String stackName, String protocolType) {
         // create the address of the cache

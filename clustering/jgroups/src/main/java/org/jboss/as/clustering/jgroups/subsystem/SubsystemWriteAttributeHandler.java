@@ -16,12 +16,12 @@ public class SubsystemWriteAttributeHandler extends ReloadRequiredWriteAttribute
     public static final SubsystemWriteAttributeHandler INSTANCE = new SubsystemWriteAttributeHandler();
 
     private SubsystemWriteAttributeHandler() {
-        super(CommonAttributes.DEFAULT_STACK);
+        super(JGroupsSubsystemRootResource.DEFAULT_STACK);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
 
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        registry.registerReadWriteAttribute(CommonAttributes.DEFAULT_STACK.getName(), null, this, flags);
+        registry.registerReadWriteAttribute(JGroupsSubsystemRootResource.DEFAULT_STACK.getName(), null, this, flags);
     }
 }
