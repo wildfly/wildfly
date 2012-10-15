@@ -60,6 +60,12 @@
         <dependency>
           <groupId>org.jboss</groupId>
           <artifactId>jboss-remote-naming</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jboss.xnio</groupId>
+              <artifactId>xnio-api</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
         <dependency>
           <groupId>javax.mail</groupId>
@@ -102,6 +108,12 @@
         <dependency>
           <groupId>org.jboss.remotingjmx</groupId>
           <artifactId>remoting-jmx</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>org.jboss.xnio</groupId>
+              <artifactId>xnio-nio</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
         <dependency>
           <groupId>org.jboss.remoting3</groupId>
@@ -114,6 +126,14 @@
         <dependency>
           <groupId>org.hornetq</groupId>
           <artifactId>hornetq-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.xnio</groupId>
+          <artifactId>xnio-api</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.xnio</groupId>
+          <artifactId>xnio-nio</artifactId>
         </dependency>
     </dependencies>
 
