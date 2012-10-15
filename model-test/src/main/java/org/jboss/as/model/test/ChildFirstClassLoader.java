@@ -34,31 +34,43 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import org.apache.maven.repository.internal.DefaultServiceLocator;
-import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
-import org.sonatype.aether.AbstractRepositoryListener;
-import org.sonatype.aether.RepositoryEvent;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
-import org.sonatype.aether.connector.wagon.WagonProvider;
-import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
-import org.sonatype.aether.repository.LocalRepository;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.transfer.AbstractTransferListener;
-import org.sonatype.aether.transfer.TransferEvent;
-import org.sonatype.aether.transfer.TransferResource;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.version.GenericVersionScheme;
-import org.sonatype.aether.version.InvalidVersionSpecificationException;
-import org.sonatype.aether.version.VersionScheme;
+import org.eclipse.aether.AbstractRepositoryListener;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositoryEvent;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.connector.file.FileRepositoryConnectorFactory;
+import org.eclipse.aether.connector.wagon.WagonProvider;
+import org.eclipse.aether.connector.wagon.WagonRepositoryConnectorFactory;
+import org.eclipse.aether.impl.ArtifactDescriptorReader;
+import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.eclipse.aether.impl.VersionRangeResolver;
+import org.eclipse.aether.impl.VersionResolver;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.VersionRangeRequest;
+import org.eclipse.aether.resolution.VersionRangeResolutionException;
+import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.resolution.VersionRequest;
+import org.eclipse.aether.resolution.VersionResolutionException;
+import org.eclipse.aether.resolution.VersionResult;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.transfer.AbstractTransferListener;
+import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.transfer.TransferResource;
+import org.eclipse.aether.util.version.GenericVersionScheme;
+import org.eclipse.aether.version.InvalidVersionSpecificationException;
+import org.eclipse.aether.version.VersionScheme;
 
 /**
  * Internal use only.
@@ -68,14 +80,13 @@ import org.sonatype.aether.version.VersionScheme;
 public class ChildFirstClassLoader extends URLClassLoader {
 
     private static final RepositorySystem REPOSITORY_SYSTEM = newRepositorySystem();
-    private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/sonatype/aether/aether-api/" : "\\org\\sonatype\\aether\\aether-api\\";
-
+    private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/eclipse/aether/aether-api/" : "\\org\\eclipse\\aether\\aether-api\\";
     private final ClassLoader parent;
     private final List<Pattern> parentFirst;
     private final List<Pattern> childFirst;
 
 
-    ChildFirstClassLoader(ClassLoader parent, List<Pattern> parentFirst, List<Pattern> childFirst, URL...urls) {
+    ChildFirstClassLoader(ClassLoader parent, List<Pattern> parentFirst, List<Pattern> childFirst, URL... urls) {
         super(urls, parent);
         assert parent != null : "Null parent";
         assert parentFirst != null : "Null parent first";
@@ -190,10 +201,11 @@ public class ChildFirstClassLoader extends URLClassLoader {
         artifactRequest.setArtifact(artifact);
         artifactRequest.addRepository(central);
 
+
         ArtifactResult artifactResult;
         try {
             artifactResult = REPOSITORY_SYSTEM.resolveArtifact(session, artifactRequest);
-        } catch(ArtifactResolutionException e) {
+        } catch (ArtifactResolutionException e) {
             throw new RuntimeException(e);
         }
 
@@ -204,16 +216,16 @@ public class ChildFirstClassLoader extends URLClassLoader {
 
 
     private static RemoteRepository newCentralRepository() {
-        return new RemoteRepository("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/");
+        return new RemoteRepository.Builder("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/").build();
     }
 
     private static RepositorySystemSession newRepositorySystemSession() {
 
-        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
 
         //TODO make local repo more pluggable?
         LocalRepository localRepo = new LocalRepository(determineLocalMavenRepositoryHack());
-        session.setLocalRepositoryManager( REPOSITORY_SYSTEM.newLocalRepositoryManager(localRepo));
+        session.setLocalRepositoryManager(REPOSITORY_SYSTEM.newLocalRepositoryManager(localRepo));
 
         //Copy these from the aether demo if they are nice to have
         session.setTransferListener(new ConsoleTransferListener());
@@ -241,14 +253,37 @@ public class ChildFirstClassLoader extends URLClassLoader {
          * using the prepopulated DefaultServiceLocator, we only need to
          * register the repository connector factories.
          */
+
         DefaultServiceLocator locator = new DefaultServiceLocator();
         locator.addService(RepositoryConnectorFactory.class, FileRepositoryConnectorFactory.class);
         locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
+        locator.setServices(VersionResolver.class, new ManualVersionResolver());
+        locator.setServices(VersionRangeResolver.class, new ManualVersionRangeResolver());
         locator.setServices(WagonProvider.class, new ManualWagonProvider());
-
+        locator.setServices(ArtifactDescriptorReader.class, new ManualArtifactDescriptorReader());
         return locator.getService(RepositorySystem.class);
     }
 
+private static class ManualVersionResolver implements VersionResolver{
+        @Override
+        public VersionResult resolveVersion(RepositorySystemSession session, VersionRequest request) throws VersionResolutionException {
+            VersionResult res = new VersionResult(request);
+            res.setVersion(request.getArtifact().getVersion());//needed because of bug in aether
+            return res;
+        }
+    }
+    private static class ManualVersionRangeResolver implements VersionRangeResolver{
+        @Override
+        public VersionRangeResult resolveVersionRange(RepositorySystemSession session, VersionRangeRequest request) throws VersionRangeResolutionException {
+            return new VersionRangeResult(request);
+        }
+    }
+    private static class ManualArtifactDescriptorReader implements ArtifactDescriptorReader{
+        @Override
+        public ArtifactDescriptorResult readArtifactDescriptor(RepositorySystemSession session, ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
+            return new ArtifactDescriptorResult(request);
+        }
+    }
     private static class ManualWagonProvider implements WagonProvider {
 
         public Wagon lookup(String roleHint) throws Exception {
