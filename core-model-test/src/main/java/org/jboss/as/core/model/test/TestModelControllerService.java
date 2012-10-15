@@ -21,7 +21,6 @@
 */
 package org.jboss.as.core.model.test;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import java.io.File;
@@ -69,7 +68,6 @@ import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.ServerEnvironmentResourceDescription;
@@ -408,23 +406,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         @Override
         public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            //TODO - might have to add some more of these - let's see how it goes without
-            final ContentRepository contentRepository = injectedContentRepository.getValue();
-            final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
-            final ServerEnvironment environment = createStandaloneServerEnvironment();
-            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, runningModeControl);
-
-            ServerControllerModelUtil.initOperations(rootRegistration,
-                    contentRepository,
-                    persister,
-                    environment,
-                    processState,
-                    runningModeControl,
-                    vaultReader,
-                    extensionRegistry,
-                    parallelBoot,
-                    pathManagerService);
-
             //Add the same stuff as is added in ServerService.initModel()
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());

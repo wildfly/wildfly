@@ -63,7 +63,6 @@ import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
-import org.jboss.as.server.ServerControllerModelUtil;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
@@ -295,8 +294,6 @@ public class ServerControllerUnitTestCase {
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             this.rootRegistration = rootRegistration;
-            ServerControllerModelUtil.initOperations(rootRegistration, MockRepository.INSTANCE, persister, environment,
-                    processState, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
         }
 
         @Override
