@@ -137,7 +137,7 @@
         <version.org.apache.xerces>2.9.1-jbossas-2</version.org.apache.xerces>
         <version.org.codehaus.jackson>1.9.2</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
-        <version.org.codehaus.plexus.plexus-utils>2.0.4</version.org.codehaus.plexus.plexus-utils>
+        <version.org.codehaus.plexus.plexus-utils>3.0.6</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate>4.1.6.Final</version.org.hibernate>
@@ -259,7 +259,7 @@
         <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j>1.6.1</version.org.slf4j>
-        <version.org.sonatype.aether>1.13.1</version.org.sonatype.aether>
+        <version.org.eclipse.aether>0.9.0.M1</version.org.eclipse.aether>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>4.2.0</version.osgi>
@@ -3203,6 +3203,24 @@
               <groupId>org.apache.maven</groupId>
               <artifactId>maven-aether-provider</artifactId>
               <version>${version.org.apache.maven}</version>
+               <exclusions>
+                   <exclusion>
+                       <groupId>org.sonatype.aether</groupId>
+                       <artifactId>aether-impl</artifactId>
+                   </exclusion>
+                   <exclusion>
+                       <groupId>org.sonatype.aether</groupId>
+                       <artifactId>aether-spi</artifactId>
+                   </exclusion>
+                   <exclusion>
+                       <groupId>org.sonatype.aether</groupId>
+                       <artifactId>aether-util</artifactId>
+                   </exclusion>
+                   <exclusion>
+                       <groupId>org.sonatype.aether</groupId>
+                       <artifactId>aether-api</artifactId>
+                   </exclusion>
+               </exclusions>
            </dependency>
 
             <dependency>
@@ -6114,47 +6132,47 @@
             </dependency>
 
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-api</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-spi</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-util</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-impl</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-connector-file</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
             </dependency>
-
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-connector-asynchttpclient</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
+                <exclusions>
+                    <!-- use io.netty:netty instead -->
+                    <exclusion>
+                        <groupId>org.jboss.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
-
             <dependency>
-                <groupId>org.sonatype.aether</groupId>
+                <groupId>org.eclipse.aether</groupId>
                 <artifactId>aether-connector-wagon</artifactId>
-                <version>${version.org.sonatype.aether}</version>
+                <version>${version.org.eclipse.aether}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
