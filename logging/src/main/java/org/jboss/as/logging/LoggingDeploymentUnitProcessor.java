@@ -60,6 +60,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
 
     public static final AttachmentKey<LogContext> LOG_CONTEXT_KEY = AttachmentKey.create(LogContext.class);
 
+    private static final String ENCODING = "utf-8";
     private static final String LOGGING_PROFILE = "Logging-Profile";
     private static final String LOG4J_PROPERTIES = "log4j.properties";
     private static final String LOG4J_XML = "log4j.xml";
@@ -163,15 +164,24 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                                 new DOMConfigurator().doConfigure(configStream, org.apache.log4j.JBossLogManagerFacade.getLoggerRepository(logContext));
                             } else {
                                 final Properties properties = new Properties();
-                                properties.load(new InputStreamReader(configStream, "utf-8"));
+                                properties.load(new InputStreamReader(configStream, ENCODING));
                                 new org.apache.log4j.PropertyConfigurator().doConfigure(properties, org.apache.log4j.JBossLogManagerFacade.getLoggerRepository(logContext));
                             }
                         } finally {
                             SecurityActions.setThreadContextClassLoader(current);
                         }
                     } else {
-                        // Load non-log4j types
-                        ConfigurationPersistence.getOrCreateConfigurationPersistence(logContext).configure(configStream);
+                        // Create a properties file
+                        final Properties properties = new Properties();
+                        properties.load(new InputStreamReader(configStream, ENCODING));
+                        // Attempt to see if this is a J.U.L. configuration file
+                        if (isJulConfiguration(properties)) {
+                            LoggingLogger.ROOT_LOGGER.julConfigurationFileFound(configFile.getName());
+                        } else {
+                            // Load non-log4j types
+                            final ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence(logContext);
+                            configurationPersistence.configure(properties);
+                        }
                     }
                 } catch (Exception e) {
                     throw LoggingMessages.MESSAGES.failedToConfigureLogging(e, configFile.getName());
@@ -248,6 +258,28 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         } catch (Exception e) {
             // no-op
         }
+    }
+
+    private static boolean isJulConfiguration(final Properties properties) {
+        // First check for .levels as it's the cheapest
+        if (properties.containsKey(".level")) {
+            return true;
+            // Check the handlers, in JBoss Log Manager they should be handler.HANDLER_NAME=HANDLER_CLASS,
+            // J.U.L. uses fully.qualified.handler.class.property
+        } else if (properties.containsKey("handlers")) {
+            final String prop = properties.getProperty("handlers", "");
+            if (prop != null && !prop.trim().isEmpty()) {
+                final String[] handlers = prop.split("\\s*,\\s*");
+                for (String handler : handlers) {
+                    final String key = String.format("handler.%s", handler);
+                    if (!properties.containsKey(key)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        // Assume it's okay
+        return false;
     }
 
     private static class ConfigFilter implements VirtualFileFilter {
