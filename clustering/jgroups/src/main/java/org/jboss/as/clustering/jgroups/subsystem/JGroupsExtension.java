@@ -69,10 +69,13 @@ public class JGroupsExtension implements Extension {
         AccessController.doPrivileged(action);
     }
 
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JGroupsExtension.class.getClassLoader(), true, false);
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+           StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+           for (String kp : keyPrefix) {
+               prefix.append('.').append(kp);
+           }
+           return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JGroupsExtension.class.getClassLoader(), true, false);
     }
-
 
     /**
      * {@inheritDoc}
@@ -89,6 +92,8 @@ public class JGroupsExtension implements Extension {
 
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResource());
         subsystem.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, JGroupsSubsystemDescribe.INSTANCE, JGroupsSubsystemDescribe.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
+
+        ManagementResourceRegistration stacks = subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
 
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
     }

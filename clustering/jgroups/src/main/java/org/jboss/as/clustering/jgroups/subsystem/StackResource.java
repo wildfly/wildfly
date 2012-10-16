@@ -1,9 +1,12 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelType;
 
 /**
  * Resource description for the addressable resource /subsystem=jgroups/stack=X
@@ -14,33 +17,35 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class StackResource extends SimpleResourceDefinition {
 
     static final PathElement STACK_PATH = PathElement.pathElement(ModelKeys.STACK);
-    static final StackResource INSTANCE = new StackResource() ;
-    static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION = new ExportNativeConfiguration();
+    static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION_HANDLER = new ExportNativeConfiguration();
+
+    private final boolean runtimeRegistration;
 
     // attributes
+    // operations
+    static final OperationDefinition EXPORT_NATIVE_CONFIGURATION = new SimpleOperationDefinitionBuilder(ModelKeys.EXPORT_NATIVE_CONFIGURATION, JGroupsExtension.getResourceDescriptionResolver("stack"))
+            .setReplyType(ModelType.STRING)
+            .build();
 
     // registration
-    private StackResource() {
+    public StackResource(boolean runtimeRegistration) {
         super(STACK_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.STACK),
                 ProtocolStackAdd.INSTANCE,
                 ProtocolStackRemove.INSTANCE);
+        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         // register protocol add and remove
-        resourceRegistration.registerOperationHandler(ModelKeys.ADD_PROTOCOL,
-                ProtocolResource.PROTOCOL_ADD,
-                ProtocolResource.PROTOCOL_ADD_DESCRIPTOR);
-        resourceRegistration.registerOperationHandler(ModelKeys.REMOVE_PROTOCOL,
-                ProtocolResource.PROTOCOL_REMOVE,
-                ProtocolResource.PROTOCOL_REMOVE_DESCRIPTOR);
+        resourceRegistration.registerOperationHandler(ProtocolResource.PROTOCOL_ADD, ProtocolResource.PROTOCOL_ADD_HANDLER);
+        resourceRegistration.registerOperationHandler(ProtocolResource.PROTOCOL_REMOVE, ProtocolResource.PROTOCOL_REMOVE_HANDLER);
         // register export-native-configuration
-        resourceRegistration.registerOperationHandler(ModelKeys.EXPORT_NATIVE_CONFIGURATION,
-                EXPORT_NATIVE_CONFIGURATION,
-                ProtocolResource.EXPORT_NATIVE_CONFIGURATION_DESCRIPTOR);
+        if (runtimeRegistration) {
+            resourceRegistration.registerOperationHandler(StackResource.EXPORT_NATIVE_CONFIGURATION, StackResource.EXPORT_NATIVE_CONFIGURATION_HANDLER);
+        }
     }
 
     @Override
