@@ -21,37 +21,34 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-
-import java.util.Locale;
+import static org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableAddHandler.NAME;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
-public final class JVMEnvironmentVariableRemoveHandler implements OperationStepHandler, DescriptionProvider {
+public final class JVMEnvironmentVariableRemoveHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "remove-item-from-environment-variables-list";
     static final JVMEnvironmentVariableRemoveHandler INSTANCE = new JVMEnvironmentVariableRemoveHandler();
 
-    private final ParameterValidator validator = new StringLengthValidator(1);
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("jvm"))
+        .addParameter(NAME)
+        .build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        validator.validateParameter(NAME, operation.get(NAME));
-
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
 
-        final String name = operation.require(NAME).asString();
+        final String name = NAME.validateOperation(operation).asString();
         ModelNode variables = model.get(JvmAttributes.JVM_ENV_VARIABLES);
         if (variables.isDefined()) {
             final ModelNode values = variables.clone();
@@ -65,13 +62,5 @@ public final class JVMEnvironmentVariableRemoveHandler implements OperationStepH
         }
 
         context.stepCompleted();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JVMDescriptions.getEnvVarRemoveOperation(locale);
     }
 }

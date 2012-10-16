@@ -70,7 +70,7 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
 
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
-        rootRegistration.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE, ValidateAddressOperationHandler.INSTANCE, false);
+        rootRegistration.registerOperationHandler(ValidateAddressOperationHandler.DEFINITION, ValidateAddressOperationHandler.INSTANCE);
 
         // Platform mbeans
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(rootRegistration);

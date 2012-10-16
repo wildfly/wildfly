@@ -780,9 +780,9 @@ public class ParseAndMarshalModelsTestCase {
 
                 // Domain controller
                 LocalDomainControllerAddHandler localDcAddHandler = new MockLocalDomainControllerAddHandler();
-                hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.OPERATION_NAME, localDcAddHandler, localDcAddHandler, false);
+                hostRegistration.registerOperationHandler(LocalDomainControllerAddHandler.DEFINITION, localDcAddHandler, false);
                 RemoteDomainControllerAddHandler remoteDcAddHandler = new MockRemoteDomainControllerAddHandler();
-                hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.OPERATION_NAME, remoteDcAddHandler, remoteDcAddHandler, false);
+                hostRegistration.registerOperationHandler(RemoteDomainControllerAddHandler.DEFINITION, remoteDcAddHandler, false);
 
                 // Jvms
                 final ManagementResourceRegistration jvms = hostRegistration.registerSubModel(JvmResourceDefinition.GLOBAL);

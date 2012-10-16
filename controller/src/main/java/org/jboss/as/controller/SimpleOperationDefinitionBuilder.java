@@ -59,6 +59,10 @@ public class SimpleOperationDefinitionBuilder {
         if (attributeResolver == null) {
             attributeResolver = resolver;
         }
+        return internalBuild(resolver, attributeResolver);
+    }
+
+    protected SimpleOperationDefinition internalBuild(ResourceDescriptionResolver resolver, ResourceDescriptionResolver attributeResolver) {
         return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
 

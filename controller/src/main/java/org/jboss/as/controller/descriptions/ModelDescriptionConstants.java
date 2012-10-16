@@ -53,6 +53,7 @@ public class ModelDescriptionConstants {
     public static final String AUTHORIZATION = "authorization";
     public static final String AUTO_START = "auto-start";
     public static final String BASE_DN = "base-dn";
+    public static final String BLOCKING = "blocking";
     public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
     public static final String CALLER_TYPE = "caller-type";

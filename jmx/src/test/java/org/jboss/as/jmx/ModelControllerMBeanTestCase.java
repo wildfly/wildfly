@@ -1211,7 +1211,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
             rootResource.getModel().get(LAUNCH_TYPE).set(launchType);
-            rootRegistration.registerOperationHandler(ResolveExpressionHandler.OPERATION_NAME, ResolveExpressionHandler.INSTANCE, ResolveExpressionHandler.INSTANCE);
+            rootRegistration.registerOperationHandler(ResolveExpressionHandler.DEFINITION, ResolveExpressionHandler.INSTANCE);
         }
 
         @Override

@@ -70,7 +70,6 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -251,26 +250,24 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(SnapshotTakeHandler.DEFINITION, snapshotTake);
 
             final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
-            resourceRegistration.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper, false);
+            resourceRegistration.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper);
         } else {
             DeploymentUploadURLHandler.registerSlave(resourceRegistration);
             DeploymentUploadStreamAttachmentHandler.registerSlave(resourceRegistration);
             DeploymentUploadBytesHandler.registerSlave(resourceRegistration);
 
             final ApplyExtensionsHandler aexh = new ApplyExtensionsHandler(extensionRegistry, hostControllerInfo, ignoredDomainResourceRegistry);
-            resourceRegistration.registerOperationHandler(ApplyExtensionsHandler.OPERATION_NAME, aexh, aexh, false, EntryType.PRIVATE);
+            resourceRegistration.registerOperationHandler(ApplyExtensionsHandler.DEFINITION, aexh);
 
             ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(fileRepository,
                     contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
-            resourceRegistration.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.OPERATION_NAME, armdmh, armdmh, false, OperationEntry.EntryType.PRIVATE);
+            resourceRegistration.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.DEFINITION, armdmh);
         }
         resourceRegistration.registerOperationHandler(DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_DEFINITION, isMaster ? new DeploymentFullReplaceHandler(contentRepo) : new DeploymentFullReplaceHandler(fileRepository));
 
-        resourceRegistration.registerOperationHandler(ValidateAddressOperationHandler.OPERATION_NAME, ValidateAddressOperationHandler.INSTANCE,
-                ValidateAddressOperationHandler.INSTANCE, false, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        resourceRegistration.registerOperationHandler(ValidateAddressOperationHandler.DEFINITION, ValidateAddressOperationHandler.INSTANCE);
 
-        resourceRegistration.registerOperationHandler(ResolveExpressionOnDomainHandler.OPERATION_NAME, ResolveExpressionOnDomainHandler.INSTANCE,
-                ResolveExpressionOnDomainHandler.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS));
+        resourceRegistration.registerOperationHandler(ResolveExpressionOnDomainHandler.DEFINITION, ResolveExpressionOnDomainHandler.INSTANCE);
 
         DomainServerLifecycleHandlers.registerDomainHandlers(resourceRegistration);
     }

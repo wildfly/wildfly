@@ -25,15 +25,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PrivateOperationDefinitionBuilder;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostRunningModeControl;
@@ -47,9 +47,11 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class StartServersHandler implements OperationStepHandler, DescriptionProvider {
+public class StartServersHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "start-servers";
+
+    public static final OperationDefinition DEFINITION = new PrivateOperationDefinitionBuilder(OPERATION_NAME).build();
 
     private final ServerInventory serverInventory;
     private final HostControllerEnvironment hostControllerEnvironment;
@@ -99,12 +101,6 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
         }, OperationContext.Stage.RUNTIME);
 
         context.stepCompleted();
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        // private operation does not need description
-        return new ModelNode();
     }
 
     private void cleanStartServers(final ModelNode servers, final ModelNode domainModel){
