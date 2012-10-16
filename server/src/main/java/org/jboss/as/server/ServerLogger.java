@@ -22,6 +22,10 @@
 
 package org.jboss.as.server;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import java.net.URISyntaxException;
 import java.util.jar.Attributes;
 
@@ -32,16 +36,13 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.module.ExtensionListEntry;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.modules.ModuleIdentifier;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
+import org.jboss.msc.service.ServiceController.Mode;
 
 /**
  * This module is using message IDs in the range 15700-15999 and 18700-18799.
@@ -398,6 +399,6 @@ public interface ServerLogger extends BasicLogger {
     void reportAdminOnlyMissingDeploymentOverlayContent(String contentHash, String deploymentName, String contentName);
 
     @LogMessage(level = Logger.Level.INFO)
-    @Message(id = 15970, value = "Deferred module phase for: %s")
-    void infoDeferredModulePhase(String deploymentName);
+    @Message(id = 15970, value = "Defer %s for %s making it %s")
+    void infoDeferDeploymentPhase(Phase phase, String deploymentName, Mode mode);
 }

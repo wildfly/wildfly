@@ -32,7 +32,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleActivator;
 import org.jboss.as.test.integration.osgi.xservice.bundle.SimpleService;
 import org.jboss.as.test.osgi.FrameworkUtils;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

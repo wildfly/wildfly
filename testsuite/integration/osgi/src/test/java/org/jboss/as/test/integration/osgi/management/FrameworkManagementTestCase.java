@@ -41,7 +41,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.dmr.ModelNode;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;

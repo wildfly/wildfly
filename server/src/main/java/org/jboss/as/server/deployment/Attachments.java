@@ -227,7 +227,7 @@ public final class Attachments {
     /**
      * The flag that indicates that the respective phase should be deferred.
      */
-    public static final AttachmentKey<Boolean> DEFERRED_MODULE_PHASE = AttachmentKey.create(Boolean.class);
+    public static final AttachmentKey<AttachmentList<String>> DEFERRED_MODULES = AttachmentKey.createList(String.class);
     public static final AttachmentKey<AtomicInteger> DEFERRED_ACTIVATION_COUNT = AttachmentKey.create(AtomicInteger.class);
 
     //

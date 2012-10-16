@@ -33,14 +33,13 @@ import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.resolver.XBundle;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -81,10 +80,6 @@ public class DeferredResolveTestCase {
 
     @Inject
     public PackageAdmin packageAdmin;
-
-    enum Phase {
-        FIRST_MODULE_USE, INSTALL
-    }
 
     @Deployment
     public static Archive<?> getDeployment() {
@@ -266,18 +261,34 @@ public class DeferredResolveTestCase {
     }
 
     @Test
-    public void testAggregateWithOneDeferredModule() throws Exception {
+    public void testAggregateWithDeferredModule() throws Exception {
+        deployer.deploy(DEFERRED_AGGREGATE_A);
         try {
-            deployer.deploy(DEFERRED_AGGREGATE_A);
-            Assert.fail("RuntimeException expected");
-        } catch (RuntimeException e) {
-            // expected
+            Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];
+            Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
+            deployer.deploy(DEFERRED_BUNDLE_B);
+            try {
+                Bundle bundleB = packageAdmin.getBundles(DEFERRED_BUNDLE_B, null)[0];
+                Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundleA.getState());
+                Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
+
+                packageAdmin.resolveBundles(new Bundle[] { bundleA });
+
+                Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundleA.getState());
+                Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleB.getState());
+
+                bundleA.start();
+                Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundleA.getState());
+            } finally {
+                deployer.undeploy(DEFERRED_BUNDLE_B);
+            }
+        } finally {
+            deployer.undeploy(DEFERRED_AGGREGATE_A);
         }
     }
 
     @Test
-    @Ignore
-    public void testAggregateWithOneDeferredModuleAndOneGoodModule() throws Exception {
+    public void testAggregateWithUndeferredModule() throws Exception {
         deployer.deploy(DEFERRED_AGGREGATE_B);
         try {
             Bundle bundleA = packageAdmin.getBundles(DEFERRED_BUNDLE_A, null)[0];

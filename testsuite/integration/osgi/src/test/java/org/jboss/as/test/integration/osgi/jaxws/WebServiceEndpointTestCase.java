@@ -40,7 +40,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
 import org.jboss.as.test.integration.osgi.jaxws.bundle.Endpoint;
 import org.jboss.as.test.integration.osgi.jaxws.bundle.EndpointImpl;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;

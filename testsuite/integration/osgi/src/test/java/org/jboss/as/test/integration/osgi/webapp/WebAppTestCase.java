@@ -40,7 +40,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
-import org.jboss.osgi.spi.OSGiManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
