@@ -39,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.METADATA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT;
@@ -116,6 +117,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author Thomas.Diesler@jboss.com
  */
 public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XMLElementWriter<ModelMarshallingContext> {
 
@@ -1045,6 +1047,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case FS_EXPLODED:
                         parseFSBaseType(reader, deploymentAdd, false);
                         break;
+                    case PROPERTIES:
+                        parseProperties(reader, deploymentAdd, expectedNs);
+                        break;
                     default:
                         throw unexpectedElement(reader);
                 }
@@ -1058,6 +1063,46 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
+    private void parseProperties(XMLExtendedStreamReader reader, ModelNode parent, Namespace expectedNs) throws XMLStreamException {
+        final ModelNode metadataNode = parent.get(METADATA).add();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY:
+                    String name = null;
+                    String value = null;
+                    final int count = reader.getAttributeCount();
+                    for (int i = 0; i < count; i++) {
+                        if (!isNoNamespaceAttribute(reader, i)) {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case NAME:
+                                name = reader.getAttributeValue(i);
+                                break;
+                            case VALUE:
+                                value = reader.getAttributeValue(i);
+                                break;
+                            default:
+                                throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                    if (name == null)
+                        throw missingRequired(reader, Collections.singleton(Attribute.NAME.getLocalName()));
+                    if (value == null)
+                        throw missingRequired(reader, Collections.singleton(Attribute.VALUE.getLocalName()));
+                    metadataNode.get(name).set(value);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+
+        // Handle elements
+        requireNoContent(reader);
+    }
 
     protected void parseDeploymentOverlays(final XMLExtendedStreamReader reader, final Namespace namespace, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
         requireNoAttributes(reader);

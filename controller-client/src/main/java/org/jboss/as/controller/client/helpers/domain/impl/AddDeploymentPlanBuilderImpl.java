@@ -23,7 +23,12 @@
 package org.jboss.as.controller.client.helpers.domain.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_START_POLICY;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.controller.client.helpers.ClientConstants.StartPolicy;
 import org.jboss.as.controller.client.helpers.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
@@ -59,6 +64,20 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
     @Override
     public ReplaceDeploymentPlanBuilder andReplace(String toReplace) {
         return replace(newContentKey, toReplace);
+    }
+
+    @Override
+    public AddDeploymentPlanBuilderImpl addMetadata(Map<String, Object> userdata) {
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan().addMetadata(userdata);
+        return new AddDeploymentPlanBuilderImpl(this, currentSet);
+    }
+
+    @Override
+    public AddDeploymentPlanBuilder andNoStart() {
+        Map<String, Object> userdata = new HashMap<String, Object>(getCurrentDeploymentSetPlan().getMetadata().getUserdata());
+        userdata.put(DEPLOYMENT_METADATA_START_POLICY, StartPolicy.DEFERRED.toString());
+        DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan().addMetadata(userdata);
+        return new AddDeploymentPlanBuilderImpl(this, currentSet);
     }
 
     @Override

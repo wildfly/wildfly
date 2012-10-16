@@ -22,10 +22,14 @@
 
 package org.jboss.as.osgi.deployment;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_METADATA_START_POLICY;
+
 import java.util.List;
 
 import javax.annotation.ManagedBean;
 
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.client.helpers.ClientConstants.StartPolicy;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.osgi.OSGiConstants;
@@ -40,9 +44,7 @@ import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.DotName;
-import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
@@ -76,36 +78,9 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         if (deployment == null && info != null) {
             deployment = DeploymentFactory.createDeployment(info);
             deployment.addAttachment(BundleInfo.class, info);
+            StartPolicy startPolicy = getStartPolicy(depUnit);
             OSGiMetaData metadata = info.getOSGiMetadata();
-            deployment.setAutoStart(!metadata.isFragment());
-
-            // Set the start level and prevent autostart if greater than the Framwork startlevel
-            AnnotationInstance slAware = getAnnotation(depUnit, "org.jboss.arquillian.osgi.StartLevelAware");
-            if (slAware != null) {
-                MethodInfo slTarget = (MethodInfo) slAware.target();
-                for (AnnotationInstance anDeployment : getAnnotations(depUnit, "org.jboss.arquillian.container.test.api.Deployment")) {
-                    AnnotationValue namevalue = anDeployment.value("name");
-                    Object deploymentName = namevalue != null ? namevalue.value() : null;
-                    if (slTarget == anDeployment.target() && depUnit.getName().equals(deploymentName)) {
-                        int startLevel = slAware.value("startLevel").asInt();
-                        deployment.setStartLevel(startLevel);
-                        deployment.setAutoStart(false);
-                    }
-                }
-            }
-
-            // Prevent autostart for marked deployments
-            AnnotationInstance marker = getAnnotation(depUnit, "org.jboss.as.arquillian.api.DeploymentMarker");
-            if (marker != null) {
-                AnnotationValue value = marker.value("autoStart");
-                if (value != null && deployment.isAutoStart()) {
-                    deployment.setAutoStart(value.asBoolean());
-                }
-                value = marker.value("startLevel");
-                if (value != null && deployment.getStartLevel() == null) {
-                    deployment.setStartLevel(value.asInt());
-                }
-            }
+            deployment.setAutoStart(startPolicy == StartPolicy.AUTO && !metadata.isFragment());
         }
 
         // Attach the deployment
@@ -131,13 +106,18 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private List<AnnotationInstance> getAnnotations(DeploymentUnit depUnit, String className) {
+    @Override
+    public void undeploy(final DeploymentUnit depUnit) {
+        depUnit.removeAttachment(OSGiConstants.DEPLOYMENT_KEY);
+    }
+
+    static List<AnnotationInstance> getAnnotations(DeploymentUnit depUnit, String className) {
         CompositeIndex index = depUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         List<AnnotationInstance> annotations = index.getAnnotations(DotName.createSimple(className));
         return annotations;
     }
 
-    private AnnotationInstance getAnnotation(DeploymentUnit depUnit, String className) {
+    static AnnotationInstance getAnnotation(DeploymentUnit depUnit, String className) {
         List<AnnotationInstance> annotations = getAnnotations(depUnit, className);
         return annotations.size() == 1 ? annotations.get(0) : null;
     }
@@ -150,8 +130,16 @@ public class BundleDeploymentProcessor implements DeploymentUnitProcessor {
         return isWar || isEjb || isCDI || isJPA;
     }
 
-    @Override
-    public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.DEPLOYMENT_KEY);
+    private DeploymentMetadata getDeploymentMetadata(final DeploymentUnit depUnit) {
+        DeploymentMetadata metadata = depUnit.getAttachment(Attachments.DEPLOYMENT_METADATA);
+        if (metadata == null && depUnit.getParent() != null) {
+            metadata = depUnit.getParent().getAttachment(Attachments.DEPLOYMENT_METADATA);
+        }
+        return metadata;
+    }
+
+    private StartPolicy getStartPolicy(final DeploymentUnit depUnit) {
+        DeploymentMetadata metadata = getDeploymentMetadata(depUnit);
+        return StartPolicy.parse((String) metadata.getUserdata().get(DEPLOYMENT_METADATA_START_POLICY));
     }
 }

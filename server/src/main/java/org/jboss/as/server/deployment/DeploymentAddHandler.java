@@ -44,6 +44,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.client.DeploymentMetadata;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
@@ -123,6 +126,11 @@ public class DeploymentAddHandler implements OperationStepHandler {
         }
 
         newModel.get(CONTENT_ALL.getName()).set(content);
+
+        ModelNode metadataModel = operation.get(ModelDescriptionConstants.METADATA);
+        if (metadataModel.isDefined()) {
+            context.attach(OperationAttachments.DEPLOYMENT_METADATA, new DeploymentMetadata(metadataModel));
+        }
 
         if (ENABLED.resolveModelAttribute(context, newModel).asBoolean() && context.isNormalServer()) {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);

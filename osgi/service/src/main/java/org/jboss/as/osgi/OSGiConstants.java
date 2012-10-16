@@ -34,6 +34,7 @@ import org.jboss.osgi.resolver.XEnvironment;
 import org.jboss.osgi.resolver.XResolver;
 import org.jboss.osgi.spi.BundleInfo;
 import org.osgi.framework.BundleContext;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * OSGi Subsystem constants
@@ -66,7 +67,10 @@ public interface OSGiConstants {
     /** Attachment key for the {@link XResolver}. */
     AttachmentKey<XResolver> RESOLVER_KEY = AttachmentKey.create(XResolver.class);
 
-    /** Attachment key for the OSGi system context. */
+    /** Attachment key for the {@link StartLevel}. */
+    AttachmentKey<StartLevel> START_LEVEL_KEY = AttachmentKey.create(StartLevel.class);
+
+    /** Attachment key for the {@link BundleContext}. */
     AttachmentKey<BundleContext> SYSTEM_CONTEXT_KEY = AttachmentKey.create(BundleContext.class);
 
     /** The {@link XRepository} service */
