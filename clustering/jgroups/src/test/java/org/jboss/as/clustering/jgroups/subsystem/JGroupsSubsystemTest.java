@@ -76,7 +76,8 @@ public class JGroupsSubsystemTest extends ClusteringSubsystemTest {
     @Test
     public void testProtocolOrdering() throws Exception {
         String xml = getSubsystemXml();
-        KernelServices kernel = super.installInController(xml);
+        // KernelServices kernel = super.installInController(xml);
+        KernelServices kernel = super.createKernelServicesBuilder(null).setSubsystemXml(xml).build();
 
         ModelNode model = kernel.readWholeModel().require("subsystem").require("jgroups").require("stack").require("maximal");
         List<ModelNode> protocols = model.require("protocols").asList();
