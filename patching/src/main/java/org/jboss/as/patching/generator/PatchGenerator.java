@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
@@ -50,6 +52,9 @@ import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.version.ProductConfig;
+import org.jboss.as.version.Usage;
+import org.jboss.modules.Module;
 
 /**
  * Generates a patch archive.
@@ -61,7 +66,9 @@ public class PatchGenerator {
     public static void main(String[] args) {
         try {
             PatchGenerator patchGenerator = parse(args);
-            patchGenerator.process();
+            if (patchGenerator != null) {
+                patchGenerator.process();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -629,36 +636,115 @@ public class PatchGenerator {
     }
 
     private static PatchGenerator parse(String[] args) {
-        // TODO actually implement
-        File patchConfig = new File(args[0]);
-        File oldFile = new File(args[1]);
-        File newFile = new File(args[2]);
-        File patchFile = new File(args[3]);
+
+        File patchConfig = null;
+        File oldFile = null;
+        File newFile = null;
+        File patchFile = null;
+
+        Set<String> required = new HashSet<String>();
+        Collections.addAll(required, "--applies-to-dist", "--output-file", "--patch-config", "--updated-dist");
+        final int argsLength = args.length;
+        for (int i = 0; i < argsLength; i++) {
+            final String arg = args[i];
+            try {
+                if ("--version".equals(arg) || "-v".equals(arg)
+                        || "-version".equals(arg) || "-V".equals(arg)) {
+                    ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty("jboss.home.dir"));
+                    System.out.println(productConfig.getPrettyVersionString());
+                    return null;
+                } else if ("--help".equals(arg) || "-h".equals(arg) || "-H".equals(arg)) {
+                    usage();
+                    return null;
+                } else if (arg.startsWith("--applies-to-dist=")) {
+                    String val = arg.substring("--applies-to-dist=".length());
+                    oldFile = new File(val);
+                    if (!oldFile.exists()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileDoesNotExist(arg));
+                        usage();
+                        return null;
+                    } else if (!oldFile.isDirectory()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileIsNotADirectory(arg));
+                        usage();
+                        return null;
+                    }
+                    required.remove("--applies-to-dist");
+                } else if (arg.startsWith("--updated-dist=")) {
+                    String val = arg.substring("--updated-dist=".length());
+                    newFile = new File(val);
+                    if (!newFile.exists()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileDoesNotExist(arg));
+                        usage();
+                        return null;
+                    } else if (!newFile.isDirectory()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileIsNotADirectory(arg));
+                        usage();
+                        return null;
+                    }
+                    required.remove("--updated-dist");
+                } else if (arg.startsWith("--patch-config=")) {
+                    String val = arg.substring("--patch-config=".length());
+                    patchConfig = new File(val);
+                    if (!patchConfig.exists()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileDoesNotExist(arg));
+                        usage();
+                        return null;
+                    } else if (patchConfig.isDirectory()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileIsADirectory(arg));
+                        usage();
+                        return null;
+                    }
+                    required.remove("--patch-config");
+                } else if (arg.startsWith("--output-file=")) {
+                    String val = arg.substring("--output-file=".length());
+                    patchFile = new File(val);
+                    if (patchFile.exists() && patchFile.isDirectory()) {
+                        System.err.printf(PatchMessages.MESSAGES.fileIsADirectory(arg));
+                        usage();
+                        return null;
+                    }
+                    required.remove("--output-file");
+                }
+            } catch (IndexOutOfBoundsException e) {
+                System.err.printf(PatchMessages.MESSAGES.argumentExpected(arg));
+                usage();
+                return null;
+            }
+        }
+
+        if (!required.isEmpty()) {
+            System.err.printf(PatchMessages.MESSAGES.missingRequiredArgs(required));
+            usage();
+            return null;
+        }
+
         return new PatchGenerator(patchConfig, oldFile, newFile, patchFile);
     }
 
-    private static class HashedContentItem implements Comparable<HashedContentItem> {
-        private final DistributionContentItem item;
-        private final byte[] hash;
+    private static void usage() {
 
-        private HashedContentItem(DistributionContentItem item, byte[] hash) {
-            this.item = item;
-            this.hash = hash;
-        }
+        Usage usage = new Usage();
 
-        @Override
-        public int compareTo(HashedContentItem o) {
-            return item.compareTo(o.item);
-        }
+        usage.addArguments("--applies-to-dist=<file>");
+        usage.addInstruction(PatchMessages.MESSAGES.argAppliesToDist());
 
-        @Override
-        public int hashCode() {
-            return item.hashCode();
-        }
+        usage.addArguments("-h", "--help");
+        usage.addInstruction(PatchMessages.MESSAGES.argHelp());
 
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof HashedContentItem && item.equals(((HashedContentItem) obj).item);
-        }
+        usage.addArguments("--output-file=<file>");
+        usage.addInstruction(PatchMessages.MESSAGES.argOutputFile());
+
+        usage.addArguments("--patch-config=<file>");
+        usage.addInstruction(PatchMessages.MESSAGES.argPatchConfig());
+
+        usage.addArguments("--updated-dist=<file>");
+        usage.addInstruction(PatchMessages.MESSAGES.argUpdatedDist());
+
+        usage.addArguments("-v", "--version");
+        usage.addInstruction(PatchMessages.MESSAGES.argVersion());
+
+        String headline = PatchMessages.MESSAGES.patchGeneratorUsageHeadline("TODO"); // TODO
+        System.out.print(usage.usage(headline));
+
     }
 }

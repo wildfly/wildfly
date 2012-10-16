@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,36 +26,40 @@ import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 import java.io.PrintStream;
 
-import org.jboss.as.process.CommandLineArgumentUsage;
 import org.jboss.as.process.CommandLineConstants;
+import org.jboss.as.version.Usage;
 
-public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
-    public static void init(){
+public class CommandLineArgumentUsageImpl {
 
-        addArguments(CommandLineConstants.APPCLIENT_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argAppClientConfig());
+    private static Usage getUsage() {
+        final Usage usage = new Usage();
+        usage.addArguments(CommandLineConstants.APPCLIENT_CONFIG + "=<config>");
+        usage.addInstruction(MESSAGES.argAppClientConfig());
 
-        addArguments( CommandLineConstants.SHORT_HELP, CommandLineConstants.HELP);
-        instructions.add(MESSAGES.argHelp());
+        usage.addArguments(CommandLineConstants.SHORT_HELP, CommandLineConstants.HELP);
+        usage.addInstruction(MESSAGES.argHelp());
 
-        addArguments(CommandLineConstants.HOST + "=<url>", CommandLineConstants.SHORT_HOST + "=<url>");
-        instructions.add(MESSAGES.argHost());
+        usage.addArguments(CommandLineConstants.HOST + "=<url>", CommandLineConstants.SHORT_HOST + "=<url>");
+        usage.addInstruction(MESSAGES.argHost());
 
-        addArguments(CommandLineConstants.SHORT_PROPERTIES + "=<url>", CommandLineConstants.PROPERTIES + "=<url>");
-        instructions.add(MESSAGES.argProperties());
+        usage.addArguments(CommandLineConstants.SHORT_PROPERTIES + "=<url>", CommandLineConstants.PROPERTIES + "=<url>");
+        usage.addInstruction(MESSAGES.argProperties());
 
-        addArguments(CommandLineConstants.CONNECTION_PROPERTIES + "=<url>");
-        instructions.add(MESSAGES.argConnectionProperties());
+        usage.addArguments(CommandLineConstants.CONNECTION_PROPERTIES + "=<url>");
+        usage.addInstruction(MESSAGES.argConnectionProperties());
 
-        addArguments(CommandLineConstants.SYS_PROP + "<name>[=value]");
-        instructions.add(MESSAGES.argSystemProperty());
+        usage.addArguments(CommandLineConstants.SYS_PROP + "<name>[=value]");
+        usage.addInstruction(MESSAGES.argSystemProperty());
 
-        addArguments(CommandLineConstants.SHORT_VERSION, CommandLineConstants.VERSION);
-        instructions.add(MESSAGES.argVersion());
+        usage.addArguments(CommandLineConstants.SHORT_VERSION, CommandLineConstants.VERSION);
+        usage.addInstruction(MESSAGES.argVersion());
+
+        return usage;
     }
 
     public static void printUsage(final PrintStream out) {
-        init();
-        out.print(usage("appclient"));
+        final Usage usage = getUsage();
+        final String headline = usage.getDefaultUsageHeadline("appclient");
+        out.print(usage.usage(headline));
     }
 }

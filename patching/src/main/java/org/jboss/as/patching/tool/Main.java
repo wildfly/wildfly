@@ -35,6 +35,7 @@ import org.jboss.modules.ModuleLoader;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,7 +117,7 @@ public class Main {
         final File jbossHome = home == null ? new File(".") : new File(home);
         final DirectoryStructure structure = DirectoryStructure.createDefault(jbossHome.getAbsoluteFile());
         final ModuleLoader loader = ModuleLoader.forClass(Main.class);
-        final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath());
+        final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
         final PatchInfo info = LocalPatchInfo.load(config, structure);
 
         // Debug information
