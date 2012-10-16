@@ -27,7 +27,7 @@ public class JGroupsSubsystemRootResource extends SimpleResourceDefinition {
     // registration
     JGroupsSubsystemRootResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
-                JGroupsExtension.getResourceDescriptionResolver(JGroupsExtension.SUBSYSTEM_NAME),
+                JGroupsExtension.getResourceDescriptionResolver(),
                 JGroupsSubsystemAdd.INSTANCE,
                 JGroupsSubsystemRemove.INSTANCE);
     }
@@ -46,8 +46,6 @@ public class JGroupsSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(StackResource.INSTANCE);
-
     }
 
 }

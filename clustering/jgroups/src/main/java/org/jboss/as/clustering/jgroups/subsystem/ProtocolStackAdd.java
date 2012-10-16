@@ -92,11 +92,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
 
         ModelNode stack = new ModelNode();
         stack.get(ModelDescriptionConstants.OPERATION_NAME).set(ADD);
-        stack.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString("stack.add"));
+        stack.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.stack.add"));
 
         // optional TRANSPORT and PROTOCOLS parameters (to permit configuring a stack from add())
-        TransportResource.TRANSPORT.addOperationParameterDescription(resources,"stack.add", stack);
-        ProtocolResource.PROTOCOLS.addOperationParameterDescription(resources, "stack.add" , stack);
+        TransportResource.TRANSPORT.addOperationParameterDescription(resources,"jgroups.stack.add", stack);
+        ProtocolResource.PROTOCOLS.addOperationParameterDescription(resources, "jgroups.stack.add" , stack);
 
         return stack ;
     }
@@ -154,7 +154,7 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
                 addProtocol.get(OP_ADDR).set(protocolAddress);
 
                 // execute the operation using the transport handler
-                context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD, OperationContext.Stage.IMMEDIATE);
+                context.addStep(addProtocol, ProtocolResource.PROTOCOL_ADD_HANDLER, OperationContext.Stage.IMMEDIATE);
             }
         }
     }
