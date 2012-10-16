@@ -31,6 +31,7 @@ import org.jboss.logging.annotations.Cause;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 16840 - 16899
@@ -41,6 +42,39 @@ import java.util.List;
 public interface PatchMessages {
 
     PatchMessages MESSAGES = Messages.getBundle(PatchMessages.class);
+
+    @Message(id = Message.NONE, value = "Filesystem path of a pristine unzip of the distribution of the version of the " +
+            "software to which the generated patch applies")
+    String argAppliesToDist();
+
+    /**
+     * Instructions for the {@code -h} and {@code --help} command line arguments.
+     *
+     * @return the instructions.
+     */
+    @Message(id = Message.NONE, value = "Display this message and exit")
+    String argHelp();
+
+    @Message(id = Message.NONE, value = "Filesystem location to which the generated patch file should be written")
+    String argOutputFile();
+
+    @Message(id = Message.NONE, value = "Filesystem path of the patch generation configuration file to use")
+    String argPatchConfig();
+
+    @Message(id = Message.NONE, value = "Filesystem path of a pristine unzip of a distribution of software which " +
+            "contains the changes that should be incorporated in the patch")
+    String argUpdatedDist();
+
+    @Message(id = Message.NONE, value = "Usage: %s [args...]%nwhere args include:")
+    String patchGeneratorUsageHeadline(String todo);
+
+    /**
+     * Instructions for {@code --version} command line argument.
+     *
+     * @return the instructions.
+     */
+    @Message(id = Message.NONE, value = "Print version and exit")
+    String argVersion();
 
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
     PatchingException doesNotApply(List<String> appliesTo, String version);
@@ -56,4 +90,26 @@ public interface PatchMessages {
 
     @Message(id = 16845, value = "Failed to show history of patches")
     OperationFailedException failedToShowHistory(@Cause Throwable cause);
+
+    /**
+     * A message indicating the argument, represented by the {@code arg} parameter, expected an additional argument.
+     *
+     * @param arg the argument that expects an additional argument.
+     *
+     * @return the message.
+     */
+    @Message(id = 16846, value = "Argument expected for option %s")
+    String argumentExpected(String arg);
+
+    @Message(id = 16847, value = "Missing required argument(s): %s")
+    String missingRequiredArgs(Set<String> missing);
+
+    @Message(id = 16848, value = "File at path specified by argument %s does not exist")
+    String fileDoesNotExist(String arg);
+
+    @Message(id = 16849, value = "File at path specified by argument %s is not a directory")
+    String fileIsNotADirectory(String arg);
+
+    @Message(id = 16850, value = "File at path specified by argument %s is a directory")
+    String fileIsADirectory(String arg);
 }

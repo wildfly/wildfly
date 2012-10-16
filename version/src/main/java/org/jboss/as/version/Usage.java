@@ -20,33 +20,51 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.process;
+package org.jboss.as.version;
 
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
-
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-public abstract class CommandLineArgumentUsage {
+public final class Usage {
 
-    private static String USAGE;
     private static final String NEW_LINE = String.format("%n");
 
-    private static List<List<String>> arguments = new ArrayList<List<String>>();
+    private final List<List<String>> arguments = new ArrayList<List<String>>();
+    private final List<String> instructions = new ArrayList<String>();
 
-    protected static void addArguments( String... args){
+    public String getDefaultUsageHeadline(String executableBaseName) {
+        boolean isWindows = (getSystemProperty("os.name")).toLowerCase(Locale.ENGLISH).contains("windows");
+        String executableName = isWindows ? executableBaseName : executableBaseName + ".sh";
+        return UsageMessages.MESSAGES.argUsage(executableName);
+    }
+
+    public void addArguments(String... args){
         ArrayList<String> tempArguments = new ArrayList<String>();
-        for( String arg : args ){
+        for (String arg : args) {
             tempArguments.add(arg);
         }
         arguments.add(tempArguments);
     }
 
-    protected static List<String> instructions = new ArrayList<String>();
+    public void addInstruction(String instruction){
+        instructions.add(instruction);
+    }
 
-    private static String getCommand(int i){
+    public String usage(String headline) {
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append(NEW_LINE).append(UsageMessages.MESSAGES.argUsage(headline)).append(NEW_LINE);
+
+        for (int i = 0; i < arguments.size(); i++) {
+            sb.append(getCommand(i)).append(NEW_LINE);
+        }
+        return sb.toString();
+    }
+
+    private String getCommand(int i){
         // Segment Instructions
         final List<String> segmentedInstructions = new ArrayList<String>();
         segmentInstructions(instructions.get(i), segmentedInstructions);
@@ -59,9 +77,9 @@ public abstract class CommandLineArgumentUsage {
         StringBuilder output = new StringBuilder(String.format("    %-35s %s", segmentedArguments.remove(0), segmentedInstructions.remove(0)));
         output.append(NEW_LINE);
 
-        if( segmentedArguments.size() <= segmentedInstructions.size()){
+        if (segmentedArguments.size() <= segmentedInstructions.size()) {
             int count = 0;
-            for( String arg : segmentedArguments){
+            for (String arg : segmentedArguments) {
                 output.append(String.format("         %-30s %s", arg, segmentedInstructions.remove(count)));
                 output.append(NEW_LINE);
                 count++;
@@ -71,15 +89,15 @@ public abstract class CommandLineArgumentUsage {
                 output.append(String.format("%-40s%s", " ", instruction));
                 output.append(NEW_LINE);
             }
-        }else{
+        } else {
             int count = 0;
-            for ( String instruction : segmentedInstructions ){
+            for (String instruction : segmentedInstructions ) {
                 output.append(String.format("         %-30s %s", segmentedArguments.remove(count), instruction));
                 output.append(NEW_LINE);
                 count++;
             }
 
-            for( String arg : segmentedArguments ){
+            for (String arg : segmentedArguments ) {
                 output.append(String.format("         %-30s", arg));
                 output.append(NEW_LINE);
             }
@@ -89,30 +107,24 @@ public abstract class CommandLineArgumentUsage {
         return output.toString();
     }
 
-    private static void segmentArguments(List<String> input, List<String> output, int depth){
-        int width = 30;
+    private static void segmentArguments(List<String> input, List<String> output, int depth) {
+        int width = depth == 0 ? 35 : 30;
 
-        if( depth == 0 ){
-            width = 35;
-        }
-
-        if( input.size() == 0 ){
-
-        }else{
+        if (input.size() > 0) {
             StringBuilder argumentsString = new StringBuilder();
-            for( int i = 0; i < input.size(); ){
+            for (int i = 0; i < input.size();) {
                 // Trim in case an argument is too large for the width. Shouldn't happen.
-                if( input.get(0).length() > width ){
+                if (input.get(0).length() > width) {
                     String tooLong = input.remove(0);
                     tooLong.substring(0, width-5);
                     input.add("Command removed. Too long.");
                 }
 
-                if( input.size() == 1 && (argumentsString.toString().length() + input.get(0).length() <= width)){
+                if (input.size() == 1 && (argumentsString.toString().length() + input.get(0).length() <= width)) {
                     argumentsString.append(input.remove(0));
-                }else if( argumentsString.toString().length() + input.get(0).length() + 2 <= width ){
+                } else if (argumentsString.toString().length() + input.get(0).length() + 2 <= width ) {
                     argumentsString.append(input.remove(0) + ", ");
-                }else{
+                } else {
                    break;
                 }
 
@@ -137,21 +149,18 @@ public abstract class CommandLineArgumentUsage {
         }
     }
 
-    protected static String usage(String executableBaseName) {
-        boolean isWindows = (WildFlySecurityManager.getPropertyPrivileged("os.name", null)).toLowerCase(Locale.ENGLISH).contains("windows");
-        String executableName = isWindows ? executableBaseName : executableBaseName + ".sh";
-
-        if (USAGE == null) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append(NEW_LINE).append(MESSAGES.argUsage(executableName)).append(NEW_LINE);
-
-            for (int i = 0; i < arguments.size(); i++) {
-                sb.append(getCommand(i)).append(NEW_LINE);
-            }
-            USAGE = sb.toString();
+    private static String getSystemProperty(final String key) {
+        if (System.getSecurityManager() == null) {
+            return System.getProperty(key);
         }
-        return USAGE;
 
+        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+
+            @Override
+            public String run() {
+                return System.getProperty(key);
+            }
+        });
     }
 
 }

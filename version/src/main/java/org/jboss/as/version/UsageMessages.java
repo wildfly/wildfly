@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,23 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.version;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageBundle;
 
-abstract class PatchAttributeReadHandler implements OperationStepHandler {
+/**
+ * This module is using message IDs in the range 12000-12099.
+ * This file is using the subset 12040-12099 for non-logger messages.
+ * See http://community.jboss.org/docs/DOC-16810 for the full list of
+ * currently reserved JBAS message id blocks.
+ *
+ * Date: 29.06.2011
+ *
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ */
+@MessageBundle(projectCode = "JBAS")
+interface UsageMessages {
+    /**
+     * The default messages.
+     */
+    UsageMessages MESSAGES = Messages.getBundle(UsageMessages.class);
 
-    @Override
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-        final PatchInfo info = service.getPatchInfo();
-        final ModelNode result = context.getResult();
-        handle(result, info);
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-    }
-
-    abstract void handle(ModelNode result, PatchInfo info);
+    @Message(id = Message.NONE, value = "Usage: %s [args...]%nwhere args include:")
+    String argUsage(String executableName);
 }
