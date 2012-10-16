@@ -1,0 +1,40 @@
+RULE create counter
+CLASS com.arjuna.webservices11.wscoor.sei.ActivationPortTypeImpl
+METHOD createCoordinationContextOperation(CreateCoordinationContextType)
+BIND NOTHING
+IF TRUE
+DO debug("participant_completion.counter.create"),
+  deleteCounter("completes"),
+  createCounter("completes", 1)
+ENDRULE
+
+RULE complete called
+CLASS com.arjuna.webservices11.wsba.sei.BusinessAgreementWithParticipantCompletionCoordinatorPortTypeImpl
+METHOD completedOperation(NotificationType)
+AT RETURN
+BIND NOTHING
+IF (debug("participant_completion.counter.decrement") AND decrementCounter("completes") == 0)
+DO debug("participant_completion.called.waking"),
+   signalWake("complete", true),
+   debug("participant_completion.called.donewake")
+ENDRULE
+
+RULE close called
+CLASS com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorPortTypeImpl
+METHOD closeOperation(NotificationType)
+BIND NOTHING
+IF TRUE
+DO debug("participant_completion.close.waiting"),
+   waitFor("complete"),
+   debug("participant_completion.close.woken")
+ENDRULE
+
+RULE cancel called
+CLASS com.arjuna.webservices11.wsarjtx.sei.TerminationCoordinatorPortTypeImpl
+METHOD cancelOperation(NotificationType)
+BIND NOTHING
+IF TRUE
+DO debug("participant_completion.cancel.waiting"),
+   waitFor("complete"),
+   debug("participant_completion.cancel.woken")
+ENDRULE
