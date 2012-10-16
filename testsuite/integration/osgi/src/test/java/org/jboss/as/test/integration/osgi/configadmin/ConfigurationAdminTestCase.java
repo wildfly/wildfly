@@ -26,10 +26,10 @@ import java.io.InputStream;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.api.ConfiguredService;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -69,8 +69,8 @@ public class ConfigurationAdminTestCase {
     static final String PID_A = ConfigurationAdminTestCase.class.getSimpleName() + "-pid-a";
     static final String PID_B = "a.test.pid";
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

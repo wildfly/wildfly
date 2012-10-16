@@ -76,8 +76,8 @@ public class ManagedBeansTestCase {
     private static final String VISA_PROVIDER_BUNDLE = "visa-bundle.jar";
     private static final String PAYPAL_PROVIDER_BUNDLE = "paypal-bundle.jar";
 
-    @Inject
-    public PackageAdmin packageAdmin;
+    @ArquillianResource
+    PackageAdmin packageAdmin;
 
     @ArquillianResource
     ManagementClient managementClient;

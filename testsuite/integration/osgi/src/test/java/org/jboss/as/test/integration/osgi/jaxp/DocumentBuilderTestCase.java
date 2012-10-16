@@ -27,12 +27,12 @@ import static org.junit.Assert.assertNotNull;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.inject.Inject;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -55,11 +55,11 @@ import org.w3c.dom.Node;
 @RunWith(Arquillian.class)
 public class DocumentBuilderTestCase {
 
-    @Inject
-    public static BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

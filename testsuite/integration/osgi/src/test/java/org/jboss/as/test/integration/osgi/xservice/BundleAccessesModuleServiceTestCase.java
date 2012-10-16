@@ -43,8 +43,8 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.metadata.ManifestBuilder;
+import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -73,8 +73,8 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
     @ArquillianResource
     public Deployer deployer;
 
-    @Inject
-    public BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
     @Deployment
     public static JavaArchive createdeployment() {

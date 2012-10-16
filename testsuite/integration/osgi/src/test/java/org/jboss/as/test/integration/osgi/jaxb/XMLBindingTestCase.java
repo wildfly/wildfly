@@ -27,13 +27,13 @@ import static org.junit.Assert.assertNotNull;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Unmarshaller;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.jaxb.bundle.CompanyType;
 import org.jboss.as.test.integration.osgi.jaxb.bundle.ContactType;
 import org.jboss.as.test.integration.osgi.jaxb.bundle.CourseBooking;
@@ -56,8 +56,8 @@ import org.osgi.framework.Bundle;
 @RunWith(Arquillian.class)
 public class XMLBindingTestCase {
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

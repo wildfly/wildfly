@@ -28,11 +28,11 @@ import static org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME;
 
 import java.io.InputStream;
 
-import javax.inject.Inject;
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.ejb3.bundle.SimpleStatelessSessionBean;
 import org.jboss.as.test.integration.osgi.ejb3.bundle.TargetBundleActivator;
@@ -60,8 +60,8 @@ public class StatelessBeanTestCase {
 
     static final String EJB3_DEPLOYMENT_NAME = "ejb3-osgi.jar";
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment(order = 1)
     public static JavaArchive deployment() {

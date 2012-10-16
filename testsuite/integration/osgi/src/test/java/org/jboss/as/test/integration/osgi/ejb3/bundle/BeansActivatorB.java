@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.osgi.ejb3.bundle;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 

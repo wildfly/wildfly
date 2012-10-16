@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.osgi.jpa.bundle;
 
 import java.util.concurrent.Callable;
 
-
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 

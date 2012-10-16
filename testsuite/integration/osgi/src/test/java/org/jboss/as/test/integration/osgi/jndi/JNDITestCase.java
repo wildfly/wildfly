@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.inject.Inject;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.Name;
@@ -41,6 +40,7 @@ import javax.naming.spi.ObjectFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -62,8 +62,8 @@ import org.osgi.framework.ServiceRegistration;
 @RunWith(Arquillian.class)
 public class JNDITestCase {
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

@@ -57,11 +57,11 @@ public class StartLevelTestCase {
     @ArquillianResource
     public Deployer deployer;
 
-    @Inject
-    public BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
-    @Inject
-    public StartLevel startLevel;
+    @ArquillianResource
+    StartLevel startLevel;
 
     @Deployment
     public static JavaArchive deployment() {

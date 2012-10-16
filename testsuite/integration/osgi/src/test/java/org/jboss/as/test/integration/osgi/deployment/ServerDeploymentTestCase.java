@@ -64,17 +64,17 @@ public class ServerDeploymentTestCase {
     @ArquillianResource
     public Deployer deployer;
 
-    @Inject
-    public StartLevel startLevel;
+    @ArquillianResource
+    StartLevel startLevel;
 
-    @Inject
-    public PackageAdmin packageAdmin;
+    @ArquillianResource
+    PackageAdmin packageAdmin;
 
-    @Inject
-    public BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

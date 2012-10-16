@@ -84,11 +84,11 @@ public class ConfigAdminIntegrationTestCase {
     @ArquillianResource
     ManagementClient managementClient;
 
-    @Inject
-    public PackageAdmin packageAdmin;
+    @ArquillianResource
+    PackageAdmin packageAdmin;
 
-    @Inject
-    public BundleContext syscontext;
+    @ArquillianResource
+    BundleContext syscontext;
 
     @Deployment
     public static JavaArchive deployment() {

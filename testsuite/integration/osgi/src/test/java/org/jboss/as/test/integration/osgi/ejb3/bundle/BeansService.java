@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.junit.Assert;
 import org.osgi.framework.BundleContext;
