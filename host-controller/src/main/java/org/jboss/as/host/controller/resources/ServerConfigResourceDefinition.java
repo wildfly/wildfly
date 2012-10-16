@@ -25,7 +25,6 @@ package org.jboss.as.host.controller.resources;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -43,7 +42,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
@@ -156,11 +154,11 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
         if (serverInventory != null) {
             // TODO convert these to use OperationDefinition
             ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerStartHandler.OPERATION_NAME, startHandler, startHandler, EnumSet.of(OperationEntry.Flag.HOST_CONTROLLER_ONLY));
+            resourceRegistration.registerOperationHandler(ServerStartHandler.DEFINITION, startHandler);
             ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerRestartHandler.OPERATION_NAME, restartHandler, restartHandler, EnumSet.of(OperationEntry.Flag.HOST_CONTROLLER_ONLY));
+            resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
             ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerStopHandler.OPERATION_NAME, stopHandler, stopHandler, EnumSet.of(OperationEntry.Flag.HOST_CONTROLLER_ONLY));
+            resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
         }
     }
 
@@ -170,13 +168,13 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
         //server paths
         resourceRegistration.registerSubModel(PathResourceDefinition.createSpecifiedNoServices(pathManager));
 
-         ManagementResourceRegistration serverInterfaces = resourceRegistration.registerSubModel(new InterfaceDefinition(
+        resourceRegistration.registerSubModel(new InterfaceDefinition(
                 SpecifiedInterfaceAddHandler.INSTANCE,
                 SpecifiedInterfaceRemoveHandler.INSTANCE,
                 true
         ));
 
-        // Server system properties  TODO convert to ResourceDefinition
+        // Server system properties
         resourceRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.SERVER_CONFIG));
         // Server jvm
         resourceRegistration.registerSubModel(JvmResourceDefinition.SERVER);

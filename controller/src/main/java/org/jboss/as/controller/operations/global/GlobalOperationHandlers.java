@@ -140,7 +140,7 @@ public class GlobalOperationHandlers {
     public static final OperationDefinition READ_OPERATION_DESCRIPTION_DEFINITION = ReadOperationDescriptionHandler.DEFINITION;
 
     @Deprecated
-    public static final OperationDefinition UNDEFINE_ATTRIBUTE_DEFINITION = org.jboss.as.controller.operations.global.UndefineAttributeHandler.UNDEFINE_ATTRIBUTE_DEFINITION;
+    public static final OperationDefinition UNDEFINE_ATTRIBUTE_DEFINITION = org.jboss.as.controller.operations.global.UndefineAttributeHandler.DEFINITION;
 
     @Deprecated
     public static final OperationDefinition WRITE_ATTRIBUTE_DEFINITION = org.jboss.as.controller.operations.global.WriteAttributeHandler.DEFINITION;
@@ -173,7 +173,7 @@ public class GlobalOperationHandlers {
         if (processType != ProcessType.DOMAIN_SERVER) {
             root.registerOperationHandler(org.jboss.as.controller.operations.global.WriteAttributeHandler.DEFINITION,
                                           org.jboss.as.controller.operations.global.WriteAttributeHandler.INSTANCE, true);
-            root.registerOperationHandler(org.jboss.as.controller.operations.global.UndefineAttributeHandler.UNDEFINE_ATTRIBUTE_DEFINITION,
+            root.registerOperationHandler(org.jboss.as.controller.operations.global.UndefineAttributeHandler.DEFINITION,
                                           org.jboss.as.controller.operations.global.UndefineAttributeHandler.INSTANCE, true);
         }
     }

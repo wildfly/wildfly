@@ -56,7 +56,6 @@ import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ReadTransformedResourceOperation;
 import org.jboss.as.controller.transform.TransformerRegistry;
@@ -120,7 +119,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
         }
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, ProcessType.STANDALONE_SERVER);
 
-        rootRegistration.registerOperationHandler(CompositeOperationHandler.NAME, CompositeOperationHandler.INSTANCE, CompositeOperationHandler.INSTANCE, false, EntryType.PRIVATE);
+        rootRegistration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
 
         //Handler to be able to get hold of the root resource
         rootRegistration.registerOperationHandler(ModelTestModelControllerService.RootResourceGrabber.NAME, ModelTestModelControllerService.RootResourceGrabber.INSTANCE, ModelTestModelControllerService.RootResourceGrabber.INSTANCE, false);

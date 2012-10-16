@@ -21,37 +21,49 @@
  */
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.ControllerMessages;
-import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.Iterator;
-import java.util.Locale;
-import java.util.NoSuchElementException;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleLoadError;
+import org.jboss.dmr.ModelType;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class ValidateAddressOperationHandler implements OperationStepHandler, DescriptionProvider {
+public class ValidateAddressOperationHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "validate-address";
     public static final ValidateAddressOperationHandler INSTANCE = new ValidateAddressOperationHandler();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("global"))
+        .addParameter(
+                SimpleAttributeDefinitionBuilder.create(VALUE, ModelType.OBJECT)
+                    .build())
+        .setReplyParameters(
+                SimpleAttributeDefinitionBuilder.create(VALID, ModelType.BOOLEAN).build(),
+                SimpleAttributeDefinitionBuilder.create(PROBLEM, ModelType.STRING)
+                    .setAllowNull(true)
+                    .build()
+                )
+        .setReadOnly()
+        .build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -101,10 +113,5 @@ public class ValidateAddressOperationHandler implements OperationStepHandler, De
         }
         context.getResult().get(VALID).set(true);
         context.stepCompleted();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return CommonDescriptions.getValidateAddressOperation(locale);
     }
 }

@@ -65,7 +65,8 @@ public class SimpleOperationDefinition extends OperationDefinition {
         this.resolver = resolver;
         this.attributeResolver = resolver;
     }
-    SimpleOperationDefinition(final String name,
+
+    protected SimpleOperationDefinition(final String name,
                                      final ResourceDescriptionResolver resolver,
                                      final ResourceDescriptionResolver attributeResolver,
                                      final OperationEntry.EntryType entryType,

@@ -26,18 +26,16 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handler for the "composite" operation; i.e. one that includes one or more child operations
@@ -46,16 +44,27 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public final class CompositeOperationHandler implements OperationStepHandler, DescriptionProvider {
+public final class CompositeOperationHandler implements OperationStepHandler {
     public static final CompositeOperationHandler INSTANCE = new CompositeOperationHandler();
     public static final String NAME = ModelDescriptionConstants.COMPOSITE;
+
+    private static final AttributeDefinition STEPS = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.STEPS, ModelType.OBJECT)
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(NAME, ControllerResolver.getResolver("root"))
+        .addParameter(STEPS)
+        .setReplyType(ModelType.OBJECT)
+        .setPrivateEntry()
+        .build();
 
     private CompositeOperationHandler() {
     }
 
-    public void execute(final OperationContext context, final ModelNode operation) {
+    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        STEPS.validateOperation(operation);
+
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-        final List<ModelNode> list = operation.get(STEPS).asList();
+        final List<ModelNode> list = operation.get(ModelDescriptionConstants.STEPS).asList();
         final ModelNode responseMap = context.getResult().setEmptyObject();
         Map<String, OperationStepHandler> stepHandlerMap = new HashMap<String, OperationStepHandler>();
         final int size = list.size();
@@ -99,12 +108,5 @@ public final class CompositeOperationHandler implements OperationStepHandler, De
                 context.getFailureDescription().set(failureMsg);
             }
         });
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        //Since this instance should have EntryType.PRIVATE, there is no need for a description
-        //return new ModelNode();
-        return CommonDescriptions.getCompositeOperation(locale);
     }
 }

@@ -30,8 +30,12 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+<<<<<<< HEAD
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+=======
+import org.jboss.as.controller.PrivateOperationDefinitionBuilder;
+>>>>>>> Convert operations to use OperationDefinition
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
@@ -43,12 +47,19 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class RootResourceHack implements OperationStepHandler {
+<<<<<<< HEAD
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(RootResourceHack.NAME, new NonResolvingResourceDescriptionResolver())
             .setPrivateEntry()
             .setRuntimeOnly()
             .build();
+=======
+
+>>>>>>> Convert operations to use OperationDefinition
     public static final RootResourceHack INSTANCE = new RootResourceHack();
     public static final String NAME = "root-resource-hack";
+    public static OperationDefinition DEFINITION = new PrivateOperationDefinitionBuilder(NAME)
+        .setRuntimeOnly()
+        .build();
     private static final ModelNode OPERATION;
     static {
         OPERATION = new ModelNode();

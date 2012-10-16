@@ -21,34 +21,40 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
-final class JVMOptionRemoveHandler implements OperationStepHandler, DescriptionProvider {
+final class JVMOptionRemoveHandler implements OperationStepHandler {
 
     static final String OPERATION_NAME = "remove-jvm-option";
     static final JVMOptionRemoveHandler INSTANCE = new JVMOptionRemoveHandler();
 
-    private final ParameterValidator validator = new StringLengthValidator(1);
+    static final SimpleAttributeDefinition JVM_OPTION = SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_OPTION, ModelType.STRING, false)
+            .setValidator(new StringLengthValidator(1))
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("jvm"))
+        .addParameter(JVM_OPTION)
+        .build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validateParameter(JvmAttributes.JVM_OPTION, operation.get(JvmAttributes.JVM_OPTION));
-
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
 
-        final ModelNode option = operation.require(JvmAttributes.JVM_OPTION);
+        final ModelNode option = JVM_OPTION.validateOperation(operation);
         if (model.hasDefined(JvmAttributes.JVM_OPTIONS)) {
             final ModelNode values = model.get(JvmAttributes.JVM_OPTIONS).clone();
             model.get(JvmAttributes.JVM_OPTIONS).setEmptyList();
@@ -61,13 +67,5 @@ final class JVMOptionRemoveHandler implements OperationStepHandler, DescriptionP
         }
 
         context.stepCompleted();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JVMDescriptions.getOptionRemoveOperation(locale);
     }
 }

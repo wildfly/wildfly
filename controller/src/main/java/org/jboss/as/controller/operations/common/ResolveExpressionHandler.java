@@ -22,17 +22,23 @@
 
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
+
 import java.util.Locale;
 
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -43,7 +49,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ResolveExpressionHandler implements OperationStepHandler, DescriptionProvider {
+public class ResolveExpressionHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "resolve-expression";
 
@@ -51,6 +57,14 @@ public class ResolveExpressionHandler implements OperationStepHandler, Descripti
 
     public static final SimpleAttributeDefinition EXPRESSION = new SimpleAttributeDefinitionBuilder("expression", ModelType.STRING, true)
             .setAllowExpression(true).build();
+
+    public static final OperationDefinition DEFINITION = new NillableReturnTypeOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("core"))
+        .addParameter(EXPRESSION)
+        .setReplyType(ModelType.STRING)
+        .setReadOnly()
+        .setRuntimeOnly()
+        .build();
+
 
     private ResolveExpressionHandler() {
     }
@@ -84,13 +98,26 @@ public class ResolveExpressionHandler implements OperationStepHandler, Descripti
         context.stepCompleted();
     }
 
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelType valueType = null;
-        DescriptionProvider delegate = new DefaultOperationDescriptionProvider(OPERATION_NAME,
-                ControllerResolver.getResolver("core"), ModelType.STRING, valueType, EXPRESSION);
-        ModelNode result = delegate.getModelDescription(locale);
-        result.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.NILLABLE).set(true);
-        return result;
+    public static class NillableReturnTypeOperationDefinitionBuilder extends SimpleOperationDefinitionBuilder {
+        public NillableReturnTypeOperationDefinitionBuilder(String name, ResourceDescriptionResolver resolver) {
+            super(name, resolver);
+        }
+
+        @Override
+        public SimpleOperationDefinition internalBuild(final ResourceDescriptionResolver resolver, final ResourceDescriptionResolver attributeResolver) {
+            return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters) {
+                @Override
+                public DescriptionProvider getDescriptionProvider() {
+                    return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, deprecationData, replyParameters, parameters) {
+                        @Override
+                        public ModelNode getModelDescription(Locale locale) {
+                            ModelNode result = super.getModelDescription(locale);
+                            result.get(REPLY_PROPERTIES, NILLABLE).set(true);
+                            return result;
+                        }
+                    };
+                }
+            };
+        }
     }
 }

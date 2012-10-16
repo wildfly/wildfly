@@ -23,13 +23,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -46,9 +45,10 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @version $Revision: 1.1 $
  */
-public class LocalDomainControllerAddHandler implements OperationStepHandler, DescriptionProvider {
+public class LocalDomainControllerAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "write-local-domain-controller";
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("host")).build();
 
     private final ManagementResourceRegistration rootRegistration;
     private final HostControllerConfigurationPersister overallConfigPersister;
@@ -122,10 +122,5 @@ public class LocalDomainControllerAddHandler implements OperationStepHandler, De
         overallConfigPersister.initializeDomainConfigurationPersister(false);
 
         domainController.initializeMasterDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository, extensionRegistry, pathManager);
-    }
-
-    @Override
-    public ModelNode getModelDescription(final Locale locale) {
-        return HostRootDescription.getLocalDomainControllerAdd(locale);
     }
 }

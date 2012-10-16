@@ -21,40 +21,47 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.descriptions.HostRootDescription;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
-public final class JVMEnvironmentVariableAddHandler implements OperationStepHandler, DescriptionProvider {
+public final class JVMEnvironmentVariableAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "add-item-to-environment-variables-list";
     static final JVMEnvironmentVariableAddHandler INSTANCE = new JVMEnvironmentVariableAddHandler();
 
-    private final ParameterValidator validator = new StringLengthValidator(1);
+    static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
+            .setValidator(new StringLengthValidator(1))
+            .build();
+    private static final SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.VALUE, ModelType.STRING, false)
+            .setValidator(new StringLengthValidator(1))
+            .build();
+
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("jvm"))
+        .addParameter(NAME)
+        .addParameter(VALUE)
+        .build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-        validator.validateParameter(NAME, operation.get(NAME));
-        validator.validateParameter(VALUE, operation.get(VALUE));
-
         final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         final ModelNode model = resource.getModel();
 
-        final String name = operation.require(NAME).asString();
-        final String value = operation.require(VALUE).asString();
+        final String name = NAME.validateOperation(operation).asString();
+        final String value = VALUE.validateOperation(operation).asString();
         ModelNode variables = model.get(JvmAttributes.JVM_ENV_VARIABLES);
         if (variables.isDefined()) {
             for (ModelNode varNode : variables.asList()) {
@@ -66,13 +73,5 @@ public final class JVMEnvironmentVariableAddHandler implements OperationStepHand
         model.get(JvmAttributes.JVM_ENV_VARIABLES).add(name, value);
 
         context.stepCompleted();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return JVMDescriptions.getEnvVarAddOperation(locale);
     }
 }

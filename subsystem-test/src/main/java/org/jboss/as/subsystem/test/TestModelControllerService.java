@@ -32,10 +32,7 @@ import java.util.Properties;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
