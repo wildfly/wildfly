@@ -51,6 +51,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Jason T. Greene
  */
+@Deprecated
 public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
 
     private static final ParameterValidator validator;

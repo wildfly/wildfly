@@ -58,7 +58,10 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CACHE_TYPE =
             new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true).build();
-    static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition(Constants.MODULE_OPTIONS, Element.MODULE_OPTION.getLocalName(), true, true);
+    static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
+            .setXmlName(Element.MODULE_OPTION.getLocalName())
+            .setAllowExpression(true)
+            .build();
     private final boolean registerRuntimeOnly;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {

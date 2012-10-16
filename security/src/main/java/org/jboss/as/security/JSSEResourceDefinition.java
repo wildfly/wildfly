@@ -55,7 +55,9 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition CIPHER_SUITES =
             new SimpleAttributeDefinitionBuilder(Constants.CIPHER_SUITES, ModelType.STRING, true).setAllowExpression(true).build();
 
-    public static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition(Constants.ADDITIONAL_PROPERTIES, Constants.PROPERTY, true);
+    public static final PropertiesAttributeDefinition ADDITIONAL_PROPERTIES = new PropertiesAttributeDefinition.Builder(Constants.ADDITIONAL_PROPERTIES, true)
+            .setXmlName(Constants.PROPERTY)
+            .build();
 
     private JSSEResourceDefinition() {
         super(PathElement.pathElement(Constants.JSSE, Constants.CLASSIC),

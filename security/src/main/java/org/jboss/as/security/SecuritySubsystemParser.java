@@ -625,13 +625,11 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             required.remove(attribute);
             switch (attribute) {
                 case CODE: {
-                    ModelNode code = LoginModulesAttributeDefinition.parseField(CODE, value, reader);
-                    node.get(CODE).set(code);
+                    LoginModulesDefinition.CODE.parseAndSetParameter(value,node,reader);
                     break;
                 }
                 case FLAG: {
-                    ModelNode flag = LoginModulesAttributeDefinition.parseField(FLAG, value, reader);
-                    node.get(FLAG).set(flag);
+                    LoginModulesDefinition.FLAG.parseAndSetParameter(value,node,reader);
                     break;
                 }
                 case TYPE: {

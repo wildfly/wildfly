@@ -54,13 +54,15 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.CODE, ModelType.STRING, true).build();
 
 
-    public static final PropertiesAttributeDefinition OPTIONS = new PropertiesAttributeDefinition(Constants.VAULT_OPTIONS, Constants.VAULT_OPTION, true);
+    public static final PropertiesAttributeDefinition OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.VAULT_OPTIONS, true)
+            .setXmlName(Constants.VAULT_OPTION)
+            .build();
 
 
     private VaultResourceDefinition() {
         super(PathElement.pathElement(Constants.VAULT, Constants.CLASSIC),
-              SecurityExtension.getResourceDescriptionResolver(Constants.VAULT),
-              VaultResourceDefinitionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+                SecurityExtension.getResourceDescriptionResolver(Constants.VAULT),
+                VaultResourceDefinitionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
