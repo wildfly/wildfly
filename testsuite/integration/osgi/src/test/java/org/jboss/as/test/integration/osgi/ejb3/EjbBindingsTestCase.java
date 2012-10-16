@@ -70,11 +70,11 @@ public class EjbBindingsTestCase {
     @ArquillianResource
     Deployer deployer;
 
-    @Inject
-    public PackageAdmin packageAdmin;
+    @ArquillianResource
+    PackageAdmin packageAdmin;
 
-    @Inject
-    public BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
     @Deployment
     public static Archive<?> deployment() {

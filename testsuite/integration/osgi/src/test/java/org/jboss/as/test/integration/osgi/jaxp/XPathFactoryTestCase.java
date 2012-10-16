@@ -24,12 +24,12 @@ package org.jboss.as.test.integration.osgi.jaxp;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.inject.Inject;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -50,10 +50,10 @@ import org.xml.sax.InputSource;
 @RunWith(Arquillian.class)
 public class XPathFactoryTestCase {
 
-    @Inject
-    public BundleContext context;
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    BundleContext context;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

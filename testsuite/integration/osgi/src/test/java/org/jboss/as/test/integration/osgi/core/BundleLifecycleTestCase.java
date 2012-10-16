@@ -21,10 +21,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.InputStream;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.osgi.core.bundle.SimpleActivator;
 import org.jboss.as.test.integration.osgi.core.bundle.SimpleService;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -48,8 +47,8 @@ import org.osgi.framework.Version;
 @RunWith(Arquillian.class)
 public class BundleLifecycleTestCase {
 
-    @Inject
-    public Bundle bundle;
+    @ArquillianResource
+    Bundle bundle;
 
     @Deployment
     public static JavaArchive createdeployment() {

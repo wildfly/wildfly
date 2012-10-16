@@ -22,6 +22,10 @@
 
 package org.jboss.as.test.integration.osgi.configadmin.bundle;
 
+import java.util.Collections;
+import java.util.Dictionary;
+import java.util.Set;
+
 import org.jboss.as.configadmin.ConfigAdmin;
 import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.msc.service.Service;
@@ -34,10 +38,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Set;
 
 /**
  * A simple service that reads its configuration from the {@link ConfigAdmin}

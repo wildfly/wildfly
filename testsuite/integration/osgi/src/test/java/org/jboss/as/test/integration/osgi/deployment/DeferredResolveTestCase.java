@@ -32,8 +32,8 @@ import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.osgi.framework.BundleManager;
-import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -72,14 +72,14 @@ public class DeferredResolveTestCase {
     @ArquillianResource
     ManagementClient managementClient;
 
-    @Inject
-    public BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
-    @Inject
-    public StartLevel startLevel;
+    @ArquillianResource
+    StartLevel startLevel;
 
-    @Inject
-    public PackageAdmin packageAdmin;
+    @ArquillianResource
+    PackageAdmin packageAdmin;
 
     @Deployment
     public static Archive<?> getDeployment() {

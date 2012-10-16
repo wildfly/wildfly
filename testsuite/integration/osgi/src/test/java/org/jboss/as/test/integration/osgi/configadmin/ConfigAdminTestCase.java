@@ -35,8 +35,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.as.configadmin.ConfigAdmin;
+import org.jboss.as.configadmin.ConfigAdminListener;
 import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfiguredMSCService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;

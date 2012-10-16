@@ -70,11 +70,11 @@ public class ModuleAccessesBundleServiceTestCase extends AbstractXServiceTestCas
     @ArquillianResource
     public Deployer deployer;
 
-    @Inject
-    public BundleContext context;
+    @ArquillianResource
+    BundleContext context;
 
-    @Inject
-    public PackageAdmin packageAdmin;
+    @ArquillianResource
+    PackageAdmin packageAdmin;
 
     @Deployment
     public static JavaArchive createdeployment() {
