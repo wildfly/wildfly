@@ -23,7 +23,6 @@ package org.jboss.as.security;
 
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -35,16 +34,24 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
 
     public static final ACLResourceDefinition INSTANCE = new ACLResourceDefinition();
 
+    @Deprecated
     public static final ListAttributeDefinition ACL_MODULES = new LoginModulesAttributeDefinition(Constants.ACL_MODULES, Constants.ACL_MODULE);
 
     private ACLResourceDefinition() {
-        super(PathElement.pathElement(Constants.ACL, Constants.CLASSIC),
+        super(SecurityExtension.ACL_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.ACL),
-                ACLResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
+                ACLResourceDefinitionAdd.INSTANCE,
+                new SecurityDomainReloadRemoveHandler());
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(ACL_MODULES, null, new SecurityDomainReloadWriteHandler(ACL_MODULES));
+        //resourceRegistration.registerReadWriteAttribute(ACL_MODULES, null, new SecurityDomainReloadWriteHandler(ACL_MODULES));
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(LoginModulesDefinition.INSTANCE);
     }
 
     static class ACLResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -52,7 +59,7 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            ACL_MODULES.validateAndSet(operation, model);
+            //ACL_MODULES.validateAndSet(operation, model);
         }
 
     }
