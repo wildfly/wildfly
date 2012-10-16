@@ -22,14 +22,8 @@
 
 package org.jboss.as.connector.deployers.ds.processors;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
 import org.jboss.as.connector.deployers.Util;
+import org.jboss.as.connector.deployers.ds.DsXmlParser;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
@@ -38,9 +32,16 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.metadata.ds.v11.DsParser;
+import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Picks up -ds.xml deployments
@@ -72,6 +73,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         boolean resolveProperties = Util.shouldResolveJBoss(deploymentUnit);
+        final PropertyResolver propertyResolver = deploymentUnit.getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);
 
         final Set<VirtualFile> files = dataSources(deploymentUnit);
 
@@ -79,9 +81,10 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
             InputStream xmlStream = null;
             try {
                 xmlStream = new FileInputStream(f.getPhysicalFile());
-                DsParser parser = new DsParser();
+                DsXmlParser parser = new DsXmlParser(propertyResolver);
                 parser.setSystemPropertiesResolved(resolveProperties);
                 DataSources dataSources = parser.parse(xmlStream);
+
                 if (dataSources != null) {
                     deploymentUnit.addToAttachmentList(DATA_SOURCES_ATTACHMENT_KEY, dataSources);
                 }
