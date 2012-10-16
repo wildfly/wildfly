@@ -199,7 +199,9 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     @Override
     public void marshallAsElement(ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-        attributeMarshaller.marshallAsElement(this, resourceModel, marshallDefault, writer);
+        if (attributeMarshaller.isMarshallable(this,resourceModel,marshallDefault)){
+            attributeMarshaller.marshallAsElement(this, resourceModel, marshallDefault, writer);
+        }
     }
     public static ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {
         public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
