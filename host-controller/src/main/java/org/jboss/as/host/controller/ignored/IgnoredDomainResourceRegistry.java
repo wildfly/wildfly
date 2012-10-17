@@ -29,7 +29,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -95,7 +95,7 @@ public class IgnoredDomainResourceRegistry {
     private class ResourceDefinition extends SimpleResourceDefinition {
 
         public ResourceDefinition() {
-            super(IgnoredDomainResourceRoot.PATH_ELEMENT, HostRootDescription.getResourceDescriptionResolver(ModelDescriptionConstants.IGNORED_RESOURCES));
+            super(IgnoredDomainResourceRoot.PATH_ELEMENT, HostResolver.getResolver(ModelDescriptionConstants.IGNORED_RESOURCES));
         }
 
         @Override

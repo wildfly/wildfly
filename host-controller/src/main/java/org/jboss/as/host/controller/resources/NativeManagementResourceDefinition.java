@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.host.controller.HostModelUtil;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.NativeManagementAddHandler;
 import org.jboss.as.host.controller.operations.NativeManagementWriteAttributeHandler;

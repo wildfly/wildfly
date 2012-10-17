@@ -29,7 +29,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,7 +48,7 @@ public class HostShutdownHandler implements OperationStepHandler {
     private static final AttributeDefinition RESTART = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RESTART, ModelType.BOOLEAN, true)
             .setAllowNull(true)
             .build();
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("host"))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
             .addParameter(RESTART)
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
             .build();

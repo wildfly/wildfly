@@ -46,7 +46,7 @@ import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.host.controller.ServerInventory;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.ServerAddHandler;
 import org.jboss.as.host.controller.operations.ServerRemoveHandler;
@@ -119,7 +119,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
      * @param pathManager the {@link PathManagerService} to use for the child {@code path} resources. Cannot be {@code null}
      */
     public ServerConfigResourceDefinition(final ServerInventory serverInventory, final PathManagerService pathManager) {
-        super(PathElement.pathElement(SERVER_CONFIG), HostRootDescription.getResourceDescriptionResolver(SERVER_CONFIG, false),
+        super(PathElement.pathElement(SERVER_CONFIG), HostResolver.getResolver(SERVER_CONFIG, false),
                 ServerAddHandler.INSTANCE, ServerRemoveHandler.INSTANCE);
 
         assert pathManager != null : "pathManager is null";

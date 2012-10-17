@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 public class RemoteDomainControllerRemoveHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "remove-remote-domain-controller";
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("host")).build();
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host")).build();
     public static final RemoteDomainControllerRemoveHandler INSTANCE = new RemoteDomainControllerRemoveHandler();
 
     /**

@@ -28,19 +28,15 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
  *
  * @author Brian Stansberry
  */
-@Deprecated
-public class HostRootDescription {
+public class HostResolver {
 
-    private static final String BLOCKING = "blocking";
+    private static final String RESOURCE_NAME = HostResolver.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final String RESOURCE_NAME = HostEnvironmentResourceDescription.class.getPackage().getName() + ".LocalDescriptions";
-
-    @Deprecated
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return getResourceDescriptionResolver(keyPrefix, true);
+    public static ResourceDescriptionResolver getResolver(final String keyPrefix) {
+        return getResolver(keyPrefix, true);
     }
-    @Deprecated
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
+
+    public static ResourceDescriptionResolver getResolver(final String keyPrefix, final boolean useUnprefixedChildTypes) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, HostEnvironmentResourceDescription.class.getClassLoader(), true, useUnprefixedChildTypes);
     }
 
