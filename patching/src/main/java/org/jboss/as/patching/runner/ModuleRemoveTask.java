@@ -22,8 +22,13 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
+import org.jboss.marshalling.ByteInputStream;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,23 +44,30 @@ import java.nio.charset.Charset;
  */
 class ModuleRemoveTask extends AbstractModuleTask {
 
-    ModuleRemoveTask(ModuleItem item, byte[] expected) {
-        super(item, expected);
+    ModuleRemoveTask(PatchingTaskDescription description) {
+        super(description);
     }
 
     @Override
-    public void execute(final PatchingContext context) throws IOException {
-        final File targetDir = context.getModulePatchDirectory(item);
-        targetDir.mkdirs();
-
+    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
+        final File targetDir = context.getModulePatchDirectory(contentItem);
+        if(! targetDir.mkdirs()) {
+            throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
+        }
         final File moduleXml = new File(targetDir, MODULE_XML);
         final OutputStream os = new FileOutputStream(moduleXml);
         try {
-            os.write(getFileContent(item));
-            os.close();
+            final ByteArrayInputStream is = new ByteArrayInputStream(getFileContent(contentItem));
+            return PatchUtils.copyAndGetHash(is, os);
         } finally {
             PatchUtils.safeClose(os);
         }
+    }
+
+    @Override
+    ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash) {
+        final ModuleItem item = createContentItem(contentItem, itemHash);
+        return new ContentModification(item, targetHash, ModificationType.ADD);
     }
 
     static byte[] getFileContent(final ModuleItem item) {

@@ -20,44 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.metadata;
+package org.jboss.as.patching.runner;
+
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentType;
 
 /**
- * A modification of a content item. The {@linkplain ModificationType} describes whether the content
- * is added, modified or removed.
+ * Content item filter.
  *
  * @author Emanuel Muckenhuber
  */
-public class ContentModification {
+public interface ContentItemFilter {
 
-    private final ContentItem item;
-    private final byte[] targetHash;
-    private final ModificationType type;
+    /**
+     * Tests whether or not the content-item should be included or not.
+     *
+     * @param item the content item
+     * @return  <code>true</code> if and only if <code>item</code> should be included
+     */
+    boolean accepts(ContentItem item);
 
-    public ContentModification(ContentItem item, byte[] targetHash, ModificationType type) {
-        this.item = item;
-        this.targetHash = targetHash;
-        this.type = type;
-    }
+    ContentItemFilter ALL = new ContentItemFilter() {
+        @Override
+        public boolean accepts(ContentItem item) {
+            return true;
+        }
+    };
 
-    public ContentModification(ContentItem item, ContentModification existing) {
-        this(item, existing.getTargetHash(), existing.getType());
-    }
-
-    public ContentItem getItem() {
-        return item;
-    }
-
-    public <T extends ContentItem> T getItem(Class<T> expected) {
-        return expected.cast(item);
-    }
-
-    public byte[] getTargetHash() {
-        return targetHash;
-    }
-
-    public ModificationType getType() {
-        return type;
-    }
+    ContentItemFilter MISC_ONLY = new ContentItemFilter() {
+        @Override
+        public boolean accepts(ContentItem item) {
+            final ContentType type = item.getContentType();
+            return type == ContentType.MISC;
+        }
+    };
 
 }

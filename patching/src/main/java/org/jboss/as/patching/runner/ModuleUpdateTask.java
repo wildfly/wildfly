@@ -45,24 +45,28 @@ import java.util.Arrays;
  */
 class ModuleUpdateTask extends AbstractModuleTask {
 
-    ModuleUpdateTask(ModuleItem item, byte[] expected, boolean add) {
-        super(item, expected, add);
+    ModuleUpdateTask(PatchingTaskDescription description) {
+        super(description);
     }
 
     @Override
-    public void execute(PatchingContext context) throws IOException {
-
+    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
         // Copy the new module resources to the patching directory
-        final File targetDir = context.getModulePatchDirectory(item);
-        final File sourceDir = context.getLoader().getFile(item);
+        final File targetDir = context.getModulePatchDirectory(contentItem);
+        final File sourceDir = loader.getFile(contentItem);
         final File[] moduleResources = sourceDir.listFiles();
         for(final File file : moduleResources) {
             final File target = new File(targetDir, file.getName());
             PatchUtils.copy(file, target);
         }
+        return contentItem.getContentHash();
+    }
+
+    @Override
+    ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash) {
         // Hmm we actually don't need to do anything when rolling back the patch?
-        // final ContentModification modification = new ContentModification(item, expected, ModificationType.MODIFY);
-        // context.recordRollbackAction(modification);
+        final ModuleItem item = createContentItem(contentItem, itemHash);
+        return new ContentModification(item, targetHash, ModificationType.MODIFY);
     }
 
     static byte[] copy(final InputStream is, final File target) throws IOException {

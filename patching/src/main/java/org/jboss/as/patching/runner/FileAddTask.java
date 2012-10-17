@@ -22,12 +22,14 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Task adding new a file.
@@ -36,23 +38,22 @@ import java.io.IOException;
  */
 class FileAddTask extends AbstractFileTask {
 
-    FileAddTask(MiscContentItem item, File target, File backup, ContentModification modification) {
-        super(target, backup, item, modification);
+    FileAddTask(PatchingTaskDescription description, File target, File backup) {
+        super(description, target, backup);
     }
 
     @Override
-    public boolean prepare(PatchingContext context) throws IOException {
-        boolean result = super.prepare(context);
-        if(result) {
-            // Check that there was really no content copied
-            return backupHash == NO_CONTENT;
+    ContentModification createRollbackEntry(ContentModification original, MiscContentItem item, byte[] targetHash) {
+        return new ContentModification(item, targetHash, ModificationType.REMOVE);
+    }
+
+    @Override
+    byte[] backup(PatchingContext context) throws IOException {
+        final byte[] backupHash = super.backup(context);
+        if(! Arrays.equals(backupHash, NO_CONTENT)) {
+            PatchLogger.ROOT_LOGGER.debugf("item should not exist (%s)", contentItem);
         }
-        return result;
-    }
-
-    @Override
-    protected ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
-        return new ContentModification(backupItem, targetHash, ModificationType.REMOVE);
+        return backupHash;
     }
 
 }

@@ -24,6 +24,8 @@ package org.jboss.as.patching.runner;
 
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.metadata.BundleItem;
+import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.ModuleItem;
 
 import java.io.File;
@@ -35,55 +37,41 @@ import java.util.Arrays;
  *
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractModuleTask implements PatchingTask {
+abstract class AbstractModuleTask extends AbstractPatchingTask<ModuleItem> {
 
     static final String MODULE_XML = "module.xml";
 
-    protected final ModuleItem item;
-    protected final byte[] expected;
-    protected final boolean add;
-
-    protected AbstractModuleTask(ModuleItem item, byte[] expected) {
-        this(item, expected, false);
-    }
-
-    protected AbstractModuleTask(ModuleItem item, byte[] expected, boolean add) {
-        this.item = item;
-        this.expected = expected;
-        this.add = add;
+    AbstractModuleTask(PatchingTaskDescription description) {
+        super(description, ModuleItem.class);
     }
 
     @Override
-    public ModuleItem getContentItem() {
-        return item;
-    }
-
-    @Override
-    public boolean prepare(PatchingContext context) throws IOException {
+    byte[] backup(PatchingContext context) throws IOException {
         // Check the module.xml hash
         final PatchInfo patchInfo = context.getPatchInfo();
         final File[] repoRoots = patchInfo.getModulePath();
         //
-        final String moduleName = item.getName();
-        final String slot = item.getSlot();
+        final String moduleName = contentItem.getName();
+        final String slot = contentItem.getSlot();
         for(final File path : repoRoots) {
 
             final File modulePath = PatchContentLoader.getModulePath(path, moduleName, slot);
             final File moduleXml = new File(modulePath, MODULE_XML);
             if(moduleXml.exists()) {
                 PatchLogger.ROOT_LOGGER.debugf("found in path (%s)", moduleXml.getAbsolutePath());
-                // We only care about the first match
-                // Calculate the hash over the complete directory
-                final byte[] hash = PatchUtils.calculateHash(modulePath);
-                if(! Arrays.equals(expected, hash)) {
-                    PatchLogger.ROOT_LOGGER.moduleContentChanged(moduleName, PatchUtils.bytesToHexString(hash));
-                    return false;
-                } else {
-                    return true;
-                }
+                return PatchUtils.calculateHash(modulePath);
             }
         }
-        return add;
+        return NO_CONTENT;
+    }
+
+    static ModuleItem createContentItem(final ModuleItem original, final byte[] contentHash) {
+        final ContentType type = original.getContentType();
+        if(type == ContentType.BUNDLE) {
+            return new BundleItem(original.getName(), original.getSlot(), contentHash);
+        } else {
+            return new ModuleItem(original.getName(), original.getSlot(), contentHash);
+        }
     }
 
 }

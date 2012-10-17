@@ -25,12 +25,10 @@ package org.jboss.as.patching.runner;
 import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
 
 import org.jboss.as.boot.DirectoryStructure;
-import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
@@ -41,11 +39,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -140,7 +139,7 @@ public class PatchingTaskRunner {
             // Execute the patch itself
             final PatchingContext context = PatchingContext.create(patch, patchInfo, structure, policy, workDir);
             try {
-                return executeTasks(patch, context);
+                return applyPatch(patch, context);
             } catch (Exception e) {
                 // Undo patch
                 context.undo();
@@ -155,6 +154,44 @@ public class PatchingTaskRunner {
     }
 
     /**
+     * Apply the patch.
+     *
+     * @param patch the patch
+     * @param context the patching context
+     * @return the patching result
+     * @throws PatchingException
+     */
+    private PatchingResult applyPatch(final Patch patch, final PatchingContext context) throws PatchingException {
+        // Rollback one-off patches
+        final List<String> rollbacks;
+        final Patch.PatchType type = patch.getPatchType();
+        if(type == Patch.PatchType.CUMULATIVE) {
+            rollbacks = patchInfo.getPatchIDs();
+        } else {
+            rollbacks = Collections.emptyList();
+        }
+        // Rollback one-off patches (if there are any to roll back)
+        final Map<Location, PatchingTasks.ContentTaskDefinition> definitions = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
+        for(final String oneOff : rollbacks) {
+            try {
+                // Rollback one off patches
+                context.recordRollback(oneOff, definitions);
+            } catch (Exception e) {
+                throw new PatchingException(e);
+            }
+        }
+        try {
+            // Apply the current patch
+            context.applyPatch(patch, definitions);
+        } catch (Exception e) {
+            throw new PatchingException(e);
+        }
+        // Process the resolved tasks
+        return executeTasks(patch, definitions, context);
+    }
+
+
+    /**
      * This will create and execute all the patching tasks based on the patch metadata.
      *
      * @param patch the patch
@@ -162,18 +199,18 @@ public class PatchingTaskRunner {
      * @return the result of the patching action
      * @throws PatchingException
      */
-    private PatchingResult executeTasks(final Patch patch, final PatchingContext context) throws PatchingException {
+    private PatchingResult executeTasks(final Patch patch, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions, final PatchingContext context) throws PatchingException {
         // Create the modification tasks
         final List<PatchingTask> tasks = new ArrayList<PatchingTask>();
         final List<ContentItem> problems = new ArrayList<ContentItem>();
-        for(final ContentModification modification : patch.getModifications()) {
-            final PatchingTask task = PatchingTask.Factory.create(modification, context);
+        // Process the consolidated modifications
+        for(final PatchingTasks.ContentTaskDefinition definition : definitions.values()) {
+            final PatchingTask task = context.createTask(definition);
             try {
-                // backup
-                if(! task.prepare(context)) {
-                    // In case the file was modified we report a problem
-                    final ContentItem item = modification.getItem();
-                    // Unless it was ignored (or excluded)
+                // backup and validate content
+                if(! task.prepare(context) || definition.hasConflicts()) {
+                    // Unless it a content item was manually ignored (or excluded)
+                    final ContentItem item = task.getContentItem();
                     if(! context.isIgnored(item)) {
                         problems.add(item);
                     }
@@ -218,12 +255,36 @@ public class PatchingTaskRunner {
      */
     public PatchingResult rollback(final String patchId, final boolean overrideAll) throws PatchingException {
         // Check if the patch is currently active
-        if(! patchInfo.getCumulativeID().equals(patchId)) {
-            if(! patchInfo.getPatchIDs().contains(patchId)) {
+        final int index = patchInfo.getPatchIDs().indexOf(patchId);
+        if(index == -1 ) {
+            if(patchInfo.getCumulativeID().equals(patchId)) {
                 PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
                 return new FailedResult(patchId, patchInfo);
             }
         }
+
+        //
+        boolean rollbackTo = false; // TODO configure 'rollbackTo' somewhere?
+        final List<String> patches = new ArrayList<String>();
+        if(index == -1) {
+            // Means we rollback a CP and all it's one-off patches
+            patches.addAll(patchInfo.getPatchIDs());
+            patches.add(patchId);
+        } else if (index == 0) {
+            patches.add(patchId);
+        } else {
+            if (rollbackTo) {
+                final List<String> oneOffs = new ArrayList<String>();
+                for(int i = 0; i <= index; i++) {
+                    patches.add(oneOffs.get(i));
+                }
+            } else {
+                // TODO perhaps we can allow this as well?
+                PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
+                return new FailedResult(patchId, patchInfo);
+            }
+        }
+
         final File historyDir = structure.getHistoryDir(patchId);
         if(! historyDir.exists()) {
             PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
@@ -257,9 +318,19 @@ public class PatchingTaskRunner {
                     throw new PatchingException("inconsistent patches for '%s' expected: %s, was: %s", cumulative, historyDir, cumulativePatches);
                 }
 
+                // Process potentially multiple rollbacks
                 final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, overrideAll, workDir);
+                final Map<Location, PatchingTasks.ContentTaskDefinition> definitions = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
+                for(final String rollback : patches) {
+                    try {
+                        // Rollback one off patches
+                        context.recordRollback(rollback, definitions);
+                    } catch (Exception e) {
+                        throw new PatchingException(e);
+                    }
+                }
                 // Rollback
-                return executeTasks(patch, context);
+                return executeTasks(patch, definitions, context);
 
             } finally {
                 PatchUtils.safeClose(is);

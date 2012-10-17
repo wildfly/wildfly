@@ -70,7 +70,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newHash = calculateHash(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, NO_CONTENT), newHash, ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT, ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -129,7 +129,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         File modulesPatchDir = env.getModulePatchDirectory(patch.getPatchId());
         assertDirExists(modulesPatchDir);
-        assertContains(modulesPatchDir, result.getPatchInfo().getModulePath()); 
+        assertContains(modulesPatchDir, result.getPatchInfo().getModulePath());
         assertDefinedAbsentModule(result.getPatchInfo().getModulePath(), moduleName);
     }
 

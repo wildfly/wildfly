@@ -53,15 +53,15 @@ class FileRemoveTask implements PatchingTask {
     private final MiscContentItem item;
     private final File target;
     private final File backup;
-    private final ContentModification modification;
+    private final PatchingTaskDescription description;
 
     private final List<ContentModification> rollback = new ArrayList<ContentModification>();
 
-    FileRemoveTask(MiscContentItem item, File target, File backup, ContentModification modification) {
-        this.item = item;
+    FileRemoveTask(PatchingTaskDescription description, File target, File backup) {
         this.target = target;
         this.backup = backup;
-        this.modification = modification;
+        this.description = description;
+        this.item = description.getContentItem(MiscContentItem.class);
     }
 
     @Override
@@ -76,7 +76,8 @@ class FileRemoveTask implements PatchingTask {
         // If the task is undone, the patch history will be deleted (including this backup).
         backup(target, Collections.<String>emptyList(), rollback);
         // See if the hash matches the metadata
-        final byte[] expected = modification.getTargetHash();
+
+        final byte[] expected = description.getModification().getTargetHash();
         final byte[] actual = PatchUtils.calculateHash(target);
         return Arrays.equals(expected, actual);
     }
