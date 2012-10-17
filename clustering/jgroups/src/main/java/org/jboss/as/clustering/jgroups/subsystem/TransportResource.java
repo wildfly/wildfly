@@ -1,16 +1,21 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -127,6 +132,11 @@ public class TransportResource extends SimpleResourceDefinition {
                 setSuffix("transport").
                 build();
 
+    // operations
+    private static final OperationDefinition TRANSPORT_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT))
+        .setParameters(TRANSPORT_PARAMETERS)
+        .build();
+
     static final OperationStepHandler TRANSPORT_ADD = new TransportLayerAdd(TRANSPORT_PARAMETERS);
     static final OperationStepHandler TRANSPORT_REMOVE = new TransportLayerRemove();
     static final TransportResource INSTANCE = new TransportResource();
@@ -160,5 +170,10 @@ public class TransportResource extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(PropertyResource.INSTANCE);
     }
 
+    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
+    @Override
+    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
+        registration.registerOperationHandler(TRANSPORT_ADD_DEFINITION, handler);
+    }
 
 }
