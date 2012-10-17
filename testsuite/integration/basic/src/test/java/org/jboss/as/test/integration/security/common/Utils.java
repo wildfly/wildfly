@@ -86,8 +86,10 @@ import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.callback.UsernamePasswordHandler;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.util.Base64;
 
 /**
@@ -414,8 +416,8 @@ public class Utils {
         }
     }
 
-    public static void saveWar(WebArchive war, String address) {
-        war.as(ZipExporter.class).exportTo(new File(address), true);
+    public static void saveArchive(Archive<?> archive, String filePath) {
+        archive.as(ZipExporter.class).exportTo(new File(filePath), true);
     }
 
     public static ModelControllerClient getModelControllerClient() throws UnknownHostException {
@@ -606,4 +608,38 @@ public class Utils {
         return host.toLowerCase(Locale.ENGLISH);
     }
 
+    /**
+     * Generates content of jboss-ejb3.xml file as an ShrinkWrap asset with the given security domain name.
+     * 
+     * @param securityDomain security domain name
+     * @return Asset instance
+     */
+    public static Asset getJBossEjb3XmlAsset(final String securityDomain) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<jboss:ejb-jar xmlns:jboss='http://www.jboss.com/xml/ns/javaee'");
+        sb.append("\n\txmlns='http://java.sun.com/xml/ns/javaee'");
+        sb.append("\n\txmlns:s='urn:security'");
+        sb.append("\n\tversion='3.1'");
+        sb.append("\n\timpl-version='2.0'>");
+        sb.append("\n\t<assembly-descriptor><s:security>");
+        sb.append("\n\t\t<ejb-name>*</ejb-name>");
+        sb.append("\n\t\t<s:security-domain>").append(securityDomain).append("</s:security-domain>");
+        sb.append("\n\t</s:security></assembly-descriptor>");
+        sb.append("\n</jboss:ejb-jar>");
+        return new StringAsset(sb.toString());
+    }
+
+    /**
+     * Generates content of jboss-web.xml file as an ShrinkWrap asset with the given security domain name.
+     * 
+     * @param securityDomain security domain name
+     * @return Asset instance
+     */
+    public static Asset getJBossWebXmlAsset(final String securityDomain) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<jboss-web>");
+        sb.append("\n\t<security-domain>").append(securityDomain).append("</security-domain>");
+        sb.append("\n</jboss-web>");
+        return new StringAsset(sb.toString());
+    }
 }

@@ -19,42 +19,52 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.xacml;
+package org.jboss.as.test.integration.security.common.ejb3;
 
+import javax.annotation.Resource;
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RolesAllowed;
+import javax.ejb.Remote;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 
 /**
- * A HelloBean.
+ * A simple implementation of {@link Hello} interface. It's annotated as a {@link Stateless} bean with {@link Hello} as a
+ * {@link Remote remote} interface. Access to the methods is protected and only {@value #ROLE_ALLOWED} role has access.
  * 
  * @author Josef Cacek
  */
-@DeclareRoles("TestRole")
+@DeclareRoles(HelloBean.ROLE_ALLOWED)
 @Stateless
-@RolesAllowed("TestRole")
+@RolesAllowed(HelloBean.ROLE_ALLOWED)
+@Remote(Hello.class)
 public class HelloBean implements Hello {
 
+    public static final String ROLE_ALLOWED = "TestRole";
+
     public static final String HELLO_WORLD = "Hello world!";
+
+    @Resource
+    private SessionContext context;
 
     // Public methods --------------------------------------------------------
 
     /**
      * Returns {@value #HELLO_WORLD}.
      * 
-     * @see org.jboss.as.test.integration.security.xacml.Hello#sayHello()
+     * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHelloWorld()
      */
-    public String sayHello() {
+    public String sayHelloWorld() {
         return HELLO_WORLD;
     }
 
     /**
-     * Returns echo of the given string (2x repeated).
+     * Returns greeting with name retrieved from {@link SessionContext#getCallerPrincipal()}.
      * 
-     * @see org.jboss.as.test.integration.security.xacml.Hello#echo(java.lang.String)
+     * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHello()
      */
-    public String echo(String name) {
-        return name + name;
+    public String sayHello() {
+        return "Hello " + context.getCallerPrincipal().getName() + "!";
     }
 
 }

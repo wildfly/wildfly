@@ -32,6 +32,7 @@ public class SecurityDomain {
     public static final String DEFAULT_NAME = "test-security-domain";
 
     private final String name;
+    private final String cacheType;
     private final SecurityModule[] loginModules;
     private final SecurityModule[] authorizationModules;
     private final SecurityModule[] mappingModules;
@@ -47,6 +48,7 @@ public class SecurityDomain {
         this.mappingModules = builder.mappingModules;
         this.jaspiAuthn = builder.jaspiAuthn;
         this.jsse = builder.jsse;
+        this.cacheType = builder.cacheType;
     }
 
     // Public methods --------------------------------------------------------
@@ -58,6 +60,15 @@ public class SecurityDomain {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Get the cacheType.
+     * 
+     * @return the cacheType.
+     */
+    public String getCacheType() {
+        return cacheType;
     }
 
     /**
@@ -104,11 +115,13 @@ public class SecurityDomain {
     public JSSE getJsse() {
         return jsse;
     }
+
     // Embedded classes ------------------------------------------------------
 
     public static class Builder {
 
         private String name;
+        private String cacheType;
         private SecurityModule[] loginModules;
         private SecurityModule[] authorizationModules;
         private SecurityModule[] mappingModules;
@@ -117,6 +130,11 @@ public class SecurityDomain {
 
         public Builder name(String name) {
             this.name = name;
+            return this;
+        }
+
+        public Builder cacheType(String cacheType) {
+            this.cacheType = cacheType;
             return this;
         }
 

@@ -19,11 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.xacml;
-
+package org.jboss.as.test.integration.security.common.ejb3;
 
 /**
- * A Hello interface.
+ * An interface for basic EJB tests.
  * 
  * @author Josef Cacek
  */
@@ -34,14 +33,13 @@ public interface Hello {
      * 
      * @return
      */
-    public abstract String sayHello();
+    public abstract String sayHelloWorld();
 
     /**
-     * Returns an echo.
+     * Returns returns greeting with caller principal name.
      * 
-     * @param name
      * @return
      */
-    public abstract String echo(String name);
+    public abstract String sayHello();
 
 }
