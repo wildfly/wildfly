@@ -79,7 +79,11 @@ final class ManagedProcess {
     }
 
     public boolean isRunning() {
-        return state == State.STARTED;
+        return (state == State.STARTED) || (state == State.STOPPING);
+    }
+
+    public boolean isStopping() {
+        return state == State.STOPPING;
     }
 
     enum State {

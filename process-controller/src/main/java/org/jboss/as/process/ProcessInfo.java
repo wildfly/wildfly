@@ -29,11 +29,13 @@ public final class ProcessInfo {
     private final String processName;
     private final byte[] authKey;
     private final boolean running;
+    private final boolean stopping;
 
-    ProcessInfo(final String processName, final byte[] authKey, final boolean running) {
+    ProcessInfo(final String processName, final byte[] authKey, final boolean running, final boolean stopping) {
         this.processName = processName;
         this.authKey = authKey;
         this.running = running;
+        this.stopping = stopping;
     }
 
     public String getProcessName() {
@@ -46,5 +48,9 @@ public final class ProcessInfo {
 
     public boolean isRunning() {
         return running;
+    }
+
+    public boolean isStopping() {
+        return stopping;
     }
 }
