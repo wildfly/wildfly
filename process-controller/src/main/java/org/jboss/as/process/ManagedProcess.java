@@ -258,6 +258,8 @@ final class ManagedProcess {
                 stopRequested = true;
                 StreamUtils.safeClose(stdin);
                 state = State.STOPPING;
+            } else if (state == State.STOPPING) {
+                return;
             } else {
                 new Thread() {
                     @Override
