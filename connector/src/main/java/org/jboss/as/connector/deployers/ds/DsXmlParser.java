@@ -45,7 +45,6 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 /**
  * TODO class javadoc.
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class DsXmlParser extends DsParser {
 
