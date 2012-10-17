@@ -44,13 +44,13 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
+import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -155,7 +155,7 @@ public class JACCForEarModulesTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, jarName + ".jar");
         jar.addClasses(HelloBeanDD.class);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, ArchivePaths.create("beans.xml"));
-        jar.addAsManifestResource(JACCForEarModulesTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsManifestResource(Utils.getJBossEjb3XmlAsset(SECURITY_DOMAIN_NAME), "jboss-ejb3.xml");
         jar.addAsManifestResource(JACCForEarModulesTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return jar;
     }
@@ -170,9 +170,7 @@ public class JACCForEarModulesTestCase {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, warName + ".war");
         war.addClass(ListJACCPoliciesServlet.class);
         war.addAsWebInfResource(JACCForEarModulesTestCase.class.getPackage(), "web.xml", "web.xml");
-        war.addAsWebInfResource(new StringAsset("<jboss-web>" + //
-                "<security-domain>" + SECURITY_DOMAIN_NAME + "</security-domain>" + //
-                "</jboss-web>"), "jboss-web.xml");
+        war.addAsWebInfResource(Utils.getJBossWebXmlAsset(SECURITY_DOMAIN_NAME), "jboss-web.xml");
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(war.toString(true));
         }

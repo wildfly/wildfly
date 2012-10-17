@@ -36,7 +36,7 @@ public class HelloBeanDD {
     /**
      * Returns {@value #HELLO_WORLD}.
      * 
-     * @see org.jboss.as.test.integration.security.xacml.Hello#sayHello()
+     * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHelloWorld()
      */
     public String sayHello() {
         return HELLO_WORLD;
@@ -45,7 +45,7 @@ public class HelloBeanDD {
     /**
      * Returns echo of the given string (2x repeated).
      * 
-     * @see org.jboss.as.test.integration.security.xacml.Hello#echo(java.lang.String)
+     * @see org.jboss.as.test.integration.security.common.ejb3.Hello#sayHello()
      */
     public String echo(String name) {
         return name + name;
