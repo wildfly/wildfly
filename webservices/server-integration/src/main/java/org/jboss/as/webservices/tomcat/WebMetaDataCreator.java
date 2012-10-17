@@ -302,7 +302,7 @@ final class WebMetaDataCreator {
         if (hasAuthMethod) {
             final SecurityMetaDataAccessorEJB ejbMDAccessor = getEjbSecurityMetaDataAccessor(dep);
             final SecurityRolesMetaData securityRolesMD = ejbMDAccessor.getSecurityRoles(dep);
-            final boolean hasSecurityRolesMD = securityRolesMD != null;
+            final boolean hasSecurityRolesMD = securityRolesMD != null && !securityRolesMD.isEmpty();
 
             if (hasSecurityRolesMD) {
                 ROOT_LOGGER.creatingSecurityRoles();
