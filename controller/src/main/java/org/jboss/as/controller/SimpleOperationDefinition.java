@@ -25,11 +25,14 @@
 package org.jboss.as.controller;
 
 import java.util.EnumSet;
+import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.EntryType;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -61,9 +64,7 @@ public class SimpleOperationDefinition extends OperationDefinition {
     }
 
     public SimpleOperationDefinition(final String name, final ResourceDescriptionResolver resolver, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags, AttributeDefinition... parameters) {
-        super(name, entryType, flags, null, null, null, null, parameters);
-        this.resolver = resolver;
-        this.attributeResolver = resolver;
+        this(name, resolver, resolver, entryType, flags, null, null, false, null, null, parameters);
     }
 
     protected SimpleOperationDefinition(final String name,
@@ -73,17 +74,28 @@ public class SimpleOperationDefinition extends OperationDefinition {
                                      final EnumSet<OperationEntry.Flag> flags,
                                      final ModelType replyType,
                                      final ModelType replyValueType,
+                                     final boolean replyAllowNull,
                                      final DeprecationData deprecationData,
                                      final AttributeDefinition[] replyParameters,
                                      final AttributeDefinition... parameters) {
-        super(name, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
+        super(name, entryType, flags, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
         this.resolver = resolver;
         this.attributeResolver = attributeResolver;
     }
 
     @Override
     public DescriptionProvider getDescriptionProvider() {
-        return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, deprecationData, replyParameters, parameters);
+        if (entryType == EntryType.PRIVATE) {
+            return PRIVATE_PROVIDER;
+        }
+        return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
     }
+
+    private static DescriptionProvider PRIVATE_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return new ModelNode();
+        }
+    };
 
 }

@@ -42,6 +42,7 @@ public abstract class OperationDefinition {
     protected final AttributeDefinition[] parameters;
     protected final ModelType replyType;
     protected final ModelType replyValueType;
+    protected final boolean replyAllowNull;
     protected final DeprecationData deprecationData;
     protected final AttributeDefinition[] replyParameters;
 
@@ -51,6 +52,7 @@ public abstract class OperationDefinition {
                                EnumSet<OperationEntry.Flag> flags,
                                final ModelType replyType,
                                final ModelType replyValueType,
+                               final boolean replyAllowNull,
                                final DeprecationData deprecationData,
                                AttributeDefinition[] replyParameters,
                                AttributeDefinition[] parameters
@@ -61,6 +63,7 @@ public abstract class OperationDefinition {
         this.parameters = parameters;
         this.replyType = replyType;
         this.replyValueType = replyValueType;
+        this.replyAllowNull = replyAllowNull;
         this.deprecationData = deprecationData;
         this.replyParameters = replyParameters;
     }

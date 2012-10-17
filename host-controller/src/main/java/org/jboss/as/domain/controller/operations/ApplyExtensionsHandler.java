@@ -40,9 +40,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PrivateOperationDefinitionBuilder;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
@@ -70,7 +70,10 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
     private final LocalHostControllerInfo localHostInfo;
     private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
-    public static final SimpleOperationDefinition DEFINITION = new PrivateOperationDefinitionBuilder(OPERATION_NAME).build();
+    //Private method does not need resources for description
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, null)
+        .setPrivateEntry()
+        .build();
 
 
     public ApplyExtensionsHandler(ExtensionRegistry extensionRegistry, LocalHostControllerInfo localHostInfo, final IgnoredDomainResourceRegistry ignoredResourceRegistry) {

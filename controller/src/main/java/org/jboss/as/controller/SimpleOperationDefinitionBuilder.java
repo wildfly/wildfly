@@ -46,6 +46,7 @@ public class SimpleOperationDefinitionBuilder {
     protected AttributeDefinition[] parameters = new AttributeDefinition[0];
     protected ModelType replyType;
     protected ModelType replyValueType;
+    protected boolean replyAllowNull;
     protected DeprecationData deprecationData = null;
     protected AttributeDefinition[] replyParameters = new AttributeDefinition[0];
 
@@ -63,7 +64,7 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     protected SimpleOperationDefinition internalBuild(ResourceDescriptionResolver resolver, ResourceDescriptionResolver attributeResolver) {
-        return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
+        return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters);
     }
 
     protected static EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
@@ -131,6 +132,11 @@ public class SimpleOperationDefinitionBuilder {
 
     public SimpleOperationDefinitionBuilder setReplyValueType(ModelType replyValueType) {
         this.replyValueType = replyValueType;
+        return this;
+    }
+
+    public SimpleOperationDefinitionBuilder allowReturnNull() {
+        this.replyAllowNull = true;
         return this;
     }
 

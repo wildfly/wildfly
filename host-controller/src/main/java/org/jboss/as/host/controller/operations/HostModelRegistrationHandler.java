@@ -50,7 +50,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PrivateOperationDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -70,7 +70,11 @@ import org.jboss.modules.ModuleClassLoader;
 public class HostModelRegistrationHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "register-host-model";
-    public static final OperationDefinition DEFINITION = new PrivateOperationDefinitionBuilder(OPERATION_NAME).build();
+
+    //Private method does not need resources for description
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, null)
+        .setPrivateEntry()
+        .build();
 
     private final HostControllerEnvironment hostControllerEnvironment;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
