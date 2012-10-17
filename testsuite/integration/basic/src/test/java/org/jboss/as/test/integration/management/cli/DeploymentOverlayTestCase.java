@@ -50,7 +50,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -196,7 +195,7 @@ public class DeploymentOverlayTestCase {
     public void testWildcardOverride() throws Exception {
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --wildcards=deployment.*\\.war");
+                + " --wildcards=deployment*.war");
 
         ctx.handle("deploy " + war1.getAbsolutePath());
         ctx.handle("deploy " + war2.getAbsolutePath());
@@ -211,9 +210,6 @@ public class DeploymentOverlayTestCase {
     }
 
     @Test
-    @Ignore
-    // TODO this because the cli is using wildcards instead of regexp
-    // to determine the matching deployments
     public void testWildcardOverrideWithRedeployAffected() throws Exception {
 
         ctx.handle("deploy " + war1.getAbsolutePath());
@@ -221,9 +217,9 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + " --wildcards=deployment.*\\.war --redeploy-affected");
+                + " --wildcards=deployment*.war --redeploy-affected");
 
-        Thread.sleep(2000);
+        //Thread.sleep(2000);
         String response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
@@ -249,7 +245,7 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("NON OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a.*\\.war");
+        ctx.handle("deployment-overlay link --name=overlay-test --wildcards=a*.war");
 
         response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
@@ -287,7 +283,7 @@ public class DeploymentOverlayTestCase {
         response = readResponse("another");
         assertEquals("OVERRIDDEN", response);
 
-        ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a.*\\.war");
+        ctx.handle("deployment-overlay remove --name=overlay-test --wildcards=a*.war");
 
         response = readResponse("deployment0");
         assertEquals("OVERRIDDEN", response);
@@ -334,7 +330,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war3.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath());
-        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a.*\\.war");
+        ctx.handle("deployment-overlay link --name=overlay-test --deployments=deployment0.war --wildcards=a*.war");
 
         String response = readResponse("deployment0");
         assertEquals("NON OVERRIDDEN", response);
@@ -349,10 +345,8 @@ public class DeploymentOverlayTestCase {
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
         assertEquals("NON OVERRIDDEN", response);
-        // TODO the below will fail because CLI uses simple wildcards to determine the target deployments
-        // instead of true regexp
-//        response = readResponse("another");
-//        assertEquals("OVERRIDDEN", response);
+        response = readResponse("another");
+        assertEquals("OVERRIDDEN", response);
     }
 
     protected String readResponse(String warName) throws IOException, ExecutionException, TimeoutException,

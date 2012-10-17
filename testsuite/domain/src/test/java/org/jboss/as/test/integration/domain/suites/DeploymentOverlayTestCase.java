@@ -58,7 +58,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
@@ -268,7 +267,7 @@ public class DeploymentOverlayTestCase {
         addr = new ModelNode();
         addr.add(ModelDescriptionConstants.SERVER_GROUP, "main-server-group");
         addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
-        addr.add(ModelDescriptionConstants.DEPLOYMENT, ".*\\.war");
+        addr.add(ModelDescriptionConstants.DEPLOYMENT, "*.war");
         op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
         op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         op.get(ModelDescriptionConstants.REGULAR_EXPRESSION).set(true);

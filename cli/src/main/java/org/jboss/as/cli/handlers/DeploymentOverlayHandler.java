@@ -1037,24 +1037,26 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 op.get(Util.REGULAR_EXPRESSION).set(true);
                 steps.add(op);
 
-                final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup);
-                if(!matchingDeployments.isEmpty()) {
-                    if(serverGroup == null) {
-                        for(String deployment : matchingDeployments) {
-                            final ModelNode step = new ModelNode();
-                            final ModelNode addr = step.get(Util.ADDRESS);
-                            addr.add(Util.DEPLOYMENT, deployment);
-                            step.get(Util.OPERATION).set(Util.REDEPLOY);
-                            steps.add(step);
-                        }
-                    } else {
-                        for(String deployment : matchingDeployments) {
-                            final ModelNode step = new ModelNode();
-                            final ModelNode addr = step.get(Util.ADDRESS);
-                            addr.add(Util.SERVER_GROUP, serverGroup);
-                            addr.add(Util.DEPLOYMENT, deployment);
-                            step.get(Util.OPERATION).set(Util.REDEPLOY);
-                            steps.add(step);
+                if(redeployAffected.isPresent(ctx.getParsedCommandLine())) {
+                    final List<String> matchingDeployments = Util.getMatchingDeployments(ctx.getModelControllerClient(), link, serverGroup);
+                    if(!matchingDeployments.isEmpty()) {
+                        if(serverGroup == null) {
+                            for(String deployment : matchingDeployments) {
+                                final ModelNode step = new ModelNode();
+                                final ModelNode addr = step.get(Util.ADDRESS);
+                                addr.add(Util.DEPLOYMENT, deployment);
+                                step.get(Util.OPERATION).set(Util.REDEPLOY);
+                                steps.add(step);
+                            }
+                        } else {
+                            for(String deployment : matchingDeployments) {
+                                final ModelNode step = new ModelNode();
+                                final ModelNode addr = step.get(Util.ADDRESS);
+                                addr.add(Util.SERVER_GROUP, serverGroup);
+                                addr.add(Util.DEPLOYMENT, deployment);
+                                step.get(Util.OPERATION).set(Util.REDEPLOY);
+                                steps.add(step);
+                            }
                         }
                     }
                 }
