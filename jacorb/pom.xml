@@ -102,8 +102,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjts</artifactId>
+            <groupId>org.jboss.jbossts.jts</groupId>
+            <artifactId>jbossjts-jacorb</artifactId>
         </dependency>
 
         <dependency>
