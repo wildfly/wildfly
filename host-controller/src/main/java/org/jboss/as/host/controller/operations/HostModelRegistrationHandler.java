@@ -45,15 +45,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrivateOperationDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -70,7 +67,7 @@ import org.jboss.modules.ModuleClassLoader;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HostModelRegistrationHandler implements OperationStepHandler, DescriptionProvider {
+public class HostModelRegistrationHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "register-host-model";
     public static final OperationDefinition DEFINITION = new PrivateOperationDefinitionBuilder(OPERATION_NAME).build();
@@ -85,12 +82,6 @@ public class HostModelRegistrationHandler implements OperationStepHandler, Descr
         this.hostControllerEnvironment = hostControllerEnvironment;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.hostModelRegistrar = hostModelRegistrar;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        // This is a private operation, so this op will not be called
-        return new ModelNode();
     }
 
     /**
