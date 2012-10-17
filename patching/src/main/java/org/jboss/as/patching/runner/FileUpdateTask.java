@@ -39,32 +39,13 @@ import java.util.Arrays;
  */
 final class FileUpdateTask extends AbstractFileTask {
 
-    FileUpdateTask(MiscContentItem item, File target, File backup, ContentModification modification) {
-        super(target, backup, item, modification);
+    FileUpdateTask(PatchingTaskDescription description, File target, File backup) {
+        super(description, target, backup);
     }
 
-    public void execute(final PatchingContext context) throws IOException {
-
-        final InputStream is = context.getLoader().openContentStream(item);
-        try {
-            // Replace the file
-            final byte[] hash = PatchUtils.copy(is, target);
-            final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
-            final ContentModification rollback = createRollback(context, item, backupItem, hash);
-            context.recordRollbackAction(rollback);
-        } finally {
-            PatchUtils.safeClose(is);
-        }
-    }
-
-    protected ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
-        final byte[] expected = item.getContentHash();
-        // TODO Ignored resources
-        if(! Arrays.equals(expected, targetHash)) {
-            // TODO rollback if the content hash is different than in the metadata?
-            PatchLogger.ROOT_LOGGER.warnf("wrong content has for item (%s) ", item); // TODO i18n
-        }
-        return new ContentModification(backupItem, targetHash, ModificationType.MODIFY);
+    @Override
+    ContentModification createRollbackEntry(ContentModification original, MiscContentItem item, byte[] targetHash) {
+        return new ContentModification(item, targetHash, ModificationType.MODIFY);
     }
 
 }

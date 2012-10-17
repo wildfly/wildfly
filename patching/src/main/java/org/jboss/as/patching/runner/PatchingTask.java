@@ -69,50 +69,50 @@ public interface PatchingTask {
 
     static final class Factory {
 
-        static PatchingTask create(final ContentModification modification, final PatchingContext context) {
-            final ContentItem item = modification.getItem();
+        static PatchingTask create(final PatchingTaskDescription description, final PatchingContext context) {
+            final ContentItem item = description.getContentItem();
             switch (item.getContentType()) {
                 case BUNDLE:
-                    return createBundleTask(modification, (BundleItem)item, context);
+                    return createBundleTask(description, (BundleItem)item, context);
                 case MISC:
-                    return createMiscTask(modification, (MiscContentItem) item, context);
+                    return createMiscTask(description, (MiscContentItem) item, context);
                 case MODULE:
-                    return createModuleTask(modification, (ModuleItem) item, context);
+                    return createModuleTask(description, (ModuleItem) item, context);
                 default:
                     throw new IllegalStateException();
             }
         }
 
-        static PatchingTask createBundleTask(final ContentModification modification, final BundleItem item, final PatchingContext context) {
-            final ModificationType type = modification.getType();
+        static PatchingTask createBundleTask(final PatchingTaskDescription description, final BundleItem item, final PatchingContext context) {
+            final ModificationType type = description.getModificationType();
             if(type == ModificationType.REMOVE) {
-                return new ModuleRemoveTask(item, modification.getTargetHash());
+                return new ModuleRemoveTask(description);
             } else {
-                return new ModuleUpdateTask(item, modification.getTargetHash(), type == ModificationType.ADD);
+                return new ModuleUpdateTask(description);
             }
         }
 
-        static PatchingTask createModuleTask(final ContentModification modification, final ModuleItem item, final PatchingContext context) {
-            final ModificationType type = modification.getType();
+        static PatchingTask createModuleTask(final PatchingTaskDescription description, final ModuleItem item, final PatchingContext context) {
+            final ModificationType type = description.getModificationType();
             if(type == ModificationType.REMOVE) {
-                return new ModuleRemoveTask(item, modification.getTargetHash());
+                return new ModuleRemoveTask(description);
             } else {
-                return new ModuleUpdateTask(item, modification.getTargetHash(), type == ModificationType.ADD);
+                return new ModuleUpdateTask(description);
             }
         }
 
-        static PatchingTask createMiscTask(final ContentModification modification, final MiscContentItem item, final PatchingContext context) {
+        static PatchingTask createMiscTask(final PatchingTaskDescription description, final MiscContentItem item, final PatchingContext context) {
             // Create the task
             final File target = context.getTargetFile(item);
             final File backup = context.getBackupFile(item);
-            final ModificationType type = modification.getType();
+            final ModificationType type = description.getModificationType();
             switch (type) {
                 case ADD:
-                    return new FileAddTask(item, target, backup, modification);
+                    return new FileAddTask(description, target, backup);
                 case MODIFY:
-                    return new FileUpdateTask(item, target, backup, modification);
+                    return new FileUpdateTask(description, target, backup);
                 case REMOVE:
-                    return new FileRemoveTask(item, target, backup, modification);
+                    return new FileRemoveTask(description, target, backup);
                 default:
                     throw new IllegalStateException();
             }

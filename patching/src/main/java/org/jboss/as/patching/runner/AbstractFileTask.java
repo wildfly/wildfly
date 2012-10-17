@@ -22,86 +22,73 @@
 
 package org.jboss.as.patching.runner;
 
-import static org.jboss.as.patching.runner.PatchUtils.copy;
+import org.jboss.as.patching.PatchMessages;
 
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.SyncFailedException;
-import java.util.Arrays;
 
 /**
  * Base {@linkplain PatchingTask} for misc file updates.
  *
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractFileTask implements PatchingTask {
-
-    static final byte[] NO_CONTENT = new byte[0];
+abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
 
     final File target; // the target file
     final File backup; // the backup file
-    final MiscContentItem item;
-    final ContentModification modification;
 
-    byte[] backupHash = NO_CONTENT;
-
-    protected AbstractFileTask(File target, File backup, MiscContentItem item, ContentModification modification) {
+    protected AbstractFileTask(PatchingTaskDescription description, File target, File backup) {
+        super(description, MiscContentItem.class);
         this.target = target;
         this.backup = backup;
-        this.modification = modification;
-        this.item = item;
     }
 
     /**
-     * Create the rollback modification item.
+     * Create the rollback item.
      *
-     * @param context the patching context
-     * @param item the content item
-     * @param backupItem the backup content item
-     * @param targetHash the target hash for the modification
+     * @param original the original content modification
+     * @param item the new misc content item
+     * @param targetHash the new target hash
      * @return the rollback modification item
      */
-    protected abstract ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash);
+    abstract ContentModification createRollbackEntry(ContentModification original, MiscContentItem item, byte[] targetHash);
 
-    public MiscContentItem getContentItem() {
-        return item;
-    }
-
-    public boolean prepare(final PatchingContext context) throws IOException {
+    @Override
+    byte[] backup(PatchingContext context) throws IOException {
         if(target.isFile()) {
             // Backup the original in the history directory
-            backupHash = PatchUtils.copy(target, backup);
+            return PatchUtils.copy(target, backup);
         }
-        // See if the hash matches the metadata
-        final byte[] expected = modification.getTargetHash();
-        return Arrays.equals(expected, backupHash);
+        return NO_CONTENT;
     }
 
-    public void execute(final PatchingContext context) throws IOException {
+    @Override
+    byte[] apply(PatchingContext context, PatchContentLoader loader) throws IOException {
+        final MiscContentItem item = contentItem;
         if(item.isDirectory()) {
-            if(! target.mkdir()) {
-                throw new IOException();
+            if(! target.mkdir() && ! target.isDirectory()) {
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
             }
-            final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash, item.isDirectory(), item.isAffectsRuntime());
-            final ContentModification rollback = createRollback(context, item, backupItem, NO_CONTENT);
-            context.recordRollbackAction(rollback);
+            return NO_CONTENT;
         } else {
-            final InputStream is = context.getLoader().openContentStream(item);
+            final InputStream is = loader.openContentStream(item);
             try {
                 // Replace the file
-                final byte[] hash = PatchUtils.copy(is, target);
-                final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash, item.isDirectory(), item.isAffectsRuntime());
-                final ContentModification rollback = createRollback(context, item, backupItem, hash);
-                context.recordRollbackAction(rollback);
+                return PatchUtils.copy(is, target);
             } finally {
                 PatchUtils.safeClose(is);
             }
         }
+    }
+
+    @Override
+    ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash) {
+        final MiscContentItem item = new MiscContentItem(contentItem.getName(), contentItem.getPath(), itemHash, contentItem.isDirectory(), contentItem.isAffectsRuntime());
+        return createRollbackEntry(original, item, targetHash);
     }
 
 }

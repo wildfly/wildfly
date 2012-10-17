@@ -47,7 +47,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Emanuel Muckenhuber
@@ -56,7 +58,6 @@ class PatchingContext {
 
     private final Patch patch;
     private final PatchInfo info;
-    private final PatchContentLoader loader;
     private final DirectoryStructure structure;
 
     private final File target;
@@ -66,6 +67,7 @@ class PatchingContext {
 
     private ContentVerificationPolicy verificationPolicy;
     private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
+    private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
 
     private boolean rollbackOnly;
 
@@ -85,8 +87,11 @@ class PatchingContext {
         if(!backup.mkdirs()) {
             PatchMessages.MESSAGES.cannotCreateDirectory(backup.getAbsolutePath());
         }
+        final PatchingContext context = new PatchingContext(patch, info, structure, backup, policy);
+        // Register the patch loader
         final PatchContentLoader loader = PatchContentLoader.create(workDir);
-        return new PatchingContext(patch, info, structure, backup, policy, loader);
+        context.contentLoaders.put(patch.getPatchId(), loader);
+        return context;
     }
 
     /**
@@ -102,29 +107,30 @@ class PatchingContext {
     static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir) {
         // backup is just a temp dir
         final File backup = workDir;
-        // setup the content loader paths
-        final String patchId = patch.getPatchId();
-        final File historyDir = structure.getHistoryDir(patchId);
-        final File miscRoot = new File(historyDir, PatchContentLoader.MISC);
-        final File modulesRoot = structure.getModulePatchDirectory(patchId);
-        final File bundlesRoot = structure.getBundlesPatchDirectory(patchId);
-        final PatchContentLoader loader = new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
         //
         final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
-        return new PatchingContext(patch, current, structure, backup, policy, loader);
+        return new PatchingContext(patch, current, structure, backup, policy);
     }
 
     private PatchingContext(final Patch patch, final PatchInfo info, final DirectoryStructure structure,
-                            final File backup, final ContentVerificationPolicy policy, final PatchContentLoader loader) {
+                            final File backup, final ContentVerificationPolicy policy) {
         this.patch = patch;
         this.info = info;
-        this.loader = loader;
         this.backup = backup;
         this.structure = structure;
         this.verificationPolicy = policy;
         this.miscBackup = new File(backup, PatchContentLoader.MISC);
         this.configBackup = new File(backup, DirectoryStructure.CONFIGURATION);
         this.target = structure.getInstalledImage().getJbossHome();
+    }
+
+    /**
+     * Get the current patch type.
+     *
+     * @return the patch type
+     */
+    public Patch.PatchType getPatchType() {
+        return patch.getPatchType();
     }
 
     /**
@@ -137,12 +143,53 @@ class PatchingContext {
     }
 
     /**
-     * Get the patch content loader.
+     * Record a patch for rollback.
      *
-     * @return the patch content loader
+     * @param patchId the patch id.
+     * @param definitions the definitions
+     * @throws XMLStreamException
+     * @throws IOException
      */
-    public PatchContentLoader getLoader() {
-        return loader;
+    void recordRollback(final String patchId, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions) throws XMLStreamException, IOException {
+        // Rollback patches
+        PatchingTasks.rollback(structure, patchId, definitions);
+        // setup the content loader paths
+        final File historyDir = structure.getHistoryDir(patchId);
+        final File miscRoot = new File(historyDir, PatchContentLoader.MISC);
+        final File modulesRoot = structure.getModulePatchDirectory(patchId);
+        final File bundlesRoot = structure.getBundlesPatchDirectory(patchId);
+        final PatchContentLoader loader = new PatchContentLoader(miscRoot, bundlesRoot, modulesRoot);
+        //
+        contentLoaders.put(patchId, loader);
+    }
+
+    /**
+     * Apply the patch.
+     *
+     * @param patch the patch
+     * @param definitions
+     * @throws XMLStreamException
+     * @throws IOException
+     */
+    void applyPatch(final Patch patch, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions) throws XMLStreamException, IOException {
+        if(patch != this.patch) {
+            // TODO allow multiple patches at once?
+            throw new IllegalStateException();
+        }
+        // Apply the patch
+        PatchingTasks.apply(patch, definitions);
+    }
+
+    /**
+     * Create a task based on a merged definiton.
+     *
+     * @param definition the patching task definiton
+     * @return the patching task
+     */
+    PatchingTask createTask(final PatchingTasks.ContentTaskDefinition definition) {
+        final PatchContentLoader contentLoader = contentLoaders.get(definition.getTarget().getPatchId());
+        final PatchingTaskDescription description = PatchingTaskDescription.create(definition, contentLoader);
+        return PatchingTask.Factory.create(description, this);
     }
 
     /**
@@ -288,11 +335,16 @@ class PatchingContext {
 
                 @Override
                 public void rollback() {
+                    // TODO cleanup
                     try {
-                        // Persist the original info
-                        persist(info);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        undo();
+                    } finally {
+                        try {
+                            // Persist the original info
+                            persist(info);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             };
@@ -316,10 +368,16 @@ class PatchingContext {
         // Use the misc backup location for the content items
         final PatchContentLoader loader = new PatchContentLoader(miscBackup, null, null);
         final File backup = null; // We skip the prepare step, so there should be no backup
-        final PatchingContext undoContext = new PatchingContext(patch, info, structure, backup, ContentVerificationPolicy.OVERRIDE_ALL, loader);
+        final PatchingContext undoContext = new PatchingContext(patch, info, structure, backup, ContentVerificationPolicy.OVERRIDE_ALL);
 
         for(final ContentModification modification : rollbackActions) {
-            final PatchingTask task = PatchingTask.Factory.create(modification, undoContext);
+            final ContentType type = modification.getItem().getContentType();
+            if(type == ContentType.MODULE || type == ContentType.BUNDLE) {
+                // We can skip all module and bundle updates
+                continue;
+            }
+            final PatchingTaskDescription description = new PatchingTaskDescription(patch.getPatchId(), modification, loader, false, false);
+            final PatchingTask task = PatchingTask.Factory.create(description, undoContext);
             try {
                 // Just execute the task directly and copy the files back
                 task.execute(undoContext);
