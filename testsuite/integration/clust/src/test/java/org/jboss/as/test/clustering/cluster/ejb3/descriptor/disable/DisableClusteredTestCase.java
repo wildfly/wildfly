@@ -29,8 +29,6 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -41,6 +39,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.NodeNameGetter;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -61,7 +60,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DisableClusteredTestCase {
+public class DisableClusteredTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(DisableClusteredTestCase.class);
     private static final String ARCHIVE_NAME = "not-creating-cluster-dd";
     private static boolean node1Running = false;
@@ -72,11 +71,6 @@ public class DisableClusteredTestCase {
     
     private static final String PROPERTIES_FILENAME = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
     
-    @ArquillianResource
-    private ContainerController container;
-    @ArquillianResource
-    private Deployer deployer;
-
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> createDeploymentForContainer1() {
@@ -105,17 +99,14 @@ public class DisableClusteredTestCase {
         context = new InitialContext(env);
     }
 
-    @Test
-    @InSequence(-1)
-    public void startContainers() {
-        container.start(CONTAINER_1);
-        deployer.deploy(DEPLOYMENT_1);
+    @Override
+    protected void setUp() {
+        super.setUp();
+        deploy(DEPLOYMENTS);
         node1Running = true;
-        container.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2);
         node2Running = true;
     }
-    
+
     /**
      * Validate the stateful bean is not clustered by having failover not work
      */
@@ -132,10 +123,10 @@ public class DisableClusteredTestCase {
 
         // Now we switch off node 1, failover should not be provided
         if (node1.equals(NODE_1)) {
-            container.stop(CONTAINER_1);
+            stop(CONTAINER_1);
             node1Running = false;
         } else {
-            container.stop(CONTAINER_2);
+            stop(CONTAINER_2);
             node2Running = false;
         }
 
@@ -167,11 +158,11 @@ public class DisableClusteredTestCase {
                 "//DisableClusteredAnnotationStateless!" + DisableClusteredRemote.class.getName());
 
         if (!node1Running) {
-            container.start(CONTAINER_1);
+            start(CONTAINER_1);
             node1Running = true;
         }
         if (!node2Running) {
-            container.start(CONTAINER_2);
+            start(CONTAINER_2);
             node2Running = true;
         }
 
@@ -184,22 +175,5 @@ public class DisableClusteredTestCase {
             Assert.assertEquals(node1, stateless.getNodeState());
         }
     }
-    
-    @Test
-    @InSequence(3)
-    public void stopAndUndeploy() {
-        // returning to the previous context selector, @see {RemoteEJBClientDDBasedSFSBFailoverTestCase}
-        if (previousSelector != null) {
-            EJBClientContext.setSelector(previousSelector);
-        }
-        
-        if (!node1Running) {
-            deployer.undeploy(DEPLOYMENT_1);
-            container.stop(CONTAINER_1);
-        }
-        if (!node2Running) {
-            deployer.undeploy(DEPLOYMENT_2);
-            container.stop(CONTAINER_2);
-        }
-    }
+
 }

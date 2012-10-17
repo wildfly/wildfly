@@ -22,6 +22,7 @@
 package org.jboss.as.test.clustering.cluster.management;
 
 import java.net.URL;
+
 import junit.framework.Assert;
 import org.jboss.arquillian.container.test.api.*;
 import org.jboss.arquillian.junit.Arquillian;
@@ -32,19 +33,22 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.JndiServlet;
 import org.jboss.as.test.integration.management.util.ModelUtil;
+
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
+
 import org.jboss.as.test.clustering.NodeUtil;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 
 /**
- *
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -101,11 +105,12 @@ public class CacheTestCase extends AbstractMgmtTestBase {
 
         NodeUtil.stop(controller, deployer, CONTAINER_1, DEPLOYMENT_1);
     }
+
     @Test
     public void testLocalCache(@ArquillianResource ManagementClient managementClient, @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
-        ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
+        ModelNode op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
                 ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("jndi-name").set("java:jboss/caches/TestCache");
@@ -121,7 +126,7 @@ public class CacheTestCase extends AbstractMgmtTestBase {
                     ModelDescriptionConstants.REMOVE);
             executeOperation(op);
         }
-        
+
         // check that it is unregistered
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
@@ -129,10 +134,10 @@ public class CacheTestCase extends AbstractMgmtTestBase {
 
 
     @Test
-    public void testDistributedCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {
+    public void testDistributedCache(@ArquillianResource ManagementClient managementClient, @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
-        ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
+        ModelNode op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
                 ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("mode").set("ASYNC");
@@ -149,17 +154,17 @@ public class CacheTestCase extends AbstractMgmtTestBase {
                     ModelDescriptionConstants.REMOVE);
             executeOperation(op);
         }
-        
+
         // check that it is unregistered
         String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
         Assert.assertEquals(JndiServlet.NOT_FOUND, jndiClass);
     }
 
     @Test
-    public void testReplicatedCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {
+    public void testReplicatedCache(@ArquillianResource ManagementClient managementClient, @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
-        ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
+        ModelNode op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
                 ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("mode").set("ASYNC");
@@ -183,10 +188,10 @@ public class CacheTestCase extends AbstractMgmtTestBase {
     }
 
     @Test
-    public void testInvalidationCache(@ArquillianResource ManagementClient managementClient,  @ArquillianResource URL url) throws Exception {
+    public void testInvalidationCache(@ArquillianResource ManagementClient managementClient, @ArquillianResource URL url) throws Exception {
         this.managementClient = managementClient;
         // add local cache
-        ModelNode  op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,
+        ModelNode op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,
                 ModelDescriptionConstants.ADD);
         op.get("start").set("EAGER");
         op.get("mode").set("ASYNC");
