@@ -28,4 +28,7 @@ public class VaultReaderException extends Exception {
     public VaultReaderException(Throwable cause) {
         super(cause);
     }
+    public VaultReaderException(String message, Throwable cause) {
+        super(message,cause);
+    }
 }

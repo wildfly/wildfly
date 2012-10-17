@@ -39,16 +39,18 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("securitysubsystemv1.xml");
 
-        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                        .setSubsystemXml(subsystemXml)
+                        .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
-        System.out.println(marshalled);
-
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                        .setSubsystemXml(marshalled)
+                        .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -60,16 +62,18 @@ public class SecurityDomainModelv1UnitTestCase extends AbstractSubsystemTest {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml = readResource("securitysubsystemJASPIv1.xml");
 
-        KernelServices servicesA = super.installInController(AdditionalInitialization.MANAGEMENT, subsystemXml);
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                        .setSubsystemXml(subsystemXml)
+                        .build();
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         String marshalled = servicesA.getPersistedSubsystemXml();
         servicesA.shutdown();
 
-        System.out.println(marshalled);
-
         //Install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(AdditionalInitialization.MANAGEMENT, marshalled);
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                        .setSubsystemXml(marshalled)
+                        .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical

@@ -34,9 +34,13 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -54,7 +58,10 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition CACHE_TYPE =
             new SimpleAttributeDefinitionBuilder(Constants.CACHE_TYPE, ModelType.STRING, true).build();
-
+    static SimpleMapAttributeDefinition MODULE_OPTIONS = new SimpleMapAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
+            .setXmlName(Element.MODULE_OPTION.getLocalName())
+            .setAllowExpression(true)
+            .build();
     private final boolean registerRuntimeOnly;
 
     SecurityDomainResourceDefinition(boolean registerRuntimeOnly) {
@@ -65,6 +72,7 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(CACHE_TYPE, null, new SecurityDomainReloadWriteHandler(CACHE_TYPE));
+        resourceRegistration.registerReadWriteAttribute(MODULE_OPTIONS, null, new SecurityDomainReloadWriteHandler(MODULE_OPTIONS));
     }
 
     @Override
@@ -72,11 +80,8 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
 
         if (registerRuntimeOnly) {
-            EnumSet<Flag> runtimeOnly = EnumSet.of(Flag.RUNTIME_ONLY);
-            resourceRegistration.registerOperationHandler(Constants.LIST_CACHED_PRINCIPALS,
-                    ListCachePrincipals.INSTANCE, SecuritySubsystemDescriptions.LIST_CACHED_PRINCIPALS, runtimeOnly);
-            resourceRegistration.registerOperationHandler(Constants.FLUSH_CACHE, FlushOperation.INSTANCE,
-                    SecuritySubsystemDescriptions.FLUSH_CACHE, runtimeOnly);
+            resourceRegistration.registerOperationHandler(ListCachePrincipals.DEFINITION, ListCachePrincipals.INSTANCE);
+            resourceRegistration.registerOperationHandler(FlushOperation.DEFINITION,FlushOperation.INSTANCE);
         }
     }
 
@@ -96,6 +101,13 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     static class ListCachePrincipals extends AbstractRuntimeOnlyHandler {
         static final ListCachePrincipals INSTANCE = new ListCachePrincipals();
+        static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.LIST_CACHED_PRINCIPALS,
+                SecurityExtension.getResourceDescriptionResolver(Constants.LIST_CACHED_PRINCIPALS))
+                .setRuntimeOnly()
+                .setReplyType(ModelType.LIST)
+                .setReplyValueType(ModelType.STRING)
+                .build();
+
 
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -126,6 +138,11 @@ public class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
 
     static final class FlushOperation extends AbstractRuntimeOnlyHandler {
         static final FlushOperation INSTANCE = new FlushOperation();
+        static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinition(Constants.FLUSH_CACHE,
+                SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN),
+                OperationEntry.EntryType.PUBLIC, EnumSet.of(Flag.RUNTIME_ONLY),
+                new SimpleAttributeDefinition(Constants.PRINCIPAL_ARGUMENT, ModelType.STRING, true)
+                );
 
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
