@@ -32,8 +32,8 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PrivateOperationDefinitionBuilder;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostRunningModeControl;
@@ -51,7 +51,10 @@ public class StartServersHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "start-servers";
 
-    public static final OperationDefinition DEFINITION = new PrivateOperationDefinitionBuilder(OPERATION_NAME).build();
+  //Private method does not need resources for description
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, null)
+        .setPrivateEntry()
+        .build();
 
     private final ServerInventory serverInventory;
     private final HostControllerEnvironment hostControllerEnvironment;

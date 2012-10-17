@@ -23,6 +23,7 @@
 package org.jboss.as.controller.descriptions;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -50,7 +51,8 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
     private final ResourceDescriptionResolver attributeDescriptionResolver;
     private final ModelType replyType;
     private final ModelType replyValueType;
-    private DeprecationData deprecationData;
+    private final boolean replyAllowNull;
+    private final DeprecationData deprecationData;
     private final AttributeDefinition[] replyParameters;
     private final AttributeDefinition[] parameters;
 
@@ -65,7 +67,6 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final DeprecationData deprecationData,
                                                final AttributeDefinition... parameters) {
         this(operationName, descriptionResolver, null, null, parameters);
-        this.deprecationData = deprecationData;
     }
 
     public DefaultOperationDescriptionProvider(final String operationName,
@@ -100,15 +101,30 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final DeprecationData deprecationData,
                                                final AttributeDefinition[] replyParameters,
                                                final AttributeDefinition... parameters) {
+        this(operationName, descriptionResolver, attributeDescriptionResolver, replyType, replyValueType, false, deprecationData, replyParameters, parameters);
+    }
+
+    public DefaultOperationDescriptionProvider(final String operationName,
+            final ResourceDescriptionResolver descriptionResolver,
+            final ResourceDescriptionResolver attributeDescriptionResolver,
+            final ModelType replyType,
+            final ModelType replyValueType,
+            final boolean replyAllowNull,
+            final DeprecationData deprecationData,
+            final AttributeDefinition[] replyParameters,
+            final AttributeDefinition... parameters) {
         this.operationName = operationName;
         this.descriptionResolver = descriptionResolver;
         this.attributeDescriptionResolver = attributeDescriptionResolver;
         this.replyType = replyType;
         this.replyValueType = replyValueType;
+        this.replyAllowNull = replyAllowNull;
         this.parameters = parameters;
         this.deprecationData = deprecationData;
         this.replyParameters = replyParameters;
     }
+
+
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
@@ -163,6 +179,10 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             if (replyDesc != null) {
                 reply.get(DESCRIPTION).set(replyDesc);
             }
+        }
+        if (replyAllowNull) {
+            reply.get(NILLABLE).set(true);
+
         }
         if (deprecationData != null) {
             ModelNode deprecated = result.get(ModelDescriptionConstants.DEPRECATED);

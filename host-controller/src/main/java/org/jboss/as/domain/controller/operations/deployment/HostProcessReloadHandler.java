@@ -114,7 +114,7 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
 
         @Override
         public SimpleOperationDefinition internalBuild(final ResourceDescriptionResolver resolver, final ResourceDescriptionResolver attributeResolver) {
-            return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters) {
+            return new SimpleOperationDefinition(name, resolver, attributeResolver, entryType, flags, replyType, replyValueType, false, deprecationData, replyParameters, parameters) {
                 @Override
                 public DescriptionProvider getDescriptionProvider() {
                     return new DescriptionProvider() {

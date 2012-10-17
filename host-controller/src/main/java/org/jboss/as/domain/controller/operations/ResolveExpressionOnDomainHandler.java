@@ -26,6 +26,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.descriptions.DomainResolver;
@@ -43,9 +44,10 @@ public class ResolveExpressionOnDomainHandler implements OperationStepHandler {
 
     public static final ResolveExpressionOnDomainHandler INSTANCE = new ResolveExpressionOnDomainHandler();
 
-    public static final OperationDefinition DEFINITION = new ResolveExpressionHandler.NillableReturnTypeOperationDefinitionBuilder(OPERATION_NAME, DomainResolver.getResolver("domain"))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, DomainResolver.getResolver("domain"))
             .addParameter(ResolveExpressionHandler.EXPRESSION)
             .setReplyType(ModelType.STRING)
+            .allowReturnNull()
             .setReadOnly()
             .withFlag(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)
             .build();
