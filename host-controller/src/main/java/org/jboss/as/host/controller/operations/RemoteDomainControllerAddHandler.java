@@ -42,7 +42,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -72,7 +72,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
             .setValidator(new StringLengthValidator(1, true))
             .build();
 
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("host"))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
             .setParameters(PORT, HOST, USERNAME, SECURITY_REALM)
             .build();
     private final ManagementResourceRegistration rootRegistration;

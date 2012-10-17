@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -39,7 +39,7 @@ public final class JVMEnvironmentVariableRemoveHandler implements OperationStepH
     public static final String OPERATION_NAME = "remove-item-from-environment-variables-list";
     static final JVMEnvironmentVariableRemoveHandler INSTANCE = new JVMEnvironmentVariableRemoveHandler();
 
-    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("jvm"))
+    public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("jvm"))
         .addParameter(NAME)
         .build();
 

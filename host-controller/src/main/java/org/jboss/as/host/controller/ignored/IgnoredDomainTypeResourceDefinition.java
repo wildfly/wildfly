@@ -37,7 +37,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -58,7 +58,7 @@ public class IgnoredDomainTypeResourceDefinition extends SimpleResourceDefinitio
             .build();
 
     IgnoredDomainTypeResourceDefinition() {
-        super(PathElement.pathElement(IGNORED_RESOURCE_TYPE), HostRootDescription.getResourceDescriptionResolver(IGNORED_RESOURCE_TYPE),
+        super(PathElement.pathElement(IGNORED_RESOURCE_TYPE), HostResolver.getResolver(IGNORED_RESOURCE_TYPE),
                 new IgnoredDomainTypeAddHandler(),
                 new IgnoredDomainTypeRemoveHandler(),
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);

@@ -28,7 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.host.controller.descriptions.HostRootDescription;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -41,7 +41,7 @@ public class ResolveExpressionOnHostHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "resolve-expression-on-domain";
 
-    public static final OperationDefinition DEFINITION = new ResolveExpressionHandler.NillableReturnTypeOperationDefinitionBuilder(OPERATION_NAME, HostRootDescription.getResourceDescriptionResolver("host"))
+    public static final OperationDefinition DEFINITION = new ResolveExpressionHandler.NillableReturnTypeOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
             .addParameter(ResolveExpressionHandler.EXPRESSION)
             .setReplyType(ModelType.STRING)
             .setReadOnly()

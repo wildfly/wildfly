@@ -108,7 +108,7 @@ public class HostEnvironmentResourceDescription extends SimpleResourceDefinition
      * @param environment the environment the resource is based on.
      */
     private HostEnvironmentResourceDescription(final HostControllerEnvironment environment) {
-        super(RESOURCE_PATH, HostRootDescription.getResourceDescriptionResolver("host.env"));
+        super(RESOURCE_PATH, HostResolver.getResolver("host.env"));
         osh = new HostEnvironmentReadHandler(environment);
     }
 
