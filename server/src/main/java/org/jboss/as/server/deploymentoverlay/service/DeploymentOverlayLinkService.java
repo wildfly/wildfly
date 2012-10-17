@@ -38,6 +38,23 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
 
     public static final ServiceName SERVICE_NAME = DeploymentOverlayIndexService.SERVICE_NAME.append("deploymentOverlayLinkService");
 
+    private static String wildcardToJavaRegexp(String expr) {
+        if(expr == null) {
+            throw new IllegalArgumentException("expr is null");
+        }
+        final StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < expr.length(); ++i) {
+            final char ch = expr.charAt(i);
+            if(ch == '*') {
+                buf.append('.');
+            } else if(ch == '.') {
+                buf.append('\\');
+            }
+            buf.append(ch);
+        }
+        return buf.toString();
+    }
+
     private final InjectedValue<DeploymentOverlayIndexService> deploymentOverlayIndexServiceInjectedValue = new InjectedValue<DeploymentOverlayIndexService>();
     private final InjectedValue<DeploymentOverlayService> deploymentOverlayServiceInjectedValue = new InjectedValue<DeploymentOverlayService>();
     private final String deployment;
@@ -50,7 +67,7 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
         this.priority = priority;
         this.regex = regex;
         if (regex) {
-            this.pattern = Pattern.compile(deployment);
+            this.pattern = Pattern.compile(wildcardToJavaRegexp(deployment));
         } else {
             this.pattern = null;
         }

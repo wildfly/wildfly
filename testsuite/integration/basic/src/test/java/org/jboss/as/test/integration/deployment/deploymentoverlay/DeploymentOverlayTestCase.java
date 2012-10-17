@@ -19,7 +19,6 @@ import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -104,7 +103,7 @@ public class DeploymentOverlayTestCase {
             op = new ModelNode();
             addr = new ModelNode();
             addr.add(ModelDescriptionConstants.DEPLOYMENT_OVERLAY, TEST_WILDCARD);
-            addr.add(ModelDescriptionConstants.DEPLOYMENT, ".*.war");
+            addr.add(ModelDescriptionConstants.DEPLOYMENT, "*.war");
             op.get(ModelDescriptionConstants.OP_ADDR).set(addr);
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
             op.get(ModelDescriptionConstants.REGULAR_EXPRESSION).set(true);
@@ -122,7 +121,7 @@ public class DeploymentOverlayTestCase {
             op.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
             ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
 
-            removeDeploymentItem(managementClient, TEST_WILDCARD, ".*.war");
+            removeDeploymentItem(managementClient, TEST_WILDCARD, "*.war");
             removeContentItem(managementClient, TEST_WILDCARD, "WEB-INF/web.xml");
 
             removeContentItem(managementClient, TEST_WILDCARD, "WEB-INF/classes/wildcard-new-file");
