@@ -22,19 +22,17 @@
 
 package org.jboss.as.domain.controller.operations;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.dmr.ModelNode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Step handler responsible for collecting a complete description of the domain model,
@@ -42,7 +40,7 @@ import java.util.Locale;
  *
  * @author John Bailey
  */
-public class ReadMasterDomainModelHandler implements OperationStepHandler, DescriptionProvider {
+public class ReadMasterDomainModelHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "read-master-domain-model";
 
@@ -98,9 +96,5 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler, Descr
                 describe(base.append(entry.getPathElement()), entry, nodes);
             }
         }
-    }
-
-    public ModelNode getModelDescription(Locale locale) {
-        return new ModelNode(); // PRIVATE operation requires no description
     }
 }
