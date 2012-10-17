@@ -257,4 +257,9 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 15593, value = "MBeanServer not available, skipping registration/unregistration of %s")
     void mBeanServerNotAvailable(Object bean);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15596, value = "Multiple EJB3 endpoints in the same deployment with different declared security roles; be aware this might be a security risk if you're not controlling allowed roles (@RolesAllowed) on each ws endpoint method.")
+    void multipleEndpointsWithDifferentDeclaredSecurityRoles();
+
 }

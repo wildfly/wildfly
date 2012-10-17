@@ -24,9 +24,11 @@ package org.jboss.as.webservices.tomcat;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.WSLogger;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -75,8 +77,16 @@ abstract class AbstractSecurityMetaDataAccessorEJB implements SecurityMetaDataAc
     public SecurityRolesMetaData getSecurityRoles(final Deployment dep) {
         final SecurityRolesMetaData securityRolesMD = new SecurityRolesMetaData();
 
+        Set<String> firstEndpointDeclaredSecurityRoles = null;
         for (final EJBEndpoint ejbEndpoint : getEjbEndpoints(dep)) {
-            for (final String roleName : ejbEndpoint.getSecurityRoles()) {
+            final Set<String> declaredSecurityRoles = ejbEndpoint.getDeclaredSecurityRoles();
+            if (firstEndpointDeclaredSecurityRoles == null) {
+                firstEndpointDeclaredSecurityRoles = declaredSecurityRoles;
+            } else if (!firstEndpointDeclaredSecurityRoles.equals(declaredSecurityRoles)) {
+                WSLogger.ROOT_LOGGER.multipleEndpointsWithDifferentDeclaredSecurityRoles();
+            }
+            //union of declared security roles from all endpoints...
+            for (final String roleName : declaredSecurityRoles) {
                 final SecurityRoleMetaData securityRoleMD = new SecurityRoleMetaData();
                 securityRoleMD.setRoleName(roleName);
                 securityRolesMD.add(securityRoleMD);
