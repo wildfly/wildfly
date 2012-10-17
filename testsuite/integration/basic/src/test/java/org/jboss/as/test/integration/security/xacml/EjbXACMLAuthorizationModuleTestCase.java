@@ -36,6 +36,8 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.as.test.integration.security.common.ejb3.Hello;
+import org.jboss.as.test.integration.security.common.ejb3.HelloBean;
 import org.jboss.logging.Logger;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
@@ -81,7 +83,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
     @Test
     public void testNotAuthn() throws Exception {
         try {
-            hello.sayHello();
+            hello.sayHelloWorld();
             fail("Access to sayHello() should be denied if not authenticated.");
         } catch (EJBAccessException e) {
             //OK
@@ -100,7 +102,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
         securityClient.setSimple("jduke", "theduke");
         try {
             securityClient.login();
-            assertEquals(HelloBean.HELLO_WORLD, hello.sayHello());
+            assertEquals(HelloBean.HELLO_WORLD, hello.sayHelloWorld());
         } finally {
             securityClient.logout();
         }
@@ -118,7 +120,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
         securityClient.setSimple("JohnDoe", "jdoe");
         try {
             securityClient.login();
-            hello.sayHello();
+            hello.sayHelloWorld();
             fail("Access to sayHello() should be denied for JohnDoe.");
         } catch (EJBAccessException e) {
             //OK - expected
@@ -136,7 +138,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
     @Ignore("JBPAPP-8989")
     public void testAuthenticationCache() throws Exception {
         try {
-            hello.sayHello();
+            hello.sayHelloWorld();
             fail("Access to sayHello() should be denied if not authenticated.");
         } catch (EJBAccessException e) {
             //OK
@@ -145,7 +147,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
         securityClient.setSimple("jduke", "theduke");
         try {
             securityClient.login();
-            assertEquals(HelloBean.HELLO_WORLD, hello.sayHello());
+            assertEquals(HelloBean.HELLO_WORLD, hello.sayHelloWorld());
         } finally {
             securityClient.logout();
         }
