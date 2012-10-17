@@ -1388,14 +1388,16 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         context.startSubsystemElement(getExpectedNamespace().getUriString(), false);
         final ModelNode node = context.getModelNode();
 
-        final ModelNode servers = node.require(HORNETQ_SERVER);
-        boolean first = true;
-        for (Property prop : servers.asPropertyList()) {
-            writeHornetQServer(writer, prop.getName(), prop.getValue());
-            if (!first) {
-                writeNewLine(writer);
-            } else {
-                first = false;
+        if (node.hasDefined(HORNETQ_SERVER)) {
+            final ModelNode servers = node.get(HORNETQ_SERVER);
+            boolean first = true;
+            for (Property prop : servers.asPropertyList()) {
+                writeHornetQServer(writer, prop.getName(), prop.getValue());
+                if (!first) {
+                    writeNewLine(writer);
+                } else {
+                    first = false;
+                }
             }
         }
 
