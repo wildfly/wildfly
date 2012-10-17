@@ -1063,11 +1063,11 @@
         </module-def>
 
         <module-def name="org.jboss.jts">
-            <maven-resource group="org.jboss.jbossts" artifact="jbossjts"/>
+            <maven-resource group="org.jboss.jbossts.jts" artifact="jbossjts-jacorb"/>
         </module-def>
 
         <module-def name="org.jboss.jts.integration">
-            <maven-resource group="org.jboss.jbossts" artifact="jbossjts-integration"/>
+            <maven-resource group="org.jboss.jbossts.jts" artifact="jbossjts-integration"/>
         </module-def>
 
         <module-def name="org.jboss.metadata">
@@ -1257,8 +1257,7 @@
         </module-def>
 
         <module-def name="org.jboss.xts">
-            <maven-resource group="org.jboss.jbossts" artifact="jbossxts"/>
-            <maven-resource group="org.jboss.jbossts" artifact="jbossxts-api"/>
+            <maven-resource group="org.jboss.jbossts.xts" artifact="jbossxts"/>
             <maven-resource group="org.jboss.jbossts" artifact="jbosstxbridge"/>
         </module-def>
 
