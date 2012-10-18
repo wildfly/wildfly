@@ -42,17 +42,10 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
         if(expr == null) {
             throw new IllegalArgumentException("expr is null");
         }
-        final StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < expr.length(); ++i) {
-            final char ch = expr.charAt(i);
-            if(ch == '*') {
-                buf.append('.');
-            } else if(ch == '.') {
-                buf.append('\\');
-            }
-            buf.append(ch);
-        }
-        return buf.toString();
+        String regex = expr.replaceAll("([(){}\\[\\].+^$])", "\\\\$1"); // escape regex characters
+        regex = regex.replaceAll("\\*", ".*"); // replace * with .*
+        regex = regex.replaceAll("\\?", "."); // replace ? with .
+        return regex;
     }
 
     private final InjectedValue<DeploymentOverlayIndexService> deploymentOverlayIndexServiceInjectedValue = new InjectedValue<DeploymentOverlayIndexService>();
