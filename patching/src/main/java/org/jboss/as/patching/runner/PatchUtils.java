@@ -336,4 +336,43 @@ public final class PatchUtils {
     static String generateTimestamp() {
         return DateFormat.getInstance().format(new Date());
     }
+
+    static boolean recursiveDelete(File root) {
+        boolean ok = true;
+        if (root.isDirectory()) {
+            final File[] files = root.listFiles();
+            for (File file : files) {
+                ok &= recursiveDelete(file);
+            }
+            return ok && (root.delete() || !root.exists());
+        } else {
+            ok &= root.delete() || !root.exists();
+        }
+        return ok;
+    }
+
+    static byte[] copy(File source, File target) throws IOException {
+        final FileInputStream is = new FileInputStream(source);
+        try {
+            byte[] backupHash = ModuleUpdateTask.copy(is, target);
+            is.close();
+            return backupHash;
+        } finally {
+            safeClose(is);
+        }
+    }
+
+    static byte[] copy(final InputStream is, final File target) throws IOException {
+        if(! target.getParentFile().exists()) {
+            target.getParentFile().mkdirs(); // Hmm
+        }
+        final OutputStream os = new FileOutputStream(target);
+        try {
+            byte[] nh = copyAndGetHash(is, os);
+            os.close();
+            return nh;
+        } finally {
+            safeClose(os);
+        }
+    }
 }

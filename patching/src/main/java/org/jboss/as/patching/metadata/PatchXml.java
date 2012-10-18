@@ -101,9 +101,9 @@ public class PatchXml {
             setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(stream);
             //
-            final PatchBuilder builder = new PatchBuilder();
+            final PatchBuilder builder = PatchBuilder.create();
             MAPPER.parseDocument(builder, streamReader);
-            return builder;
+            return builder.build();
         } finally {
             PatchUtils.safeClose(stream);
         }

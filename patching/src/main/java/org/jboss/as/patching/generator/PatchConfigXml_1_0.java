@@ -34,6 +34,7 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -50,6 +51,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         ADDED_BUNDLE("added-bundle"),
         ADDED_MISC_CONTENT("added-misc-content"),
         ADDED_MODULE("added-module"),
+        APPLIES_TO_VERSION("applies-to-version"),
         BUNDLES("bundles"),
         CUMULATIVE("cumulative"),
         DESCRIPTION("description"),
@@ -94,8 +96,6 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
     }
 
     enum Attribute {
-
-        APPLIES_TO_VERSION("applies-to-version"),
         DIRECTORY("directory"),
         EXISTING_PATH("existing-path"),
         IN_RUNTIME_USE("in-runtime-use"),
@@ -175,19 +175,27 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-                case APPLIES_TO_VERSION:
-                    builder.addAppliesTo(value);
-                    break;
                 case RESULTING_VERSION:
                     if(type == Patch.PatchType.CUMULATIVE) {
                         builder.setResultingVersion(value);
                         break;
+                    } else {
+                        throw PatchMessages.MESSAGES.resultingVersionForCumulativePatchOnly();
                     }
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
-        requireNoContent(reader);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case APPLIES_TO_VERSION:
+                    builder.addAppliesTo(reader.getElementText());
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
     }
 
     private static void parseGenerateByDiff(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {

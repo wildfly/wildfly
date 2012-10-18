@@ -82,11 +82,11 @@ class PatchConfigBuilder implements PatchConfig {
 
     @Override
     public PatchBuilder toPatchBuilder() {
-        PatchBuilder pb = new PatchBuilder();
-        pb.setPatchId(getPatchId());
-        pb.setDescription(getDescription());
-        pb.setPatchType(getPatchType());
-        pb.setResultingVersion(getResultingVersion());
+        PatchBuilder pb = PatchBuilder.create()
+                .setPatchId(getPatchId())
+                .setDescription(getDescription())
+                .setPatchType(getPatchType())
+                .setResultingVersion(getResultingVersion());
         for (String applyTo : appliesTo) {
             pb.addAppliesTo(applyTo);
         }

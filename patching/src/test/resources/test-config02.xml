@@ -25,7 +25,10 @@
 
     <name>patch-12345</name>
     <description>patch description</description>
-    <one-off applies-to-version="1.2.3" />
+    <one-off>
+        <applies-to-version>1.2.3</applies-to-version>
+        <applies-to-version>1.2.4</applies-to-version>
+    </one-off>
 
     <generate-by-diff>
         <in-runtime-use path="test" />

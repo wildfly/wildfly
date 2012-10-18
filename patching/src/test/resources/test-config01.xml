@@ -25,7 +25,10 @@
 
     <name>patch-12345</name>
     <description>patch description</description>
-    <cumulative applies-to-version="1.2.3" resulting-version="2.3.4" />
+    <cumulative resulting-version="2.3.4">
+        <applies-to-version>1.2.3</applies-to-version>
+        <applies-to-version>1.2.4</applies-to-version>
+    </cumulative>
 
     <generate-by-diff>
         <in-runtime-use path="test" />

@@ -22,6 +22,9 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.runner.PatchUtils.copyAndGetHash;
+import static org.jboss.as.patching.runner.PatchUtils.safeClose;
+
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
@@ -34,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.DigestInputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -49,15 +53,6 @@ import java.util.List;
  * @author Emanuel Muckenhuber
  */
 class FileRemoveTask implements PatchingTask {
-
-    private static final MessageDigest DIRECTORY;
-    static {
-        try {
-            DIRECTORY = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private final MiscContentItem item;
     private final File target;
@@ -80,22 +75,17 @@ class FileRemoveTask implements PatchingTask {
 
     @Override
     public boolean prepare(PatchingContext context) throws IOException {
-        final byte[] hash;
-        synchronized (DIRECTORY) {
-            // Backup the files
-            DIRECTORY.reset();
-            backup(target, Collections.<String>emptyList(), rollback);
-            hash = DIRECTORY.digest();
-        }
+        backup(target, Collections.<String>emptyList(), rollback);
         // See if the hash matches the metadata
         final byte[] expected = modification.getTargetHash();
-        return Arrays.equals(expected, hash);
+        final byte[] actual = PatchUtils.calculateHash(target);
+        return Arrays.equals(expected, actual);
     }
 
     @Override
     public void execute(PatchingContext context) throws IOException {
         // delete the file or directory recursively
-        boolean ok = recursiveDelete(target);
+        boolean ok = PatchUtils.recursiveDelete(target);
         for(ContentModification mod : rollback) {
             // Add the rollback (add actions)
             context.recordRollbackAction(mod);
@@ -106,7 +96,7 @@ class FileRemoveTask implements PatchingTask {
     }
 
     void backup(final File root, final List<String> path, final List<ContentModification> rollback) throws IOException {
-        if(root.exists()) {
+        if(!root.exists()) {
             // Perhaps an error condition?
         } else if(root.isDirectory()) {
             final File[] files = root.listFiles();
@@ -122,17 +112,9 @@ class FileRemoveTask implements PatchingTask {
             }
         } else {
             // Copy and record the backup action
-            final byte[] hash = copy(root, getTarget(backup, root.getName(), path));
+            final byte[] hash = copy(root, backup);
             rollback.add(createRollbackItem(root.getName(), path, hash, false));
         }
-    }
-
-    static File getTarget(final File root, String name, List<String> paths) {
-        File file = root;
-        for(final String path : paths) {
-            file = new File(root, path);
-        }
-        return new File(file, name);
     }
 
     static ContentModification createRollbackItem(String name, List<String> path,  byte[] backupHash, boolean directory) {
@@ -140,28 +122,12 @@ class FileRemoveTask implements PatchingTask {
         return new ContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
     }
 
-    static boolean recursiveDelete(File root) {
-        boolean ok = true;
-        if (root.isDirectory()) {
-            final File[] files = root.listFiles();
-            for (File file : files) {
-                ok &= recursiveDelete(file);
-            }
-            return ok && (root.delete() || !root.exists());
-        } else {
-            ok &= root.delete() || !root.exists();
-        }
-        return ok;
-    }
-
     static byte[] copy(File source, File target) throws IOException {
         final FileInputStream is = new FileInputStream(source);
         try {
-            byte[] backupHash = copy(is, target);
-            is.close();
-            return backupHash;
+            return copy(is, target);
         } finally {
-            PatchUtils.safeClose(is);
+            safeClose(is);
         }
     }
 
@@ -171,12 +137,9 @@ class FileRemoveTask implements PatchingTask {
         }
         final OutputStream os = new FileOutputStream(target);
         try {
-            final DigestOutputStream dos = new DigestOutputStream(os, DIRECTORY);
-            byte[] nh = PatchUtils.copyAndGetHash(is, dos);
-            dos.close();
-            return nh;
+            return copyAndGetHash(is, os);
         } finally {
-            PatchUtils.safeClose(os);
+            safeClose(os);
         }
     }
 

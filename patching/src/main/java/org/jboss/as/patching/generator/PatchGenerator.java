@@ -39,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -127,7 +125,7 @@ public class PatchGenerator {
 
             copyContent();
 
-            preparePatchFile();
+            ZipUtils.zip(tmp, patchFile);
 
         } finally {
             cleanFile(tmp);
@@ -507,7 +505,7 @@ public class PatchGenerator {
 
             patchXml.createNewFile();
             fos = new FileOutputStream(patchXml);
-            PatchXml.marshal(fos, pb);
+            PatchXml.marshal(fos, pb.build());
 
         } finally {
             PatchUtils.safeClose(fos);
@@ -563,61 +561,6 @@ public class PatchGenerator {
         } catch (IOException e) {
             throw new RuntimeException("Cannot copy " + sourceFile + " to " + targetFile, e);
         }
-    }
-
-    private void preparePatchFile() {
-        try {
-            ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(patchFile));
-
-            for (File file : tmp.listFiles()) {
-                if (file.isDirectory()) {
-                    addDirectoryToZip(file, file.getName(), zos);
-                } else {
-                    addFileToZip(file, null, zos);
-                }
-            }
-
-            zos.close();
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed creating patch file " + patchFile, e);
-        }
-
-        System.out.println("\nPrepared " + patchFile.getName() + " at " + patchFile.getAbsolutePath());
-    }
-
-    private void addDirectoryToZip(File dir, String dirName, ZipOutputStream zos) throws IOException {
-
-        ZipEntry dirEntry = new ZipEntry(dirName + "/");
-        zos.putNextEntry(dirEntry);
-        zos.closeEntry();
-
-        File[] children = dir.listFiles();
-        if (children != null) {
-            for (File file : children) {
-                if (file.isDirectory()) {
-                    addDirectoryToZip(file, dirName + "/" + file.getName(), zos);
-                } else {
-                    addFileToZip(file, dirName, zos);
-                }
-            }
-        }
-    }
-
-    private void addFileToZip(File file, String parent, ZipOutputStream zos) throws IOException {
-
-        String entryName = parent == null ? file.getName() : parent + "/" + file.getName();
-        zos.putNextEntry(new ZipEntry(entryName));
-
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-
-        byte[] bytesIn = new byte[4096];
-        int read;
-        while ((read = bis.read(bytesIn)) != -1) {
-            zos.write(bytesIn, 0, read);
-        }
-
-        zos.closeEntry();
     }
 
     private void cleanFile(File file) {

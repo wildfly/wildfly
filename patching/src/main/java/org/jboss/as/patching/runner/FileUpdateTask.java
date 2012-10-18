@@ -47,7 +47,7 @@ final class FileUpdateTask extends AbstractFileTask {
         final InputStream is = context.getLoader().openContentStream(item);
         try {
             // Replace the file
-            final byte[] hash = copy(is, target);
+            final byte[] hash = PatchUtils.copy(is, target);
             final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash);
             final ContentModification rollback = createRollback(context, item, backupItem, hash);
             context.recordRollbackAction(rollback);

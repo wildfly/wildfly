@@ -30,7 +30,6 @@ import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,22 +58,11 @@ class ModuleUpdateTask extends AbstractModuleTask {
         final File[] moduleResources = sourceDir.listFiles();
         for(final File file : moduleResources) {
             final File target = new File(targetDir, file.getName());
-            copy(file, target);
+            PatchUtils.copy(file, target);
         }
         // Hmm we actually don't need to do anything when rolling back the patch?
         // final ContentModification modification = new ContentModification(item, expected, ModificationType.MODIFY);
         // context.recordRollbackAction(modification);
-    }
-
-    static byte[] copy(File source, File target) throws IOException {
-        final FileInputStream is = new FileInputStream(source);
-        try {
-            byte[] backupHash = copy(is, target);
-            is.close();
-            return backupHash;
-        } finally {
-            PatchUtils.safeClose(is);
-        }
     }
 
     static byte[] copy(final InputStream is, final File target) throws IOException {

@@ -22,13 +22,17 @@
 
 package org.jboss.as.patching.metadata;
 
+import static java.util.Collections.unmodifiableList;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.patching.metadata.Patch.PatchType;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchBuilder implements Patch {
+public class PatchBuilder {
 
     private String patchId;
     private String description;
@@ -37,58 +41,75 @@ public class PatchBuilder implements Patch {
     private List<String> appliesTo = new ArrayList<String>();
     private List<ContentModification> modifications = new ArrayList<ContentModification>();
 
-    @Override
-    public String getPatchId() {
-        return patchId;
+    public static PatchBuilder create() {
+        return new PatchBuilder();
     }
 
-    @Override
-    public String getDescription() {
-        return description;
+    private PatchBuilder() {
     }
 
-    @Override
-    public PatchType getPatchType() {
-        return patchType;
-    }
-
-    @Override
-    public String getResultingVersion() {
-        return resultingVersion;
-    }
-
-    @Override
-    public List<String> getAppliesTo() {
-        return appliesTo;
-    }
-
-    @Override
-    public List<ContentModification> getModifications() {
-        return modifications;
-    }
-
-    public void setPatchId(String patchId) {
+    public PatchBuilder setPatchId(String patchId) {
         this.patchId = patchId;
+        return this;
     }
 
-    public void setDescription(String description) {
+    public PatchBuilder setDescription(String description) {
         this.description = description;
+        return this;
     }
 
-    public void setPatchType(PatchType patchType) {
+    public PatchBuilder setPatchType(PatchType patchType) {
         this.patchType = patchType;
+        return this;
     }
 
-    public void setResultingVersion(String resultingVersion) {
+    public PatchBuilder setResultingVersion(String resultingVersion) {
         this.resultingVersion = resultingVersion;
+        return this;
     }
 
-    public void addAppliesTo(String appliesTo) {
+    public PatchBuilder addAppliesTo(String appliesTo) {
         this.appliesTo.add(appliesTo);
+        return this;
     }
 
-    public void addContentModification(ContentModification modification) {
+    public PatchBuilder addContentModification(ContentModification modification) {
         this.modifications.add(modification);
+        return this;
     }
 
+    public Patch build() {
+        return new Patch() {
+
+            @Override
+            public String getResultingVersion() {
+                return resultingVersion;
+            }
+
+            @Override
+            public PatchType getPatchType() {
+                return patchType;
+            }
+
+            @Override
+            public String getPatchId() {
+                return patchId;
+            }
+
+            @Override
+            public List<ContentModification> getModifications() {
+                return unmodifiableList(modifications);
+            }
+
+            @Override
+            public String getDescription() {
+                return description;
+            }
+
+            @Override
+            public List<String> getAppliesTo() {
+                return unmodifiableList(appliesTo);
+            }
+        };
+    }
 }

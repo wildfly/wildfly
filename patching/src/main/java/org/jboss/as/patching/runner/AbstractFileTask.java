@@ -22,15 +22,15 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.runner.PatchUtils.copy;
+
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.SyncFailedException;
 import java.util.Arrays;
 
@@ -75,7 +75,7 @@ abstract class AbstractFileTask implements PatchingTask {
     public boolean prepare(final PatchingContext context) throws IOException {
         if(target.isFile()) {
             // Backup the original in the history directory
-            backupHash = copy(target, backup);
+            backupHash = PatchUtils.copy(target, backup);
         }
         // See if the hash matches the metadata
         final byte[] expected = modification.getTargetHash();
@@ -94,38 +94,13 @@ abstract class AbstractFileTask implements PatchingTask {
             final InputStream is = context.getLoader().openContentStream(item);
             try {
                 // Replace the file
-                final byte[] hash = copy(is, target);
+                final byte[] hash = PatchUtils.copy(is, target);
                 final MiscContentItem backupItem = new MiscContentItem(item.getName(), item.getPath(), backupHash, item.isDirectory(), item.isAffectsRuntime());
                 final ContentModification rollback = createRollback(context, item, backupItem, hash);
                 context.recordRollbackAction(rollback);
             } finally {
                 PatchUtils.safeClose(is);
             }
-        }
-    }
-
-    static byte[] copy(File source, File target) throws IOException {
-        final FileInputStream is = new FileInputStream(source);
-        try {
-            byte[] backupHash = copy(is, target);
-            is.close();
-            return backupHash;
-        } finally {
-            PatchUtils.safeClose(is);
-        }
-    }
-
-    static byte[] copy(final InputStream is, final File target) throws IOException {
-        if(! target.getParentFile().exists()) {
-            target.getParentFile().mkdirs(); // Hmm
-        }
-        final OutputStream os = new FileOutputStream(target);
-        try {
-            byte[] nh = PatchUtils.copyAndGetHash(is, os);
-            os.close();
-            return nh;
-        } finally {
-            PatchUtils.safeClose(os);
         }
     }
 
