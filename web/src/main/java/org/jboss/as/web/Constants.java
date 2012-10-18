@@ -129,6 +129,11 @@ public interface Constants {
 
     String LOAD_TIME ="load-time";
     String MIN_TIME = "min-time";
-
+    String MODULE = "module";
+    String CLASS_NAME = "class-name";
+    String VALVE = "valve";
+    String PARAM_NAME = "param-name";
+    String PARAM_VALUE = "param-value";
+    String PARAM = "param";
 
 }

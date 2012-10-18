@@ -89,6 +89,8 @@ public class WebExtension implements Extension {
 
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
 
+    public static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
+
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -99,6 +101,7 @@ public class WebExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
 
     /**
      * {@inheritDoc}
@@ -154,6 +157,9 @@ public class WebExtension implements Extension {
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebDeploymentDefinition.INSTANCE);
         deployments.registerSubModel(WebDeploymentServletDefinition.INSTANCE);
 
+        // Global valve.
+        registration.registerSubModel(WebValveDefinition.INSTANCE);
+
         registerTransformers_1_1_0(subsystem);
     }
 
@@ -162,6 +168,7 @@ public class WebExtension implements Extension {
      */
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_3.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_2.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_1.getUriString(), WebSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEB_1_0.getUriString(), WebSubsystemParser.getInstance());
