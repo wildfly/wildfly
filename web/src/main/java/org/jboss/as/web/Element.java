@@ -46,6 +46,8 @@ enum Element {
     SUBSYSTEM(Constants.SUBSYSTEM),
     VIRTUAL_SERVER(Constants.VIRTUAL_SERVER),
     WELCOME_FILE(Constants.WELCOME_FILE),
+    VALVE(Constants.VALVE),
+    PARAM(Constants.PARAM),
     ;
 
     private final String name;

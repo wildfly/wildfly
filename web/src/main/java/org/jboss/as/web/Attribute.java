@@ -106,6 +106,11 @@ enum Attribute {
     X_POWERED_BY(Constants.X_POWERED_BY),
     ENABLE_LOOKUPS(Constants.ENABLE_LOOKUPS),
     VALUE(Constants.VALUE),
+    MODULE(Constants.MODULE),
+    CLASS_NAME(Constants.CLASS_NAME),
+    PARAM_NAME(Constants.PARAM_NAME),
+    PARAM_VALUE(Constants.PARAM_VALUE),
+    PARAM(Constants.PARAM),
     ;
 
     private final String name;
