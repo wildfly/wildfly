@@ -44,30 +44,30 @@ class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsyste
 
         CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
 
-        if (attributeName.equals(ArchiveValidationAdd.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
+        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setArchiveValidation(resolvedValue.asBoolean());
         }
 
-        if (attributeName.equals(ArchiveValidationAdd.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
+        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
             config.setArchiveValidationFailOnError(resolvedValue.asBoolean());
         }
-        if (attributeName.equals(ArchiveValidationAdd.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
+        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
             config.setArchiveValidationFailOnWarn(resolvedValue.asBoolean());
         }
 
-        if (attributeName.equals(BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
+        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setBeanValidation(resolvedValue.asBoolean());
         }
 
-        if (attributeName.equals(BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
+        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
                     config.setBeanValidation(resolvedValue.asBoolean());
         }
 
-        if (attributeName.equals(CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().getName())) {
+        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getName())) {
             ccm.setDebug(resolvedValue.asBoolean());
         }
 
-        if (attributeName.equals(CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().getName())) {
+        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
             ccm.setError(resolvedValue.asBoolean());
         }
 
@@ -82,30 +82,30 @@ class JcaAttributeWriteHandler extends AbstractWriteAttributeHandler<JcaSubsyste
 
         CachedConnectionManager ccm = (CachedConnectionManager) context.getServiceRegistry(false).getService(ConnectorServices.CCM_SERVICE).getValue();
 
-        if (attributeName.equals(ArchiveValidationAdd.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
+        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setArchiveValidation(valueToRestore.asBoolean());
         }
 
-        if (attributeName.equals(ArchiveValidationAdd.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
+        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_ERROR.getAttribute().getName())) {
             config.setArchiveValidationFailOnError(valueToRestore.asBoolean());
         }
-        if (attributeName.equals(ArchiveValidationAdd.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
+        if (attributeName.equals(JcaArchiveValidationDefinition.ArchiveValidationParameters.ARCHIVE_VALIDATION_FAIL_ON_WARN.getAttribute().getName())) {
             config.setArchiveValidationFailOnWarn(valueToRestore.asBoolean());
         }
 
-        if (attributeName.equals(BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
+        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setBeanValidation(valueToRestore.asBoolean());
         }
 
-        if (attributeName.equals(BeanValidationAdd.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
+        if (attributeName.equals(JcaBeanValidationDefinition.BeanValidationParameters.BEAN_VALIDATION_ENABLED.getAttribute().getName())) {
             config.setBeanValidation(valueToRestore.asBoolean());
         }
 
-        if (attributeName.equals(CachedConnectionManagerAdd.CcmParameters.DEBUG.getAttribute().getName())) {
+        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.DEBUG.getAttribute().getName())) {
             ccm.setDebug(valueToRestore.asBoolean());
         }
 
-        if (attributeName.equals(CachedConnectionManagerAdd.CcmParameters.ERROR.getAttribute().getName())) {
+        if (attributeName.equals(JcaCachedConnectionManagerDefinition.CcmParameters.ERROR.getAttribute().getName())) {
             ccm.setError(valueToRestore.asBoolean());
         }
 
