@@ -55,13 +55,15 @@
                 Describes the type of the patch
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="applies-to-version" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    Identifier of the project or product version to which this patch applies.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+        <xs:sequence>
+            <xs:element name="applies-to-version" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Identifier of the project or product version to which this patch can be applied.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="cumulative-patchType">

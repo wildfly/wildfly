@@ -38,6 +38,7 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.runner.PatchingTask;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -305,6 +306,8 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     if(type == Patch.PatchType.CUMULATIVE) {
                         builder.setResultingVersion(value);
                         break;
+                    } else {
+                        throw PatchMessages.MESSAGES.resultingVersionForCumulativePatchOnly();
                     }
                 default:
                     throw unexpectedAttribute(reader, i);

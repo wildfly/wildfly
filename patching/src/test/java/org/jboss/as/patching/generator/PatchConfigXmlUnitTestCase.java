@@ -29,17 +29,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Scanner;
 import java.util.Set;
 
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchXml;
-import org.jboss.as.patching.metadata.XMLUtils;
 import org.junit.Test;
 
 /**
@@ -61,7 +57,7 @@ public class PatchConfigXmlUnitTestCase {
         assertTrue(patchConfig.isGenerateByDiff());
         assertEquals("2.3.4", patchConfig.getResultingVersion());
 
-        validateAppliesTo(patchConfig, "1.2.3");
+        validateAppliesTo(patchConfig, "1.2.3", "1.2.4");
 
         validateInRuntimeUse(patchConfig);
     }
@@ -78,11 +74,9 @@ public class PatchConfigXmlUnitTestCase {
         assertNotNull(patchConfig.getPatchType());
         assertEquals(Patch.PatchType.ONE_OFF, patchConfig.getPatchType());
         assertTrue(patchConfig.isGenerateByDiff());
-        // TODO is this right?
-//        assertEquals("1.2.3", patchConfig.getResultingVersion());
         assertNull(patchConfig.getResultingVersion());
 
-        validateAppliesTo(patchConfig, "1.2.3"); // TODO multiple applies-to should be supported
+        validateAppliesTo(patchConfig, "1.2.3", "1.2.4");
 
         validateInRuntimeUse(patchConfig);
     }
@@ -93,13 +87,11 @@ public class PatchConfigXmlUnitTestCase {
         return resource.openStream();
     }
 
-    private static void validateAppliesTo(final PatchConfig patchConfig, String... validVersions) {
-        Set<String> validApplies = new HashSet<String>(Arrays.asList(validVersions));
-        for (String applyTo : patchConfig.getAppliesTo()) {
-            assertTrue(applyTo + " is valid", validApplies.remove(applyTo));
-        }
-        assertEquals("Expected applies-to not found", Collections.emptySet(), validApplies);
+    private static void validateAppliesTo(final PatchConfig patchConfig, String... expected) {
+        Set<String> expectedAppliesTo = new HashSet<String>(Arrays.asList(expected));
+        Set<String> actualAppliesTo = new HashSet<String>(patchConfig.getAppliesTo());
 
+        assertEquals(expectedAppliesTo, actualAppliesTo);
     }
 
     private static void validateInRuntimeUse(final PatchConfig patchConfig) {
