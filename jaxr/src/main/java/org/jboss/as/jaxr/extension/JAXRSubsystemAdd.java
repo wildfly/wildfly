@@ -24,6 +24,7 @@ package org.jboss.as.jaxr.extension;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -56,11 +57,10 @@ class JAXRSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        for (String attr : JAXRConfiguration.OPTIONAL_ATTRIBUTES) {
-            ModelNode node = operation.get(attr);
-            if (node.isDefined()) {
-                JAXRWriteAttributeHandler.applyUpdateToConfig(config, attr, node);
-                model.get(attr).set(node);
+        for (AttributeDefinition attr : JAXRSubsystemRootResource.ATTRIBUTES) {
+            if (operation.hasDefined(attr.getName())) {
+                attr.validateAndSet(operation, model);
+                JAXRWriteAttributeHandler.applyUpdateToConfig(config, attr.getName(), operation.get(attr.getName()));
             }
         }
     }

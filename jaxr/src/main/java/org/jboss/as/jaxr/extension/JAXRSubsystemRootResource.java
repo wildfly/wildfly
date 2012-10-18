@@ -21,24 +21,14 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
-import org.jboss.as.controller.descriptions.DefaultResourceRemoveDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jaxr.JAXRConfiguration;
-import org.jboss.as.jaxr.JAXRConstants;
-
-import java.util.EnumSet;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import org.jboss.as.jaxr.ModelConstants;
+import org.jboss.dmr.ModelType;
 
 
 /**
@@ -48,31 +38,27 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
  * @since 10-Nov-2011
  */
 class JAXRSubsystemRootResource extends SimpleResourceDefinition {
+    static SimpleAttributeDefinition CONNECTION_FACTORY_ATTRIBUTE = new SimpleAttributeDefinition(ModelConstants.CONNECTION_FACTORY, ModelType.STRING, true);
+    static SimpleAttributeDefinition CONNECTION_FACTORY_IMPL_ATTRIBUTE = new SimpleAttributeDefinition(ModelConstants.CONNECTION_FACTORY_IMPL, ModelType.STRING, true);
+
+    static AttributeDefinition[] ATTRIBUTES = {CONNECTION_FACTORY_ATTRIBUTE,CONNECTION_FACTORY_IMPL_ATTRIBUTE};
 
     private final JAXRConfiguration config;
 
     JAXRSubsystemRootResource(JAXRConfiguration config) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME), getResourceDescriptionResolver(JAXRConstants.SUBSYSTEM_NAME));
+        super(JAXRExtension.SUBSYSTEM_PATH,
+                JAXRExtension.getResolver(),
+                new JAXRSubsystemAdd(config),
+                ReloadRequiredRemoveStepHandler.INSTANCE
+        );
         this.config = config;
     }
 
-    private static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, JAXRConstants.RESOURCE_NAME, JAXRSubsystemRootResource.class.getClassLoader(), true, false);
-    }
-
     @Override
-    public void registerOperations(final ManagementResourceRegistration rootResourceRegistration) {
-        final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
-        final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
-        rootResourceRegistration.registerOperationHandler(ADD, new JAXRSubsystemAdd(config), subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-        final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
-        rootResourceRegistration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, subsystemRemoveDescription,
-                EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
-    }
-
-    @Override
-    public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
+    public void registerAttributes(final ManagementResourceRegistration registry) {
         JAXRWriteAttributeHandler writeHandler = new JAXRWriteAttributeHandler(config);
-        writeHandler.registerAttributes(rootResourceRegistration);
+
+        registry.registerReadWriteAttribute(CONNECTION_FACTORY_ATTRIBUTE, null, writeHandler);
+        registry.registerReadWriteAttribute(CONNECTION_FACTORY_IMPL_ATTRIBUTE, null, writeHandler);
     }
 }

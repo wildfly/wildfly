@@ -21,28 +21,21 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
+import static org.jboss.as.jaxr.JAXRConstants.SUBSYSTEM_NAME;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.jaxr.JAXRConfiguration;
-import org.jboss.as.jaxr.JAXRConstants;
 import org.jboss.as.jaxr.JAXRConstants.Namespace;
 import org.jboss.as.jaxr.ModelConstants;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 
 /**
@@ -50,47 +43,44 @@ import org.jboss.dmr.ModelType;
  * @author Kurt Stam
  * @since 26-Oct-2011
  */
-public class JAXRSubsystemExtension implements Extension {
+public class JAXRExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+    static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelConstants.PROPERTY);
 
     private final JAXRSubsystemParser parser = new JAXRSubsystemParser();
     private final JAXRConfiguration config = new JAXRConfiguration();
 
+    private static final String RESOURCE_NAME = JAXRConfiguration.class.getPackage().getName() + ".LocalDescriptions";
+
+
+    static ResourceDescriptionResolver getResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JAXRConfiguration.class.getClassLoader(), true, false);
+    }
+
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(JAXRConstants.SUBSYSTEM_NAME, Namespace.JAXR_1_1.getUriString(), parser);
-        context.setSubsystemXmlMapping(JAXRConstants.SUBSYSTEM_NAME, Namespace.JAXR_1_0.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JAXR_1_1.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JAXR_1_0.getUriString(), parser);
     }
 
     @Override
     public void initialize(ExtensionContext context) {
-        SubsystemRegistration subsystem = context.registerSubsystem(JAXRConstants.SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+        SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new JAXRSubsystemRootResource(config));
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // JAXR Properties
-        ManagementResourceRegistration properties = registration.registerSubModel(PathElement.pathElement(ModelConstants.PROPERTY), PROPERTY_DESCRIPTION);
-        properties.registerOperationHandler(ModelDescriptionConstants.ADD, new JAXRPropertyAdd(config), JAXRPropertyAdd.DESCRIPTION, false);
-        properties.registerOperationHandler(ModelDescriptionConstants.REMOVE, new JAXRPropertyRemove(config), JAXRPropertyRemove.DESCRIPTION, false);
-        properties.registerReadWriteAttribute(ModelConstants.VALUE, null, new JAXRPropertyWrite(config), Storage.CONFIGURATION);
+        registration.registerSubModel(new JAXRPropertyDefinition(config));
 
         subsystem.registerXMLElementWriter(JAXRSubsystemWriter.INSTANCE);
     }
-
-    static final DescriptionProvider PROPERTY_DESCRIPTION = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            final ModelNode node = new ModelNode();
-            ResourceBundle resbundle = JAXRConfiguration.getResourceBundle(locale);
-            node.get(DESCRIPTION).set(resbundle.getString("jaxr.property"));
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("jaxr.property.value"));
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ATTRIBUTES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
-            return node;
-        }
-    };
-
 }
