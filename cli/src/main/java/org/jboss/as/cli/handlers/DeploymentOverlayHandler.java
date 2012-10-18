@@ -345,6 +345,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(deployments.isPresent(ctx.getParsedCommandLine()) || wildcards.isPresent(ctx.getParsedCommandLine())) {
                     return super.canAppearNext(ctx);
                 }
+                final String actionValue = action.getValue(ctx.getParsedCommandLine());
+                if(actionValue != null && (actionValue.equals(UPLOAD) || actionValue.equals(REMOVE))) {
+                    return super.canAppearNext(ctx);
+                }
                 return false;
             }
         };
@@ -440,10 +444,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
 
         try {
-            ctx.printLine("redeploy request: " + redeployOp);
             final ModelNode result = client.execute(redeployOp);
             if (!Util.isSuccess(result)) {
-                ctx.printLine(result.toString());
                 throw new CommandLineException(Util.getFailureDescription(result));
             }
         } catch (IOException e) {
@@ -620,7 +622,13 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 }
             }
         } else if(redeploy == REDEPLOY_ALL) {
-            addRemoveRedeployLinksSteps(client, steps, name, null, null, false, redeploy);
+            if(ctx.isDomainMode()) {
+                for(String group : Util.getServerGroupsReferencingOverlay(name, client)) {
+                    addRemoveRedeployLinksSteps(client, steps, name, group, null, false, redeploy);
+                }
+            } else {
+                addRemoveRedeployLinksSteps(client, steps, name, null, null, false, redeploy);
+            }
         }
 
         if(contentStr == null && deploymentStr == null && sg == null) {

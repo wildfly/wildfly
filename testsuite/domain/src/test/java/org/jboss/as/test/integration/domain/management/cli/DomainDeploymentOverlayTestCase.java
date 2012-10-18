@@ -306,7 +306,6 @@ public class DomainDeploymentOverlayTestCase {
         ctx.handle("/server-group=main-server-group/deployment=" + war1.getName() + ":redeploy");
         ctx.handle("/server-group=main-server-group/deployment=" + war2.getName() + ":redeploy");
         ctx.handle("/server-group=main-server-group/deployment=" + war3.getName() + ":redeploy");
-/* TODO this below fails
         ctx.handle("deployment-overlay remove --name=overlay-test --content=WEB-INF/web.xml --redeploy-affected");
 
         assertEquals("NON OVERRIDDEN", performHttpCall("master", "main-one", "deployment0"));
@@ -324,7 +323,7 @@ public class DomainDeploymentOverlayTestCase {
         assertEquals("OVERRIDDEN", performHttpCall("slave", "main-three", "deployment0"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "deployment1"));
         assertEquals("NON OVERRIDDEN", performHttpCall("slave", "main-three", "another"));
-*/    }
+    }
 
     @Test
     public void testRedeployAffected() throws Exception {
