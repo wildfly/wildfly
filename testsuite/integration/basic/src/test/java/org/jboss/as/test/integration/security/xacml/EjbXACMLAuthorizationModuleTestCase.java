@@ -94,6 +94,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore("JBPAPP-8989")
     public void testAuthz() throws Exception {
         SecurityClient securityClient = SecurityClientFactory.getSecurityClient();
         securityClient.setSimple("jduke", "theduke");
@@ -132,6 +133,7 @@ public class EjbXACMLAuthorizationModuleTestCase {
      * @throws Exception
      */
     @Test
+    @Ignore("JBPAPP-8989")
     public void testAuthenticationCache() throws Exception {
         try {
             hello.sayHello();

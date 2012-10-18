@@ -57,6 +57,7 @@ import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -90,11 +91,13 @@ public class WebSecurityCERTTestCase {
     }
 
     @Test
+    @Ignore
     public void testClientCertSuccessfulAuth() throws Exception {
         makeCall("test", 200);
     }
 
     @Test
+    @Ignore
     public void testClientCertUnsuccessfulAuth() throws Exception {
         makeCall("test2", 403);
     }
