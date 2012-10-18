@@ -27,7 +27,7 @@
             <connectionfactory-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory2</connectionfactory-interface>
             <connectionfactory-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnectionFactory2Impl</connectionfactory-impl-class>
             <connection-interface>org.jboss.as.test.smoke.deployment.rar.MultipleConnection2</connection-interface>
-            <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnection12Impl</connection-impl-class>
+            <connection-impl-class>org.jboss.as.test.smoke.deployment.rar.MultipleConnection2Impl</connection-impl-class>
          </connection-definition>
          <transaction-support>NoTransaction</transaction-support>
          <reauthentication-support>false</reauthentication-support>

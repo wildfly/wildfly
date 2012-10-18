@@ -33,6 +33,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.jms.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.hornetq"/>
         <module name="org.hornetq.ra"/>
