@@ -75,8 +75,6 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     public static final DotName APPLICATION = DotName.createSimple(Application.class.getName());
 
-    private static CompositeIndex[] EMPTY_INDEXES = new CompositeIndex[0];
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -97,6 +95,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
         ResteasyDeploymentData resteasyDeploymentData = new ResteasyDeploymentData();
         final WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+        @SuppressWarnings("unchecked")
         final ServiceController<ModuleIndexService> serviceController = (ServiceController<ModuleIndexService>) phaseContext.getServiceRegistry().getRequiredService(Services.JBOSS_MODULE_INDEX_SERVICE);
 
         try {
@@ -123,9 +122,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
     public static final Set<String> BOOT_CLASSES = new HashSet<String>();
 
     static {
-        for (String clazz : ResteasyBootstrapClasses.BOOTSTRAP_CLASSES) {
-            BOOT_CLASSES.add(clazz);
-        }
+        Collections.addAll(BOOT_CLASSES, ResteasyBootstrapClasses.BOOTSTRAP_CLASSES);
     }
 
     /**
