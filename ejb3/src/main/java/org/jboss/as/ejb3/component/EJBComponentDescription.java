@@ -28,6 +28,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.ComponentView;
@@ -42,11 +43,14 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.ContextInjectionSource;
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.LoggingInterceptor;
 import org.jboss.as.ejb3.component.interceptors.ShutDownInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.UserTransactionAccessRightInterceptor;
 import org.jboss.as.ejb3.component.invocationmetrics.ExecutionTimeInterceptor;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
@@ -69,6 +73,7 @@ import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.msc.service.Service;
@@ -231,6 +236,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addCurrentInvocationContextFactory();
         // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
         this.addRemoteTransactionsRepositoryDependency();
+        // setup UserTransaction access permission interceptors
+        this.setupUserTxAccessPermissionInterceptors();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
         this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
         this.descriptorMethodPermissions = new ApplicableMethodInformation<EJBMethodSecurityAttribute>(componentName, null);
@@ -454,6 +461,28 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         });
     }
 
+    /**
+     * Sets up component interceptors for the EJB component, which will set/reset the permission for accessing the
+     * {@link javax.transaction.UserTransaction} depending on whether the EJB is a BMT or a CMT
+     */
+    protected void setupUserTxAccessPermissionInterceptors() {
+
+        this.getConfigurators().add(new ComponentConfigurator() {
+            @Override
+            public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration componentConfiguration) throws DeploymentUnitProcessingException {
+                // setup the interceptors
+                componentConfiguration.addComponentInterceptor(UserTxAccessPermissionComponentInterceptorFactory.INSTANCE, InterceptorOrder.Component.USER_TX_ACCESS_PERMISSION_INTERCEPTOR, true);
+                componentConfiguration.addPostConstructInterceptor(UserTxAccessPermissionComponentInterceptorFactory.INSTANCE, InterceptorOrder.ComponentPostConstruct.USER_TX_ACCESS_PERMISSION_INTERCEPTOR);
+                componentConfiguration.addPreDestroyInterceptor(UserTxAccessPermissionComponentInterceptorFactory.INSTANCE, InterceptorOrder.ComponentPreDestroy.USER_TX_ACCESS_PERMISSION_INTERCEPTOR);
+                if (description.isPassivationApplicable()) {
+                    componentConfiguration.addPrePassivateInterceptor(UserTxAccessPermissionComponentInterceptorFactory.INSTANCE, InterceptorOrder.ComponentPassivation.USER_TX_ACCESS_PERMISSION_INTERCEPTOR);
+                    componentConfiguration.addPostActivateInterceptor(UserTxAccessPermissionComponentInterceptorFactory.INSTANCE, InterceptorOrder.ComponentPassivation.USER_TX_ACCESS_PERMISSION_INTERCEPTOR);
+                }
+                componentConfiguration.addTimeoutViewInterceptor(UserTxAccessPermissionComponentInterceptorFactory.INSTANCE, InterceptorOrder.View.USER_TX_ACCESS_PERMISSION_INTERCEPTOR);
+            }
+        });
+    }
+
     protected void setupSecurityInterceptors(final ViewDescription view) {
         // setup security interceptor for the component
         view.getConfigurators().add(new EJBSecurityViewConfigurator());
@@ -548,6 +577,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Returns the security domain that is applicable for this bean. In the absence of any explicit
      * configuration of a security domain for this bean, this method returns the default security domain
      * (if any) that's configured for all beans in the EJB3 subsystem
+     *
      * @return
      */
     public String getSecurityDomain() {
@@ -561,6 +591,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
      * Returns true if this bean has been explicitly configured with a security domain via the
      * {@link org.jboss.ejb3.annotation.SecurityDomain} annotation or via the jboss-ejb3.xml deployment descriptor.
      * Else returns false.
+     *
      * @return
      */
     public boolean isExplicitSecurityDomainConfigured() {
@@ -726,6 +757,26 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 throw MESSAGES.componentViewNotAvailableInContext(context);
             }
             return "Proxy for view class: " + componentView.getViewClass().getName() + " of EJB: " + name;
+        }
+    }
+
+    /**
+     * A {@link ComponentInterceptorFactory} which sets up the {@link UserTransactionAccessRightInterceptor} for
+     * EJB components
+     */
+    private static class UserTxAccessPermissionComponentInterceptorFactory extends ComponentInterceptorFactory {
+        static final UserTxAccessPermissionComponentInterceptorFactory INSTANCE = new UserTxAccessPermissionComponentInterceptorFactory();
+
+        @Override
+        protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
+            if (!(component instanceof EJBComponent)) {
+                throw EjbLogger.EJB3_LOGGER.notAnEJBComponent(component);
+            }
+            final EJBComponent ejbComponent = (EJBComponent) component;
+            // UserTransaction access is only allowed for BMT session and message driven beans. Entity beans
+            // and CMT beans are *not* allowed UserTransaction access
+            final boolean userTxAccessAllowed = ejbComponent.isBeanManagedTransaction() && !(ejbComponent instanceof EntityBeanComponent);
+            return new UserTransactionAccessRightInterceptor(ejbComponent.getUserTransactionAccessRightService(), userTxAccessAllowed);
         }
     }
 

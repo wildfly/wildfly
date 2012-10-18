@@ -128,8 +128,9 @@ public class ServiceBasedNamingStore implements NamingStore {
             try {
                 object = controller.getValue();
             } catch (IllegalStateException e) {
-                //occurs if the service is not actually up
-                throw new NameNotFoundException("Error looking up " + name + ", service " + lookupName + " is not started");
+                final NamingException namingException = new NamingException("Error looking up " + name + ", service " + lookupName);
+                namingException.setRootCause(e);
+                throw namingException;
             }
         } else {
             return null;
