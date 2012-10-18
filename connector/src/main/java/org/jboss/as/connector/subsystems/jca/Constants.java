@@ -29,29 +29,17 @@ class Constants {
     static final String JCA = "jca";
 
     static final String ARCHIVE_VALIDATION = "archive-validation";
-    static final String ARCHIVE_VALIDATION_ENABLED = "enabled";
-    static final String ARCHIVE_VALIDATION_FAIL_ON_ERROR = "fail-on-error";
-    static final String ARCHIVE_VALIDATION_FAIL_ON_WARN = "fail-on-warn";
 
     static final String BEAN_VALIDATION = "bean-validation";
-    static final String BEAN_VALIDATION_ENABLED = "enabled";
 
     static final String CACHED_CONNECTION_MANAGER = "cached-connection-manager";
-    static final String CACHED_CONNECTION_MANAGER_DEBUG = "debug";
-    static final String CACHED_CONNECTION_MANAGER_ERROR = "error";
 
     static final String DEFAULT_NAME = "default";
-    static final String THREAD_POOL = "thread-pool";
     static final String WORKMANAGER_SHORT_RUNNING = "short-running-threads";
     static final String WORKMANAGER_LONG_RUNNING = "long-running-threads";
 
-    static final String WORKMANAGERS = "workmanagers";
-
     static final String WORKMANAGER = "workmanager";
-    static final String WORKMANAGER_NAME = "name";
-
-    static final String BOOTSTRAP_CONTEXTS = "bootstrap-contexts";
 
     static final String BOOTSTRAP_CONTEXT = "bootstrap-context";
-    static final String BOOTSTRAP_CONTEXT_WORKMANAGER = "workmanager";
+
 }

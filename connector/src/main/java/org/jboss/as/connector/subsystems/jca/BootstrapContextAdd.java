@@ -32,12 +32,8 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.jca.core.api.bootstrap.CloneableBootstrapContext;
 import org.jboss.jca.core.api.workmanager.WorkManager;
 import org.jboss.msc.service.ServiceController;
@@ -52,37 +48,9 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
 
     public static final BootstrapContextAdd INSTANCE = new BootstrapContextAdd();
 
-    public static enum BootstrapCtxParameters {
-        NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
-                .setAllowExpression(true)
-                .setAllowNull(false)
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName("name")
-                .build()),
-        WORKMANAGER(SimpleAttributeDefinitionBuilder.create("workmanager", ModelType.STRING)
-                .setAllowExpression(true)
-                .setAllowNull(false)
-                .setMeasurementUnit(MeasurementUnit.NONE)
-                .setRestartAllServices()
-                .setXmlName("workmanager")
-                .build());
-
-
-        private BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
-            this.attribute = attribute;
-        }
-
-        public SimpleAttributeDefinition getAttribute() {
-            return attribute;
-        }
-
-        private SimpleAttributeDefinition attribute;
-    }
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for (BootstrapCtxParameters parameter : BootstrapCtxParameters.values()) {
+        for (JcaBootstrapContextDefinition.BootstrapCtxParameters parameter : JcaBootstrapContextDefinition.BootstrapCtxParameters.values()) {
             parameter.getAttribute().validateAndSet(operation, model);
         }
     }
@@ -91,8 +59,8 @@ public class BootstrapContextAdd extends AbstractAddStepHandler {
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        String name = BootstrapCtxParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
-        String workmanager = BootstrapCtxParameters.WORKMANAGER.getAttribute().resolveModelAttribute(context, model).asString();
+        String name = JcaBootstrapContextDefinition.BootstrapCtxParameters.NAME.getAttribute().resolveModelAttribute(context, model).asString();
+        String workmanager = JcaBootstrapContextDefinition.BootstrapCtxParameters.WORKMANAGER.getAttribute().resolveModelAttribute(context, model).asString();
         boolean usingDefaultWm = false;
         if (DEFAULT_NAME.equals( workmanager)) {
             usingDefaultWm = true;
