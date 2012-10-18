@@ -25,14 +25,26 @@ package org.jboss.as.ejb3.security;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.metadata.ejb.spec.MethodInterfaceType;
+import org.jboss.security.AnybodyPrincipal;
+import org.jboss.security.NobodyPrincipal;
+import org.jboss.security.SimplePrincipal;
+
 /**
  * EJB authorization interceptor responsible for handling invocation on EJB methods and doing the necessary authorization
  * checks on the invoked method.
@@ -56,7 +68,12 @@ public class AuthorizationInterceptor implements Interceptor {
      */
     private final Method viewMethod;
 
-    public AuthorizationInterceptor(final EJBMethodSecurityAttribute ejbMethodSecurityMetaData, final String viewClassName, final Method viewMethod) {
+    /*
+     * The JACC contextID to be used by this interceptor.
+     */
+    private final String contextID;
+
+    public AuthorizationInterceptor(final EJBMethodSecurityAttribute ejbMethodSecurityMetaData, final String viewClassName, final Method viewMethod, final String contextID) {
         if (ejbMethodSecurityMetaData == null) {
             throw MESSAGES.ejbMethodSecurityMetaDataIsNull();
         }
@@ -69,6 +86,7 @@ public class AuthorizationInterceptor implements Interceptor {
         this.ejbMethodSecurityMetaData = ejbMethodSecurityMetaData;
         this.viewClassName = viewClassName;
         this.viewMethod = viewMethod;
+        this.contextID = contextID;
     }
 
     @Override
@@ -85,25 +103,106 @@ public class AuthorizationInterceptor implements Interceptor {
             throw MESSAGES.failProcessInvocation(this.getClass().getName(), invokedMethod,viewClassOfInvokedMethod, viewMethod, viewClassName);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
-        // check @DenyAll/exclude-list
-        if (ejbMethodSecurityMetaData.isDenyAll()) {
-            throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+        final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
+        final MethodInterfaceType methodIntfType = this.getMethodInterfaceType(componentView.getPrivateData(MethodIntf.class));
+
+        // set the JACC contextID before calling the security manager.
+        final String previousContextID = setContextID(this.contextID);
+        try {
+            if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
+                methodIntfType.name(), this.viewMethod, this.getMethodRolesAsPrincipals(), this.contextID))
+                throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
         }
-        // If @PermitAll isn't applicable for the method then check the allowed roles
-        if (!ejbMethodSecurityMetaData.isPermitAll()) {
-            // get allowed roles (if any) for this method invocation
-            final Collection<String> allowedRoles = ejbMethodSecurityMetaData.getRolesAllowed();
-            if (!allowedRoles.isEmpty()) {
-                // call the security API to do authorization check
-                final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
-                final EJBSecurityMetaData ejbSecurityMetaData = ejbComponent.getSecurityMetaData();
-                if (!securityManager.isCallerInRole(ejbSecurityMetaData.getSecurityRoles(), ejbSecurityMetaData.getSecurityRoleLinks(), allowedRoles.toArray(new String[allowedRoles.size()]))) {
-                    throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
-                }
-            }
+        finally {
+            // reset the previous JACC contextID.
+            setContextID(previousContextID);
         }
+
         // successful authorization, let the invocation proceed
         return context.proceed();
     }
 
+    /**
+     * <p>
+     * Returns the method roles as a set of {@code Principal} instances. All roles specified in the method-permissions or
+     * via {@code RolesAllowed} for this method are wrapped by a {@code SimplePrincipal}. If the method has been added to
+     * the exclude-list or annotated with {@code DenyAll}, a NOBODY_PRINCIPAL is returned. If the method has been added
+     * to the unchecked list or annotated with {@code PermitAll}, a ANYBODY_PRINCIPAL is returned.
+     * </p>
+     *
+     * @return the constructed set of role principals.
+     */
+    protected Set<Principal> getMethodRolesAsPrincipals() {
+        Set<Principal> methodRoles = new HashSet<Principal>();
+        if (this.ejbMethodSecurityMetaData.isDenyAll())
+            methodRoles.add(NobodyPrincipal.NOBODY_PRINCIPAL);
+        else if (this.ejbMethodSecurityMetaData.isPermitAll())
+            methodRoles.add(AnybodyPrincipal.ANYBODY_PRINCIPAL);
+        else {
+            for (String role : this.ejbMethodSecurityMetaData.getRolesAllowed())
+                methodRoles.add(new SimplePrincipal(role));
+        }
+        return methodRoles;
+    }
+
+    /**
+     * <p>
+     * Gets the {@code MethodInterfaceType} that corresponds to the specified {@code MethodIntf}.
+     * </p>
+     *
+     * @param viewType the {@code MethodIntf} type to be converted.
+     * @return the converted type or {@code null} if the type cannot be converted.
+     */
+    protected MethodInterfaceType getMethodInterfaceType(MethodIntf viewType) {
+        switch (viewType) {
+            case HOME:
+                return MethodInterfaceType.Home;
+            case LOCAL_HOME:
+                return MethodInterfaceType.LocalHome;
+            case SERVICE_ENDPOINT:
+                return MethodInterfaceType.ServiceEndpoint;
+            case LOCAL:
+                return MethodInterfaceType.Local;
+            case REMOTE:
+                return MethodInterfaceType.Remote;
+            case TIMER:
+                return MethodInterfaceType.Timer;
+            case MESSAGE_ENDPOINT:
+                return MethodInterfaceType.MessageEndpoint;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * <p>
+     * Sets the JACC contextID using a privileged action and returns the previousID from the {@code PolicyContext}.
+     * </p>
+     *
+     * @param contextID the JACC contextID to be set.
+     * @return the previous contextID as retrieved from the {@code PolicyContext}.
+     */
+    protected String setContextID(final String contextID) {
+        final PrivilegedAction<String> action = new SetContextIDAction(contextID);
+        return AccessController.doPrivileged(action);
+    }
+
+    /**
+     * PrivilegedAction that sets the {@code PolicyContext} id.
+     */
+    private static class SetContextIDAction implements PrivilegedAction<String> {
+
+        private String contextID;
+
+        SetContextIDAction(final String contextID) {
+            this.contextID = contextID;
+        }
+
+        @Override
+        public String run() {
+            final String previousID = PolicyContext.getContextID();
+            PolicyContext.setContextID(this.contextID);
+            return previousID;
+        }
+    }
 }

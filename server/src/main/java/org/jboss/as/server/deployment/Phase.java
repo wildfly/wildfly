@@ -426,7 +426,7 @@ public enum Phase {
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
     public static final int INSTALL_RESOLVE_MESSAGE_DESTINATIONS        = 0x0403;
     public static final int INSTALL_EJB_CLIENT_CONTEXT                  = 0x0404;
-    public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x0405;
+    public static final int INSTALL_EJB_JACC_PROCESSING                 = 0x1105;
     public static final int INSTALL_SERVICE_ACTIVATOR                   = 0x0500;
     public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;

@@ -134,7 +134,6 @@ public class JACCForEarModulesTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-9429")
     @OperateOnDeployment("war")
     public void testEJBPermissions(@ArquillianResource URL webAppURL) throws Exception {
         final Document doc = getPermissionDocument(webAppURL);
