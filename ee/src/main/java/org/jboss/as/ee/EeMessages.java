@@ -23,6 +23,7 @@
 package org.jboss.as.ee;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
@@ -884,5 +885,8 @@ public interface EeMessages {
 
     @Message(id = 16703, value = "Module may not be a child of the EAR's library directory. Library directory: %s, module file name: %s")
     DeploymentUnitProcessingException earModuleChildOfLibraryDirectory(String libraryDirectory, String moduleFileName);
+
+    @Message(id = 16704, value = "ManagedReference was null and injection is not optional for injection into field %s")
+    RuntimeException managedReferenceWasNull(Field field);
 
 }
