@@ -2,6 +2,7 @@ package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.List;
 
+import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -33,7 +34,7 @@ public class ProtocolLayerRemove implements OperationStepHandler {
         // if child resource already exists, throw OFE
         // TODO not sure if this works ex expected - it may only confirm a registered resource
         if (!resource.hasChild(protocolRelativePath))  {
-            throw new OperationFailedException(new ModelNode().set("protocol with relative path " + protocolRelativePath.toString() +  " is not defined"));
+            throw JGroupsMessages.MESSAGES.protocolNotDefined(protocolRelativePath.toString()) ;
         }
 
         // remove the resource and its children

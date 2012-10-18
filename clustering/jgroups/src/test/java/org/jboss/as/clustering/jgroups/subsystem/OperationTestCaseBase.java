@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -340,7 +341,7 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected String getSubsystemXml(String xml_file) throws IOException {
         URL url = Thread.currentThread().getContextClassLoader().getResource(xml_file);
         if (url == null) {
-            throw new IllegalStateException(String.format("Failed to locate %s", xml_file));
+            throw new IllegalStateException(JGroupsMessages.MESSAGES.notFound(xml_file));
         }
         try {
             BufferedReader reader = new BufferedReader(new FileReader(new File(url.toURI())));

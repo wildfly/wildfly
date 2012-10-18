@@ -1,5 +1,6 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,7 +38,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
 
         // if child resource already exists, throw OFE
         if (resource.hasChild(protocolRelativePath))  {
-            throw new OperationFailedException(new ModelNode().set("protocol with relative path " + protocolRelativePath.toString() +  " is already defined"));
+            throw JGroupsMessages.MESSAGES.protocolAlreadyDefined(protocolRelativePath.toString()) ;
         }
 
         // now get the created model
@@ -72,7 +73,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
                 final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                 final ModelNode value = property.getValue();
                 if(! value.isDefined()) {
-                    throw new OperationFailedException(new ModelNode().set("property " + property.getName() + " not defined"));
+                    throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), protocolRelativePath.toString());
                 }
                 // set the value of the property
                 param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
