@@ -22,18 +22,18 @@
 package org.jboss.as.jaxr.extension;
 
 
+import static org.jboss.as.jaxr.JAXRConstants.Attribute;
+import static org.jboss.as.jaxr.JAXRConstants.Element;
+import static org.jboss.as.jaxr.JAXRConstants.Namespace;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import static org.jboss.as.jaxr.JAXRConstants.Attribute;
-import static org.jboss.as.jaxr.JAXRConstants.Element;
-import static org.jboss.as.jaxr.JAXRConstants.Namespace;
 
 /**
  * The subsystem writer
@@ -57,30 +57,22 @@ public class JAXRSubsystemWriter implements XMLStreamConstants, XMLElementWriter
 
         // write connection-factory
         writer.writeStartElement(Element.CONNECTION_FACTORY.getLocalName());
-        writeAttribute(writer, Attribute.JNDI_NAME, node.get(ModelConstants.CONNECTION_FACTORY));
-        ModelNode clazz = node.get(ModelConstants.CONNECTION_FACTORY_IMPL);
-        if (clazz.isDefined()) {
-            writeAttribute(writer, Attribute.CLASS, clazz);
-        }
+        JAXRSubsystemRootResource.CONNECTION_FACTORY_ATTRIBUTE.marshallAsAttribute(node, writer);
+        JAXRSubsystemRootResource.CONNECTION_FACTORY_IMPL_ATTRIBUTE.marshallAsAttribute(node, writer);
         writer.writeEndElement();
 
         writer.writeStartElement(Element.PROPERTIES.getLocalName());
         ModelNode properties = node.get(ModelConstants.PROPERTY);
         if (properties.isDefined()) {
             for (String key : properties.keys()) {
-                String val = properties.get(key).get(ModelConstants.VALUE).asString();
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), val);
+                JAXRPropertyDefinition.VALUE.marshallAsAttribute(properties.get(key), writer);
                 writer.writeEndElement();
             }
         }
         writer.writeEndElement();
-
         writer.writeEndElement();
     }
 
-    private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
-        writer.writeAttribute(attr.getLocalName(), value.asString());
-    }
 }

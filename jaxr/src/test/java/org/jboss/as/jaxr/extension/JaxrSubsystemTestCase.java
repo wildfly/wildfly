@@ -34,7 +34,7 @@ import org.junit.Test;
 public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public JaxrSubsystemTestCase() {
-        super(JAXRConstants.SUBSYSTEM_NAME, new JAXRSubsystemExtension());
+        super(JAXRConstants.SUBSYSTEM_NAME, new JAXRExtension());
     }
 
     @Test

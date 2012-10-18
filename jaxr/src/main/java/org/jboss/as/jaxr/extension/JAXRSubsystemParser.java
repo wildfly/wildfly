@@ -21,30 +21,29 @@
  */
 package org.jboss.as.jaxr.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+import static org.jboss.as.jaxr.extension.JAXRPropertyDefinition.VALUE;
+import static org.jboss.as.jaxr.extension.JAXRSubsystemRootResource.CONNECTION_FACTORY_ATTRIBUTE;
+import static org.jboss.as.jaxr.extension.JAXRSubsystemRootResource.CONNECTION_FACTORY_IMPL_ATTRIBUTE;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.jaxr.JAXRConstants.Attribute;
 import org.jboss.as.jaxr.JAXRConstants.Element;
 import org.jboss.as.jaxr.JAXRConstants.Namespace;
-import org.jboss.as.jaxr.JAXRConstants;
 import org.jboss.as.jaxr.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -52,6 +51,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * The subsystem parser.
+ *
  * @author Thomas.Diesler@jboss.com
  * @author Kurt Stam
  * @since 26-Oct-2011
@@ -70,19 +70,14 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
                 readElement1_1(reader, operations);
                 break;
             default:
-              throw unexpectedElement(reader);
+                throw unexpectedElement(reader);
         }
     }
 
     private void readElement1_0(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
-        address.protect();
-
-        final ModelNode addOp = new ModelNode();
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(address);
+        final PathAddress address = PathAddress.pathAddress(JAXRExtension.SUBSYSTEM_PATH);
+        final ModelNode addOp = Util.createAddOperation(address);
 
         operations.add(addOp);
 
@@ -114,13 +109,8 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
     }
 
     private void readElement1_1(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, JAXRConstants.SUBSYSTEM_NAME);
-        address.protect();
-        final ModelNode addOp = new ModelNode();
-        addOp.get(OP).set(ADD);
-        addOp.get(OP_ADDR).set(address);
+        final PathAddress address = PathAddress.pathAddress(JAXRExtension.SUBSYSTEM_PATH);
+        final ModelNode addOp = Util.createAddOperation(address);
 
         operations.add(addOp);
 
@@ -163,7 +153,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             switch (attribute) {
                 case JNDI_NAME: {
                     jndiName = attrValue;
-                    JAXRWriteAttributeHandler.CONNECTION_FACTORY_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
+                    CONNECTION_FACTORY_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
                     break;
                 }
                 default:
@@ -171,8 +161,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             }
         }
 
-        if (jndiName == null)
-            throw missingRequired(reader, Collections.singleton(Attribute.JNDI_NAME));
+        if (jndiName == null) { throw missingRequired(reader, Collections.singleton(Attribute.JNDI_NAME)); }
 
         requireNoContent(reader);
     }
@@ -189,11 +178,11 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             switch (attribute) {
                 case JNDI_NAME: {
                     jndiName = attrValue;
-                    JAXRWriteAttributeHandler.CONNECTION_FACTORY_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
+                    CONNECTION_FACTORY_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
                     break;
                 }
                 case CLASS: {
-                    JAXRWriteAttributeHandler.CONNECTION_FACTORY_IMPL_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
+                    CONNECTION_FACTORY_IMPL_ATTRIBUTE.parseAndSetParameter(jndiName, addOp, reader);
                     break;
                 }
                 default:
@@ -201,13 +190,12 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             }
         }
 
-        if (jndiName == null)
-            throw missingRequired(reader, Collections.singleton(Attribute.JNDI_NAME));
+        if (jndiName == null) { throw missingRequired(reader, Collections.singleton(Attribute.JNDI_NAME)); }
 
         requireNoContent(reader);
     }
 
-    private List<ModelNode> parseProperties(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private List<ModelNode> parseProperties(XMLExtendedStreamReader reader, PathAddress address) throws XMLStreamException {
 
         requireNoAttributes(reader);
 
@@ -232,7 +220,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
         return result;
     }
 
-    private ModelNode parseProperty(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private ModelNode parseProperty(XMLExtendedStreamReader reader, PathAddress parent) throws XMLStreamException {
 
         // Handle attributes
         String name = null;
@@ -256,21 +244,18 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             }
         }
 
-        if (name == null)
-            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-        if (value == null)
-            throw missingRequired(reader, Collections.singleton(Attribute.VALUE));
+        if (name == null) { throw missingRequired(reader, Collections.singleton(Attribute.NAME)); }
+        if (value == null) { throw missingRequired(reader, Collections.singleton(Attribute.VALUE)); }
 
         requireNoContent(reader);
 
-        ModelNode propNode = new ModelNode();
-        propNode.get(OP).set(ADD);
-        propNode.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, name);
+        final PathAddress address = parent.append(ModelConstants.PROPERTY, name);
+        ModelNode propNode = Util.createAddOperation(address);
         propNode.get(ModelConstants.VALUE).set(value);
         return propNode;
     }
 
-    private List<ModelNode> parseJuddiServer(XMLExtendedStreamReader reader, ModelNode address) throws XMLStreamException {
+    private List<ModelNode> parseJuddiServer(XMLExtendedStreamReader reader, PathAddress parent) throws XMLStreamException {
 
         List<ModelNode> result = new ArrayList<ModelNode>();
 
@@ -283,18 +268,14 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             required.remove(attribute);
             switch (attribute) {
                 case PUBLISH_URL: {
-                    ModelNode propOp = new ModelNode();
-                    propOp.get(OP).set(ADD);
-                    propOp.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, "javax.xml.registry.lifeCycleManagerURL");
-                    JAXRPropertyWrite.VALUE.parseAndSetParameter(attrValue, propOp, reader);
+                    ModelNode propOp = Util.createAddOperation(parent.append(ModelConstants.PROPERTY, "javax.xml.registry.lifeCycleManagerURL"));
+                    VALUE.parseAndSetParameter(attrValue, propOp, reader);
                     result.add(propOp);
                     break;
                 }
                 case QUERY_URL: {
-                    ModelNode propOp = new ModelNode();
-                    propOp.get(OP).set(ADD);
-                    propOp.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, "javax.xml.registry.queryManagerURL");
-                    JAXRPropertyWrite.VALUE.parseAndSetParameter(attrValue, propOp, reader);
+                    ModelNode propOp = Util.createAddOperation(parent.append(ModelConstants.PROPERTY, "javax.xml.registry.queryManagerURL"));
+                    VALUE.parseAndSetParameter(attrValue, propOp, reader);
                     result.add(propOp);
                     break;
                 }
@@ -303,8 +284,7 @@ public class JAXRSubsystemParser implements XMLStreamConstants, XMLElementReader
             }
         }
 
-        if (required.size() > 0)
-            throw missingRequired(reader, required);
+        if (required.size() > 0) { throw missingRequired(reader, required); }
 
         requireNoContent(reader);
 
