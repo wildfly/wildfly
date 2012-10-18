@@ -66,6 +66,13 @@ public class InfinispanSubsystemProviders {
         }
     };
 
+    static final DescriptionProvider CACHE_CONTAINER_CLEAR_CACHES = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getCacheContainerClearCachesCommandDescription(locale);
+        }
+    };
+
     static final DescriptionProvider ADD_ALIAS = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -133,6 +140,13 @@ public class InfinispanSubsystemProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return InfinispanDescriptions.getCacheRemoveDescription(locale);
+        }
+    };
+
+    static final DescriptionProvider LOCAL_CACHE_CLEAR = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return InfinispanDescriptions.getLocalCacheClearDescription(locale);
         }
     };
 

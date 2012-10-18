@@ -38,6 +38,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
@@ -54,6 +55,7 @@ import org.jboss.staxmapper.XMLElementReader;
 public class InfinispanExtension implements Extension {
 
     static final String SUBSYSTEM_NAME = "infinispan";
+    private static final EnumSet<OperationEntry.Flag> RUNTIME_ONLY_FLAG = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
 
     private static final PathElement containerPath = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
     private static final PathElement localCachePath = PathElement.pathElement(ModelKeys.LOCAL_CACHE);
@@ -86,6 +88,7 @@ public class InfinispanExtension implements Extension {
      */
     @Override
     public void initialize(ExtensionContext context) {
+        boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
@@ -101,6 +104,9 @@ public class InfinispanExtension implements Extension {
         container.registerOperationHandler(REMOVE, CacheContainerRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_CONTAINER_REMOVE, false);
         container.registerOperationHandler("add-alias", AddAliasCommand.INSTANCE, InfinispanSubsystemProviders.ADD_ALIAS, false);
         container.registerOperationHandler("remove-alias", RemoveAliasCommand.INSTANCE, InfinispanSubsystemProviders.REMOVE_ALIAS, false);
+        if (registerRuntimeOnly) {
+            container.registerOperationHandler("clear-caches", EmbeddedCacheManagerOperations.ClearCachesInCacheManager.INSTANCE, InfinispanSubsystemProviders.CACHE_CONTAINER_CLEAR_CACHES, false, RUNTIME_ONLY_FLAG);
+        }
         CacheContainerWriteAttributeHandler.INSTANCE.registerAttributes(container);
 
         // add /subsystem=infinispan/cache-container=*/singleton=transport:write-attribute
@@ -113,6 +119,7 @@ public class InfinispanExtension implements Extension {
         ManagementResourceRegistration local = container.registerSubModel(localCachePath, InfinispanSubsystemProviders.LOCAL_CACHE);
         local.registerOperationHandler(ADD, LocalCacheAdd.INSTANCE, InfinispanSubsystemProviders.LOCAL_CACHE_ADD, false);
         local.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
+        local.registerOperationHandler("clear", CacheOperations.ClearCache.INSTANCE, InfinispanSubsystemProviders.LOCAL_CACHE_CLEAR, false);
         registerCommonCacheAttributeHandlers(local);
 
         // add /subsystem=infinispan/cache-container=*/invalidation-cache=*

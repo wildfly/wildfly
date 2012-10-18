@@ -150,4 +150,23 @@ public interface InfinispanMessages {
     @Message(id = 10299, value = "Value for property with key %s is not defined")
     OperationFailedException propertyValueNotDefined(String propertyKey);
 
+    /**
+     * Creates an exception indicating that the cache container is not available because the cache container service is not up.
+     *
+     * @param cacheContainerName the name of the cache container which is not available.
+     *
+     * @return the String.
+     */
+    @Message(id = 10300, value = "Cache container %s is not available. Please start the cache container service before using any operation")
+    String cacheContainerNotAvailableForOperation(String cacheContainerName);
+
+    /**
+     * Creates an exception indicating that the cache container is not available because the cache service is not up.
+     *
+     * @param cacheName the name of the cache which is not available.
+     *
+     * @return the String.
+     */
+    @Message(id = 10301, value = "Cache %s is not available. Please start the cache service before using any operation")
+    String cacheNotAvailableForOperation(String cacheName);
 }
