@@ -230,11 +230,6 @@ public class Util {
         return regex;
     }
 
-    public static void main(String[] args) throws Exception {
-
-        System.out.println(wildcardToJavaRegex("a*.war"));
-    }
-
     public static boolean listContains(ModelNode operationResult, String item) {
         if(!operationResult.hasDefined(RESULT))
             return false;
