@@ -811,7 +811,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         }
 
         if (canAttributeBeReplicated(value) == false) {
-            throw MESSAGES.failToReplicateAttribute();
+            throw MESSAGES.failToReplicateAttribute(name, value);
         }
 
         // Construct an event with the new value
