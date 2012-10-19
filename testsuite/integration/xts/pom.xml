@@ -35,6 +35,14 @@
             <!--
                 Server configuration executions.
             -->
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.byteman</groupId>
+                    <artifactId>byteman</artifactId>
+                    <scope>test</scope>
+		</dependency>
+            </dependencies>
+
             <build>
                 <plugins>
                     <plugin>
@@ -54,6 +62,25 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-dependency-plugin</artifactId>
+                      <executions>
+                        <execution>
+                          <id>copy-dependencies</id>
+                          <phase>test-compile</phase>
+                          <goals>
+                            <goal>copy-dependencies</goal>
+                          </goals>
+                          <configuration>
+                              <stripVersion>true</stripVersion>
+                              <includeGroupIds>org.jboss.byteman</includeGroupIds>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                          </configuration>
+                        </execution>
+                      </executions>
                     </plugin>
 
                     <!--
@@ -77,6 +104,12 @@
                                     <includes>
                                         <include>org/jboss/as/test/xts/**/*TestCase.java</include>
                                     </includes>
+                                    <systemPropertyVariables combine.children="append">
+                                        <server.jvm.args>-Xms64m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.byteman.verbose
+                                            -Djboss.modules.system.pkgs=org.jboss.byteman
+                                            -Dorg.jboss.byteman.transform.all
+                                            -javaagent:${project.build.directory}/lib/byteman.jar=script:${project.build.directory}/test-classes/participant_completion_coordinator_rules.btm</server.jvm.args>
+                                    </systemPropertyVariables>
                                 </configuration>
                             </execution>
 
