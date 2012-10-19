@@ -24,7 +24,6 @@ package org.jboss.as.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -35,7 +34,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -216,17 +214,12 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
                 }
             }
         }
-
-        if (validator instanceof AllowedValuesValidator) {
-            AllowedValuesValidator avv = (AllowedValuesValidator) validator;
-            List<ModelNode> allowed = avv.getAllowedValues();
-            if (allowed != null) {
-                for (ModelNode ok : allowed) {
-                    result.get(ModelDescriptionConstants.ALLOWED).add(ok);
-                }
-            }
-        }
         return result;
+    }
+
+    @Override
+    protected void addAllowedValuesToDescription(ModelNode result, ParameterValidator validator) {
+        //Don't add allowed values for object types, since they simply enumerate the fields given in the value type
     }
 
     public static final class Builder extends AbstractAttributeDefinitionBuilder<Builder, ObjectTypeAttributeDefinition> {
