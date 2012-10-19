@@ -39,7 +39,8 @@
                 <dependency>
                     <groupId>org.jboss.byteman</groupId>
                     <artifactId>byteman</artifactId>
-                </dependency>
+                    <scope>test</scope>
+		</dependency>
             </dependencies>
 
             <build>
