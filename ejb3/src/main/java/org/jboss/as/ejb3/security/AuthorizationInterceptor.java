@@ -183,8 +183,14 @@ public class AuthorizationInterceptor implements Interceptor {
      * @return the previous contextID as retrieved from the {@code PolicyContext}.
      */
     protected String setContextID(final String contextID) {
-        final PrivilegedAction<String> action = new SetContextIDAction(contextID);
-        return AccessController.doPrivileged(action);
+        if(System.getSecurityManager() == null) {
+            final String previousID = PolicyContext.getContextID();
+            PolicyContext.setContextID(contextID);
+            return previousID;
+        } else {
+            final PrivilegedAction<String> action = new SetContextIDAction(contextID);
+            return AccessController.doPrivileged(action);
+        }
     }
 
     /**
