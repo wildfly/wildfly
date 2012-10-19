@@ -30,6 +30,7 @@ import org.jboss.as.patching.metadata.ModificationType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * Task modifying an existing file.
@@ -59,7 +60,7 @@ final class FileUpdateTask extends AbstractFileTask {
     protected ContentModification createRollback(PatchingContext context, MiscContentItem item, MiscContentItem backupItem, byte[] targetHash) {
         final byte[] expected = item.getContentHash();
         // TODO Ignored resources
-        if(! targetHash.equals(expected)) {
+        if(! Arrays.equals(expected, targetHash)) {
             // TODO rollback if the content hash is different than in the metadata?
             PatchLogger.ROOT_LOGGER.warnf("wrong content has for item (%s) ", item); // TODO i18n
         }
