@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching.metadata;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -86,4 +87,31 @@ public class MiscContentItem extends ContentItem {
         return builder.toString();
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + (affectsRuntime ? 1231 : 1237);
+        result = prime * result + (isDirectory ? 1231 : 1237);
+        result = prime * result + Arrays.hashCode(path);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!super.equals(obj))
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MiscContentItem other = (MiscContentItem) obj;
+        if (affectsRuntime != other.affectsRuntime)
+            return false;
+        if (isDirectory != other.isDirectory)
+            return false;
+        if (!Arrays.equals(path, other.path))
+            return false;
+        return true;
+    }
 }

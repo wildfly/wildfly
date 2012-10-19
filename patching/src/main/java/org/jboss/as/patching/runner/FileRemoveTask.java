@@ -75,11 +75,15 @@ class FileRemoveTask implements PatchingTask {
 
     @Override
     public boolean prepare(PatchingContext context) throws IOException {
-        backup(target, Collections.<String>emptyList(), rollback);
         // See if the hash matches the metadata
         final byte[] expected = modification.getTargetHash();
         final byte[] actual = PatchUtils.calculateHash(target);
-        return Arrays.equals(expected, actual);
+        if (Arrays.equals(expected, actual)) {
+            backup(target, Collections.<String>emptyList(), rollback);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override

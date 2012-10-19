@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
+
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
@@ -184,6 +186,7 @@ public class PatchingTaskRunner {
         // If there were problems report them
         if(! problems.isEmpty()) {
             // TODO handle patch cleanup
+            recursiveDelete(structure.getHistoryDir(patch.getPatchId()));
             return new FailedResult(patch.getPatchId(), context.getPatchInfo(), problems);
         }
         //
