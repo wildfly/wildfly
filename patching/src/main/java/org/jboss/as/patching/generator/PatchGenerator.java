@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
@@ -115,6 +116,8 @@ public class PatchGenerator {
 
             if (patchConfig.isGenerateByDiff()) {
                 analyzeDifferences(patchConfig);
+            } else {
+                prepareDifferences(patchConfig);
             }
 
             try {
@@ -331,6 +334,85 @@ public class PatchGenerator {
         }
     }
 
+    private void prepareDifferences(PatchConfig patchConfig) throws IOException {
+
+        for (Map.Entry<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> entry : patchConfig.getSpecifiedContent().entrySet()) {
+            switch (entry.getKey()) {
+                case MODULE_ROOT:
+                    for (Map.Entry<ModificationType, SortedSet<DistributionContentItem>> modEntry : entry.getValue().entrySet()) {
+                        switch (modEntry.getKey()) {
+                            case ADD:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordModuleAdd(item);
+                                }
+                                break;
+                            case MODIFY:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordModuleUpdateViaContentChange(item);
+                                }
+                                break;
+                            case REMOVE:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordModuleRemove(item);
+                                }
+                                break;
+                            default:
+                                throw new IllegalStateException();
+                        }
+                    }
+                    break;
+                case BUNDLE_ROOT:
+                    for (Map.Entry<ModificationType, SortedSet<DistributionContentItem>> modEntry : entry.getValue().entrySet()) {
+                        switch (modEntry.getKey()) {
+                            case ADD:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordBundleAdd(item);
+                                }
+                                break;
+                            case MODIFY:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordBundleUpdate(item);
+                                }
+                                break;
+                            case REMOVE:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordBundleRemove(item);
+                                }
+                                break;
+                            default:
+                                throw new IllegalStateException();
+                        }
+                    }
+                    break;
+                case MISC:
+                    for (Map.Entry<ModificationType, SortedSet<DistributionContentItem>> modEntry : entry.getValue().entrySet()) {
+                        switch (modEntry.getKey()) {
+                            case ADD:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordMiscFileAdd(item);
+                                }
+                                break;
+                            case MODIFY:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordMiscFileUpdate(item, patchConfig);
+                                }
+                                break;
+                            case REMOVE:
+                                for (DistributionContentItem item : modEntry.getValue()) {
+                                    recordMiscFileRemove(item, patchConfig);
+                                }
+                                break;
+                            default:
+                                throw new IllegalStateException();
+                        }
+                    }
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
+
     private void recordBundleAdd(DistributionContentItem itemPath) throws IOException {
         DistributionContentItem bundleRoot = getBundleRoot(itemPath);
         File moduleRootFile = bundleRoot.getFile(newRoot);
@@ -415,12 +497,24 @@ public class PatchGenerator {
         miscAdds.put(itemPath, cm);
     }
 
+    private void recordMiscFileUpdate(DistributionContentItem itemPath, PatchConfig config) throws IOException {
+        File newFile = itemPath.getFile(newRoot);
+        DistributionContentItem oldItemPath = newStructure.getPreviousVersionPath(itemPath, oldStructure);
+        File oldFile = oldItemPath.getFile(oldRoot);
+        recordMiscFileUpdate(itemPath, config, getHash(newFile), getHash(oldFile));
+    }
+
     private void recordMiscFileUpdate(DistributionContentItem itemPath, PatchConfig config, byte[] newItemHash, byte[] oldItemHash) throws IOException {
         List<String> list = itemPath.getParent().getPathAsList();
         String[] array = list.toArray(new String[list.size()]);
         MiscContentItem mci = new MiscContentItem(itemPath.getName(), array, newItemHash, itemPath.isDirectory(), config.getInRuntimeUseItems().contains(itemPath));
         ContentModification cm = new ContentModification(mci, oldItemHash, ModificationType.MODIFY);
         miscUpdates.put(itemPath, cm);
+    }
+
+    private void recordMiscFileRemove(DistributionContentItem oldItemPath, PatchConfig config) throws IOException {
+        File oldFile = oldItemPath.getFile(oldRoot);
+        recordMiscFileRemove(oldItemPath, config, getHash(oldFile));
     }
 
     private void recordMiscFileRemove(DistributionContentItem oldItemPath, PatchConfig config, byte[] oldItemHash) {

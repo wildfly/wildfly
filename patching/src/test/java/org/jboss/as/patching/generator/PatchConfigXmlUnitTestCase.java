@@ -32,9 +32,13 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.junit.Test;
 
@@ -81,6 +85,51 @@ public class PatchConfigXmlUnitTestCase {
         validateInRuntimeUse(patchConfig);
     }
 
+    @Test
+    public void testCumulativeSpecified() throws Exception {
+
+        specifiedContentTest("test-config03.xml");
+    }
+
+    @Test
+    public void testOneOffSpecified() throws Exception {
+
+        specifiedContentTest("test-config04.xml");
+    }
+
+    private void specifiedContentTest(String configFile) throws Exception {
+
+        final InputStream is = getResource(configFile);
+        final PatchConfig patchConfig = PatchConfigXml.parse(is);
+
+        Map<ModificationType, Set<String>> content = new HashMap<ModificationType, Set<String>>();
+        Set<String> adds = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test/main", "modules/org/jboss/as/test/prod",
+                "bundles/org/jboss/as/test/main", "bundles/org/jboss/as/test/prod", "test/file", "test/file2"));
+        content.put(ModificationType.ADD, adds);
+        Set<String> mods = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test2/main", "modules/org/jboss/as/test2/prod",
+                "bundles/org/jboss/as/test2/main", "bundles/org/jboss/as/test2/prod", "test/file3", "test/file4"));
+        content.put(ModificationType.MODIFY, mods);
+        Set<String> rems = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test3/main", "modules/org/jboss/as/test3/prod",
+                "bundles/org/jboss/as/test3/main", "bundles/org/jboss/as/test3/prod", "test/file5", "test/file6"));
+        content.put(ModificationType.REMOVE, rems);
+
+        for (Map<ModificationType, SortedSet<DistributionContentItem>> map : patchConfig.getSpecifiedContent().values()) {
+            for (Map.Entry<ModificationType, SortedSet<DistributionContentItem>> entry : map.entrySet()) {
+                for (DistributionContentItem item : entry.getValue()) {
+                    String path = item.getPath();
+                    assertTrue(path, content.get(entry.getKey()).remove(path));
+                }
+            }
+        }
+
+        for (Set<String> set : content.values()) {
+            assertTrue(set.toString(), set.isEmpty());
+        }
+
+        Set<String> validInUse = new HashSet<String>(Arrays.asList("test/file3", "test/file5"));
+        validateInRuntimeUse(patchConfig, validInUse);
+    }
+
     private static InputStream getResource(String name) throws IOException {
         final URL resource = PatchConfigXmlUnitTestCase.class.getClassLoader().getResource(name);
         assertNotNull(name, resource);
@@ -96,6 +145,10 @@ public class PatchConfigXmlUnitTestCase {
 
     private static void validateInRuntimeUse(final PatchConfig patchConfig) {
         Set<String> validInUse = new HashSet<String>(Arrays.asList("test", "test/file", "test/file/file1"));
+        validateInRuntimeUse(patchConfig, validInUse);
+    }
+
+    private static void validateInRuntimeUse(final PatchConfig patchConfig, Set<String> validInUse) {
         for (DistributionContentItem item : patchConfig.getInRuntimeUseItems()) {
             String path = item.getPath();
             assertTrue(path + " is valid", validInUse.remove(path));

@@ -43,6 +43,10 @@ public interface DistributionStructure {
         }
     }
 
+    DistributionContentItem getModuleRootContentItem(String moduleName, String slot);
+    DistributionContentItem getBundleRootContentItem(String bundleName, String slot);
+    DistributionContentItem getMiscContentItem(String path, boolean directory);
+
     /**
      * Create a {@link DistributionContentItem content item} for the given {@code file}, which is a child of a file
      * represented by the given {@code parent} content item
@@ -108,6 +112,39 @@ public interface DistributionStructure {
         @Override
         public DistributionContentItem getPreviousVersionPath(DistributionContentItem currentVersionItem, DistributionStructure previousVersionStructure) {
             return currentVersionItem;
+        }
+
+        @Override
+        public DistributionContentItem getModuleRootContentItem(String moduleName, String slot) {
+            DistributionContentItem item = MODULES;
+            for (String name : splitSlottedContentName(moduleName)) {
+                item = new DistributionContentItem(name, DistributionContentItem.Type.MODULE_PARENT, item, true);
+            }
+            final String slotName = slot == null ? "main" : slot;
+            return new DistributionContentItem(slotName, DistributionContentItem.Type.MODULE_ROOT, item, true);
+        }
+
+        @Override
+        public DistributionContentItem getBundleRootContentItem(String bundleName, String slot) {
+            DistributionContentItem item = BUNDLES;
+            for (String name : splitSlottedContentName(bundleName)) {
+                item = new DistributionContentItem(name, DistributionContentItem.Type.BUNDLE_PARENT, item, true);
+            }
+            final String slotName = slot == null ? "main" : slot;
+            return new DistributionContentItem(slotName, DistributionContentItem.Type.BUNDLE_ROOT, item, true);
+        }
+
+        @Override
+        public DistributionContentItem getMiscContentItem(String path, boolean directory) {
+            DistributionContentItem item = ROOT;
+            String[] split = splitPath(path);
+            for (int i = 0; i < split.length - 1; i++) {
+                item = new DistributionContentItem(split[i], DistributionContentItem.Type.MISC, item, true);
+            }
+            if (split.length > 0) {
+                item = new DistributionContentItem(split[split.length - 1], DistributionContentItem.Type.MISC, item, directory);
+            }
+            return item;
         }
 
         @Override
@@ -203,6 +240,14 @@ public interface DistributionStructure {
         public String getModuleSlot(DistributionContentItem moduleRoot) {
             assert moduleRoot.getType() == DistributionContentItem.Type.MODULE_ROOT : "Invalid type " + moduleRoot.getType();
             return moduleRoot.getName();
+        }
+
+        private static String[] splitSlottedContentName(String name) {
+            return name.split("\\.");
+        }
+
+        private static String[] splitPath(String path) {
+            return path.split("/");
         }
     }
 }

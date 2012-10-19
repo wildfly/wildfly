@@ -24,10 +24,15 @@ package org.jboss.as.patching.generator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 
@@ -45,6 +50,8 @@ class PatchConfigBuilder implements PatchConfig {
     private boolean generateByDiff;
     private List<String> appliesTo = new ArrayList<String>();
     private Set<DistributionContentItem> runtimeUseItems = new HashSet<DistributionContentItem>();
+    private final Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> modifications =
+            new HashMap<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>>();
 
     @Override
     public String getPatchId() {
@@ -78,6 +85,11 @@ class PatchConfigBuilder implements PatchConfig {
 
     public boolean isGenerateByDiff() {
         return generateByDiff;
+    }
+
+    @Override
+    public Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> getSpecifiedContent() {
+        return modifications;
     }
 
     @Override
@@ -117,8 +129,34 @@ class PatchConfigBuilder implements PatchConfig {
         this.generateByDiff = generateByDiff;
     }
 
-    public void addRuntimeUseItem(DistributionContentItem item) {
+    void addRuntimeUseItem(DistributionContentItem item) {
         this.runtimeUseItems.add(item);
+    }
+
+    void addModification(DistributionContentItem item, ModificationType modificationType) {
+        Map<ModificationType, SortedSet<DistributionContentItem>> typeMap = null;
+        DistributionContentItem.Type itemType = item.getType();
+        switch (itemType) {
+            case MODULE_ROOT:
+            case BUNDLE_ROOT:
+            case MISC:
+                typeMap = modifications.get(itemType);
+                if (typeMap == null) {
+                    typeMap = new HashMap<ModificationType, SortedSet<DistributionContentItem>>();
+                    modifications.put(itemType, typeMap);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException(itemType + " is not a valid content item type for a modification");
+        }
+
+        SortedSet<DistributionContentItem> items = typeMap.get(modificationType);
+        if (items == null) {
+            items = new TreeSet<DistributionContentItem>();
+            typeMap.put(modificationType, items);
+        }
+
+        items.add(item);
     }
 
 }
