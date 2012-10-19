@@ -47,23 +47,23 @@ public class PatchingAssert {
         assertTrue(f + " not found in " + set, set.contains(f));
     }
 
-    static void assertDirExists(File rootDir, String... segments) {
-        assertFileExists(true, rootDir, segments);
+    static File assertDirExists(File rootDir, String... segments) {
+        return assertFileExists(true, rootDir, segments);
     }
     
     static void assertDirDoesNotExist(File rootDir, String... segments) {
         assertFileDoesNotExist(true, rootDir, segments);
     }
     
-    static void assertFileExists(File rootDir, String... segments) {
-        assertFileExists(false, rootDir, segments);
+    static File assertFileExists(File rootDir, String... segments) {
+        return assertFileExists(false, rootDir, segments);
     }
     
     static void assertFileDoesNotExist(File rootDir, String... segments) {
         assertFileDoesNotExist(false, rootDir, segments);
     }
 
-    private static void assertFileExists(boolean isDir, File rootFile, String... segments) {
+    private static File assertFileExists(boolean isDir, File rootFile, String... segments) {
         assertTrue(rootFile + " does not exist", rootFile.exists());
         File f = rootFile;
         for (String segment : segments) {
@@ -71,6 +71,7 @@ public class PatchingAssert {
             assertTrue(f + " does not exist", f.exists());
         }
         assertEquals(f + " is " + (isDir? "not":"") + " a directory", isDir, f.isDirectory());
+        return f;
     }
     
     private static void assertFileDoesNotExist(boolean isDir, File rootFile, String... segments) {

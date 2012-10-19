@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
+import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
 import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
 import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
@@ -35,6 +36,7 @@ import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
+import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,9 +46,11 @@ import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -95,14 +99,14 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         // start from a base installation
         PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
         // with a file in it
-        File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
-        File standaloneShellFile = touch(binDir, "standalone.sh");
+        String fileName = "standalone.sh";
+        File standaloneShellFile = touch(env.getInstalledImage().getJbossHome(), "bin", fileName );
         dump(standaloneShellFile, "original script to run standalone AS7");
         byte[] existingHash = calculateHash(standaloneShellFile);
 
         // build a one-off patch for the base installation
         // with 1 removed file
-        ContentModification fileRemoved = new ContentModification(new MiscContentItem(standaloneShellFile.getName(), new String[] { "bin" }, NO_CONTENT), existingHash, REMOVE);
+        ContentModification fileRemoved = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, NO_CONTENT), existingHash, REMOVE);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
@@ -125,6 +129,54 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         /// file has been removed from the AS7 installation
         assertFileDoesNotExist(standaloneShellFile);
         // but it's been backed up
-        assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", standaloneShellFile.getName());
+        assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", fileName);
+    }
+
+    @Test
+    public void testUpdateFile() throws Exception {
+
+        // start from a base installation
+        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        // with a file in it
+        File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
+        String fileName = "standalone.sh";
+        File standaloneShellFile = touch(binDir, fileName);
+        dump(standaloneShellFile, "original script to run standalone AS7");
+        byte[] existingHash = calculateHash(standaloneShellFile);
+
+        // build a one-off patch for the base installation
+        // with 1 updated file
+        String patchID = randomString();
+        File patchDir = mkdir(tempDir, patchID);
+
+        File updatedFile = touch(patchDir, "misc", "bin", fileName);
+        dump(updatedFile, "updated script");
+        byte[] updatedHash = calculateHash(updatedFile);
+        ContentModification fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), existingHash, MODIFY);
+
+        Patch patch = PatchBuilder.create()
+                .setPatchId(randomString())
+                .setDescription(randomString())
+                .setPatchType(PatchType.ONE_OFF)
+                .addAppliesTo(info.getVersion())
+                .addContentModification(fileUpdated)
+                .build();
+
+        // create the patch
+        createPatchXMLFile(patchDir, patch);
+        File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
+
+        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+
+        assertPatchHasBeenApplied(result, patch);
+
+        /// file has been updated in the AS7 installation
+        // and it's the new one
+        assertFileExists(standaloneShellFile);
+        assertArrayEquals(updatedHash, calculateHash(standaloneShellFile));
+        // the existing file has been backed up
+        File backupFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", fileName);
+        assertArrayEquals(existingHash, calculateHash(backupFile));        
     }
 }
