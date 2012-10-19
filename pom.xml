@@ -183,7 +183,7 @@
         <version.org.jboss.modules.jboss-modules>1.1.3.GA</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.0.2.GA</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.deployment>1.2.0.CR1</version.org.jboss.osgi.deployment>
-        <version.org.jboss.osgi.framework>2.0.0.CR37</version.org.jboss.osgi.framework>
+        <version.org.jboss.osgi.framework>2.0.0.CR38</version.org.jboss.osgi.framework>
         <version.org.jboss.osgi.logging>1.0.0.Final</version.org.jboss.osgi.logging>
         <version.org.jboss.osgi.metadata>2.1.1.CR9</version.org.jboss.osgi.metadata>
         <version.org.jboss.osgi.resolver>3.0.0.CR8</version.org.jboss.osgi.resolver>
@@ -1082,7 +1082,37 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-osgi-integration</artifactId>
+                <artifactId>jboss-as-osgi-http</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-osgi-jmx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-osgi-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-osgi-jta</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-osgi-naming</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-osgi-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

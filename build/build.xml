@@ -944,8 +944,28 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-service"/>
         </module-def>
 
-     	<module-def name="org.jboss.as.osgi.integration">
-            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-integration"/>
+     	<module-def name="org.jboss.as.osgi.http">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-http"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.jmx">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-jmx"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.jpa">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-jpa"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.jta">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-jta"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.naming">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-naming"/>
+        </module-def>
+
+     	<module-def name="org.jboss.as.osgi.web">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-osgi-web"/>
         </module-def>
 
         <module-def name="org.jboss.as.sar">

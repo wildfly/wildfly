@@ -53,6 +53,10 @@
         <!-- 
         	Optional Extensions 
         -->
-        <module name="org.jboss.as.osgi.integration" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.jmx" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.jpa" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.jta" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.naming" optional="true" services="import"/>
+        <module name="org.jboss.as.osgi.web" optional="true" services="import"/>
     </dependencies>
 </module>

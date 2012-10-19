@@ -35,45 +35,15 @@
 
     <artifactId>jboss-as-osgi-integration</artifactId>
     <name>JBoss Application Server: OSGi Integration</name>
+    <packaging>pom</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jmx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-naming</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-transactions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-osgi-service</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.osgi.framework</groupId>
-            <artifactId>jbosgi-framework-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.enterprise</artifactId>
-        </dependency>
-    </dependencies>
-
-    <!-- Build -->
-    <build>
-        <plugins>
-        </plugins>
-    </build>
+    <modules>
+        <module>configadmin</module>
+        <module>http</module>
+        <module>jmx</module>
+        <module>jpa</module>
+        <module>jta</module>
+        <module>naming</module>
+        <module>web</module>
+    </modules>
 </project>
