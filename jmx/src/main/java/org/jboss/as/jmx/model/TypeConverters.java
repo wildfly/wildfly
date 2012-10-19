@@ -532,11 +532,7 @@ class TypeConverters {
                 final Map<String, Object> items = new HashMap<String, Object>();
                 for (String attrName : compositeType.keySet()) {
                     TypeConverter converter = getConverter(typeNode.get(attrName, TYPE), typeNode.get(attrName, VALUE_TYPE));
-                    try {
-                        items.put(attrName, converter.fromModelNode(node.get(attrName)));
-                    } catch (Exception e) {
-                        System.out.println("xxx");
-                    }
+                    items.put(attrName, converter.fromModelNode(node.get(attrName)));
                 }
 
                 try {

@@ -357,17 +357,6 @@ public class MBeanInfoFactory {
         return new ImmutableDescriptor(descriptions);
     }
 
-    private Descriptor createParameterDescriptor(ModelNode parameter) {
-        Map<String, String> descriptions = new HashMap<String, String>();
-        addMBeanExpressionSupport(descriptions);
-        Boolean allowExpressions = parameter.hasDefined(EXPRESSIONS_ALLOWED) && parameter.get(EXPRESSIONS_ALLOWED).asBoolean();
-        descriptions.put(DESC_EXPRESSIONS_ALLOWED, allowExpressions.toString());
-        descriptions.put(DESC_EXPRESSIONS_ALLOWED_DESC, allowExpressions ?
-                MESSAGES.descriptorParameterExpressionsAllowedTrue() : MESSAGES.descriptorParameterExpressionsAllowedFalse());
-        return new ImmutableDescriptor(descriptions);
-    }
-
-
     private void addMBeanExpressionSupport(Map<String, String> descriptions) {
         if (legacy) {
             descriptions.put(DESC_MBEAN_EXPR, "true");
