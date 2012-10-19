@@ -24,7 +24,6 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,6 +34,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -51,6 +51,7 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener.Inheritance;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -60,7 +61,9 @@ import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.spi.AbstractBundleRevisionAdaptor;
+import org.jboss.osgi.framework.spi.BootstrapBundlesActivate;
 import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
+import org.jboss.osgi.framework.spi.BootstrapBundlesResolve;
 import org.jboss.osgi.framework.spi.IntegrationService;
 import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.framework.spi.StorageStatePlugin;
@@ -70,6 +73,7 @@ import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.XRequirementBuilder;
 import org.jboss.osgi.resolver.MavenCoordinates;
+import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
 import org.jboss.osgi.resolver.XCapability;
@@ -78,7 +82,9 @@ import org.jboss.osgi.resolver.XResource;
 import org.jboss.osgi.resolver.XResourceBuilder;
 import org.jboss.osgi.spi.BundleInfo;
 import org.jboss.osgi.vfs.AbstractVFS;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.service.packageadmin.PackageAdmin;
@@ -102,6 +108,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
     private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
     private final InjectedValue<XRepository> injectedRepository = new InjectedValue<XRepository>();
+    private List<OSGiCapability> modulecaps;
     private File bundlesDir;
 
     BootstrapBundlesIntegration() {
@@ -132,14 +139,16 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     public synchronized void start(StartContext context) throws StartException {
         super.start(context);
 
-        final List<Deployment> deployments = new ArrayList<Deployment>();
+        List<Deployment> deployments = new ArrayList<Deployment>();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
             bundlesDir = serverEnvironment.getBundlesDir();
             if (bundlesDir.isDirectory() == false)
                 throw MESSAGES.illegalStateCannotFindBundleDir(bundlesDir);
 
-            final List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
+            modulecaps = new ArrayList<OSGiCapability>();
+
+            List<OSGiCapability> configcaps = new ArrayList<OSGiCapability>();
             for (String capspec : SystemPackagesIntegration.DEFAULT_CAPABILITIES) {
                 configcaps.add(new OSGiCapability(capspec, null));
             }
@@ -147,8 +156,10 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
             Iterator<OSGiCapability> iterator = configcaps.iterator();
             while (iterator.hasNext()) {
                 OSGiCapability configcap = iterator.next();
-                if (installInitialModuleCapability(configcap))
+                if (installInitialModuleCapability(configcap)) {
+                    modulecaps.add(configcap);
                     iterator.remove();
+                }
             }
 
             for (OSGiCapability configcap : configcaps) {
@@ -161,6 +172,11 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
 
         // Install the bundles from the given locations
         installBootstrapBundles(context.getChildTarget(), deployments);
+    }
+
+    @Override
+    protected ServiceController<Void> installResolveService(ServiceTarget serviceTarget, Set<ServiceName> installedServices) {
+        return new BootstrapResolveIntegration(getServiceName().getParent(), installedServices).install(serviceTarget);
     }
 
     private boolean installInitialModuleCapability(OSGiCapability configcap) throws Exception {
@@ -181,25 +197,27 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
                 } catch (ModuleLoadException ex) {
                     throw MESSAGES.cannotResolveInitialCapability(ex, identifier);
                 }
-                if (module != null) {
-                    final OSGiMetaData metadata = getModuleMetadata(module);
-                    final BundleContext syscontext = injectedSystemContext.getValue();
-                    XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
-                        @Override
-                        public XBundleRevision createResource() {
-                            return new AbstractBundleRevisionAdaptor(syscontext, module);
-                        }
-                    };
-                    XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
-                    if (metadata != null) {
-                        builder.loadFrom(metadata);
-                    } else {
-                        builder.loadFrom(module);
+
+                final OSGiMetaData metadata = getModuleMetadata(module);
+                final BundleContext syscontext = injectedSystemContext.getValue();
+                XBundleRevisionBuilderFactory factory = new XBundleRevisionBuilderFactory() {
+                    @Override
+                    public XBundleRevision createResource() {
+                        return new AbstractBundleRevisionAdaptor(syscontext, module);
                     }
-                    XResource resource = builder.getResource();
-                    injectedEnvironment.getValue().installResources(resource);
-                    return true;
+                };
+                XResource resource;
+                XResourceBuilder builder = XBundleRevisionBuilderFactory.create(factory);
+                if (metadata != null) {
+                    builder.loadFrom(metadata);
+                    resource = builder.getResource();
+                    resource.addAttachment(OSGiMetaData.class, metadata);
+                } else {
+                    builder.loadFrom(module);
+                    resource = builder.getResource();
                 }
+                injectedEnvironment.getValue().installResources(resource);
+                return true;
             }
         }
         return false;
@@ -307,5 +325,47 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
             }
         }
         return null;
+    }
+
+    class BootstrapResolveIntegration extends BootstrapBundlesResolve<Void> {
+
+        BootstrapResolveIntegration(ServiceName baseName, Set<ServiceName> installedServices) {
+            super(baseName, installedServices);
+        }
+
+        @Override
+        protected ServiceController<Void> installActivateService(ServiceTarget serviceTarget, Set<ServiceName> resolvedServices) {
+            return new BootstrapActivateIntegration(getServiceName().getParent(), resolvedServices).install(serviceTarget);
+        }
+    }
+
+    class BootstrapActivateIntegration extends BootstrapBundlesActivate<Void> {
+
+        BootstrapActivateIntegration(ServiceName baseName, Set<ServiceName> installedServices) {
+            super(baseName, installedServices);
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+
+            // Start the module capabilities that have a start level assigned
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            for (OSGiCapability modcap : modulecaps) {
+                String identifier = modcap.getIdentifier();
+                XBundle bundle = bundleManager.getBundleByLocation(identifier);
+                // [TODO] integrate with StartLevel instead of this BundleActivator hack
+                OSGiMetaData metadata = bundle.getBundleRevision().getAttachment(OSGiMetaData.class);
+                if (metadata != null && metadata.getBundleActivator() != null) {
+                    try {
+                        bundle.start(Bundle.START_ACTIVATION_POLICY);
+                    } catch (BundleException ex) {
+                        LOGGER.errorCannotStartBundle(ex, bundle);
+                    }
+                }
+            }
+
+            // Start the bundle capabilities
+            super.start(context);
+        }
     }
 }

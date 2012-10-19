@@ -29,18 +29,31 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-osgi-integration</artifactId>
         <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-osgi</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>jboss-as-osgi-jta</artifactId>
+    <name>JBoss Application Server: OSGi Integration JTA</name>
 
-    <name>JBoss Application Server: OSGi</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-transactions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-osgi-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.enterprise</artifactId>
+        </dependency>
+    </dependencies>
 
-    <modules>
-        <module>service</module>
-        <module>integration</module>
-    </modules>
+    <!-- Build -->
+    <build>
+        <plugins>
+        </plugins>
+    </build>
 </project>
