@@ -29,6 +29,7 @@ import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
+import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasNotBeenApplied;
 import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
@@ -37,6 +38,7 @@ import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,11 +48,9 @@ import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -132,6 +132,53 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", fileName);
     }
 
+    /**
+     * apply a patch to remove a file that has been modified by the user
+     * => the patch must fail (STRICT policy) and not touch the user-modified file
+     */
+    @Test
+    public void testUndoRemoveFile() throws Exception {
+
+        // start from a base installation
+        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        // with a file in it
+        String fileName = "standalone.sh";
+        File standaloneShellFile = touch(env.getInstalledImage().getJbossHome(), "bin", fileName );
+        dump(standaloneShellFile, "original script to run standalone AS7");
+        // let's simulate that the file has been modified by the users by using a hash that is not the file checksum
+        byte[] unmodifiedHash = randomString().getBytes();
+        byte[] actualHash = calculateHash(standaloneShellFile);
+
+        // build a one-off patch for the base installation
+        // with 1 removed file
+        ContentModification fileRemoved = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, NO_CONTENT), unmodifiedHash, REMOVE);
+
+        Patch patch = PatchBuilder.create()
+                .setPatchId(randomString())
+                .setDescription(randomString())
+                .setPatchType(PatchType.ONE_OFF)
+                .addAppliesTo(info.getVersion())
+                .addContentModification(fileRemoved)
+                .build();
+
+        // create the patch
+        File patchDir = mkdir(tempDir, patch.getPatchId());
+        createPatchXMLFile(patchDir, patch);
+        File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
+
+        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+
+        assertTrue(result.hasFailures());
+        assertTrue(result.getProblems().contains(fileRemoved.getItem()));
+
+        assertPatchHasNotBeenApplied(result, patch, fileRemoved.getItem());
+
+        /// file has not been modified in the AS7 installation
+        assertFileExists(standaloneShellFile);
+        assertArrayEquals(actualHash, calculateHash(standaloneShellFile));
+    }
+
     @Test
     public void testUpdateFile() throws Exception {
 
@@ -155,7 +202,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         ContentModification fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), existingHash, MODIFY);
 
         Patch patch = PatchBuilder.create()
-                .setPatchId(randomString())
+                .setPatchId(patchID)
                 .setDescription(randomString())
                 .setPatchType(PatchType.ONE_OFF)
                 .addAppliesTo(info.getVersion())
@@ -176,7 +223,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         assertFileExists(standaloneShellFile);
         assertArrayEquals(updatedHash, calculateHash(standaloneShellFile));
         // the existing file has been backed up
-        File backupFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", fileName);
+        File backupFile = assertFileExists(env.getHistoryDir(patchID), "misc", "bin", fileName);
         assertArrayEquals(existingHash, calculateHash(backupFile));        
     }
 }

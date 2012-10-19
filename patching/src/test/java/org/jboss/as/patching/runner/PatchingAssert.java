@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;
 
 /**
@@ -50,17 +51,13 @@ public class PatchingAssert {
     static File assertDirExists(File rootDir, String... segments) {
         return assertFileExists(true, rootDir, segments);
     }
-    
+
     static void assertDirDoesNotExist(File rootDir, String... segments) {
-        assertFileDoesNotExist(true, rootDir, segments);
+        assertFileDoesNotExist(rootDir, segments);
     }
-    
+
     static File assertFileExists(File rootDir, String... segments) {
         return assertFileExists(false, rootDir, segments);
-    }
-    
-    static void assertFileDoesNotExist(File rootDir, String... segments) {
-        assertFileDoesNotExist(false, rootDir, segments);
     }
 
     private static File assertFileExists(boolean isDir, File rootFile, String... segments) {
@@ -73,14 +70,13 @@ public class PatchingAssert {
         assertEquals(f + " is " + (isDir? "not":"") + " a directory", isDir, f.isDirectory());
         return f;
     }
-    
-    private static void assertFileDoesNotExist(boolean isDir, File rootFile, String... segments) {
+
+    static void assertFileDoesNotExist(File rootFile, String... segments) {
         if (segments.length == 0) {
             assertFalse(rootFile + " exists", rootFile.exists());
-            assertEquals(rootFile + " is " + (isDir? "not":"") + " a directory", isDir, rootFile.isDirectory());
             return;
         }
-        
+
         File f = rootFile;
         for (int i = 0; i < segments.length - 1; i++) {
             String segment = segments[i];
@@ -88,7 +84,6 @@ public class PatchingAssert {
             assertTrue(f + " does not exist", f.exists());
         }
         f = new File(f, segments[segments.length -1]);
-        assertEquals(f + " is " + (isDir? "not":"") + " a directory", isDir, f.isDirectory());
     }
 
     static void assertDefinedModule(File[] modulesPath, String moduleName, byte[] expectedHash) throws Exception {
@@ -137,5 +132,13 @@ public class PatchingAssert {
         } else {
             assertTrue(result.getPatchInfo().getPatchIDs().contains(patch.getPatchId()));
         }
+    }
+
+    static void assertPatchHasNotBeenApplied(PatchingResult result, Patch patch, ContentItem problematicItem) {
+        assertTrue("patch should have failed", result.hasFailures());
+        assertTrue(problematicItem + " is not reported in the problemes " + result.getProblems(), result.getProblems().contains(problematicItem));
+
+        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getPatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getHistoryDir(patch.getPatchId()));
     }
 }
