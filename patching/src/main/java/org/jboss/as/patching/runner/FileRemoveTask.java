@@ -37,10 +37,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.DigestInputStream;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,15 +71,14 @@ class FileRemoveTask implements PatchingTask {
 
     @Override
     public boolean prepare(PatchingContext context) throws IOException {
+        // we create the backup in any case, since it is possible that the task
+        // will be processed anyhow if the user specified OVERRIDE_ALL policy.
+        // If the task is undone, the patch history will be deleted (including this backup).
+        backup(target, Collections.<String>emptyList(), rollback);
         // See if the hash matches the metadata
         final byte[] expected = modification.getTargetHash();
         final byte[] actual = PatchUtils.calculateHash(target);
-        if (Arrays.equals(expected, actual)) {
-            backup(target, Collections.<String>emptyList(), rollback);
-            return true;
-        } else {
-            return false;
-        }
+        return Arrays.equals(expected, actual);
     }
 
     @Override
