@@ -21,14 +21,10 @@
  */
 package org.jboss.as.configadmin.parser;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.configadmin.service.ConfigAdminInternal;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
@@ -50,18 +46,4 @@ public class ConfigurationRemove extends AbstractRemoveStepHandler {
             configAdmin.removeConfigurationInternal(pid);
         }
     }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            ResourceBundle resbundle = ConfigAdminProviders.getResourceBundle(locale);
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.remove"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }
