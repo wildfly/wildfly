@@ -110,7 +110,6 @@ import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
-import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -1089,24 +1088,10 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         return null;
     }
 
-    private void assertEqualByteArray(byte[] bytes, int...expected) {
-        Assert.assertEquals(expected.length, bytes.length);
-        for (int i = 0 ; i < bytes.length ; i++) {
-            Assert.assertEquals(expected[i], bytes[i]);
-        }
-    }
-
     private void assertEqualByteArray(byte[] bytes, byte...expected) {
         Assert.assertEquals(expected.length, bytes.length);
         for (int i = 0 ; i < bytes.length ; i++) {
             Assert.assertEquals(expected[i], bytes[i]);
-        }
-    }
-
-    private void assertEqualList(List<?> list, Object...expected) {
-        Assert.assertEquals(expected.length, list.size());
-        for (int i = 0 ; i < list.size() ; i++) {
-            Assert.assertEquals(expected[i], list.get(i));
         }
     }
 
@@ -1209,7 +1194,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
                 + "<expose-expression-model/>"
                 + "<remoting-connector/>" + "</subsystem>"
                 + additionalInitialization.getExtraXml();
-        KernelServices services = super.installInController(additionalInitialization, subsystemXml);
+        createKernelServicesBuilder(additionalInitialization).setSubsystemXml(subsystemXml).build();
 
         // Make sure that we can connect to the MBean server
         String host = "localhost";

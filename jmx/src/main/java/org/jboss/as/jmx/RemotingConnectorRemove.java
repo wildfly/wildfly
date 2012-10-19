@@ -25,8 +25,6 @@ package org.jboss.as.jmx;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -40,8 +38,6 @@ class RemotingConnectorRemove extends AbstractRemoveStepHandler {
         //
     }
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
-        final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        final String name = address.getLastElement().getValue();
         context.removeService(RemotingConnectorService.SERVICE_NAME);
     }
 

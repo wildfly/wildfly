@@ -680,7 +680,7 @@ public class ExpressionTypeConverterUnitTestCase {
         ModelNode description = createDescription(ModelType.LIST, ModelType.INT);
         description.get(EXPRESSIONS_ALLOWED).set(true);
         TypeConverter converter = getConverter(description);
-        ArrayType<?> arrayType = assertCast(ArrayType.class, converter.getOpenType());
+        assertCast(ArrayType.class, converter.getOpenType());
 
         ModelNode node = new ModelNode();
         node.addExpression("${this.should.not.exist.!!!!!:1}");
