@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
@@ -48,10 +49,10 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
 
     private PropertyObjectTypeAttributeDefinition(final String name, final String xmlName, final String propertyName, final String suffix,
                                                   final AttributeDefinition[] valueTypes, final boolean allowNull, final ModelNodeResolver<String> resolver,
-                                                  final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
+                                                  final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
                                                   final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData,
                                                   final AttributeAccess.Flag... flags) {
-        super(name, xmlName, suffix, valueTypes, allowNull, new ObjectTypeValidator(allowNull, valueTypes), corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, flags);
+        super(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, flags);
         this.propertyName = propertyName;
         this.resolver = resolver;
     }
@@ -107,7 +108,11 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
 
         public PropertyObjectTypeAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
-            return new PropertyObjectTypeAttributeDefinition(name, xmlName, propertyName, suffix, valueTypes, allowNull, resolver, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            ParameterValidator validator = this.validator;
+            if (validator == null) {
+                validator = new ObjectTypeValidator(allowNull, valueTypes);
+            }
+            return new PropertyObjectTypeAttributeDefinition(name, xmlName, propertyName, suffix, valueTypes, allowNull, resolver, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 
         public Builder setSuffix(final String suffix) {
