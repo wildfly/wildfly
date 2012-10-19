@@ -23,8 +23,11 @@
 package org.jboss.as.patching.generator;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 
@@ -85,9 +88,19 @@ public interface PatchConfig {
     boolean isGenerateByDiff();
 
     /**
+     * Gets the modifications specifically specified in the patch config, if the config doesn't specify
+     * {@link #isGenerateByDiff() generating the modifications by differencing the two distributions}.
+     *
+     * @return map of content items to the type of modification to apply to that item
+     *
+     * @throws IllegalStateException if {@link #isGenerateByDiff()} returns {@code true}
+     */
+    Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> getSpecifiedContent();
+
+    /**
      * Create a {@link PatchBuilder} whose basic metadata matches what's configured in this object.
      *
-     * @return
+     * @return the patch builder
      */
     PatchBuilder toPatchBuilder();
 }

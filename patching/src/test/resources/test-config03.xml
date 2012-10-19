@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2012, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<patch-config xmlns="urn:jboss:patch-config:1.0">
+
+    <name>patch-12345</name>
+    <description>patch description</description>
+    <cumulative resulting-version="2.3.4">
+        <applies-to-version>1.2.3</applies-to-version>
+    </cumulative>
+
+    <specified-content>
+
+        <modules>
+            <added-module name="org.jboss.as.test" />
+            <added-module name="org.jboss.as.test" slot="prod" />
+            <updated-module name="org.jboss.as.test2" />
+            <updated-module name="org.jboss.as.test2" slot="prod" />
+            <removed-module name="org.jboss.as.test3" />
+            <removed-module name="org.jboss.as.test3" slot="prod" />
+        </modules>
+
+        <bundles>
+            <added-bundle name="org.jboss.as.test" />
+            <added-bundle name="org.jboss.as.test" slot="prod" />
+            <updated-bundle name="org.jboss.as.test2" />
+            <updated-bundle name="org.jboss.as.test2" slot="prod" />
+            <removed-bundle name="org.jboss.as.test3" />
+            <removed-bundle name="org.jboss.as.test3" slot="prod" />
+        </bundles>
+
+        <misc-files>
+            <added-misc-content path="test/file" />
+            <added-misc-content path="test/file2" directory="true" />
+            <updated-misc-content path="test/file3" in-runtime-use="true" />
+            <updated-misc-content path="test/file4" directory="true" />
+            <removed-misc-content path="test/file5" in-runtime-use="true" />
+            <removed-misc-content path="test/file6" directory="true" />
+        </misc-files>
+
+    </specified-content>
+
+</patch-config>

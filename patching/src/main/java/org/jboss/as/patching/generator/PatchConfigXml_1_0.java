@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -128,6 +129,9 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
     }
 
+    private DistributionStructure updatedStructure;
+    private DistributionStructure appliesToStructure;
+
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -166,8 +170,8 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
     }
 
-    private static void parsePatchType(final XMLExtendedStreamReader reader, final Patch.PatchType type, final PatchConfigBuilder builder) throws XMLStreamException {
-        //
+    private void parsePatchType(final XMLExtendedStreamReader reader, final Patch.PatchType type, final PatchConfigBuilder builder) throws XMLStreamException {
+
         builder.setPatchType(type);
 
         final int count = reader.getAttributeCount();
@@ -178,6 +182,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                 case RESULTING_VERSION:
                     if(type == Patch.PatchType.CUMULATIVE) {
                         builder.setResultingVersion(value);
+                        updatedStructure = DistributionStructure.Factory.create(value);
                         break;
                     } else {
                         throw PatchMessages.MESSAGES.resultingVersionForCumulativePatchOnly();
@@ -190,7 +195,15 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case APPLIES_TO_VERSION:
-                    builder.addAppliesTo(reader.getElementText());
+                    String value = reader.getElementText();
+                    builder.addAppliesTo(value);
+                    if (appliesToStructure == null) {
+                        // TODO deal with multiple applies-to
+                        appliesToStructure = DistributionStructure.Factory.create(value);
+                        if (type == Patch.PatchType.ONE_OFF) {
+                            updatedStructure = appliesToStructure;
+                        }
+                    }
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -238,7 +251,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         patchConfigBuilder.addRuntimeUseItem(DistributionContentItem.createMiscItemForPath(path));
     }
 
-    private static void parseSpecifiedContent(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
+    private void parseSpecifiedContent(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
 
         patchConfigBuilder.setGenerateByDiff(false);
 
@@ -260,51 +273,123 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
     }
 
-    private static void parseModules(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
+    private void parseModules(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ADDED_MODULE:
-                    // TODO
+                    parseSlottedItem(reader, ModificationType.ADD, false, builder);
+                    break;
                 case UPDATED_MODULE:
-                    // TODO
+                    parseSlottedItem(reader, ModificationType.MODIFY, false, builder);
+                    break;
                 case REMOVED_MODULE:
-                    // TODO
+                    parseSlottedItem(reader, ModificationType.REMOVE, false, builder);
+                    break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
     }
 
-    private static void parseMiscFiles(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
+    private void parseMiscFiles(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ADDED_MISC_CONTENT:
-                    // TODO
+                    parseMiscModification(reader, ModificationType.ADD, builder);
+                    break;
                 case UPDATED_MISC_CONTENT:
-                    // TODO
+                    parseMiscModification(reader, ModificationType.MODIFY, builder);
+                    break;
                 case REMOVED_MISC_CONTENT:
-                    // TODO
+                    parseMiscModification(reader, ModificationType.REMOVE, builder);
+                    break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
     }
 
-    private static void parseBundles(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
+    private void parseBundles(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ADDED_BUNDLE:
-                    // TODO
+                    parseSlottedItem(reader, ModificationType.ADD, true, builder);
+                    break;
                 case UPDATED_BUNDLE:
-                    // TODO
+                    parseSlottedItem(reader, ModificationType.MODIFY, true, builder);
+                    break;
                 case REMOVED_BUNDLE:
-                    // TODO
+                    parseSlottedItem(reader, ModificationType.REMOVE, true, builder);
+                    break;
                 default:
                     throw unexpectedElement(reader);
             }
+        }
+    }
+
+    private void parseSlottedItem(final XMLExtendedStreamReader reader, ModificationType modificationType,
+                                         final boolean bundle, final PatchConfigBuilder builder) throws XMLStreamException {
+
+        String name = null;
+        String slot = "main";
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME:
+                    name = value;
+                    break;
+                case SLOT:
+                    slot = value;
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+        requireNoContent(reader);
+
+        DistributionStructure structure =  modificationType == ModificationType.REMOVE ? appliesToStructure : updatedStructure;
+        DistributionContentItem item = bundle ? structure.getBundleRootContentItem(name, slot) : structure.getModuleRootContentItem(name, slot);
+        builder.addModification(item, modificationType);
+    }
+
+    private void parseMiscModification(final XMLExtendedStreamReader reader, final ModificationType modificationType,
+                                       final PatchConfigBuilder builder) throws XMLStreamException {
+
+        String path = null;
+        boolean directory = false;
+        boolean affectsRuntime = false;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case DIRECTORY:
+                    directory = Boolean.parseBoolean(value);
+                    break;
+                case PATH:
+                    path = value;
+                    break;
+                case IN_RUNTIME_USE:
+                    affectsRuntime = Boolean.parseBoolean(value);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+        requireNoContent(reader);
+
+        DistributionStructure structure =  modificationType == ModificationType.REMOVE ? appliesToStructure : updatedStructure;
+        DistributionContentItem item = structure.getMiscContentItem(path, directory);
+        builder.addModification(item, modificationType);
+        if (affectsRuntime) {
+            builder.addRuntimeUseItem(item);
         }
     }
 }

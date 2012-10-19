@@ -75,23 +75,17 @@ public class PatchXml {
     }
 
     public static void marshal(final Writer writer, final Patch patch) throws XMLStreamException {
-        try {
-            final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
-            final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(writer);
-            MAPPER.deparseDocument(INSTANCE, patch, streamWriter);
-        } finally {
-            PatchUtils.safeClose(writer);
-        }
+        final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
+        final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(writer);
+        MAPPER.deparseDocument(INSTANCE, patch, streamWriter);
+        streamWriter.close();
     }
 
     public static void marshal(final OutputStream os, final Patch patch) throws XMLStreamException {
-        try {
-            final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
-            final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(os);
-            MAPPER.deparseDocument(INSTANCE, patch, streamWriter);
-        } finally {
-            PatchUtils.safeClose(os);
-        }
+        final XMLOutputFactory outputFactory = OUTPUT_FACTORY;
+        final XMLStreamWriter streamWriter = outputFactory.createXMLStreamWriter(os);
+        MAPPER.deparseDocument(INSTANCE, patch, streamWriter);
+        streamWriter.close();
     }
 
     public static Patch parse(final InputStream stream) throws XMLStreamException {
