@@ -23,19 +23,15 @@ package org.jboss.as.configadmin.parser;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.configadmin.service.ConfigAdminInternal;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Process a Configuration Update.
@@ -78,20 +74,4 @@ public class ConfigurationUpdate implements OperationStepHandler {
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            ResourceBundle resbundle = ConfigAdminProviders.getResourceBundle(locale);
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelConstants.UPDATE);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.update"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("configuration.entries"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.ENTRIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.PROPERTY);
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }

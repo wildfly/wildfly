@@ -21,18 +21,16 @@
  */
 package org.jboss.as.configadmin.parser;
 
-import static org.jboss.as.configadmin.parser.ModelConstants.UPDATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 
 import org.jboss.as.configadmin.ConfigAdmin;
-import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.configadmin.service.ConfigAdminInternal;
+import org.jboss.as.configadmin.service.ConfigAdminServiceImpl;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -40,13 +38,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
@@ -69,6 +64,13 @@ public class ConfigAdminExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    private static final String RESOURCE_NAME = ConfigAdminExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ConfigAdminExtension.class.getClassLoader(), true, true);
+    }
+
+
     static ConfigAdminInternal getConfigAdminService(OperationContext context) {
         ServiceController<?> controller = context.getServiceRegistry(true).getService(ConfigAdmin.SERVICE_NAME);
         return controller != null ? (ConfigAdminServiceImpl) controller.getValue() : null;
@@ -84,17 +86,7 @@ public class ConfigAdminExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ConfigAdminProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, ConfigAdminAdd.INSTANCE, ConfigAdminAdd.DESCRIPTION, false);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, ConfigAdminProviders.SUBSYSTEM_REMOVE, false);
-
-        // Configuration Admin Settings
-        ManagementResourceRegistration configuration = registration.registerSubModel(PathElement.pathElement(ModelConstants.CONFIGURATION), ConfigAdminProviders.CONFIGURATION_DESCRIPTION);
-        configuration.registerOperationHandler(ADD, ConfigurationAdd.INSTANCE, ConfigurationAdd.DESCRIPTION, false);
-        configuration.registerOperationHandler(REMOVE, ConfigurationRemove.INSTANCE, ConfigurationRemove.DESCRIPTION, false);
-        configuration.registerOperationHandler(UPDATE, ConfigurationUpdate.INSTANCE, ConfigurationUpdate.DESCRIPTION, false);
-        configuration.registerReadOnlyAttribute(ModelConstants.ENTRIES, null, AttributeAccess.Storage.CONFIGURATION);
+        subsystem.registerSubsystemModel(new ConfigAdminRootResource());
 
         registerTransformers_1_0_0(subsystem);
 
