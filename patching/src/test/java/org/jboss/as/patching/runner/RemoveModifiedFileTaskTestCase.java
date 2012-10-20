@@ -13,7 +13,6 @@ import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
-import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
@@ -25,7 +24,6 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.junit.After;
 import org.junit.Before;
@@ -66,8 +64,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(fileRemoved)
                 .build();
 

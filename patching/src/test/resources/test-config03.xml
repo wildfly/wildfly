@@ -25,9 +25,7 @@
 
     <name>patch-12345</name>
     <description>patch description</description>
-    <cumulative resulting-version="2.3.4">
-        <applies-to-version>1.2.3</applies-to-version>
-    </cumulative>
+    <cumulative applies-to-version="1.2.3" resulting-version="2.3.4"/>
 
     <specified-content>
 

@@ -25,6 +25,8 @@ package org.jboss.as.patching.metadata;
 import static java.util.Collections.unmodifiableList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.patching.metadata.Patch.PatchType;
@@ -38,7 +40,7 @@ public class PatchBuilder {
     private String description;
     private String resultingVersion;
     private PatchType patchType;
-    private List<String> appliesTo = new ArrayList<String>();
+    private List<String> appliesTo;
     private List<ContentModification> modifications = new ArrayList<ContentModification>();
 
     public static PatchBuilder create() {
@@ -58,19 +60,21 @@ public class PatchBuilder {
         return this;
     }
 
-    public PatchBuilder setPatchType(PatchType patchType) {
-        this.patchType = patchType;
-        return this;
-    }
-
-    public PatchBuilder setResultingVersion(String resultingVersion) {
+    public PatchBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
+        this.patchType = PatchType.CUMULATIVE;
+        this.appliesTo = Collections.singletonList(appliesToVersion);
         this.resultingVersion = resultingVersion;
         return this;
     }
 
-    public PatchBuilder addAppliesTo(String appliesTo) {
-        this.appliesTo.add(appliesTo);
+    public PatchBuilder setOneOffType(List<String> appliesTo) {
+        this.patchType = PatchType.ONE_OFF;
+        this.appliesTo = Collections.unmodifiableList(appliesTo);
         return this;
+    }
+
+    public PatchBuilder setOneOffType(String... appliesTo) {
+        return setOneOffType(Arrays.asList(appliesTo));
     }
 
     public PatchBuilder addContentModification(ContentModification modification) {

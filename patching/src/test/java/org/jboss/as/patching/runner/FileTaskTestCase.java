@@ -47,7 +47,6 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.junit.Test;
 
@@ -75,8 +74,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(fileAdded)
                 .build();
 
@@ -109,8 +107,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(fileRemoved)
                 .build();
 
@@ -155,8 +152,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(fileUpdated)
                 .build();
 
@@ -175,6 +171,6 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         assertArrayEquals(updatedHash, calculateHash(standaloneShellFile));
         // the existing file has been backed up
         File backupFile = assertFileExists(env.getHistoryDir(patchID), "misc", "bin", fileName);
-        assertArrayEquals(existingHash, calculateHash(backupFile));        
+        assertArrayEquals(existingHash, calculateHash(backupFile));
     }
 }

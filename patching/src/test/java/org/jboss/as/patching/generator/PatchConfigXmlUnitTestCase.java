@@ -61,7 +61,7 @@ public class PatchConfigXmlUnitTestCase {
         assertTrue(patchConfig.isGenerateByDiff());
         assertEquals("2.3.4", patchConfig.getResultingVersion());
 
-        validateAppliesTo(patchConfig, "1.2.3", "1.2.4");
+        validateAppliesTo(patchConfig, "1.2.3");
 
         validateInRuntimeUse(patchConfig);
     }
