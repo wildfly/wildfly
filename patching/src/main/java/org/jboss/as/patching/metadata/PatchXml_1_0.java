@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.metadata;
 
+import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
@@ -31,14 +33,16 @@ import static org.jboss.as.patching.metadata.ModuleItem.MAIN_SLOT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.runner.PatchingTask;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -101,6 +105,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
 
     enum Attribute {
 
+        APPLIES_TO_VERSION("applies-to-version"),
         DIRECTORY("directory"),
         EXISTING_HASH("existing-hash"),
         EXISTING_PATH("existing-path"),
@@ -157,12 +162,13 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         final Patch.PatchType type = patch.getPatchType();
         if(type == Patch.PatchType.ONE_OFF) {
             writer.writeStartElement(Element.ONE_OFF.name);
+            writeAppliesToVersions(writer, patch.getAppliesTo());
+            writer.writeEndElement();
         } else {
-            writer.writeStartElement(Element.CUMULATIVE.name);
+            writer.writeEmptyElement(Element.CUMULATIVE.name);
+            writer.writeAttribute(Attribute.APPLIES_TO_VERSION.name, patch.getAppliesTo().iterator().next());
             writer.writeAttribute(Attribute.RESULTING_VERSION.name, patch.getResultingVersion());
         }
-        writeAppliesToVersions(writer, patch.getAppliesTo());
-        writer.writeEndElement(); // </one-off> or </cumulative>
 
         // Sort by content and modification type
         final List<ContentModification> bundlesAdd  = new ArrayList<ContentModification>();
@@ -273,10 +279,10 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     patch.setDescription(reader.getElementText());
                     break;
                 case CUMULATIVE:
-                    parsePatchType(reader, Patch.PatchType.CUMULATIVE, patch);
+                    parseCumulativePatchType(reader, patch);
                     break;
                 case ONE_OFF:
-                    parsePatchType(reader, Patch.PatchType.ONE_OFF, patch);
+                    parseOneOffPatchType(reader, patch);
                     break;
                 case MODULES:
                     parseModules(reader, patch);
@@ -293,36 +299,60 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         }
     }
 
-    static void parsePatchType(final XMLExtendedStreamReader reader, final Patch.PatchType type, final PatchBuilder builder) throws XMLStreamException {
-        //
-        builder.setPatchType(type);
+    static void parseCumulativePatchType(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
 
+        String appliesTo = null;
+        String resulting = null;
+
+        Set<Attribute> required = EnumSet.of(Attribute.APPLIES_TO_VERSION, Attribute.RESULTING_VERSION);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
             switch (attribute) {
+                case APPLIES_TO_VERSION:
+                    appliesTo = value;
+                    break;
                 case RESULTING_VERSION:
-                    if(type == Patch.PatchType.CUMULATIVE) {
-                        builder.setResultingVersion(value);
-                        break;
-                    } else {
-                        throw PatchMessages.MESSAGES.resultingVersionForCumulativePatchOnly();
-                    }
+                    resulting = value;
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
+
+        requireNoContent(reader);
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        builder.setCumulativeType(appliesTo, resulting);
+    }
+
+    static void parseOneOffPatchType(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+
+        final List<String> appliesTo = new ArrayList<String>();
+
+        requireNoAttributes(reader);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case APPLIES_TO_VERSION:
-                    builder.addAppliesTo(reader.getElementText());
+                    appliesTo.add(reader.getElementText());
                     break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
+
+        if (appliesTo.isEmpty()) {
+            throw missingRequired(reader, Collections.singleton(Element.APPLIES_TO_VERSION));
+        }
+
+        builder.setOneOffType(appliesTo);
     }
 
     static void parseModules(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {

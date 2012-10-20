@@ -115,7 +115,4 @@ public interface PatchMessages {
     @Message(id = 16850, value = "File at path specified by argument %s is a directory")
     String fileIsADirectory(String arg);
 
-    @Message(id = 16851, value = "resulting-version is not allowed for one-off patch")
-    XMLStreamException resultingVersionForCumulativePatchOnly();
-
 }

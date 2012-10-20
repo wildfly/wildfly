@@ -96,45 +96,57 @@ class PatchConfigBuilder implements PatchConfig {
     public PatchBuilder toPatchBuilder() {
         PatchBuilder pb = PatchBuilder.create()
                 .setPatchId(getPatchId())
-                .setDescription(getDescription())
-                .setPatchType(getPatchType())
-                .setResultingVersion(getResultingVersion());
-        for (String applyTo : appliesTo) {
-            pb.addAppliesTo(applyTo);
+                .setDescription(getDescription());
+        if (patchType == Patch.PatchType.ONE_OFF) {
+            pb.setOneOffType(appliesTo);
+        } else {
+            pb.setCumulativeType(appliesTo.iterator().next(), resultingVersion);
         }
+
         return pb;
     }
 
-    void setPatchId(String patchId) {
+    PatchConfigBuilder setPatchId(String patchId) {
         this.patchId = patchId;
+
+        return this;
     }
 
-    void setDescription(String description) {
+    PatchConfigBuilder setDescription(String description) {
         this.description = description;
+
+        return this;
     }
 
-    void setPatchType(Patch.PatchType patchType) {
-        this.patchType = patchType;
-    }
-
-    void setResultingVersion(String resultingVersion) {
+    PatchConfigBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
+        this.patchType = Patch.PatchType.CUMULATIVE;
+        this.appliesTo = Collections.singletonList(appliesToVersion);
         this.resultingVersion = resultingVersion;
+
+        return this;
     }
 
-    void addAppliesTo(String appliesTo) {
-        this.appliesTo.add(appliesTo);
+    PatchConfigBuilder setOneOffType(List<String> appliesTo) {
+        this.patchType = Patch.PatchType.ONE_OFF;
+        this.appliesTo = Collections.unmodifiableList(appliesTo);
+
+        return this;
     }
 
-    void setGenerateByDiff(boolean generateByDiff) {
+    PatchConfigBuilder setGenerateByDiff(boolean generateByDiff) {
         this.generateByDiff = generateByDiff;
+
+        return this;
     }
 
-    void addRuntimeUseItem(DistributionContentItem item) {
+    PatchConfigBuilder addRuntimeUseItem(DistributionContentItem item) {
         this.runtimeUseItems.add(item);
+
+        return this;
     }
 
-    void addModification(DistributionContentItem item, ModificationType modificationType) {
-        Map<ModificationType, SortedSet<DistributionContentItem>> typeMap = null;
+    PatchConfigBuilder addModification(DistributionContentItem item, ModificationType modificationType) {
+        Map<ModificationType, SortedSet<DistributionContentItem>> typeMap;
         DistributionContentItem.Type itemType = item.getType();
         switch (itemType) {
             case MODULE_ROOT:
@@ -157,6 +169,8 @@ class PatchConfigBuilder implements PatchConfig {
         }
 
         items.add(item);
+
+        return this;
     }
 
 }

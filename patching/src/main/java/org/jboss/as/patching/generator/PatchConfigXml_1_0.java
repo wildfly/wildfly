@@ -23,20 +23,23 @@
 package org.jboss.as.patching.generator;
 
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ModificationType;
-import org.jboss.as.patching.metadata.Patch;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -97,6 +100,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
     }
 
     enum Attribute {
+        APPLIES_TO_VERSION("applies-to-version"),
         DIRECTORY("directory"),
         EXISTING_PATH("existing-path"),
         IN_RUNTIME_USE("in-runtime-use"),
@@ -144,10 +148,10 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                     patchConfigBuilder.setDescription(reader.getElementText());
                     break;
                 case CUMULATIVE:
-                    parsePatchType(reader, Patch.PatchType.CUMULATIVE, patchConfigBuilder);
+                    parseCumulativePatchType(reader, patchConfigBuilder);
                     break;
                 case ONE_OFF:
-                    parsePatchType(reader, Patch.PatchType.ONE_OFF, patchConfigBuilder);
+                    parseOneOffPatchType(reader, patchConfigBuilder);
                     break;
                 case GENERATE_BY_DIFF:
                     parseGenerateByDiff(reader, patchConfigBuilder);
@@ -170,45 +174,69 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
     }
 
-    private void parsePatchType(final XMLExtendedStreamReader reader, final Patch.PatchType type, final PatchConfigBuilder builder) throws XMLStreamException {
+    private void parseCumulativePatchType(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
 
-        builder.setPatchType(type);
+        String appliesTo = null;
+        String resulting = null;
+
+        Set<Attribute> required = EnumSet.of(Attribute.APPLIES_TO_VERSION, Attribute.RESULTING_VERSION);
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
             switch (attribute) {
+                case APPLIES_TO_VERSION:
+                    appliesTo = value;
+                    appliesToStructure = DistributionStructure.Factory.create(value);
+                    break;
                 case RESULTING_VERSION:
-                    if(type == Patch.PatchType.CUMULATIVE) {
-                        builder.setResultingVersion(value);
-                        updatedStructure = DistributionStructure.Factory.create(value);
-                        break;
-                    } else {
-                        throw PatchMessages.MESSAGES.resultingVersionForCumulativePatchOnly();
-                    }
+                    resulting = value;
+                    updatedStructure = DistributionStructure.Factory.create(value);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
+
+        requireNoContent(reader);
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        builder.setCumulativeType(appliesTo, resulting);
+    }
+
+    private void parseOneOffPatchType(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
+
+        final List<String> appliesTo = new ArrayList<String>();
+
+        requireNoAttributes(reader);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case APPLIES_TO_VERSION:
                     String value = reader.getElementText();
-                    builder.addAppliesTo(value);
+                    appliesTo.add(value);
                     if (appliesToStructure == null) {
                         // TODO deal with multiple applies-to
                         appliesToStructure = DistributionStructure.Factory.create(value);
-                        if (type == Patch.PatchType.ONE_OFF) {
-                            updatedStructure = appliesToStructure;
-                        }
+                        updatedStructure = appliesToStructure;
                     }
                     break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
+
+        if (appliesTo.isEmpty()) {
+            throw missingRequired(reader, Collections.singleton(Element.APPLIES_TO_VERSION));
+        }
+
+        builder.setOneOffType(appliesTo);
     }
 
     private static void parseGenerateByDiff(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
