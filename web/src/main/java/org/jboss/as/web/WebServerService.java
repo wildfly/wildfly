@@ -92,6 +92,7 @@ class WebServerService implements WebServer, Service<WebServer> {
             engine.setJvmRoute(instanceId);
         }
 
+        /*
         try {
             Valve valve = WebValve.createValve("/home/jfclere/jbossweb_sandbox/valves/valves.jar",
                     "org.apache.coyote.Mytest.TestValve", this.getClass().getClassLoader());
@@ -100,6 +101,7 @@ class WebServerService implements WebServer, Service<WebServer> {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+         */
 
         service.setContainer(engine);
 
@@ -176,6 +178,18 @@ class WebServerService implements WebServer, Service<WebServer> {
 
     public StandardService getService() {
         return service;
+    }
+
+    @Override
+    public void addValve(Valve valve) {
+        final Engine engine = this.engine;
+        ((StandardEngine) engine).addValve(valve);
+    }
+
+    @Override
+    public void removeValve(Valve valve) {
+        final Engine engine = this.engine;
+        ((StandardEngine) engine).removeValve(valve);
     }
 
 }
