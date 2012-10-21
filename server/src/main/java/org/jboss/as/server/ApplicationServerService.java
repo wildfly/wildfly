@@ -89,9 +89,6 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         final Bootstrap.Configuration configuration = this.configuration;
         final ServerEnvironment serverEnvironment = configuration.getServerEnvironment();
 
-        // Install the environment before doing anything
-        serverEnvironment.install();
-
         String prettyVersion = serverEnvironment.getProductConfig().getPrettyVersionString();
         AS_ROOT_LOGGER.serverStarting(prettyVersion);
         if (CONFIG_LOGGER.isDebugEnabled()) {
