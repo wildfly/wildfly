@@ -22,6 +22,7 @@
 package org.jboss.as.web;
 
 import org.apache.catalina.Host;
+import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
@@ -71,4 +72,17 @@ public interface WebServer {
      */
     StandardService getService();
 
+    /**
+     * Add a global valve.
+     *
+     * @param valve the valve
+     */
+    void addValve(Valve valve);
+
+    /**
+     * Remove a global valve.
+     *
+     * @param host the valve
+     */
+    void removeValve(Valve valve);
 }

@@ -8,7 +8,6 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -23,7 +22,6 @@ public class WebValveFileDefinition extends SimpleResourceDefinition {
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
-                    .setDefaultValue(new ModelNode("jboss.server.log.dir"))
                     .build();
 
 

@@ -89,7 +89,12 @@ public class WebExtension implements Extension {
 
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
 
-    public static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
+    protected static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
+
+    protected static final PathElement FILE_PATH = PathElement.pathElement(Constants.SETTING, Constants.FILE);
+    protected static final PathElement FILE_ALIAS = PathElement.pathElement(Constants.FILE, Constants.CONFIGURATION);
+
+    protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
 
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -101,7 +106,6 @@ public class WebExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
-
 
     /**
      * {@inheritDoc}
@@ -158,8 +162,8 @@ public class WebExtension implements Extension {
         deployments.registerSubModel(WebDeploymentServletDefinition.INSTANCE);
 
         // Global valve.
-        registration.registerSubModel(WebValveDefinition.INSTANCE);
-
+        final ManagementResourceRegistration valve = registration.registerSubModel(WebValveDefinition.INSTANCE);
+        valve.registerSubModel(WebValveFileDefinition.INSTANCE);
         registerTransformers_1_1_0(subsystem);
     }
 

@@ -40,6 +40,7 @@ import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER;
 import static org.jboss.as.web.Constants.EXTENDED;
+import static org.jboss.as.web.Constants.FILE;
 import static org.jboss.as.web.Constants.FLAGS;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
@@ -64,6 +65,7 @@ import static org.jboss.as.web.Constants.VALVE;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
 import static org.jboss.as.web.WebExtension.ACCESS_LOG_PATH;
 import static org.jboss.as.web.WebExtension.DIRECTORY_PATH;
+import static org.jboss.as.web.WebExtension.FILE_PATH;
 import static org.jboss.as.web.WebExtension.SSL_PATH;
 import static org.jboss.as.web.WebExtension.SSO_PATH;
 
@@ -217,7 +219,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             if (node.hasDefined(VALVE)) {
                 for (final Property valve : node.get(VALVE).asPropertyList()) {
                     final ModelNode config = valve.getValue();
-                    writer.writeStartElement(Element.CONNECTOR.getLocalName());
+                    writer.writeStartElement(Element.VALVE.getLocalName());
                     writer.writeAttribute(NAME, valve.getName());
                     for (SimpleAttributeDefinition attr : WebValveDefinition.ATTRIBUTES) {
                         attr.marshallAsAttribute(config, false, writer);
@@ -227,6 +229,18 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             writer.writeEmptyElement(Element.PARAM.getLocalName());
                             writer.writeAttribute(Attribute.PARAM_NAME.getLocalName(), entry.getName());
                             writer.writeAttribute(Attribute.PARAM_VALUE.getLocalName(), entry.getValue().asString());
+                        }
+                    }
+                    if (config.get(FILE_PATH.getKey(), FILE_PATH.getValue()).isDefined()) {
+                        ModelNode file = config.get(FILE_PATH.getKey(), FILE_PATH.getValue());
+                        String name = Element.FILE.getLocalName();
+                        boolean startwritten = false;
+                        startwritten = writeAttribute(writer, WebValveDefinition.PATH, file, startwritten,
+                                name);
+                        startwritten = writeAttribute(writer, WebValveDefinition.RELATIVE_TO, file,
+                                startwritten, name);
+                        if (startwritten) {
+                            writer.writeEndElement();
                         }
                     }
 
@@ -425,17 +439,18 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     }
 
-    static void parseValve(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> list) throws XMLStreamException {
-        PathAddress address = PathAddress.pathAddress(parent, WebExtension.VALVE_PATH);
+    private static void parseValve(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> list) throws XMLStreamException {
+        String name = null;
         final ModelNode valve = new ModelNode();
-        valve.get(OP).set(ADD);
-        valve.get(OP_ADDR).set(address.toModelNode());
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
+                case NAME:
+                    name = value;
+                    break;
                 case MODULE:
                     valve.get(MODULE).set(value);
                     break;
@@ -444,6 +459,15 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
             }
         }
+
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+        valve.get(OP).set(ADD);
+        PathAddress address = PathAddress.pathAddress(parent, PathElement.pathElement(VALVE, name));
+        valve.get(OP_ADDR).set(address.toModelNode());
+        list.add(valve);
+
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
@@ -453,11 +477,39 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     valve.get(PARAM).get(array[0]).set(array[1]);
                     requireNoContent(reader);
                     break;
+                case FILE:
+                    parseDirOrFile(reader, address, list, WebExtension.FILE_PATH);
+                    break;
                 default:
                     throw unexpectedElement(reader);
             }
         }
+    }
 
+    private static void parseDirOrFile(XMLExtendedStreamReader reader, PathAddress address, List<ModelNode> list,
+            PathElement filePath) throws XMLStreamException {
+                    final PathAddress dirAddress = PathAddress.pathAddress(address, filePath);
+                    final ModelNode directory = new ModelNode();
+                    directory.get(OP).set(ADD);
+                    directory.get(OP_ADDR).set(dirAddress.toModelNode());
+                    final int count2 = reader.getAttributeCount();
+                    for (int i = 0; i < count2; i++) {
+                        requireNoNamespaceAttribute(reader, i);
+                        final String value = reader.getAttributeValue(i);
+                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                        switch (attribute) {
+                            case PATH:
+                                directory.get(PATH).set(value);
+                                break;
+                            case RELATIVE_TO:
+                                directory.get(RELATIVE_TO).set(value);
+                                break;
+                            default:
+                                throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                    requireNoContent(reader);
+                    list.add(directory);
     }
 
     static void addDefaultContainerConfig(final PathAddress parent, List<ModelNode> list) {
@@ -879,29 +931,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DIRECTORY:
-                            final PathAddress dirAddress = PathAddress.pathAddress(address, WebExtension.DIRECTORY_PATH);
-                            final ModelNode directory = new ModelNode();
-                            directory.get(OP).set(ADD);
-                            directory.get(OP_ADDR).set(dirAddress.toModelNode());
-                            final int count2 = reader.getAttributeCount();
-                            for (int i = 0; i < count2; i++) {
-                                requireNoNamespaceAttribute(reader, i);
-                                final String value = reader.getAttributeValue(i);
-                                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                                switch (attribute) {
-                                    case PATH:
-                                        directory.get(PATH).set(value);
-                                        break;
-                                    case RELATIVE_TO:
-                                        directory.get(RELATIVE_TO).set(value);
-                                        break;
-                                    default:
-                                        throw unexpectedAttribute(reader, i);
-                                }
-                            }
-                            requireNoContent(reader);
-                            list.add(directory);
-                            break;
+                            parseDirOrFile(reader, address, list, WebExtension.DIRECTORY_PATH);
+                             break;
                         default:
                             throw unexpectedElement(reader);
                     }
