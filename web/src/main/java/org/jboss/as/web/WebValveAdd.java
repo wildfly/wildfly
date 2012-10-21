@@ -79,7 +79,7 @@ class WebValveAdd extends AbstractAddStepHandler {
 
         final WebValveService service = new WebValveService(name, classname, module);
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_HOST.append(name), service)
+        final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_VALVE.append(name), service)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
 

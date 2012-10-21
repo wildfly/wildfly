@@ -23,6 +23,8 @@ public final class WebSubsystemServices {
     public static final ServiceName JBOSS_WEB_HOST = JBOSS_WEB.append("host");
     /** The base name for jboss.web deployments. */
     static final ServiceName JBOSS_WEB_DEPLOYMENT_BASE = JBOSS_WEB.append("deployment");
+    /** The base name for jboss.web valve services. */
+    public static final ServiceName JBOSS_WEB_VALVE = JBOSS_WEB.append("valve");
 
     public static ServiceName deploymentServiceName(final String virtualHost, final String contextPath) {
         return JBOSS_WEB_DEPLOYMENT_BASE.append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
