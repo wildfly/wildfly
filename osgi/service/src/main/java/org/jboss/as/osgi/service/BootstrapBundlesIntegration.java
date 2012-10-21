@@ -351,11 +351,9 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
             // Start the module capabilities that have a start level assigned
             BundleManager bundleManager = injectedBundleManager.getValue();
             for (OSGiCapability modcap : modulecaps) {
-                String identifier = modcap.getIdentifier();
-                XBundle bundle = bundleManager.getBundleByLocation(identifier);
-                // [TODO] integrate with StartLevel instead of this BundleActivator hack
-                OSGiMetaData metadata = bundle.getBundleRevision().getAttachment(OSGiMetaData.class);
-                if (metadata != null && metadata.getBundleActivator() != null) {
+                if (modcap.getStartLevel() != null) {
+                    String identifier = modcap.getIdentifier();
+                    XBundle bundle = bundleManager.getBundleByLocation(identifier);
                     try {
                         bundle.start(Bundle.START_ACTIVATION_POLICY);
                     } catch (BundleException ex) {
