@@ -49,7 +49,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -659,12 +658,22 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     @Test
     public void testUndeployByContentDeletionZipped() throws Exception {
+        undeployByContentDeletionZippedTest(tmpDir);
+    }
 
+    @Test
+    public void testUndeployContentInSubdirectory() throws Exception {
+        File subdir = createDirectory(tmpDir, "sub");
+        undeployByContentDeletionZippedTest(subdir);
+    }
+
+    private void undeployByContentDeletionZippedTest(File baseDir) throws Exception {
         // First, zipped content
 
-        File war = createFile("foo.war");
-        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
-        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File war = createFile(baseDir, "foo.war");
+        File dodeploy = createFile(baseDir, "foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
         TesteeSet ts = createTestee();
         ts.testee.setAutoDeployZippedContent(true);
         ts.controller.addCompositeSuccessResponse(1);
@@ -672,6 +681,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
 
@@ -681,14 +691,16 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(war.exists());
         assertFalse(dodeploy.exists());
         assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
         assertEquals(0, ts.controller.added.size());
         assertEquals(0, ts.controller.deployed.size());
 
         // Next, zipped content with auto-deploy disabled
 
-        war = createFile("foo.war");
-        dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
-        deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        war = createFile(baseDir,"foo.war");
+        dodeploy = createFile(baseDir, "foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        deployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        undeployed = new File(baseDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
         ts = createTestee();
         ts.testee.setAutoDeployZippedContent(false);
         ts.controller.addCompositeSuccessResponse(1);
@@ -696,6 +708,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertTrue(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
 
@@ -704,6 +717,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(war.exists());
         assertFalse(dodeploy.exists());
         assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
         assertEquals(1, ts.controller.added.size());
         assertEquals(1, ts.controller.deployed.size());
     }

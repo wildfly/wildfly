@@ -27,8 +27,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -314,7 +312,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 final String deploymentName = fileName.substring(0, fileName.length() - DEPLOYED.length());
                 if (deploymentNames.contains(deploymentName)) {
                     File deployment = new File(dir, deploymentName);
-                    deployed.put(deploymentName, new DeploymentMarker(child.lastModified(), !deployment.isDirectory()));
+                    deployed.put(deploymentName, new DeploymentMarker(child.lastModified(), !deployment.isDirectory(), dir));
                 } else {
                     if (!child.delete()) {
                         ROOT_LOGGER.cannotRemoveDeploymentMarker(fileName);
@@ -407,11 +405,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
                 // Add remove actions to the plan for anything we count as
                 // deployed that we didn't find on the scan
-                for (String missing : scanContext.toRemove) {
-                    // TODO -- minor -- this assumes the deployment was in the root deploymentDir,
-                    // not a child dir, and therefore puts the '.isundeploying' file there
-                    File parent = deploymentDir;
-                    scannerTasks.add(new UndeployTask(missing, parent, scanContext.scanStartTime));
+                for (Map.Entry<String, DeploymentMarker> missing : scanContext.toRemove.entrySet()) {
+                    scannerTasks.add(new UndeployTask(missing.getKey(), missing.getValue().parentFolder, scanContext.scanStartTime));
                 }
                 // Process the tasks
                 if (scannerTasks.size() > 0) {
@@ -1026,7 +1021,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         @Override
         protected void handleSuccessResult() {
-            final File doDeployMarker = new File(new File(parent), deploymentFile.getName() + DO_DEPLOY);
+            final File parentFolder = new File(parent);
+            final File doDeployMarker = new File(parentFolder, deploymentFile.getName() + DO_DEPLOY);
             if (doDeployMarker.exists() && !doDeployMarker.delete()) {
                 ROOT_LOGGER.cannotRemoveDeploymentMarker(doDeployMarker.getAbsolutePath());
             }
@@ -1043,7 +1039,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             if (deployed.containsKey(deploymentName)) {
                 deployed.remove(deploymentName);
             }
-            deployed.put(deploymentName, new DeploymentMarker(doDeployTimestamp, archive));
+            deployed.put(deploymentName, new DeploymentMarker(doDeployTimestamp, archive, parentFolder));
 
             // Remove the in-progress marker - save this until the deployment is really complete.
             removeInProgressMarker();
@@ -1123,7 +1119,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
             removeInProgressMarker();
 
             deployed.remove(deploymentName);
-            deployed.put(deploymentName, new DeploymentMarker(markerLastModified, archive));
+            deployed.put(deploymentName, new DeploymentMarker(markerLastModified, archive, new File(parent)));
 
         }
 
@@ -1181,11 +1177,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private class DeploymentMarker {
         private final long lastModified;
-        private boolean archive;
+        private final boolean archive;
+        private final File parentFolder;
 
-        private DeploymentMarker(final long lastModified, boolean archive) {
+        private DeploymentMarker(final long lastModified, boolean archive, File parentFolder) {
             this.lastModified = lastModified;
             this.archive = archive;
+            this.parentFolder = parentFolder;
         }
     }
 
@@ -1201,7 +1199,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         /**
          * Files to undeploy at the end of the scan
          */
-        private final Set<String> toRemove = new HashSet<String>(deployed.keySet());
+        private final Map<String, DeploymentMarker> toRemove = new HashMap<String, DeploymentMarker>(deployed);
         /**
          * Marker files with no corresponding content
          */
