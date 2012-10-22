@@ -39,13 +39,13 @@ import org.jboss.modules.filter.PathFilters;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.osgi.framework.spi.AbstractIntegrationService;
 import org.jboss.osgi.framework.spi.FrameworkModulePlugin;
 import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.osgi.framework.Bundle;
 
 /**
@@ -54,25 +54,19 @@ import org.osgi.framework.Bundle;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-final class FrameworkModuleIntegration implements FrameworkModulePlugin, IntegrationService<FrameworkModulePlugin> {
+final class FrameworkModuleIntegration extends AbstractIntegrationService<FrameworkModulePlugin> implements FrameworkModulePlugin {
 
     private final Map<String, Object> props;
     private Module frameworkModule;
 
     FrameworkModuleIntegration(Map<String, Object> props) {
+        super(IntegrationServices.FRAMEWORK_MODULE_PLUGIN);
         this.props = props;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return FRAMEWORK_MODULE_PLUGIN;
-    }
-
-    @Override
-    public ServiceController<FrameworkModulePlugin> install(ServiceTarget serviceTarget) {
-        ServiceBuilder<FrameworkModulePlugin> builder = serviceTarget.addService(getServiceName(), this);
+    protected void addServiceDependencies(ServiceBuilder<FrameworkModulePlugin> builder) {
         builder.setInitialMode(Mode.ON_DEMAND);
-        return builder.install();
     }
 
     @Override

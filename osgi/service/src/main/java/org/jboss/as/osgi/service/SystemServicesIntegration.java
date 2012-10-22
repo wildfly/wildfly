@@ -42,7 +42,6 @@ import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.SubsystemExtension;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -55,7 +54,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.spi.AbstractIntegrationService;
 import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.SystemServicesPlugin;
 import org.jboss.osgi.repository.XRepository;
 import org.osgi.framework.BundleContext;
@@ -66,7 +67,7 @@ import org.osgi.framework.BundleContext;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-final class SystemServicesIntegration implements Service<SystemServicesPlugin>, SystemServicesPlugin, IntegrationService<SystemServicesPlugin> {
+final class SystemServicesIntegration extends AbstractIntegrationService<SystemServicesPlugin> implements SystemServicesPlugin {
 
     private final InjectedValue<ModelController> injectedModelController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
@@ -78,30 +79,22 @@ final class SystemServicesIntegration implements Service<SystemServicesPlugin>, 
     private ExecutorService controllerThreadExecutor;
 
     SystemServicesIntegration(OSGiRuntimeResource resource, List<SubsystemExtension> extensions) {
+        super(IntegrationServices.SYSTEM_SERVICES_PLUGIN);
         this.extensions = extensions;
         this.resource = resource;
     }
 
     @Override
-    public ServiceName getServiceName() {
-        return SYSTEM_SERVICES_PLUGIN;
-    }
-
-    @Override
-    public ServiceController<SystemServicesPlugin> install(ServiceTarget serviceTarget) {
-        ServiceBuilder<SystemServicesPlugin> builder = serviceTarget.addService(SYSTEM_SERVICES_PLUGIN, this);
+    protected void addServiceDependencies(ServiceBuilder<SystemServicesPlugin> builder) {
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedModelController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedBundleContext);
         builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
-
         // Subsystem extension dependencies
         for(SubsystemExtension extension : extensions) {
-            extension.configureServiceDependencies(SYSTEM_SERVICES_PLUGIN, builder);
+            extension.configureServiceDependencies(getServiceName(), builder);
         }
-
         builder.setInitialMode(Mode.ON_DEMAND);
-        return builder.install();
     }
 
     @Override
@@ -123,7 +116,7 @@ final class SystemServicesIntegration implements Service<SystemServicesPlugin>, 
                 socketBindingNames.add(JBOSS_BINDING_NAME.append(suffix));
             }
             ServiceTarget serviceTarget = startContext.getChildTarget();
-            ServiceName serviceName = IntegrationService.SYSTEM_SERVICES_PLUGIN.append("BINDINGS");
+            ServiceName serviceName = IntegrationServices.SYSTEM_SERVICES_PLUGIN.append("BINDINGS");
             ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new AbstractService<Void>() {
                 @Override
                 public void start(StartContext context) throws StartException {

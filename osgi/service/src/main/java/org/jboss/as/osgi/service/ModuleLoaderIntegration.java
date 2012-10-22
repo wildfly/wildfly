@@ -50,6 +50,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -61,6 +62,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.ModuleLoaderPlugin;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
@@ -81,14 +83,15 @@ final class ModuleLoaderIntegration extends ModuleLoader implements ModuleLoader
 
     @Override
     public ServiceName getServiceName() {
-        return MODULE_LOADER_PLUGIN;
+        return IntegrationServices.MODULE_LOADER_PLUGIN;
     }
 
     @Override
-    public ServiceController<ModuleLoaderPlugin> install(ServiceTarget serviceTarget) {
+    public ServiceController<ModuleLoaderPlugin> install(ServiceTarget serviceTarget, ServiceListener<Object> listener) {
         ServiceBuilder<ModuleLoaderPlugin> builder = serviceTarget.addService(getServiceName(), this);
         builder.addDependency(JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, injectedModuleLoader);
         builder.setInitialMode(Mode.ON_DEMAND);
+        builder.addListener(listener);
         return builder.install();
     }
 

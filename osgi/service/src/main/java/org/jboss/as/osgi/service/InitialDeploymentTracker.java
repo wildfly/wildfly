@@ -45,7 +45,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
-import org.jboss.osgi.framework.spi.IntegrationService.BootstrapPhase;
+import org.jboss.osgi.framework.spi.IntegrationServices.BootstrapPhase;
 import org.jboss.osgi.framework.spi.ServiceTracker;
 
 /**
