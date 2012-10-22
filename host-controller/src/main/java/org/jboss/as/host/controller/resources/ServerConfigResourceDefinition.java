@@ -39,6 +39,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
+import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -82,7 +83,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(0))
             .setXmlName(Attribute.PORT_OFFSET.getLocalName())
-            .setValidator(new ModelTypeValidator(ModelType.INT, true, true))
+            .setValidator(new IntRangeValidator(-65535, 65535, true, true))
             .build();
 
     public static final SimpleAttributeDefinition GROUP = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.GROUP, ModelType.STRING)
