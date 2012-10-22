@@ -94,7 +94,7 @@
         <version.commons-io>2.1</version.commons-io>
         <version.commons-configuration>1.6</version.commons-configuration>
         <version.commons-lang>2.6</version.commons-lang>
-        <version.commons-pool>1.5.6</version.commons-pool>
+        <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.4.5.Final</version.io.netty>
