@@ -41,5 +41,6 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.osgi.framework"/>
         <module name="org.osgi.core"/>
+        <module name="org.osgi.enterprise"/>
     </dependencies>
 </module>

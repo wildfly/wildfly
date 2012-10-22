@@ -61,7 +61,6 @@ interface SystemPackagesIntegration  {
     };
 
     String[] DEFAULT_CAPABILITIES = new String[] {
-        "org.osgi.enterprise",
         "javax.annotation.api"
     };
 
