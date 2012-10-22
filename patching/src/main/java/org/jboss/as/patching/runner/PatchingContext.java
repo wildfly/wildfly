@@ -107,7 +107,6 @@ class PatchingContext {
     static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir) {
         // backup is just a temp dir
         final File backup = workDir;
-        //
         final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
         return new PatchingContext(patch, current, structure, backup, policy);
     }
@@ -292,6 +291,24 @@ class PatchingContext {
             throw  new PatchingException(e);
         }
 
+        // persist the applied patch
+        if (!PatchInfo.BASE.equals(patch.getPatchId())) {
+            final File appliedPatchXml = new File(info.getEnvironment().getPatchDirectory(patchId), PatchXml.PATCH_XML);
+            // patch directory is not created if the patch contains only misc content
+            appliedPatchXml.getParentFile().mkdir();
+            try {
+                final OutputStream os = new FileOutputStream(appliedPatchXml);
+                try {
+                    PatchXml.marshal(os, patch);
+                } finally {
+                    PatchUtils.safeClose(os);
+                }
+            } catch (XMLStreamException e) {
+                throw new PatchingException(e);
+            } catch (IOException e) {
+                throw new PatchingException(e);
+            }
+        }
         // Persist the patch rollback information
         final Patch newPatch = new RollbackPatch();
         final File patchXml = new File(backup, PatchXml.PATCH_XML);
