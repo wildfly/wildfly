@@ -38,7 +38,7 @@ public class AdminObjectResourceDefinition extends SimpleResourceDefinition {
     private final boolean readOnly;
 
     public AdminObjectResourceDefinition(boolean readOnly) {
-        super(PathElement.pathElement(ADMIN_OBJECTS_NAME), ResourceAdaptersExtension.getResourceDescriptionResolver(ADMIN_OBJECTS_NAME), AdminObjectAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PathElement.pathElement(ADMIN_OBJECTS_NAME), ResourceAdaptersExtension.getResourceDescriptionResolver(ADMIN_OBJECTS_NAME), readOnly ? null : AdminObjectAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
         this.readOnly = readOnly;
     }
 

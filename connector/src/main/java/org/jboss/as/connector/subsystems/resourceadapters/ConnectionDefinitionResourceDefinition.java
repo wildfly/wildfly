@@ -54,7 +54,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     private final boolean runtimeOnlyRegistrationValid;
 
     public ConnectionDefinitionResourceDefinition(final boolean readOnly, final boolean runtimeOnlyRegistrationValid) {
-        super(PathElement.pathElement(CONNECTIONDEFINITIONS_NAME), ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME), ConnectionDefinitionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(PathElement.pathElement(CONNECTIONDEFINITIONS_NAME), ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME),
+                readOnly ? null : ConnectionDefinitionAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE);
         this.readOnly = readOnly;
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
     }
@@ -83,6 +84,6 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(CDConfigPropertyAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE));
+        resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(readOnly ? null : CDConfigPropertyAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE));
     }
 }

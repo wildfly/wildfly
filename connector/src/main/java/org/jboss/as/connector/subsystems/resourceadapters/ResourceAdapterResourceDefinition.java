@@ -45,7 +45,7 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     private final boolean runtimeOnlyRegistrationValid;
 
     public ResourceAdapterResourceDefinition(boolean readOnly, boolean runtimeOnlyRegistrationValid) {
-        super(PathElement.pathElement(RESOURCEADAPTER_NAME), RESOLVER, RaAdd.INSTANCE, RaRemove.INSTANCE);
+        super(PathElement.pathElement(RESOURCEADAPTER_NAME), RESOLVER, readOnly ? null : RaAdd.INSTANCE, readOnly ? null : RaRemove.INSTANCE);
         this.readOnly = readOnly;
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
     }
@@ -71,7 +71,7 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(ConfigPropertyAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE));
+        resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(readOnly ? null : ConfigPropertyAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE));
         resourceRegistration.registerSubModel(new ConnectionDefinitionResourceDefinition(readOnly, runtimeOnlyRegistrationValid));
         resourceRegistration.registerSubModel(new AdminObjectResourceDefinition(readOnly));
     }
