@@ -22,6 +22,10 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsElementDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.descriptionproviders.SubSystemExtensionDescriptionProvider;
@@ -45,10 +49,6 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
 
 /**
 *
@@ -147,7 +147,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     for (String statName : poolStats.getNames()) {
                                         cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                     }
-                                    cdSubRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), ResourceAdaptersSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                                    cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
                                 }
 
                                 registerIronjacamar(controller, subRegistration, subsystemResource);

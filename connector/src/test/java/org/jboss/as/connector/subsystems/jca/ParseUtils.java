@@ -25,6 +25,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import junit.framework.Assert;
+
 import org.jboss.dmr.ModelNode;
 
 /**Common utility class for parsing operation tests
@@ -240,20 +241,24 @@ public class ParseUtils {
      * @param model
      * @param params
      */
-    public static void checkModelParams(ModelNode node,Properties params){
+    public static void checkModelParams(ModelNode node, Properties params){
     	String str;
 
         StringBuffer sb = new StringBuffer();
         String par,child;
-        Enumeration e = params.propertyNames();
+        Enumeration<?> e = params.propertyNames();
 
         while (e.hasMoreElements()) {
         	str=(String)e.nextElement();
         	par=params.getProperty(str);
-        	if (node.get(str)==null) sb.append("Parameter <"+str+"> is not set, but must be set to '"+par+"' \n");
+        	if (node.get(str) == null) {
+        	    sb.append("Parameter <"+str+"> is not set, but must be set to '"+par+"' \n");
+        	}
         	else{
         		child= node.get(str).asString();
-        		if (!child.equals(par)) sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
+        		if (!child.equals(par)) {
+        		    sb.append("Parameter <"+str+"> is set to '"+child+"', but must be set to '"+par+"' \n");
+        		}
         	}
         }
         if (sb.length()>0) Assert.fail("There are parsing errors:\n"+sb.toString()+"Parsed configuration:\n"+node);

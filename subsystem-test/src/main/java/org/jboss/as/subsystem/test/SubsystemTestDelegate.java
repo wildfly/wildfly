@@ -533,6 +533,8 @@ final class SubsystemTestDelegate {
         }
         ModelNode model = result.get(RESULT);
 
+        //System.out.println(model);
+
         ModelDescriptionValidator validator = new ModelDescriptionValidator(address, model, arbitraryDescriptors);
         List<ModelDescriptionValidator.ValidationFailure> validationMessages = validator.validateResource();
         if (validationMessages.size() > 0) {
