@@ -75,7 +75,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
     // Server-only attributes.
 
     public static final SimpleAttributeDefinition PORT_OFFSET = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT_OFFSET, ModelType.INT, true)
-            .setAllowExpression(true).setValidator(new IntRangeValidator(0, 65535, true, true))
+            .setAllowExpression(true).setValidator(new IntRangeValidator(-65535, 65535, true, true))
             .setDefaultValue(new ModelNode().set(0)).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
     // Domain-only attributes
