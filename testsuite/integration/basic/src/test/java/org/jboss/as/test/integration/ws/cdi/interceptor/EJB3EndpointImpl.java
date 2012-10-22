@@ -18,18 +18,22 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-package org.jboss.as.test.integration.ws.cdiInterceptor;
+ */
+package org.jboss.as.test.integration.ws.cdi.interceptor;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.ejb.Stateless;
+import javax.jws.WebService;
 
-import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+/**
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ */
+@WebService(name = "EJB3Endpoint", serviceName = "EJB3EndpointService", targetNamespace = "http://org.jboss.test.ws/jbws3441")
+@Stateless
+public class EJB3EndpointImpl implements EndpointIface {
+    static boolean interceptorCalled;
 
-@InterceptorBinding
-@Retention(RUNTIME)
-@Target({METHOD, TYPE})
-public @interface POJOInterceptor {}
+    @EJBInterceptor
+    public String echo(final String message) {
+        return interceptorCalled ? message + " (including EJB interceptor)" : message;
+    }
+}

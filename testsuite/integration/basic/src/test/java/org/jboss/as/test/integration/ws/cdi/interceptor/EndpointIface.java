@@ -18,24 +18,15 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-package org.jboss.as.test.integration.ws.cdiInterceptor;
+ */
+package org.jboss.as.test.integration.ws.cdi.interceptor;
 
-import javax.ejb.Stateless;
 import javax.jws.WebService;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-@WebService(name = "EJB3Endpoint", serviceName="EJB3EndpointService", targetNamespace = "http://org.jboss.test.ws/jbws3441")
-@Stateless
-public class EJB3EndpointImpl implements EndpointIface
-{
-   static boolean interceptorCalled;
-
-   @EJBInterceptor
-   public String echo(final String message)
-   {
-      return interceptorCalled ? message + " (including EJB interceptor)" : message;
-   }
+@WebService(name = "EndpointIface", targetNamespace = "http://org.jboss.test.ws/jbws3441")
+public interface EndpointIface {
+    public String echo(final String message);
 }

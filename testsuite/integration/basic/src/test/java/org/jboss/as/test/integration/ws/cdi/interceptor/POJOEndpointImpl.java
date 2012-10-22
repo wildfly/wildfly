@@ -18,26 +18,20 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-package org.jboss.as.test.integration.ws.cdiInterceptor;
+ */
+package org.jboss.as.test.integration.ws.cdi.interceptor;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import javax.jws.WebService;
 
-@EJBInterceptor
-@Interceptor
-public class EJBInterceptorImpl
-{
-    public EJBInterceptorImpl()
-    {
-       System.out.println("EJB interceptor initialized");
-    }
+/**
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ */
+@WebService(name = "POJOEndpoint", serviceName = "POJOEndpointService", targetNamespace = "http://org.jboss.test.ws/jbws3441")
+public class POJOEndpointImpl implements EndpointIface {
+    static boolean interceptorCalled;
 
-    @AroundInvoke
-    public Object intercept(final InvocationContext ic) throws Exception
-    {
-        EJB3EndpointImpl.interceptorCalled = true;
-        return ic.proceed();
+    @POJOInterceptor
+    public String echo(final String message) {
+        return interceptorCalled ? message + " (including POJO interceptor)" : message;
     }
 }

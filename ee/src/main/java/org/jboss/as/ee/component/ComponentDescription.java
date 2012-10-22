@@ -22,10 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -75,6 +71,10 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.ConstructedValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
+
+import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -1038,4 +1038,19 @@ public class ComponentDescription implements ResourceInjectionTarget {
             return Collections.unmodifiableMap(injections);
         }
     }
+
+    /**
+     * If this method returns true then Weld will directly create the component instance,
+     * which will apply interceptors and decorators via sub classing.
+     *
+     * For most components this is not necessary.
+     *
+     * Also not that even though EJB's are intercepted, their interceptor is done through
+     * a different method that integrates with the existing EJB interceptor chain
+     *
+     */
+    public boolean isCDIInterceptorEnabled() {
+        return false;
+    }
+
 }

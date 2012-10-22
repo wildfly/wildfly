@@ -18,26 +18,19 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-package org.jboss.as.test.integration.ws.cdiInterceptor;
+ */
+package org.jboss.as.test.integration.ws.cdi.interceptor;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-@POJOInterceptor
-@Interceptor
-public class POJOInterceptorImpl
-{
-    public POJOInterceptorImpl()
-    {
-       System.out.println("POJO interceptor initialized");
-    }
+import javax.interceptor.InterceptorBinding;
 
-    @AroundInvoke
-    public Object intercept(final InvocationContext ic) throws Exception
-    {
-        POJOEndpointImpl.interceptorCalled = true;
-        return ic.proceed();
-    }
-}
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@InterceptorBinding
+@Retention(RUNTIME)
+@Target({METHOD, TYPE})
+public @interface POJOInterceptor {}

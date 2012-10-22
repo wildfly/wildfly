@@ -127,7 +127,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
         final ServiceName serviceName = configuration.getComponentDescription().getServiceName().append("WeldInstantiator");
 
-        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId);
+        final WeldManagedReferenceFactory factory = new WeldManagedReferenceFactory(componentClass, beanName, interceptorClasses, classLoader, beanDeploymentArchiveId, description.isCDIInterceptorEnabled());
 
         ServiceBuilder<WeldManagedReferenceFactory> builder = target.addService(serviceName, factory)
                 .addDependency(weldServiceName, WeldContainer.class, factory.getWeldContainer());

@@ -18,8 +18,8 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
-package org.jboss.as.test.integration.ws.cdiInterceptor;
+ */
+package org.jboss.as.test.integration.ws.cdi.interceptor;
 
 import java.net.URL;
 
@@ -45,8 +45,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class CdiInterceptorTestCase
-{
+public class CdiInterceptorTestCase {
     @ArquillianResource
     URL baseUrl;
 
@@ -90,6 +89,6 @@ public class CdiInterceptorTestCase
     }
 
     private static final String BEANS_CONFIG = "<beans><interceptors>"
-            + "<class>org.jboss.as.test.integration.ws.cdiInterceptor.POJOInterceptorImpl</class>"
-            + "<class>org.jboss.as.test.integration.ws.cdiInterceptor.EJBInterceptorImpl</class>" + "</interceptors></beans>";
+            + "<class>org.jboss.as.test.integration.ws.cdi.interceptor.POJOInterceptorImpl</class>"
+            + "<class>org.jboss.as.test.integration.ws.cdi.interceptor.EJBInterceptorImpl</class>" + "</interceptors></beans>";
 }
