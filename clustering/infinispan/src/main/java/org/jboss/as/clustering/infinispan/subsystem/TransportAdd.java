@@ -48,7 +48,7 @@ public class TransportAdd extends AbstractAddStepHandler {
 
     private static void populate(ModelNode operation, ModelNode model) throws OperationFailedException {
         // simply transfer the attributes from operation to model
-        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
+        for (AttributeDefinition attr : TransportResource.TRANSPORT_ATTRIBUTES) {
 
             // replace with AttributeDefinition.validateAndSet
             attr.validateAndSet(operation, model);

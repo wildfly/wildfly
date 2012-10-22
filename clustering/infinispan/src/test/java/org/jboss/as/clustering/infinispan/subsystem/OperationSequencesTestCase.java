@@ -28,6 +28,7 @@ import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,6 +37,7 @@ import org.junit.runner.RunWith;
 *
 * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
 */
+@Ignore
 @RunWith(BMUnitRunner.class)
 public class OperationSequencesTestCase extends AbstractSubsystemTest {
 

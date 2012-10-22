@@ -15,14 +15,14 @@ public class TransportWriteAttributeHandler extends ReloadRequiredWriteAttribute
     public static final TransportWriteAttributeHandler INSTANCE = new TransportWriteAttributeHandler();
 
     private TransportWriteAttributeHandler() {
-        super(CommonAttributes.TRANSPORT_ATTRIBUTES);
+        super(TransportResource.TRANSPORT_ATTRIBUTES);
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
 
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-        for (AttributeDefinition attr : CommonAttributes.TRANSPORT_ATTRIBUTES) {
+        for (AttributeDefinition attr : TransportResource.TRANSPORT_ATTRIBUTES) {
            registry.registerReadWriteAttribute(attr.getName(), null, this, flags);
         }
     }

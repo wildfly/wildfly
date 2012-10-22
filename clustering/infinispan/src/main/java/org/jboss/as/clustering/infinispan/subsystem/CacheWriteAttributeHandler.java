@@ -1,8 +1,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.CACHE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.DISTRIBUTED_CACHE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.CacheResource.CACHE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResource.CLUSTERED_CACHE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -38,7 +38,7 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
 
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
-    private CacheWriteAttributeHandler(final AttributeDefinition... definitions) {
+    public CacheWriteAttributeHandler(final AttributeDefinition... definitions) {
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
         attributeDefinitions = new HashMap<String, AttributeDefinition>();
         for (AttributeDefinition def : definitions) {

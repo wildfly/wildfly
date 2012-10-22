@@ -22,14 +22,19 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import java.util.Locale;
+import java.util.ResourceBundle;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -177,28 +182,28 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode locking = cache.getValue().get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
             ModelNode lockingAddress = address.clone();
             lockingAddress.add(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
-            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.LOCKING_ATTRIBUTES, lockingAddress, locking));
+            result.add(CacheConfigOperationHandlers.createOperation(LockingResource.LOCKING_ATTRIBUTES, lockingAddress, locking));
         }
         // command to recreate the transaction configuration
         if (cache.getValue().get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
             ModelNode transaction = cache.getValue().get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
             ModelNode transactionAddress = address.clone();
             transactionAddress.add(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
-            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.TRANSACTION_ATTRIBUTES, transactionAddress, transaction));
+            result.add(CacheConfigOperationHandlers.createOperation(TransactionResource.TRANSACTION_ATTRIBUTES, transactionAddress, transaction));
         }
         // command to recreate the eviction configuration
         if (cache.getValue().get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
             ModelNode eviction = cache.getValue().get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
             ModelNode evictionAddress = address.clone();
             evictionAddress.add(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EVICTION_ATTRIBUTES, evictionAddress, eviction));
+            result.add(CacheConfigOperationHandlers.createOperation(EvictionResource.EVICTION_ATTRIBUTES, evictionAddress, eviction));
         }
         // command to recreate the expiration configuration
         if (cache.getValue().get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
             ModelNode expiration = cache.getValue().get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
             ModelNode expirationAddress = address.clone();
             expirationAddress.add(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-            result.add(CacheConfigOperationHandlers.createOperation(CommonAttributes.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
+            result.add(CacheConfigOperationHandlers.createOperation(ExpirationResource.EXPIRATION_ATTRIBUTES, expirationAddress, expiration));
         }
 
         // command to recreate the cache store configuration
@@ -207,8 +212,8 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode store = cache.getValue().get(ModelKeys.STORE, ModelKeys.STORE_NAME);
             ModelNode storeAddress = address.clone();
             storeAddress.add(ModelKeys.STORE, ModelKeys.STORE_NAME);
-            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
-                    CommonAttributes.STORE_ATTRIBUTES));
+            result.add(CacheConfigOperationHandlers.createStoreOperation(BaseStoreResource.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    StoreResource.STORE_ATTRIBUTES));
             addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
@@ -216,8 +221,8 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode store = cache.getValue().get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
             ModelNode storeAddress = address.clone();
             storeAddress.add(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
-                    CommonAttributes.FILE_STORE_ATTRIBUTES));
+            result.add(CacheConfigOperationHandlers.createStoreOperation(BaseStoreResource.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    FileStoreResource.FILE_STORE_ATTRIBUTES));
             addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
@@ -249,8 +254,8 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode store = cache.getValue().get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
             ModelNode storeAddress = address.clone();
             storeAddress.add(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
-            result.add(CacheConfigOperationHandlers.createStoreOperation(CommonAttributes.COMMON_STORE_ATTRIBUTES, storeAddress, store,
-                    CommonAttributes.REMOTE_STORE_ATTRIBUTES));
+            result.add(CacheConfigOperationHandlers.createStoreOperation(BaseStoreResource.COMMON_STORE_ATTRIBUTES, storeAddress, store,
+                    RemoteStoreResource.REMOTE_STORE_ATTRIBUTES));
             addStoreWriteBehindConfigCommands(store, storeAddress, result);
             addCacheStorePropertyCommands(store, storeAddress, result);
         }
@@ -271,7 +276,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode stateTransfer = cache.getValue().get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
             ModelNode stateTransferAddress = address.clone();
             stateTransferAddress.add(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-            ModelNode createOperation = CacheConfigOperationHandlers.createOperation(CommonAttributes.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer);
+            ModelNode createOperation = CacheConfigOperationHandlers.createOperation(StateTransferResource.STATE_TRANSFER_ATTRIBUTES, stateTransferAddress, stateTransfer);
             result.add(createOperation);
         }
     }
@@ -282,7 +287,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
             ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
             ModelNode writeBehindAddress = address.clone();
             writeBehindAddress.add(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
-            ModelNode createOperation = CacheConfigOperationHandlers.createOperation(CommonAttributes.WRITE_BEHIND_ATTRIBUTES, writeBehindAddress, writeBehind);
+            ModelNode createOperation = CacheConfigOperationHandlers.createOperation(StoreWriteBehindResource.WRITE_BEHIND_ATTRIBUTES, writeBehindAddress, writeBehind);
             result.add(createOperation);
         }
     }
@@ -292,9 +297,40 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
         if (store.hasDefined(ModelKeys.PROPERTY)) {
              for (Property property : store.get(ModelKeys.PROPERTY).asPropertyList()) {
                  ModelNode propertyAddress = address.clone().add(ModelKeys.PROPERTY, property.getName());
-                 AttributeDefinition[] ATTRIBUTE = {CommonAttributes.VALUE} ;
+                 AttributeDefinition[] ATTRIBUTE = {StorePropertyResource.VALUE} ;
                  result.add(CacheConfigOperationHandlers.createOperation(ATTRIBUTE, propertyAddress, property.getValue()));
              }
         }
     }
+
+
+    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return getSubsystemDescribeDescription(locale);
+        }
+    };
+
+    static ModelNode getSubsystemDescribeDescription(Locale locale) {
+        ResourceBundle resources = getResources(locale);
+        final ModelNode op = createOperationDescription(ModelDescriptionConstants.DESCRIBE, resources, "infinispan.describe");
+        op.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
+        op.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
+        op.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
+        return op;
+    }
+    private static ModelNode createOperationDescription(String operation, ResourceBundle resources, String key) {
+        ModelNode description = new ModelNode();
+        if (operation != null) {
+            description.get(ModelDescriptionConstants.OPERATION_NAME).set(operation);
+        }
+        description.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString(key));
+        return description;
+    }
+
+    private static ResourceBundle getResources(Locale locale) {
+        return ResourceBundle.getBundle(InfinispanExtension.RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
+    }
+
+
 }

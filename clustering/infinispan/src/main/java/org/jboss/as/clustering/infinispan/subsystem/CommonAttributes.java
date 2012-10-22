@@ -1,27 +1,5 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.transaction.LockingMode;
-import org.infinispan.util.concurrent.IsolationLevel;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.ObjectListAttributeDefinition;
-import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-
 /**
  * Attributes used in setting up Infinispan configurations
  * To mark an attribute as required, mark it as not allowing null.
@@ -31,6 +9,7 @@ import org.jboss.dmr.Property;
  */
 public interface CommonAttributes {
 
+    /*
     SimpleAttributeDefinition ACQUIRE_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(ModelKeys.ACQUIRE_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(Attribute.ACQUIRE_TIMEOUT.getLocalName())
@@ -485,7 +464,6 @@ public interface CommonAttributes {
                     .setDefaultValue(new ModelNode().set(1))
                     .build();
 
-    AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, CACHE_CONTAINER_MODULE};
     AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT};
 
     AttributeDefinition[] CACHE_ATTRIBUTES = { START, BATCHING, INDEXING, JNDI_NAME, CACHE_MODULE, INDEXING_PROPERTIES};
@@ -598,5 +576,5 @@ public interface CommonAttributes {
             setAllowNull(true).
             setSuffix("write-behind").
             build();
-
+  */
 }

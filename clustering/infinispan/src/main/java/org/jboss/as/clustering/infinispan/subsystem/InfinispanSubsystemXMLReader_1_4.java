@@ -24,14 +24,15 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
+import java.util.Collections;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import java.util.Collections;
-import java.util.List;
+
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * Infinispan subsystem parsing code.
@@ -45,23 +46,23 @@ public class InfinispanSubsystemXMLReader_1_4 extends InfinispanSubsystemXMLRead
     protected void parseCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache) throws XMLStreamException {
         switch (attribute) {
             case NAME: {
-                CommonAttributes.NAME.parseAndSetParameter(value, cache, reader);
+                CacheResource.NAME.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case START: {
-                CommonAttributes.START.parseAndSetParameter(value, cache, reader);
+                CacheResource.START.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case JNDI_NAME: {
-                CommonAttributes.JNDI_NAME.parseAndSetParameter(value, cache, reader);
+                CacheResource.JNDI_NAME.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case BATCHING: {
-                CommonAttributes.BATCHING.parseAndSetParameter(value, cache, reader);
+                CacheResource.BATCHING.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case MODULE: {
-                CommonAttributes.CACHE_MODULE.parseAndSetParameter(value, cache, reader);
+                CacheResource.CACHE_MODULE.parseAndSetParameter(value, cache, reader);
                 break;
             }
             default: {
@@ -127,7 +128,7 @@ public class InfinispanSubsystemXMLReader_1_4 extends InfinispanSubsystemXMLRead
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             if (attribute == Attribute.INDEX) {
-                CommonAttributes.INDEXING.parseAndSetParameter(value, node, reader);
+                CacheResource.INDEXING.parseAndSetParameter(value, node, reader);
             } else {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             }
@@ -156,7 +157,7 @@ public class InfinispanSubsystemXMLReader_1_4 extends InfinispanSubsystemXMLRead
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
                     }
                     String value = reader.getElementText();
-                    CommonAttributes.INDEXING_PROPERTIES.parseAndAddParameterElement(property, value, node, reader);
+                    CacheResource.INDEXING_PROPERTIES.parseAndAddParameterElement(property, value, node, reader);
                     break;
                 }
                 default: {

@@ -1,11 +1,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -89,27 +90,27 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
                     break;
                 }
                 case DEFAULT_CACHE: {
-                    CommonAttributes.DEFAULT_CACHE.parseAndSetParameter(value, container, reader);
+                    CacheContainerResource.DEFAULT_CACHE.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case JNDI_NAME: {
-                    CommonAttributes.JNDI_NAME.parseAndSetParameter(value, container, reader);
+                    CacheContainerResource.JNDI_NAME.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case START: {
-                    CommonAttributes.START.parseAndSetParameter(value, container, reader);
+                    CacheContainerResource.START.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case LISTENER_EXECUTOR: {
-                    CommonAttributes.LISTENER_EXECUTOR.parseAndSetParameter(value, container, reader);
+                    CacheContainerResource.LISTENER_EXECUTOR.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case EVICTION_EXECUTOR: {
-                    CommonAttributes.EVICTION_EXECUTOR.parseAndSetParameter(value, container, reader);
+                    CacheContainerResource.EVICTION_EXECUTOR.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case REPLICATION_QUEUE_EXECUTOR: {
-                    CommonAttributes.REPLICATION_QUEUE_EXECUTOR.parseAndSetParameter(value, container, reader);
+                    CacheContainerResource.REPLICATION_QUEUE_EXECUTOR.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 default: {
@@ -123,7 +124,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
         }
 
         // Backwards compatible default module
-        CommonAttributes.CACHE_CONTAINER_MODULE.parseAndSetParameter("org.jboss.as.jpa.hibernate:4", container, reader);
+        CacheContainerResource.CACHE_CONTAINER_MODULE.parseAndSetParameter("org.jboss.as.jpa.hibernate:4", container, reader);
 
         ModelNode containerAddress = subsystemAddress.clone() ;
         containerAddress.add(ModelKeys.CACHE_CONTAINER, name);
@@ -173,19 +174,19 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STACK: {
-                    CommonAttributes.STACK.parseAndSetParameter(value, transport, reader);
+                    TransportResource.STACK.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case CLUSTER: {
-                    CommonAttributes.CLUSTER.parseAndSetParameter(value, transport, reader);
+                    TransportResource.CLUSTER.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case EXECUTOR: {
-                    CommonAttributes.EXECUTOR.parseAndSetParameter(value, transport, reader);
+                    TransportResource.EXECUTOR.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 case LOCK_TIMEOUT: {
-                    CommonAttributes.LOCK_TIMEOUT.parseAndSetParameter(value, transport, reader);
+                    TransportResource.LOCK_TIMEOUT.parseAndSetParameter(value, transport, reader);
                     break;
                 }
                 default: {
@@ -207,23 +208,23 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
     private void parseCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache) throws XMLStreamException {
         switch (attribute) {
             case NAME: {
-                CommonAttributes.NAME.parseAndSetParameter(value, cache, reader);
+                CacheResource.NAME.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case START: {
-                CommonAttributes.START.parseAndSetParameter(value, cache, reader);
+                CacheResource.START.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case JNDI_NAME: {
-                CommonAttributes.JNDI_NAME.parseAndSetParameter(value, cache, reader);
+                CacheResource.JNDI_NAME.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case BATCHING: {
-                CommonAttributes.BATCHING.parseAndSetParameter(value, cache, reader);
+                CacheResource.BATCHING.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case INDEXING: {
-                CommonAttributes.INDEXING.parseAndSetParameter(value, cache, reader);
+                CacheResource.INDEXING.parseAndSetParameter(value, cache, reader);
                 break;
             }
             default: {
@@ -235,24 +236,24 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
     private void parseClusteredCacheAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode cache) throws XMLStreamException {
         switch (attribute) {
             case ASYNC_MARSHALLING: {
-                CommonAttributes.ASYNC_MARSHALLING.parseAndSetParameter(value, cache, reader);
+                ClusteredCacheResource.ASYNC_MARSHALLING.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case MODE: {
                 // note the use of ClusteredCacheAdd.MODE
-                ClusteredCacheAdd.MODE.parseAndSetParameter(value, cache, reader);
+                ClusteredCacheResource.MODE.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case QUEUE_SIZE: {
-                CommonAttributes.QUEUE_SIZE.parseAndSetParameter(value, cache, reader);
+                ClusteredCacheResource.QUEUE_SIZE.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case QUEUE_FLUSH_INTERVAL: {
-                CommonAttributes.QUEUE_FLUSH_INTERVAL.parseAndSetParameter(value, cache, reader);
+                ClusteredCacheResource.QUEUE_FLUSH_INTERVAL.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case REMOTE_TIMEOUT: {
-                CommonAttributes.REMOTE_TIMEOUT.parseAndSetParameter(value, cache, reader);
+                ClusteredCacheResource.REMOTE_TIMEOUT.parseAndSetParameter(value, cache, reader);
                 break;
             }
             default: {
@@ -307,15 +308,15 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case OWNERS: {
-                    CommonAttributes.OWNERS.parseAndSetParameter(value, cache, reader);
+                    DistributedCacheResource.OWNERS.parseAndSetParameter(value, cache, reader);
                     break;
                 }
                 case VIRTUAL_NODES: {
-                    CommonAttributes.VIRTUAL_NODES.parseAndSetParameter(value, cache, reader);
+                    DistributedCacheResource.VIRTUAL_NODES.parseAndSetParameter(value, cache, reader);
                     break;
                 }
                 case L1_LIFESPAN: {
-                    CommonAttributes.L1_LIFESPAN.parseAndSetParameter(value, cache, reader);
+                    DistributedCacheResource.L1_LIFESPAN.parseAndSetParameter(value, cache, reader);
                     break;
                 }
                 default: {
@@ -508,15 +509,15 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ENABLED: {
-                    CommonAttributes.ENABLED.parseAndSetParameter(value, stateTransfer, reader);
+                    StateTransferResource.ENABLED.parseAndSetParameter(value, stateTransfer, reader);
                     break;
                 }
                 case TIMEOUT: {
-                    CommonAttributes.TIMEOUT.parseAndSetParameter(value, stateTransfer, reader);
+                    StateTransferResource.TIMEOUT.parseAndSetParameter(value, stateTransfer, reader);
                     break;
                 }
                 case CHUNK_SIZE: {
-                    CommonAttributes.CHUNK_SIZE.parseAndSetParameter(value, stateTransfer, reader);
+                    StateTransferResource.CHUNK_SIZE.parseAndSetParameter(value, stateTransfer, reader);
                     break;
                 }
                 default: {
@@ -541,19 +542,19 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ISOLATION: {
-                    CommonAttributes.ISOLATION.parseAndSetParameter(value, locking, reader);
+                    LockingResource.ISOLATION.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case STRIPING: {
-                    CommonAttributes.STRIPING.parseAndSetParameter(value, locking, reader);
+                    LockingResource.STRIPING.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case ACQUIRE_TIMEOUT: {
-                    CommonAttributes.ACQUIRE_TIMEOUT.parseAndSetParameter(value, locking, reader);
+                    LockingResource.ACQUIRE_TIMEOUT.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case CONCURRENCY_LEVEL: {
-                    CommonAttributes.CONCURRENCY_LEVEL.parseAndSetParameter(value, locking, reader);
+                    LockingResource.CONCURRENCY_LEVEL.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 default: {
@@ -578,15 +579,15 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STOP_TIMEOUT: {
-                    CommonAttributes.STOP_TIMEOUT.parseAndSetParameter(value, transaction, reader);
+                    TransactionResource.STOP_TIMEOUT.parseAndSetParameter(value, transaction, reader);
                     break;
                 }
                 case MODE: {
-                    CommonAttributes.MODE.parseAndSetParameter(value, transaction, reader);
+                    TransactionResource.MODE.parseAndSetParameter(value, transaction, reader);
                     break;
                 }
                 case LOCKING: {
-                    CommonAttributes.LOCKING.parseAndSetParameter(value, transaction, reader);
+                    TransactionResource.LOCKING.parseAndSetParameter(value, transaction, reader);
                     break;
                 }
                 default: {
@@ -610,11 +611,11 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STRATEGY: {
-                    CommonAttributes.EVICTION_STRATEGY.parseAndSetParameter(value, eviction, reader);
+                    EvictionResource.EVICTION_STRATEGY.parseAndSetParameter(value, eviction, reader);
                     break;
                 }
                 case MAX_ENTRIES: {
-                    CommonAttributes.MAX_ENTRIES.parseAndSetParameter(value, eviction, reader);
+                    EvictionResource.MAX_ENTRIES.parseAndSetParameter(value, eviction, reader);
                     break;
                 }
                 default: {
@@ -639,15 +640,15 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case MAX_IDLE: {
-                    CommonAttributes.MAX_IDLE.parseAndSetParameter(value, expiration, reader);
+                    ExpirationResource.MAX_IDLE.parseAndSetParameter(value, expiration, reader);
                     break;
                 }
                 case LIFESPAN: {
-                    CommonAttributes.LIFESPAN.parseAndSetParameter(value, expiration, reader);
+                    ExpirationResource.LIFESPAN.parseAndSetParameter(value, expiration, reader);
                     break;
                 }
                 case INTERVAL: {
-                    CommonAttributes.INTERVAL.parseAndSetParameter(value, expiration, reader);
+                    ExpirationResource.INTERVAL.parseAndSetParameter(value, expiration, reader);
                     break;
                 }
                 default: {
@@ -671,7 +672,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CLASS: {
-                    CommonAttributes.CLASS.parseAndSetParameter(value, store, reader);
+                    StoreResource.CLASS.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -702,11 +703,11 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case RELATIVE_TO: {
-                    CommonAttributes.RELATIVE_TO.parseAndSetParameter(value, store, reader);
+                    FileStoreResource.RELATIVE_TO.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 case PATH: {
-                    CommonAttributes.PATH.parseAndSetParameter(value, store, reader);
+                    FileStoreResource.PATH.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -734,15 +735,15 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CACHE: {
-                    CommonAttributes.CACHE.parseAndSetParameter(value, store, reader);
+                    RemoteStoreResource.CACHE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 case SOCKET_TIMEOUT: {
-                    CommonAttributes.SOCKET_TIMEOUT.parseAndSetParameter(value, store, reader);
+                    RemoteStoreResource.SOCKET_TIMEOUT.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 case TCP_NO_DELAY: {
-                    CommonAttributes.TCP_NO_DELAY.parseAndSetParameter(value, store, reader);
+                    RemoteStoreResource.TCP_NO_DELAY.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -781,7 +782,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case OUTBOUND_SOCKET_BINDING: {
-                    CommonAttributes.OUTBOUND_SOCKET_BINDING.parseAndSetParameter(value, server, reader);
+                    RemoteStoreResource.OUTBOUND_SOCKET_BINDING.parseAndSetParameter(value, server, reader);
                     break;
                 }
                 default: {
@@ -805,7 +806,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    CommonAttributes.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    BaseJDBCStoreResource.DATA_SOURCE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -851,7 +852,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    CommonAttributes.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    BaseJDBCStoreResource.DATA_SOURCE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -896,7 +897,7 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    CommonAttributes.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    BaseJDBCStoreResource.DATA_SOURCE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -943,15 +944,15 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PREFIX: {
-                    CommonAttributes.PREFIX.parseAndSetParameter(value, table, reader);
+                    BaseJDBCStoreResource.PREFIX.parseAndSetParameter(value, table, reader);
                     break;
                 }
                 case FETCH_SIZE: {
-                    CommonAttributes.FETCH_SIZE.parseAndSetParameter(value, table, reader);
+                    BaseJDBCStoreResource.FETCH_SIZE.parseAndSetParameter(value, table, reader);
                     break;
                 }
                 case BATCH_SIZE: {
-                    CommonAttributes.BATCH_SIZE.parseAndSetParameter(value, table, reader);
+                    BaseJDBCStoreResource.BATCH_SIZE.parseAndSetParameter(value, table, reader);
                     break;
                 }
                 default: {
@@ -1006,27 +1007,27 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
     private void parseStoreAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode store) throws XMLStreamException {
         switch (attribute) {
             case SHARED: {
-                CommonAttributes.SHARED.parseAndSetParameter(value, store, reader);
+                BaseStoreResource.SHARED.parseAndSetParameter(value, store, reader);
                 break;
             }
             case PRELOAD: {
-                CommonAttributes.PRELOAD.parseAndSetParameter(value, store, reader);
+                BaseStoreResource.PRELOAD.parseAndSetParameter(value, store, reader);
                 break;
             }
             case PASSIVATION: {
-                CommonAttributes.PASSIVATION.parseAndSetParameter(value, store, reader);
+                BaseStoreResource.PASSIVATION.parseAndSetParameter(value, store, reader);
                 break;
             }
             case FETCH_STATE: {
-                CommonAttributes.FETCH_STATE.parseAndSetParameter(value, store, reader);
+                BaseStoreResource.FETCH_STATE.parseAndSetParameter(value, store, reader);
                 break;
             }
             case PURGE: {
-                CommonAttributes.PURGE.parseAndSetParameter(value, store, reader);
+                BaseStoreResource.PURGE.parseAndSetParameter(value, store, reader);
                 break;
             }
             case SINGLETON: {
-                CommonAttributes.SINGLETON.parseAndSetParameter(value, store, reader);
+                BaseStoreResource.SINGLETON.parseAndSetParameter(value, store, reader);
                 break;
             }
             default: {
@@ -1065,19 +1066,19 @@ public class InfinispanSubsystemXMLReader_1_2 implements XMLElementReader<List<M
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case FLUSH_LOCK_TIMEOUT: {
-                    CommonAttributes.FLUSH_LOCK_TIMEOUT.parseAndSetParameter(value, writeBehind, reader);
+                    StoreWriteBehindResource.FLUSH_LOCK_TIMEOUT.parseAndSetParameter(value, writeBehind, reader);
                     break;
                 }
                 case MODIFICATION_QUEUE_SIZE: {
-                    CommonAttributes.MODIFICATION_QUEUE_SIZE.parseAndSetParameter(value, writeBehind, reader);
+                    StoreWriteBehindResource.MODIFICATION_QUEUE_SIZE.parseAndSetParameter(value, writeBehind, reader);
                     break;
                 }
                 case SHUTDOWN_TIMEOUT: {
-                    CommonAttributes.SHUTDOWN_TIMEOUT.parseAndSetParameter(value, writeBehind, reader);
+                    StoreWriteBehindResource.SHUTDOWN_TIMEOUT.parseAndSetParameter(value, writeBehind, reader);
                     break;
                 }
                 case THREAD_POOL_SIZE: {
-                    CommonAttributes.THREAD_POOL_SIZE.parseAndSetParameter(value, writeBehind, reader);
+                    StoreWriteBehindResource.THREAD_POOL_SIZE.parseAndSetParameter(value, writeBehind, reader);
                     break;
                 }
                 default:

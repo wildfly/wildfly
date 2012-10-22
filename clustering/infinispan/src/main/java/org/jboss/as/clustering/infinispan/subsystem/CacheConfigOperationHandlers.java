@@ -1,27 +1,25 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.BINARY_KEYED_JDBC_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.COMMON_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.EVICTION_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.EXPIRATION_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.FILE_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.LOCKING_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.MIXED_KEYED_JDBC_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.REMOTE_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STRING_KEYED_JDBC_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.TRANSACTION_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.WRITE_BEHIND_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.BaseJDBCStoreResource.COMMON_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.BaseStoreResource.COMMON_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.EvictionResource.EVICTION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResource.EXPIRATION_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.FileStoreResource.FILE_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.LockingResource.LOCKING_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.RemoteStoreResource.REMOTE_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResource.STATE_TRANSFER_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.StoreResource.STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResource.WRITE_BEHIND_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_ATTRIBUTES;
+import static org.jboss.as.clustering.infinispan.subsystem.TransactionResource.TRANSACTION_ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -31,7 +29,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -112,7 +109,7 @@ public class CacheConfigOperationHandlers {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            CommonAttributes.VALUE.validateAndSet(operation, resource.getModel());
+            StorePropertyResource.VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
             context.stepCompleted();
         }
@@ -122,7 +119,7 @@ public class CacheConfigOperationHandlers {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-            CommonAttributes.VALUE.validateAndSet(operation, resource.getModel());
+            StorePropertyResource.VALUE.validateAndSet(operation, resource.getModel());
             reloadRequiredStep(context);
             context.stepCompleted();
         }
@@ -133,7 +130,7 @@ public class CacheConfigOperationHandlers {
      * Override the process method in order to process configuration specific elements.
      *
      */
-    private static class BasicCacheConfigAdd implements OperationStepHandler, DescriptionProvider {
+    private static class BasicCacheConfigAdd implements OperationStepHandler  {
         private final AttributeDefinition[] attributes;
 
         BasicCacheConfigAdd(final AttributeDefinition[] attributes) {
@@ -161,12 +158,6 @@ public class CacheConfigOperationHandlers {
         void process(ModelNode subModel, ModelNode operation) {
             //
         };
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode().set(DESCRIPTION);
-        }
-
     }
 
     /**
@@ -175,14 +166,15 @@ public class CacheConfigOperationHandlers {
      * This class needs to do the following:
      * - check that its parent has no existing defined cache store
      * - process its model attributes
-     * - create any child resources required for the store resource
+     * - create any child resources required for the store resource, such as a
+     * set of properties
      *
      */
     abstract static class AbstractCacheStoreAdd extends AbstractAddStepHandler {
         private final AttributeDefinition[] attributes;
 
         AbstractCacheStoreAdd() {
-            this.attributes = CommonAttributes.COMMON_STORE_ATTRIBUTES;
+            this.attributes = BaseStoreResource.COMMON_STORE_ATTRIBUTES;
         }
 
         @Override
@@ -199,7 +191,7 @@ public class CacheConfigOperationHandlers {
             for(final AttributeDefinition attribute : attributes) {
                 // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
                 // don't copy these into the model
-                if (attribute.getName().equals(CommonAttributes.PROPERTIES.getName()))
+                if (attribute.getName().equals(BaseStoreResource.PROPERTIES.getName()))
                     continue ;
                 attribute.validateAndSet(operation, model);
             }
@@ -237,7 +229,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         CacheStoreAdd() {
-            this.attributes = CommonAttributes.STORE_ATTRIBUTES;
+            this.attributes = StoreResource.STORE_ATTRIBUTES;
         }
 
         @Override
@@ -256,7 +248,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         FileCacheStoreAdd() {
-            this.attributes = CommonAttributes.FILE_STORE_ATTRIBUTES;
+            this.attributes = FileStoreResource.FILE_STORE_ATTRIBUTES;
         }
 
         @Override
@@ -272,7 +264,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         JDBCCacheStoreAdd() {
-            this.attributes = CommonAttributes.COMMON_JDBC_STORE_ATTRIBUTES;
+            this.attributes = BaseJDBCStoreResource.COMMON_JDBC_STORE_ATTRIBUTES;
         }
 
         @Override
@@ -288,7 +280,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         StringKeyedJDBCCacheStoreAdd() {
-            this.attributes = CommonAttributes.STRING_KEYED_JDBC_STORE_ATTRIBUTES;
+            this.attributes = StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_ATTRIBUTES;
         }
 
         @Override
@@ -311,7 +303,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         BinaryKeyedJDBCCacheStoreAdd() {
-            this.attributes = CommonAttributes.BINARY_KEYED_JDBC_STORE_ATTRIBUTES;
+            this.attributes = BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_ATTRIBUTES;
         }
 
         @Override
@@ -334,7 +326,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         MixedKeyedJDBCCacheStoreAdd() {
-            this.attributes = CommonAttributes.MIXED_KEYED_JDBC_STORE_ATTRIBUTES;
+            this.attributes = MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_ATTRIBUTES;
         }
 
         @Override
@@ -354,7 +346,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         RemoteCacheStoreAdd() {
-            this.attributes = CommonAttributes.REMOTE_STORE_ATTRIBUTES;
+            this.attributes = RemoteStoreResource.REMOTE_STORE_ATTRIBUTES;
         }
 
         @Override

@@ -22,34 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.NAME;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.STATE_TRANSFER_OBJECT;
-import static org.jboss.as.clustering.infinispan.subsystem.CommonAttributes.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HEAD_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MAX_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TAIL_COMMENT_ALLOWED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-
-import java.util.Locale;
-import java.util.ResourceBundle;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 /**
 * @author Paul Ferraro
 * @author Richard Achmatowicz (c) Red Hat Inc. 2011
@@ -61,7 +33,7 @@ public class InfinispanDescriptions {
     private InfinispanDescriptions() {
         // Hide
     }
-
+ /*
     // subsystems
     static ModelNode getSubsystemDescription(Locale locale) {
         ResourceBundle resources = getResources(locale);
@@ -805,6 +777,7 @@ public class InfinispanDescriptions {
         description.get(CHILDREN, ModelKeys.PROPERTY, MAX_OCCURS).set(1);
         description.get(CHILDREN, ModelKeys.PROPERTY, MODEL_DESCRIPTION);
     }
+    */
 
     /**
      * Add the set of request parameters which are common to all cache add operations.
@@ -813,11 +786,11 @@ public class InfinispanDescriptions {
      * @param operation the operation ModelNode to add the request properties to
      * @param resources the resource bundle containing keys and their strings
      */
-    private static void addCommonCacheAddRequestProperties(String keyPrefix, ModelNode operation, ResourceBundle resources) {
-        for (AttributeDefinition attribute: CommonAttributes.CACHE_ATTRIBUTES) {
-            attribute.addOperationParameterDescription(resources, keyPrefix, operation);
-        }
-    }
+//    private static void addCommonCacheAddRequestProperties(String keyPrefix, ModelNode operation, ResourceBundle resources) {
+//        for (AttributeDefinition attribute: CommonAttributes.CACHE_ATTRIBUTES) {
+//            attribute.addOperationParameterDescription(resources, keyPrefix, operation);
+//        }
+//    }
 
     /**
      * Add the set of request parameters which are common to all clustered cache add operations.
@@ -826,11 +799,12 @@ public class InfinispanDescriptions {
      * @param operation the operation ModelNode to add the request properties to
      * @param resources the resource bundle containing keys and their strings
      */
-    private static void addCommonClusteredCacheAddRequestProperties(String keyPrefix, ModelNode operation, ResourceBundle resources) {
+//    private static void addCommonClusteredCacheAddRequestProperties(String keyPrefix, ModelNode operation, ResourceBundle resources) {
+//
+//        for (AttributeDefinition attr : CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES) {
+//            attr.addOperationParameterDescription(resources, keyPrefix, operation);
+//        }
+//        // addNode(requestProperties, ModelKeys.MODE, resources.getString(keyPrefix+".mode"), ModelType.STRING, true);
+//    }
 
-        for (AttributeDefinition attr : CommonAttributes.CLUSTERED_CACHE_ATTRIBUTES) {
-            attr.addOperationParameterDescription(resources, keyPrefix, operation);
-        }
-        // addNode(requestProperties, ModelKeys.MODE, resources.getString(keyPrefix+".mode"), ModelType.STRING, true);
-    }
 }

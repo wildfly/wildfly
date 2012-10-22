@@ -30,11 +30,11 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
 
     private final Map<String, AttributeDefinition> attributeDefinitions;
 
-    private CacheContainerWriteAttributeHandler() {
-        this(CommonAttributes.CACHE_CONTAINER_ATTRIBUTES);
+    public CacheContainerWriteAttributeHandler() {
+        this(CacheContainerResource.CACHE_CONTAINER_ATTRIBUTES);
     }
 
-    private CacheContainerWriteAttributeHandler(final AttributeDefinition... definitions) {
+    public CacheContainerWriteAttributeHandler(final AttributeDefinition... definitions) {
         assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
         attributeDefinitions = new HashMap<String, AttributeDefinition>();
         for (AttributeDefinition def : definitions) {
@@ -100,7 +100,7 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
     public void registerAttributes(final ManagementResourceRegistration registry) {
 
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.CACHE_CONTAINER_ATTRIBUTES) {
+        for (AttributeDefinition attr : CacheContainerResource.CACHE_CONTAINER_ATTRIBUTES) {
            registry.registerReadWriteAttribute(attr.getName(), CacheContainerReadAttributeHandler.INSTANCE, this, flags);
         }
     }

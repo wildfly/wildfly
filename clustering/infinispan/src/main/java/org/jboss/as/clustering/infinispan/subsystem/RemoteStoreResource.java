@@ -1,0 +1,86 @@
+package org.jboss.as.clustering.infinispan.subsystem;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
+/**
+ * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/cache=Y/remote-store=REMOTE_STORE
+ *
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ */
+public class RemoteStoreResource extends BaseStoreResource {
+
+    private static final PathElement REMOTE_STORE_PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+    public static final RemoteStoreResource INSTANCE = new RemoteStoreResource();
+
+    // attributes
+    static final SimpleAttributeDefinition CACHE =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.CACHE, ModelType.STRING, true)
+                    .setXmlName(Attribute.CACHE.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+    static final SimpleAttributeDefinition TCP_NO_DELAY =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.TCP_NO_DELAY, ModelType.BOOLEAN, true)
+                    .setXmlName(Attribute.TCP_NO_DELAY.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(true))
+                    .build();
+    static final SimpleAttributeDefinition SOCKET_TIMEOUT =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.SOCKET_TIMEOUT, ModelType.LONG, true)
+                    .setXmlName(Attribute.SOCKET_TIMEOUT.getLocalName())
+                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(60000))
+                    .build();
+
+    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinition("outbound-socket-binding", ModelType.STRING, true);
+
+    static final ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition.
+            Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING).
+            setAllowNull(true).
+            setSuffix("remote-server").
+            build();
+
+    static final ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER).
+            setAllowNull(true).
+            build();
+
+    static final AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = {CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS};
+
+    public RemoteStoreResource() {
+        super(REMOTE_STORE_PATH,
+                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE),
+                CacheConfigOperationHandlers.REMOTE_STORE_ADD,
+                CacheConfigOperationHandlers.REMOVE);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+
+        // check that we don't need a special handler here?
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(REMOTE_STORE_ATTRIBUTES);
+        for (AttributeDefinition attr : REMOTE_STORE_ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
+        }
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+    }
+}

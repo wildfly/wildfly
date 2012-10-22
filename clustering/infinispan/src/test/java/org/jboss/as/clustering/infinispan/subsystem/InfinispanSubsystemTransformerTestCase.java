@@ -28,12 +28,14 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author <a href="tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 
+@Ignore
 public class InfinispanSubsystemTransformerTestCase extends AbstractSubsystemBaseTest {
 
 

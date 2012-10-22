@@ -31,7 +31,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
     private final Map<String, AttributeDefinition> attributeDefinitions ;
 
     private CacheContainerReadAttributeHandler() {
-        this(CommonAttributes.CACHE_CONTAINER_ATTRIBUTES);
+        this(CacheContainerResource.CACHE_CONTAINER_ATTRIBUTES);
     }
 
     private CacheContainerReadAttributeHandler(final AttributeDefinition... definitions) {
@@ -69,7 +69,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
     public void registerAttributes(final ManagementResourceRegistration registry) {
 
         final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        for (AttributeDefinition attr : CommonAttributes.CACHE_CONTAINER_ATTRIBUTES) {
+        for (AttributeDefinition attr : CacheContainerResource.CACHE_CONTAINER_ATTRIBUTES) {
            registry.registerReadWriteAttribute(attr.getName(), this, CacheContainerWriteAttributeHandler.INSTANCE, flags);
         }
     }
