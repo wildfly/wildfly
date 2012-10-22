@@ -236,8 +236,8 @@ public interface WebMessages {
     @Message(id = 18061, value = "Interrupted acquiring ownership of %s")
     RuntimeException interruptedAcquiringOwnership(String id, @Cause Throwable t);
 
-    @Message(id = 18062, value = "Specified attribute cannot be replicated")
-    IllegalArgumentException failToReplicateAttribute();
+    @Message(id = 18062, value = "'%s' attribute with type '%s' cannot be replicated")
+    IllegalArgumentException failToReplicateAttribute(String attributeName, String className);
 
     @Message(id = 18063, value = "Error calling value bound session listener")
     String errorValueBoundEvent(@Cause Throwable t);
