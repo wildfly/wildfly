@@ -22,8 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -52,14 +51,9 @@ public class ConnectionDefinitionAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-        for (AttributeDefinition attribute : CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
-            if (!attribute.isAllowed(operation) && operation.hasDefined(attribute.getName())) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalid(attribute.getName())));
-            }
-            attribute.validateAndSet(operation, modelNode);
+        for (AttributeDefinition attribute : CONNECTION_DEFINITIONS_NODE_ATTRIBUTE) {
+           attribute.validateAndSet(operation, modelNode);
         }
-
-
     }
 
     @Override

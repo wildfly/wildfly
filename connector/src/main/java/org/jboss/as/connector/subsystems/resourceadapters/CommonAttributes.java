@@ -36,8 +36,8 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
@@ -54,7 +54,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
@@ -64,17 +64,23 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 import org.jboss.as.controller.AttributeDefinition;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
-public class ResourceAdaptersSubsystemProviders {
+public class CommonAttributes {
 
-    static final AttributeDefinition[] RESOURCEADAPTER_ATTRIBUTE = new AttributeDefinition[]{ARCHIVE, TRANSACTIONSUPPORT, BOOTSTRAPCONTEXT,
-            CONFIG_PROPERTIES, BEANVALIDATIONGROUPS };
-    static final AttributeDefinition[] CONNECTIONDEFINITIONS_NODEATTRIBUTE = new AttributeDefinition[]{
-            CLASS_NAME, JNDINAME,
+    static final AttributeDefinition[] RESOURCE_ADAPTER_ATTRIBUTE = {
+            ARCHIVE,
+            TRANSACTION_SUPPORT,
+            BOOTSTRAP_CONTEXT,
+            CONFIG_PROPERTIES,
+            BEANVALIDATION_GROUPS
+    };
+    static final AttributeDefinition[] CONNECTION_DEFINITIONS_NODE_ATTRIBUTE = {
+            CLASS_NAME,
+            JNDINAME,
             USE_JAVA_CONTEXT,
-            ENABLED, MAX_POOL_SIZE,
+            ENABLED,
+            MAX_POOL_SIZE,
             MIN_POOL_SIZE,
             POOL_USE_STRICT_MIN,
             POOL_FLUSH_STRATEGY,
@@ -90,15 +96,26 @@ public class ResourceAdaptersSubsystemProviders {
             BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION,
             USE_FAST_FAIL, USE_CCM,
-            RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES,
-            RECOVERY_PASSWORD, RECOVERY_SECURITY_DOMAIN,
-            RECOVERY_USERNAME, NO_RECOVERY,
-            WRAP_XA_RESOURCE, SAME_RM_OVERRIDE,
-            PAD_XID, POOL_PREFILL, INTERLEAVING, NOTXSEPARATEPOOL};
+            RECOVERLUGIN_CLASSNAME,
+            RECOVERLUGIN_PROPERTIES,
+            RECOVERY_PASSWORD,
+            RECOVERY_SECURITY_DOMAIN,
+            RECOVERY_USERNAME,
+            NO_RECOVERY,
+            WRAP_XA_RESOURCE,
+            SAME_RM_OVERRIDE,
+            PAD_XID,
+            POOL_PREFILL,
+            INTERLEAVING,
+            NOTXSEPARATEPOOL
+    };
 
-    static final AttributeDefinition[] ADMIN_OBJECTS_NODEATTRIBUTE = new AttributeDefinition[]{
-            CLASS_NAME, JNDINAME,
-            USE_JAVA_CONTEXT, ENABLED};
-
-    public static final String RESOURCE_NAME = ResourceAdaptersSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
+    static final AttributeDefinition[] ADMIN_OBJECTS_NODE_ATTRIBUTE = new AttributeDefinition[]{
+            CLASS_NAME,
+            JNDINAME,
+            USE_JAVA_CONTEXT,
+            ENABLED
+    };
+    @Deprecated
+    public static final String RESOURCE_NAME = CommonAttributes.class.getPackage().getName() + ".LocalDescriptions";
 }

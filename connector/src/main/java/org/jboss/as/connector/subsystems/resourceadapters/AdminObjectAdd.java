@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE;
+import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -44,16 +44,16 @@ import org.jboss.msc.service.ServiceTarget;
  * Adds a recovery-environment to the Transactions subsystem
  */
 public class AdminObjectAdd extends AbstractAddStepHandler {
+    static final AdminObjectAdd INSTANCE = new AdminObjectAdd();
+    private AdminObjectAdd(){
 
-    public static final AdminObjectAdd INSTANCE = new AdminObjectAdd();
+    }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-        for (AttributeDefinition attribute : ADMIN_OBJECTS_NODEATTRIBUTE) {
+        for (AttributeDefinition attribute : ADMIN_OBJECTS_NODE_ATTRIBUTE) {
             attribute.validateAndSet(operation, modelNode);
         }
-
-
     }
 
     @Override
@@ -84,9 +84,5 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                 .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector())
                 .addListener(verificationHandler).install();
-
-
     }
-
-
 }

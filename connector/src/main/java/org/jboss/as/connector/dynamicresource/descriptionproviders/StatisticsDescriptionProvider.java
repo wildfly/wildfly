@@ -54,7 +54,9 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
  * that adds resource-specific statistics to a generic resource.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @deprecated must be replaced with RD
  */
+@Deprecated
 public class StatisticsDescriptionProvider implements DescriptionProvider {
 
     private final String bundleName;

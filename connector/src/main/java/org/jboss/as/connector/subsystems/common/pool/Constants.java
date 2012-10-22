@@ -22,11 +22,11 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -80,23 +80,11 @@ public class Constants {
 
     public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinition(POOL_USE_STRICT_MIN_NAME, CommonPool.Tag.USE_STRICT_MIN.getLocalName(), new ModelNode().set(Defaults.USE_STRICT_MIN), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    public static SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinition(FLUSH_STRATEGY_NAME, CommonPool.Tag.FLUSH_STRATEGY.getLocalName(), new ModelNode().set(Defaults.FLUSH_STRATEGY.getName()), ModelType.STRING, true, true, MeasurementUnit.NONE, new ParameterValidator() {
-            @Override
-            public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
-                String str = value.asString();
-
-                if ( FlushStrategy.forName(str) == FlushStrategy.UNKNOWN) {
-                    throw new OperationFailedException(new ModelNode().set("Unknown FlushStrategy"));
-                }
-            }
-            }
-
-            @Override
-            public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                validateParameter(parameterName, value.resolve());
-            }
-        });
-
-
+    public static SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinitionBuilder(FLUSH_STRATEGY_NAME, ModelType.STRING)
+            .setDefaultValue(new ModelNode(Defaults.FLUSH_STRATEGY.getName()))
+            .setXmlName(CommonPool.Tag.FLUSH_STRATEGY.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
+            .build();
 }

@@ -1,7 +1,7 @@
 package org.jboss.as.connector.subsystems.jca;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;

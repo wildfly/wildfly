@@ -48,9 +48,7 @@ public class AOConfigPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-
         CONFIG_PROPERTY_VALUE.validateAndSet(operation, modelNode);
-
     }
 
     @Override
@@ -74,7 +72,5 @@ public class AOConfigPropertyAdd extends AbstractAddStepHandler {
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(aoServiceName, ModifiableAdminObject.class, service.getAOInjector() )
                     .addListener(verificationHandler).install();
-
     }
-
 }

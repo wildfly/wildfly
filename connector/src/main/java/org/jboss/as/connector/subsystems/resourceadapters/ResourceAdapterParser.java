@@ -26,12 +26,12 @@ import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN_OBJECTS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUP;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATIONGROUPS;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAPCONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTIONSUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -252,12 +252,12 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case BEAN_VALIDATION_GROUP: {
                             String value = rawElementText(reader);
-                            operation.get(BEANVALIDATIONGROUPS.getName()).add(BEANVALIDATIONGROUP.parse(value, reader));
+                            operation.get(BEANVALIDATION_GROUPS.getName()).add(BEANVALIDATIONGROUP.parse(value, reader));
                             break;
                         }
                         case BOOTSTRAP_CONTEXT: {
                             String value = rawElementText(reader);
-                            BOOTSTRAPCONTEXT.parseAndSetParameter(value, operation, reader);
+                            BOOTSTRAP_CONTEXT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case CONFIG_PROPERTY: {
@@ -267,10 +267,10 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
                         case TRANSACTION_SUPPORT: {
                             if (txSupportMatched) {
-                                throw new ParserException(bundle.unexpectedElement(TRANSACTIONSUPPORT.getXmlName()));
+                                throw new ParserException(bundle.unexpectedElement(TRANSACTION_SUPPORT.getXmlName()));
                             }
                             String value = rawElementText(reader);
-                            TRANSACTIONSUPPORT.parseAndSetParameter(value, operation, reader);
+                            TRANSACTION_SUPPORT.parseAndSetParameter(value, operation, reader);
                             isXa = value != null && TransactionSupportEnum.valueOf(value) == TransactionSupportEnum.XATransaction;
                             txSupportMatched = true;
                             break;

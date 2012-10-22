@@ -48,7 +48,6 @@ public class ConfigPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-
         CONFIG_PROPERTY_VALUE.validateAndSet(operation, modelNode);
 
     }
@@ -73,8 +72,5 @@ public class ConfigPropertyAdd extends AbstractAddStepHandler {
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(raServiceName, ModifiableResourceAdapter.class, service.getRaInjector() )
                     .addListener(verificationHandler).install();
-
-
     }
-
 }

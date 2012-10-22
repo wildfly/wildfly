@@ -47,14 +47,14 @@ public class RaAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (final AttributeDefinition attribute : ResourceAdaptersSubsystemProviders.RESOURCEADAPTER_ATTRIBUTE) {
+        for (final AttributeDefinition attribute : CommonAttributes.RESOURCE_ADAPTER_ATTRIBUTE) {
             attribute.validateAndSet(operation, model);
         }
     }
 
     @Override
-    public void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> controllers) throws OperationFailedException {
-
+    public void performRuntime(final OperationContext context, ModelNode operation, ModelNode model, final ServiceVerificationHandler verificationHandler,
+                               final List<ServiceController<?>> controllers) throws OperationFailedException {
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
@@ -68,13 +68,7 @@ public class RaAdd extends AbstractAddStepHandler {
             }
         }
         model.get(ARCHIVE.getName()).set(archiveName);
-
-
         ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation);
-
         RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
-
     }
-
-
 }

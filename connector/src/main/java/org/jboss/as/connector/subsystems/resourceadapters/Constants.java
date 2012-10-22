@@ -140,11 +140,11 @@ public class Constants {
 
     static final SimpleAttributeDefinition ARCHIVE = new SimpleAttributeDefinition(ARCHIVE_NAME, ResourceAdapter.Tag.ARCHIVE.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition BOOTSTRAPCONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition BOOTSTRAP_CONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition TRANSACTIONSUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE, new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true));
+    static final SimpleAttributeDefinition TRANSACTION_SUPPORT = new SimpleAttributeDefinition(TRANSACTIONSUPPORT_NAME, ResourceAdapter.Tag.TRANSACTION_SUPPORT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE, new EnumValidator<TransactionSupportEnum>(TransactionSupportEnum.class, true, true));
 
-    static final PrimitiveListAttributeDefinition BEANVALIDATIONGROUPS = PrimitiveListAttributeDefinition.Builder.of(BEANVALIDATIONGROUPS_NAME, ModelType.STRING)
+    static final PrimitiveListAttributeDefinition BEANVALIDATION_GROUPS = PrimitiveListAttributeDefinition.Builder.of(BEANVALIDATIONGROUPS_NAME, ModelType.STRING)
             .setXmlName(ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -175,6 +175,7 @@ public class Constants {
 
     static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinitionBuilder(APPLICATION_NAME,ModelType.BOOLEAN)
             .setXmlName(CommonSecurity.Tag.APPLICATION.getLocalName())
+            .setDefaultValue(new ModelNode(Defaults.APPLICATION_MANAGED_SECURITY))
             .setAllowExpression(true)
             .setAllowNull(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
@@ -208,7 +209,7 @@ public class Constants {
 
     static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinition(RECOVERY_SECURITY_DOMAIN_NAME, Credential.Tag.SECURITY_DOMAIN.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(false), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVERLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

@@ -232,12 +232,12 @@ public class IronJacamarResourceCreator {
         final Resource ijResourceAdapter = new IronJacamarResource.IronJacamarRuntimeResource();
         final ModelNode model = ijResourceAdapter.getModel();
         model.get(Constants.ARCHIVE.getName()).set(name);
-        setAttribute(model, Constants.BOOTSTRAPCONTEXT, ironJacamarMetadata.getBootstrapContext());
+        setAttribute(model, Constants.BOOTSTRAP_CONTEXT, ironJacamarMetadata.getBootstrapContext());
         if (ironJacamarMetadata.getTransactionSupport() != null)
-            model.get(Constants.TRANSACTIONSUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
+            model.get(Constants.TRANSACTION_SUPPORT.getName()).set(ironJacamarMetadata.getTransactionSupport().name());
         if (ironJacamarMetadata.getBeanValidationGroups() != null) {
             for (String bv : ironJacamarMetadata.getBeanValidationGroups()) {
-                model.get(Constants.BEANVALIDATIONGROUPS.getName()).add(new ModelNode().set(bv));
+                model.get(Constants.BEANVALIDATION_GROUPS.getName()).add(new ModelNode().set(bv));
             }
         }
         if (ironJacamarMetadata.getConfigProperties() != null) {

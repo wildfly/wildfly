@@ -25,6 +25,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ADMIN
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -45,7 +46,7 @@ public class AdminObjectResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         ReloadRequiredWriteAttributeHandler writeAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
-        for (final AttributeDefinition attribute : ResourceAdaptersSubsystemProviders.ADMIN_OBJECTS_NODEATTRIBUTE) {
+        for (final AttributeDefinition attribute : CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE) {
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {
