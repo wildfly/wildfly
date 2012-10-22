@@ -1,10 +1,15 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import java.util.List;
+
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -13,6 +18,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Resource description for the addressable resources:
@@ -26,14 +32,6 @@ import org.jboss.dmr.ModelType;
 public class PropertyResource extends SimpleResourceDefinition {
 
     static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
-
-    // attributes
-    static SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, false)
-                    .setXmlName(Attribute.NAME.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
 
     static SimpleAttributeDefinition VALUE =
             new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
@@ -52,24 +50,15 @@ public class PropertyResource extends SimpleResourceDefinition {
         }
     };
 
-    static final OperationStepHandler PROTOCOL_PROPERTY_ADD = new OperationStepHandler() {
+    static final AbstractAddStepHandler PROTOCOL_PROPERTY_ADD = new AbstractAddStepHandler() {
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
-            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            PropertyResource.VALUE.validateAndSet(operation, resource.getModel());
-            reloadRequiredStep(context);
-            context.stepCompleted();
+        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+            PropertyResource.VALUE.validateAndSet(operation, model);
         }
-    };
 
-    static final OperationStepHandler PROTOCOL_PROPERTY_ATTR = new OperationStepHandler() {
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-            PropertyResource.VALUE.validateAndSet(operation, resource.getModel());
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
             reloadRequiredStep(context);
-            context.stepCompleted();
         }
     };
 
@@ -92,7 +81,7 @@ public class PropertyResource extends SimpleResourceDefinition {
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
 
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, PropertyResource.PROTOCOL_PROPERTY_ATTR);
+        resourceRegistration.registerReadWriteAttribute(VALUE, null, new ReloadRequiredWriteAttributeHandler(VALUE));
     }
 
     /**

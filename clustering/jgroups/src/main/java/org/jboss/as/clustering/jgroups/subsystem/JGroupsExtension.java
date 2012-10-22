@@ -28,13 +28,14 @@ import java.util.List;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jgroups.Global;
@@ -48,6 +49,7 @@ import org.jgroups.Global;
 public class JGroupsExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "jgroups";
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     public static final String RESOURCE_NAME = JGroupsExtension.class.getPackage().getName() + "." +"LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
@@ -91,9 +93,9 @@ public class JGroupsExtension implements Extension {
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResource());
-        subsystem.registerOperationHandler(ModelDescriptionConstants.DESCRIBE, JGroupsSubsystemDescribe.INSTANCE, JGroupsSubsystemDescribe.SUBSYSTEM_DESCRIBE, false, OperationEntry.EntryType.PRIVATE);
+        subsystem.registerOperationHandler(JGroupsSubsystemDescribe.DEFINITON,JGroupsSubsystemDescribe.INSTANCE);
 
-        ManagementResourceRegistration stacks = subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
+        subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
 
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
     }

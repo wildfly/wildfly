@@ -15,7 +15,6 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -110,7 +109,7 @@ public class TransportResource extends SimpleResourceDefinition {
 
     static SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
 
-    static SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
+    static SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY).
             setAllowNull(true).
             build();
 
@@ -145,13 +144,14 @@ public class TransportResource extends SimpleResourceDefinition {
     TransportResource() {
         super(TRANSPORT_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT),
-                TRANSPORT_ADD,
+                null,  //we register it manualy in #  registerOperations
                 TRANSPORT_REMOVE);
     }
 
     @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
+    public void registerOperations(ManagementResourceRegistration registration) {
+        super.registerOperations(registration);
+        registration.registerOperationHandler(TRANSPORT_ADD_DEFINITION, TRANSPORT_ADD);
     }
 
     @Override
@@ -169,11 +169,4 @@ public class TransportResource extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(PropertyResource.INSTANCE);
     }
-
-    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
-    @Override
-    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
-        registration.registerOperationHandler(TRANSPORT_ADD_DEFINITION, handler);
-    }
-
 }

@@ -115,9 +115,19 @@ public class OperationValidator {
         if (operation == null) {
             return;
         }
-        OperationEntry entry = root.getOperationEntry(PathAddress.pathAddress(operation.get(OP_ADDR)), operation.get(OP).asString());
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String name = operation.get(OP).asString();
+
+        OperationEntry entry = root.getOperationEntry(address, name);
+        if (entry == null) {
+            throwOrWarnAboutDescriptorProblem(MESSAGES.noOperationEntry(name, address));
+        }
+        //noinspection ConstantConditions
         if (entry.getType() == EntryType.PRIVATE) {
             return;
+        }
+        if (entry.getOperationHandler() == null) {
+            throwOrWarnAboutDescriptorProblem(MESSAGES.noOperationHandler(name, address));
         }
         final DescriptionProvider provider = getDescriptionProvider(operation);
         final ModelNode description = provider.getModelDescription(null);

@@ -20,8 +20,6 @@ public class SubsystemWriteAttributeHandler extends ReloadRequiredWriteAttribute
     }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-
-        final EnumSet<AttributeAccess.Flag> flags = EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES);
-        registry.registerReadWriteAttribute(JGroupsSubsystemRootResource.DEFAULT_STACK.getName(), null, this, flags);
+        registry.registerReadWriteAttribute(JGroupsSubsystemRootResource.DEFAULT_STACK, null, this);
     }
 }
