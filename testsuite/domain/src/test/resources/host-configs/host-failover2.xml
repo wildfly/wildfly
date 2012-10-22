@@ -23,7 +23,7 @@
 <host xmlns="urn:jboss:domain:1.4"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="urn:jboss:domain:1.4 jboss-as-config_1_4.xsd"
-      name="failover2">
+      name="failover-h2">
 
     <paths>
         <path name="domainTestPath" path="/tmp" />
