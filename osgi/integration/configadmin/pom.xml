@@ -31,7 +31,6 @@
         <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-osgi-configadmin</artifactId>
     <packaging>bundle</packaging>
 
@@ -49,10 +48,17 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.configadmin</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
