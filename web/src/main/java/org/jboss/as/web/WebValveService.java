@@ -22,18 +22,9 @@
 
 package org.jboss.as.web;
 
-import java.net.MalformedURLException;
-
-import org.apache.catalina.Container;
 import org.apache.catalina.Valve;
-import org.apache.catalina.authenticator.SingleSignOn;
-import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.valves.AccessLogValve;
-import org.apache.catalina.valves.ExtendedAccessLogValve;
 import org.apache.tomcat.util.IntrospectionUtils;
-import org.jboss.as.clustering.web.sso.SSOClusterManager;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.web.sso.ClusteredSingleSignOn;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.Service;
@@ -41,7 +32,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.web.rewrite.RewriteValve;
 
 /**
  * Service creating and registering a global valve.
@@ -50,7 +40,6 @@ import org.jboss.web.rewrite.RewriteValve;
  */
 public class WebValveService implements Service<Valve> {
 
-    private final String name;
     private final String classname;
     private final String module;
     private ModelNode params;
@@ -65,7 +54,6 @@ public class WebValveService implements Service<Valve> {
     private PathManager.Callback.Handle callbackHandle;
 
     public WebValveService(String name, String classname, String module) {
-        this.name = name;
         this.classname = classname;
         this.module = module;
     }

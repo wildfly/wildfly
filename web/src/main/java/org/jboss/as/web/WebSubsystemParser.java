@@ -39,6 +39,7 @@ import static org.jboss.as.web.Constants.CONDITION;
 import static org.jboss.as.web.Constants.CONFIGURATION;
 import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER;
+import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.EXTENDED;
 import static org.jboss.as.web.Constants.FILE;
 import static org.jboss.as.web.Constants.FLAGS;
@@ -245,6 +246,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     }
 
                 }
+                writer.writeEndElement();
             }
 
         }
@@ -457,6 +459,11 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case CLASS_NAME:
                     valve.get(CLASS_NAME).set(value);
                     break;
+                case ENABLED:
+                    valve.get(ENABLED).set(value);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
 

@@ -38,6 +38,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -77,6 +78,7 @@ class WebValveAdd extends AbstractAddStepHandler {
         if (WebValveDefinition.MODULE.resolveModelAttribute(context, operation).isDefined())
             module = WebValveDefinition.MODULE.resolveModelAttribute(context, operation).asString();
 
+        final boolean enabled = WebValveDefinition.ENABLED.resolveModelAttribute(context, operation).asBoolean();
         final WebValveService service = new WebValveService(name, classname, module);
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_VALVE.append(name), service)
@@ -97,7 +99,10 @@ class WebValveAdd extends AbstractAddStepHandler {
         if (operation.hasDefined(PARAM)) {
             service.setParam(operation.get(PARAM).clone());
         }
-        serviceBuilder.addListener(verificationHandler);
+
+        serviceBuilder.setInitialMode(enabled ? Mode.ACTIVE : Mode.NEVER);
+        if (enabled)
+            serviceBuilder.addListener(verificationHandler);
         newControllers.add(serviceBuilder.install());
     }
 }
