@@ -1,6 +1,7 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,12 +38,8 @@ public class TransportLayerAdd implements OperationStepHandler {
             // don't process properties twice - we do them below
             if (attribute.getName().equals(ModelKeys.PROPERTIES))
                 continue ;
-
             attribute.validateAndSet(operation, subModel);
         }
-
-        // Process type specific properties if required
-        process(subModel, operation);
 
         // The transport config parameters  <property name=>value</property>
         if(operation.hasDefined(ModelKeys.PROPERTIES)) {
@@ -50,7 +47,7 @@ public class TransportLayerAdd implements OperationStepHandler {
                 // create a new property=name resource
                 final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                 final ModelNode value = property.getValue();
-                if(! value.isDefined()) {
+                if(!value.isDefined()) {
                     throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), transportRelativePath.toString());
                 }
                 // set the value of the property
@@ -62,9 +59,6 @@ public class TransportLayerAdd implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    void process(ModelNode subModel, ModelNode operation) {
-        //
-    }
 
     /**
      * Add a step triggering the {@linkplain org.jboss.as.controller.OperationContext#reloadRequired()} in case the

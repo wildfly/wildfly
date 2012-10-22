@@ -43,7 +43,7 @@ public class ProtocolResource extends SimpleResourceDefinition {
                     .build();
 
     static SimpleAttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
-    static SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
+    static SimpleListAttributeDefinition PROPERTIES = new SimpleListAttributeDefinition.Builder(ModelKeys.PROPERTIES, PROPERTY).
             setAllowNull(true).
             build();
 
@@ -77,9 +77,7 @@ public class ProtocolResource extends SimpleResourceDefinition {
     // registration
     ProtocolResource() {
         super(PROTOCOL_PATH,
-                JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL),
-                null,
-                null);
+                JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROTOCOL));
     }
 
     @Override

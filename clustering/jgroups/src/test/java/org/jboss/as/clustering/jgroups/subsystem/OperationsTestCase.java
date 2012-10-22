@@ -1,9 +1,11 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -67,16 +69,16 @@ public class OperationsTestCase extends OperationTestCaseBase {
 
         // read the default stack
         ModelNode result = servicesA.executeOperation(readSubsystemDefaultStackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("maximal", result.get(RESULT).asString());
 
         // write the default stack
         result = servicesA.executeOperation(writeSubsystemDefaultStackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
 
         // re-read the default stack
         result = servicesA.executeOperation(readSubsystemDefaultStackOp);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
         Assert.assertEquals("new-default", result.get(RESULT).asString());
     }
 
@@ -115,10 +117,10 @@ public class OperationsTestCase extends OperationTestCaseBase {
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
-
+        Assert.assertTrue("Could not create services",servicesA.isSuccessfulBoot());
         // add a protocol stack specifying TRANSPORT and PROTOCOLS parameters
         ModelNode result = servicesA.executeOperation(addStackOpWithParams);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(),SUCCESS, result.get(OUTCOME).asString());
 
          // read the transport type attribute
         result = servicesA.executeOperation(readTransportTypeOp);

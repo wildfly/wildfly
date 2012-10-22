@@ -1,10 +1,9 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -26,7 +25,7 @@ public class JGroupsSubsystemRootResource extends SimpleResourceDefinition {
 
     // registration
     JGroupsSubsystemRootResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME),
+        super(JGroupsExtension.SUBSYSTEM_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(),
                 JGroupsSubsystemAdd.INSTANCE,
                 JGroupsSubsystemRemove.INSTANCE);
@@ -40,7 +39,7 @@ public class JGroupsSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_STACK, null, SubsystemWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_STACK, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_STACK));
     }
 
     @Override

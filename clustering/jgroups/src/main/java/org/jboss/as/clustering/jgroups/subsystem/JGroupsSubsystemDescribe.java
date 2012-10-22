@@ -28,9 +28,12 @@
 
  import org.jboss.as.controller.AttributeDefinition;
  import org.jboss.as.controller.OperationContext;
+ import org.jboss.as.controller.OperationDefinition;
  import org.jboss.as.controller.OperationFailedException;
  import org.jboss.as.controller.OperationStepHandler;
  import org.jboss.as.controller.PathAddress;
+ import org.jboss.as.controller.SimpleOperationDefinition;
+ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
  import org.jboss.as.controller.descriptions.DescriptionProvider;
  import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
  import org.jboss.as.controller.operations.common.Util;
@@ -128,20 +131,10 @@
      /*
       * Description provider for the subsystem describe handler
       */
-    static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
-        public ModelNode getModelDescription(Locale locale) {
-            ResourceBundle resources = getResources(locale);
-            ModelNode op = new ModelNode();
-            op.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.DESCRIBE);
-            op.get(ModelDescriptionConstants.DESCRIPTION).set(resources.getString("jgroups.describe"));
-            op.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-            op.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.TYPE).set(ModelType.LIST);
-            op.get(ModelDescriptionConstants.REPLY_PROPERTIES, ModelDescriptionConstants.VALUE_TYPE).set(ModelType.OBJECT);
-            return op;
-        }
-    };
+     static OperationDefinition DEFINITON = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE,null)
+             .setPrivateEntry()
+             .setReplyType(ModelType.LIST)
+             .setReplyValueType(ModelType.OBJECT)
+             .build();
 
-    private static ResourceBundle getResources(Locale locale) {
-        return ResourceBundle.getBundle(JGroupsExtension.RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
-    }
  }
