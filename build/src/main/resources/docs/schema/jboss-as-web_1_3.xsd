@@ -434,6 +434,7 @@
          </xs:sequence>
          <xs:attribute name="class-name" type="xs:string" use="required" />
          <xs:attribute name="module" type="xs:string" use="optional" />
+         <xs:attribute name="enabled" default="true" type="xs:boolean" />
       </xs:complexType>
    </xs:element>
 

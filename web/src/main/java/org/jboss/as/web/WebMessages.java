@@ -369,4 +369,9 @@ public interface WebMessages {
     @Message(id = 18105, value = "Not applicable")
     RuntimeException notApplicable();
 
+    @Message(id = 18106, value = "Param-name and param-value are required to add parameter")
+    String paramNameAndParamValueRequiredForAddParam();
+
+    @Message(id = 18107, value = "Param-name is required to remove parameter")
+    String paramNameRequiredForRemoveParam();
 }
