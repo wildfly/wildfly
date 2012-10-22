@@ -56,6 +56,8 @@ import java.util.Map;
  */
 class PatchingContext {
 
+    public static final String ROLLBACK_XML = "rollback.xml";
+
     private final Patch patch;
     private final PatchInfo info;
     private final DirectoryStructure structure;
@@ -70,6 +72,8 @@ class PatchingContext {
     private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
 
     private boolean rollbackOnly;
+    // the patchID that is rolled back. null if a patch is applied
+    private final String rollingBackPatchID;
 
     /**
      * Create a patching context.
@@ -87,7 +91,7 @@ class PatchingContext {
         if(!backup.mkdirs()) {
             PatchMessages.MESSAGES.cannotCreateDirectory(backup.getAbsolutePath());
         }
-        final PatchingContext context = new PatchingContext(patch, info, structure, backup, policy);
+        final PatchingContext context = new PatchingContext(patch, info, structure, backup, policy, null);
         // Register the patch loader
         final PatchContentLoader loader = PatchContentLoader.create(workDir);
         context.contentLoaders.put(patch.getPatchId(), loader);
@@ -102,17 +106,18 @@ class PatchingContext {
      * @param structure the directory structure
      * @param overrideAll override all conflicting files
      * @param workDir the current work dir
+     * @param rollingBackPatchID the patchID of the patch to rollback
      * @return the patching context for rollback
      */
-    static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir) {
+    static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir, final String rollingBackPatchID) {
         // backup is just a temp dir
         final File backup = workDir;
         final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
-        return new PatchingContext(patch, current, structure, backup, policy);
+        return new PatchingContext(patch, current, structure, backup, policy, rollingBackPatchID);
     }
 
     private PatchingContext(final Patch patch, final PatchInfo info, final DirectoryStructure structure,
-                            final File backup, final ContentVerificationPolicy policy) {
+                            final File backup, final ContentVerificationPolicy policy, final String rollingBackPatchID) {
         this.patch = patch;
         this.info = info;
         this.backup = backup;
@@ -121,6 +126,7 @@ class PatchingContext {
         this.miscBackup = new File(backup, PatchContentLoader.MISC);
         this.configBackup = new File(backup, DirectoryStructure.CONFIGURATION);
         this.target = structure.getInstalledImage().getJbossHome();
+        this.rollingBackPatchID = rollingBackPatchID;
     }
 
     /**
@@ -272,7 +278,11 @@ class PatchingContext {
         final PatchInfo newInfo;
         if(Patch.PatchType.ONE_OFF == patch.getPatchType()) {
             final List<String> patches = new ArrayList<String>(info.getPatchIDs());
-            patches.add(0, patchId);
+            if (rollingBackPatchID != null) {
+                patches.remove(rollingBackPatchID);
+            } else {
+                patches.add(0, patchId);
+            }
             final String resultingVersion = info.getVersion();
             newInfo = new LocalPatchInfo(resultingVersion, info.getCumulativeID(), patches, info.getEnvironment());
         } else {
@@ -293,9 +303,7 @@ class PatchingContext {
 
         // persist the applied patch
         if (!PatchInfo.BASE.equals(patch.getPatchId())) {
-            final File appliedPatchXml = new File(info.getEnvironment().getPatchDirectory(patchId), PatchXml.PATCH_XML);
-            // patch directory is not created if the patch contains only misc content
-            appliedPatchXml.getParentFile().mkdir();
+            final File appliedPatchXml = new File(backup, PatchXml.PATCH_XML);
             try {
                 final OutputStream os = new FileOutputStream(appliedPatchXml);
                 try {
@@ -311,7 +319,7 @@ class PatchingContext {
         }
         // Persist the patch rollback information
         final Patch newPatch = new RollbackPatch();
-        final File patchXml = new File(backup, PatchXml.PATCH_XML);
+        final File patchXml = new File(backup, ROLLBACK_XML);
         try {
             final OutputStream os = new FileOutputStream(patchXml);
             try {
@@ -321,6 +329,15 @@ class PatchingContext {
             }
         } catch (XMLStreamException e) {
             throw new PatchingException(e);
+        } catch (IOException e) {
+            throw new PatchingException(e);
+        }
+        try {
+            if (rollingBackPatchID != null) {
+                restoreConfiguration(rollingBackPatchID);
+            } else {
+                backupConfiguration();
+            }
         } catch (IOException e) {
             throw new PatchingException(e);
         }
@@ -385,7 +402,7 @@ class PatchingContext {
         // Use the misc backup location for the content items
         final PatchContentLoader loader = new PatchContentLoader(miscBackup, null, null);
         final File backup = null; // We skip the prepare step, so there should be no backup
-        final PatchingContext undoContext = new PatchingContext(patch, info, structure, backup, ContentVerificationPolicy.OVERRIDE_ALL);
+        final PatchingContext undoContext = new PatchingContext(patch, info, structure, backup, ContentVerificationPolicy.OVERRIDE_ALL, null);
 
         for(final ContentModification modification : rollbackActions) {
             final ContentType type = modification.getItem().getContentType();
@@ -511,14 +528,42 @@ class PatchingContext {
     };
 
     static void backupDirectory(final File source, final File target) throws IOException {
-        if(! target.mkdirs()) {
-            throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
+        if (!target.exists()) {
+            if(! target.mkdirs()) {
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
+            }
         }
         final File[] files = source.listFiles(CONFIG_FILTER);
         for(final File file : files) {
             final File t = new File(target, file.getName());
             PatchUtils.copyFile(file, t);
         }
+    }
+
+    // TODO log a warning if the restored configuration files are different from the current one?
+    // or should we check that before rolling back the patch to give the user a chance to save the changes
+    void restoreConfiguration(final String rollingBackPatchID) throws IOException {
+        final DirectoryStructure.InstalledImage image = structure.getInstalledImage();
+        final String configuration = DirectoryStructure.CONFIGURATION;
+
+        File backupConfigurationDir = new File(structure.getHistoryDir(rollingBackPatchID), configuration);
+        final File ba = new File(backupConfigurationDir, DirectoryStructure.APP_CLIENT);
+        final File bd = new File(backupConfigurationDir, DirectoryStructure.DOMAIN);
+        final File bs = new File(backupConfigurationDir, DirectoryStructure.STANDALONE);
+
+        if(ba.exists()) {
+            final File a = new File(image.getAppClientDir(), configuration);
+            backupDirectory(ba, a);
+        }
+        if(bd.exists()) {
+            final File d = new File(image.getDomainDir(), configuration);
+            backupDirectory(bd, d);
+        }
+        if(bs.exists()) {
+            final File s = new File(image.getStandaloneDir(), configuration);
+            backupDirectory(bs, s);
+        }
+
     }
 
 }

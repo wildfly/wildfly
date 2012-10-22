@@ -28,6 +28,7 @@ import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
+import static org.jboss.as.patching.runner.PatchingAssert.assertNoResourcesForPatch;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
 import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
@@ -58,7 +59,7 @@ import org.junit.Test;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
  */
-public class CumulativePatchTestCase extends AbstractTaskTestCase{
+public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testApplyCumulativePatch() throws Exception {
@@ -211,5 +212,82 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase{
         assertPatchHasBeenApplied(resultOfOneOffPatch, oneOffPatch);
 
         assertDefinedModule(resultOfOneOffPatch.getPatchInfo().getModulePath(), moduleName, updatedHash);
+    }
+
+    @Test
+    public void testApplyCumulativePatchThenOneOffPatchThenRollbackCumulativePatch() throws Exception {
+
+        // start from a base installation
+        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        // with a module in it
+        String moduleName = randomString();
+        // create an empty module in the AS7 installation
+        createModule(env.getInstalledImage().getJbossHome(), moduleName);
+
+        tree(env.getInstalledImage().getJbossHome());
+        byte[] existingHash = calculateHash(new File(env.getInstalledImage().getModulesDir(), moduleName));
+
+        // build a CP patch for the base installation
+        // with 1 updated module
+        String culumativePatchID = randomString() + "-CP";
+        File cumulativePatchDir = mkdir(tempDir, culumativePatchID);
+        File moduleDir = createModule(cumulativePatchDir, moduleName, "this is a module update in a cumulative patch");
+        byte[] updatedHashCP = calculateHash(moduleDir);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, updatedHashCP), existingHash, MODIFY);
+
+        Patch cumulativePatch = PatchBuilder.create()
+                .setPatchId(culumativePatchID)
+                .setDescription(randomString())
+                .setPatchType(PatchType.CUMULATIVE)
+                .setResultingVersion(info.getVersion() + "-CP")
+                .addAppliesTo(info.getVersion())
+                .addContentModification(moduleAdded)
+                .build();
+        createPatchXMLFile(cumulativePatchDir, cumulativePatch);
+        File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, culumativePatchID);
+
+        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        PatchingResult resultOfCumulativePatch = runner.executeDirect(new FileInputStream(zippedCumulativePatch), ContentVerificationPolicy.STRICT);
+
+        assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
+
+        assertDefinedModule(resultOfCumulativePatch.getPatchInfo().getModulePath(), moduleName, updatedHashCP);
+
+        // apply a one-off patch now
+        String oneOffPatchID = randomString();
+        File oneOffPatchDir = mkdir(tempDir, oneOffPatchID);
+
+        File oneOffmoduleDir = createModule(oneOffPatchDir, moduleName, "update module resource");
+        byte[] updatedHashOneOff = calculateHash(oneOffmoduleDir);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHashOneOff), updatedHashCP, MODIFY);
+
+        Patch oneOffPatch = PatchBuilder.create()
+                .setPatchId(oneOffPatchID + "-oneoff")
+                .setDescription(randomString())
+                .setPatchType(PatchType.ONE_OFF)
+                // one-off patch can be applied to CP
+                .addAppliesTo(cumulativePatch.getResultingVersion())
+                .addContentModification(moduleUpdated)
+                .build();
+        createPatchXMLFile(oneOffPatchDir, oneOffPatch);
+        File zippedOneOffPatch = createZippedPatchFile(oneOffPatchDir, oneOffPatchID);
+
+        // use the updated PatchInfo for the result of applying the cumulative patch
+        runner = new PatchingTaskRunner(resultOfCumulativePatch.getPatchInfo(), resultOfCumulativePatch.getPatchInfo().getEnvironment());
+        PatchingResult resultOfOneOffPatch = runner.executeDirect(new FileInputStream(zippedOneOffPatch), ContentVerificationPolicy.STRICT);
+
+        assertPatchHasBeenApplied(resultOfOneOffPatch, oneOffPatch);
+
+        assertDefinedModule(resultOfOneOffPatch.getPatchInfo().getModulePath(), moduleName, updatedHashOneOff);
+
+        // rollback the cumulative patch, this should also rollback the one-off patch
+        runner = new PatchingTaskRunner(resultOfOneOffPatch.getPatchInfo(), resultOfOneOffPatch.getPatchInfo().getEnvironment());
+        PatchingResult resultOfCumulativePatchRollback = runner.rollback(culumativePatchID, true);
+
+        tree(resultOfCumulativePatchRollback.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        assertPatchHasBeenRolledBack(resultOfCumulativePatchRollback, cumulativePatch, info);
+        assertNoResourcesForPatch(resultOfCumulativePatchRollback.getPatchInfo(), oneOffPatch);
+
+        assertDefinedModule(resultOfCumulativePatchRollback.getPatchInfo().getModulePath(), moduleName, existingHash);
+    }
 }
- }
