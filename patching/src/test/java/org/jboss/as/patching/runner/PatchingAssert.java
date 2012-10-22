@@ -24,9 +24,10 @@ package org.jboss.as.patching.runner;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
-import static org.junit.Assert.assertEquals;
+import static org.jboss.as.patching.runner.PatchUtils.bytesToHexString;
+import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -35,8 +36,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-
-import junit.framework.Assert;
 
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
@@ -90,6 +89,14 @@ public class PatchingAssert {
         f = new File(f, segments[segments.length -1]);
     }
 
+    static void assertFileContent(byte[] expected, File f) throws Exception {
+        assertFileContent(null, expected, f);
+    }
+
+    static void assertFileContent(String message, byte[] expected, File f) throws Exception {
+        assertEquals(message, bytesToHexString(expected), bytesToHexString(calculateHash(f)));
+    }
+
     static void assertDefinedModule(File[] modulesPath, String moduleName, byte[] expectedHash) throws Exception {
         for (File path : modulesPath) {
             final File modulePath = PatchContentLoader.getModulePath(path, moduleName, "main");
@@ -117,7 +124,7 @@ public class PatchingAssert {
                 return;
             }
         }
-        fail("count not find bundle '" + moduleName + "' in " + asList(bundlesPath));
+        fail("couln't not find bundle '" + moduleName + "' in " + asList(bundlesPath));
     }
 
     static void assertDefinedAbsentBundle(File[] bundlesPath, String moduleName) throws Exception {
@@ -130,7 +137,7 @@ public class PatchingAssert {
                 }
             }
         }
-        fail("count not find bundle '" + moduleName + "' in " + asList(bundlesPath));
+        fail("content not found module for " + moduleName + " in " + asList(modulesPath));
     }
 
     static void assertDefinedAbsentModule(File[] modulesPath, String moduleName) throws Exception {
@@ -182,8 +189,12 @@ public class PatchingAssert {
         assertEquals(expectedPatchInfo.getCumulativeID(), result.getPatchInfo().getCumulativeID());
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());
 
-        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getModulePatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getBundlesPatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getPatchDirectory(patch.getPatchId()));
+        assertNoResourcesForPatch(result.getPatchInfo(), patch);
+    }
+
+    static void assertNoResourcesForPatch(PatchInfo patchInfo, Patch patch) {
+        assertDirDoesNotExist(patchInfo.getEnvironment().getModulePatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(patchInfo.getEnvironment().getBundlesPatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(patchInfo.getEnvironment().getPatchDirectory(patch.getPatchId()));
     }
 }
