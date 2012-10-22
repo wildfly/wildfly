@@ -257,7 +257,7 @@ public class PatchingTaskRunner {
         // Check if the patch is currently active
         final int index = patchInfo.getPatchIDs().indexOf(patchId);
         if(index == -1 ) {
-            if(patchInfo.getCumulativeID().equals(patchId)) {
+            if(!patchInfo.getCumulativeID().equals(patchId)) {
                 PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
                 return new FailedResult(patchId, patchInfo);
             }
@@ -330,7 +330,12 @@ public class PatchingTaskRunner {
                     }
                 }
                 // Rollback
-                return executeTasks(patch, definitions, context);
+                PatchingResult rollbackResult = executeTasks(patch, definitions, context);
+                if (!rollbackResult.hasFailures()) {
+                    recursiveDelete(structure.getPatchDirectory(patchId));
+                    recursiveDelete(structure.getHistoryDir(patchId));
+                }
+                return rollbackResult;
 
             } finally {
                 PatchUtils.safeClose(is);
@@ -344,26 +349,6 @@ public class PatchingTaskRunner {
                 PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
             }
         }
-    }
-
-    /**
-     * Attempt to recursively delete a file or directory.
-     *
-     * @param root the real file to delete
-     * @return {@code true} if the file was deleted
-     */
-    static boolean recursiveDelete(File root) {
-        boolean ok = true;
-        if (root.isDirectory()) {
-            final File[] files = root.listFiles();
-            for (File file : files) {
-                ok &= recursiveDelete(file);
-            }
-            return ok && (root.delete() || !root.exists());
-        } else {
-            ok &= root.delete() || !root.exists();
-        }
-        return ok;
     }
 
     /**

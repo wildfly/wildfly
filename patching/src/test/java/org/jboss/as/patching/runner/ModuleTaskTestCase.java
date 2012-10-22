@@ -87,6 +87,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         File modulesPatchDir = env.getModulePatchDirectory(patchID);
         assertDirExists(modulesPatchDir);
+        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
         assertContains(modulesPatchDir, result.getPatchInfo().getModulePath());
         assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newHash);
     }
@@ -105,7 +106,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         // build a one-off patch for the base installation
         // with 1 module removed
-        ContentModification moduleRemoved = new ContentModification(new ModuleItem(moduleName, existingHash), existingHash, REMOVE);
+        ContentModification moduleRemoved = new ContentModification(new ModuleItem(moduleName, NO_CONTENT), existingHash, REMOVE);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
