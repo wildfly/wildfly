@@ -32,6 +32,7 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
@@ -90,7 +91,7 @@ public abstract class AbstractParser {
 
 
     protected void parseExtension(XMLExtendedStreamReader reader, String enclosingTag, final ModelNode operation,
-                                  final SimpleAttributeDefinition extensionClassName, final SimpleAttributeDefinition extensionProperties)
+                                  final SimpleAttributeDefinition extensionClassName, final AttributeDefinition extensionProperties)
             throws XMLStreamException, ParserException, ValidateException {
 
         String className = null;

@@ -22,12 +22,18 @@
 
 package org.jboss.as.connector.dynamicresource.operations;
 
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
+
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.as.connector.subsystems.resourceadapters.Constants;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
 
@@ -37,6 +43,9 @@ import org.jboss.jca.core.spi.statistics.StatisticsPlugin;
  * @author Stefano Maestri
  */
 public class ClearStatisticsHandler implements OperationStepHandler {
+
+    public static OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(Constants.CLEAR_STATISTICS, ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME))
+            .build();
 
     private final List<StatisticsPlugin> stats;
 

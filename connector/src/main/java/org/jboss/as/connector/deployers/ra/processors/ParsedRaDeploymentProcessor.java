@@ -22,16 +22,21 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarRegistrator;
-import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceCreator;
-import org.jboss.as.connector.util.ConnectorServices;
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
-import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
-import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
+import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
+import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceCreator;
+import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResourceDefinition;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -64,11 +69,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
-
-import java.util.Map;
-import java.util.Map.Entry;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -155,7 +155,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
                 @Override
                 protected void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource) {
                     //register ironJacamar
-                    new IronJacamarRegistrator(subRegistration).invoke();
+                    subRegistration.registerSubModel(new IronJacamarResourceDefinition());
                     AS7MetadataRepository mdr = ((ResourceAdapterDeploymentService) controller.getService()).getMdr();
                     IronJacamarResourceCreator.INSTANCE.execute(subsystemResource, mdr);
                 }
