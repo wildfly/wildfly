@@ -59,7 +59,9 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      * @param pathElement         the path. Cannot be {@code null}.
      * @param descriptionProvider the description provider. Cannot be {@code null}
      * @throws IllegalArgumentException if any parameter is {@code null}.
+     * @deprecated
      */
+    @Deprecated
     public SimpleResourceDefinition(final PathElement pathElement, final DescriptionProvider descriptionProvider) {
         if (pathElement == null) {
             throw MESSAGES.nullVar("pathElement");

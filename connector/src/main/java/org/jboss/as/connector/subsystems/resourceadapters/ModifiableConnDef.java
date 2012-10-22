@@ -70,8 +70,6 @@ public class ModifiableConnDef implements CommonConnDef {
 
     private final Recovery recovery;
 
-    private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
-
 
     /**
      * Create a new ConnectionDefinition.

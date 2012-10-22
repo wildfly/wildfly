@@ -34,7 +34,7 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.shared.FileUtils;
@@ -88,7 +88,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
 
     private void setup() throws Exception {
         String xml = FileUtils.readFile(ReDeploymentTestCase.class, "re-deployment.xml");
-        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdaptersExtension.ResourceAdapterSubsystemParser());
+        List<ModelNode> operations = xmlToModelOperations(xml, Namespace.CURRENT.getUriString(), new ResourceAdapterSubsystemParser());
         executeOperation(operationListToCompositeOperation(operations));
 
         //since it is created after deployment it needs activation

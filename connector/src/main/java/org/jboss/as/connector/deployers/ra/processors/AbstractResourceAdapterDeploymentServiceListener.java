@@ -31,10 +31,10 @@ import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsEle
 import org.jboss.as.connector.dynamicresource.descriptionproviders.SubSystemExtensionDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersSubsystemProviders;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -79,7 +79,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
 
                             if (poolStats.getNames().size() != 0) {
-                                DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics", poolStats);
+                                DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics", poolStats);
                                 PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
                                 PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, Constants.STATISTICS_NAME);
                                 PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME, cm.getJndiName());
@@ -109,7 +109,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
 
                                 ManagementResourceRegistration subRegistration;
                                 try {
-                                    subRegistration = overrideRegistration.registerSubModel(new SimpleResourceDefinition(pe, new SubSystemExtensionDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "deployment-subsystem")));
+                                    subRegistration = overrideRegistration.registerSubModel(new SimpleResourceDefinition(pe, new SubSystemExtensionDescriptionProvider(CommonAttributes.RESOURCE_NAME, "deployment-subsystem")));
                                 } catch (IllegalArgumentException iae) {
                                     subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
                                 }
@@ -124,7 +124,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
 
                                 ManagementResourceRegistration statsRegistration;
                                     try {
-                                        statsRegistration = subRegistration.registerSubModel(new SimpleResourceDefinition(peStats, new StatisticsElementDescriptionProvider(ResourceAdaptersSubsystemProviders.RESOURCE_NAME, "statistics")));
+                                        statsRegistration = subRegistration.registerSubModel(new SimpleResourceDefinition(peStats, new StatisticsElementDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics")));
                                     } catch (IllegalArgumentException iae) {
                                         statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
                                     }

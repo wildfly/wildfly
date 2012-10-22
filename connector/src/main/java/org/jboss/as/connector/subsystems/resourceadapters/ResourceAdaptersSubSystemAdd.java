@@ -35,9 +35,9 @@ import org.jboss.dmr.ModelNode;
  *         Maestri</a>
  * @author John Bailey
  */
-class ResourceAdaptersSubSystemAdd extends AbstractAddStepHandler {
+class ResourceAdaptersSubsystemAdd extends AbstractAddStepHandler {
 
-    static final ResourceAdaptersSubSystemAdd INSTANCE = new ResourceAdaptersSubSystemAdd();
+    static final ResourceAdaptersSubsystemAdd INSTANCE = new ResourceAdaptersSubsystemAdd();
 
     protected void populateModel(ModelNode operation, ModelNode model) {
         model.setEmptyObject();

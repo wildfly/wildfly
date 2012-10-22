@@ -145,7 +145,11 @@ public class EnumValidator<E extends Enum<E>> extends ModelTypeValidator impleme
     public List<ModelNode> getAllowedValues() {
         List<ModelNode> result = new ArrayList<ModelNode>();
         for (E value : allowedValues) {
-            result.add(new ModelNode().set(value.toString()));
+            if (value.toString() != null) {
+                result.add(new ModelNode().set(value.toString()));
+            } else {
+                result.add(new ModelNode().set(value.name()));
+            }
         }
         return result;
     }

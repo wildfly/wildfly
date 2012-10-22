@@ -48,7 +48,6 @@ public class CDConfigPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-
         CONFIG_PROPERTY_VALUE.validateAndSet(operation, modelNode);
 
     }
@@ -74,7 +73,5 @@ public class CDConfigPropertyAdd extends AbstractAddStepHandler {
             ServiceController<?> controller = serviceTarget.addService(serviceName, service).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(cfServiceName, ModifiableConnDef.class, service.getRaInjector() )
                     .addListener(verificationHandler).install();
-
     }
-
 }

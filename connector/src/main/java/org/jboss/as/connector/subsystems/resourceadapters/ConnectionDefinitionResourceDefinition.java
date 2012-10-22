@@ -27,6 +27,7 @@ import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -63,7 +64,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         ReloadRequiredWriteAttributeHandler writeAttributeHandler = new  ReloadRequiredWriteAttributeHandler();
-        for (final AttributeDefinition attribute : ResourceAdaptersSubsystemProviders.CONNECTIONDEFINITIONS_NODEATTRIBUTE) {
+        for (final AttributeDefinition attribute : CommonAttributes.CONNECTION_DEFINITIONS_NODE_ATTRIBUTE) {
             if (readOnly) {
                 resourceRegistration.registerReadOnlyAttribute(attribute, null);
             } else {

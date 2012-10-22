@@ -21,9 +21,8 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 import static org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension.SUBSYSTEM_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -37,7 +36,7 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
     private final boolean runtimeOnlyRegistrationValid;
 
     public ResourceAdaptersRootResourceDefinition(boolean runtimeOnlyRegistrationValid) {
-        super(PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME), ResourceAdaptersExtension.getResourceDescriptionResolver(SUBSYSTEM_NAME), ResourceAdaptersSubSystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(ResourceAdaptersExtension.SUBSYSTEM_PATH, ResourceAdaptersExtension.getResourceDescriptionResolver(SUBSYSTEM_NAME), ResourceAdaptersSubsystemAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
     }
 
@@ -51,6 +50,4 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new ResourceAdapterResourceDefinition(false, runtimeOnlyRegistrationValid));
     }
-
-
 }
