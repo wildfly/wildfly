@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.service;
 
+import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
+
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -44,8 +46,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.jpa.JpaLogger.JPA_LOGGER;
-
 /**
  * Persistence Unit service that is created for each deployed persistence unit that will be referenced by the
  * persistence context/unit injector.
@@ -65,6 +65,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final PersistenceUnitMetadata pu;
     private final ClassLoader classLoader;
     private final PersistenceUnitRegistryImpl persistenceUnitRegistry;
+    private final ServiceName deploymentUnitServiceName;
 
     private volatile EntityManagerFactory entityManagerFactory;
 
@@ -73,12 +74,14 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             final PersistenceUnitMetadata pu,
             final PersistenceProviderAdaptor persistenceProviderAdaptor,
             final PersistenceProvider persistenceProvider,
-            final PersistenceUnitRegistryImpl persistenceUnitRegistry) {
+            final PersistenceUnitRegistryImpl persistenceUnitRegistry,
+            final ServiceName deploymentUnitServiceName) {
         this.pu = pu;
         this.persistenceProviderAdaptor = persistenceProviderAdaptor;
         this.persistenceProvider = persistenceProvider;
         this.classLoader = classLoader;
         this.persistenceUnitRegistry = persistenceUnitRegistry;
+        this.deploymentUnitServiceName = deploymentUnitServiceName;
     }
 
     @Override
@@ -92,7 +95,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                     pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
                     pu.setJtaDataSource(jtaDataSource.getOptionalValue());
                     pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
-                    WritableServiceBasedNamingStore.pushOwner(context.getController().getServiceContainer().subTarget());
+                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                     entityManagerFactory = createContainerEntityManagerFactory();
                     persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
                     context.complete();
@@ -116,7 +119,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             public void run() {
                 JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
                 if (entityManagerFactory != null) {
-                    WritableServiceBasedNamingStore.pushOwner(context.getController().getServiceContainer().subTarget());
+                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                     try {
                         entityManagerFactory.close();
                     } catch (Throwable t) {
