@@ -42,6 +42,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
     private static final String MODULE_ID_VFS = "org.jboss.vfs";
     private static final String SYSPROP_KEY_CLASS_PATH = "java.class.path";
     private static final String SYSPROP_KEY_MODULE_PATH = "module.path";
+    private static final String SYSPROP_KEY_BUNDLE_PATH = "jboss.bundles.dir";
     private static final String SYSPROP_KEY_LOGMANAGER = "java.util.logging.manager";
     private static final String SYSPROP_KEY_JBOSS_HOME_DIR = "jboss.home.dir";
     private static final String SYSPROP_VALUE_JBOSS_LOGMANAGER = "org.jboss.logmanager.LogManager";
@@ -63,10 +64,12 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
 
         // Create the module loader
         final String modulePath = config.getModulePath();
-        if (modulePath == null || modulePath.length() == 0) {
-            throw new IllegalStateException("Module path must be defined in the configuration");
+
+        final File modulesDir = new File(modulePath);
+        if (!modulesDir.isDirectory()) {
+            throw new IllegalStateException("Invalid modules directory: " + modulesDir);
         }
-        final File modulesDir = new File(config.getModulePath());
+
         final ModuleLoader moduleLoader = createModuleLoader(modulesDir);
 
         // Register URL Stream Handlers for the VFS Module
@@ -78,6 +81,14 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             throw new RuntimeException("Could not load VFS module", mle);
         }
         Module.registerURLStreamHandlerFactoryModule(vfsModule);
+
+        // Set bundle path
+        final String bundlePath = config.getBundlePath();
+        final File bundlesDir = new File(bundlePath);
+        if (!bundlesDir.isDirectory()) {
+            throw new IllegalStateException("Invalid modules directory: " + modulesDir);
+        }
+        SecurityActions.setSystemProperty(SYSPROP_KEY_BUNDLE_PATH, bundlePath);
 
         // Initialize the Logging system
         final ModuleIdentifier logModuleId = ModuleIdentifier.create(MODULE_ID_LOGMANAGER);
@@ -108,8 +119,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         final File jbossHome = new File(config.getJbossHome());
         // Emebdded Server wants this, too. Seems redundant, but supply it.
         SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_HOME_DIR, jbossHome.getAbsolutePath());
-        final StandaloneServerIndirection server = new StandaloneServerIndirection(moduleLoader, jbossHome);
-        this.server = server;
+        this.server = new StandaloneServerIndirection(moduleLoader, jbossHome);
     }
 
     /**
@@ -160,6 +170,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             // Set up sysprop env
             SecurityActions.clearSystemProperty(SYSPROP_KEY_CLASS_PATH);
             SecurityActions.setSystemProperty(SYSPROP_KEY_MODULE_PATH, modulePath.getAbsolutePath());
+
             // Get the module loader
             final ModuleLoader moduleLoader = Module.getBootModuleLoader();
             return moduleLoader;
