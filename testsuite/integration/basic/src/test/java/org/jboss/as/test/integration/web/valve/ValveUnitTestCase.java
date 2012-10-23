@@ -21,6 +21,8 @@
  */
 package org.jboss.as.test.integration.web.valve;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -34,6 +36,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
@@ -55,29 +58,35 @@ public class ValveUnitTestCase {
 
     static class ValveSetup implements ServerSetupTask {
 
+        static final String filename = "/tmp/valve.jar";
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            ValveUtil.createValve(managementClient.getControllerClient(), "myvalve");
+            File file = new File(filename);
+            if (file.exists())
+                file.delete();
+            createJar(file);
+            ValveUtil.createValve(managementClient.getControllerClient(), "myvalve", filename);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            File file = new File(filename);
+            if (file.exists())
+                file.delete();           
             ValveUtil.removeValve(managementClient.getControllerClient(), "myvalve");
         }
     }
 
-    /*
-    @Deployment(name = "valve.jar", testable = false)
-    public static JavaArchive createDeployment() {
+    public static void createJar(File file) {
 
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "valve.jar")
                               .addClass(MyValve.class);
         
-        System.out.println("jar is: " + archive.getName());
         log.info(archive.toString(true));
-        return archive;
+            
+        archive.as(ZipExporter.class).exportTo(file);
     }
-    */
+
     @Deployment(name = "valve")
     public static WebArchive Hello() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "valve.war");
