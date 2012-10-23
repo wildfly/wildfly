@@ -99,7 +99,34 @@ public class PatchingAssert {
                 return;
             }
         }
-        fail("count not found module for " + moduleName + " in " + asList(modulesPath));
+        fail("count not find module for " + moduleName + " in " + asList(modulesPath));
+    }
+
+    static void assertDefinedBundle(File[] bundlesPath, String moduleName, byte[] expectedHash) throws Exception {
+        for (File path : bundlesPath) {
+            final File bundlePath = PatchContentLoader.getModulePath(path, moduleName, "main");
+            if(bundlePath.exists()) {
+                if(expectedHash != null) {
+                    byte[] actualHash = PatchUtils.calculateHash(bundlePath);
+                    assertTrue("content of bundle differs", Arrays.equals(expectedHash, actualHash));
+                }
+                return;
+            }
+        }
+        fail("count not find bundle '" + moduleName + "' in " + asList(bundlesPath));
+    }
+
+    static void assertDefinedAbsentBundle(File[] bundlesPath, String moduleName) throws Exception {
+        for (File path : bundlesPath) {
+            final File bundlePath = PatchContentLoader.getModulePath(path, moduleName, "main");
+            if(bundlePath.exists()) {
+                final File[] children = bundlePath.listFiles();
+                if(children.length == 0) {
+                    return;
+                }
+            }
+        }
+        fail("count not find bundle '" + moduleName + "' in " + asList(bundlesPath));
     }
 
     static void assertDefinedAbsentModule(File[] modulesPath, String moduleName) throws Exception {
@@ -126,7 +153,7 @@ public class PatchingAssert {
     }
 
     static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
-        assertFalse("encountered problems: " + result.getProblems(), result.hasFailures());        
+        assertFalse("encountered problems: " + result.getProblems(), result.hasFailures());
         if (CUMULATIVE == patch.getPatchType()) {
             assertEquals(patch.getPatchId(), result.getPatchInfo().getCumulativeID());
         } else {

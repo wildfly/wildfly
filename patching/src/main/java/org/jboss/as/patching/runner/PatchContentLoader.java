@@ -39,7 +39,7 @@ import java.io.InputStream;
 class PatchContentLoader {
 
     public static final String MODULES = "modules";
-    public static final String BUNDLES = "modules";
+    public static final String BUNDLES = "bundles";
     public static final String MISC = "misc";
 
     private final File miscRoot;

@@ -302,8 +302,10 @@ public final class PatchUtils {
     static void internalCalculateHash(final File file, final MessageDigest digest) throws IOException {
         if(file.isDirectory()) {
             final File[] children = file.listFiles();
-            for(final File child : children) {
-                internalCalculateHash(child, digest);
+            if(children != null && children.length > 0) {
+                for(final File child : children) {
+                    internalCalculateHash(child, digest);
+                }
             }
         } else {
             final InputStream is = new FileInputStream(file);
@@ -354,7 +356,7 @@ public final class PatchUtils {
     static byte[] copy(File source, File target) throws IOException {
         final FileInputStream is = new FileInputStream(source);
         try {
-            byte[] backupHash = ModuleUpdateTask.copy(is, target);
+            byte[] backupHash = copy(is, target);
             is.close();
             return backupHash;
         } finally {
