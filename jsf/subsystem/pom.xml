@@ -81,11 +81,6 @@
             <artifactId>jboss-jsf-api_2.1_spec</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.sun.faces</groupId>
-            <artifactId>jsf-impl</artifactId>
-        </dependency>
-
     </dependencies>
 
     <build>
