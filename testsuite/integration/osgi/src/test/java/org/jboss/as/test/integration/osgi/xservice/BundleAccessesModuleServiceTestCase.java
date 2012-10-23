@@ -85,7 +85,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(Logger.class, Services.class, Module.class);
+                builder.addImportPackages(Logger.class, Services.class, Module.class, ServiceContainer.class);
                 return builder.openStream();
             }
         });

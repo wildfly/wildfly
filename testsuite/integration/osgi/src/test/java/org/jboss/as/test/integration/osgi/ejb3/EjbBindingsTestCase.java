@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.osgi.ejb3;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
 import javax.naming.Context;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -85,6 +84,7 @@ public class EjbBindingsTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(jar.getName());
                 builder.addBundleManifestVersion(2);
+                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });
