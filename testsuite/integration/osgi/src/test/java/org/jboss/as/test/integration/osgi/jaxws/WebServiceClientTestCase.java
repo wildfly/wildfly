@@ -80,6 +80,7 @@ public class WebServiceClientTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(WebService.class, SOAPBinding.class, QName.class, Service.class);
+                builder.addImportPackages(ManagementClient.class);
                 return builder.openStream();
             }
         });

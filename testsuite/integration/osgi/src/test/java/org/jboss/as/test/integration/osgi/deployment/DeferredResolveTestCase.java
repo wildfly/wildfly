@@ -19,8 +19,6 @@ package org.jboss.as.test.integration.osgi.deployment;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -91,7 +89,8 @@ public class DeferredResolveTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(ModelControllerClient.class, ModelNode.class);
+                builder.addImportPackages(ModelControllerClient.class, ModelNode.class, ManagementClient.class);
+                builder.addImportPackages(PackageAdmin.class, StartLevel.class);
                 builder.addImportPackages(XBundle.class, BundleManager.class);
                 return builder.openStream();
             }

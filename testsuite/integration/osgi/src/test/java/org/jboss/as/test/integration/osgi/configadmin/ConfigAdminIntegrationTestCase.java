@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -101,8 +99,9 @@ public class ConfigAdminIntegrationTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addExportPackages(ConfiguredService.class);
-                builder.addImportPackages(ConfigurationAdmin.class, ModelNode.class);
-                builder.addImportPackages(ConfigAdmin.class, ServiceContainer.class);
+                builder.addImportPackages(ConfigurationAdmin.class, ModelNode.class, ModelControllerClient.class);
+                builder.addImportPackages(ConfigAdmin.class, ServiceContainer.class, ManagementClient.class);
+                builder.addImportPackages(PackageAdmin.class);
                 return builder.openStream();
             }
         });

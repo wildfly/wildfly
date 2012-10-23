@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.osgi.jpa;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
 
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -83,7 +82,8 @@ public class PersistenceTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(Bundle.class, ServiceTracker.class, EntityManager.class);
+                builder.addImportPackages(PackageAdmin.class, Bundle.class, ServiceTracker.class);
+                builder.addImportPackages(EntityManager.class);
                 return builder.openStream();
             }
         });
