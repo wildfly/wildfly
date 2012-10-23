@@ -48,4 +48,8 @@ public final class WSComponentDescription extends ComponentDescription {
         return cc;
     }
 
+    @Override
+    public boolean isCDIInterceptorEnabled() {
+        return true;
+    }
 }

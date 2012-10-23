@@ -21,22 +21,27 @@
  */
 package org.jboss.as.weld.injection;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
+
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.weld.WeldContainer;
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.weld.bean.ManagedBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.manager.BeanManagerImpl;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Managed reference factory that can be used to create and inject components.
@@ -53,14 +58,22 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
     private final ClassLoader classLoader;
     private final String beanDeploymentArchiveId;
 
+    /**
+     * If this is true and bean is not null then weld will create the bean directly, this
+     * means interceptors and decorators will be applied, which is not wanted for most component
+     * types.
+     */
+    private final boolean delegateProduce;
+
     private WeldEEInjection injectionTarget;
     private Bean<?> bean;
     private BeanManagerImpl beanManager;
 
-    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader, final String beanDeploymentArchiveId) {
+    public WeldManagedReferenceFactory(Class<?> componentClass, String ejbName, final Set<Class<?>> interceptorClasses, final ClassLoader classLoader, final String beanDeploymentArchiveId, final boolean delegateProduce) {
         this.componentClass = componentClass;
         this.ejbName = ejbName;
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
+        this.delegateProduce = delegateProduce;
         this.weldContainer = new InjectedValue<WeldContainer>();
         this.interceptorClasses = interceptorClasses;
         this.classLoader = classLoader;
@@ -68,23 +81,18 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
 
     @Override
     public ManagedReference getReference() {
-        final CreationalContext<?> ctx;
-        if (bean == null) {
-            ctx = beanManager.createCreationalContext(null);
+        final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
+        if(delegateProduce && bean instanceof ManagedBean) {
+            final Object instance = ((ManagedBean)bean).getInjectionTarget().produce(ctx);
+            return new WeldManagedReference(ctx, instance, injectionTarget, interceptorInjections);
         } else {
-            ctx = beanManager.createCreationalContext(bean);
+            final Object instance = injectionTarget.produce(ctx);
+            return new WeldManagedReference(ctx, instance, injectionTarget, interceptorInjections);
         }
-        final Object instance = injectionTarget.produce(ctx);
-        return new WeldManagedReference(ctx, instance, injectionTarget, interceptorInjections);
     }
 
     public ManagedReference injectExistingReference(final ManagedReference existing) {
-        final CreationalContext<?> ctx;
-        if (bean == null) {
-            ctx = beanManager.createCreationalContext(null);
-        } else {
-            ctx = beanManager.createCreationalContext(bean);
-        }
+        final CreationalContext<?> ctx = beanManager.createCreationalContext(bean);
         final Object instance = existing.getInstance();
 
         injectionTarget.inject(instance, ctx);
@@ -122,6 +130,25 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
                 //may happen if the EJB was vetoed
                 if (descriptor != null) {
                     bean = beanManager.getBean(descriptor);
+                }
+            } else if (delegateProduce) {
+                final Set<Annotation> qualifiers = new HashSet<Annotation>();
+                for(Annotation annotation : componentClass.getAnnotations()) {
+                    if(beanManager.isQualifier(annotation.annotationType())) {
+                        qualifiers.add(annotation);
+                    }
+                }
+                Set<Bean<?>> beans = beanManager.getBeans(componentClass, qualifiers);
+                boolean found = false;
+                for(Bean<?> bean : beans) {
+                    if(bean instanceof ManagedBean) {
+                        found = true;
+                        this.bean = bean;
+                        break;
+                    }
+                }
+                if(!found){
+                    WeldLogger.DEPLOYMENT_LOGGER.debugf("Could not find bean for %s, interception and decoration will be unavailable", componentClass);
                 }
             }
             injectionTarget = WeldEEInjection.createWeldEEInjection(componentClass, bean, beanManager);
