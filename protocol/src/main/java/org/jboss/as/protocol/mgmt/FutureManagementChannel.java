@@ -168,13 +168,18 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
 
         @Override
         public Channel getChannel() throws IOException {
-            final Channel channel = super.getChannel();
+            Channel channel = super.getChannel();
             if(channel != null) {
                 return channel;
             }
             // Try to connect and wait for the channel
             connectionManager.connect();
-            return awaitChannel();
+            // In case connect did not succeed the next getChannel() call needs to try to reconnect
+            channel = super.getChannel();
+            if(channel == null) {
+                throw ProtocolMessages.MESSAGES.channelClosed();
+            }
+            return channel;
         }
 
         @Override
