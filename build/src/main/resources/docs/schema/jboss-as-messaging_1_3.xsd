@@ -599,7 +599,15 @@
           <xs:element maxOccurs="unbounded" minOccurs="0" name="permission">
              <xs:complexType>
                 <xs:attribute name="type" type="xs:string" use="required"/>
-                <xs:attribute name="roles" type="xs:string" use="required"/>
+                <xs:attribute name="roles" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                List of roles that are granted the permission for the given type. The roles must be separated by spaces or commas.
+                            ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
              </xs:complexType>
           </xs:element>
        </xs:sequence>

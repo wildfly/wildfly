@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging;
 
+import static java.util.Arrays.asList;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -36,6 +37,7 @@ import static org.jboss.as.messaging.Element.DISCOVERY_GROUP_REF;
 import static org.jboss.as.messaging.Element.STATIC_CONNECTORS;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -304,6 +306,18 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                     throw ParseUtils.unexpectedElement(reader);
             }
         }
+    }
+
+    /**
+     * [AS7-5808] Support space-separated roles names for backwards compatibility and comma-separated ones for compatibility with
+     * HornetQ configuration.
+     *
+     * Roles are persisted using space character delimiter in {@link MessagingXMLWriter}.
+     */
+    @Override
+    protected List<String> parseRolesAttribute(XMLExtendedStreamReader reader, int index) throws XMLStreamException {
+        String roles = reader.getAttributeValue(index);
+        return asList(roles.split("[,\\s]+"));
     }
 
     static void handleSingleAttribute(final XMLExtendedStreamReader reader, final Element element, final String modelName, String attributeName, final ModelNode node) throws XMLStreamException {
