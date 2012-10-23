@@ -28,8 +28,8 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.osgi.parser.BundleResource;
 import org.jboss.as.osgi.parser.ModelConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -59,12 +59,13 @@ public class BundleResourceHandlerTestCase {
         ManagementResourceRegistration mrr = Mockito.mock(ManagementResourceRegistration.class);
 
         BundleResourceHandler handler = BundleResourceHandler.INSTANCE;
-        handler.register(mrr);
+        BundleResource resource = new BundleResource();
+        resource.registerAttributes(mrr);
 
-        Mockito.verify(mrr).registerReadOnlyAttribute(ModelConstants.ID, handler, AttributeAccess.Storage.RUNTIME);
-        Mockito.verify(mrr).registerReadOnlyAttribute(ModelConstants.STARTLEVEL, handler, AttributeAccess.Storage.RUNTIME);
-        Mockito.verify(mrr).registerReadOnlyAttribute(ModelConstants.SYMBOLIC_NAME, handler, AttributeAccess.Storage.RUNTIME);
-        Mockito.verify(mrr).registerReadOnlyAttribute(ModelConstants.VERSION, handler, AttributeAccess.Storage.RUNTIME);
+        Mockito.verify(mrr).registerReadOnlyAttribute(BundleResource.ID, handler);
+        Mockito.verify(mrr).registerReadOnlyAttribute(BundleResource.STARTLEVEL, handler);
+        Mockito.verify(mrr).registerReadOnlyAttribute(BundleResource.SYMBOLIC_NAME, handler);
+        Mockito.verify(mrr).registerReadOnlyAttribute(BundleResource.VERSION, handler);
     }
 
     @Test

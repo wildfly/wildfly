@@ -21,34 +21,19 @@
  */
 package org.jboss.as.osgi.management;
 
-import java.util.Locale;
-
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.parser.ModelConstants;
-import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.operations.global.WriteAttributeHandlers.AttributeDefinitionValidatingHandler;
+import org.jboss.as.osgi.parser.OSGiRootResource;
 
 /**
  * Handles changes to the activation attribute.
  *
  * @author David Bosschaert
  */
-public class ActivationAttributeHandler implements OperationStepHandler {
+public class ActivationAttributeHandler extends AttributeDefinitionValidatingHandler {
 
     public static final ActivationAttributeHandler INSTANCE = new ActivationAttributeHandler();
 
     private ActivationAttributeHandler() {
-    }
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        Activation val = Activation.valueOf(operation.require(ModelDescriptionConstants.VALUE).asString().toUpperCase(Locale.ENGLISH));
-        ModelNode node = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        node.get(ModelConstants.ACTIVATION).set(val.toString().toLowerCase(Locale.ENGLISH));
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        super(OSGiRootResource.ACTIVATION);
     }
 }

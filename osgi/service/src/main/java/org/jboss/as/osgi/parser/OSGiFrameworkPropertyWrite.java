@@ -21,16 +21,11 @@
  */
 package org.jboss.as.osgi.parser;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author Thomas.Diesler@jboss.com
@@ -40,6 +35,7 @@ public class OSGiFrameworkPropertyWrite extends AbstractWriteAttributeHandler<Ob
     static final OSGiFrameworkPropertyWrite INSTANCE = new OSGiFrameworkPropertyWrite();
 
     private OSGiFrameworkPropertyWrite() {
+        super(FrameworkPropertyResource.VALUE);
     }
 
     @Override
@@ -49,38 +45,21 @@ public class OSGiFrameworkPropertyWrite extends AbstractWriteAttributeHandler<Ob
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Object> handbackHolder) throws OperationFailedException {
+        return doUpdate(context, operation, resolvedValue);
+    }
+
+    @Override
+    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
+        doUpdate(context, operation, valueToRestore);
+    }
+
+    private boolean doUpdate(OperationContext context, ModelNode operation, ModelNode value) {
         String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
-        String propValue = resolvedValue.asString();
+        String propValue = value.asString();
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
             subsystemState.setProperty(propName, propValue);
         }
         return true;
     }
-
-    @Override
-    protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
-        String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
-        String propValue = valueToRestore.asString();
-        SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
-        if (subsystemState != null) {
-            subsystemState.setProperty(propName, propValue);
-        }
-    }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            ResourceBundle resbundle = OSGiDescriptionProviders.getResourceBundle(locale);
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.write"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }

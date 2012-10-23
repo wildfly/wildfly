@@ -53,11 +53,11 @@ class OSGiSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Subsys
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode node = context.getModelNode();
 
-        if (has(node, ModelConstants.ACTIVATION)) {
-            writeAttribute(writer, Attribute.ACTIVATION, node.get(ModelConstants.ACTIVATION));
+        if (node.hasDefined(ModelConstants.ACTIVATION)) {
+            OSGiRootResource.ACTIVATION.marshallAsAttribute(node, writer);
         }
 
-        if (has(node, ModelConstants.PROPERTY)) {
+        if (node.hasDefined(ModelConstants.PROPERTY)) {
             writer.writeStartElement(Element.PROPERTIES.getLocalName());
             ModelNode properties = node.get(ModelConstants.PROPERTY);
             for (String key : new TreeSet<String>(properties.keys())) {
@@ -70,37 +70,19 @@ class OSGiSubsystemWriter implements XMLStreamConstants, XMLElementWriter<Subsys
             writer.writeEndElement();
         }
 
-        if (has(node, ModelConstants.CAPABILITY)) {
+        if (node.hasDefined(ModelConstants.CAPABILITY)) {
             writer.writeStartElement(Element.CAPABILITIES.getLocalName());
             ModelNode modules = node.get(ModelConstants.CAPABILITY);
             for (String key : modules.keys()) {
                 ModelNode moduleNode = modules.get(key);
                 writer.writeEmptyElement(Element.CAPABILITY.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), key);
-                if (moduleNode.has(ModelConstants.STARTLEVEL)) {
-                    writeAttribute(writer, Attribute.STARTLEVEL, moduleNode.require(ModelConstants.STARTLEVEL));
+                if (moduleNode.hasDefined(ModelConstants.STARTLEVEL)) {
+                    FrameworkCapabilityResource.STARTLEVEL.marshallAsAttribute(moduleNode, writer);
                 }
             }
             writer.writeEndElement();
         }
         writer.writeEndElement();
-    }
-
-    private boolean has(ModelNode node, String name) {
-        if (node.has(name) && node.get(name).isDefined()) {
-            ModelNode n = node.get(name);
-            switch (n.getType()) {
-                case LIST:
-                case OBJECT:
-                    return n.asList().size() > 0;
-                default:
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
-        writer.writeAttribute(attr.getLocalName(), value.asString());
     }
 }

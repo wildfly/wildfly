@@ -22,18 +22,14 @@
 package org.jboss.as.osgi.parser;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -48,21 +44,13 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (operation.has(ModelConstants.STARTLEVEL)) {
-            model.get(ModelConstants.STARTLEVEL).set(operation.get(ModelConstants.STARTLEVEL));
-        }
+        FrameworkCapabilityResource.STARTLEVEL.validateAndSet(operation, model);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler,
             List<ServiceController<?>> newControllers) throws OperationFailedException {
-
-        ModelNode slNode = null;
-        if (operation.has(ModelConstants.STARTLEVEL)) {
-            slNode = operation.get(ModelConstants.STARTLEVEL);
-            model.get(ModelConstants.STARTLEVEL).set(slNode);
-        }
-        final Integer startLevel = (slNode != null ? slNode.asInt() : null);
+        final Integer startLevel = (operation.hasDefined(ModelConstants.STARTLEVEL) ? FrameworkCapabilityResource.STARTLEVEL.resolveModelAttribute(context, model).asInt() : null);
 
         String identifier = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.CAPABILITY).asString();
         OSGiCapability module = new OSGiCapability(identifier, startLevel);
@@ -81,24 +69,4 @@ public class OSGiCapabilityAdd extends AbstractAddStepHandler {
             subsystemState.removeCapability(identifier);
         }
     }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            ResourceBundle resourceBundle = OSGiDescriptionProviders.getResourceBundle(locale);
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(resourceBundle.getString("capability.add"));
-            addModelProperties(resourceBundle, node, ModelDescriptionConstants.REQUEST_PROPERTIES);
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-
-        private void addModelProperties(ResourceBundle bundle, ModelNode node, String propType) {
-            node.get(propType, ModelConstants.STARTLEVEL, ModelDescriptionConstants.DESCRIPTION).set(bundle.getString("capability.startlevel"));
-            node.get(propType, ModelConstants.STARTLEVEL, ModelDescriptionConstants.TYPE).set(ModelType.INT);
-            node.get(propType, ModelConstants.STARTLEVEL, ModelDescriptionConstants.REQUIRED).set(false);
-        }
-    };
 }

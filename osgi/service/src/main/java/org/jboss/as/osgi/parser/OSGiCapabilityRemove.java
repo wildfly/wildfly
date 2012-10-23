@@ -21,12 +21,9 @@
  */
 package org.jboss.as.osgi.parser;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
 import org.jboss.dmr.ModelNode;
@@ -60,17 +57,4 @@ public class OSGiCapabilityRemove extends AbstractRemoveStepHandler {
             }
         });
     }
-
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.REMOVE);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(OSGiDescriptionProviders.getResourceBundle(locale).getString("capability.remove"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES).setEmptyObject();
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }

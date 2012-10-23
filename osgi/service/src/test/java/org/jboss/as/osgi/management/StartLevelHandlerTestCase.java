@@ -25,7 +25,6 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.osgi.management.StartLevelHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;

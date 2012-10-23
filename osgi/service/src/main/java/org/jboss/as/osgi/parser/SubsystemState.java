@@ -94,7 +94,16 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
     }
 
     public enum Activation {
-        EAGER, LAZY
+        EAGER("eager"), LAZY("lazy");
+        private final String name;
+        Activation(String name){
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     public Map<String, Object> getProperties() {

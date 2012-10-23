@@ -103,7 +103,7 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
                         case ACTIVATION: {
-                            result.get(ModelConstants.ACTIVATION).set(attrValue);
+                            OSGiRootResource.ACTIVATION.parseAndSetParameter(attrValue, result, reader);
                             break;
                         }
                         default:
@@ -154,7 +154,7 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
                         ModelNode propNode = new ModelNode();
                         propNode.get(OP).set(ADD);
                         propNode.get(OP_ADDR).set(address).add(ModelConstants.PROPERTY, name);
-                        propNode.get(ModelConstants.VALUE).set(value);
+                        FrameworkPropertyResource.VALUE.parseAndSetParameter(value, propNode, reader);
 
                         result.add(propNode);
                         break;
@@ -180,34 +180,29 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
                 case VERSION_1_2: {
                     final Element element = Element.forName(reader.getLocalName());
                     if (element == Element.CAPABILITY) {
-                        String name = null;
-                        String start = null;
                         final int count = reader.getAttributeCount();
+                        ModelNode moduleNode = new ModelNode();
+                        moduleNode.get(OP).set(ADD);
+
                         for (int i = 0; i < count; i++) {
                             requireNoNamespaceAttribute(reader, i);
                             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                             switch (attribute) {
                                 case NAME: {
-                                    name = reader.getAttributeValue(i);
+                                    moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, reader.getAttributeValue(i));
                                     break;
                                 }
                                 case STARTLEVEL: {
-                                    start = reader.getAttributeValue(i);
+                                    FrameworkCapabilityResource.STARTLEVEL.parseAndSetParameter(reader.getAttributeValue(i), moduleNode, reader);
                                     break;
                                 }
                                 default:
                                     throw unexpectedAttribute(reader, i);
                             }
                         }
-                        if (name == null)
+                        if (!moduleNode.hasDefined(OP_ADDR)) {
                             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-
-                        ModelNode moduleNode = new ModelNode();
-                        moduleNode.get(OP).set(ADD);
-                        moduleNode.get(OP_ADDR).set(address).add(ModelConstants.CAPABILITY, name);
-                        if (start != null)
-                            moduleNode.get(ModelConstants.STARTLEVEL).set(start);
-
+                        }
                         nodes.add(moduleNode);
 
                         requireNoContent(reader);
