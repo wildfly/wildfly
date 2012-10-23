@@ -45,6 +45,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -59,6 +60,7 @@ import org.osgi.service.http.HttpService;
  * @since 19-Jul-2011
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-5828")
 public class HttpServiceTestCase {
 
     static StringAsset STRING_ASSET = new StringAsset("Hello from Resource");
