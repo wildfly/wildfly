@@ -73,26 +73,21 @@ public interface PatchingTask {
             final ContentItem item = description.getContentItem();
             switch (item.getContentType()) {
                 case BUNDLE:
-                    return createBundleTask(description, (BundleItem)item, context);
+                    return createBundleTask(description);
                 case MISC:
                     return createMiscTask(description, (MiscContentItem) item, context);
                 case MODULE:
-                    return createModuleTask(description, (ModuleItem) item, context);
+                    return createModuleTask(description);
                 default:
                     throw new IllegalStateException();
             }
         }
 
-        static PatchingTask createBundleTask(final PatchingTaskDescription description, final BundleItem item, final PatchingContext context) {
-            final ModificationType type = description.getModificationType();
-            if(type == ModificationType.REMOVE) {
-                return new ModuleRemoveTask(description);
-            } else {
-                return new ModuleUpdateTask(description);
-            }
+        static PatchingTask createBundleTask(final PatchingTaskDescription description) {
+            return new BundlePatchingTask(description);
         }
 
-        static PatchingTask createModuleTask(final PatchingTaskDescription description, final ModuleItem item, final PatchingContext context) {
+        static PatchingTask createModuleTask(final PatchingTaskDescription description) {
             final ModificationType type = description.getModificationType();
             if(type == ModificationType.REMOVE) {
                 return new ModuleRemoveTask(description);

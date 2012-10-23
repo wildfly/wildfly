@@ -28,6 +28,7 @@ import org.jboss.as.version.ProductConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +38,9 @@ import java.util.regex.Pattern;
  * @author Emanuel Muckenhuber
  */
 public class LocalPatchInfo implements PatchInfo {
+
+    private static final String MODULE_PATH = "module.path";
+    private static final String BUNDLES_DIR = "jboss.bundles.dir";
 
     private final String version;
     private final String cumulativeId;
@@ -129,7 +133,7 @@ public class LocalPatchInfo implements PatchInfo {
     @Override
     public File[] getModulePath() {
         final List<File> path = getPatchingPathInternal();
-        final String modulePath = System.getProperty("module.path", System.getenv("JAVA_MODULEPATH"));
+        final String modulePath = System.getProperty(MODULE_PATH, System.getenv("JAVA_MODULEPATH"));
         if(modulePath != null) {
             final String[] paths = modulePath.split(Pattern.quote(File.pathSeparator));
             for(final String s : paths) {
@@ -149,6 +153,24 @@ public class LocalPatchInfo implements PatchInfo {
             path.add(environment.getModulePatchDirectory(cumulativeId));
         }
         return path;
+    }
+
+    @Override
+    public File[] getBundlePath() {
+        final List<File> path = new ArrayList<File>();
+        for(final String patch : patches) {
+            path.add(environment.getBundlesPatchDirectory(patch));
+        }
+        if(cumulativeId != BASE) {
+            path.add(environment.getBundlesPatchDirectory(cumulativeId));
+        }
+        final String bundleDir = System.getProperty(BUNDLES_DIR);
+        if(bundleDir == null) {
+            path.add(environment.getInstalledImage().getBundlesDir());
+        } else {
+            path.add(new File(bundleDir));
+        }
+        return path.toArray(new File[path.size()]);
     }
 
 }

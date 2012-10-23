@@ -69,18 +69,4 @@ class ModuleUpdateTask extends AbstractModuleTask {
         return new ContentModification(item, targetHash, ModificationType.MODIFY);
     }
 
-    static byte[] copy(final InputStream is, final File target) throws IOException {
-        if(! target.getParentFile().exists()) {
-            target.getParentFile().mkdirs(); // Hmm
-        }
-        final OutputStream os = new FileOutputStream(target);
-        try {
-            byte[] nh = PatchUtils.copyAndGetHash(is, os);
-            os.close();
-            return nh;
-        } finally {
-            PatchUtils.safeClose(os);
-        }
-    }
-
 }

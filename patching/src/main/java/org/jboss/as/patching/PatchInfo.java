@@ -81,4 +81,11 @@ public interface PatchInfo {
      */
     File[] getModulePath();
 
+    /**
+     * Get the current bundle.path.
+     *
+     * @return the bundle path
+     */
+    File[] getBundlePath();
+
 }

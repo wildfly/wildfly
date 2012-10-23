@@ -130,6 +130,16 @@ public class TestUtils {
         return moduleDir;
     }
 
+    public static File createBundle(File baseDir, String moduleName, boolean content) throws Exception {
+        File bundles = mkdir(baseDir, "bundles", moduleName);
+        File mainDir = mkdir(bundles, "main");
+        if(content) {
+            File f = touch(mainDir, "content");
+            dump(f, randomString());
+        }
+        return bundles;
+    }
+
     static void createPatchXMLFile(File dir, Patch patch) throws Exception {
         File patchXMLfile = new File(dir, "patch.xml");
         patchXMLfile.createNewFile();
