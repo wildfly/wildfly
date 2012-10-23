@@ -598,7 +598,7 @@
        <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="0" name="permission">
              <xs:complexType>
-                <xs:attribute name="type" type="xs:string" use="required"/>
+                <xs:attribute name="type" type="security-permissionType" use="required"/>
                 <xs:attribute name="roles" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>
@@ -1034,6 +1034,32 @@
          <xs:enumeration value="AT_MOST_ONCE"/>
          <xs:enumeration value="DUPLICATES_OK"/>
          <xs:enumeration value="ONCE_AND_ONLY_ONCE"/>
+      </xs:restriction>
+   </xs:simpleType>
+
+   <xs:simpleType name="security-permissionType">
+      <xs:restriction base="xs:token">
+         <xs:enumeration value="send"/>
+         <xs:enumeration value="consume"/>
+         <xs:enumeration value="createDurableQueue"/>
+         <xs:enumeration value="deleteDurableQueue"/>
+         <xs:enumeration value="createNonDurableQueue"/>
+         <xs:enumeration value="deleteNonDurableQueue"/>
+         <xs:enumeration value="manage"/>
+         <xs:enumeration value="createTempQueue">
+             <xs:annotation>
+                 <xs:documentation>
+                     Deprecated. use createNonDurableQueue instead.
+                 </xs:documentation>
+             </xs:annotation>
+         </xs:enumeration>
+         <xs:enumeration value="deleteTempQueue">
+             <xs:annotation>
+                 <xs:documentation>
+                     Deprecated. use deleteNonDurableQueue instead.
+                 </xs:documentation>
+             </xs:annotation>
+         </xs:enumeration>
       </xs:restriction>
    </xs:simpleType>
 
