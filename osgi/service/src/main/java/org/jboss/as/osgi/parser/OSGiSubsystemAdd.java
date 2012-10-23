@@ -87,19 +87,17 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) {
-        if (operation.has(ModelConstants.ACTIVATION)) {
-            model.get(ModelConstants.ACTIVATION).set(operation.get(ModelConstants.ACTIVATION));
-        }
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
+        OSGiRootResource.ACTIVATION.validateAndSet(operation, model);
     }
 
     @Override
     protected void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
-            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         LOGGER.infoActivatingSubsystem();
 
-        final Activation activation = getActivationMode(operation);
+        final Activation activation = Activation.valueOf(OSGiRootResource.ACTIVATION.resolveModelAttribute(context, model).asString().toUpperCase(Locale.ENGLISH));
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final InitialDeploymentTracker deploymentTracker = new InitialDeploymentTracker(context, verificationHandler);
         final ModuleRegistrationTracker registrationTracker = new ModuleRegistrationTracker();
@@ -149,13 +147,4 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // Add the subsystem state as a service
         newControllers.add(SubsystemState.addService(serviceTarget, activation));
     }
-
-    private Activation getActivationMode(ModelNode operation) {
-        Activation activation = SubsystemState.DEFAULT_ACTIVATION;
-        if (operation.has(ModelConstants.ACTIVATION)) {
-            activation = Activation.valueOf(operation.get(ModelConstants.ACTIVATION).asString().toUpperCase(Locale.ENGLISH));
-        }
-        return activation;
-    }
-
 }

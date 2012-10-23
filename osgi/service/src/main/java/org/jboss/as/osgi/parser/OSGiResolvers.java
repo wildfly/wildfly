@@ -21,24 +21,20 @@
  */
 package org.jboss.as.osgi.parser;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.dmr.ModelNode;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 
 /**
- * Describe and handle subsystem operations.
- *
- * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author David Bosschaert
+ * @author Thomas.Diesler@jboss.com
  */
-class OSGiSubsystemDescribeHandler extends GenericSubsystemDescribeHandler {
+public class OSGiResolvers {
 
-    static final OSGiSubsystemDescribeHandler INSTANCE = new OSGiSubsystemDescribeHandler();
+    static final String RESOURCE_NAME = OSGiResolvers.class.getPackage().getName() + ".LocalDescriptions";
 
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        super.execute(context, operation);
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    static ResourceDescriptionResolver getResolver(String keyPrefix) {
+        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityActions.getClassLoader(OSGiResolvers.class), true, true);
     }
+
 }

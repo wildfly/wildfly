@@ -22,17 +22,13 @@
 package org.jboss.as.osgi.parser;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -47,7 +43,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(ModelConstants.VALUE).set(operation.get(ModelConstants.VALUE));
+        FrameworkPropertyResource.VALUE.validateAndSet(operation, model);
     }
 
     @Override
@@ -55,7 +51,7 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
             List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         String propName = operation.get(ModelDescriptionConstants.OP_ADDR).asObject().get(ModelConstants.PROPERTY).asString();
-        String propValue = model.get(ModelConstants.VALUE).asString();
+        String propValue = FrameworkPropertyResource.VALUE.resolveModelAttribute(context, model).asString();
 
         SubsystemState subsystemState = SubsystemState.getSubsystemState(context);
         if (subsystemState != null) {
@@ -72,19 +68,4 @@ public class OSGiFrameworkPropertyAdd extends AbstractAddStepHandler {
         }
     }
 
-    static DescriptionProvider DESCRIPTION = new DescriptionProvider() {
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            ModelNode node = new ModelNode();
-            ResourceBundle resbundle = OSGiDescriptionProviders.getResourceBundle(locale);
-            node.get(ModelDescriptionConstants.OPERATION_NAME).set(ModelDescriptionConstants.ADD);
-            node.get(ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.add"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.DESCRIPTION).set(resbundle.getString("framework.property.value"));
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.TYPE).set(ModelType.STRING);
-            node.get(ModelDescriptionConstants.REQUEST_PROPERTIES, ModelConstants.VALUE, ModelDescriptionConstants.REQUIRED).set(true);
-            node.get(ModelDescriptionConstants.REPLY_PROPERTIES).setEmptyObject();
-            return node;
-        }
-    };
 }
