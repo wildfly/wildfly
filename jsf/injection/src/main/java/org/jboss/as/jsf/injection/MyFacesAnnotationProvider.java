@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.faces.context.ExternalContext;
 import org.apache.myfaces.spi.AnnotationProvider;
-import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 
 /**
  * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a
@@ -39,14 +38,9 @@ import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
  */
 public class MyFacesAnnotationProvider extends AnnotationProvider {
 
-    /**
-     * @see JSFAnnotationProcessor#FACES_ANNOTATIONS_SC_ATTR
-     */
-    public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
-
     @Override
     public Map<Class<? extends Annotation>, Set<Class<?>>> getAnnotatedClasses(ExternalContext externalCtx) {
-        return (Map<Class<? extends Annotation>, Set<Class<?>>>)externalCtx.getApplicationMap().get(FACES_ANNOTATIONS_SC_ATTR);
+        return AnnotationMap.get(externalCtx);
     }
 
     @Override
