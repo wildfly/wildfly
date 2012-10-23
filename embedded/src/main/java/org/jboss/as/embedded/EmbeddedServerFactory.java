@@ -24,19 +24,19 @@ package org.jboss.as.embedded;
 
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
-import org.jboss.modules.Module;
-import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoadException;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.modules.log.JDKModuleLogger;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.LogManager;
+
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.log.JDKModuleLogger;
 
 /**
  * <p>
@@ -58,6 +58,7 @@ import java.util.logging.LogManager;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:mmatloka@gmail.com">Michal Matloka</a>
  */
 public class EmbeddedServerFactory {
 
@@ -72,9 +73,16 @@ public class EmbeddedServerFactory {
             final ModuleClassLoader serverModuleClassLoader = serverModule.getClassLoader();
 
             Class<?> embeddedStandAloneServerFactoryClass = serverModuleClassLoader.loadClass("org.jboss.as.server.EmbeddedStandAloneServerFactory");
+            Class<?> standaloneServerClass = serverModuleClassLoader.loadClass("org.jboss.as.embedded.StandaloneServer");
             Method createMethod = embeddedStandAloneServerFactoryClass.getMethod("create", File.class, ModuleLoader.class, Properties.class, Map.class);
-            final StandaloneServer standaloneServer = (StandaloneServer) createMethod.invoke(null, jbossHomeDir, moduleLoader, systemProps, systemEnv);
-            return standaloneServer;
+
+            // Cast to StandaloneServer is not possible, same classes loaded by different classloaders are considered as
+            // completely different. It is required to start and stop server via reflections
+            final Object standaloneServer = createMethod.invoke(null, jbossHomeDir, moduleLoader, systemProps, systemEnv);
+            Method startMethod = standaloneServerClass.getMethod("start", (Class<?>[]) null);
+            Method stopMethod = standaloneServerClass.getMethod("stop", (Class<?>[]) null);
+
+            return new StandaloneServerAdapter(standaloneServer, startMethod, stopMethod);
         } catch (ModuleLoadException e) {
             throw MESSAGES.moduleLoaderError(e, e.getMessage(), moduleLoader);
         } catch (ClassNotFoundException e) {
@@ -88,14 +96,14 @@ public class EmbeddedServerFactory {
         }
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
-        if (jbossHomeDir == null || jbossHomeDir.isDirectory() == false)
+    public static StandaloneServer create(final File jbossHomeDir, final File modulesDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
+        if (jbossHomeDir == null || !jbossHomeDir.isDirectory()) {
             throw MESSAGES.invalidJbossHome(jbossHomeDir);
-
-        if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null)
+        }
+        if (systemProps.getProperty(ServerEnvironment.HOME_DIR) == null) {
             systemProps.setProperty(ServerEnvironment.HOME_DIR, jbossHomeDir.getAbsolutePath());
+        }
 
-        File modulesDir = new File(jbossHomeDir + "/modules");
         final ModuleLoader moduleLoader = InitialModuleLoaderFactory.getModuleLoader(modulesDir, systemPackages);
 
         try {
@@ -126,21 +134,28 @@ public class EmbeddedServerFactory {
         }
     }
 
+    public static StandaloneServer create(final File jbossHomeDir, final Properties systemProps, final Map<String, String> systemEnv, String...systemPackages) {
+        File modulesDir = new File(jbossHomeDir + "/modules");
+        return create(jbossHomeDir, modulesDir, systemProps, systemEnv, systemPackages);
+    }
     @Deprecated
     public static void main(String[] args) throws Throwable {
         SecurityActions.setSystemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
 
         String jbossHomeKey = "jboss.home";
         String jbossHomeProp = System.getProperty(jbossHomeKey);
-        if (jbossHomeProp == null)
+        if (jbossHomeProp == null) {
             throw MESSAGES.systemPropertyNotFound(jbossHomeKey);
+        }
 
         File jbossHomeDir = new File(jbossHomeProp);
-        if (jbossHomeDir.isDirectory() == false)
+        if (!jbossHomeDir.isDirectory()) {
             throw MESSAGES.invalidJbossHome(jbossHomeDir);
+        }
 
         Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
         StandaloneServer server = create(jbossHomeDir, System.getProperties(), System.getenv());
+
         server.start();
         server.stop();
         System.exit(0);

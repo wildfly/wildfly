@@ -24,7 +24,7 @@ import javax.management.Attribute;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.embedded.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -33,21 +33,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * JBossASRemoteIntegrationTestCase
+ * EmbeddedInContainerTestCase
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 @RunWith(Arquillian.class)
-public class JBossASEmbeddedInContainerTestCase {
+public class EmbeddedInContainerTestCase {
 
     @Deployment
     public static JavaArchive createDeployment() throws Exception {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sar-example.sar");
         archive.addPackage(ConfigService.class.getPackage());
-        archive.addClass(JBossASEmbeddedInContainerTestCase.class);
+        archive.addClass(EmbeddedInContainerTestCase.class);
         String path = "META-INF/jboss-service.xml";
-        URL resourceURL = JBossASEmbeddedInContainerTestCase.class.getResource("/sar-example.sar/" + path);
-        archive.addResource(new File(resourceURL.getFile()), path);
+        URL resourceURL = EmbeddedInContainerTestCase.class.getResource("/sar-example.sar/" + path);
+        archive.addAsResource(new File(resourceURL.getFile()), path);
         return archive;
     }
 
@@ -56,7 +56,7 @@ public class JBossASEmbeddedInContainerTestCase {
         MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
 
-        //FIXME should have some notification happening when the deployment has been installed for client
+        // FIXME should have some notification happening when the deployment has been installed for client
         waitForMbean(mbeanServer, objectName);
 
         mbeanServer.getAttribute(objectName, "IntervalSeconds");
