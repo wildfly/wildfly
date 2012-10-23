@@ -55,7 +55,7 @@ public class ValveUtil {
 
     private static Logger log = Logger.getLogger(ValveUtil.class);
 
-    public static void createValve(ModelControllerClient client, String name) throws Exception {
+    public static void createValve(ModelControllerClient client, String name, String filename) throws Exception {
         List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -74,7 +74,7 @@ public class ValveUtil {
         op.get(OP_ADDR).add("valve", name);
         op.get(OP_ADDR).add("setting", "file");
         op.get(NAME).set("path");
-        op.get("path").set("valve.jar");
+        op.get("path").set(filename);
         updates.add(op);
         applyUpdates(updates, client);
 
