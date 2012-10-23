@@ -30,11 +30,12 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.log.JDKModuleLogger;
 
 /**
- * {@link DeployableContainer} implementation to bootstrap JBoss Logging (installing the LogManager if possible), use
- * the JBoss Modules modular ClassLoading Environment to create a new server instance, and handle lifecycle of the
- * Application Server in the currently-running environment.
+ * {@link DeployableContainer} implementation to bootstrap JBoss Logging (installing the LogManager if possible), use the JBoss
+ * Modules modular ClassLoading Environment to create a new server instance, and handle lifecycle of the Application Server in
+ * the currently-running environment.
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+ * @author <a href="mailto:mmatloka@gmail.com">Michal Matloka</a>
  */
 public final class EmbeddedDeployableContainer extends CommonDeployableContainer<EmbeddedContainerConfiguration> {
 
@@ -59,38 +60,91 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
      */
     @Override
     public void setup(final EmbeddedContainerConfiguration config) {
-        // Call super implementation
         super.setup(config);
 
-        // Create the module loader
-        final String modulePath = config.getModulePath();
+        final ModuleLoader moduleLoader = setupModuleLoader(config.getModulePath());
+
+        setupBundlePath(config.getBundlePath());
+
+        setupVfsModule(moduleLoader);
+
+        setupLoggingSystem(moduleLoader);
+
+        setupServer(moduleLoader, config.getJbossHome());
+    }
+
+    /**
+     * Creates/obtains the boot {@link ModuleLoader} for the specified, required modules path
+     *
+     * @param modulePath
+     * @return module loader
+     */
+    private ModuleLoader setupModuleLoader(final String modulePath) {
+        if (modulePath == null || modulePath.isEmpty()) {
+            throw new IllegalStateException("Module path must be defined in the configuration");
+        }
 
         final File modulesDir = new File(modulePath);
         if (!modulesDir.isDirectory()) {
             throw new IllegalStateException("Invalid modules directory: " + modulesDir);
         }
 
-        final ModuleLoader moduleLoader = createModuleLoader(modulesDir);
-
-        // Register URL Stream Handlers for the VFS Module
-        final ModuleIdentifier vfsModuleID = ModuleIdentifier.create(MODULE_ID_VFS);
-        final Module vfsModule;
+        final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
         try {
-            vfsModule = moduleLoader.loadModule(vfsModuleID);
-        } catch (final ModuleLoadException mle) {
-            throw new RuntimeException("Could not load VFS module", mle);
-        }
-        Module.registerURLStreamHandlerFactoryModule(vfsModule);
+            // Set up sysprop env
+            SecurityActions.clearSystemProperty(SYSPROP_KEY_CLASS_PATH);
+            SecurityActions.setSystemProperty(SYSPROP_KEY_MODULE_PATH, modulesDir.getAbsolutePath());
 
-        // Set bundle path
-        final String bundlePath = config.getBundlePath();
+            // Get the module loader
+            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+            return moduleLoader;
+        } finally {
+            // Return to previous state for classpath prop
+            SecurityActions.setSystemProperty(SYSPROP_KEY_CLASS_PATH, classPath);
+        }
+    }
+
+    /**
+     * Set bundle path
+     *
+     * @param bundlePath
+     */
+    private void setupBundlePath(final String bundlePath) {
+        if (bundlePath == null || bundlePath.isEmpty()) {
+            throw new IllegalStateException("Bundle path must be defined in the configuration");
+        }
+
         final File bundlesDir = new File(bundlePath);
         if (!bundlesDir.isDirectory()) {
             throw new IllegalStateException("Invalid modules directory: " + bundlesDir);
         }
         SecurityActions.setSystemProperty(SYSPROP_KEY_BUNDLE_PATH, bundlePath);
+    }
 
-        // Initialize the Logging system
+    /**
+     * Register URL Stream Handlers for the VFS Module
+     *
+     * @param moduleLoader
+     */
+    private void setupVfsModule(final ModuleLoader moduleLoader) {
+        final ModuleIdentifier vfsModuleID = ModuleIdentifier.create(MODULE_ID_VFS);
+        final Module vfsModule;
+
+        try {
+            vfsModule = moduleLoader.loadModule(vfsModuleID);
+        } catch (final ModuleLoadException mle) {
+            throw new RuntimeException("Could not load VFS module", mle);
+        }
+
+        Module.registerURLStreamHandlerFactoryModule(vfsModule);
+    }
+
+    /**
+     * Initialize the Logging system
+     *
+     * @param moduleLoader
+     */
+    private void setupLoggingSystem(ModuleLoader moduleLoader) {
         final ModuleIdentifier logModuleId = ModuleIdentifier.create(MODULE_ID_LOGMANAGER);
         final Module logModule;
         try {
@@ -98,6 +152,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         } catch (final ModuleLoadException mle) {
             throw new RuntimeException("Could not load logging module", mle);
         }
+
         final ModuleClassLoader logModuleClassLoader = logModule.getClassLoader();
         final ClassLoader tccl = SecurityActions.getContextClassLoader();
         try {
@@ -107,7 +162,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             final Class<?> actualLogManagerClass = LogManager.getLogManager().getClass();
             if (actualLogManagerClass == LogManager.class) {
                 System.err
-                    .println("Could not load JBoss LogManager; the LogManager or Logging subsystem has likely been accessed prior to this initialization.");
+                        .println("Could not load JBoss LogManager; the LogManager or Logging subsystem has likely been accessed prior to this initialization.");
             } else {
                 Module.setModuleLogger(new JDKModuleLogger());
             }
@@ -115,10 +170,25 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             // Reset TCCL
             SecurityActions.setContextClassLoader(tccl);
         }
+    }
 
-        // Create and set the server
-        final File jbossHome = new File(config.getJbossHome());
-        // Emebdded Server wants this, too. Seems redundant, but supply it.
+    /**
+     * Create and set the server
+     *
+     * @param moduleLoader
+     * @param jbossHomePath
+     */
+    private void setupServer(final ModuleLoader moduleLoader, final String jbossHomePath) {
+        if (jbossHomePath == null || jbossHomePath.isEmpty()) {
+            throw new IllegalStateException("JBoss home path must be defined");
+        }
+
+        final File jbossHome = new File(jbossHomePath);
+        if (!jbossHome.isDirectory()) {
+            throw new IllegalStateException("Invalid jboss home directory: " + jbossHome);
+        }
+
+        // Embedded Server wants this, too. Seems redundant, but supply it.
         SecurityActions.setSystemProperty(SYSPROP_KEY_JBOSS_HOME_DIR, jbossHome.getAbsolutePath());
         this.server = new StandaloneServerIndirection(moduleLoader, jbossHome);
     }
@@ -153,32 +223,4 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
     protected void stopInternal() throws LifecycleException {
         this.server.stop();
     }
-
-    /**
-     * Creates/obtains the boot {@link ModuleLoader} for the specified, required modules path
-     *
-     * @param modulePath
-     * @return
-     */
-    private static ModuleLoader createModuleLoader(final File modulePath) {
-        // Precondition checks
-        if (modulePath == null || !modulePath.isDirectory()) {
-            throw new RuntimeException("Invalid module path: " + modulePath);
-        }
-
-        final String classPath = SecurityActions.getSystemProperty(SYSPROP_KEY_CLASS_PATH);
-        try {
-            // Set up sysprop env
-            SecurityActions.clearSystemProperty(SYSPROP_KEY_CLASS_PATH);
-            SecurityActions.setSystemProperty(SYSPROP_KEY_MODULE_PATH, modulePath.getAbsolutePath());
-
-            // Get the module loader
-            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-            return moduleLoader;
-        } finally {
-            // Return to previous state for classpath prop
-            SecurityActions.setSystemProperty(SYSPROP_KEY_CLASS_PATH, classPath);
-        }
-    }
-
 }

@@ -32,10 +32,9 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * Indirection to the {@link StandaloneServer}; used to encapsulate access to the underlying embedded AS Server instance
- * in a manner that does not directly link this class. Necessary to avoid {@link ClassCastException} when this class is
- * loaded by the application {@link ClassLoader} (or any other hierarchical CL) while the server is loaded by a modular
- * environment.
+ * Indirection to the {@link StandaloneServer}; used to encapsulate access to the underlying embedded AS Server instance in a
+ * manner that does not directly link this class. Necessary to avoid {@link ClassCastException} when this class is loaded by the
+ * application {@link ClassLoader} (or any other hierarchical CL) while the server is loaded by a modular environment.
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
@@ -43,7 +42,7 @@ class StandaloneServerIndirection {
 
     private static final String MODULE_ID_EMBEDDED_CANONICAL_FORM = "org.jboss.as.embedded";
 
-    private static final ModuleIdentifier MODULE_ID_EMBEDDED;
+    private static final ModuleIdentifier MODULE_ID_EMBEDDED = ModuleIdentifier.create(MODULE_ID_EMBEDDED_CANONICAL_FORM);
 
     private static final String METHOD_NAME_CREATE = "create";
 
@@ -51,26 +50,19 @@ class StandaloneServerIndirection {
 
     private static final String METHOD_NAME_STOP = "stop";
 
-    static {
-        MODULE_ID_EMBEDDED = ModuleIdentifier.create(MODULE_ID_EMBEDDED_CANONICAL_FORM);
-    }
-
     /**
-     * Instance of {@link StandaloneServer}; represented as {@link Object} to avoid leaking a direct link from this
-     * class
+     * Instance of {@link StandaloneServer}; represented as {@link Object} to avoid leaking a direct link from this class
      */
     private final Object standaloneServer;
 
     /**
-     * Creates a new instance with the specified, required {@link ModuleLoader}, which will be used to load and create
-     * the server located at the specified, required JBOSS_HOME.
+     * Creates a new instance with the specified, required {@link ModuleLoader}, which will be used to load and create the
+     * server located at the specified, required JBOSS_HOME.
      *
      * @param loader
-     * @param jbossHome
-     *            Location of AS installation local filesystem
-     * @throws IllegalArgumentException
-     *             If the {@link ModuleLoader} is not specified or if <code>JBOSS_HOME</code> is not specified, not a
-     *             directory, or doesn't exist
+     * @param jbossHome Location of AS installation local filesystem
+     * @throws IllegalArgumentException If the {@link ModuleLoader} is not specified or if <code>JBOSS_HOME</code> is not
+     *         specified, not a directory, or doesn't exist
      */
     StandaloneServerIndirection(final ModuleLoader loader, final File jbossHome) throws IllegalArgumentException {
         // Precondition checks
@@ -103,14 +95,14 @@ class StandaloneServerIndirection {
             embeddedServerFactoryClass = embeddedModuleCL.loadClass(EmbeddedServerFactory.class.getName());
         } catch (final ClassNotFoundException cnfe) {
             throw new RuntimeException(
-                "Could not load the embedded server factory from the embedded server module; check dependencies", cnfe);
+                    "Could not load the embedded server factory from the embedded server module; check dependencies", cnfe);
         }
 
         // Get a handle to the method which will create the server
         final Method createServerMethod;
         try {
-            createServerMethod = embeddedServerFactoryClass.getMethod(METHOD_NAME_CREATE, ModuleLoader.class,
-                File.class, Properties.class, Map.class);
+            createServerMethod = embeddedServerFactoryClass.getMethod(METHOD_NAME_CREATE, ModuleLoader.class, File.class,
+                    Properties.class, Map.class);
         } catch (final NoSuchMethodException nsme) {
             throw new RuntimeException("Could not get a handle to the method which will create the server", nsme);
         }
@@ -118,8 +110,8 @@ class StandaloneServerIndirection {
         // Create the server
         final Object standaloneServer;
         try {
-            standaloneServer = createServerMethod.invoke(null, loader, jbossHome,
-                SecurityActions.getSystemProperties(), SecurityActions.getSystemEnvironment());
+            standaloneServer = createServerMethod.invoke(null, loader, jbossHome, SecurityActions.getSystemProperties(),
+                    SecurityActions.getSystemEnvironment());
         } catch (final InvocationTargetException ite) {
             throw new RuntimeException(ite);
         } catch (final IllegalAccessException iae) {
@@ -151,8 +143,7 @@ class StandaloneServerIndirection {
     /**
      * Invokes the method of the specified name on the backing server
      *
-     * @throws LifecycleException
-     *             Returned and wraps any {@link Exception} encountered during invocation
+     * @throws LifecycleException Returned and wraps any {@link Exception} encountered during invocation
      */
     private void invokeOnServer(final String methodName) throws LifecycleException {
         // Precondition checks
@@ -166,8 +157,8 @@ class StandaloneServerIndirection {
         try {
             method = standaloneServerClass.getMethod(methodName);
         } catch (final NoSuchMethodException nsme) {
-            throw new RuntimeException("Could not get a handle to the method to invoke upon the server, \""
-                + methodName + "\", of " + standaloneServer, nsme);
+            throw new RuntimeException("Could not get a handle to the method to invoke upon the server, \"" + methodName
+                    + "\", of " + standaloneServer, nsme);
         }
 
         // Set accessible
