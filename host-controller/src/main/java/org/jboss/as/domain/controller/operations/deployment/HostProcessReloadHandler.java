@@ -94,7 +94,7 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
             @Override
             public void doReload(HostRunningModeControl runningModeControl) {
                 runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
-                runningModeControl.setReloaded(true);
+                runningModeControl.setReloaded();
                 runningModeControl.setUseCurrentConfig(useCurrentHostConfig);
                 runningModeControl.setUseCurrentDomainConfig(useCurrentDomainConfig);
             }

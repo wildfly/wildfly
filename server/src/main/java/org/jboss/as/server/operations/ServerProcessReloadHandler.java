@@ -70,7 +70,7 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
             @Override
             public void doReload(RunningModeControl runningModeControl) {
                 runningModeControl.setRunningMode(adminOnly ? RunningMode.ADMIN_ONLY : RunningMode.NORMAL);
-                runningModeControl.setReloaded(true);
+                runningModeControl.setReloaded();
                 runningModeControl.setUseCurrentConfig(useCurrentConfig);
             }
         };
