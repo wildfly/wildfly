@@ -99,10 +99,11 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             throw new RuntimeException("Could not load logging module", mle);
         }
         final ModuleClassLoader logModuleClassLoader = logModule.getClassLoader();
-        final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        final ClassLoader tccl = SecurityActions.getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(logModuleClassLoader);
+            SecurityActions.setContextClassLoader(logModuleClassLoader);
             SecurityActions.setSystemProperty(SYSPROP_KEY_LOGMANAGER, SYSPROP_VALUE_JBOSS_LOGMANAGER);
+
             final Class<?> actualLogManagerClass = LogManager.getLogManager().getClass();
             if (actualLogManagerClass == LogManager.class) {
                 System.err
@@ -112,7 +113,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             }
         } finally {
             // Reset TCCL
-            Thread.currentThread().setContextClassLoader(tccl);
+            SecurityActions.setContextClassLoader(tccl);
         }
 
         // Create and set the server

@@ -29,7 +29,7 @@ import java.util.Properties;
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
-class SecurityActions {
+final class SecurityActions {
 
     private SecurityActions() {
         throw new UnsupportedOperationException("No instances permitted");
@@ -57,7 +57,7 @@ class SecurityActions {
                     throw (SecurityException) cause;
                 } else {
                     throw new RuntimeException("Unexpected exception encountered settingg accessibility of " + method
-                        + " to true", cause);
+                            + " to true", cause);
                 }
             }
         }
@@ -122,6 +122,7 @@ class SecurityActions {
 
     private enum GetSystemPropertiesAction implements PrivilegedAction<Properties> {
         INSTANCE;
+
         @Override
         public Properties run() {
             return System.getProperties();
@@ -136,4 +137,34 @@ class SecurityActions {
         }
     }
 
+    static ClassLoader getContextClassLoader() {
+
+        if (System.getSecurityManager() == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+                @Override
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
+    }
+
+    static void setContextClassLoader(final ClassLoader tccl) {
+
+        if (System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(tccl);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
+                    Thread.currentThread().setContextClassLoader(tccl);
+                    return null;
+                }
+            });
+        }
+    }
 }
