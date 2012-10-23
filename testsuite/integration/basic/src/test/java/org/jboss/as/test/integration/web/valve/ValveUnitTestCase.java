@@ -88,7 +88,6 @@ public class ValveUnitTestCase {
     @Test
     @OperateOnDeployment("valve")
     public void testValve(@ArquillianResource URL url) throws Exception {
-        log.error("merde: " + url);
         String response = ValveUtil.hitValve(log, url);
         // AS7-5133 assertTrue(response.contains("MyParam"));
     }
