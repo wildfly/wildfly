@@ -44,12 +44,11 @@ class WebValveRemove extends AbstractRemoveStepHandler{
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String name = address.getLastElement().getValue();
-        // TODO: Add stuff here...
+        context.removeService(WebSubsystemServices.JBOSS_WEB_VALVE.append(name));
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
     }
-
 
 }
