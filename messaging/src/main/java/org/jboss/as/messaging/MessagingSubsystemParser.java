@@ -954,7 +954,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
     }
 
-    static ModelNode processSecuritySettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
+    private ModelNode processSecuritySettings(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
         final ModelNode security = new ModelNode();
         String localName = null;
         do {
@@ -980,7 +980,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return security;
     }
 
-    static void parseSecurityRoles(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
+    private void parseSecurityRoles(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operations) throws XMLStreamException {
 
         final Map<String, Set<AttributeDefinition>> permsByRole = new HashMap<String, Set<AttributeDefinition>>();
         String localName = null;
@@ -1002,7 +1002,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 required.remove(attribute);
                 switch (attribute) {
                     case ROLES_ATTR_NAME:
-                        roles = reader.getListAttributeValue(i);
+                        roles = parseRolesAttribute(reader, i);
                         break;
                     case TYPE_ATTR_NAME:
                         perm = SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.get(reader.getAttributeValue(i));
@@ -1051,6 +1051,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
             operations.add(operation);
         }
+    }
+
+    protected List<String> parseRolesAttribute(final XMLExtendedStreamReader reader, int index) throws XMLStreamException {
+        return reader.getListAttributeValue(index);
     }
 
     static void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
