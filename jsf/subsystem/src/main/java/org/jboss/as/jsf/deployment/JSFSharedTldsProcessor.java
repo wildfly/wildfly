@@ -41,7 +41,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.TldMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 
 /**
@@ -80,7 +79,7 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
             } catch (Exception e) {
                 // Ignore
             }
-            System.out.println("** put jsf TLDS for slot=" + slot);
+
             jsfTldMap.put(slot, jsfTlds);
         }
     }
