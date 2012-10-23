@@ -83,7 +83,7 @@ import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.M
  */
 class FileSystemDeploymentService implements DeploymentScanner {
 
-    private static final Pattern ARCHIVE_PATTERN = Pattern.compile("^.*\\.[SsWwJjEeRr][Aa][Rr]$");
+    static final Pattern ARCHIVE_PATTERN = Pattern.compile("^.*\\.(?:(?:[SsWwJjEeRr][Aa][Rr])|(?:[Ww][Aa][Bb])|(?:[Ee][Ss][Aa]))$");
 
     static final String DEPLOYED = ".deployed";
     static final String FAILED_DEPLOY = ".failed";
