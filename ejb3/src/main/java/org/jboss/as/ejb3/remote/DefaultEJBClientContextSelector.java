@@ -22,21 +22,22 @@
 
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
+import org.jboss.ejb.client.EJBClientContextIdentifier;
+import org.jboss.ejb.client.IdentityEJBClientContextSelector;
 import org.jboss.logging.Logger;
 
 /**
- * A {@link TCCLEJBClientContextSelector} is backed by {@link TCCLEJBClientContextSelectorService}
- * which returns an appropriate {@link EJBClientContext} based on the current {@link Thread#getContextClassLoader() context classloader}
- *
+ * A {@link DefaultEJBClientContextSelector} is backed by {@link TCCLEJBClientContextSelectorService}
  * @author Jaikiran Pai
  */
-class TCCLEJBClientContextSelector implements ContextSelector<EJBClientContext> {
+class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContext>, IdentityEJBClientContextSelector {
 
-    private static final Logger logger = Logger.getLogger(TCCLEJBClientContextSelector.class);
+    private static final Logger logger = Logger.getLogger(DefaultEJBClientContextSelector.class);
 
-    static final TCCLEJBClientContextSelector INSTANCE = new TCCLEJBClientContextSelector();
+    static final DefaultEJBClientContextSelector INSTANCE = new DefaultEJBClientContextSelector();
 
     private volatile TCCLEJBClientContextSelectorService tcclEJBClientContextService;
     private volatile EJBClientContext defaultEJBClientContext;
@@ -79,5 +80,29 @@ class TCCLEJBClientContextSelector implements ContextSelector<EJBClientContext> 
             logger.debug("Returning default EJB client context " + this.defaultEJBClientContext + " since no EJB client context could be found for TCCL " + SecurityActions.getContextClassLoader());
         }
         return this.defaultEJBClientContext;
+    }
+
+    @Override
+    public void registerContext(final EJBClientContextIdentifier identifier, final EJBClientContext context) {
+        if (this.tcclEJBClientContextService == null) {
+            throw EjbMessages.MESSAGES.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+        }
+        this.tcclEJBClientContextService.registerContext(identifier, context);
+    }
+
+    @Override
+    public EJBClientContext unRegisterContext(final EJBClientContextIdentifier identifier) {
+        if (this.tcclEJBClientContextService == null) {
+            throw EjbMessages.MESSAGES.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+        }
+        return this.tcclEJBClientContextService.unRegisterContext(identifier);
+    }
+
+    @Override
+    public EJBClientContext getContext(final EJBClientContextIdentifier identifier) {
+        if (this.tcclEJBClientContextService == null) {
+            throw EjbMessages.MESSAGES.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+        }
+        return this.tcclEJBClientContextService.getContext(identifier);
     }
 }

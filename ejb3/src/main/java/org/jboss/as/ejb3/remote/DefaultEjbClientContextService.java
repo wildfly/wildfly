@@ -65,7 +65,7 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
     // selector will be locked https://issues.jboss.org/browse/AS7-2998
     static {
         // setup the selector
-        AccessController.doPrivileged(new SetSelectorAction(TCCLEJBClientContextSelector.INSTANCE));
+        AccessController.doPrivileged(new SetSelectorAction(DefaultEJBClientContextSelector.INSTANCE));
     }
 
     private final InjectedValue<TCCLEJBClientContextSelectorService> tcclEJBClientContextSelector = new InjectedValue<TCCLEJBClientContextSelectorService>();
@@ -102,19 +102,19 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
             AccessController.doPrivileged(new LockSelectorAction());
         }
 
-        // the EJBClientContext selector is set to TCCLEJBClientContextSelector and is *locked* once
+        // the EJBClientContext selector is set to DefaultEJBClientContextSelector and is *locked* once
         // (in a static block of this service) so that restarting this service will not cause failures related
-        // to resetting the selector. The TCCLEJBClientContextSelector is backed by a TCCLEJBClientContextSelectorService
+        // to resetting the selector. The DefaultEJBClientContextSelector is backed by a TCCLEJBClientContextSelectorService
         // which is what we set here during the service start, so that the selector has the correct service to return the
         // EJBClientContext. @see https://issues.jboss.org/browse/AS7-2998 for details
-        TCCLEJBClientContextSelector.INSTANCE.setup(this.tcclEJBClientContextSelector.getValue(), this.context);
+        DefaultEJBClientContextSelector.INSTANCE.setup(this.tcclEJBClientContextSelector.getValue(), this.context);
 
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         this.context = null;
-        TCCLEJBClientContextSelector.INSTANCE.destroy();
+        DefaultEJBClientContextSelector.INSTANCE.destroy();
     }
 
     @Override
