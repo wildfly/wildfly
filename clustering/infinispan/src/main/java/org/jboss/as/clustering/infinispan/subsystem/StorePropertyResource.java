@@ -1,6 +1,9 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -30,7 +33,7 @@ public class StorePropertyResource extends SimpleResourceDefinition {
         super(STORE_PROPERTY_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
                 CacheConfigOperationHandlers.STORE_PROPERTY_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
@@ -38,7 +41,8 @@ public class StorePropertyResource extends SimpleResourceDefinition {
         super.registerAttributes(resourceRegistration);
 
         // do we need a special handler here?
-        resourceRegistration.registerReadWriteAttribute(VALUE, null, CacheConfigOperationHandlers.STORE_PROPERTY_ATTR);
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(VALUE);
+        resourceRegistration.registerReadWriteAttribute(VALUE, null, writeHandler);
     }
 
     @Override

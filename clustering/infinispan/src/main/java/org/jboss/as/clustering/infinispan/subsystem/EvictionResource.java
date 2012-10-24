@@ -4,6 +4,7 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -48,7 +49,7 @@ public class EvictionResource extends SimpleResourceDefinition {
         super(EVICTION_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.EVICTION),
                 CacheConfigOperationHandlers.EVICTION_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

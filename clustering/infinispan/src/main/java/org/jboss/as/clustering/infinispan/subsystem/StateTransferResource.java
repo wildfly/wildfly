@@ -3,6 +3,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -57,7 +58,7 @@ public class StateTransferResource extends SimpleResourceDefinition {
         super(STATE_TRANSFER_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STATE_TRANSFER),
                 CacheConfigOperationHandlers.STATE_TRANSFER_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

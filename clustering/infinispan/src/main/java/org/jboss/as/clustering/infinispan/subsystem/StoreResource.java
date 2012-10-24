@@ -6,6 +6,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -46,7 +47,7 @@ public class StoreResource extends BaseStoreResource {
         super(STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE),
                 CacheConfigOperationHandlers.STORE_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

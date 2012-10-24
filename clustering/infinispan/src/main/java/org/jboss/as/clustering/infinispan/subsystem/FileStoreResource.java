@@ -6,6 +6,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -57,7 +58,7 @@ public class FileStoreResource extends BaseStoreResource {
         super(FILE_STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE),
                 CacheConfigOperationHandlers.FILE_STORE_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

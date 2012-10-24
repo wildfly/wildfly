@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -91,4 +92,12 @@ public interface InfinispanLogger extends BasicLogger {
     @Message(id = 10284, value = "The '%s' attribute specified on the 'transport' element of a cache container is no longer valid" +
                 "; use the same attribute specified on the 'transport' element of corresponding JGroups stack instead")
     void topologyAttributeDeprecated(String attribute);
+
+    /**
+     * Logs a debug message indicating that named cache container has been installed.
+     */
+    @LogMessage(level = DEBUG)
+    @Message(id = 10285, value = "'%s' cache container installed.")
+    void cacheContainerInstalled(String containerName);
+
 }

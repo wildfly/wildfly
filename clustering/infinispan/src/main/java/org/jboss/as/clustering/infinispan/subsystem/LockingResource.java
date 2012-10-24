@@ -4,6 +4,7 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -68,7 +69,7 @@ public class LockingResource extends SimpleResourceDefinition {
         super(LOCKING_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING),
                 CacheConfigOperationHandlers.LOCKING_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

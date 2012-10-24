@@ -4,6 +4,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -71,7 +72,7 @@ public class StoreWriteBehindResource extends SimpleResourceDefinition {
         super(STORE_WRITE_BEHIND_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.WRITE_BEHIND),
                 CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

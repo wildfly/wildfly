@@ -8,6 +8,7 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -80,7 +81,7 @@ public class RemoteStoreResource extends BaseStoreResource {
         super(REMOTE_STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE),
                 CacheConfigOperationHandlers.REMOTE_STORE_ADD,
-                CacheConfigOperationHandlers.REMOVE);
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

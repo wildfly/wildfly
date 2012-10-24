@@ -160,4 +160,14 @@ public interface InfinispanMessages {
     @Message(id = 10300, value = "Failed to locate %s")
     String notFound(String resourceName);
 
+    /**
+     * A message indicating that the resource could not be parsed.
+     *
+     * @param resourceName the name of the resource.
+     *
+     * @return IllegalStateException instance.
+     */
+    @Message(id = 10301, value = "Failed to parse %s")
+    IllegalStateException failedToParse(@Cause Throwable cause, String resourceName);
+
 }

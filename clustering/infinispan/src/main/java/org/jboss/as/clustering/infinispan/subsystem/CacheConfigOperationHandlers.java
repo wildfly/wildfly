@@ -8,9 +8,9 @@ import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResou
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResource.TRANSACTION_ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -18,10 +18,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * Common code for handling the following cache configuration elements
@@ -31,107 +33,47 @@ import org.jboss.dmr.Property;
  */
 public class CacheConfigOperationHandlers {
 
-    /** The cache locking config add operation handler. */
-    static final OperationStepHandler LOCKING_ADD = new BasicCacheConfigAdd(LOCKING_ATTRIBUTES);
+    static final OperationStepHandler LOCKING_ADD = new CacheConfigAdd(LOCKING_ATTRIBUTES);
+    static final OperationStepHandler TRANSACTION_ADD = new CacheConfigAdd(TRANSACTION_ATTRIBUTES);
+    static final OperationStepHandler EVICTION_ADD = new CacheConfigAdd(EVICTION_ATTRIBUTES);
+    static final OperationStepHandler EXPIRATION_ADD = new CacheConfigAdd(EXPIRATION_ATTRIBUTES);
+    static final OperationStepHandler STATE_TRANSFER_ADD = new CacheConfigAdd(STATE_TRANSFER_ATTRIBUTES);
 
-    /** The cache transaction config add operation handler. */
-    static final OperationStepHandler TRANSACTION_ADD = new BasicCacheConfigAdd(TRANSACTION_ATTRIBUTES);
-
-    /** The cache eviction config add operation handler. */
-    static final OperationStepHandler EVICTION_ADD = new BasicCacheConfigAdd(EVICTION_ATTRIBUTES);
-
-    /** The cache expiration config add operation handler. */
-    static final OperationStepHandler EXPIRATION_ADD = new BasicCacheConfigAdd(EXPIRATION_ATTRIBUTES);
-
-    /** The cache state transfer config add operation handler. */
-    static final OperationStepHandler STATE_TRANSFER_ADD = new BasicCacheConfigAdd(STATE_TRANSFER_ATTRIBUTES);
-
-    /** The cache store config add operation handler. */
     static final OperationStepHandler STORE_ADD = new CacheStoreAdd();
-
-    /** The cache store write-behind config add operation handler. */
-    static final OperationStepHandler STORE_WRITE_BEHIND_ADD = new BasicCacheConfigAdd(WRITE_BEHIND_ATTRIBUTES);
-
-    /** The cache file-store config add operation handler. */
+    static final OperationStepHandler STORE_WRITE_BEHIND_ADD = new CacheConfigAdd(WRITE_BEHIND_ATTRIBUTES);
+    static final OperationStepHandler STORE_PROPERTY_ADD = new CacheConfigAdd(new AttributeDefinition[]{StorePropertyResource.VALUE});
     static final OperationStepHandler FILE_STORE_ADD = new FileCacheStoreAdd();
-
-    /** The cache string-keyed-jdbc-store config add operation handler. */
     static final OperationStepHandler STRING_KEYED_JDBC_STORE_ADD = new StringKeyedJDBCCacheStoreAdd();
-
-    /** The cache binary-keyed-jdbc-store config add operation handler. */
     static final OperationStepHandler BINARY_KEYED_JDBC_STORE_ADD = new BinaryKeyedJDBCCacheStoreAdd();
-
-    /** The cache mixed-keyed-jdbc-store config add operation handler. */
     static final OperationStepHandler MIXED_KEYED_JDBC_STORE_ADD = new MixedKeyedJDBCCacheStoreAdd();
-
-    /** The cache remote-store config add operation handler. */
     static final OperationStepHandler REMOTE_STORE_ADD = new RemoteCacheStoreAdd();
-
-    /** The cache config remove operation handler. */
-    static final OperationStepHandler REMOVE = new OperationStepHandler() {
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            context.removeResource(PathAddress.EMPTY_ADDRESS);
-            reloadRequiredStep(context);
-            context.stepCompleted();
-        }
-    };
-
-    /** The cache config property add operation handler. */
-    static final OperationStepHandler STORE_PROPERTY_ADD = new OperationStepHandler() {
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            StorePropertyResource.VALUE.validateAndSet(operation, resource.getModel());
-            reloadRequiredStep(context);
-            context.stepCompleted();
-        }
-    };
-
-    static final OperationStepHandler STORE_PROPERTY_ATTR = new OperationStepHandler() {
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-            StorePropertyResource.VALUE.validateAndSet(operation, resource.getModel());
-            reloadRequiredStep(context);
-            context.stepCompleted();
-        }
-    };
 
     /**
      * Helper class to process adding basic nested cache configuration elements to the cache parent resource.
-     * Override the process method in order to process configuration specific elements.
-     *
+     * When additional configuration is added, services need to be restarted; we restart all of them, for now
+     * by indicating reload required.
      */
-    private static class BasicCacheConfigAdd implements OperationStepHandler  {
+    private static class CacheConfigAdd extends AbstractAddStepHandler  {
         private final AttributeDefinition[] attributes;
 
-        BasicCacheConfigAdd(final AttributeDefinition[] attributes) {
+        CacheConfigAdd(final AttributeDefinition[] attributes) {
             this.attributes = attributes;
         }
 
         @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            final ModelNode subModel = resource.getModel();
-
-            // Process attributes
-            for(final AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, subModel);
+        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+            for (AttributeDefinition attr : attributes) {
+                attr.validateAndSet(operation, model);
             }
-
-            // Process type specific properties if required
-            process(subModel, operation);
-
-            // This needs a reload
-            reloadRequiredStep(context);
-            context.stepCompleted();
         }
 
-        void process(ModelNode subModel, ModelNode operation) {
-            //
-        };
-    }
+        @Override
+        protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            super.performRuntime(context, operation, model, verificationHandler, newControllers);
+            // once we add a cache configuration, we need to restart all the services for the changes to take effect
+            context.reloadRequired();
+        }
+     }
 
     /**
      * Base class for adding cache stores.
@@ -139,8 +81,7 @@ public class CacheConfigOperationHandlers {
      * This class needs to do the following:
      * - check that its parent has no existing defined cache store
      * - process its model attributes
-     * - create any child resources required for the store resource, such as a
-     * set of properties
+     * - create any child resources required for the store resource, such as a set of properties
      *
      */
     abstract static class AbstractCacheStoreAdd extends AbstractAddStepHandler {
@@ -157,7 +98,7 @@ public class CacheConfigOperationHandlers {
             // need to check that the parent does not contain some other cache store ModelNode
             if (isCacheStoreDefined(context, operation)) {
                 String storeName = getDefinedCacheStore(context, operation);
-                throw new OperationFailedException(new ModelNode().set("cache store " + storeName + " is already defined"));
+                throw InfinispanMessages.MESSAGES.cacheStoreAlreadyDefined(storeName);
             }
 
             // Process attributes
@@ -179,7 +120,7 @@ public class CacheConfigOperationHandlers {
                     final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                     final ModelNode value = property.getValue();
                     if(! value.isDefined()) {
-                        throw new OperationFailedException(new ModelNode().set("property " + property.getName() + " not defined"));
+                        throw InfinispanMessages.MESSAGES.propertyValueNotDefined(property.getName());
                     }
                     // set the value of the property
                     param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
@@ -332,39 +273,6 @@ public class CacheConfigOperationHandlers {
         }
     }
 
-
-    /**
-     * Add a step triggering the {@linkplain org.jboss.as.controller.OperationContext#reloadRequired()} in case the
-     * the cache service is installed, since the transport-config operations need a reload/restart and can't be
-     * applied to the runtime directly.
-     *
-     * @param context the operation context
-     */
-    static void reloadRequiredStep(final OperationContext context) {
-        if (context.getProcessType().isServer() && !context.isBooting()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-
-                    // shorten this by providing static getServiceName methods which take an OP_ADDR
-//                    PathAddress elementAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-//                    PathAddress cacheAddress = elementAddress.subAddress(0, elementAddress.size() - 1);
-//                    PathAddress containerAddress = cacheAddress.subAddress(0, cacheAddress.size() - 2);
-//                    String cacheName = cacheAddress.getLastElement().getValue();
-//                    String containerName = containerAddress.getLastElement().getValue();
-//                    ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
-
-//                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheConfigurationServiceName);
-//                    if(controller != null) {
-//                        context.reloadRequired();
-//                    }
-                    context.reloadRequired();
-                    context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
-    }
-
     private static PathAddress getCacheAddress(ModelNode operation) {
         PathAddress cacheStoreAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
         PathAddress cacheAddress = cacheStoreAddress.subAddress(0, cacheStoreAddress.size()-1);
@@ -377,12 +285,6 @@ public class CacheConfigOperationHandlers {
         ModelNode cache = Resource.Tools.readModel(context.readResourceFromRoot(cacheAddress));
         return cache ;
     }
-/*
-    private static Resource getCacheResource(OperationContext context, PathAddress cacheAddress) {
-        Resource rootResource = context.readResourceFromRoot(cacheAddress, true);
-        return rootResource ;
-    }
-*/
     private static boolean isCacheStoreDefined(OperationContext context, ModelNode operation) {
          ModelNode cache = getCache(context, getCacheAddress(operation)) ;
 
@@ -431,15 +333,5 @@ public class CacheConfigOperationHandlers {
 
     private static boolean hasRemoteStore(ModelNode cache) {
         return cache.hasDefined(ModelKeys.REMOTE_STORE) && cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined() ;
-    }
-
-    // join two arrays
-    private static AttributeDefinition[] combine(AttributeDefinition[] one, AttributeDefinition[] two) {
-
-        ArrayList<AttributeDefinition> list = new ArrayList<AttributeDefinition>(Arrays.asList(one)) ;
-        list.addAll(Arrays.asList(two));
-        AttributeDefinition[] allValueTypes = new AttributeDefinition[list.size()];
-        list.toArray(allValueTypes);
-        return allValueTypes;
     }
 }
