@@ -26,7 +26,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -59,7 +59,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -93,7 +93,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
@@ -129,7 +129,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         ModelNode addOp = getCacheAddOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
         ModelNode removeOp = getCacheRemoveOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
@@ -152,7 +152,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         ModelNode addOp = getCacheAddOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
         ModelNode removeOp = getCacheRemoveOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
