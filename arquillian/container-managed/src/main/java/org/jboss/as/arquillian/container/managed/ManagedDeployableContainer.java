@@ -16,11 +16,9 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,7 +38,8 @@ import org.jboss.as.arquillian.container.CommonDeployableContainer;
  */
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
-    private static final String CONFIG_PATH = "/standalone/configuration/";
+    private static final String CONFIG_PATH = "/configuration/";
+    private static final String SERVER_BASE_DIR = "standalone";
 
     private static final int PORT_RANGE_MIN = 1;
     private static final int PORT_RANGE_MAX = 65535;
@@ -114,9 +113,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 cmd.add("-ea");
             }
 
+            final String serverBaseDir = getSystemPropertyValue(cmd, "jboss.server.base.dir", SERVER_BASE_DIR);
+            final String bootLogFileDefaultValue = jbossHome + "/" + serverBaseDir + "/log/boot.log";
+            final String loggingConfigurationDefaultValue = "file:" + jbossHome + "/" + serverBaseDir + CONFIG_PATH + "logging.properties";
             cmd.add("-Djboss.home.dir=" + jbossHome);
-            cmd.add("-Dorg.jboss.boot.log.file=" + jbossHome + "/standalone/log/boot.log");
-            cmd.add("-Dlogging.configuration=file:" + jbossHome + CONFIG_PATH + "logging.properties");
+            cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", bootLogFileDefaultValue));
+            cmd.add("-Dlogging.configuration=" + getSystemPropertyValue(cmd, "logging.configuration", loggingConfigurationDefaultValue));
             cmd.add("-Djboss.bundles.dir=" + bundlesPath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
@@ -339,5 +341,24 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
            }
         }
 
+    }
+
+    /**
+     * Get the value of the system property from a list of command line arguments.
+     *
+     * @param cmdArguments list of command line arguments
+     * @param systemPropertyName name of the system property
+     * @param defaultValue the default value
+     * @return The value of the {@code systemPropertyName} if found in the {@code cmdArguments}
+     *         or the {@code defaultValue}
+     */
+    private String getSystemPropertyValue(List<String> cmdArguments, String systemPropertyName, String defaultValue) {
+        final String argument = "-D" + systemPropertyName + "=";
+        for (String cmdArgument : cmdArguments) {
+            if (cmdArgument.startsWith(argument)) {
+                return cmdArgument.substring(argument.length());
+            }
+        }
+        return defaultValue;
     }
 }
