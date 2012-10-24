@@ -24,6 +24,7 @@ package org.jboss.as.osgi.service;
 
 import static org.jboss.as.osgi.OSGiLogger.LOGGER;
 import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,7 +39,6 @@ import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.OSGiConstants;
 import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.osgi.parser.SubsystemState.OSGiCapability;
@@ -50,7 +50,6 @@ import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -65,6 +64,7 @@ import org.jboss.osgi.framework.spi.BootstrapBundlesActivate;
 import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
 import org.jboss.osgi.framework.spi.BootstrapBundlesResolve;
 import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageState;
 import org.jboss.osgi.framework.spi.StorageStatePlugin;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -97,7 +97,7 @@ import org.osgi.service.startlevel.StartLevel;
  * @author Thomas.Diesler@jboss.com
  * @since 11-Sep-2010
  */
-class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implements IntegrationService<Void> {
+class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private final InjectedValue<StorageStatePlugin> injectedStorageProvider = new InjectedValue<StorageStatePlugin>();
@@ -112,24 +112,18 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
     private File bundlesDir;
 
     BootstrapBundlesIntegration() {
-        super(BOOTSTRAP_BUNDLES);
-    }
-
-    ServiceController<Void> install(ServiceTarget serviceTarget, ServiceVerificationHandler verificationHandler) {
-        ServiceController<Void> controller = super.install(serviceTarget);
-        if (verificationHandler != null)
-            controller.addListener(Inheritance.ALL, verificationHandler);
-        return controller;
+        super(IntegrationServices.BOOTSTRAP_BUNDLES);
     }
 
     @Override
     protected void addServiceDependencies(ServiceBuilder<Void> builder) {
+        super.addServiceDependencies(builder);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, injectedServerEnvironment);
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, injectedSubsystemState);
         builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, injectedPackageAdmin);
-        builder.addDependency(IntegrationService.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, injectedStorageProvider);
+        builder.addDependency(IntegrationServices.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, injectedStorageProvider);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, injectedStartLevel);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
@@ -137,8 +131,6 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        super.start(context);
-
         List<Deployment> deployments = new ArrayList<Deployment>();
         try {
             ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
@@ -176,7 +168,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
 
     @Override
     protected ServiceController<Void> installResolveService(ServiceTarget serviceTarget, Set<ServiceName> installedServices) {
-        return new BootstrapResolveIntegration(getServiceName().getParent(), installedServices).install(serviceTarget);
+        return new BootstrapResolveIntegration(getServiceName().getParent(), installedServices).install(serviceTarget, getServiceListener());
     }
 
     private boolean installInitialModuleCapability(OSGiCapability configcap) throws Exception {
@@ -335,7 +327,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> implemen
 
         @Override
         protected ServiceController<Void> installActivateService(ServiceTarget serviceTarget, Set<ServiceName> resolvedServices) {
-            return new BootstrapActivateIntegration(getServiceName().getParent(), resolvedServices).install(serviceTarget);
+            return new BootstrapActivateIntegration(getServiceName().getParent(), resolvedServices).install(serviceTarget, getServiceListener());
         }
     }
 

@@ -51,7 +51,6 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -59,9 +58,11 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.spi.AbstractIntegrationService;
 import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.ServiceTracker;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.vfs.VFSUtils;
@@ -73,7 +74,7 @@ import org.osgi.framework.BundleException;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, IntegrationService<BundleLifecyclePlugin> {
+public final class BundleLifecycleIntegration extends AbstractIntegrationService<BundleLifecyclePlugin> implements BundleLifecyclePlugin {
 
     private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
@@ -81,19 +82,16 @@ public final class BundleLifecycleIntegration implements BundleLifecyclePlugin, 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
     private ServerDeploymentManager deploymentManager;
 
-    @Override
-    public ServiceName getServiceName() {
-        return BUNDLE_LIFECYCLE_PLUGIN;
+    BundleLifecycleIntegration() {
+        super(IntegrationServices.BUNDLE_LIFECYCLE_PLUGIN);
     }
 
     @Override
-    public ServiceController<BundleLifecyclePlugin> install(ServiceTarget serviceTarget) {
-        ServiceBuilder<BundleLifecyclePlugin> builder = serviceTarget.addService(getServiceName(), this);
+    protected void addServiceDependencies(ServiceBuilder<BundleLifecyclePlugin> builder) {
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
-        return builder.install();
     }
 
     @Override
