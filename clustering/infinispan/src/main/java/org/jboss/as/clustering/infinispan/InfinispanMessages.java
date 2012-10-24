@@ -150,4 +150,14 @@ public interface InfinispanMessages {
     @Message(id = 10299, value = "Value for property with key %s is not defined")
     OperationFailedException propertyValueNotDefined(String propertyKey);
 
+    /**
+     * A message indicating that the resource could not be located.
+     *
+     * @param resourceName the name of the resource.
+     *
+     * @return the String message.
+     */
+    @Message(id = 10300, value = "Failed to locate %s")
+    String notFound(String resourceName);
+
 }
