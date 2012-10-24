@@ -35,8 +35,6 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.dmr.ModelType;
 
 /**
  * A registration for a management resource which consists of a resource description plus registered operation handlers.
@@ -411,9 +409,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
      *
      * @param address the child of this registry that is an alias
      * @param aliasEntry the target model
-     * @deprecated Might change before AS 7.2.0
      */
-    @Deprecated
     void registerAlias(PathElement address, AliasEntry aliasEntry);
 
     /**

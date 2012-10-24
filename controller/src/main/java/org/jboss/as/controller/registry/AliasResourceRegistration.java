@@ -48,7 +48,6 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Kabir Khan
  */
-@SuppressWarnings("deprecation")
 final class AliasResourceRegistration extends AbstractResourceRegistration implements DescriptionProvider {
 
     private final AliasEntry aliasEntry;

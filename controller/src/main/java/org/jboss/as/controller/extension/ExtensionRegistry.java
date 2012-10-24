@@ -914,7 +914,6 @@ public class ExtensionRegistry {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         public void registerAlias(PathElement address, AliasEntry alias) {
             deployments.registerAlias(address, alias);
             subdeployments.registerAlias(address, alias);

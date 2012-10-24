@@ -35,9 +35,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * A handler that simply maps an alias onto a target part of the model.
  *
- * @deprecated Might change before AS 7.2.0
  */
-@Deprecated
 class AliasStepHandler implements OperationStepHandler {
 
     private final AliasEntry aliasEntry;

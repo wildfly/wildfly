@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -47,7 +46,6 @@ import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * A registry of model node information.  This registry is thread-safe.
@@ -441,7 +439,6 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public void registerAlias(PathElement address, AliasEntry alias) {
         RootInvocation rootInvocation = parent == null ? null : getRootInvocation();
         AbstractResourceRegistration root = rootInvocation == null ? this : rootInvocation.root;
