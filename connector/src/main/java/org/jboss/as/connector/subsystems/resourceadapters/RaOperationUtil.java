@@ -144,36 +144,48 @@ public class RaOperationUtil {
         boolean wrapXaResource = WRAP_XA_RESOURCE.resolveModelAttribute(context, operation).asBoolean();
         boolean noTxSeparatePool = NOTXSEPARATEPOOL.resolveModelAttribute(context, operation).asBoolean();
 
-        int allocationRetry = ALLOCATION_RETRY.resolveModelAttribute(context, operation).asInt();
-        long allocationRetryWaitMillis = ALLOCATION_RETRY_WAIT_MILLIS.resolveModelAttribute(context, operation).asLong();
-        long blockingTimeoutMillis = BLOCKING_TIMEOUT_WAIT_MILLIS.resolveModelAttribute(context, operation).asLong();
-        long idleTimeoutMinutes = IDLETIMEOUTMINUTES.resolveModelAttribute(context, operation).asLong();
-        int xaResourceTimeout = XA_RESOURCE_TIMEOUT.resolveModelAttribute(context, operation).asInt();
+        ModelNode allocationRetryModel = ALLOCATION_RETRY.resolveModelAttribute(context, operation);
+        ModelNode allocationRetryWaitMillisModel = ALLOCATION_RETRY_WAIT_MILLIS.resolveModelAttribute(context, operation);
+        ModelNode blockingTimeoutMillisModel = BLOCKING_TIMEOUT_WAIT_MILLIS.resolveModelAttribute(context, operation);
+        ModelNode idleTimeoutMinutesModel = IDLETIMEOUTMINUTES.resolveModelAttribute(context, operation);
+        ModelNode xaResourceTimeoutModel = XA_RESOURCE_TIMEOUT.resolveModelAttribute(context, operation);
+
+
+        Integer allocationRetry = allocationRetryModel.isDefined()?allocationRetryModel.asInt():null;
+        Long allocationRetryWaitMillis = allocationRetryWaitMillisModel.isDefined()?allocationRetryWaitMillisModel.asLong():null;
+        Long blockingTimeoutMillis = blockingTimeoutMillisModel.isDefined()?blockingTimeoutMillisModel.asLong():null;
+        Long idleTimeoutMinutes = idleTimeoutMinutesModel.isDefined()?idleTimeoutMinutesModel.asLong():null;
+        Integer xaResourceTimeout = xaResourceTimeoutModel.isDefined()?xaResourceTimeoutModel.asInt():null;
 
         CommonTimeOut timeOut = new CommonTimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout);
-        CommonPool pool = null;
+        CommonPool pool;
         if (isXa) {
             pool = new CommonXaPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy, isSameRM, interlivng, padXid, wrapXaResource, noTxSeparatePool);
         } else {
             pool = new CommonPoolImpl(minPoolSize, maxPoolSize, prefill, useStrictMin, flushStrategy);
         }
-        String securityDomain = SECURITY_DOMAIN.resolveModelAttribute(context, operation).asString();
-        String securityDomainAndApplication = SECURITY_DOMAIN_AND_APPLICATION.resolveModelAttribute(context, operation).asString();
+        ModelNode securityDomainModel = SECURITY_DOMAIN.resolveModelAttribute(context, operation);
+        String securityDomain = securityDomainModel.isDefined()?securityDomainModel.asString():null;
+        ModelNode securityDomainAndApplicationModel = SECURITY_DOMAIN_AND_APPLICATION.resolveModelAttribute(context, operation);
+        String securityDomainAndApplication = securityDomainAndApplicationModel.isDefined()?securityDomainAndApplicationModel.asString():null;
 
         boolean application = APPLICATION.resolveModelAttribute(context, operation).asBoolean();
         CommonSecurity security = null;
         if (securityDomain != null || securityDomainAndApplication != null) {
             security = new CommonSecurityImpl(securityDomain, securityDomainAndApplication, application);
         }
-        long backgroundValidationMillis = BACKGROUNDVALIDATIONMILLIS.resolveModelAttribute(context, operation).asLong();
+        ModelNode backgroundValidationMillisModel = BACKGROUNDVALIDATIONMILLIS.resolveModelAttribute(context, operation);
+        Long backgroundValidationMillis = backgroundValidationMillisModel.isDefined()?backgroundValidationMillisModel.asLong():null;
         boolean backgroundValidation = BACKGROUNDVALIDATION.resolveModelAttribute(context, operation).asBoolean();
         boolean useFastFail = USE_FAST_FAIL.resolveModelAttribute(context, operation).asBoolean();
         CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail);
         final String recoveryUsername = RECOVERY_USERNAME.resolveModelAttribute(context, operation).asString();
 
-        String recoveryPassword = RECOVERY_PASSWORD.resolveModelAttribute(context, operation).asString();
-        final String recoverySecurityDomain = RECOVERY_SECURITY_DOMAIN.resolveModelAttribute(context, operation).asString();
+        final ModelNode recoveryPasswordModel = RECOVERY_PASSWORD.resolveModelAttribute(context, operation);
+        final String recoveryPassword = recoveryPasswordModel.isDefined()?recoveryPasswordModel.asString():null;
+        final ModelNode recoverySecurityDomainModel = RECOVERY_SECURITY_DOMAIN.resolveModelAttribute(context, operation);
+        final String recoverySecurityDomain = recoverySecurityDomainModel.isDefined()?recoverySecurityDomainModel.asString():null;
         boolean noRecovery = NO_RECOVERY.resolveModelAttribute(context, operation).asBoolean();
 
         Recovery recovery = null;

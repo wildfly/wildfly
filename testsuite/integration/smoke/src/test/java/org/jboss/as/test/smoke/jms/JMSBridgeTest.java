@@ -48,6 +48,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,7 +83,8 @@ public class JMSBridgeTest {
                 .addClass(CreateQueueSetupTask.class)
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
-                        ArchivePaths.create("beans.xml"));
+                        ArchivePaths.create("beans.xml"))
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"), "MANIFEST.MF");
     }
 
     /**
