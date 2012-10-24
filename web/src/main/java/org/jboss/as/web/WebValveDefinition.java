@@ -20,12 +20,6 @@ import org.jboss.dmr.ModelType;
 public class WebValveDefinition extends SimpleResourceDefinition {
     protected static final WebValveDefinition INSTANCE = new WebValveDefinition();
 
-    protected static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING)
-                    .setXmlName(Constants.NAME)
-                    .setAllowNull(true) // todo should be false, but 'add' won't validate then
-                    .build();
-
     protected static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(Constants.MODULE,
             ModelType.STRING).setXmlName(Constants.MODULE).setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setValidator(new StringLengthValidator(1)).build();

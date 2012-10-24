@@ -56,9 +56,6 @@ class WebValveAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        model.get(WebValveDefinition.NAME.getName()).set(address.getLastElement().getValue());
-
         for (SimpleAttributeDefinition def : WebValveDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, model);
         }
