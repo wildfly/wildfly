@@ -35,9 +35,11 @@ import java.util.Map;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
+import org.hornetq.api.core.JGroupsBroadcastGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.ra.HornetQResourceAdapter;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
@@ -141,6 +143,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
     public static final String DISCOVERY_LOCAL_BIND_ADDRESS = "discoveryLocalBindAddress";
     public static final String TRANSACTION_MANAGER_LOCATOR_METHOD = "transactionManagerLocatorMethod";
     public static final String TRANSACTION_MANAGER_LOCATOR_CLASS = "transactionManagerLocatorClass";
+    public static final String JGROUPS_CHANNEL_NAME = "jgroupsChannelName";
+    public static final String CONNECTION_POOL_NAME = "connectionPoolName";
 
     private static final Collection<String> JMS_ACTIVATION_CONFIG_PROPERTIES = new HashSet<String>();
 
@@ -239,6 +243,9 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
                 } else {
                     // FIXME HORNETQ-1048 HornetQ RA does not allow to set a JGroups channel
+                    JGroupsBroadcastGroupConfiguration jgroupsCfg = (JGroupsBroadcastGroupConfiguration)bgCfg;
+                    HornetQResourceAdapter.setJGroupsEndpointFactory(name, jgroupsCfg);
+                    properties.add(simpleProperty15(CONNECTION_POOL_NAME, STRING_TYPE, name));
                 }
                 properties.add(simpleProperty15(DISCOVERY_INITIAL_WAIT_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getDiscoveryInitialWaitTimeout()));
                 properties.add(simpleProperty15(REFRESH_TIMEOUT, LONG_TYPE, "" + discoveryGroupConfiguration.getRefreshTimeout()));
