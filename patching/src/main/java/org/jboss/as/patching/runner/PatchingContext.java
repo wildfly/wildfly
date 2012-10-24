@@ -22,11 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.Constants;
-import static org.jboss.as.patching.runner.PatchUtils.generateTimestamp;
-
 import org.jboss.as.boot.DirectoryStructure;
-import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
@@ -72,8 +68,7 @@ class PatchingContext {
     private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
 
     private boolean rollbackOnly;
-    // the patchID that is rolled back. null if a patch is applied
-    private final String rollingBackPatchID;
+    private boolean rollback;
 
     /**
      * Create a patching context.
@@ -91,7 +86,7 @@ class PatchingContext {
         if(!backup.mkdirs()) {
             PatchMessages.MESSAGES.cannotCreateDirectory(backup.getAbsolutePath());
         }
-        final PatchingContext context = new PatchingContext(patch, info, structure, backup, policy, null);
+        final PatchingContext context = new PatchingContext(patch, info, structure, backup, policy, false);
         // Register the patch loader
         final PatchContentLoader loader = PatchContentLoader.create(workDir);
         context.contentLoaders.put(patch.getPatchId(), loader);
@@ -106,18 +101,17 @@ class PatchingContext {
      * @param structure the directory structure
      * @param overrideAll override all conflicting files
      * @param workDir the current work dir
-     * @param rollingBackPatchID the patchID of the patch to rollback
      * @return the patching context for rollback
      */
-    static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir, final String rollingBackPatchID) {
+    static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir) {
         // backup is just a temp dir
         final File backup = workDir;
         final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
-        return new PatchingContext(patch, current, structure, backup, policy, rollingBackPatchID);
+        return new PatchingContext(patch, current, structure, backup, policy, true);
     }
 
-    private PatchingContext(final Patch patch, final PatchInfo info, final DirectoryStructure structure,
-                            final File backup, final ContentVerificationPolicy policy, final String rollingBackPatchID) {
+    PatchingContext(final Patch patch, final PatchInfo info, final DirectoryStructure structure,
+                            final File backup, final ContentVerificationPolicy policy, boolean rollback) {
         this.patch = patch;
         this.info = info;
         this.backup = backup;
@@ -126,7 +120,16 @@ class PatchingContext {
         this.miscBackup = new File(backup, PatchContentLoader.MISC);
         this.configBackup = new File(backup, DirectoryStructure.CONFIGURATION);
         this.target = structure.getInstalledImage().getJbossHome();
-        this.rollingBackPatchID = rollingBackPatchID;
+        this.rollback = rollback;
+    }
+
+    /**
+     * Get the patch.
+     *
+     * @return the patch
+     */
+    public Patch getPatch() {
+        return patch;
     }
 
     /**
@@ -265,81 +268,20 @@ class PatchingContext {
     /**
      * Finish the patch.
      *
-     * @param patch the patch
+     * @param task the task for the final operations
      * @return the patching result
      * @throws PatchingException
      */
-    PatchingResult finish(final Patch patch) throws PatchingException {
+    PatchingResult finish(final TaskFinishCallback task) throws PatchingException {
         if(rollbackOnly) {
             throw new IllegalStateException();
         }
-        // Create the new info
-        final String patchId = patch.getPatchId();
         final PatchInfo newInfo;
-        if(Patch.PatchType.ONE_OFF == patch.getPatchType()) {
-            final List<String> patches = new ArrayList<String>(info.getPatchIDs());
-            if (rollingBackPatchID != null) {
-                patches.remove(rollingBackPatchID);
-            } else {
-                patches.add(0, patchId);
-            }
-            final String resultingVersion = info.getVersion();
-            newInfo = new LocalPatchInfo(resultingVersion, info.getCumulativeID(), patches, info.getEnvironment());
-        } else {
-            final String resultingVersion = patch.getResultingVersion();
-            newInfo = new LocalPatchInfo(resultingVersion, patchId, Collections.<String>emptyList(), info.getEnvironment());
-        }
-        // Backup the current active patch Info
-        final File cumulativeBackup = new File(backup, DirectoryStructure.CUMULATIVE);
-        final File referencesBackup = new File(backup, DirectoryStructure.REFERENCES);
-        final File timestamp = new File(backup, Constants.TIMESTAMP);
+        final Patch rollbackPatch = new RollbackPatch();
         try {
-            PatchUtils.writeRef(cumulativeBackup, info.getCumulativeID());
-            PatchUtils.writeRefs(referencesBackup, info.getPatchIDs());
-            PatchUtils.writeRef(timestamp, generateTimestamp());
+            newInfo = task.finalizePatch(rollbackPatch, this);
         } catch (IOException e) {
             throw  new PatchingException(e);
-        }
-
-        // persist the applied patch
-        if (!PatchInfo.BASE.equals(patch.getPatchId())) {
-            final File appliedPatchXml = new File(backup, PatchXml.PATCH_XML);
-            try {
-                final OutputStream os = new FileOutputStream(appliedPatchXml);
-                try {
-                    PatchXml.marshal(os, patch);
-                } finally {
-                    PatchUtils.safeClose(os);
-                }
-            } catch (XMLStreamException e) {
-                throw new PatchingException(e);
-            } catch (IOException e) {
-                throw new PatchingException(e);
-            }
-        }
-        // Persist the patch rollback information
-        final Patch newPatch = new RollbackPatch();
-        final File patchXml = new File(backup, ROLLBACK_XML);
-        try {
-            final OutputStream os = new FileOutputStream(patchXml);
-            try {
-                PatchXml.marshal(os, newPatch);
-            } finally {
-                PatchUtils.safeClose(os);
-            }
-        } catch (XMLStreamException e) {
-            throw new PatchingException(e);
-        } catch (IOException e) {
-            throw new PatchingException(e);
-        }
-        try {
-            if (rollingBackPatchID != null) {
-                restoreConfiguration(rollingBackPatchID);
-            } else {
-                backupConfiguration();
-            }
-        } catch (IOException e) {
-            throw new PatchingException(e);
         }
         try {
             // Persist
@@ -368,16 +310,24 @@ class PatchingContext {
                 }
 
                 @Override
+                public void commit() {
+                    task.commitCallback();
+                }
+
+                @Override
                 public void rollback() {
-                    // TODO cleanup
                     try {
                         undo();
                     } finally {
                         try {
-                            // Persist the original info
-                            persist(info);
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
+                            task.rollbackCallback();
+                        } finally {
+                            try {
+                                // Persist the original info
+                                persist(info);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                 }
@@ -402,7 +352,7 @@ class PatchingContext {
         // Use the misc backup location for the content items
         final PatchContentLoader loader = new PatchContentLoader(miscBackup, null, null);
         final File backup = null; // We skip the prepare step, so there should be no backup
-        final PatchingContext undoContext = new PatchingContext(patch, info, structure, backup, ContentVerificationPolicy.OVERRIDE_ALL, null);
+        final PatchingContext undoContext = new PatchingContext(patch, info, structure, backup, ContentVerificationPolicy.OVERRIDE_ALL, true);
 
         for(final ContentModification modification : rollbackActions) {
             final ContentType type = modification.getItem().getContentType();
@@ -462,7 +412,7 @@ class PatchingContext {
 
         @Override
         public String getPatchId() {
-            return info.getCumulativeID();
+            return patch.getPatchId();
         }
 
         @Override
@@ -519,6 +469,25 @@ class PatchingContext {
 
     }
 
+    static void writePatch(final Patch patch, final File file) throws IOException {
+        final File parent = file.getParentFile();
+        if(! parent.isDirectory()) {
+            if(! parent.mkdirs() && ! parent.exists()) {
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(file.getAbsolutePath());
+            }
+        }
+        try {
+            final OutputStream os = new FileOutputStream(file);
+            try {
+                PatchXml.marshal(os, patch);
+            } finally {
+                PatchUtils.safeClose(os);
+            }
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        }
+    }
+
     static final FileFilter CONFIG_FILTER = new FileFilter() {
 
             @Override
@@ -563,6 +532,30 @@ class PatchingContext {
             final File s = new File(image.getStandaloneDir(), configuration);
             backupDirectory(bs, s);
         }
+
+    }
+
+    interface TaskFinishCallback {
+
+        /**
+         * Finalize the patch after all content tasks were run.
+         *
+         * @param rollbackPatch the rollback information
+         * @param context the patching context
+         * @return the new patch info
+         * @throws IOException
+         */
+        PatchInfo finalizePatch(Patch rollbackPatch, PatchingContext context) throws IOException;
+
+        /**
+         * Callback when the results gets committed.
+         */
+        void commitCallback();
+
+        /**
+         * Callback when the current operation gets rolled back.
+         */
+        void rollbackCallback();
 
     }
 

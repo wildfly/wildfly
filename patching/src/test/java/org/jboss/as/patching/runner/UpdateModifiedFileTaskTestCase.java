@@ -91,6 +91,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
         PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
 
+
         assertPatchHasNotBeenApplied(result, patch, fileUpdated.getItem());
 
         /// file has not been modified in the AS7 installation

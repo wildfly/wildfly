@@ -85,8 +85,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
         tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
@@ -129,8 +128,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
         assertFileExists(standaloneShellFile);
@@ -140,8 +138,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
 
         // rollback the patch based on the updated PatchInfo
-        runner = new PatchingTaskRunner(result.getPatchInfo(), result.getPatchInfo().getEnvironment());
-        PatchingResult rollbackResult = runner.rollback(patchID, true);
+        PatchingResult rollbackResult = rollback(result.getPatchInfo(), patchID);
 
         tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
@@ -173,8 +170,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(cumulativePatchDir, cumulativePatch);
         File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, culumativePatchID);
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult resultOfCumulativePatch = runner.executeDirect(new FileInputStream(zippedCumulativePatch), ContentVerificationPolicy.STRICT);
+        PatchingResult resultOfCumulativePatch = executePatch(info, zippedCumulativePatch);
 
         assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
 
@@ -199,8 +195,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File zippedOneOffPatch = createZippedPatchFile(oneOffPatchDir, oneOffPatchID);
 
         // use the updated PatchInfo for the result of applying the cumulative patch
-        runner = new PatchingTaskRunner(resultOfCumulativePatch.getPatchInfo(), resultOfCumulativePatch.getPatchInfo().getEnvironment());
-        PatchingResult resultOfOneOffPatch = runner.executeDirect(new FileInputStream(zippedOneOffPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult resultOfOneOffPatch = executePatch(resultOfCumulativePatch.getPatchInfo(), zippedOneOffPatch);
 
         assertPatchHasBeenApplied(resultOfOneOffPatch, oneOffPatch);
 
@@ -237,8 +232,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(cumulativePatchDir, cumulativePatch);
         File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, culumativePatchID);
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult resultOfCumulativePatch = runner.executeDirect(new FileInputStream(zippedCumulativePatch), ContentVerificationPolicy.STRICT);
+        PatchingResult resultOfCumulativePatch = executePatch(info, zippedCumulativePatch);
 
         assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
 
@@ -263,20 +257,18 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File zippedOneOffPatch = createZippedPatchFile(oneOffPatchDir, oneOffPatchID);
 
         // use the updated PatchInfo for the result of applying the cumulative patch
-        runner = new PatchingTaskRunner(resultOfCumulativePatch.getPatchInfo(), resultOfCumulativePatch.getPatchInfo().getEnvironment());
-        PatchingResult resultOfOneOffPatch = runner.executeDirect(new FileInputStream(zippedOneOffPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult resultOfOneOffPatch = executePatch(resultOfCumulativePatch.getPatchInfo(), zippedOneOffPatch);
 
         assertPatchHasBeenApplied(resultOfOneOffPatch, oneOffPatch);
 
         assertDefinedModule(resultOfOneOffPatch.getPatchInfo().getModulePath(), moduleName, updatedHashOneOff);
 
         // rollback the cumulative patch, this should also rollback the one-off patch
-        runner = new PatchingTaskRunner(resultOfOneOffPatch.getPatchInfo(), resultOfOneOffPatch.getPatchInfo().getEnvironment());
-        PatchingResult resultOfCumulativePatchRollback = runner.rollback(culumativePatchID, true);
+        PatchingResult resultOfCumulativePatchRollback = rollback(resultOfOneOffPatch.getPatchInfo(), culumativePatchID);
 
         tree(resultOfCumulativePatchRollback.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
         assertPatchHasBeenRolledBack(resultOfCumulativePatchRollback, cumulativePatch, info);
-        assertNoResourcesForPatch(resultOfCumulativePatchRollback.getPatchInfo(), oneOffPatch);
+        // assertNoResourcesForPatch(resultOfCumulativePatchRollback.getPatchInfo(), oneOffPatch);
 
         assertDefinedModule(resultOfCumulativePatchRollback.getPatchInfo().getModulePath(), moduleName, existingHash);
     }

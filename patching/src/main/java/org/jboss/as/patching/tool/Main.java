@@ -149,6 +149,7 @@ public class Main {
                 log.infof("Run with '--override-all' to force overriding all content conflicts.");
             }
         } else {
+            result.commit();
             log.infof("Operation completed successfully: %s", result.getPatchId());
         }
     }

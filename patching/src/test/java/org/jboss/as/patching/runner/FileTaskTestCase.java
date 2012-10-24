@@ -81,8 +81,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
 
@@ -116,8 +115,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
 
@@ -160,8 +158,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
 

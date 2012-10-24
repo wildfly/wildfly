@@ -62,11 +62,17 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
             }
             final PatchInfo newInfo = result.getPatchInfo();
             service.setPatchInfo(info, newInfo);
-            context.completeStep(new OperationContext.RollbackHandler() {
+            context.completeStep(new OperationContext.ResultHandler() {
+
                 @Override
-                public void handleRollback(OperationContext context, ModelNode operation) {
-                    result.rollback();
+                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                    if(resultAction == OperationContext.ResultAction.KEEP) {
+                        result.commit();
+                    } else {
+                        result.rollback();
+                    }
                 }
+
             });
         } catch (PatchingException e) {
             throw new OperationFailedException(e.getMessage(), e);

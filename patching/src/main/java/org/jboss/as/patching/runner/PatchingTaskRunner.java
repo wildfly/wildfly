@@ -139,11 +139,16 @@ public class PatchingTaskRunner {
 
             // Execute the patch itself
             final PatchingContext context = PatchingContext.create(patch, patchInfo, structure, policy, workDir);
+            final PatchingContext.TaskFinishCallback task = new PatchingApplyCallback(patch, patchId, structure);
             try {
-                return applyPatch(patch, context);
+                return applyPatch(patch, context, task);
             } catch (Exception e) {
-                // Undo patch
-                context.undo();
+                try {
+                    // Undo patch
+                    context.undo();
+                } finally {
+                    task.rollbackCallback();
+                }
                 throw rethrowException(e);
             }
 
@@ -162,7 +167,7 @@ public class PatchingTaskRunner {
      * @return the patching result
      * @throws PatchingException
      */
-    private PatchingResult applyPatch(final Patch patch, final PatchingContext context) throws PatchingException {
+    private PatchingResult applyPatch(final Patch patch, final PatchingContext context, final PatchingContext.TaskFinishCallback finishTask) throws PatchingException {
         // Rollback one-off patches
         final List<String> rollbacks;
         final Patch.PatchType type = patch.getPatchType();
@@ -188,19 +193,19 @@ public class PatchingTaskRunner {
             throw new PatchingException(e);
         }
         // Process the resolved tasks
-        return executeTasks(patch, definitions, context);
+        return executeTasks(patch, finishTask, definitions, context);
     }
 
 
     /**
      * This will create and execute all the patching tasks based on the patch metadata.
      *
-     * @param patch the patch
+     * @param finishTask the finish Task
      * @param context the context
      * @return the result of the patching action
      * @throws PatchingException
      */
-    private PatchingResult executeTasks(final Patch patch, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions, final PatchingContext context) throws PatchingException {
+    private PatchingResult executeTasks(final Patch patch, final PatchingContext.TaskFinishCallback finishTask, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions, final PatchingContext context) throws PatchingException {
         // Create the modification tasks
         final List<PatchingTask> tasks = new ArrayList<PatchingTask>();
         final List<ContentItem> problems = new ArrayList<ContentItem>();
@@ -223,8 +228,7 @@ public class PatchingTaskRunner {
         }
         // If there were problems report them
         if(! problems.isEmpty()) {
-            // TODO handle patch cleanup
-            recursiveDelete(structure.getHistoryDir(patch.getPatchId()));
+            finishTask.rollbackCallback();
             return new FailedResult(patch.getPatchId(), context.getPatchInfo(), problems);
         }
         //
@@ -242,8 +246,8 @@ public class PatchingTaskRunner {
         } catch (Exception e) {
             throw rethrowException(e);
         }
-        // Finish..
-        return context.finish(patch);
+        // Finish ...
+        return context.finish(finishTask);
     }
 
     /**
@@ -305,10 +309,7 @@ public class PatchingTaskRunner {
                 // Check the consistency of the CP history
                 final File previousCP = new File(historyDir, DirectoryStructure.CUMULATIVE);
                 final String cumulative = PatchUtils.readRef(previousCP);
-                if(! cumulative.equals(patch.getPatchId())) {
-                    // TODO perhaps just ignore or warn?
-                    throw new PatchingException("inconsistent cumulative version expected: %s, was: %s", patch.getPatchId(), cumulative);
-                }
+
                 // Check the consistency of the patches history for cumulative patch
                 if (PatchType.CUMULATIVE == patch.getPatchType()) {
                     final File cumulativeReferences = structure.getCumulativeRefs(cumulative);
@@ -320,8 +321,9 @@ public class PatchingTaskRunner {
                         throw new PatchingException("inconsistent patches for '%s' expected: %s, was: %s", cumulative, historyDir, cumulativePatches);
                     }
                 }
+
                 // Process potentially multiple rollbacks
-                final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, overrideAll, workDir, patchId);
+                final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, overrideAll, workDir);
                 final Map<Location, PatchingTasks.ContentTaskDefinition> definitions = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
                 for(final String rollback : patches) {
                     try {
@@ -332,18 +334,8 @@ public class PatchingTaskRunner {
                     }
                 }
                 // Rollback
-                PatchingResult rollbackResult = executeTasks(patch, definitions, context);
-                // delete all resources associated to the rolled back patches
-                if (!rollbackResult.hasFailures()) {
-                    for(final String rollback : patches) {
-                        recursiveDelete(structure.getPatchDirectory(rollback));
-                        recursiveDelete(structure.getHistoryDir(rollback));
-                    }
-                    recursiveDelete(structure.getPatchDirectory(patchId));
-                    recursiveDelete(structure.getHistoryDir(patchId));
-                    recursiveDelete(structure.getCumulativeRefs(patchId));
-                }
-                return rollbackResult;
+                final PatchingContext.TaskFinishCallback task = new PatchingRollbackCallback(patchId, patch, patches, cumulative, structure);
+                return executeTasks(patch, task, definitions, context);
 
             } finally {
                 PatchUtils.safeClose(is);
@@ -474,8 +466,13 @@ public class PatchingTaskRunner {
         }
 
         @Override
+        public void commit() {
+            //
+        }
+
+        @Override
         public void rollback() {
-            throw new IllegalStateException();
+            //
         }
     }
 
