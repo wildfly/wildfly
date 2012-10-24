@@ -77,4 +77,4 @@ eval \"$JAVA\" $JAVA_OPTS \
     org.jboss.modules.Main \
     -mp \"$JBOSS_HOME/modules\" \
     org.jboss.ws.tools.wsconsume \
-    "$@"
+    '"$@"'
