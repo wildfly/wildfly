@@ -22,15 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.Locale;
-import java.util.ResourceBundle;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -303,7 +301,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
         }
     }
 
-
+    /*
     static final DescriptionProvider SUBSYSTEM_DESCRIBE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -331,6 +329,14 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
     private static ResourceBundle getResources(Locale locale) {
         return ResourceBundle.getBundle(InfinispanExtension.RESOURCE_NAME, (locale == null) ? Locale.getDefault() : locale);
     }
+    */
 
-
+    /*
+    * Description provider for the subsystem describe handler
+    */
+     static OperationDefinition DEFINITON = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE,null)
+             .setPrivateEntry()
+             .setReplyType(ModelType.LIST)
+             .setReplyValueType(ModelType.OBJECT)
+             .build();
 }

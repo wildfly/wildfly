@@ -122,15 +122,15 @@ public class CacheResource extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        resourceRegistration.registerSubModel(LockingResource.INSTANCE);
-        resourceRegistration.registerSubModel(TransactionResource.INSTANCE);
-        resourceRegistration.registerSubModel(EvictionResource.INSTANCE);
-        resourceRegistration.registerSubModel(ExpirationResource.INSTANCE);
-        resourceRegistration.registerSubModel(StoreResource.INSTANCE);
-        resourceRegistration.registerSubModel(FileStoreResource.INSTANCE);
-        resourceRegistration.registerSubModel(StringKeyedJDBCStoreResource.INSTANCE);
-        resourceRegistration.registerSubModel(BinaryKeyedJDBCStoreResource.INSTANCE);
-        resourceRegistration.registerSubModel(MixedKeyedJDBCStoreResource.INSTANCE);
-        resourceRegistration.registerSubModel(RemoteStoreResource.INSTANCE);
+        resourceRegistration.registerSubModel(new LockingResource());
+        resourceRegistration.registerSubModel(new TransactionResource());
+        resourceRegistration.registerSubModel(new EvictionResource());
+        resourceRegistration.registerSubModel(new ExpirationResource());
+        resourceRegistration.registerSubModel(new StoreResource());
+        resourceRegistration.registerSubModel(new FileStoreResource());
+        resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResource());
+        resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResource());
+        resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResource());
+        resourceRegistration.registerSubModel(new RemoteStoreResource());
     }
 }

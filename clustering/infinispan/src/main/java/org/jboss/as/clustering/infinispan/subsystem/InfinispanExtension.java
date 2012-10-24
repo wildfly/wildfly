@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,15 +31,16 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -58,13 +59,11 @@ public class InfinispanExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
-
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
            StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
            for (String kp : keyPrefix) {
                prefix.append('.').append(kp);
            }
-           //return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, InfinispanExtension.class.getClassLoader(), true, false);
             return new InfinispanResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, InfinispanExtension.class.getClassLoader());
     }
 
@@ -79,13 +78,12 @@ public class InfinispanExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource());
-        registration.registerOperationHandler(DESCRIBE, InfinispanSubsystemDescribe.INSTANCE, InfinispanSubsystemDescribe.SUBSYSTEM_DESCRIBE, false, EntryType.PRIVATE);
+        registration.registerOperationHandler(InfinispanSubsystemDescribe.DEFINITON, InfinispanSubsystemDescribe.INSTANCE);
 
         ManagementResourceRegistration cacheContainer = registration.registerSubModel(new CacheContainerResource());
 
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
 
-        /*
         // Register the model transformers
         TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
         TransformersSubRegistration containerReg = reg.registerSubResource(CacheContainerResource.CONTAINER_PATH);
@@ -94,7 +92,6 @@ public class InfinispanExtension implements Extension {
         containerReg.registerSubResource(InvalidationCacheResource.INVALIDATION_CACHE_PATH).registerOperationTransformer(ADD, ot);
         containerReg.registerSubResource(ReplicatedCacheResource.REPLICATED_CACHE_PATH).registerOperationTransformer(ADD, ot);
         containerReg.registerSubResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH).registerOperationTransformer(ADD, ot);
-        */
     }
 
     private static class InfinispanOperationTransformer_1_3 extends AbstractOperationTransformer {
@@ -128,6 +125,7 @@ public class InfinispanExtension implements Extension {
         private static final Map<String, String> sharedAttributeResolver = new HashMap<String, String>() ;
 
         static {
+            // shared cache attributes
             sharedAttributeResolver.put(CacheResource.BATCHING.getName(), "cache");
             sharedAttributeResolver.put(CacheResource.CACHE_MODULE.getName(), "cache");
             sharedAttributeResolver.put(CacheResource.INDEXING.getName(), "cache");
@@ -157,27 +155,35 @@ public class InfinispanExtension implements Extension {
             sharedAttributeResolver.put(BaseJDBCStoreResource.PREFIX.getName(), "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.COLUMN_NAME.getName(), "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.COLUMN_TYPE.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.ID_COLUMN.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.DATA_COLUMN.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.TIMESTAMP_COLUMN.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.ENTRY_TABLE.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.BUCKET_TABLE.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.STRING_KEYED_TABLE.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.BINARY_KEYED_TABLE.getName(), "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.ID_COLUMN.getName()+".column", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.DATA_COLUMN.getName()+".column", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.TIMESTAMP_COLUMN.getName()+".column", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.ENTRY_TABLE.getName()+"table", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.BUCKET_TABLE.getName()+"table", "jdbc-store");
+
+            // shared children - this avoids having to describe the children for each parent resource
+            sharedAttributeResolver.put(ModelKeys.TRANSPORT, null);
+            sharedAttributeResolver.put(ModelKeys.LOCKING, null);
+            sharedAttributeResolver.put(ModelKeys.TRANSACTION, null);
+            sharedAttributeResolver.put(ModelKeys.EVICTION, null);
+            sharedAttributeResolver.put(ModelKeys.EXPIRATION, null);
+            sharedAttributeResolver.put(ModelKeys.STATE_TRANSFER, null);
+            sharedAttributeResolver.put(ModelKeys.STORE, null);
+            sharedAttributeResolver.put(ModelKeys.FILE_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.REMOTE_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.STRING_KEYED_JDBC_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.BINARY_KEYED_JDBC_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.MIXED_KEYED_JDBC_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.WRITE_BEHIND, null);
+            sharedAttributeResolver.put(ModelKeys.PROPERTY, null);
         }
 
         private InfinispanResourceDescriptionResolver(String keyPrefix, String bundleBaseName, ClassLoader bundleLoader) {
-            super(keyPrefix, bundleBaseName, bundleLoader);
-
-//            System.out.println("dumping InfinispanResourceDescriptionResolver attribute table:");
-//            for (Map.Entry entry : sharedAttributeResolver.entrySet()) {
-//                System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
-//            }
+            super(keyPrefix, bundleBaseName, bundleLoader, true, false);
         }
 
         @Override
         public String getResourceAttributeDescription(String attributeName, Locale locale, ResourceBundle bundle) {
-            System.out.println("resource attribute description: name = " + attributeName);
             // don't apply the default bundle prefix to these attributes
             if (sharedAttributeResolver.containsKey(attributeName)) {
                return bundle.getString(getBundleKey(attributeName));
@@ -187,7 +193,6 @@ public class InfinispanExtension implements Extension {
 
         @Override
         public String getResourceAttributeValueTypeDescription(String attributeName, Locale locale, ResourceBundle bundle, String... suffixes) {
-            System.out.println("resource attribute value type description: name = " + attributeName + " suffixes = " + suffixes);
             // don't apply the default bundle prefix to these attributes
             if (sharedAttributeResolver.containsKey(attributeName)) {
                return bundle.getString(getVariableBundleKey(attributeName, suffixes));
@@ -197,7 +202,6 @@ public class InfinispanExtension implements Extension {
 
         @Override
         public String getOperationParameterDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
-            System.out.println("operation parameter description: operation = " + operationName + ", parameter = " + paramName);
             // don't apply the default bundle prefix to these attributes
             if (sharedAttributeResolver.containsKey(paramName)) {
                return bundle.getString(getBundleKey(paramName));
@@ -207,12 +211,20 @@ public class InfinispanExtension implements Extension {
 
         @Override
         public String getOperationParameterValueTypeDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle, String... suffixes) {
-            System.out.println("operation parameter value type description: operation = " + operationName + ", parameter = " + paramName + ", suffixes = " + suffixes);
             // don't apply the default bundle prefix to these attributes
             if (sharedAttributeResolver.containsKey(paramName)) {
                return bundle.getString(getVariableBundleKey(paramName, suffixes));
             }
             return super.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
+        }
+
+        @Override
+        public String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle) {
+            // don't apply the default bundle prefix to these attributes
+            if (sharedAttributeResolver.containsKey(childType)) {
+               return bundle.getString(getBundleKey(childType));
+            }
+            return super.getChildTypeDescription(childType, locale, bundle);
         }
 
         private String getBundleKey(final String name) {
@@ -239,5 +251,4 @@ public class InfinispanExtension implements Extension {
             return sb.toString();
         }
     }
-
 }

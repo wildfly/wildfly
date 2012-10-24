@@ -33,6 +33,6 @@ public class SharedCacheResource extends ClusteredCacheResource {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
 
-        resourceRegistration.registerSubModel(StateTransferResource.INSTANCE);
+        resourceRegistration.registerSubModel(new StateTransferResource());
     }
 }

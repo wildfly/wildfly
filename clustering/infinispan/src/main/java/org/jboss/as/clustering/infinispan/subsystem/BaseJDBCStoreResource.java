@@ -53,9 +53,9 @@ public class BaseJDBCStoreResource extends BaseStoreResource {
 //                   .setDefaultValue(new ModelNode().set("ispn_entry"))
                     .build();
 
-    static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinition("name", ModelType.STRING, true);
+    static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinition("column-name", ModelType.STRING, true);
 
-    static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinition("type", ModelType.STRING, true);
+    static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinition("column-type", ModelType.STRING, true);
 
     static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.
             Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE).
@@ -119,4 +119,5 @@ public class BaseJDBCStoreResource extends BaseStoreResource {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
     }
+
 }

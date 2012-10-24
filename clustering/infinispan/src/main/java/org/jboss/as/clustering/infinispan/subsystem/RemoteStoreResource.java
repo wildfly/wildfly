@@ -1,16 +1,21 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -61,9 +66,19 @@ public class RemoteStoreResource extends BaseStoreResource {
 
     static final AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = {CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS};
 
+    // operations
+    private static final OperationDefinition REMOTE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
+        .setParameters(COMMON_STORE_PARAMETERS)
+        .addParameter(CACHE)
+        .addParameter(TCP_NO_DELAY)
+        .addParameter(SOCKET_TIMEOUT)
+        .addParameter(REMOTE_SERVERS)
+        .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE))
+        .build();
+
     public RemoteStoreResource() {
         super(REMOTE_STORE_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE),
+                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REMOTE_STORE),
                 CacheConfigOperationHandlers.REMOTE_STORE_ADD,
                 CacheConfigOperationHandlers.REMOVE);
     }
@@ -82,5 +97,11 @@ public class RemoteStoreResource extends BaseStoreResource {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+    }
+
+    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
+    @Override
+    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
+        registration.registerOperationHandler(REMOTE_STORE_ADD_DEFINITION, handler);
     }
 }

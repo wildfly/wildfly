@@ -140,10 +140,10 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         super.registerChildren(resourceRegistration);
 
         // child resources
-        resourceRegistration.registerSubModel(TransportResource.INSTANCE);
-        resourceRegistration.registerSubModel(LocalCacheResource.INSTANCE);
-        resourceRegistration.registerSubModel(InvalidationCacheResource.INSTANCE);
-        resourceRegistration.registerSubModel(ReplicatedCacheResource.INSTANCE);
-        resourceRegistration.registerSubModel(DistributedCacheResource.INSTANCE);
+        resourceRegistration.registerSubModel(new TransportResource());
+        resourceRegistration.registerSubModel(new LocalCacheResource());
+        resourceRegistration.registerSubModel(new InvalidationCacheResource());
+        resourceRegistration.registerSubModel(new ReplicatedCacheResource());
+        resourceRegistration.registerSubModel(new DistributedCacheResource());
     }
 }

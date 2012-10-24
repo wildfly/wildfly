@@ -69,8 +69,8 @@ public class StoreWriteBehindResource extends SimpleResourceDefinition {
 
     public StoreWriteBehindResource() {
         super(STORE_WRITE_BEHIND_PATH,
-                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE),
-                CacheConfigOperationHandlers.STORE_ADD,
+                InfinispanExtension.getResourceDescriptionResolver(ModelKeys.WRITE_BEHIND),
+                CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ADD,
                 CacheConfigOperationHandlers.REMOVE);
     }
 

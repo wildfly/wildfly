@@ -70,7 +70,6 @@ public class InfinispanSubsystemTestCase extends ClusteringSubsystemTest {
       return Arrays.asList(data);
     }
 
-
     @Override
     protected ValidationConfiguration getModelValidationConfiguration() {
         // use this configuration to report any exceptional cases for DescriptionProviders

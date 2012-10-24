@@ -1,13 +1,18 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -30,6 +35,13 @@ public class StoreResource extends BaseStoreResource {
 
     static final AttributeDefinition[] STORE_ATTRIBUTES = {CLASS};
 
+    // operations
+    private static final OperationDefinition STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
+        .setParameters(COMMON_STORE_PARAMETERS)
+        .addParameter(CLASS)
+        .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
+        .build();
+
     public StoreResource() {
         super(STORE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE),
@@ -51,5 +63,11 @@ public class StoreResource extends BaseStoreResource {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+    }
+
+    // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
+    @Override
+    protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
+        registration.registerOperationHandler(STORE_ADD_DEFINITION, handler);
     }
 }

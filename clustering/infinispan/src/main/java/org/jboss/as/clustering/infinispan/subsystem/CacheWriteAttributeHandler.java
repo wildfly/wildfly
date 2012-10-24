@@ -1,17 +1,12 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.CacheResource.CACHE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.ClusteredCacheResource.CLUSTERED_CACHE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.DistributedCacheResource.DISTRIBUTED_CACHE_ATTRIBUTES;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -26,12 +21,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class CacheWriteAttributeHandler implements OperationStepHandler, SelfRegisteringAttributeHandler {
-
-    /** The basic and clustered cache attributes operation handler. */
-    static final SelfRegisteringAttributeHandler CACHE_ATTR = new CacheWriteAttributeHandler(CACHE_ATTRIBUTES);
-    static final SelfRegisteringAttributeHandler CLUSTERED_CACHE_ATTR = new CacheWriteAttributeHandler(CLUSTERED_CACHE_ATTRIBUTES);
-    static final SelfRegisteringAttributeHandler DISTRIBUTED_CACHE_ATTR = new CacheWriteAttributeHandler(DISTRIBUTED_CACHE_ATTRIBUTES);
+public class CacheWriteAttributeHandler implements OperationStepHandler {
 
     public static final CacheWriteAttributeHandler INSTANCE = new CacheWriteAttributeHandler();
     private final ParametersValidator nameValidator = new ParametersValidator();
@@ -107,29 +97,4 @@ public class CacheWriteAttributeHandler implements OperationStepHandler, SelfReg
            registry.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, this);
         }
     }
-
-    /*
-     * The operation address is of the form /subsystem=infinispan/cache-container=X/cache-type=Y:write-attribute()
-     */
-    @Deprecated //it looks like it is not used anymore
-    public static CacheMode getCacheMode(ModelNode operation) {
-
-        PathAddress cacheAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-        String cacheType = cacheAddress.getLastElement().getKey();
-
-        CacheMode mode = null;
-        if (cacheType.equals(ModelKeys.LOCAL_CACHE)) {
-            mode = CacheMode.LOCAL;
-        } else if (cacheType.equals(ModelKeys.INVALIDATION_CACHE)) {
-            mode = CacheMode.INVALIDATION_SYNC;
-        }
-        else if (cacheType.equals(ModelKeys.REPLICATED_CACHE)) {
-            mode = CacheMode.REPL_SYNC;
-        }
-        else if (cacheType.equals(ModelKeys.DISTRIBUTED_CACHE)) {
-            mode = CacheMode.DIST_SYNC;
-        }
-        return mode;
-    }
-
 }
