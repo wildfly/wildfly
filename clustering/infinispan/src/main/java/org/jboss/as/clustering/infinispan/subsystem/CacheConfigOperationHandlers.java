@@ -1,17 +1,11 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.subsystem.BaseJDBCStoreResource.COMMON_JDBC_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.BaseStoreResource.COMMON_STORE_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.BinaryKeyedJDBCStoreResource.BINARY_KEYED_JDBC_STORE_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.EvictionResource.EVICTION_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResource.EXPIRATION_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.LockingResource.LOCKING_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.MixedKeyedJDBCStoreResource.MIXED_KEYED_JDBC_STORE_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.StateTransferResource.STATE_TRANSFER_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.StoreWriteBehindResource.WRITE_BEHIND_ATTRIBUTES;
-import static org.jboss.as.clustering.infinispan.subsystem.StringKeyedJDBCStoreResource.STRING_KEYED_JDBC_STORE_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.TransactionResource.TRANSACTION_ATTRIBUTES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
@@ -25,7 +19,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -337,69 +330,6 @@ public class CacheConfigOperationHandlers {
             }
             // now check for outbound connections passed as optional parameter
         }
-    }
-
-
-
-    static ModelNode createOperation(AttributeDefinition[] attributes, ModelNode address, ModelNode existing) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        for(final AttributeDefinition attribute : attributes) {
-            attribute.validateAndSet(existing, operation);
-        }
-        return operation;
-    }
-
-    static ModelNode createStoreOperation(AttributeDefinition[] commonAttributes, ModelNode address, ModelNode existing, AttributeDefinition... additionalAttributes) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        for(final AttributeDefinition attribute : commonAttributes) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : additionalAttributes) {
-            attribute.validateAndSet(existing, operation);
-        }
-        return operation;
-    }
-
-    static ModelNode createStringKeyedStoreOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        for(final AttributeDefinition attribute : COMMON_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : COMMON_JDBC_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : STRING_KEYED_JDBC_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        return operation;
-    }
-
-    static ModelNode createBinaryKeyedStoreOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        for(final AttributeDefinition attribute : COMMON_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : COMMON_JDBC_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : BINARY_KEYED_JDBC_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        return operation;
-    }
-
-    static ModelNode createMixedKeyedStoreOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
-        ModelNode operation = Util.getEmptyOperation(ADD, address);
-        for(final AttributeDefinition attribute : COMMON_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : COMMON_JDBC_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        for(final AttributeDefinition attribute : MIXED_KEYED_JDBC_STORE_ATTRIBUTES) {
-            attribute.validateAndSet(existing, operation);
-        }
-        return operation;
     }
 
 
