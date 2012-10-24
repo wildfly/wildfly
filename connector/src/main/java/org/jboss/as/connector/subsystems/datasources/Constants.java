@@ -21,8 +21,16 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
@@ -41,6 +49,9 @@ import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
 import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -178,13 +189,21 @@ class Constants {
 
     private static final String NO_RECOVERY_NAME = "no-recovery";
 
-    static final String INSTALLED_DRIVERS = "installed-drivers";
 
-    static final String DEPLOYMENT_NAME = "deployment-name";
+    static final SimpleAttributeDefinition DEPLOYMENT_NAME = SimpleAttributeDefinitionBuilder.create("deployment-name",ModelType.STRING)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .build();
 
-    static final String MODULE_SLOT = "module-slot";
 
-    static final String JDBC_COMPLIANT = "jdbc-compliant";
+    static final SimpleAttributeDefinition MODULE_SLOT = SimpleAttributeDefinitionBuilder.create("module-slot",ModelType.STRING)
+                .setAllowExpression(true)
+                .setAllowNull(true)
+                .build();
+
+    static final SimpleAttributeDefinition JDBC_COMPLIANT = SimpleAttributeDefinitionBuilder.create("jdbc-compliant",ModelType.BOOLEAN)
+                        .setAllowNull(true)
+                        .build();;
 
     static final String STATISTICS = "statistics";
 
@@ -227,7 +246,9 @@ class Constants {
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
     //Note: ENABLED default is false in AS7 (true in IJ) because of the enable/disable operation behaviour
-    static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Boolean.FALSE), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Boolean.TRUE), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition[] READONLY_XA_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {ENABLED};
+    static final SimpleAttributeDefinition[] READONLY_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {ENABLED};
 
     static SimpleAttributeDefinition JTA = new SimpleAttributeDefinition(JTA_NAME, DataSource.Attribute.JTA.getLocalName(), new ModelNode().set(Defaults.JTA), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
@@ -265,16 +286,22 @@ class Constants {
 
     static SimpleAttributeDefinition EXCEPTIONSORTERCLASSNAME = new SimpleAttributeDefinition(EXCEPTIONSORTERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new SimpleAttributeDefinition(EXCEPTIONSORTER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
+    static PropertiesAttributeDefinition EXCEPTIONSORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME,true)
+            .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+            .setAllowExpression(true).setMeasurementUnit(MeasurementUnit.NONE).build();
+
 
     static SimpleAttributeDefinition STALECONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(STALECONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition STALECONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(STALECONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
+    static PropertiesAttributeDefinition STALECONNECTIONCHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(STALECONNECTIONCHECKER_PROPERTIES_NAME, true)
+                .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+                .setAllowNull(true).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.NONE).build();
 
     static SimpleAttributeDefinition VALIDCONNECTIONCHECKERCLASSNAME = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKERCLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition VALIDCONNECTIONCHECKER_PROPERTIES = new SimpleAttributeDefinition(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
-
+    static PropertiesAttributeDefinition VALIDCONNECTIONCHECKER_PROPERTIES = new PropertiesAttributeDefinition.Builder(VALIDCONNECTIONCHECKER_PROPERTIES_NAME, true)
+                    .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+                    .setAllowNull(true).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.NONE).build();
 
     static SimpleAttributeDefinition VALIDATEONMATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(),new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
@@ -298,7 +325,42 @@ class Constants {
 
     static SimpleAttributeDefinition REAUTHPLUGIN_CLASSNAME = new SimpleAttributeDefinition(REAUTHPLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition REAUTHPLUGIN_PROPERTIES = new SimpleAttributeDefinition(REAUTHPLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
+    static PropertiesAttributeDefinition REAUTHPLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(REAUTHPLUGIN_PROPERTIES_NAME, true)
+                    .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+                    .setAllowNull(true).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.NONE).build();
+
+
+    static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {CONNECTION_URL,
+            DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDINAME,
+            DATASOURCE_DRIVER,
+            NEW_CONNECTION_SQL, URL_DELIMITER,
+            URL_SELECTOR_STRATEGY_CLASS_NAME, USE_JAVA_CONTEXT,
+            JTA, org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE,
+            org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN,
+            USERNAME, PASSWORD, SECURITY_DOMAIN,
+            REAUTHPLUGIN_CLASSNAME,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS,
+            PREPAREDSTATEMENTSCACHESIZE,
+            SHAREPREPAREDSTATEMENTS, TRACKSTATEMENTS,
+            ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
+            org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS, org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES,
+            QUERYTIMEOUT, USETRYLOCK, SETTXQUERYTIMEOUT,
+            TRANSACTION_ISOLATION, CHECKVALIDCONNECTIONSQL,
+            EXCEPTIONSORTERCLASSNAME,
+            STALECONNECTIONCHECKERCLASSNAME,
+            VALIDCONNECTIONCHECKERCLASSNAME,
+            org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS,
+            org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
+            org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
+            VALIDATEONMATCH, SPY,
+            USE_CCM};
+
+    static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[] {
+                REAUTHPLUGIN_PROPERTIES,
+                EXCEPTIONSORTER_PROPERTIES,
+                STALECONNECTIONCHECKER_PROPERTIES,
+                VALIDCONNECTIONCHECKER_PROPERTIES,
+                };
 
     static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
@@ -308,9 +370,48 @@ class Constants {
 
     static SimpleAttributeDefinition RECOVERLUGIN_CLASSNAME = new SimpleAttributeDefinition(RECOVER_PLUGIN_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition RECOVERLUGIN_PROPERTIES = new SimpleAttributeDefinition(RECOVER_PLUGIN_PROPERTIES_NAME, org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.OBJECT, true, true, MeasurementUnit.NONE);
+    static PropertiesAttributeDefinition RECOVERLUGIN_PROPERTIES = new PropertiesAttributeDefinition.Builder(RECOVER_PLUGIN_PROPERTIES_NAME, true)
+                    .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
+                    .setAllowNull(true).setAllowExpression(true).setMeasurementUnit(MeasurementUnit.NONE).build();
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition[] XA_DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[] {
+            Constants.XADATASOURCECLASS, JNDINAME, DATASOURCE_DRIVER,
+            NEW_CONNECTION_SQL, URL_DELIMITER,
+            URL_SELECTOR_STRATEGY_CLASS_NAME, USE_JAVA_CONTEXT,
+            org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE, org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL, org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN, INTERLEAVING,
+            NOTXSEPARATEPOOL, PAD_XID, SAME_RM_OVERRIDE,
+            WRAP_XA_RESOURCE, USERNAME, PASSWORD,
+            SECURITY_DOMAIN,
+            REAUTHPLUGIN_CLASSNAME,
+            org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY, ALLOW_MULTIPLE_USERS,
+            PREPAREDSTATEMENTSCACHESIZE,
+            SHAREPREPAREDSTATEMENTS, TRACKSTATEMENTS,
+            ALLOCATION_RETRY, ALLOCATION_RETRY_WAIT_MILLIS,
+            org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS, org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES,
+            QUERYTIMEOUT, USETRYLOCK, SETTXQUERYTIMEOUT,
+            TRANSACTION_ISOLATION, CHECKVALIDCONNECTIONSQL,
+            EXCEPTIONSORTERCLASSNAME,
+            STALECONNECTIONCHECKERCLASSNAME,
+            VALIDCONNECTIONCHECKERCLASSNAME,
+            org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS,
+            org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
+            org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
+            VALIDATEONMATCH, XA_RESOURCE_TIMEOUT,
+            SPY, USE_CCM,
+            RECOVERY_USERNAME, RECOVERY_PASSWORD,
+            RECOVERY_SECURITY_DOMAIN, RECOVERLUGIN_CLASSNAME,
+            NO_RECOVERY, JTA};
+
+    static final PropertiesAttributeDefinition[] XA_DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[] {
+                   REAUTHPLUGIN_PROPERTIES,
+                   EXCEPTIONSORTER_PROPERTIES,
+                   STALECONNECTIONCHECKER_PROPERTIES,
+                   VALIDCONNECTIONCHECKER_PROPERTIES,
+                   RECOVERLUGIN_PROPERTIES
+                   };
+
 
     static SimpleAttributeDefinition XADATASOURCE_PROPERTIES = new SimpleAttributeDefinition(XADATASOURCEPROPERTIES_NAME, XaDataSource.Tag.XA_DATASOURCE_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
@@ -329,5 +430,38 @@ class Constants {
     static final SimpleAttributeDefinition DRIVER_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinition(DRIVER_DATASOURCE_CLASS_NAME_NAME, Driver.Tag.DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
     static final SimpleAttributeDefinition DRIVER_XA_DATASOURCE_CLASS_NAME = new SimpleAttributeDefinition(DRIVER_XA_DATASOURCE_CLASS_NAME_NAME, Driver.Tag.XA_DATASOURCE_CLASS.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+
+    static final ObjectTypeAttributeDefinition INSTALLED_DRIVERS = ObjectTypeAttributeDefinition.Builder.of("installed-drivers",
+            DEPLOYMENT_NAME,
+            DRIVER_NAME,
+            DRIVER_MODULE_NAME,
+            MODULE_SLOT,
+            DRIVER_CLASS_NAME,
+            DRIVER_DATASOURCE_CLASS_NAME,
+            DRIVER_XA_DATASOURCE_CLASS_NAME,
+            DRIVER_MAJOR_VERSION,
+            DRIVER_MINOR_VERSION,
+            JDBC_COMPLIANT).build();
+
+
+    static final SimpleOperationDefinition INSTALLED_DRIVERS_LIST = new SimpleOperationDefinitionBuilder("installed-drivers-list", DataSourcesExtension.getResourceDescriptionResolver())
+            .setRuntimeOnly().build();
+    static final SimpleOperationDefinition GET_INSTALLED_DRIVER = new SimpleOperationDefinitionBuilder("get-installed-driver", DataSourcesExtension.getResourceDescriptionResolver())
+            .setRuntimeOnly().build();
+    static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver())
+            .setParameters(SimpleAttributeDefinitionBuilder.create(PERSISTENT,ModelType.BOOLEAN).setDefaultValue(new ModelNode(true)).build()).build();
+    static final SimpleOperationDefinition DATASOURCE_DISABLE = new SimpleOperationDefinitionBuilder(DISABLE, DataSourcesExtension.getResourceDescriptionResolver())
+            .build();
+    static final SimpleOperationDefinition FLUSH_IDLE_CONNECTION = new SimpleOperationDefinitionBuilder("flush-idle-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+            .setRuntimeOnly().build();
+    static final SimpleOperationDefinition FLUSH_ALL_CONNECTION = new SimpleOperationDefinitionBuilder("flush-all-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+            .setRuntimeOnly().build();
+    static final SimpleOperationDefinition TEST_CONNECTION = new SimpleOperationDefinitionBuilder("test-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+            .setRuntimeOnly().build();
+    static final SimpleOperationDefinition CLEAR_STATISTICS = new SimpleOperationDefinitionBuilder("clear-statistics", DataSourcesExtension.getResourceDescriptionResolver())
+                .build();
+
+
+
 
 }

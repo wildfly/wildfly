@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -194,7 +195,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
     protected abstract AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException;
 
     static void populateAddModel(final ModelNode operation, final ModelNode modelNode,
-            final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes) throws OperationFailedException {
+            final String connectionPropertiesProp, final SimpleAttributeDefinition[] attributes, PropertiesAttributeDefinition[] properties) throws OperationFailedException {
         if (operation.hasDefined(connectionPropertiesProp)) {
 
             for (Property property : operation.get(connectionPropertiesProp).asPropertyList()) {
@@ -202,6 +203,10 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
             }
         }
         for (final SimpleAttributeDefinition attribute : attributes) {
+            attribute.validateAndSet(operation, modelNode);
+        }
+
+        for (final PropertiesAttributeDefinition attribute : properties) {
             attribute.validateAndSet(operation, modelNode);
         }
 

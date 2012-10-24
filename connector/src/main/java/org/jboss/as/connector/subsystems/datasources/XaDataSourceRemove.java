@@ -32,7 +32,4 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 public class XaDataSourceRemove extends AbstractDataSourceRemove {
     static final XaDataSourceRemove INSTANCE = new XaDataSourceRemove();
 
-    protected SimpleAttributeDefinition[] getModelProperties() {
-        return DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
-    }
 }
