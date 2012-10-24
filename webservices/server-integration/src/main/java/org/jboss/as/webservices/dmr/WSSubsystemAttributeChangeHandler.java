@@ -28,9 +28,9 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -41,8 +41,8 @@ import org.jboss.wsf.spi.management.ServerConfig;
  */
 final class WSSubsystemAttributeChangeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    WSSubsystemAttributeChangeHandler(final ParameterValidator valueValidator) {
-        super(valueValidator);
+    WSSubsystemAttributeChangeHandler(AttributeDefinition... definitions) {
+        super(definitions);
     }
 
     @Override
@@ -53,7 +53,7 @@ final class WSSubsystemAttributeChangeHandler extends AbstractWriteAttributeHand
             final String value = resolvedValue.isDefined() ? resolvedValue.asString() : null;
 
             if (MODIFY_WSDL_ADDRESS.equals(attributeName)) {
-                final boolean modifyWSDLAddress = value != null ? Boolean.parseBoolean(value) : false;
+                final boolean modifyWSDLAddress = value != null && Boolean.parseBoolean(value);
                 config.setModifySOAPAddress(modifyWSDLAddress);
             } else if (WSDL_HOST.equals(attributeName)) {
                 final String host = value != null ? value : null;

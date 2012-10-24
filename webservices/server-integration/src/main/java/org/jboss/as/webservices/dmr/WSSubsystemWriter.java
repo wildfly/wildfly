@@ -22,23 +22,18 @@
 
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
-import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.NAME;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.Constants.VALUE;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -65,32 +60,15 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
         // write ws subsystem start element
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         ModelNode subsystem = context.getModelNode();
-        if (has(subsystem, MODIFY_WSDL_ADDRESS)) {
-            // write modify-wsdl-address element
-            final String modifyWsdlAddress = subsystem.require(MODIFY_WSDL_ADDRESS).asString();
-            writeElement(writer, MODIFY_WSDL_ADDRESS, modifyWsdlAddress);
+        for (SimpleAttributeDefinition attr : Attributes.SUBSYSTEM_ATTRIBUTES) {
+            attr.marshallAsElement(subsystem, true, writer);
         }
-        if (has(subsystem, WSDL_HOST)) {
-            // write wsdl-host element
-            final String wsdlHost = subsystem.require(WSDL_HOST).asString();
-            writeElement(writer, WSDL_HOST, wsdlHost);
-        }
-        if (has(subsystem, WSDL_PORT)) {
-            // write wsdl-port element
-            final String wsdlPort = subsystem.require(WSDL_PORT).asString();
-            writeElement(writer, WSDL_PORT, wsdlPort);
-        }
-        if (has(subsystem, WSDL_SECURE_PORT)) {
-            // write wsdl-secure-port element
-            final String wsdlSecurePort = subsystem.require(WSDL_SECURE_PORT).asString();
-            writeElement(writer, WSDL_SECURE_PORT, wsdlSecurePort);
-        }
-        if (has(subsystem, ENDPOINT_CONFIG)) {
+        if (subsystem.hasDefined(ENDPOINT_CONFIG)) {
             // write endpoint-config elements
             final ModelNode endpointConfigs = subsystem.get(ENDPOINT_CONFIG);
             writeConfigs(ENDPOINT_CONFIG, writer, endpointConfigs);
         }
-        if (has(subsystem, CLIENT_CONFIG)) {
+        if (subsystem.hasDefined(CLIENT_CONFIG)) {
             // write client-config elements
             final ModelNode clientConfigs = subsystem.get(CLIENT_CONFIG);
             writeConfigs(CLIENT_CONFIG, writer, clientConfigs);
@@ -127,17 +105,13 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
     }
 
     private static void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode properties) throws XMLStreamException {
-        ModelNode property = null;
-        String propertyValue = null;
+        ModelNode property;
         // write property elements
         for (final String propertyName : properties.keys()) {
             property = properties.get(propertyName);
             writer.writeStartElement(PROPERTY);
             writer.writeAttribute(NAME, propertyName);
-            if (property.hasDefined(VALUE)) {
-                propertyValue = property.get(VALUE).asString();
-                writer.writeAttribute(VALUE, propertyValue);
-            }
+            Attributes.VALUE.marshallAsAttribute(property, false, writer);
             writer.writeEndElement();
         }
     }
@@ -160,7 +134,7 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
                     handler = handlerChain.get(HANDLER).get(handlerName);
                     writer.writeStartElement(HANDLER);
                     writer.writeAttribute(NAME, handlerName);
-                    writer.writeAttribute(CLASS, handler.get(CLASS).asString());
+                    Attributes.CLASS.marshallAsAttribute(handler, writer);
                     writer.writeEndElement();
                 }
             }
@@ -168,21 +142,4 @@ final class WSSubsystemWriter implements XMLElementWriter<SubsystemMarshallingCo
             writer.writeEndElement();
         }
     }
-
-    private static void writeElement(final XMLExtendedStreamWriter writer, final String elementName, final String elementValue) throws XMLStreamException {
-        writer.writeStartElement(elementName);
-        if (elementValue.indexOf('\n') > -1) {
-            writer.writeCharacters(elementValue);
-        } else {
-            // Use the method where staxmapper won't add new lines
-            char[] chars = elementValue.toCharArray();
-            writer.writeCharacters(chars, 0, chars.length);
-        }
-        writer.writeEndElement();
-    }
-
-    private static boolean has(final ModelNode node, final String name) {
-        return node.has(name) && node.get(name).isDefined();
-    }
-
 }

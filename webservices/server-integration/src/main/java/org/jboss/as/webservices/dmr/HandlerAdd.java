@@ -99,7 +99,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
     private static UnifiedHandlerChainMetaData getChain(final List<UnifiedHandlerChainMetaData> handlerChains, final String handlerChainId) {
         if (handlerChains != null) {
             for (final UnifiedHandlerChainMetaData handlerChain : handlerChains) {
-                if (handlerChainId.equals(handlerChain.getId())) return handlerChain;
+                if (handlerChainId.equals(handlerChain.getId())) { return handlerChain; }
             }
         }
         return null;
@@ -107,9 +107,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(CLASS)) {
-            model.get(CLASS).set(operation.get(CLASS));
-        }
+        Attributes.CLASS.validateAndSet(operation, model);
     }
 
 }

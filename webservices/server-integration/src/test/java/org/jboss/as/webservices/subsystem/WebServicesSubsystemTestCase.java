@@ -23,7 +23,13 @@ package org.jboss.as.webservices.subsystem;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.webservices.dmr.WSExtension;
 
 /**
@@ -38,22 +44,19 @@ public final class WebServicesSubsystemTestCase extends AbstractSubsystemBaseTes
     }
 
     @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization(){
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
+
+        };
+    }
+
+    @Override
     protected String getSubsystemXml() throws IOException {
-        return
-            "<subsystem xmlns=\"urn:jboss:domain:webservices:1.2\">" + 
-            "    <modify-wsdl-address>true</modify-wsdl-address>" + 
-            "    <wsdl-host>${jboss.bind.address:127.0.0.1}</wsdl-host>" + 
-            "    <wsdl-port>8080</wsdl-port>" + 
-            "    <wsdl-secure-port>8443</wsdl-secure-port>" + 
-            "    <endpoint-config name=\"Standard-Endpoint-Config\"/>" + 
-            "    <endpoint-config name=\"Recording-Endpoint-Config\">" + 
-            "        <pre-handler-chain name=\"recording-handlers\" protocol-bindings=\"##SOAP11_HTTP ##SOAP11_HTTP_MTOM ##SOAP12_HTTP ##SOAP12_HTTP_MTOM\">" +
-            "            <handler name=\"RecordingHandler\" class=\"org.jboss.ws.common.invocation.RecordingServerHandler\"/>" + 
-            "        </pre-handler-chain>" +
-            "        <property name=\"foo\" value=\"bar\"/>" + 
-            "    </endpoint-config>" +
-            "    <client-config name=\"Standard-Client-Config\"/>" +
-            "</subsystem>";
+        return readResource("subsystem.xml");
     }
 
 }

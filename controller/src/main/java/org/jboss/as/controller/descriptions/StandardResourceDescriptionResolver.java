@@ -147,6 +147,10 @@ public class StandardResourceDescriptionResolver implements ResourceDescriptionR
         return useUnprefixedChildTypes;
     }
 
+    public StandardResourceDescriptionResolver getChildResolver(String key){
+        return new StandardResourceDescriptionResolver(keyPrefix+"."+key,bundleBaseName,bundleLoader.get(),reuseAttributesForAdd,useUnprefixedChildTypes);
+    }
+
     /** {@inheritDoc} */
     @Override
     public ResourceBundle getResourceBundle(Locale locale) {

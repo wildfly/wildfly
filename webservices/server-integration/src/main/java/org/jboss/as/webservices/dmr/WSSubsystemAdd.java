@@ -22,9 +22,6 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
@@ -34,14 +31,13 @@ import java.net.UnknownHostException;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -52,7 +48,6 @@ import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -65,49 +60,15 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final WSSubsystemAdd INSTANCE = new WSSubsystemAdd();
 
-    private final ParametersValidator configValidator = new ParametersValidator();
-
-    // Private to ensure a singleton.
-    private WSSubsystemAdd() {
-        configValidator.registerValidator(WSDL_HOST, new ModelTypeValidator(ModelType.STRING, true, true));
-        configValidator.registerValidator(MODIFY_WSDL_ADDRESS, new ModelTypeValidator(ModelType.BOOLEAN));
-        configValidator.registerValidator(WSDL_PORT, new ModelTypeValidator(ModelType.INT, true, true));
-        configValidator.registerValidator(WSDL_SECURE_PORT, new ModelTypeValidator(ModelType.INT, true, true));
-    }
-
-    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws  OperationFailedException {
-
-        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
-        final ModelNode submodel = resource.getModel();
-
-        if (operation.hasDefined(WSDL_PORT)) {
-            submodel.get(WSDL_PORT).set(operation.require(WSDL_PORT));
-        }
-        if (operation.hasDefined(WSDL_SECURE_PORT)) {
-            submodel.get(WSDL_SECURE_PORT).set(operation.require(WSDL_SECURE_PORT));
-        }
-
-        if (appclient && operation.hasDefined(WSDL_HOST)) {
-            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
-        }
-
-        if (!appclient) {
-            submodel.get(WSDL_HOST).setExpression(operation.require(WSDL_HOST).asString());
-            configValidator.validate(operation);
-            submodel.get(MODIFY_WSDL_ADDRESS).set(operation.require(MODIFY_WSDL_ADDRESS));
-            submodel.get(ENDPOINT_CONFIG).setEmptyObject();
-            submodel.get(CLIENT_CONFIG).setEmptyObject();
-            submodel.get(ENDPOINT).setEmptyObject();
-        }
-    }
-
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        //NOOP this is not actually used
+        for (AttributeDefinition attr:Attributes.SUBSYSTEM_ATTRIBUTES){
+            attr.validateAndSet(operation,model);
+        }
     }
 
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
 
@@ -123,11 +84,11 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServiceTarget serviceTarget = context.getServiceTarget();
         if (appclient && model.hasDefined(WSDL_HOST)) {
-            ServerConfigImpl serverConfig = createServerConfig(model, true);
+            ServerConfigImpl serverConfig = createServerConfig(model, true,context);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
         }
         if (!appclient) {
-            ServerConfigImpl serverConfig = createServerConfig(model, false);
+            ServerConfigImpl serverConfig = createServerConfig(model, false, context);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
             newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
 
@@ -137,22 +98,22 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         }
     }
 
-    private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient) {
+    private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient, OperationContext context) throws OperationFailedException {
         final ServerConfigImpl config = ServerConfigImpl.newInstance();
         try {
-            ModelNode wsdlHost = configuration.require(WSDL_HOST).resolve();
+            ModelNode wsdlHost = Attributes.WSDL_HOST.resolveModelAttribute(context, configuration);
             config.setWebServiceHost(wsdlHost.asString());
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
         if (!appclient) {
-            config.setModifySOAPAddress(configuration.require(MODIFY_WSDL_ADDRESS).asBoolean());
+            config.setModifySOAPAddress(Attributes.MODIFY_WSDL_ADDRESS.resolveModelAttribute(context,configuration).asBoolean());
         }
         if (configuration.hasDefined(WSDL_PORT)) {
-            config.setWebServicePort(configuration.require(WSDL_PORT).asInt());
+            config.setWebServicePort(Attributes.WSDL_PORT.resolveModelAttribute(context,configuration).asInt());
         }
         if (configuration.hasDefined(WSDL_SECURE_PORT)) {
-            config.setWebServiceSecurePort(configuration.require(WSDL_SECURE_PORT).asInt());
+            config.setWebServiceSecurePort(Attributes.WSDL_SECURE_PORT.resolveModelAttribute(context,configuration).asInt());
         }
         return config;
     }
