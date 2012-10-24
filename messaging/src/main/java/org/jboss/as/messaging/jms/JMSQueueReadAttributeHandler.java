@@ -108,9 +108,19 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         } else if (QUEUE_ADDRESS.getName().equals(attributeName)) {
             context.getResult().set(control.getAddress());
         } else if (EXPIRY_ADDRESS.getName().equals(attributeName)) {
-            context.getResult().set(control.getExpiryAddress());
+            // create the result node in all cases
+            ModelNode result = context.getResult();
+            String expiryAddress = control.getExpiryAddress();
+            if (expiryAddress != null) {
+                result.set(expiryAddress);
+            }
         } else if (DEAD_LETTER_ADDRESS.getName().equals(attributeName)) {
-            context.getResult().set(control.getDeadLetterAddress());
+            // create the result node in all cases
+            ModelNode result = context.getResult();
+            String dla = control.getDeadLetterAddress();
+            if (dla != null) {
+                result.set(dla);
+            }
         } else if (PAUSED.equals(attributeName)) {
             try {
                 context.getResult().set(control.isPaused());
