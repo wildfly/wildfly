@@ -124,7 +124,7 @@ public class PatchingAssert {
                 return;
             }
         }
-        fail("couln't not find bundle '" + moduleName + "' in " + asList(bundlesPath));
+        fail("content not found bundle for " + moduleName + " in " + asList(bundlesPath));
     }
 
     static void assertDefinedAbsentBundle(File[] bundlesPath, String moduleName) throws Exception {
@@ -137,7 +137,7 @@ public class PatchingAssert {
                 }
             }
         }
-        fail("content not found module for " + moduleName + " in " + asList(modulesPath));
+        fail("content not found bundle for " + moduleName + " in " + asList(bundlesPath));
     }
 
     static void assertDefinedAbsentModule(File[] modulesPath, String moduleName) throws Exception {

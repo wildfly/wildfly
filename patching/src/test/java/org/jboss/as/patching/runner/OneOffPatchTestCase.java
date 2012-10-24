@@ -78,8 +78,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(moduleAdded)
                 .build();
         createPatchXMLFile(patchDir, patch);
@@ -122,8 +121,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(moduleAdded)
                 .addContentModification(fileUpdated)
                 .build();
@@ -149,6 +147,6 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         assertFileExists(standaloneShellFile);
         assertArrayEquals(existingHash, calculateHash(standaloneShellFile));
     }
-    
+
     // TODO test to apply 2 one-off patches and roll back to the oldest one
 }

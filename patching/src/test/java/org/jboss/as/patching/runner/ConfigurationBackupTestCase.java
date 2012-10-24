@@ -72,15 +72,15 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         // with some files in the configuration directories
         File appClientXmlFile = touch(env.getInstalledImage().getAppClientDir(), "configuration", "appclient.xml");
         dump(appClientXmlFile, "<original content of appclient configuration>");
-       originalAppClientHash = calculateHash(appClientXmlFile);
+        originalAppClientHash = calculateHash(appClientXmlFile);
         standaloneXmlFile = touch(env.getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
         dump(standaloneXmlFile, "<original content of standalone configuration>");
         originalStandaloneHash = calculateHash(standaloneXmlFile);
         File domainXmlFile = touch(env.getInstalledImage().getDomainDir(), "configuration", "domain.xml");
         dump(domainXmlFile, "<original content of domain configuration>");
-        originalDomainHash = calculateHash(domainXmlFile);        
+        originalDomainHash = calculateHash(domainXmlFile);
     }
-    
+
     @After
     public void tearDown() {
         info = null;
@@ -105,12 +105,10 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.CUMULATIVE)
-                .setResultingVersion(info.getVersion() + "-CP")
-                .addAppliesTo(info.getVersion())
+                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
                 .addContentModification(moduleAdded)
                 .build();
-        
+
         checkApplyPatchAndRollbackRestoresBackupConfiguration(patchDir, patch);
     }
 
@@ -129,15 +127,14 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
-                .addAppliesTo(info.getVersion())
+                .setOneOffType(info.getVersion())
                 .addContentModification(moduleAdded)
                 .build();
-        
+
         checkApplyPatchAndRollbackRestoresBackupConfiguration(patchDir, patch);
     }
 
-    
+
     private void checkApplyPatchAndRollbackRestoresBackupConfiguration(File patchDir, Patch patch) throws Exception {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
@@ -154,17 +151,17 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         assertFileContent(originalStandaloneHash, backupStandaloneXmlFile);
         File backupDomainXmlFile = assertFileExists(result.getPatchInfo().getEnvironment().getHistoryDir(patch.getPatchId()), "configuration", "domain", "domain.xml");
         assertFileContent(originalDomainHash, backupDomainXmlFile);
-        
+
         // let's change the standalone.xml file
         dump(standaloneXmlFile, "<updated standalone configuration with changes from the added module>");
         byte[] updatedStandaloneXmlFile = calculateHash(standaloneXmlFile);
 
         runner = new PatchingTaskRunner(result.getPatchInfo(), result.getPatchInfo().getEnvironment());
         PatchingResult rollbackResult = runner.rollback(patch.getPatchId(), true);
-        
+
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
         File rolledBackStandaloneXmlFile = assertFileExists(rollbackResult.getPatchInfo().getEnvironment().getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
         assertEquals("updated content was " + bytesToHexString(updatedStandaloneXmlFile), bytesToHexString(originalStandaloneHash), bytesToHexString(calculateHash(rolledBackStandaloneXmlFile)));
     }
-    
+
 }

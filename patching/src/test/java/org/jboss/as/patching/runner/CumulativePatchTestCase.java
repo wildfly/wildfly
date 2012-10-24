@@ -79,9 +79,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.CUMULATIVE)
-                .setResultingVersion(info.getVersion() + "-CP")
-                .addAppliesTo(info.getVersion())
+                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
                 .addContentModification(moduleAdded)
                 .build();
         createPatchXMLFile(patchDir, patch);
@@ -124,9 +122,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.CUMULATIVE)
-                .setResultingVersion(info.getVersion() + "-CP")
-                .addAppliesTo(info.getVersion())
+                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
                 .addContentModification(moduleAdded)
                 .addContentModification(fileUpdated)
                 .build();
@@ -171,9 +167,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch cumulativePatch = PatchBuilder.create()
                 .setPatchId(culumativePatchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.CUMULATIVE)
-                .setResultingVersion(info.getVersion() + "-CP")
-                .addAppliesTo(info.getVersion())
+                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
                 .addContentModification(moduleAdded)
                 .build();
         createPatchXMLFile(cumulativePatchDir, cumulativePatch);
@@ -197,9 +191,8 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
                 // one-off patch can be applied to CP
-                .addAppliesTo(cumulativePatch.getResultingVersion())
+                .setOneOffType(cumulativePatch.getResultingVersion())
                 .addContentModification(moduleUpdated)
                 .build();
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
@@ -238,9 +231,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch cumulativePatch = PatchBuilder.create()
                 .setPatchId(culumativePatchID)
                 .setDescription(randomString())
-                .setPatchType(PatchType.CUMULATIVE)
-                .setResultingVersion(info.getVersion() + "-CP")
-                .addAppliesTo(info.getVersion())
+                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
                 .addContentModification(moduleAdded)
                 .build();
         createPatchXMLFile(cumulativePatchDir, cumulativePatch);
@@ -264,9 +255,8 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID + "-oneoff")
                 .setDescription(randomString())
-                .setPatchType(PatchType.ONE_OFF)
                 // one-off patch can be applied to CP
-                .addAppliesTo(cumulativePatch.getResultingVersion())
+                .setOneOffType(cumulativePatch.getResultingVersion())
                 .addContentModification(moduleUpdated)
                 .build();
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
