@@ -27,7 +27,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.apache.catalina.Valve;
-import org.apache.tomcat.util.IntrospectionUtils;
 
 /**
  * A Simple wrapper for Valves (Engine & Host)
@@ -41,7 +40,6 @@ public class WebValve {
 
         URLClassLoader child = new URLClassLoader(new URL[] { new URL("file:////" + filename) }, parent);
         Valve valve = (Valve) child.loadClass(classname).newInstance();
-        IntrospectionUtils.setProperty(valve, "mystring", "toto");
         return valve;
 
     }
