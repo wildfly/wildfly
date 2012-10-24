@@ -28,14 +28,14 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author Jean-Frederic Clere
  */
-public class WebValveParamRemove implements OperationStepHandler{
+public class WebValveParamRemove extends AbstractRemoveStepHandler {
 
     static final WebValveParamRemove INSTANCE = new WebValveParamRemove();
 
