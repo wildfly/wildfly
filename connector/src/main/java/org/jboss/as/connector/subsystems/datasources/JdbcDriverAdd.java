@@ -109,7 +109,7 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
         final ModuleIdentifier moduleId;
         final Module module;
-        String slot = operation.hasDefined(MODULE_SLOT) ? operation.get(MODULE_SLOT).asString() : null;
+        String slot = operation.hasDefined(MODULE_SLOT.getName()) ? operation.get(MODULE_SLOT.getName()).asString() : null;
         if (moduleName.contains(":")) {
             slot = moduleName.substring(moduleName.indexOf(":") + 1);
             moduleName = moduleName.substring(0, moduleName.indexOf(":"));
