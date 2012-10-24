@@ -36,18 +36,17 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
     private String bundlePath = System.getProperty("bundle.path");
 
     public EmbeddedContainerConfiguration() {
-        super();
 
         // if no jbossHome is set use jboss.home of already running jvm
         if (jbossHome == null || jbossHome.isEmpty()) {
             jbossHome = System.getProperty("jboss.home");
         }
 
-        if(modulePath == null || modulePath.isEmpty()) {
+        if (modulePath == null || modulePath.isEmpty()) {
             modulePath = jbossHome + "/modules";
         }
 
-        if(bundlePath == null || bundlePath.isEmpty()) {
+        if (bundlePath == null || bundlePath.isEmpty()) {
             bundlePath = jbossHome + "/bundles";
         }
     }
