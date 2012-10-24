@@ -38,7 +38,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 
 /**
  * A WebApp extension to the OSGi subsystem
@@ -76,7 +76,7 @@ public class WebExtension extends AbstractSubsystemExtension {
 
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
-        if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
+        if (serviceName.equals(IntegrationServices.SYSTEM_SERVICES_PLUGIN)) {
             builder.addDependency(WebContextLifecycleInterceptor.SERVICE_NAME);
         }
     }

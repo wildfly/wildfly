@@ -41,7 +41,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.spi.AbstractBundleRevisionAdaptor;
-import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XBundleRevisionBuilderFactory;
@@ -68,7 +68,7 @@ public class ModuleRegistrationTracker extends AbstractService<Void> {
         ServiceBuilder<Void> builder = serviceTarget.addService(MODULE_REGISTRATION_COMPLETE, this);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
-        builder.addDependencies(IntegrationService.BOOTSTRAP_BUNDLES_COMPLETE);
+        builder.addDependencies(IntegrationServices.BOOTSTRAP_BUNDLES_COMPLETE);
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.ON_DEMAND);
         return builder.install();
