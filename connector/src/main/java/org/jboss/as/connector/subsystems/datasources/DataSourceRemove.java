@@ -33,7 +33,4 @@ public class DataSourceRemove extends AbstractDataSourceRemove {
 
     static final DataSourceRemove INSTANCE = new DataSourceRemove();
 
-    protected SimpleAttributeDefinition[] getModelProperties() {
-        return DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
-    }
 }

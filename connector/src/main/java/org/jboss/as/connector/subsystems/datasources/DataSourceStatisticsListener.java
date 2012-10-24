@@ -23,8 +23,8 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
-import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
+import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -72,7 +72,7 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                     if (jdbcStatsSize > 0) {
                         ManagementResourceRegistration jdbcRegistration = subRegistration.registerSubModel(JDBC_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));
                         jdbcRegistration.setRuntimeOnly(true);
-                        jdbcRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(jdbcStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                        jdbcRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(jdbcStats));
 
                         for (String statName : jdbcStats.getNames()) {
                             jdbcRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
@@ -84,7 +84,7 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                     if (poolStatsSize > 0) {
                         ManagementResourceRegistration poolRegistration = subRegistration.registerSubModel(POOL_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", poolStats));
                         poolRegistration.setRuntimeOnly(true);
-                        poolRegistration.registerOperationHandler("clear-statistics", new ClearStatisticsHandler(poolStats), DataSourcesSubsystemProviders.CLEAR_STATISTICS_DESC, false);
+                        poolRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(poolStats));
 
                         for (String statName : poolStats.getNames()) {
                             poolRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));

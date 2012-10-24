@@ -25,25 +25,26 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.services.driver.InstalledDriver;
+import org.jboss.as.connector.services.driver.registry.DriverRegistry;
+import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
 
 /**
  * Reads the "installed-drivers" attribute.
@@ -69,16 +70,16 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                         ModelNode driverNode = new ModelNode();
                         driverNode.get(DRIVER_NAME.getName()).set(driver.getDriverName());
                         if (driver.isFromDeployment()) {
-                            driverNode.get(DEPLOYMENT_NAME).set(driver.getDriverName());
+                            driverNode.get(DEPLOYMENT_NAME.getName()).set(driver.getDriverName());
                             driverNode.get(DRIVER_MODULE_NAME.getName());
-                            driverNode.get(MODULE_SLOT);
+                            driverNode.get(MODULE_SLOT.getName());
                             driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName());
                             driverNode.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName());
 
                         } else {
-                            driverNode.get(DEPLOYMENT_NAME);
+                            driverNode.get(DEPLOYMENT_NAME.getName());
                             driverNode.get(DRIVER_MODULE_NAME.getName()).set(driver.getModuleName().getName());
-                            driverNode.get(MODULE_SLOT).set(
+                            driverNode.get(MODULE_SLOT.getName()).set(
                                     driver.getModuleName() != null ? driver.getModuleName().getSlot() : "");
                             driverNode.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).set(
                                     driver.getDataSourceClassName() != null ? driver.getDataSourceClassName() : "");
@@ -89,7 +90,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                         driverNode.get(DRIVER_CLASS_NAME.getName()).set(driver.getDriverClassName());
                         driverNode.get(DRIVER_MAJOR_VERSION.getName()).set(driver.getMajorVersion());
                         driverNode.get(DRIVER_MINOR_VERSION.getName()).set(driver.getMinorVersion());
-                        driverNode.get(JDBC_COMPLIANT).set(driver.isJdbcCompliant());
+                        driverNode.get(JDBC_COMPLIANT.getName()).set(driver.isJdbcCompliant());
                         result.add(driverNode);
                     }
                     context.stepCompleted();

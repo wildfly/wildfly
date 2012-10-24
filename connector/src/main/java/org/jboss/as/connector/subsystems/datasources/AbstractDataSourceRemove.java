@@ -111,5 +111,4 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
         // TODO:  RE-ADD SERVICES
     }
 
-    protected abstract SimpleAttributeDefinition[] getModelProperties();
 }

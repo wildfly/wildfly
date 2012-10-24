@@ -21,6 +21,37 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
+import org.jboss.jca.common.api.metadata.common.CommonPool;
+import org.jboss.jca.common.api.metadata.common.CommonXaPool;
+import org.jboss.jca.common.api.metadata.common.Recovery;
+import org.jboss.jca.common.api.metadata.ds.DataSources;
+import org.jboss.jca.common.api.metadata.ds.Driver;
+import org.jboss.jca.common.api.metadata.ds.DsSecurity;
+import org.jboss.jca.common.api.metadata.ds.Statement;
+import org.jboss.jca.common.api.metadata.ds.TimeOut;
+import org.jboss.jca.common.api.metadata.ds.Validation;
+import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
+
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
@@ -32,7 +63,6 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.datasources.AbstractDataSourceAdd.populateAddModel;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
@@ -45,7 +75,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
@@ -95,99 +124,10 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOUR
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_CONNECTION_PROPERTIES_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XADATASOURCE_PROPERTIES_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ADD_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.CONNECTION_PROPERTIES_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.DISABLE_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.ENABLE_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_ALL_CONNECTION_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.FLUSH_IDLE_CONNECTION_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.GET_INSTALLED_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.INSTALLED_DRIVERS_LIST_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_CONNECTION_PROPERTIES_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_JDBC_DRIVER_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XADATASOURCE_PROPERTIES_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.REMOVE_XA_DATA_SOURCE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_ADD_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.SUBSYSTEM_REMOVE_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.TEST_CONNECTION_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XADATASOURCE_PROPERTIES_DESC;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE;
-import static org.jboss.as.connector.subsystems.datasources.DataSourcesSubsystemProviders.XA_DATA_SOURCE_DESC;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Locale;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
-import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler;
-import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler.PoolConfigurationReadHandler;
-import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.jca.common.api.metadata.common.CommonPool;
-import org.jboss.jca.common.api.metadata.common.CommonXaPool;
-import org.jboss.jca.common.api.metadata.common.Recovery;
-import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.api.metadata.ds.Driver;
-import org.jboss.jca.common.api.metadata.ds.DsSecurity;
-import org.jboss.jca.common.api.metadata.ds.Statement;
-import org.jboss.jca.common.api.metadata.ds.TimeOut;
-import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
-import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
@@ -198,11 +138,19 @@ public class DataSourcesExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
-    private static final EnumSet<Flag> RUNTIME_ONLY_FLAG = EnumSet.of(Flag.RUNTIME_ONLY);
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 1;
+
+
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, DataSourcesExtension.class.getClassLoader(), true, false);
+    }
 
     @Override
     public void initialize(final ExtensionContext context) {
@@ -211,137 +159,17 @@ public class DataSourcesExtension implements Extension {
         boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
 
         // Register the remoting subsystem
-        final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
+        final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        registration.registerXMLElementWriter(DataSourceSubsystemParser.INSTANCE);
-
-        // Remoting subsystem description and operation handlers
-        final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(SUBSYSTEM);
-        subsystem.registerOperationHandler(ADD, DataSourcesSubsystemAdd.INSTANCE, SUBSYSTEM_ADD_DESC, false);
-        subsystem.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, SUBSYSTEM_REMOVE_DESC, false);
-        subsystem.registerOperationHandler(DESCRIBE, DataSourcesSubsystemDescribeHandler.INSTANCE,
-                DataSourcesSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
-        subsystem.registerReadOnlyAttribute(Constants.INSTALLED_DRIVERS, null, Storage.CONFIGURATION);
-        if (registerRuntimeOnly) {
-            subsystem.registerOperationHandler("installed-drivers-list", InstalledDriversListOperationHandler.INSTANCE,
-                    INSTALLED_DRIVERS_LIST_DESC, RUNTIME_ONLY_FLAG);
-            subsystem.registerOperationHandler("get-installed-driver", GetInstalledDriverOperationHandler.INSTANCE,
-                    GET_INSTALLED_DRIVER_DESC, RUNTIME_ONLY_FLAG);
-        }
-
-        final ManagementResourceRegistration jdbcDrivers = subsystem.registerSubModel(PathElement.pathElement(JDBC_DRIVER_NAME),
-                JDBC_DRIVER_DESC);
-        jdbcDrivers.registerOperationHandler(ADD, JdbcDriverAdd.INSTANCE, ADD_JDBC_DRIVER_DESC, false);
-        jdbcDrivers.registerOperationHandler(REMOVE, JdbcDriverRemove.INSTANCE, REMOVE_JDBC_DRIVER_DESC, false);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_MAJOR_VERSION, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_MINOR_VERSION, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_DATASOURCE_CLASS_NAME, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.XADATASOURCECLASS, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_CLASS_NAME, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_NAME, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DRIVER_MODULE_NAME, null);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.DEPLOYMENT_NAME, null, Storage.CONFIGURATION);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.JDBC_COMPLIANT, null, Storage.CONFIGURATION);
-        jdbcDrivers.registerReadOnlyAttribute(Constants.MODULE_SLOT, null,Storage.CONFIGURATION);
-
-        final ManagementResourceRegistration dataSources = subsystem.registerSubModel(PathElement.pathElement(DATA_SOURCE),
-                DATA_SOURCE_DESC);
-        dataSources.registerOperationHandler(ADD, DataSourceAdd.INSTANCE, ADD_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(REMOVE, DataSourceRemove.INSTANCE, REMOVE_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(ENABLE, DataSourceEnable.LOCAL_INSTANCE, ENABLE_DATA_SOURCE_DESC, false);
-        dataSources.registerOperationHandler(DISABLE, DataSourceDisable.LOCAL_INSTANCE, DISABLE_DATA_SOURCE_DESC, false);
-        if (registerRuntimeOnly) {
-            dataSources.registerOperationHandler("flush-idle-connection-in-pool",
-                    PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-            dataSources.registerOperationHandler("flush-all-connection-in-pool",
-                    PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-            dataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
-                    TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        }
-        for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
-            if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
-                dataSources.registerReadWriteAttribute(attribute, PoolConfigurationReadHandler.INSTANCE, LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
-            } else {
-                dataSources.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE));
-            }
-        }
-        for (SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.READONLY_DATASOURCE_ATTRIBUTE) {
-            dataSources.registerReadOnlyAttribute(attribute, null);
-        }
-
-        final ManagementResourceRegistration configAdapter = dataSources.registerSubModel(PathElement.pathElement(CONNECTION_PROPERTIES.getName()), CONNECTION_PROPERTIES_DESC);
-        configAdapter.registerOperationHandler(ADD, ConnectionPropertyAdd.INSTANCE, ADD_CONNECTION_PROPERTIES_DESC, false);
-        configAdapter.registerOperationHandler(REMOVE, ConnectionPropertyRemove.INSTANCE, REMOVE_CONNECTION_PROPERTIES_DESC, false);
-        configAdapter.registerReadOnlyAttribute(Constants.CONNECTION_PROPERTY_VALUE, null);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(DataSourcesSubsystemRootDefinition.createInstance(registerRuntimeOnly));
 
 
-        final ManagementResourceRegistration xaDataSources = subsystem.registerSubModel(PathElement.pathElement(XA_DATASOURCE), XA_DATA_SOURCE_DESC);
-        xaDataSources.registerOperationHandler(ADD, XaDataSourceAdd.INSTANCE, ADD_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(REMOVE, XaDataSourceRemove.INSTANCE, REMOVE_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(ENABLE, DataSourceEnable.XA_INSTANCE, ENABLE_XA_DATA_SOURCE_DESC, false);
-        xaDataSources.registerOperationHandler(DISABLE, DataSourceDisable.XA_INSTANCE, DISABLE_XA_DATA_SOURCE_DESC, false);
-        if (registerRuntimeOnly) {
-            xaDataSources.registerOperationHandler("flush-idle-connection-in-pool",
-                    PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-            xaDataSources.registerOperationHandler("flush-all-connection-in-pool",
-                    PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-            xaDataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
-                    TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        }
-        for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
-           if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
-               xaDataSources.registerReadWriteAttribute(attribute, PoolConfigurationReadHandler.INSTANCE,
-                       LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
-           } else {
-               xaDataSources.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE));
-           }
-       }
-        for (SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.READONLY_XA_DATASOURCE_ATTRIBUTE) {
-            xaDataSources.registerReadOnlyAttribute(attribute, null);
-        }
-        final ManagementResourceRegistration xadatasourcePropertyAdapter = xaDataSources.registerSubModel(PathElement.pathElement(XADATASOURCE_PROPERTIES.getName()), XADATASOURCE_PROPERTIES_DESC);
-        xadatasourcePropertyAdapter.registerOperationHandler(ADD, XaDataSourcePropertyAdd.INSTANCE, ADD_XADATASOURCE_PROPERTIES_DESC, false);
-        xadatasourcePropertyAdapter.registerOperationHandler(REMOVE, XaDataSourcePropertyRemove.INSTANCE, REMOVE_XADATASOURCE_PROPERTIES_DESC, false);
-        xadatasourcePropertyAdapter.registerReadOnlyAttribute(Constants.XADATASOURCE_PROPERTY_VALUE,null);
+        subsystem.registerXMLElementWriter(DataSourceSubsystemParser.INSTANCE);
 
 
         if (registerRuntimeOnly) {
-            registerDeploymentsModel(registration);
-        }
-    }
-
-    private void registerDeploymentsModel(final SubsystemRegistration registration) {
-        ResourceDefinition deploymentsDef = new SimpleResourceDefinition(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME),
-                getResourceDescriptionResolver("deployed"));
-        final ManagementResourceRegistration deploymentsRegistration = registration.registerDeploymentModel(deploymentsDef);
-
-        final ManagementResourceRegistration dataSources = deploymentsRegistration.registerSubModel(PathElement.pathElement(DATA_SOURCE), DATA_SOURCE_DESC);
-        dataSources.registerOperationHandler("flush-idle-connection-in-pool",
-                PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        dataSources.registerOperationHandler("flush-all-connection-in-pool",
-                PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        dataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE,
-                TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-
-        final ManagementResourceRegistration configAdapter = dataSources.registerSubModel(PathElement.pathElement(CONNECTION_PROPERTIES.getName()), CONNECTION_PROPERTIES_DESC);
-        configAdapter.registerReadOnlyAttribute(Constants.CONNECTION_PROPERTY_VALUE.getName(), XMLDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
-
-        for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.DATASOURCE_ATTRIBUTE) {
-            dataSources.registerReadOnlyAttribute(attribute.getName(), XMLDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
-        }
-
-        final ManagementResourceRegistration xaDataSources = deploymentsRegistration.registerSubModel(PathElement.pathElement(XA_DATASOURCE),
-                XA_DATA_SOURCE_DESC);
-        xaDataSources.registerOperationHandler("flush-idle-connection-in-pool", PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE, FLUSH_IDLE_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        xaDataSources.registerOperationHandler("flush-all-connection-in-pool", PoolOperations.FlushAllConnectionInPool.DS_INSTANCE, FLUSH_ALL_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-        xaDataSources.registerOperationHandler("test-connection-in-pool", PoolOperations.TestConnectionInPool.DS_INSTANCE, TEST_CONNECTION_DESC, false, RUNTIME_ONLY_FLAG);
-
-        final ManagementResourceRegistration xadatasourcePropertyAdapter = xaDataSources.registerSubModel(PathElement.pathElement(XADATASOURCE_PROPERTIES.getName()), XADATASOURCE_PROPERTIES_DESC);
-        xadatasourcePropertyAdapter.registerReadOnlyAttribute(Constants.CONNECTION_PROPERTY_VALUE.getName(), XMLXaDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
-
-        for (final SimpleAttributeDefinition attribute : DataSourcesSubsystemProviders.XA_DATASOURCE_ATTRIBUTE) {
-            xaDataSources.registerReadOnlyAttribute(attribute.getName(), XMLXaDataSourceRuntimeHandler.INSTANCE, Storage.RUNTIME);
+            subsystem.registerDeploymentModel(DataSourcesSubsystemRootDefinition.createDeployedInstance(registerRuntimeOnly));
         }
     }
 
@@ -827,118 +655,5 @@ public class DataSourcesExtension implements Extension {
 
     }
 
-    private static class DataSourcesSubsystemDescribeHandler implements OperationStepHandler, DescriptionProvider {
-        static final DataSourcesSubsystemDescribeHandler INSTANCE = new DataSourcesSubsystemDescribeHandler();
-
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final ModelNode result = context.getResult();
-            final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR))
-                    .getLastElement());
-            final ModelNode subModel = context.readModel(PathAddress.EMPTY_ADDRESS);
-
-            final ModelNode subsystemAdd = new ModelNode();
-            subsystemAdd.get(OP).set(ADD);
-            subsystemAdd.get(OP_ADDR).set(rootAddress.toModelNode());
-
-            result.add(subsystemAdd);
-
-            if (subModel.hasDefined(JDBC_DRIVER_NAME)) {
-                for (final Property jdbcDriver : subModel.get(Constants.JDBC_DRIVER_NAME).asPropertyList()) {
-                    final ModelNode address = rootAddress.toModelNode();
-                    address.add(Constants.JDBC_DRIVER_NAME, jdbcDriver.getName());
-                    final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
-                    addOperation.get(DRIVER_NAME.getName()).set(jdbcDriver.getValue().get(DRIVER_NAME.getName()));
-                    addOperation.get(DRIVER_MODULE_NAME.getName()).set(jdbcDriver.getValue().get(DRIVER_MODULE_NAME.getName()));
-                    addOperation.get(DRIVER_MAJOR_VERSION.getName()).set(jdbcDriver.getValue().get(DRIVER_MAJOR_VERSION.getName()));
-                    addOperation.get(DRIVER_MINOR_VERSION.getName()).set(jdbcDriver.getValue().get(DRIVER_MINOR_VERSION.getName()));
-                    addOperation.get(DRIVER_CLASS_NAME.getName()).set(jdbcDriver.getValue().get(DRIVER_CLASS_NAME.getName()));
-                    addOperation.get(DRIVER_DATASOURCE_CLASS_NAME.getName()).set(
-                            jdbcDriver.getValue().get(DRIVER_DATASOURCE_CLASS_NAME.getName()));
-                    addOperation.get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()).set(
-                            jdbcDriver.getValue().get(DRIVER_XA_DATASOURCE_CLASS_NAME.getName()));
-                    result.add(addOperation);
-                }
-            }
-
-            if (subModel.hasDefined(DATA_SOURCE)) {
-                for (final Property dataSourceProp : subModel.get(Constants.DATA_SOURCE).asPropertyList()) {
-                    final ModelNode address = rootAddress.toModelNode();
-                    address.add(Constants.DATA_SOURCE, dataSourceProp.getName());
-                    final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
-                    final ModelNode dataSource = dataSourceProp.getValue();
-
-                    populateAddModel(dataSource, addOperation, CONNECTION_PROPERTIES.getName(), DATASOURCE_ATTRIBUTE);
-
-                    addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
-                    result.add(addOperation);
-
-                    if (dataSource.hasDefined(CONNECTION_PROPERTIES.getName())) {
-                        for (final Property prop : dataSource.get(CONNECTION_PROPERTIES.getName()).asPropertyList()) {
-                            final ModelNode propAddress = address.clone();
-
-                            propAddress.add(CONNECTION_PROPERTIES.getName(), prop.getName());
-                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAddress);
-                            addPropOperation.get("value").set(prop.getValue().get(VALUE).asString());
-                            result.add(addPropOperation);
-                        }
-
-                    }
-
-                    if (!dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
-                        final ModelNode enableOperation = new ModelNode();
-                        enableOperation.get(OP).set(ENABLE);
-                        enableOperation.get(OP_ADDR).set(address);
-                        enableOperation.get(PERSISTENT).set(dataSource.hasDefined(ENABLED.getName()));
-                        result.add(enableOperation);
-                    }
-                }
-            }
-
-            if (subModel.hasDefined(XA_DATASOURCE)) {
-                for (final Property dataSourceProp : subModel.get(Constants.XA_DATASOURCE).asPropertyList()) {
-                    final ModelNode address = rootAddress.toModelNode();
-                    address.add(Constants.XA_DATASOURCE, dataSourceProp.getName());
-                    final ModelNode addOperation = Util.getEmptyOperation(ADD, address);
-                    final ModelNode dataSource = dataSourceProp.getValue();
-
-                    populateAddModel(dataSource, addOperation, XADATASOURCE_PROPERTIES.getName(), XA_DATASOURCE_ATTRIBUTE);
-
-                    addOperation.get(DATASOURCE_DRIVER.getName()).set(dataSourceProp.getValue().get(DATASOURCE_DRIVER.getName()));
-                    result.add(addOperation);
-
-                    if (dataSource.hasDefined(XADATASOURCE_PROPERTIES.getName())) {
-                        for (final Property prop : dataSource.get(XADATASOURCE_PROPERTIES.getName()).asPropertyList()) {
-                            final ModelNode propAddress = address.clone();
-
-                            propAddress.add(XADATASOURCE_PROPERTIES.getName(), prop.getName());
-                            final ModelNode addPropOperation = Util.getEmptyOperation(ADD, propAddress);
-                            addPropOperation.get("value").set(prop.getValue().get(VALUE).asString());
-                            result.add(addPropOperation);
-                        }
-
-                    }
-
-                    if (!dataSource.hasDefined(ENABLED.getName()) || dataSource.get(ENABLED.getName()).asBoolean()) {
-                        final ModelNode enableOperation = new ModelNode();
-                        enableOperation.get(OP).set(ENABLE);
-                        enableOperation.get(OP_ADDR).set(address);
-                        enableOperation.get(PERSISTENT).set(dataSource.hasDefined(ENABLED.getName()));
-                        result.add(enableOperation);
-                    }
-                }
-            }
-
-            context.stepCompleted();
-        }
-
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return GenericSubsystemDescribeHandler.DEFINITION.getDescriptionProvider().getModelDescription(locale);
-        }
-    }
-
-    public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DataSourcesExtension.class.getClassLoader(), true, true);
-    }
 }
 
