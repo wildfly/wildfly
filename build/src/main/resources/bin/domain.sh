@@ -188,7 +188,7 @@ while true; do
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA_FROM_JVM\" \
-         "$@"
+         '"$@"'
       JBOSS_STATUS=$?
    else
       # Execute the JVM in the background
@@ -207,7 +207,7 @@ while true; do
          $HOST_CONTROLLER_JAVA_OPTS \
          -- \
          -default-jvm \"$JAVA_FROM_JVM\" \
-         "$@" "&"
+         '"$@"' "&"
       JBOSS_PID=$!
       # Trap common signals and relay them to the jboss process
       trap "kill -HUP  $JBOSS_PID" HUP
