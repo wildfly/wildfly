@@ -7,6 +7,11 @@
     </subsystem>
     <supplement name="default">
         <replacement placeholder="CACHE-CONTAINERS">
+            <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.jboss.as.clustering.web.infinispan">
+                <local-cache name="local-web" batching="true">
+                    <file-store passivation="false" purge="false"/>
+                </local-cache>
+            </cache-container>
             <cache-container name="hibernate" default-cache="local-query" module="org.jboss.as.jpa.hibernate:4">
                 <local-cache name="entity">
                     <transaction mode="NON_XA"/>
