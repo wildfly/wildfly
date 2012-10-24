@@ -64,6 +64,11 @@ public interface PatchingResult {
     PatchInfo getPatchInfo();
 
     /**
+     * Complete.
+     */
+    void commit();
+
+    /**
      * Rollback...
      */
     void rollback();

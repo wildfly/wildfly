@@ -241,8 +241,8 @@ class PatchingTasks {
     }
 
     static Patch loadPatchInformation(final String patchId, final DirectoryStructure structure) throws IOException, XMLStreamException {
-        final File historyDir = structure.getHistoryDir(patchId);
-        final File patchXml = new File(historyDir, PatchXml.PATCH_XML);
+        final File patchDir = structure.getPatchDirectory(patchId);
+        final File patchXml = new File(patchDir, PatchXml.PATCH_XML);
         return parse(patchXml);
     }
 

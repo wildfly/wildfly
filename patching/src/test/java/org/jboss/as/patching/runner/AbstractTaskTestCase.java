@@ -22,11 +22,14 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.PatchInfo;
 import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.junit.After;
@@ -59,6 +62,20 @@ public abstract class AbstractTaskTestCase {
         if (storedModulesPath != null) {
             System.setProperty("module.path", storedModulesPath);
         }
+    }
+
+    PatchingResult executePatch(final PatchInfo info, final File file) throws FileNotFoundException, PatchingException {
+        final PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        final PatchingResult result = runner.executeDirect(new FileInputStream(file), ContentVerificationPolicy.STRICT);
+        result.commit();
+        return result;
+    }
+
+    PatchingResult rollback(final PatchInfo info, final String patchId) throws PatchingException {
+        final PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
+        final PatchingResult result = runner.rollback(patchId, false);
+        result.commit();
+        return result;
     }
 
 }

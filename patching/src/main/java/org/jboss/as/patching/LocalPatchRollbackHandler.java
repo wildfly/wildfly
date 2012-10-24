@@ -61,7 +61,18 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
                 context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
                 return;
             }
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.completeStep(new OperationContext.ResultHandler() {
+
+                @Override
+                public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                    if(resultAction == OperationContext.ResultAction.KEEP) {
+                        result.commit();
+                    } else {
+                        result.rollback();
+                    }
+                }
+
+            });
         } catch (PatchingException e) {
             throw new OperationFailedException(e.getMessage(), e);
         } finally {

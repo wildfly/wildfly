@@ -84,8 +84,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
         tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
@@ -128,8 +127,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
         assertFileExists(standaloneShellFile);
@@ -139,8 +137,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
 
         // rollback the patch based on the updated PatchInfo
-        runner = new PatchingTaskRunner(result.getPatchInfo(), result.getPatchInfo().getEnvironment());
-        PatchingResult rollbackResult = runner.rollback(patchID, true);
+        PatchingResult rollbackResult = rollback(result.getPatchInfo(), patchID);
 
         tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);

@@ -139,8 +139,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
 
-        PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
 
@@ -156,8 +155,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         dump(standaloneXmlFile, "<updated standalone configuration with changes from the added module>");
         byte[] updatedStandaloneXmlFile = calculateHash(standaloneXmlFile);
 
-        runner = new PatchingTaskRunner(result.getPatchInfo(), result.getPatchInfo().getEnvironment());
-        PatchingResult rollbackResult = runner.rollback(patch.getPatchId(), true);
+        PatchingResult rollbackResult = rollback(result.getPatchInfo(), patch.getPatchId());
 
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
         File rolledBackStandaloneXmlFile = assertFileExists(rollbackResult.getPatchInfo().getEnvironment().getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
