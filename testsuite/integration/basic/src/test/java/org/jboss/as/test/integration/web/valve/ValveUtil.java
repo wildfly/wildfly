@@ -84,7 +84,7 @@ public class ValveUtil {
         op.get(OP_ADDR).add(SUBSYSTEM, "web");
         op.get(OP_ADDR).add("valve", name);
         op.get(NAME).set("enabled");
-        op.get("enabled").set("false");
+        op.get("enabled").set("true");
         updates.add(op);
         applyUpdates(updates, client);
 
