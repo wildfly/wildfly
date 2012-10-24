@@ -30,7 +30,7 @@ import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -45,7 +45,7 @@ public class JMXExtension extends AbstractSubsystemExtension {
 
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
-        if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
+        if (serviceName.equals(IntegrationServices.SYSTEM_SERVICES_PLUGIN)) {
             builder.addDependency(DependencyType.OPTIONAL, MBeanServerService.SERVICE_NAME, MBeanServer.class, injectedMBeanServer);
         }
     }

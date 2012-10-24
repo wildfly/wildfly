@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
@@ -83,7 +83,7 @@ public class NamingExtension extends AbstractSubsystemExtension {
 
     @Override
     public void configureServiceDependencies(ServiceName serviceName, ServiceBuilder<?> builder) {
-        if (serviceName.equals(IntegrationService.SYSTEM_SERVICES_PLUGIN)) {
+        if (serviceName.equals(IntegrationServices.SYSTEM_SERVICES_PLUGIN)) {
             builder.addDependency(DependencyType.OPTIONAL, NamingService.SERVICE_NAME, NamingStore.class, injectedNamingStore);
         }
     }

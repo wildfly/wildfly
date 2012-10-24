@@ -51,7 +51,6 @@ import org.jboss.as.osgi.deployment.OSGiManifestStructureProcessor;
 import org.jboss.as.osgi.deployment.OSGiXServiceParseProcessor;
 import org.jboss.as.osgi.management.OSGiRuntimeResource;
 import org.jboss.as.osgi.parser.SubsystemState.Activation;
-import org.jboss.as.osgi.service.FrameworkActivator;
 import org.jboss.as.osgi.service.FrameworkBootstrapService;
 import org.jboss.as.osgi.service.InitialDeploymentTracker;
 import org.jboss.as.osgi.service.ModuleRegistrationTracker;
@@ -110,9 +109,6 @@ class OSGiSubsystemAdd extends AbstractBoottimeAddStepHandler {
         while(services.hasNext()) {
             extensions.add(services.next());
         }
-
-        // Create the framework activator
-        FrameworkActivator.create(serviceTarget, activation == Activation.LAZY);
 
         context.addStep(new OperationStepHandler() {
             @Override

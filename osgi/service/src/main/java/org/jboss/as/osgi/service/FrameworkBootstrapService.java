@@ -59,7 +59,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.internal.FrameworkBuilder;
-import org.jboss.osgi.framework.spi.IntegrationService;
+import org.jboss.osgi.framework.internal.FrameworkBuilder.FrameworkPhase;
 import org.jboss.osgi.framework.spi.SystemPathsPlugin;
 import org.osgi.framework.Constants;
 
@@ -72,25 +72,26 @@ import org.osgi.framework.Constants;
  */
 public class FrameworkBootstrapService implements Service<Void> {
 
-    static final ServiceName FRAMEWORK_BOOTSTRAP_NAME = SERVICE_BASE_NAME.append("framework", "bootstrap");
+    static final ServiceName SERVICE_NAME = SERVICE_BASE_NAME.append("framework", "bootstrap");
     static final String MAPPED_OSGI_SOCKET_BINDINGS = "org.jboss.as.osgi.socket.bindings";
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<SubsystemState> injectedSubsystemState = new InjectedValue<SubsystemState>();
+    private final ServiceVerificationHandler verificationHandler;
     private final List<SubsystemExtension> extensions;
     private final OSGiRuntimeResource resource;
 
-    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, List<SubsystemExtension> extensions,
-            ServiceVerificationHandler verificationHandler) {
-        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, extensions);
-        ServiceBuilder<Void> builder = target.addService(FRAMEWORK_BOOTSTRAP_NAME, service);
+    public static ServiceController<Void> addService(ServiceTarget target, OSGiRuntimeResource resource, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
+        FrameworkBootstrapService service = new FrameworkBootstrapService(resource, extensions, verificationHandler);
+        ServiceBuilder<Void> builder = target.addService(FrameworkBootstrapService.SERVICE_NAME, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(OSGiConstants.SUBSYSTEM_STATE_SERVICE_NAME, SubsystemState.class, service.injectedSubsystemState);
         builder.addListener(Inheritance.ONCE, verificationHandler);
         return builder.install();
     }
 
-    private FrameworkBootstrapService(OSGiRuntimeResource resource, List<SubsystemExtension> extensions) {
+    private FrameworkBootstrapService(OSGiRuntimeResource resource, List<SubsystemExtension> extensions, ServiceVerificationHandler verificationHandler) {
+        this.verificationHandler = verificationHandler;
         this.extensions = extensions;
         this.resource = resource;
     }
@@ -117,32 +118,33 @@ public class FrameworkBootstrapService implements Service<Void> {
             ResolverService.addService(serviceTarget);
             RepositoryService.addService(serviceTarget);
 
+            Activation activation = subsystemState.getActivationPolicy();
+            Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.LAZY);
+
             // Configure the {@link Framework} builder
-            FrameworkBuilder builder = new FrameworkBuilder(props);
+            FrameworkBuilder builder = new FrameworkBuilder(props, initialMode);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(serviceTarget);
 
-            // Install the integration services
-            builder.installIntegrationService(serviceContainer, serviceTarget, new BundleLifecycleIntegration());
-            builder.installIntegrationService(serviceContainer, serviceTarget, new FrameworkModuleIntegration(props));
-            builder.installIntegrationService(serviceContainer, serviceTarget, new ModuleLoaderIntegration());
-            builder.installIntegrationService(serviceContainer, serviceTarget, new SystemServicesIntegration(resource, extensions));
+            builder.registerFrameworkServices(serviceContainer, true);
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new BundleLifecycleIntegration());
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new FrameworkModuleIntegration(props));
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new ModuleLoaderIntegration());
+            builder.registerIntegrationService(FrameworkPhase.CREATE, new SystemServicesIntegration(resource, extensions));
+            builder.registerIntegrationService(FrameworkPhase.INIT, new BootstrapBundlesIntegration());
+            builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration());
 
-            Activation activation = subsystemState.getActivationPolicy();
+            // Install the services to create the framework
+            builder.installFrameworkServices(FrameworkPhase.CREATE, serviceTarget, verificationHandler);
+
             if (activation == Activation.EAGER) {
-                // Install the bootstrap bundle services
-                builder.installIntegrationService(serviceContainer, serviceTarget, new BootstrapBundlesIntegration());
-                builder.installIntegrationService(serviceContainer, serviceTarget, new PersistentBundlesIntegration());
-                builder.setInitialMode(Mode.ACTIVE);
-            } else {
-                // Exclude the bootstrap bundle services - see {@link FrameworkActivator}
-                builder.addExcludedService(IntegrationService.BOOTSTRAP_BUNDLES_INSTALL);
-                builder.addExcludedService(IntegrationService.PERSISTENT_BUNDLES_INSTALL);
-                builder.setInitialMode(Mode.LAZY);
+                builder.installFrameworkServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
+                builder.installFrameworkServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);
             }
 
-            // Create the {@link Framework} services
-            builder.createFrameworkServices(true);
+            // Create the framework activator
+            FrameworkActivator.create(builder);
+
         } catch (Throwable th) {
             throw MESSAGES.startFailedToCreateFrameworkServices(th);
         }

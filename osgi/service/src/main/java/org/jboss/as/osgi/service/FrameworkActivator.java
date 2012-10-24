@@ -36,6 +36,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
+import org.jboss.osgi.framework.internal.FrameworkBuilder;
+import org.jboss.osgi.framework.internal.FrameworkBuilder.FrameworkPhase;
 
 /**
  * A service that activates the framework
@@ -59,10 +61,10 @@ public final class FrameworkActivator {
 
     private static FrameworkActivator INSTANCE;
     private final AtomicBoolean activated;
-    private final ServiceTarget serviceTarget;
+    private final FrameworkBuilder builder;
 
-    public static void create(ServiceTarget serviceTarget, boolean enabled) {
-        INSTANCE = new FrameworkActivator(serviceTarget, enabled);
+    public static void create(FrameworkBuilder builder) {
+        INSTANCE = new FrameworkActivator(builder);
     }
 
     /**
@@ -80,17 +82,18 @@ public final class FrameworkActivator {
         return INSTANCE.activateInternal(Activation.EAGER, verificationHandler);
     }
 
-    private FrameworkActivator(ServiceTarget serviceTarget, boolean enabled) {
-        this.serviceTarget = serviceTarget;
-        this.activated = new AtomicBoolean(!enabled);
+    private FrameworkActivator(FrameworkBuilder builder) {
+        this.activated = new AtomicBoolean(builder.getInitialMode() == Mode.ACTIVE);
+        this.builder = builder;
     }
 
     private boolean activateInternal(Activation activation, ServiceVerificationHandler verificationHandler) {
         boolean activate = activated.compareAndSet(false, true);
         if (activate) {
 
-            new BootstrapBundlesIntegration().install(serviceTarget, verificationHandler);
-            new PersistentBundlesIntegration().install(serviceTarget, verificationHandler);
+            ServiceTarget serviceTarget = builder.getServiceTarget();
+            builder.installFrameworkServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
+            builder.installFrameworkServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);
 
             ServiceName serviceName = Services.FRAMEWORK_ACTIVE.getParent().append(activation.toString(), "ACTIVATOR");
             switch (activation) {
@@ -122,7 +125,7 @@ public final class FrameworkActivator {
         // Instead it explicitly activates {@link Services#FRAMEWORK_ACTIVE}
         static void addService (ServiceTarget serviceTarget, ServiceName serviceName, ServiceVerificationHandler verificationHandler) {
             ServiceBuilder<Void> builder = serviceTarget.addService(serviceName, new LazyActivatorService());
-            builder.addDependency(FrameworkBootstrapService.FRAMEWORK_BOOTSTRAP_NAME);
+            builder.addDependency(FrameworkBootstrapService.SERVICE_NAME);
             builder.addListener(verificationHandler);
             builder.install();
         }
