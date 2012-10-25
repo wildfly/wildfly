@@ -98,7 +98,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -120,7 +120,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)

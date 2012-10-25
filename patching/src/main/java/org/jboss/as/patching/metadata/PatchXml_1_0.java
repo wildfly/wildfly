@@ -116,8 +116,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
         SLOT("slot"),
 
         // default unknown attribute
-        UNKNOWN(null),
-        ;
+        UNKNOWN(null);
 
         private final String name;
         Attribute(String name) {
@@ -444,7 +443,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     targetHash = hexStringToByteArray(value);
                     break;
                 default:
-                    throw unexpectedElement(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);
@@ -482,7 +481,7 @@ class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>
                     affectsRuntime = Boolean.parseBoolean(value);
                     break;
                 default:
-                    throw unexpectedElement(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);

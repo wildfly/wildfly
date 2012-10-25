@@ -56,7 +56,7 @@ public final class Usage {
     public String usage(String headline) {
 
         final StringBuilder sb = new StringBuilder();
-        sb.append(NEW_LINE).append(UsageMessages.MESSAGES.argUsage(headline)).append(NEW_LINE);
+        sb.append(NEW_LINE).append(headline).append(NEW_LINE);
 
         for (int i = 0; i < arguments.size(); i++) {
             sb.append(getCommand(i)).append(NEW_LINE);

@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
@@ -39,6 +40,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -57,12 +59,19 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         ADDED_MODULE("added-module"),
         APPLIES_TO_VERSION("applies-to-version"),
         BUNDLES("bundles"),
+        BUNDLE_SEARCH_PATH("bundle-search-path"),
+        BUNDLE_SEARCH_PATHS("bundle-search-paths"),
         CUMULATIVE("cumulative"),
         DESCRIPTION("description"),
+        DISTRIBUTION_STRUCTURE("distribution-structure"),
+        EXCLUDE_DEFAULT("exclude-default"),
         GENERATE_BY_DIFF("generate-by-diff"),
+        IGNORED_PATH("ignored-path"),
         IN_RUNTIME_USE("in-runtime-use"),
         MISC_FILES("misc-files"),
         MODULES("modules"),
+        MODULE_SEARCH_PATH("module-search-path"),
+        MODULE_SEARCH_PATHS("module-search-paths"),
         NAME("name"),
         ONE_OFF("one-off"),
         PATCH_CONFIG("patch-config"),
@@ -100,6 +109,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
     }
 
     enum Attribute {
+        AFFECTS_TYPE("affects-type"),
         APPLIES_TO_VERSION("applies-to-version"),
         DIRECTORY("directory"),
         EXISTING_PATH("existing-path"),
@@ -107,6 +117,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         NAME("name"),
         PATH("path"),
         RESULTING_VERSION("resulting-version"),
+        SEARCH_PATH("search-path"),
         SLOT("slot"),
 
         // default unknown attribute
@@ -133,8 +144,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
     }
 
-    private DistributionStructure updatedStructure;
-    private DistributionStructure appliesToStructure;
+    private boolean patchTypeConfigured;
 
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
@@ -146,6 +156,9 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                     break;
                 case DESCRIPTION:
                     patchConfigBuilder.setDescription(reader.getElementText());
+                    break;
+                case DISTRIBUTION_STRUCTURE:
+                    parseDistributionStructure(reader, patchConfigBuilder);
                     break;
                 case CUMULATIVE:
                     parseCumulativePatchType(reader, patchConfigBuilder);
@@ -174,6 +187,159 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
     }
 
+    private void parseDistributionStructure(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
+
+        if (!patchTypeConfigured) {
+            throw missingOneOf(reader, EnumSet.of(Element.CUMULATIVE, Element.ONE_OFF));
+        }
+
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case MODULE_SEARCH_PATHS:
+                    parseSlottedContentSearchPaths(reader, patchConfigBuilder, Element.MODULE_SEARCH_PATH);
+                    break;
+                case BUNDLE_SEARCH_PATHS:
+                    parseSlottedContentSearchPaths(reader, patchConfigBuilder, Element.BUNDLE_SEARCH_PATH);
+                    break;
+                case IGNORED_PATH:
+                    parseIgnoredPath(reader, patchConfigBuilder);
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseSlottedContentSearchPaths(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder, Element type) throws XMLStreamException {
+
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (element == type) {
+                parseSlottedContentSearchPath(reader, patchConfigBuilder, type);
+            } else if (element == Element.EXCLUDE_DEFAULT) {
+                parseSlottedContentDefaultExclusion(reader, patchConfigBuilder, type);
+            } else {
+                throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseSlottedContentSearchPath(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder, Element type) throws XMLStreamException {
+
+        String name = null;
+        String path = null;
+        PatchConfigBuilder.AffectsType affectsType = PatchConfigBuilder.AffectsType.BOTH;
+
+        Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.PATH);
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case NAME:
+                    name = value;
+                    break;
+                case PATH:
+                    path = value;
+                    break;
+                case AFFECTS_TYPE:
+                    try {
+                        affectsType = Enum.valueOf(PatchConfigBuilder.AffectsType.class, value.toUpperCase());
+                    } catch (RuntimeException e) {
+                        throw PatchMessages.MESSAGES.illegalAffectsType(value, reader.getLocation());
+                    }
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        requireNoContent(reader);
+
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+        if (type == Element.MODULE_SEARCH_PATH) {
+            patchConfigBuilder.addModuleSearchPath(name, path, affectsType); // TODO affectsType
+        } else {
+            patchConfigBuilder.addBundleSearchPath(name, path, affectsType); // TODO affectsType
+        }
+    }
+
+    private void parseSlottedContentDefaultExclusion(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder, Element type) throws XMLStreamException {
+
+        PatchConfigBuilder.AffectsType affectsType = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            if (attribute == Attribute.AFFECTS_TYPE) {
+                try {
+                    affectsType = Enum.valueOf(PatchConfigBuilder.AffectsType.class, value.toUpperCase());
+                } catch (RuntimeException e) {
+                    throw PatchMessages.MESSAGES.illegalAffectsType(value, reader.getLocation());
+                }
+            } else {
+                throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        requireNoContent(reader);
+
+        if (affectsType == null) {
+            throw missingRequired(reader, EnumSet.of(Attribute.AFFECTS_TYPE));
+        }
+
+        if (type == Element.MODULE_SEARCH_PATH) {
+            patchConfigBuilder.setDefaultModuleSearchPathExclusion(affectsType);
+        } else {
+            patchConfigBuilder.setDefaultBundleSearchPathExclusion(affectsType);
+        }
+    }
+
+    private void parseIgnoredPath(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
+
+        String path = null;
+        PatchConfigBuilder.AffectsType affectsType = PatchConfigBuilder.AffectsType.BOTH;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case PATH:
+                    path = value;
+                    break;
+                case AFFECTS_TYPE:
+                    try {
+                        affectsType = Enum.valueOf(PatchConfigBuilder.AffectsType.class, value.toUpperCase());
+                    } catch (RuntimeException e) {
+                        throw PatchMessages.MESSAGES.illegalAffectsType(value, reader.getLocation());
+                    }
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        requireNoContent(reader);
+
+        if (path == null) {
+            throw missingRequired(reader, EnumSet.of(Attribute.PATH));
+        }
+
+        patchConfigBuilder.addIgnoredPath(path, affectsType);
+    }
+
     private void parseCumulativePatchType(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
 
         String appliesTo = null;
@@ -189,11 +355,9 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
             switch (attribute) {
                 case APPLIES_TO_VERSION:
                     appliesTo = value;
-                    appliesToStructure = DistributionStructure.Factory.create(value);
                     break;
                 case RESULTING_VERSION:
                     resulting = value;
-                    updatedStructure = DistributionStructure.Factory.create(value);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -207,6 +371,8 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
 
         builder.setCumulativeType(appliesTo, resulting);
+
+        patchTypeConfigured = true;
     }
 
     private void parseOneOffPatchType(final XMLExtendedStreamReader reader, final PatchConfigBuilder builder) throws XMLStreamException {
@@ -221,11 +387,6 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                 case APPLIES_TO_VERSION:
                     String value = reader.getElementText();
                     appliesTo.add(value);
-                    if (appliesToStructure == null) {
-                        // TODO deal with multiple applies-to
-                        appliesToStructure = DistributionStructure.Factory.create(value);
-                        updatedStructure = appliesToStructure;
-                    }
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -237,6 +398,8 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
         }
 
         builder.setOneOffType(appliesTo);
+
+        patchTypeConfigured = true;
     }
 
     private static void parseGenerateByDiff(XMLExtendedStreamReader reader, PatchConfigBuilder patchConfigBuilder) throws XMLStreamException {
@@ -266,7 +429,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                     path = value;
                     break;
                 default:
-                    throw unexpectedElement(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -363,6 +526,7 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
 
         String name = null;
         String slot = "main";
+        String searchPath = null;
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -375,15 +539,20 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                 case SLOT:
                     slot = value;
                     break;
+                case SEARCH_PATH:
+                    searchPath = value;
+                    break;
                 default:
-                    throw unexpectedElement(reader);
+                    throw unexpectedAttribute(reader, i);
             }
         }
         requireNoContent(reader);
 
-        DistributionStructure structure =  modificationType == ModificationType.REMOVE ? appliesToStructure : updatedStructure;
-        DistributionContentItem item = bundle ? structure.getBundleRootContentItem(name, slot) : structure.getModuleRootContentItem(name, slot);
-        builder.addModification(item, modificationType);
+        if (bundle) {
+            builder.addBundleModification(name, slot, searchPath, modificationType);
+        } else {
+            builder.addModuleModification(name, slot, searchPath, modificationType);
+        }
     }
 
     private void parseMiscModification(final XMLExtendedStreamReader reader, final ModificationType modificationType,
@@ -408,16 +577,11 @@ class PatchConfigXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchCo
                     affectsRuntime = Boolean.parseBoolean(value);
                     break;
                 default:
-                    throw unexpectedElement(reader);
+                    throw unexpectedAttribute(reader,i );
             }
         }
         requireNoContent(reader);
 
-        DistributionStructure structure =  modificationType == ModificationType.REMOVE ? appliesToStructure : updatedStructure;
-        DistributionContentItem item = structure.getMiscContentItem(path, directory);
-        builder.addModification(item, modificationType);
-        if (affectsRuntime) {
-            builder.addRuntimeUseItem(item);
-        }
+        builder.addMiscModification(path, directory, affectsRuntime, modificationType);
     }
 }

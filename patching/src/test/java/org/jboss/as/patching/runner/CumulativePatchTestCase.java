@@ -71,7 +71,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -109,7 +109,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newModuleHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newModuleHash), NO_CONTENT, ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newModuleHash), NO_CONTENT, ADD);
         File updatedFile = touch(patchDir, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
         byte[] updatedHash = hashFile(updatedFile);
@@ -156,7 +156,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(cumulativePatchDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT, ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT, ADD);
 
         Patch cumulativePatch = PatchBuilder.create()
                 .setPatchId(culumativePatchID)
@@ -179,7 +179,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         File oneOffmoduleDir = createModule(oneOffPatchDir, moduleName, "update module resource");
         byte[] updatedHash = hashFile(oneOffmoduleDir);
-        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHash), newHash, MODIFY);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, null, updatedHash), newHash, MODIFY);
 
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID)
@@ -218,7 +218,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File cumulativePatchDir = mkdir(tempDir, culumativePatchID);
         File moduleDir = createModule(cumulativePatchDir, moduleName, "this is a module update in a cumulative patch");
         byte[] updatedHashCP = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, updatedHashCP), existingHash, MODIFY);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, updatedHashCP), existingHash, MODIFY);
 
         Patch cumulativePatch = PatchBuilder.create()
                 .setPatchId(culumativePatchID)
@@ -241,7 +241,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         File oneOffmoduleDir = createModule(oneOffPatchDir, moduleName, "update module resource");
         byte[] updatedHashOneOff = hashFile(oneOffmoduleDir);
-        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHashOneOff), updatedHashCP, MODIFY);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, null, updatedHashOneOff), updatedHashCP, MODIFY);
 
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(oneOffPatchID + "-oneoff")

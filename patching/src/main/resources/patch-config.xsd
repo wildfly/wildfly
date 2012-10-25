@@ -41,6 +41,7 @@
                     <xs:element name="cumulative" type="cumulative-patchType" maxOccurs="1"/>
                     <xs:element name="one-off" type="patchType" maxOccurs="1"/>
                 </xs:choice>
+                <xs:element name="distribution-structure" type="distribution-structureType" minOccurs="0" maxOccurs="1"/>
                 <xs:choice>
                     <xs:element name="generate-by-diff" type="generate-by-diffType" minOccurs="0" maxOccurs="1"/>
                     <xs:element name="specified-content" type="specified-contentType" minOccurs="0" maxOccurs="1"/>
@@ -48,6 +49,86 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+
+    <xs:complexType name="distribution-structureType">
+        <xs:annotation>
+            <xs:documentation>
+                Provides information about the structure of the distribution being patched and the resulting distribution
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="module-search-paths" type="slotted-content-search-pathType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="bundle-search-paths" type="slotted-content-search-pathType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ignored-path" type="ignored-pathType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-pathsType">
+        <xs:sequence>
+            <xs:element name="standard-search-path" type="slotted-content-search-pathType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="exclude-default" type="slotted-content-search-path-exclusionType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-pathType">
+        <xs:annotation>
+            <xs:documentation>
+                Provides information about the standard path of the root of a search location for module or bundle content
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    A unique name for the search path location, which will be used to identify the search path
+                    in the 'search-path' attribute in elements in the patch.xml file.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the search location, relative to the root of the distribution
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="affects" type="affectsType" use="optional" default="both"/>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-path-exclusionType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that the default search location for a bundle or module (i.e. modules/ or bundles/) should
+                not be treated as such in the distribution structure
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="affects" type="affectsType" use="optional" default="both"/>
+    </xs:complexType>
+
+    <xs:simpleType name="affectsType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="updated"/>
+            <xs:enumeration value="original"/>
+            <xs:enumeration value="both"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ignored-pathType">
+        <xs:annotation>
+            <xs:documentation>
+                Indicates that a given path (and all children thereof) should be ignored when analyzing the
+                distribution structure. The "standalone/configuration" and "domain/configuration" paths are
+                always ignored.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="path" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The path that should be ignored, relative to the root of the distribution
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="affects" type="affectsType" use="optional" default="both"/>
+    </xs:complexType>
 
     <xs:complexType name="patchType">
         <xs:annotation>
@@ -159,6 +240,14 @@
         </xs:annotation>
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="slot" type="xs:string"/>
+        <xs:attribute name="search-path" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the searchable path under which the slotted content is stored. If not set, the
+                    default path for the type of content (e.g. modules/ or bundles/) is assumed
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="added-misc-contentType">

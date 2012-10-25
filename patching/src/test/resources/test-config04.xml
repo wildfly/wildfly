@@ -25,28 +25,42 @@
 
     <name>patch-12345</name>
     <description>patch description</description>
+
     <one-off>
         <applies-to-version>1.2.3</applies-to-version>
     </one-off>
+
+    <distribution-structure>
+        <module-search-paths>
+            <module-search-path name="test" path="test/modules"/>
+            <exclude-default affects-type="updated"/>
+        </module-search-paths>
+        <bundle-search-paths>
+            <bundle-search-path name="test" path="bundles/test"/>
+            <exclude-default affects-type="updated"/>
+        </bundle-search-paths>
+        <ignored-path path="misc/test"/>
+        <ignored-path path="test/misc" affects-type="original"/>
+    </distribution-structure>
 
     <specified-content>
 
         <modules>
             <added-module name="org.jboss.as.test" />
-            <added-module name="org.jboss.as.test" slot="prod" />
-            <updated-module name="org.jboss.as.test2" />
-            <updated-module name="org.jboss.as.test2" slot="prod" />
+            <added-module name="org.jboss.as.test" slot="prod" search-path="test"/>
+            <updated-module name="org.jboss.as.test2" search-path="test"  />
+            <updated-module name="org.jboss.as.test2" slot="prod"/>
             <removed-module name="org.jboss.as.test3" />
-            <removed-module name="org.jboss.as.test3" slot="prod" />
+            <removed-module name="org.jboss.as.test3" slot="prod" search-path="test" />
         </modules>
 
         <bundles>
-            <added-bundle name="org.jboss.as.test" />
+            <added-bundle name="org.jboss.as.test" search-path="test" />
             <added-bundle name="org.jboss.as.test" slot="prod" />
             <updated-bundle name="org.jboss.as.test2" />
-            <updated-bundle name="org.jboss.as.test2" slot="prod" />
+            <updated-bundle name="org.jboss.as.test2" slot="prod"  search-path="test"/>
             <removed-bundle name="org.jboss.as.test3" />
-            <removed-bundle name="org.jboss.as.test3" slot="prod" />
+            <removed-bundle name="org.jboss.as.test3" slot="prod"  search-path="test"/>
         </bundles>
 
         <misc-files>

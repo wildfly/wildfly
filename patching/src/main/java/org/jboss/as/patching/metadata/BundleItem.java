@@ -31,9 +31,6 @@ import static org.jboss.as.patching.metadata.ContentType.BUNDLE;
  */
 public class BundleItem extends ModuleItem {
 
-    public BundleItem(String name, byte[] contentHash) {
-        this(name, MAIN_SLOT, contentHash);
-    }
 
     public BundleItem(String name, String slot, byte[] contentHash) {
         super(name, slot, contentHash, BUNDLE);

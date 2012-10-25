@@ -26,7 +26,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -102,15 +104,84 @@ public class PatchConfigXmlUnitTestCase {
         final InputStream is = getResource(configFile);
         final PatchConfig patchConfig = PatchConfigXml.parse(is);
 
+        // Validate the structure
+        DistributionStructure originalDS = patchConfig.getOriginalDistributionStructure();
+        DistributionStructure updatedDS = patchConfig.getUpdatedDistributionStructure();
+
+        DistributionContentItem modulesBase = DistributionContentItem.createMiscItemForPath("test");
+        modulesBase = new DistributionContentItem("modules", DistributionContentItem.Type.MODULE_PARENT, modulesBase, true);
+        DistributionContentItem modulesTest = new DistributionContentItem("dir", DistributionContentItem.Type.MODULE_PARENT, modulesBase, true);
+        modulesTest = new DistributionContentItem("main", DistributionContentItem.Type.MODULE_ROOT, modulesTest, true);
+        DistributionStructure.SlottedContentSearchPath searchPath = originalDS.getModuleSearchPath(modulesTest);
+        assertEquals("test", searchPath.getName());
+        assertEquals(modulesBase, searchPath.getPath());
+        searchPath = updatedDS.getModuleSearchPath(modulesTest);
+        assertEquals("test", searchPath.getName());
+        assertEquals(modulesBase, searchPath.getPath());
+
+        modulesBase = new DistributionContentItem("modules", DistributionContentItem.Type.MODULE_PARENT, DistributionContentItem.createDistributionRoot(), true);
+        modulesTest = new DistributionContentItem("dir", DistributionContentItem.Type.MODULE_PARENT, modulesBase, true);
+        modulesTest = new DistributionContentItem("main", DistributionContentItem.Type.MODULE_ROOT, modulesTest, true);
+
+        searchPath = originalDS.getModuleSearchPath(modulesTest);
+        assertEquals("", searchPath.getName());
+        assertEquals(modulesBase, searchPath.getPath());
+
+        try {
+            updatedDS.getModuleSearchPath(modulesTest);
+            fail("defaul module path not removed");
+        } catch (IllegalArgumentException e) {
+            // good
+        }
+
+        DistributionContentItem bundlesBase = DistributionContentItem.createMiscItemForPath("bundles");
+        bundlesBase = new DistributionContentItem("test", DistributionContentItem.Type.BUNDLE_PARENT, bundlesBase, true);
+        DistributionContentItem bundlesTest = new DistributionContentItem("dir", DistributionContentItem.Type.BUNDLE_PARENT, bundlesBase, true);
+        bundlesTest = new DistributionContentItem("main", DistributionContentItem.Type.BUNDLE_ROOT, bundlesTest, true);
+        searchPath = originalDS.getBundleSearchPath(bundlesTest);
+        assertEquals("test", searchPath.getName());
+        assertEquals(bundlesBase, searchPath.getPath());
+        searchPath = updatedDS.getBundleSearchPath(bundlesTest);
+        assertEquals("test", searchPath.getName());
+        assertEquals(bundlesBase, searchPath.getPath());
+
+        bundlesBase = new DistributionContentItem("bundles", DistributionContentItem.Type.BUNDLE_PARENT, DistributionContentItem.createDistributionRoot(), true);
+        bundlesTest = new DistributionContentItem("dir", DistributionContentItem.Type.BUNDLE_PARENT, bundlesBase, true);
+        bundlesTest = new DistributionContentItem("main", DistributionContentItem.Type.BUNDLE_ROOT, bundlesTest, true);
+        searchPath = originalDS.getBundleSearchPath(bundlesTest);
+        assertEquals("", searchPath.getName());
+        assertEquals(bundlesBase, searchPath.getPath());
+
+        try {
+            updatedDS.getBundleSearchPath(bundlesTest);
+            fail("defaul bundle path not removed");
+        } catch (IllegalArgumentException e) {
+            // good
+        }
+
+        DistributionContentItem misc = DistributionContentItem.createMiscItemForPath("misc");
+        File testFile = new File("test");
+        DistributionContentItem testee = originalDS.getContentItem(testFile, misc);
+        assertEquals(DistributionContentItem.Type.IGNORED, testee.getType());
+        testee = updatedDS.getContentItem(testFile, misc);
+        assertEquals(DistributionContentItem.Type.IGNORED, testee.getType());
+
+        DistributionContentItem test = DistributionContentItem.createMiscItemForPath("test");
+        File miscFile = new File("misc");
+        testee = originalDS.getContentItem(miscFile, test);
+        assertEquals(DistributionContentItem.Type.IGNORED, testee.getType());
+        testee = updatedDS.getContentItem(miscFile, test);
+        assertEquals(DistributionContentItem.Type.MISC, testee.getType());
+
         Map<ModificationType, Set<String>> content = new HashMap<ModificationType, Set<String>>();
-        Set<String> adds = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test/main", "modules/org/jboss/as/test/prod",
-                "bundles/org/jboss/as/test/main", "bundles/org/jboss/as/test/prod", "test/file", "test/file2"));
+        Set<String> adds = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test/main", "test/modules/org/jboss/as/test/prod",
+                "bundles/test/org/jboss/as/test/main", "bundles/org/jboss/as/test/prod", "test/file", "test/file2"));
         content.put(ModificationType.ADD, adds);
-        Set<String> mods = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test2/main", "modules/org/jboss/as/test2/prod",
-                "bundles/org/jboss/as/test2/main", "bundles/org/jboss/as/test2/prod", "test/file3", "test/file4"));
+        Set<String> mods = new HashSet<String>(Arrays.asList("test/modules/org/jboss/as/test2/main", "modules/org/jboss/as/test2/prod",
+                "bundles/org/jboss/as/test2/main", "bundles/test/org/jboss/as/test2/prod", "test/file3", "test/file4"));
         content.put(ModificationType.MODIFY, mods);
-        Set<String> rems = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test3/main", "modules/org/jboss/as/test3/prod",
-                "bundles/org/jboss/as/test3/main", "bundles/org/jboss/as/test3/prod", "test/file5", "test/file6"));
+        Set<String> rems = new HashSet<String>(Arrays.asList("modules/org/jboss/as/test3/main", "test/modules/org/jboss/as/test3/prod",
+                "bundles/org/jboss/as/test3/main", "bundles/test/org/jboss/as/test3/prod", "test/file5", "test/file6"));
         content.put(ModificationType.REMOVE, rems);
 
         for (Map<ModificationType, SortedSet<DistributionContentItem>> map : patchConfig.getSpecifiedContent().values()) {

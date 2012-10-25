@@ -98,6 +98,20 @@ public interface PatchConfig {
     Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> getSpecifiedContent();
 
     /**
+     * Gets the {@link DistributionStructure} for the applies-to versions.
+     *
+     * @return the {@link DistributionStructure}
+     */
+    DistributionStructure getOriginalDistributionStructure();
+
+    /**
+     * Gets the {@link DistributionStructure} for the resulting version.
+     *
+     * @return the {@link DistributionStructure}
+     */
+    DistributionStructure getUpdatedDistributionStructure();
+
+    /**
      * Create a {@link PatchBuilder} whose basic metadata matches what's configured in this object.
      *
      * @return the patch builder

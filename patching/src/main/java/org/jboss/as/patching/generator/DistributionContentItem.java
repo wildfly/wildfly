@@ -33,20 +33,20 @@ import java.util.List;
  */
 public class DistributionContentItem implements Comparable<DistributionContentItem> {
 
-    private static final String PATH_DELIMITER = "/";
+    static final String PATH_DELIMITER = "/";
 
     public enum Type {
         /** The root of a distribution */
         DISTRIBUTION_ROOT(true),
-        /** A directory within the bundle storage area that is not the final root directory of a bundle */
+        /** A directory within a bundle storage area that is not the final root directory of a bundle */
         BUNDLE_PARENT(true),
-        /** A directory within the bundle storage area that is the final root directory of a bundle */
+        /** A directory within a bundle storage area that is the final root directory of a bundle */
         BUNDLE_ROOT(true),
         /** Content within a bundle */
         BUNDLE_CONTENT(true),
-        /** A directory within the module storage area that is not the final root directory of a module */
+        /** A directory within a module storage area that is not the final root directory of a module */
         MODULE_PARENT(true),
-        /** A directory within the module storage area that is the final root directory of a module */
+        /** A directory within a module storage area that is the final root directory of a module */
         MODULE_ROOT(true),
         /** Content within a module that is not the module descriptor file */
         MODULE_CONTENT(true),
@@ -185,6 +185,15 @@ public class DistributionContentItem implements Comparable<DistributionContentIt
         return result;
     }
 
+    /**
+     * Checks for equality based on the equality of the {@link #getParent() parent} and the equality
+     * of the {@link #getName() name}. So, two items with the same path will be equal, regardless of
+     * their {@link #getType() type} or {@link #isDirectory() directory} properties.
+     *
+     * @param obj the other object
+     * @return {@code true} if the other item is a {@code DistributionContentItem} and its parent and name are equal to
+     *         this object's.
+     */
     @Override
     public boolean equals(Object obj) {
         boolean result = this == obj;
@@ -198,8 +207,6 @@ public class DistributionContentItem implements Comparable<DistributionContentIt
 
     @Override
     public int compareTo(DistributionContentItem o) {
-
-
 
         // If the two items are at different depths in the tree, compare their ancestors at the same depth
         int myDepth = getDepth();

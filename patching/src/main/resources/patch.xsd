@@ -89,6 +89,7 @@
 
     <xs:complexType name="modulesType">
         <xs:sequence>
+            <xs:element name="module-search-path" type="slotted-content-search-pathType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="added-module" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="updated-module" type="updated-slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="removed-module" type="removed-slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
@@ -97,6 +98,7 @@
 
     <xs:complexType name="bundlesType">
         <xs:sequence>
+            <xs:element name="bundle-search-path" type="slotted-content-search-pathType" minOccurs="1" maxOccurs="unbounded"/>
             <xs:element name="added-bundle" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="updated-bundle" type="updated-slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="removed-bundle" type="removed-slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
@@ -109,6 +111,29 @@
             <xs:element name="updated-misc-content" type="updated-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="removed-misc-content" type="removed-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="slotted-content-search-pathType">
+        <xs:annotation>
+            <xs:documentation>
+                A searchable path under which slotted content is stored.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    A unique name for the search path location, which will be used to identify the search path
+                    in the 'search-path' attributes.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="standard-path" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Path of the standard location of the directory, relative to the root directory of the installation being patched.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="contentType">
@@ -141,6 +166,14 @@
         </xs:annotation>
         <xs:attribute name="name" type="xs:string"/>
         <xs:attribute name="slot" type="xs:string"/>
+        <xs:attribute name="search-path" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Name of the searchable path under which the slotted content is stored. If not set, the
+                    default path for the type of content (e.g. modules/ or bundles/) is assumed
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:attributeGroup>
 
     <xs:complexType name="slotted-contentType">
