@@ -1,10 +1,10 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 
 import java.util.List;
 
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -15,6 +15,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
+ * Add handler for the resource /subsystem=infinispan/cache-container=X/transport=TRANSPORT
+ *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class TransportAdd extends AbstractAddStepHandler {
@@ -31,9 +33,7 @@ public class TransportAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         // this is not necessary as the CLI checks for duplicate addresses
         if (model.isDefined()) {
-            ModelNode exception = new ModelNode() ;
-            exception.get(FAILURE_DESCRIPTION).set("Add operation failed: singleton transport already exists.") ;
-            throw new OperationFailedException(exception);
+            throw InfinispanMessages.MESSAGES.singletonResourceAlreadyExists("transport");
         }
 
         // copy operation data to the model

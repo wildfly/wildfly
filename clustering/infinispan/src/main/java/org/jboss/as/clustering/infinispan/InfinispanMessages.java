@@ -170,4 +170,24 @@ public interface InfinispanMessages {
     @Message(id = 10301, value = "Failed to parse %s")
     IllegalStateException failedToParse(@Cause Throwable cause, String resourceName);
 
+    /**
+     * Creates an exception indicating a singleton resource already exists.
+     *
+     * @param resourceName the name of the resource.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10302, value = "Add operation failed: singleton %s already exists.")
+    OperationFailedException singletonResourceAlreadyExists(String resourceName);
+
+    /**
+     * Creates an exception indicating unable to remove an alias from an empty list of aliases.
+     *
+     * @param aliasName the name of the alias.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10303, value = "cannot remove alias % from empty list.")
+    OperationFailedException cannotRemoveAliasFromEmptyList(String aliasName);
+
 }
