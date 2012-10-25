@@ -20,6 +20,7 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_POLICY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
@@ -29,6 +30,7 @@ import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.OperationContext;
@@ -41,8 +43,8 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
@@ -87,7 +89,7 @@ public class DeploymentHandlerUtil {
     private DeploymentHandlerUtil() {
     }
 
-    public static void deploy(final OperationContext context, final String deploymentUnitName, final String managementName, final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
+    public static void deploy(final OperationContext context, final String deploymentUnitName, final String managementName, final String policy, final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
         if (context.isNormalServer()) {
@@ -99,7 +101,7 @@ public class DeploymentHandlerUtil {
             DeploymentModelUtils.cleanup(deployment);
 
             context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) {
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                     final ServiceRegistry serviceRegistry = context.getServiceRegistry(true);
                     final ServiceController<?> deploymentController = serviceRegistry.getService(deploymentUnitServiceName);
@@ -117,7 +119,7 @@ public class DeploymentHandlerUtil {
                         });
                     } else {
                         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                        final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, policy, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
 
                         context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
@@ -134,7 +136,11 @@ public class DeploymentHandlerUtil {
                                         ServerLogger.ROOT_LOGGER.deploymentRolledBackWithNoMessage(deploymentUnitName);
                                     }
                                 } else {
-                                    ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
+                                    if (policy != null) {
+                                        ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName, policy);
+                                    } else {
+                                        ServerLogger.ROOT_LOGGER.deploymentDeployed(deploymentUnitName);
+                                    }
                                 }
                             }
                         });
@@ -144,8 +150,8 @@ public class DeploymentHandlerUtil {
         }
     }
 
-    public static Collection<ServiceController<?>> doDeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final ServiceVerificationHandler verificationHandler,
-                                                             final Resource deploymentResource, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader, final ContentItem... contents) {
+    public static Collection<ServiceController<?>> doDeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final String policy, final ServiceVerificationHandler verificationHandler,
+                                                             final Resource deploymentResource, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
         final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
 
@@ -163,7 +169,8 @@ public class DeploymentHandlerUtil {
         controllers.add(contentService);
 
         final RootDeploymentUnitService service = new RootDeploymentUnitService(deploymentUnitName, managementName, null, registration, mutableRegistration, deploymentResource, verificationHandler, vaultReader);
-        final ServiceController<DeploymentUnit> deploymentUnitController = serviceTarget.addService(deploymentUnitServiceName, service)
+        final DeploymentUnitServiceBuilder builder = findDeploymentUnitServiceBuilder(policy);
+        final ServiceController<DeploymentUnit> deploymentUnitController = builder.build(serviceTarget, deploymentUnitServiceName, service)
                 .addDependency(Services.JBOSS_DEPLOYMENT_CHAINS, DeployerChains.class, service.getDeployerChainsInjector())
                 .addDependency(DeploymentMountProvider.SERVICE_NAME, DeploymentMountProvider.class, service.getServerDeploymentRepositoryInjector())
                 .addDependency(contentsServiceName, VirtualFile.class, service.contentsInjector)
@@ -183,8 +190,17 @@ public class DeploymentHandlerUtil {
         return controllers;
     }
 
-    public static void redeploy(final OperationContext context, final String deploymentUnitName,
-                                final String managementName, final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
+    private static DeploymentUnitServiceBuilder findDeploymentUnitServiceBuilder(String policy) throws OperationFailedException {
+        for (DeploymentUnitServiceBuilder builder: ServiceLoader.load(DeploymentUnitServiceBuilder.class, DeploymentUnitServiceBuilder.class.getClassLoader())) {
+            if (builder.getDeploymentPolicy().equals(policy)) {
+                return builder;
+            }
+        }
+        throw ServerMessages.MESSAGES.invalidDeploymentPolicy(policy);
+    }
+
+    public static void redeploy(final OperationContext context, final String deploymentUnitName, final String managementName, final String policy,
+                                final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
         if (context.isNormalServer()) {
@@ -207,7 +223,7 @@ public class DeploymentHandlerUtil {
                         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                             context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
-                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                            doDeploy(context, deploymentUnitName, managementName, policy, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
                             context.completeStep(new OperationContext.ResultHandler() {
                                 @Override
                                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
@@ -231,7 +247,12 @@ public class DeploymentHandlerUtil {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                            doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                            try {
+                                doDeploy(context, deploymentUnitName, managementName, policy, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                            } catch (OperationFailedException e) {
+                                // If it deployed before, it'll deploy again...
+                                throw new IllegalStateException(e);
+                            }
                             if (!logged.get()) {
                                 if (context.hasFailureDescription()) {
                                     ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, context.getFailureDescription().asString());
@@ -247,7 +268,7 @@ public class DeploymentHandlerUtil {
     }
 
     public static void replace(final OperationContext context, final ModelNode originalDeployment, final String deploymentUnitName, final String managementName,
-                               final String replacedDeploymentUnitName, final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
+                               final String replacedDeploymentUnitName, final String policy, final AbstractVaultReader vaultReader, final ContentItem... contents) throws OperationFailedException {
         assert contents != null : "contents is null";
 
         if (context.isNormalServer()) {
@@ -267,7 +288,7 @@ public class DeploymentHandlerUtil {
                     context.removeService(replacedDeploymentUnitServiceName);
 
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                    final Collection<ServiceController<?>> controllers = doDeploy(context, deploymentUnitName, managementName, policy, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
                     context.addStep(verificationHandler, OperationContext.Stage.VERIFY);
 
                     context.completeStep(new OperationContext.ResultHandler() {
@@ -281,10 +302,14 @@ public class DeploymentHandlerUtil {
                                 DeploymentModelUtils.cleanup(deployment);
                                 final String name = originalDeployment.require(NAME).asString();
                                 final String runtimeName = originalDeployment.require(RUNTIME_NAME).asString();
+                                final String policy = originalDeployment.require(DEPLOYMENT_POLICY).asString();
                                 final DeploymentHandlerUtil.ContentItem[] contents = getContents(originalDeployment.require(CONTENT));
                                 final ServiceVerificationHandler svh = new ServiceVerificationHandler();
-                                doDeploy(context, runtimeName, name, svh, deployment, registration, mutableRegistration, vaultReader, contents);
-
+                                try {
+                                    doDeploy(context, runtimeName, name, policy, svh, deployment, registration, mutableRegistration, vaultReader, contents);
+                                } catch (OperationFailedException e) {
+                                    throw new IllegalStateException(e);
+                                }
                                 if (context.hasFailureDescription()) {
                                     ServerLogger.ROOT_LOGGER.replaceRolledBack(replacedDeploymentUnitName, deploymentUnitName, getFormattedFailureDescription(context));
                                 } else {
@@ -321,10 +346,15 @@ public class DeploymentHandlerUtil {
                                 final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
                                 final String name = model.require(NAME).asString();
                                 final String runtimeName = model.require(RUNTIME_NAME).asString();
+                                final String policy = model.require(DEPLOYMENT_POLICY).asString();
                                 final DeploymentHandlerUtil.ContentItem[] contents = getContents(model.require(CONTENT));
                                 final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-                                doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
-
+                                try {
+                                    doDeploy(context, runtimeName, name, policy, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+                                } catch (OperationFailedException e) {
+                                    // If this depoloyed the 1st time, we assume it'll deploy again
+                                    throw new IllegalStateException(e);
+                                }
                                 if (context.hasFailureDescription()) {
                                     ServerLogger.ROOT_LOGGER.undeploymentRolledBack(deploymentUnitName, getFormattedFailureDescription(context));
                                 } else {

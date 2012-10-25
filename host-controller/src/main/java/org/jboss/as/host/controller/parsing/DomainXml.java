@@ -701,7 +701,7 @@ public class DomainXml extends CommonXml {
                             throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                         }
                         sawDeployments = true;
-                        parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
+                        parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED, Attribute.DEPLOYMENT_POLICY), Collections.<Element>emptySet());
                         break;
                     }
                     case DEPLOYMENT_OVERLAYS: {

@@ -56,6 +56,7 @@ public enum Attribute {
     DEBUG_OPTIONS("debug-options"),
     DEPLOYMENT("deployment"),
     DEPLOYMENT_OVERLAY("deployment-overlay"),
+    DEPLOYMENT_POLICY("policy"),
     DESTINATION_ADDRESS("destination-address"),
     DIRECTORY_GROUPING("directory-grouping"),
     DESTINATION_PORT("destination-port"),

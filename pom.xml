@@ -827,6 +827,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-clustering-singleton-deployment</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-clustering-web-infinispan</artifactId>
                 <version>${project.version}</version>
             </dependency>

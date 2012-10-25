@@ -27,6 +27,7 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONT
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_RELATIVE_TO;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.PERSISTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.POLICY;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_ADD_ATTRIBUTES;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
@@ -125,7 +126,8 @@ public class DeploymentAddHandler implements OperationStepHandler {
         newModel.get(CONTENT_ALL.getName()).set(content);
 
         if (ENABLED.resolveModelAttribute(context, newModel).asBoolean() && context.isNormalServer()) {
-            DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
+            String policy = POLICY.resolveModelAttribute(context, newModel).asString();
+            DeploymentHandlerUtil.deploy(context, runtimeName, name, policy, vaultReader, contentItem);
         }
 
         context.stepCompleted();

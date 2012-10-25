@@ -1174,9 +1174,30 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="policy" type="deployment-policy" use="optional" default="standard">
+                    <xs:annotation>
+                        <xs:documentation>Identifies the policy used to deploy this deployment.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
+
+    <xs:simpleType name="deployment-policy">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="standard">
+                <xs:annotation>
+                    <xs:documentation>Standard deployment policy</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="singleton">
+                <xs:annotation>
+                    <xs:documentation>Clustered singleton deployment policy</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="contentType">
         <xs:attribute name="sha1" use="required">
@@ -1244,6 +1265,12 @@
                         <xs:element name="fs-exploded" type="fs-explodedType"/>
                     </xs:choice>
                 </xs:sequence>
+                <xs:attribute name="policy" type="deployment-policy" use="optional" default="standard">
+                    <xs:annotation>
+                        <xs:documentation>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

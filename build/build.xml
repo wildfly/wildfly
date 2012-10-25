@@ -809,6 +809,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-singleton"/>
         </module-def>
 
+        <module-def name="org.jboss.as.clustering.singleton.deployment">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-singleton-deployment"/>
+        </module-def>
+
         <module-def name="org.jboss.as.clustering.web.infinispan">
             <maven-resource group="org.jboss.as" artifact="jboss-as-clustering-web-infinispan"/>
         </module-def>

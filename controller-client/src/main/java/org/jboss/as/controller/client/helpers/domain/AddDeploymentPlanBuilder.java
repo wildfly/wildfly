@@ -40,6 +40,15 @@ public interface AddDeploymentPlanBuilder extends DeploymentActionsCompleteBuild
 
     /**
      * Indicates content that was added via an immediately preceding
+     * <code>add</code> operation should be deployed.
+     *
+     * @param indicates the deployment policy to use when deploying this content
+     * @return a builder that can continue building the overall deployment plan
+     */
+    DeployDeploymentPlanBuilder andDeploy(String policy);
+
+    /**
+     * Indicates content that was added via an immediately preceding
      * <code>add</code> operation should be deployed, replacing the specified
      * existing content in the runtime.
      *

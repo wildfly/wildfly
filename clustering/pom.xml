@@ -46,6 +46,7 @@
         <module>registry</module>
         <module>service</module>
         <module>singleton</module>
+        <module>singleton-deployment</module>
         <module>web-spi</module>
         <module>web-infinispan</module>
         <module>ejb3-infinispan</module>
