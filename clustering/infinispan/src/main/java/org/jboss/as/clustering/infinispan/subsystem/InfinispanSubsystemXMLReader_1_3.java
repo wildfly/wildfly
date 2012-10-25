@@ -1,5 +1,8 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -9,6 +12,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -32,11 +36,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     @Override
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
-        ModelNode subsystemAddress = new ModelNode();
-        subsystemAddress.add(ModelDescriptionConstants.SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME);
-        subsystemAddress.protect();
-
-        ModelNode subsystem = Util.getEmptyOperation(ModelDescriptionConstants.ADD, subsystemAddress);
+        PathAddress subsystemAddress = PathAddress.pathAddress(InfinispanExtension.SUBSYSTEM_PATH);
+        ModelNode subsystem = Util.createAddOperation(subsystemAddress);
 
         // command to add the subsystem
         operations.add(subsystem);
@@ -55,9 +56,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         }
     }
 
-    private void parseContainer(XMLExtendedStreamReader reader, ModelNode subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
+    private void parseContainer(XMLExtendedStreamReader reader, PathAddress subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
 
-        ModelNode container = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        ModelNode container = Util.getEmptyOperation(ADD, null);
         String name = null;
         final Set<Attribute> required = EnumSet.of(Attribute.NAME);
 
@@ -115,10 +116,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
             throw ParseUtils.missingRequired(reader, required);
         }
 
-        ModelNode containerAddress = subsystemAddress.clone() ;
-        containerAddress.add(ModelKeys.CACHE_CONTAINER, name);
-        containerAddress.protect() ;
-        container.get(ModelDescriptionConstants.OP_ADDR).set(containerAddress);
+        PathAddress containerAddress = subsystemAddress.append(ModelKeys.CACHE_CONTAINER, name);
+        container.get(OP_ADDR).set(containerAddress.toModelNode());
 
         // operation to add the container
         operations.add(container);
@@ -153,10 +152,10 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         }
     }
 
-    private void parseTransport(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+    private void parseTransport(XMLExtendedStreamReader reader, PathAddress containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
-        // ModelNode for the transport add operation
-        ModelNode transport = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        PathAddress transportAddress = containerAddress.append(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+        ModelNode transport = Util.createAddOperation(transportAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -184,12 +183,6 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
             }
         }
         ParseUtils.requireNoContent(reader);
-
-        // setup the transport address
-        ModelNode transportAddress = containerAddress.clone() ;
-        transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-        transportAddress.protect() ;
-        transport.get(ModelDescriptionConstants.OP_ADDR).set(transportAddress);
 
         operations.add(transport);
     }
@@ -255,10 +248,12 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         }
     }
 
-    private void parseLocalCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+    private void parseLocalCache(XMLExtendedStreamReader reader, PathAddress containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
-        ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
+        ModelNode cache = Util.getEmptyOperation(ADD, null);
+        // NOTE: this list is used to avoid lost attribute updates to the cache
+        // object once it has been added to the operations list
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         // set the cache mode to local
@@ -287,10 +282,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         for (ModelNode additionalOperation : additionalConfigurationOperations) {
             operations.add(additionalOperation);
         }
-
     }
 
-    private void parseDistributedCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+    private void parseDistributedCache(XMLExtendedStreamReader reader, PathAddress containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
@@ -348,7 +342,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         }
     }
 
-    private void parseReplicatedCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+    private void parseReplicatedCache(XMLExtendedStreamReader reader, PathAddress containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
@@ -390,7 +384,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         }
     }
 
-    private void parseInvalidationCache(XMLExtendedStreamReader reader, ModelNode containerAddress, List<ModelNode> operations) throws XMLStreamException {
+    private void parseInvalidationCache(XMLExtendedStreamReader reader, PathAddress containerAddress, List<ModelNode> operations) throws XMLStreamException {
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
@@ -428,14 +422,12 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         }
     }
 
-    private void addCacheNameToAddress(ModelNode cache, ModelNode containerAddress, String cacheType) {
+    private void addCacheNameToAddress(ModelNode cache, PathAddress containerAddress, String cacheType) {
 
         String name = cache.get(ModelKeys.NAME).asString();
         // setup the cache address
-        ModelNode cacheAddress = containerAddress.clone() ;
-        cacheAddress.add(cacheType, name);
-        cacheAddress.protect() ;
-        cache.get(ModelDescriptionConstants.OP_ADDR).set(cacheAddress);
+        PathAddress cacheAddress = containerAddress.append(cacheType, name) ;
+        cache.get(ModelDescriptionConstants.OP_ADDR).set(cacheAddress.toModelNode());
 
         // get rid of NAME now that we are finished with it
         cache.remove(ModelKeys.NAME);
@@ -491,11 +483,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     private void parseStateTransfer(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the state transfer add operation
-        ModelNode stateTransferAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone();
-        stateTransferAddress.add(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-        stateTransferAddress.protect();
-        ModelNode stateTransfer = Util.getEmptyOperation(ModelDescriptionConstants.ADD, stateTransferAddress);
+
+        PathAddress stateTransferAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
+        ModelNode stateTransfer = Util.createAddOperation(stateTransferAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -524,11 +514,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
 
     protected void parseLocking(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
-        // ModelNode for the cache add operation
-        ModelNode lockingAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone();
-        lockingAddress.add(ModelKeys.LOCKING,ModelKeys.LOCKING_NAME);
-        lockingAddress.protect();
-        ModelNode locking = Util.getEmptyOperation(ModelDescriptionConstants.ADD, lockingAddress);
+        PathAddress lockingAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
+        ModelNode locking = Util.createAddOperation(lockingAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -561,11 +548,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
 
     protected void parseTransaction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
-        // ModelNode for the transaction add operation
-        ModelNode transactionAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone();
-        transactionAddress.add(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
-        transactionAddress.protect();
-        ModelNode transaction = Util.getEmptyOperation(ModelDescriptionConstants.ADD, transactionAddress);
+        PathAddress transactionAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
+        ModelNode transaction = Util.createAddOperation(transactionAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -593,11 +577,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     protected void parseEviction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the eviction add operation
-        ModelNode evictionAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone();
-        evictionAddress.add(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-        evictionAddress.protect();
-        ModelNode eviction = Util.getEmptyOperation(ModelDescriptionConstants.ADD, evictionAddress);
+
+        PathAddress evictionAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
+        ModelNode eviction = Util.createAddOperation(evictionAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -622,11 +604,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
 
     protected void parseExpiration(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
-        // ModelNode for the expiration add operation
-        ModelNode expirationAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone();
-        expirationAddress.add(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-        expirationAddress.protect();
-        ModelNode expiration = Util.getEmptyOperation(ModelDescriptionConstants.ADD, expirationAddress);
+        PathAddress expirationAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
+        ModelNode expiration = Util.createAddOperation(expirationAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -654,11 +633,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     protected void parseCustomStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the store add operation
-        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.STORE,ModelKeys.STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STORE, ModelKeys.STORE_NAME);
+        ModelNode store = Util.createAddOperation(storeAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -685,11 +662,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     protected void parseFileStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the file store add operation
-        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.FILE_STORE,ModelKeys.FILE_STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
+        ModelNode store = Util.createAddOperation(storeAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -716,11 +691,10 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     protected void parseRemoteStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the remote store add operation
-        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.REMOTE_STORE,ModelKeys.REMOTE_STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+        ModelNode store = Util.createAddOperation(storeAddress);
+
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -787,11 +761,10 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     protected void parseStringKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the string-keyed jdbc store add operation
-        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.STRING_KEYED_JDBC_STORE,ModelKeys.STRING_KEYED_JDBC_STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
+        ModelNode store = Util.createAddOperation(storeAddress);
+
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -833,11 +806,10 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     protected void parseBinaryKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the binary-keyed jdbc store add operation
-        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.BINARY_KEYED_JDBC_STORE,ModelKeys.BINARY_KEYED_JDBC_STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
+        ModelNode store = Util.createAddOperation(storeAddress);
+
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -878,11 +850,10 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.addAll(additionalConfigurationOperations);
     }
     protected void parseMixedKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the mixed-keyed jdbc store add operation
-        ModelNode storeAddress = cache.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        storeAddress.add(ModelKeys.MIXED_KEYED_JDBC_STORE,ModelKeys.MIXED_KEYED_JDBC_STORE_NAME) ;
-        storeAddress.protect();
-        ModelNode store = Util.getEmptyOperation(ModelDescriptionConstants.ADD, storeAddress);
+
+        PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
+        ModelNode store = Util.createAddOperation(storeAddress);
+
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -1048,11 +1019,9 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
     private void parseStoreWriteBehind(XMLExtendedStreamReader reader, ModelNode store, List<ModelNode> operations) throws XMLStreamException {
-        // ModelNode for the write-behind add operation
-        ModelNode writeBehindAddress = store.get(ModelDescriptionConstants.OP_ADDR).clone() ;
-        writeBehindAddress.add(ModelKeys.WRITE_BEHIND,ModelKeys.WRITE_BEHIND_NAME) ;
-        writeBehindAddress.protect();
-        ModelNode writeBehind = Util.getEmptyOperation(ModelDescriptionConstants.ADD, writeBehindAddress);
+
+        PathAddress writeBehindAddress = PathAddress.pathAddress(store.get(OP_ADDR)).append(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
+        ModelNode writeBehind = Util.createAddOperation(writeBehindAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
