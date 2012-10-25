@@ -47,13 +47,11 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.service.packageadmin.PackageAdmin;
 
 /**
@@ -218,46 +216,6 @@ public class WebAppTestCase {
         Bundle bundle = context.installBundle(BUNDLE_C_WAB, input);
         try {
             Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
-            try {
-                performCall("/bundle-d/servlet?input=Hello");
-                Assert.fail("IOException expected");
-            } catch (IOException ex) {
-                // expected
-            }
-
-            bundle.start();
-            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-            String result = performCall("/bundle-c/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
-            result = performCall("/bundle-c/message.txt");
-            Assert.assertEquals("Hello from Resource", result);
-        } finally {
-            bundle.uninstall();
-        }
-    }
-
-    @Test
-    @Ignore("[AS7-5653] Cannot restart webapp bundle after activation failure")
-    public void testDeferredBundleWithFailure() throws Exception {
-        InputStream input = deployer.getDeployment(BUNDLE_F_WAB);
-        Bundle bundle = context.installBundle(BUNDLE_F_WAB, input);
-        try {
-            Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
-            try {
-                performCall("/bundle-d/servlet?input=Hello");
-                Assert.fail("IOException expected");
-            } catch (IOException ex) {
-                // expected
-            }
-
-            try {
-                bundle.start();
-                Assert.fail("BundleException expected");
-            } catch (BundleException ex) {
-                // expected
-            }
-            Assert.assertEquals("RESOLVED", Bundle.RESOLVED, bundle.getState());
             try {
                 performCall("/bundle-d/servlet?input=Hello");
                 Assert.fail("IOException expected");
