@@ -157,14 +157,10 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(TYPE_STANDALONE));
 
         int count = connection.getMBeanCount();
-        Set<ObjectInstance> instances = connection.queryMBeans(null, null);
-        Set<ObjectName> objectNames = connection.queryNames(null, null);
-        Assert.assertEquals(count, instances.size());
-        Assert.assertEquals(count, objectNames.size());
-        checkSameMBeans(instances, objectNames);
-        assertContainsNames(objectNames,
-                LEGACY_ROOT_NAME, LEGACY_INTERFACE_NAME, LEGACY_SOCKET_BINDING_GROUP_NAME, LEGACY_SERVER_SOCKET_BINDING_NAME, LEGACY_SUBSYSTEM_NAME,
-                EXPR_ROOT_NAME, EXPR_INTERFACE_NAME, EXPR_SOCKET_BINDING_GROUP_NAME, EXPR_SERVER_SOCKET_BINDING_NAME, EXPR_SUBSYSTEM_NAME);
+        checkQueryMBeans(connection, count, null);
+        checkQueryMBeans(connection, count, new ObjectName("*:*"));
+
+
 
         Set<ObjectInstance> filteredInstances = connection.queryMBeans(createObjectName(LEGACY_DOMAIN + ":socket-binding-group=*,*"),
                 null);
@@ -172,7 +168,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(2, filteredInstances.size());
         Assert.assertEquals(2, filteredNames.size());
         checkSameMBeans(filteredInstances, filteredNames);
-        assertContainsNames(objectNames, LEGACY_SOCKET_BINDING_GROUP_NAME, LEGACY_SERVER_SOCKET_BINDING_NAME);
+        assertContainsNames(filteredNames, LEGACY_SOCKET_BINDING_GROUP_NAME, LEGACY_SERVER_SOCKET_BINDING_NAME);
 
         filteredInstances = connection.queryMBeans(createObjectName(EXPR_DOMAIN + ":socket-binding-group=*,*"),
                 null);
@@ -180,8 +176,20 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(2, filteredInstances.size());
         Assert.assertEquals(2, filteredNames.size());
         checkSameMBeans(filteredInstances, filteredNames);
-        assertContainsNames(objectNames, EXPR_SOCKET_BINDING_GROUP_NAME, EXPR_SERVER_SOCKET_BINDING_NAME);
+        assertContainsNames(filteredNames, EXPR_SOCKET_BINDING_GROUP_NAME, EXPR_SERVER_SOCKET_BINDING_NAME);
         // TODO test with QueryExp
+    }
+
+    private void checkQueryMBeans(MBeanServerConnection connection, int count, ObjectName filter) throws Exception {
+        Set<ObjectInstance> instances = connection.queryMBeans(filter, null);
+        Set<ObjectName> objectNames = connection.queryNames(filter, null);
+        Assert.assertEquals(count, instances.size());
+        Assert.assertEquals(count, objectNames.size());
+
+        checkSameMBeans(instances, objectNames);
+        assertContainsNames(objectNames,
+                LEGACY_ROOT_NAME, LEGACY_INTERFACE_NAME, LEGACY_SOCKET_BINDING_GROUP_NAME, LEGACY_SERVER_SOCKET_BINDING_NAME, LEGACY_SUBSYSTEM_NAME,
+                EXPR_ROOT_NAME, EXPR_INTERFACE_NAME, EXPR_SOCKET_BINDING_GROUP_NAME, EXPR_SERVER_SOCKET_BINDING_NAME, EXPR_SUBSYSTEM_NAME);
     }
 
     @Test

@@ -25,6 +25,7 @@ import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -73,7 +74,13 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     @Override
     public boolean accepts(ObjectName objectName) {
         String domain = objectName.getDomain();
-        return domain.equals(configuredDomains.getLegacyDomain()) || domain.equals(configuredDomains.getExprDomain());
+        if (!objectName.isDomainPattern()) {
+            return domain.equals(configuredDomains.getLegacyDomain()) || domain.equals(configuredDomains.getExprDomain());
+        }
+
+        Pattern p = Pattern.compile(objectName.getDomain().replace("*", ".*"));
+        return p.matcher(configuredDomains.getLegacyDomain()).matches() || p.matcher(configuredDomains.getExprDomain()).matches();
+
     }
 
     public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException, InstanceNotFoundException,
@@ -136,7 +143,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     }
 
     public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
-        if (name != null) {
+        if (name != null && !name.isDomainPattern()) {
             return getHelper(name).queryMBeans(name, query);
         } else {
             Set<ObjectInstance> instances = new HashSet<ObjectInstance>();
@@ -151,7 +158,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     }
 
     public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-        if (name != null) {
+        if (name != null && !name.isDomainPattern()) {
             return getHelper(name).queryNames(name, query);
         } else {
             Set<ObjectName> instances = new HashSet<ObjectName>();
@@ -205,7 +212,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
 
     private ModelControllerMBeanHelper getHelper(ObjectName name) {
         String domain = name.getDomain();
-        if (domain.equals(configuredDomains.getLegacyDomain())) {
+        if (domain.equals(configuredDomains.getLegacyDomain()) || name.isDomainPattern()) {
             return legacyHelper;
         }
         if (domain.equals(configuredDomains.getExprDomain())) {

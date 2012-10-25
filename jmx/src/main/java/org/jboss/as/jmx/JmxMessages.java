@@ -37,10 +37,10 @@ import javax.management.openmbean.OpenType;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -364,5 +364,9 @@ public interface JmxMessages {
 
     @Message(id = 11354, value = "Unknown child %s")
     IllegalArgumentException unknownChild(String child);
+
+    @Message(id = 11355, value = "ObjectName cannot be null")
+    IllegalArgumentException objectNameCantBeNull();
+
 }
 
