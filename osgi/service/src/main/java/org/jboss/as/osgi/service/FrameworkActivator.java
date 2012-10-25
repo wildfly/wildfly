@@ -36,8 +36,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.framework.internal.FrameworkBuilder;
-import org.jboss.osgi.framework.internal.FrameworkBuilder.FrameworkPhase;
+import org.jboss.osgi.framework.spi.FrameworkBuilder;
+import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 
 /**
  * A service that activates the framework
@@ -92,8 +92,8 @@ public final class FrameworkActivator {
         if (activate) {
 
             ServiceTarget serviceTarget = builder.getServiceTarget();
-            builder.installFrameworkServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
-            builder.installFrameworkServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);
+            builder.installServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
+            builder.installServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);
 
             ServiceName serviceName = Services.FRAMEWORK_ACTIVE.getParent().append(activation.toString(), "ACTIVATOR");
             switch (activation) {
