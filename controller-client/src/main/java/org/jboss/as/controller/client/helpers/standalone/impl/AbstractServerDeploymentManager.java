@@ -29,6 +29,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_DEPLOY_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_FULL_REPLACE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_POLICY;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REDEPLOY_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REMOVE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT_REPLACE_OPERATION;
@@ -109,6 +110,10 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
             }
             case DEPLOY: {
                 configureDeploymentOperation(step, DEPLOYMENT_DEPLOY_OPERATION, uniqueName);
+                String policy = action.getPolicy();
+                if (policy != null) {
+                    step.get(DEPLOYMENT_POLICY).set(action.getPolicy());
+                }
                 break;
             }
             case FULL_REPLACE: {

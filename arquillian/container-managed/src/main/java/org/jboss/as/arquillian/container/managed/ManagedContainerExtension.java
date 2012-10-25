@@ -17,6 +17,8 @@
 package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
+import org.jboss.arquillian.container.test.impl.enricher.resource.DeployerProvider;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jboss.as.arquillian.container.CommonContainerExtension;
 
 /**
@@ -32,5 +34,8 @@ public class ManagedContainerExtension extends CommonContainerExtension {
     public void register(ExtensionBuilder builder) {
         super.register(builder);
         builder.service(DeployableContainer.class, ManagedDeployableContainer.class);
+        builder.override(ResourceProvider.class, DeployerProvider.class, ManagedDeployerProvider.class);
+        builder.observer(ManagedClientDeployerCreator.class);
+        builder.observer(ManagedContainerDeployController.class);
     }
 }

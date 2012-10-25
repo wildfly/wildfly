@@ -672,4 +672,6 @@ public interface ServerMessages {
     @Message(id = 18784, value = "Null '%s'")
     OperationFailedException nullParameter(String name);
 
+    @Message(id = 18785, value = "%s is not a valid deployment policy")
+    OperationFailedException invalidDeploymentPolicy(String policy);
 }

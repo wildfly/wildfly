@@ -25,6 +25,7 @@
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
       <subsystem>configuration/subsystems/sar.xml</subsystem>
       <subsystem supplement="standalone">configuration/subsystems/security.xml</subsystem>
+      <subsystem>configuration/subsystems/singleton-deployment.xml</subsystem>
       <subsystem>configuration/subsystems/threads.xml</subsystem>
       <subsystem>configuration/subsystems/transactions.xml</subsystem>
       <subsystem supplement="ha">configuration/subsystems/web.xml</subsystem>

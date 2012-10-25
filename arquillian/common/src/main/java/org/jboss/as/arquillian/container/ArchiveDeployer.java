@@ -43,11 +43,15 @@ public class ArchiveDeployer {
     }
 
     public String deploy(Archive<?> archive) throws DeploymentException {
-        return deployInternal(archive);
+        return this.deploy(archive, null);
+    }
+
+    public String deploy(Archive<?> archive, String policy) throws DeploymentException {
+        return deployInternal(archive, policy);
     }
 
     public String deploy(String name, InputStream input) throws DeploymentException {
-        return deployInternal(name, input);
+        return deployInternal(name, null, input);
     }
 
     public void undeploy(String runtimeName) throws DeploymentException {
@@ -58,10 +62,10 @@ public class ArchiveDeployer {
         }
     }
 
-    private String deployInternal(Archive<?> archive) throws DeploymentException {
+    private String deployInternal(Archive<?> archive, String policy) throws DeploymentException {
         final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
         try {
-            return deployInternal(archive.getName(), input);
+            return deployInternal(archive.getName(), policy, input);
         } finally {
             if (input != null)
                 try {
@@ -72,9 +76,9 @@ public class ArchiveDeployer {
         }
     }
 
-    private String deployInternal(String name, InputStream input) throws DeploymentException {
+    private String deployInternal(String name, String policy, InputStream input) throws DeploymentException {
         try {
-            return deployer.deploy(name, input);
+            return deployer.deploy(name, policy, input);
         } catch (Exception ex) {
             Throwable rootCause = ex.getCause();
             while (null != rootCause && rootCause.getCause() != null) {

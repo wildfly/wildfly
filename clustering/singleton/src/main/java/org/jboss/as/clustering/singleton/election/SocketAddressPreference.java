@@ -37,4 +37,19 @@ public class SocketAddressPreference implements Preference {
     public boolean preferred(ClusterNode node) {
         return node.getIpAddress().getHostAddress().equals(this.address.getAddress().getHostAddress()) && (node.getPort() == this.address.getPort());
     }
+
+    @Override
+    public boolean equals(Object object) {
+        return ((object != null) && (object instanceof SocketAddressPreference)) ? this.address.equals(((SocketAddressPreference) object).address) : false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.address.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.address.toString();
+    }
 }

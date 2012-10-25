@@ -35,4 +35,19 @@ public class NamePreference implements Preference {
     public boolean preferred(ClusterNode node) {
         return node.getName().equals(this.name);
     }
+
+    @Override
+    public boolean equals(Object object) {
+        return ((object != null) && (object instanceof NamePreference)) ? this.name.equals(((NamePreference) object).name) : false;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

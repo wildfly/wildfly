@@ -20,12 +20,14 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_POLICY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.POLICY;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -88,6 +90,8 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
 
         final ModelNode replaceNode = context.readResourceForUpdate(PathAddress.pathAddress(replacePath)).getModel();
         final String replacedName = DeploymentAttributes.REPLACE_DEPLOYMENT_ATTRIBUTES.get(RUNTIME_NAME).resolveModelAttribute(context, replaceNode).asString();
+        final ModelNode policyModel = POLICY.resolveModelAttribute(context, replaceNode);
+        final String policy = policyModel.isDefined() ? policyModel.asString() : null;
 
         ModelNode deployNode;
         String runtimeName;
@@ -116,7 +120,9 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
             deployNode.get(ModelDescriptionConstants.PERSISTENT).set(true);
 
             deployNode.get(CONTENT).set(content);
-
+            if (policy != null) {
+                deployNode.get(DEPLOYMENT_POLICY).set(policy);
+            }
         } else {
             deployNode = context.readResourceForUpdate(PathAddress.pathAddress(deployPath)).getModel();
             if (ENABLED.resolveModelAttribute(context, deployNode).asBoolean()) {
@@ -129,7 +135,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
         replaceNode.get(ENABLED.getName()).set(false);
 
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
-        DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, vaultReader, contents);
+        DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, policy, vaultReader, contents);
 
         context.stepCompleted();
     }

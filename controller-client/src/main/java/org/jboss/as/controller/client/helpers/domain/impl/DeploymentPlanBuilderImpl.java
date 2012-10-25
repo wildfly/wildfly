@@ -122,11 +122,16 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
 
     @Override
     public DeployDeploymentPlanBuilder deploy(String key) {
+        return this.deploy(key, null);
+    }
+
+    @Override
+    public DeployDeploymentPlanBuilder deploy(String key, String policy) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
             throw MESSAGES.cannotAddDeploymentAction();
         }
-        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key);
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key, policy);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
         return new DeployDeploymentPlanBuilderImpl(this, newSet);
     }

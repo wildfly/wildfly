@@ -1,0 +1,4 @@
+<subsystem xmlns="urn:jboss:domain:singleton-deployment:1.0">
+    <deployment-policy name="singleton" cache-container="singleton"/>
+    <deployment-policy name="preferred" cache-container="singleton" preferred-nodes="node0 node1"/>
+</subsystem>

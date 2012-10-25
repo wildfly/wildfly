@@ -33,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_POLICY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESTINATION_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -986,6 +987,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             String uniqueName = null;
             String runtimeName = null;
             String startInput = null;
+            String policy = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String value = reader.getAttributeValue(i);
@@ -1010,6 +1012,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         }
                         case ENABLED: {
                             startInput = value;
+                            break;
+                        }
+                        case DEPLOYMENT_POLICY: {
+                            policy = value;
                             break;
                         }
                         default:
@@ -1051,6 +1057,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
 
             deploymentAdd.get(RUNTIME_NAME).set(runtimeName);
+            if (allowedAttributes.contains(DEPLOYMENT_POLICY)) {
+                deploymentAdd.get(DEPLOYMENT_POLICY).set(policy);
+            }
             if (allowedAttributes.contains(Attribute.ENABLED)) {
                 deploymentAdd.get(ENABLED).set(enabled);
             }

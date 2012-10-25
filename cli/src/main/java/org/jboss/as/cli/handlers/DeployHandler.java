@@ -66,6 +66,7 @@ public class DeployHandler extends DeploymentHandler {
     private final ArgumentWithoutValue disabled;
     private final ArgumentWithoutValue unmanaged;
     private final ArgumentWithValue script;
+    private final ArgumentWithValue policy;
 
     public DeployHandler(CommandContext ctx) {
         super(ctx, "deploy", true);
@@ -182,6 +183,9 @@ public class DeployHandler extends DeploymentHandler {
 
         script = new ArgumentWithValue(this, "--script");
         script.addRequiredPreceding(path);
+
+        policy = new ArgumentWithValue(this, "--policy");
+        policy.addRequiredPreceding(path);
     }
 
     @Override
@@ -247,6 +251,7 @@ public class DeployHandler extends DeploymentHandler {
         final boolean disabled = this.disabled.isPresent(args);
         final String serverGroups = this.serverGroups.getValue(args);
         final boolean allServerGroups = this.allServerGroups.isPresent(args);
+        final String policy = this.policy.getValue(args);
 
         if(force) {
             if(f == null) {
@@ -327,7 +332,11 @@ public class DeployHandler extends DeploymentHandler {
                 steps.add(Util.configureDeploymentOperation(Util.ADD, name, serverGroup));
             }
             for (String serverGroup : sgList) {
-                steps.add(Util.configureDeploymentOperation(Util.DEPLOY, name, serverGroup));
+                ModelNode operation = Util.configureDeploymentOperation(Util.DEPLOY, name, serverGroup);
+                if (policy != null) {
+                    operation.get(Util.DEPLOYMENT_POLICY).set(policy);
+                }
+                steps.add(operation);
             }
         } else {
             if(serverGroups != null || allServerGroups) {
@@ -337,6 +346,9 @@ public class DeployHandler extends DeploymentHandler {
             deployRequest = new ModelNode();
             deployRequest.get(Util.OPERATION).set(Util.DEPLOY);
             deployRequest.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
+            if (policy != null) {
+                deployRequest.get(Util.DEPLOYMENT_POLICY).set(policy);
+            }
         }
 
         if(f != null) {
@@ -408,6 +420,7 @@ public class DeployHandler extends DeploymentHandler {
         final String serverGroups = this.serverGroups.getValue(args);
         final boolean allServerGroups = this.allServerGroups.isPresent(args);
         final boolean archive = isCliArchive(f);
+        final String policy = this.policy.getValue(args);
 
         if(force) {
             if(f == null) {
@@ -554,7 +567,11 @@ public class DeployHandler extends DeploymentHandler {
                 steps.add(Util.configureDeploymentOperation(Util.ADD, name, serverGroup));
             }
             for (String serverGroup : sgList) {
-                steps.add(Util.configureDeploymentOperation(Util.DEPLOY, name, serverGroup));
+                ModelNode operation = Util.configureDeploymentOperation(Util.DEPLOY, name, serverGroup);
+                if (policy != null) {
+                    operation.get(Util.DEPLOYMENT_POLICY).set(policy);
+                }
+                steps.add(operation);
             }
         } else {
             if(serverGroups != null || allServerGroups) {
@@ -564,6 +581,9 @@ public class DeployHandler extends DeploymentHandler {
             deployRequest = new ModelNode();
             deployRequest.get(Util.OPERATION).set(Util.DEPLOY);
             deployRequest.get(Util.ADDRESS, Util.DEPLOYMENT).set(name);
+            if (policy != null) {
+                deployRequest.get(Util.DEPLOYMENT_POLICY).set(policy);
+            }
         }
 
         final ModelNode addRequest;

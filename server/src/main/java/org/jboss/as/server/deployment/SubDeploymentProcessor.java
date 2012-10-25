@@ -59,6 +59,7 @@ public class SubDeploymentProcessor implements DeploymentUnitProcessor {
             final ManagementResourceRegistration mutableRegistration =  deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
             final AbstractVaultReader vaultReader = deploymentUnit.getAttachment(Attachments.VAULT_READER_ATTACHMENT_KEY);
             final SubDeploymentUnitService service = new SubDeploymentUnitService(childRoot, deploymentUnit, registration, mutableRegistration, resource, serviceVerificationHandler, vaultReader);
+            service.getBuilderInjector().inject(deploymentUnit.getAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_BUILDER));
 
             final ResourceRoot parentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             final String relativePath = childRoot.getRoot().getPathNameRelativeTo(parentRoot.getRoot());

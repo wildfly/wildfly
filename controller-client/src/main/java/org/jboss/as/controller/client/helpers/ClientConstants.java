@@ -31,6 +31,7 @@ public class ClientConstants {
     public static final String COMPOSITE = "composite";
     public static final String CONTENT = "content";
     public static final String DEPLOYMENT = "deployment";
+    public static final String DEPLOYMENT_POLICY = "deployment-policy";
     public static final String EXTENSION = "extension";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String FAILURE_DESCRIPTION = "failure-description";
@@ -53,5 +54,4 @@ public class ClientConstants {
     public static final String DEPLOYMENT_REMOVE_OPERATION = "remove";
     public static final String DEPLOYMENT_REPLACE_OPERATION = "replace-deployment";
     public static final String DEPLOYMENT_UNDEPLOY_OPERATION = "undeploy";
-
 }

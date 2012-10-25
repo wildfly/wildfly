@@ -23,6 +23,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.POLICY;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
@@ -75,14 +76,18 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
                     final String deploymentUnitName;
+                    final String policy;
                     final boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
                     if (enabled) {
                         deploymentUnitName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
+                        final ModelNode policyModel = POLICY.resolveModelAttribute(context, model);
+                        policy = policyModel.isDefined() ? policyModel.asString() : null;
                         final ServiceName deploymentUnitServiceName = Services.deploymentUnitName(deploymentUnitName);
                         context.removeService(deploymentUnitServiceName);
                         context.removeService(deploymentUnitServiceName.append("contents"));
                     } else {
                         deploymentUnitName = null;
+                        policy = null;
                     }
                     final ModelNode contentNode = CONTENT_ALL.resolveModelAttribute(context, model);
                     context.completeStep(new OperationContext.ResultHandler() {
@@ -90,7 +95,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
                         public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                             if (resultAction == OperationContext.ResultAction.ROLLBACK) {
                                 if (enabled) {
-                                    recoverServices(context, model, deployment, deploymentUnitName, contentNode,
+                                    recoverServices(context, model, deployment, deploymentUnitName, policy, contentNode,
                                             registration, mutableRegistration, vaultReader);
                                 }
 
@@ -122,12 +127,16 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private void recoverServices(OperationContext context, ModelNode model, Resource deployment, String runtimeName,
+    private void recoverServices(OperationContext context, ModelNode model, Resource deployment, String runtimeName, String policy,
                                    ModelNode contentNode, ImmutableManagementResourceRegistration registration,
                                    ManagementResourceRegistration mutableRegistration, final AbstractVaultReader vaultReader) {
         final String name = model.require(NAME).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(contentNode);
         final ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
-        DeploymentHandlerUtil.doDeploy(context, runtimeName, name, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+        try {
+            DeploymentHandlerUtil.doDeploy(context, runtimeName, name, policy, verificationHandler, deployment, registration, mutableRegistration, vaultReader, contents);
+        } catch (OperationFailedException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

@@ -222,6 +222,15 @@ public interface DeploymentPlanBuilder {
     DeploymentPlanBuilder deploy(String deploymentName);
 
     /**
+     * Indicates the specified deployment content should be deployed.
+     *
+     * @param deploymentName unique identifier of the deployment content
+     * @param indicates the deployment policy to use when deploying this content
+     * @return a builder that can continue building the overall deployment plan
+     */
+    DeploymentPlanBuilder deploy(String deploymentName, String policy);
+
+    /**
      * Indicates the specified deployment content should be undeployed.
      *
      * @param deploymentName unique identifier of the deployment content

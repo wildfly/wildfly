@@ -139,10 +139,14 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         return getManagementClient().getControllerClient();
     }
 
+    public ProtocolMetaData deploy(Archive<?> archive, String policy) throws DeploymentException {
+        String runtimeName = archiveDeployer.get().deploy(archive, policy);
+        return getManagementClient().getProtocolMetaData(runtimeName);
+    }
+
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
-        String runtimeName = archiveDeployer.get().deploy(archive);
-        return getManagementClient().getProtocolMetaData(runtimeName);
+        return this.deploy(archive, null);
     }
 
     @Override

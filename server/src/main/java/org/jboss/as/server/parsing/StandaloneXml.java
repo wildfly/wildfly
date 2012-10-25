@@ -351,7 +351,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
             element = nextElement(reader, namespace);
         }
         if (element == Element.DEPLOYMENTS) {
-            parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
+            parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED, Attribute.DEPLOYMENT_POLICY),
                     EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, namespace);
         }
@@ -1048,6 +1048,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 //                    writeAttribute(writer, Attribute.ENABLED, "false");
 //                }
                 DeploymentAttributes.ENABLED.marshallAsAttribute(deployment, false, writer);
+                DeploymentAttributes.POLICY.marshallAsAttribute(deployment, false, writer);
                 final List<ModelNode> contentItems = deployment.require(CONTENT).asList();
                 for (ModelNode contentItem : contentItems) {
                     writeContentItem(writer, contentItem);

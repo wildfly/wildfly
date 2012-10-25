@@ -40,10 +40,14 @@ public class ServerDeploymentHelper {
     }
 
     public String deploy(String runtimeName, InputStream input) throws ServerDeploymentException {
+        return this.deploy(runtimeName, null, input);
+    }
+
+    public String deploy(String runtimeName, String policy, InputStream input) throws ServerDeploymentException {
         ServerDeploymentActionResult actionResult;
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            builder = builder.add(runtimeName, input).andDeploy();
+            builder = builder.add(runtimeName, input).andDeploy(policy);
             DeploymentPlan plan = builder.build();
             DeploymentAction action = builder.getLastAction();
             Future<ServerDeploymentPlanResult> future = deploymentManager.execute(plan);

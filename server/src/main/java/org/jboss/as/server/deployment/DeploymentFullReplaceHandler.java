@@ -27,6 +27,7 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONT
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_PATH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_RELATIVE_TO;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.POLICY;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.createFailureException;
@@ -124,9 +125,10 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         deployNode.get(CONTENT).set(content);
         ENABLED.validateAndSet(deployNode, replaceNode);
 
-
         if (ENABLED.resolveModelAttribute(context, replaceNode).asBoolean()) {
-            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, vaultReader, contentItem);
+            final ModelNode policyModel = POLICY.resolveModelAttribute(context, replaceNode);
+            final String policy = policyModel.isDefined() ? policyModel.asString() : null;
+            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, policy, vaultReader, contentItem);
         }
 
         ModelNode contentNode = replaceNode.get(CONTENT).get(0);
