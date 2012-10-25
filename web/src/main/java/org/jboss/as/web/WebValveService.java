@@ -27,6 +27,9 @@ import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -60,16 +63,25 @@ public class WebValveService implements Service<Valve> {
 
     /** {@inheritDoc} */
     public synchronized void start(StartContext context) throws StartException {
-        String filename = pathManagerInjector.getValue().resolveRelativePathEntry(filePath, fileRelativeTo);
         Valve valve = null;
         try {
-            valve = WebValve.createValve(filename, classname, this.getClass().getClassLoader());
+            if (module == null) {
+                String filename = pathManagerInjector.getValue().resolveRelativePathEntry(filePath, fileRelativeTo);
+                valve = WebValve.createValve(filename, classname, this.getClass().getClassLoader());
+            } else {
+                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+                final ModuleIdentifier id = ModuleIdentifier.create(module);
+                Module valveModule = moduleLoader.loadModule(id);
+                valve = WebValve.createValve(classname, valveModule.getClassLoader());
+            }
         } catch (Exception e) {
             throw new StartException(e);
         }
         /* Process parameters */
-        for (final Property param : params.asPropertyList()) {
-            IntrospectionUtils.setProperty(valve, param.getName(), param.getValue().asString());
+        if (params != null) {
+            for (final Property param : params.asPropertyList()) {
+                IntrospectionUtils.setProperty(valve, param.getName(), param.getValue().asString());
+            }
         }
         webServer.getValue().addValve(valve);
         this.valve = valve;
