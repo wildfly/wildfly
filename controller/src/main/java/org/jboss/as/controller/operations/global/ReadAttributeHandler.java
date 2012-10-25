@@ -78,7 +78,15 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
         final String attributeName = operation.require(GlobalOperationHandlers.NAME.getName()).asString();
         final boolean defaults = operation.get(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName()).asBoolean(true);
 
-        final ModelNode subModel = safeReadModel(context);
+        //final ModelNode subModel = safeReadModel(context);
+        Resource resource = null;
+        try {
+            resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
+        } catch (Exception e) {
+            context.stepCompleted();
+            return;
+        }
+        final ModelNode subModel = resource.getModel();
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         final AttributeAccess attributeAccess = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
 
@@ -144,16 +152,4 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
         return descriptionProvider.getModelDescription(locale);
     }
 
-    private static ModelNode safeReadModel(final OperationContext context) {
-        try {
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
-            final ModelNode result = resource.getModel();
-            if (result.isDefined()) {
-                return result;
-            }
-        } catch (Exception e) {
-            // ignore
-        }
-        return new ModelNode().setEmptyObject();
-    }
 }
