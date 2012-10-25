@@ -15,6 +15,7 @@ final class SecurityActions {
     static List<Field> getFieldsWithAnnotation(final Class<?> source, final Class<? extends Annotation> annotationClass)
     {
         List<Field> declaredAccessableFields = AccessController.doPrivileged(new PrivilegedAction<List<Field>>() {
+            @Override
             public List<Field> run() {
                 List<Field> foundFields = new ArrayList<Field>();
                 Class<?> nextSource = source;
