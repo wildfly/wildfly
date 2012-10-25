@@ -58,9 +58,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.internal.FrameworkBuilder;
-import org.jboss.osgi.framework.internal.FrameworkBuilder.FrameworkPhase;
+import org.jboss.osgi.framework.spi.FrameworkBuilderFactory;
+import org.jboss.osgi.framework.spi.FrameworkBuilder;
 import org.jboss.osgi.framework.spi.SystemPathsPlugin;
+import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.osgi.framework.Constants;
 
 /**
@@ -122,11 +123,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             Mode initialMode = (activation == Activation.EAGER ? Mode.ACTIVE : Mode.LAZY);
 
             // Configure the {@link Framework} builder
-            FrameworkBuilder builder = new FrameworkBuilder(props, initialMode);
+            FrameworkBuilder builder = FrameworkBuilderFactory.create(props, initialMode);
             builder.setServiceContainer(serviceContainer);
             builder.setServiceTarget(serviceTarget);
 
-            builder.registerFrameworkServices(serviceContainer, true);
+            builder.createFrameworkServices(serviceContainer, true);
             builder.registerIntegrationService(FrameworkPhase.CREATE, new BundleLifecycleIntegration());
             builder.registerIntegrationService(FrameworkPhase.CREATE, new FrameworkModuleIntegration(props));
             builder.registerIntegrationService(FrameworkPhase.CREATE, new ModuleLoaderIntegration());
@@ -135,11 +136,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration());
 
             // Install the services to create the framework
-            builder.installFrameworkServices(FrameworkPhase.CREATE, serviceTarget, verificationHandler);
+            builder.installServices(FrameworkPhase.CREATE, serviceTarget, verificationHandler);
 
             if (activation == Activation.EAGER) {
-                builder.installFrameworkServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
-                builder.installFrameworkServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);
+                builder.installServices(FrameworkPhase.INIT, serviceTarget, verificationHandler);
+                builder.installServices(FrameworkPhase.ACTIVE, serviceTarget, verificationHandler);
             }
 
             // Create the framework activator
