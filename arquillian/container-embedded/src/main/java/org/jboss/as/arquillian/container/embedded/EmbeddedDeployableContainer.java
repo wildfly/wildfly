@@ -116,7 +116,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
 
         final File bundlesDir = new File(bundlePath);
         if (!bundlesDir.isDirectory()) {
-            throw new IllegalStateException("Invalid modules directory: " + bundlesDir);
+            throw new IllegalStateException("Invalid bundles directory: " + bundlesDir);
         }
         SecurityActions.setSystemProperty(SYSPROP_KEY_BUNDLE_PATH, bundlePath);
     }
