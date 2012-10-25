@@ -75,7 +75,7 @@ public class PatchConfigXml {
             //
             final PatchConfigBuilder builder = new PatchConfigBuilder();
             MAPPER.parseDocument(builder, streamReader);
-            return builder;
+            return builder.build();
         } finally {
             safeClose(stream);
         }

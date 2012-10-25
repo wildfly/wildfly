@@ -41,7 +41,7 @@ public class PatchBuilder {
     private String resultingVersion;
     private PatchType patchType;
     private List<String> appliesTo;
-    private List<ContentModification> modifications = new ArrayList<ContentModification>();
+    private final List<ContentModification> modifications = new ArrayList<ContentModification>();
 
     public static PatchBuilder create() {
         return new PatchBuilder();

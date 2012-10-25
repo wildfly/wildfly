@@ -71,7 +71,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -109,7 +109,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newModuleHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newModuleHash), NO_CONTENT, ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newModuleHash), NO_CONTENT, ADD);
         File updatedFile = touch(patchDir, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
         byte[] updatedHash = hashFile(updatedFile);
@@ -167,7 +167,7 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newModuleHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newModuleHash), NO_CONTENT, ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, newModuleHash), NO_CONTENT, ADD);
         File updatedStandaloneShell = touch(patchDir, "misc", "bin", standaloneFileName);
         dump(updatedStandaloneShell, "updated script");
         byte[] updatedHashForStandaloneShell = hashFile(updatedStandaloneShell);

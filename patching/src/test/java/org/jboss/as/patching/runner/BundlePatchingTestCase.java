@@ -66,7 +66,7 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
         String bundleName = randomString();
         File bundleDir = createBundle(patchDir, bundleName, true);
         byte[] newHash = hashFile(bundleDir);
-        ContentModification bundleAdd = new ContentModification(new BundleItem(bundleName, newHash), NO_CONTENT, ADD);
+        ContentModification bundleAdd = new ContentModification(new BundleItem(bundleName, null, newHash), NO_CONTENT, ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -105,7 +105,7 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
         File bundleDir = createBundle(patchDir, bundleName, true);
         byte[] newHash = hashFile(bundleDir);
 
-        ContentModification bundleModify = new ContentModification(new BundleItem(bundleName, newHash), existingHash, MODIFY);
+        ContentModification bundleModify = new ContentModification(new BundleItem(bundleName, null, newHash), existingHash, MODIFY);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -133,14 +133,14 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
         PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
 
         // create a bundle in the AS7 installation
-        String moduleName = randomString();
+        String bundleName = randomString();
         File bundlesDir = env.getInstalledImage().getBundlesDir();
-        createBundle(env.getInstalledImage().getJbossHome(), moduleName, true);
-        byte[] existingHash = hashFile(new File(bundlesDir, moduleName));
+        createBundle(env.getInstalledImage().getJbossHome(), bundleName, true);
+        byte[] existingHash = hashFile(new File(bundlesDir, bundleName));
 
         // build a one-off patch for the base installation
         // with 1 bundle removed
-        ContentModification bundleRemoved = new ContentModification(new BundleItem(moduleName, existingHash), existingHash, REMOVE);
+        ContentModification bundleRemoved = new ContentModification(new BundleItem(bundleName, null, existingHash), existingHash, REMOVE);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
@@ -161,7 +161,7 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
         File bundlesPatchDirectory = env.getBundlesPatchDirectory(patch.getPatchId());
         assertDirExists(bundlesPatchDirectory);
         assertContains(bundlesPatchDirectory, result.getPatchInfo().getBundlePath());
-        assertDefinedAbsentBundle(result.getPatchInfo().getBundlePath(), moduleName);
+        assertDefinedAbsentBundle(result.getPatchInfo().getBundlePath(), bundleName);
     }
 
 

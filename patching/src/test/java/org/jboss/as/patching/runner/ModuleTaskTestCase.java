@@ -68,7 +68,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
         byte[] newHash = hashFile(moduleDir);
-        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT, ADD);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, newHash), NO_CONTENT, ADD);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -104,7 +104,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         // build a one-off patch for the base installation
         // with 1 module removed
-        ContentModification moduleRemoved = new ContentModification(new ModuleItem(moduleName, NO_CONTENT), existingHash, REMOVE);
+        ContentModification moduleRemoved = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, NO_CONTENT), existingHash, REMOVE);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(randomString())
@@ -151,7 +151,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         // create the patch with the update module
         File moduleDir = createModule(patchDir, moduleName, "new resource in the module");
         byte[] updatedHash = hashFile(moduleDir);
-        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHash), existingHash, MODIFY);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, updatedHash), existingHash, MODIFY);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)

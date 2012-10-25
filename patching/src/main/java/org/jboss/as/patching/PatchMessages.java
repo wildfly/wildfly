@@ -28,10 +28,14 @@ import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.Param;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 
 /**
  * 16840 - 16899
@@ -121,5 +125,8 @@ public interface PatchMessages {
 
     @Message(id = 16853, value = "Patch '%s' already applied")
     PatchingException alreadyApplied(String patchId);
+
+    @Message(id = 16854, value = "Illegal value %s for attribute affects-type")
+    XMLStreamException illegalAffectsType(String value, @Param Location location);
 
 }

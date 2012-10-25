@@ -111,8 +111,8 @@ public class PatchGenerator {
 
             createTempStructure(patchConfig);
 
-            this.oldStructure = DistributionStructure.Factory.create(patchConfig.getAppliesTo().iterator().next());
-            this.newStructure = DistributionStructure.Factory.create(patchConfig.getResultingVersion());
+            this.oldStructure = patchConfig.getOriginalDistributionStructure();
+            this.newStructure = patchConfig.getUpdatedDistributionStructure();
 
             if (patchConfig.isGenerateByDiff()) {
                 analyzeDifferences(patchConfig);
@@ -417,7 +417,9 @@ public class PatchGenerator {
         DistributionContentItem bundleRoot = getBundleRoot(itemPath);
         File moduleRootFile = bundleRoot.getFile(newRoot);
         byte[] moduleHash = getHash(moduleRootFile);
-        BundleItem bi = new BundleItem(newStructure.getBundleName(bundleRoot), newStructure.getBundleSlot(bundleRoot), moduleHash);
+        DistributionContentItem oldBundleRoot = newStructure.getPreviousVersionPath(bundleRoot, oldStructure);
+        BundleItem bi = new BundleItem(newStructure.getBundleName(bundleRoot), newStructure.getBundleSlot(bundleRoot),
+                moduleHash);
         ContentModification cm = new ContentModification(bi, NO_CONTENT, ModificationType.ADD);
         bundleAdds.put(bundleRoot, cm);
     }
@@ -427,8 +429,9 @@ public class PatchGenerator {
         DistributionContentItem bundleRoot = getBundleRoot(itemPath);
         File newBundleRootFile = bundleRoot.getFile(newRoot);
         byte[] newItemHash = getHash(newBundleRootFile);
-        BundleItem bi = new BundleItem(newStructure.getBundleName(bundleRoot), newStructure.getBundleSlot(bundleRoot), newItemHash);
         DistributionContentItem oldBundleRoot = newStructure.getPreviousVersionPath(bundleRoot, oldStructure);
+        BundleItem bi = new BundleItem(newStructure.getBundleName(bundleRoot), newStructure.getBundleSlot(bundleRoot),
+                newItemHash);
         File oldModuleRootFile = oldBundleRoot.getFile(oldRoot);
         byte[] oldItemHash = getHash(oldModuleRootFile);
         ContentModification cm = new ContentModification(bi, oldItemHash, ModificationType.MODIFY);
@@ -437,18 +440,29 @@ public class PatchGenerator {
 
     private void recordBundleRemove(DistributionContentItem oldItemPath) throws IOException {
         DistributionContentItem bundleRoot = getBundleRoot(oldItemPath);
-        BundleItem bi = new BundleItem(oldStructure.getBundleName(bundleRoot), oldStructure.getBundleSlot(bundleRoot), NO_CONTENT);
+        BundleItem bi = new BundleItem(oldStructure.getBundleName(bundleRoot), oldStructure.getBundleSlot(bundleRoot),
+                NO_CONTENT);
         File oldDir = bundleRoot.getFile(oldRoot);
         byte[] oldItemHash = getHash(oldDir);
         ContentModification cm = new ContentModification(bi, oldItemHash, ModificationType.REMOVE);
         bundleRemoves.put(bundleRoot, cm);
     }
 
+    private String getBundleRootName(DistributionContentItem oldBundleRoot) {
+        String result = null;
+        if (oldBundleRoot != null) {
+            DistributionStructure.SlottedContentSearchPath contentBase = oldStructure.getBundleSearchPath(oldBundleRoot);
+            result = contentBase.getName();
+        }
+        return result;
+    }
+
     private void recordModuleAdd(DistributionContentItem itemPath) throws IOException {
         DistributionContentItem moduleRoot = getModuleRoot(itemPath);
         File moduleRootFile = moduleRoot.getFile(newRoot);
         byte[] moduleHash = getHash(moduleRootFile);
-        ModuleItem mi = new ModuleItem(newStructure.getModuleName(moduleRoot), newStructure.getModuleSlot(moduleRoot), moduleHash);
+        ModuleItem mi = new ModuleItem(newStructure.getModuleName(moduleRoot), newStructure.getModuleSlot(moduleRoot),
+                moduleHash);
         ContentModification cm = new ContentModification(mi, NO_CONTENT, ModificationType.ADD);
         moduleAdds.put(moduleRoot, cm);
     }
@@ -457,9 +471,9 @@ public class PatchGenerator {
         DistributionContentItem moduleRoot = getModuleRoot(itemPath);
         File newModuleRootFile = moduleRoot.getFile(newRoot);
         byte[] newItemHash = getHash(newModuleRootFile);
-
-        ModuleItem mi = new ModuleItem(newStructure.getModuleName(moduleRoot), newStructure.getModuleSlot(moduleRoot), newItemHash);
         DistributionContentItem oldModuleRoot = newStructure.getPreviousVersionPath(moduleRoot, oldStructure);
+        ModuleItem mi = new ModuleItem(newStructure.getModuleName(moduleRoot), newStructure.getModuleSlot(moduleRoot),
+                newItemHash);
         File oldModuleRootFile = oldModuleRoot.getFile(oldRoot);
         byte[] oldItemHash = getHash(oldModuleRootFile);
         ContentModification cm = new ContentModification(mi, oldItemHash, ModificationType.MODIFY);
@@ -472,8 +486,8 @@ public class PatchGenerator {
         if (!moduleUpdates.containsKey(newModuleRoot)) {
             File newModuleRootFile = newModuleRoot.getFile(newRoot);
             byte[] newItemHash = getHash(newModuleRootFile);
-
-            ModuleItem mi = new ModuleItem(newStructure.getModuleName(newModuleRoot), newStructure.getModuleSlot(newModuleRoot), newItemHash);
+            ModuleItem mi = new ModuleItem(newStructure.getModuleName(newModuleRoot), newStructure.getModuleSlot(newModuleRoot),
+                    newItemHash);
             File oldModuleRootFile = oldModuleRoot.getFile(oldRoot);
             byte[] oldItemHash = getHash(oldModuleRootFile);
             ContentModification cm = new ContentModification(mi, oldItemHash, ModificationType.MODIFY);
@@ -482,7 +496,8 @@ public class PatchGenerator {
     }
 
     private void recordModuleRemove(DistributionContentItem oldModuleRoot) throws IOException {
-        ModuleItem mi = new ModuleItem(oldStructure.getModuleName(oldModuleRoot), oldStructure.getModuleSlot(oldModuleRoot), NO_CONTENT);
+        ModuleItem mi = new ModuleItem(oldStructure.getModuleName(oldModuleRoot), oldStructure.getModuleSlot(oldModuleRoot),
+                NO_CONTENT);
         File oldDir = oldModuleRoot.getFile(oldRoot);
         byte[] oldItemHash = getHash(oldDir);
         ContentModification cm = new ContentModification(mi, oldItemHash, ModificationType.REMOVE);
@@ -765,7 +780,7 @@ public class PatchGenerator {
         usage.addArguments("-v", "--version");
         usage.addInstruction(PatchMessages.MESSAGES.argVersion());
 
-        String headline = PatchMessages.MESSAGES.patchGeneratorUsageHeadline("TODO"); // TODO
+        String headline = usage.getDefaultUsageHeadline("patch-gen");
         System.out.print(usage.usage(headline));
 
     }

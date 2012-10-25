@@ -31,17 +31,13 @@ public class ModuleItem extends ContentItem {
 
     private final String slot;
 
-    public ModuleItem(String name, byte[] contentHash) {
-        this(name, MAIN_SLOT, contentHash);
-    }
-
     public ModuleItem(String name, String slot, byte[] contentHash) {
         this(name, slot, contentHash, ContentType.MODULE);
     }
 
     ModuleItem(String name, String slot, final byte[] contentHash, ContentType type) {
         super(name, contentHash, type);
-        this.slot = slot;
+        this.slot = slot == null ? MAIN_SLOT : slot;
     }
 
     /**
