@@ -30,8 +30,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2", "fred", ModelKeys.LOCAL_CACHE);
-        ModelNode removeCacheOp = getCacheRemoveOperation("maximal2", "fred", ModelKeys.LOCAL_CACHE);
+        ModelNode addCacheOp = getCacheAddOperation("maximal2",  ModelKeys.LOCAL_CACHE, "fred");
+        ModelNode removeCacheOp = getCacheRemoveOperation("maximal2", ModelKeys.LOCAL_CACHE, "fred");
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
@@ -63,8 +63,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2", "fred", ModelKeys.LOCAL_CACHE);
-        ModelNode removeCacheOp = getCacheRemoveOperation("maximal2", "fred", ModelKeys.LOCAL_CACHE);
+        ModelNode addCacheOp = getCacheAddOperation("maximal2", ModelKeys.LOCAL_CACHE, "fred");
+        ModelNode removeCacheOp = getCacheRemoveOperation("maximal2", ModelKeys.LOCAL_CACHE, "fred");
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
@@ -97,7 +97,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
 
         ModelNode addContainerOp = getCacheContainerAddOperation("maximal2");
         ModelNode removeContainerOp = getCacheContainerRemoveOperation("maximal2");
-        ModelNode addCacheOp = getCacheAddOperation("maximal2", "fred", ModelKeys.LOCAL_CACHE);
+        ModelNode addCacheOp = getCacheAddOperation("maximal2", ModelKeys.LOCAL_CACHE, "fred");
 
         // add a cache container
         ModelNode result = servicesA.executeOperation(addContainerOp);
@@ -131,8 +131,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
-        ModelNode addOp = getCacheAddOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
-        ModelNode removeOp = getCacheRemoveOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
+        ModelNode addOp = getCacheAddOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
+        ModelNode removeOp = getCacheRemoveOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
 
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
@@ -154,8 +154,8 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
-        ModelNode addOp = getCacheAddOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
-        ModelNode removeOp = getCacheRemoveOperation("maximal", "fred", ModelKeys.LOCAL_CACHE);
+        ModelNode addOp = getCacheAddOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
+        ModelNode removeOp = getCacheRemoveOperation("maximal", ModelKeys.LOCAL_CACHE, "fred");
 
         // add a local cache
         ModelNode result = servicesA.executeOperation(addOp);
