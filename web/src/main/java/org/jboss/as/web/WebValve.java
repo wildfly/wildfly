@@ -27,6 +27,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import org.apache.catalina.Valve;
+import org.jboss.modules.ModuleClassLoader;
 
 /**
  * A Simple wrapper for Valves (Engine & Host)
@@ -42,5 +43,10 @@ public class WebValve {
         Valve valve = (Valve) child.loadClass(classname).newInstance();
         return valve;
 
+    }
+
+    public static Valve createValve(String classname, ModuleClassLoader classLoader) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+        Valve valve = (Valve) classLoader.loadClass(classname).newInstance();
+        return valve;
     }
 }
