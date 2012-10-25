@@ -44,13 +44,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 
@@ -127,36 +125,6 @@ public class EjbBindingsTestCase {
 
         } finally {
             bundle.uninstall();
-        }
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    @Ignore("[AS7-5655] Cannot restart ejb3 bundle after activation failure")
-    public void testDeferredBundleWithFailure() throws Exception {
-        InputStream input = deployer.getDeployment(EJB3_BUNDLE_B_JAR);
-        Bundle bundle = context.installBundle(EJB3_BUNDLE_B_JAR, input);
-        try {
-            Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
-
-            try {
-                bundle.start();
-                Assert.fail("BundleException expected");
-            } catch (BundleException e) {
-                // expected
-            }
-            Assert.assertEquals("RESOLVED", Bundle.RESOLVED, bundle.getState());
-
-            bundle.start();
-            Assert.assertEquals("ACTIVE", Bundle.ACTIVE, bundle.getState());
-
-            // This service is registered by the {@link BeansActivatorA}
-            ServiceReference sref = context.getServiceReference(Callable.class.getName());
-            Callable<Boolean> service = (Callable<Boolean>) context.getService(sref);
-            Assert.assertTrue(service.call());
-
-        } finally {
-            deployer.undeploy(EJB3_BUNDLE_A_JAR);
         }
     }
 
