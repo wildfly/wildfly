@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching;
 
+import static org.jboss.as.patching.PatchMessages.MESSAGES;
+
 import java.io.InputStream;
 
 import org.jboss.as.boot.DirectoryStructure;
@@ -46,6 +48,11 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         // Setup
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
 
+        // FIXME can we check whether the process is reload-required directly from the operation context?
+        if (service.requiresReload()) {
+            throw MESSAGES.serverRequiresReload();
+        }
+
         final PatchInfo info = service.getPatchInfo();
         final DirectoryStructure structure = service.getStructure();
         final PatchingTaskRunner runner = new PatchingTaskRunner(info, structure);
@@ -60,14 +67,14 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
                 context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
                 return;
             }
-            final PatchInfo newInfo = result.getPatchInfo();
-            service.setPatchInfo(info, newInfo);
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
                         result.commit();
+                        service.reloadRequired();
+                        context.reloadRequired();
                     } else {
                         result.rollback();
                     }

@@ -22,6 +22,10 @@
 
 package org.jboss.as.patching;
 
+import static org.jboss.as.patching.Constants.OVERRIDE_ALL;
+import static org.jboss.as.patching.Constants.PATCH_ID;
+import static org.jboss.as.patching.PatchMessages.MESSAGES;
+
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,16 +42,17 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
 
     public static final LocalPatchRollbackHandler INSTANCE = new LocalPatchRollbackHandler();
 
-    private final String PATCH_ID = Constants.PATCH_ID.getName();
-    private final String OVERRIDE_ALL = Constants.OVERRIDE_ALL.getName();
-
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String patchId = operation.require(PATCH_ID).asString();
-        final boolean overrideAll = operation.get(OVERRIDE_ALL).asBoolean(false);
-        //
+        final String patchId = PATCH_ID.resolveModelAttribute(context, operation).asString();
+        final boolean overrideAll = OVERRIDE_ALL.resolveModelAttribute(context, operation).asBoolean();
+
+        // FIXME can we check whether the process is reload-required directly from the operation context?
         context.acquireControllerLock();
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
+        if (service.requiresReload()) {
+            throw MESSAGES.serverRequiresReload();
+        }
 
         final PatchInfo info = service.getPatchInfo();
         final DirectoryStructure structure = service.getStructure();
@@ -67,6 +72,8 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
                         result.commit();
+                        service.reloadRequired();
+                        context.reloadRequired();
                     } else {
                         result.rollback();
                     }
