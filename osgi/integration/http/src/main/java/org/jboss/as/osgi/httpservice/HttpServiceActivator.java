@@ -49,7 +49,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
@@ -58,7 +57,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.http.HttpService;
@@ -94,8 +92,7 @@ final class HttpServiceActivator implements Service<StandardContext> {
         builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(VIRTUAL_HOST), VirtualHost.class, service.injectedVirtualHost);
         builder.addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.injectedWebServer);
         builder.addDependency(DependencyType.OPTIONAL, HttpManagementService.SERVICE_NAME, HttpManagement.class, service.injectedHttpManagement);
-        builder.addDependency(Services.FRAMEWORK_ACTIVE, BundleContext.class, service.injectedSystemContext);
-        builder.setInitialMode(Mode.PASSIVE);
+        builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, service.injectedSystemContext);
         return builder.install();
     }
 
@@ -144,7 +141,6 @@ final class HttpServiceActivator implements Service<StandardContext> {
         }
 
         Hashtable<String, Object> props = new Hashtable<String, Object>();
-        props.put(Constants.SERVICE_RANKING, Integer.MIN_VALUE);
         props.put("provider", getClass().getPackage().getName());
 
         ServiceFactory serviceFactory = new HttpServiceFactory(webServer, virtualHost, context);
