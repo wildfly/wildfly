@@ -22,6 +22,9 @@
 
 package org.jboss.as.patching;
 
+import java.io.File;
+import java.util.List;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import static org.jboss.logging.Logger.Level.INFO;
@@ -47,5 +50,9 @@ public interface PatchLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 16801, value = "cannot rollback patch (%s)")
     void cannotRollbackPatch(String id);
+
+    @LogMessage(level = INFO)
+    @Message(id = 16802, value = "using module path: %s")
+    void usingModulePath(List<File> modulePath);
 
 }

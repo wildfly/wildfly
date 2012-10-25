@@ -57,6 +57,10 @@ import org.jboss.modules.Module;
 
 /**
  * Generates a patch archive.
+ * Run it using JBoss modules:
+ * <pre><code>
+ *   java -jar jboss-modules.jar -mp modules/ org.jboss.as.patching.generator
+ * </code></pre>
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */

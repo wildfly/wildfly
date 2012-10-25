@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.stream.XMLStreamException;
-
 /**
  * 16840 - 16899
  *
@@ -115,4 +113,6 @@ public interface PatchMessages {
     @Message(id = 16850, value = "File at path specified by argument %s is a directory")
     String fileIsADirectory(String arg);
 
+    @Message(id = 16851, value = "Unable to apply or rollback a patch when the server is in a reload-required state.")
+    OperationFailedException serverRequiresReload();
 }
