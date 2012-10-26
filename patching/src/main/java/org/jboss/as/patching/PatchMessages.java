@@ -115,4 +115,8 @@ public interface PatchMessages {
 
     @Message(id = 16851, value = "Unable to apply or rollback a patch when the server is in a reload-required state.")
     OperationFailedException serverRequiresReload();
+
+    @Message(id = 16852, value = "Cannot rollback patch (%s)")
+    PatchingException cannotRollbackPatch(String id);
+
 }

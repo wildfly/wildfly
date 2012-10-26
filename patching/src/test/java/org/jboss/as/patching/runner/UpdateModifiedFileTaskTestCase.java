@@ -15,6 +15,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
@@ -88,15 +89,15 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testUpdateModifiedFileWithSTRICT() throws Exception {
+        try {
+            runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        } catch (PatchingException e) {
+            assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
 
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
-
-
-        assertPatchHasNotBeenApplied(result, patch, fileUpdated.getItem());
-
-        /// file has not been modified in the AS7 installation
-        assertFileExists(modifiedFile);
-        assertArrayEquals(expectedModifiedHash, calculateHash(modifiedFile));
+            /// file has not been modified in the AS7 installation
+            assertFileExists(modifiedFile);
+            assertArrayEquals(expectedModifiedHash, calculateHash(modifiedFile));
+        }
     }
 
     @Test
@@ -116,13 +117,14 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testUpdateModifiedFileWithPRESERVE_ALL() throws Exception {
+        try {
+            runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
+        } catch (PatchingException e) {
+            assertPatchHasNotBeenApplied(e, patch, fileUpdated.getItem(), env);
 
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
-
-        assertPatchHasNotBeenApplied(result, patch, fileUpdated.getItem());
-
-        /// file has not been modified in the AS7 installation
-        assertFileExists(modifiedFile);
-        assertArrayEquals(expectedModifiedHash, calculateHash(modifiedFile));
+            /// file has not been modified in the AS7 installation
+            assertFileExists(modifiedFile);
+            assertArrayEquals(expectedModifiedHash, calculateHash(modifiedFile));
+        }
     }
 }

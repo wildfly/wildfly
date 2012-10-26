@@ -61,12 +61,6 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final InputStream is = context.getAttachmentStream(index);
         try {
             final PatchingResult result = runner.executeDirect(is);
-            if(result.hasFailures()) {
-                final ModelNode failureDescription = context.getFailureDescription();
-                failureDescription.get("content-items").set("TODO");
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-                return;
-            }
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
@@ -82,6 +76,9 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
 
             });
         } catch (PatchingException e) {
+            if(e.hasConflicts()) {
+                // TODO report conflicting items
+            }
             throw new OperationFailedException(e.getMessage(), e);
         }
     }

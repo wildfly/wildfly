@@ -87,13 +87,16 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testRemoveModifiedFileWithSTRICT() throws Exception {
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        try {
+            PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.STRICT);
+        } catch (PatchingException e) {
+            assertPatchHasNotBeenApplied(e, patch, fileRemoved.getItem(), env);
 
-        assertPatchHasNotBeenApplied(result, patch, fileRemoved.getItem());
+            /// file has not been modified in the AS7 installation
+            assertFileExists(removedFile);
+            assertArrayEquals(expectedModifiedHash, calculateHash(removedFile));
+        }
 
-        /// file has not been modified in the AS7 installation
-        assertFileExists(removedFile);
-        assertArrayEquals(expectedModifiedHash, calculateHash(removedFile));
     }
 
     @Test
@@ -112,12 +115,14 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @Test
     public void testRemoveModifiedFileWithPRESERVE_ALL() throws Exception {
-        PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
+        try {
+            PatchingResult result = runner.executeDirect(new FileInputStream(zippedPatch), ContentVerificationPolicy.PRESERVE_ALL);
+        } catch (PatchingException e) {
+            assertPatchHasNotBeenApplied(e, patch, fileRemoved.getItem(), env);
 
-        assertPatchHasNotBeenApplied(result, patch, fileRemoved.getItem());
-
-        /// file has not been modified in the AS7 installation
-        assertFileExists(removedFile);
-        assertArrayEquals(expectedModifiedHash, calculateHash(removedFile));
+            /// file has not been modified in the AS7 installation
+            assertFileExists(removedFile);
+            assertArrayEquals(expectedModifiedHash, calculateHash(removedFile));
+        }
     }
 }

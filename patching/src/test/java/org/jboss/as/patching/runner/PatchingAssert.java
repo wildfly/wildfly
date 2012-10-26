@@ -25,6 +25,7 @@ package org.jboss.as.patching.runner;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertEquals;
+import org.jboss.as.boot.DirectoryStructure;
 import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
 import static org.jboss.as.patching.runner.PatchUtils.bytesToHexString;
 import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
@@ -175,12 +176,12 @@ public class PatchingAssert {
         }
     }
 
-    static void assertPatchHasNotBeenApplied(PatchingResult result, Patch patch, ContentItem problematicItem) {
-        assertTrue("patch should have failed", result.hasFailures());
-        assertTrue(problematicItem + " is not reported in the problemes " + result.getProblems(), result.getProblems().contains(problematicItem));
+    static void assertPatchHasNotBeenApplied(PatchingException result, Patch patch, ContentItem problematicItem, DirectoryStructure structure) {
+        assertFalse("patch should have failed", result.getConflicts().isEmpty());
+        assertTrue(problematicItem + " is not reported in the problems " + result.getConflicts(), result.getConflicts().contains(problematicItem));
 
-        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getPatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(result.getPatchInfo().getEnvironment().getHistoryDir(patch.getPatchId()));
+        assertDirDoesNotExist(structure.getPatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(structure.getHistoryDir(patch.getPatchId()));
     }
 
     static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchInfo expectedPatchInfo) {

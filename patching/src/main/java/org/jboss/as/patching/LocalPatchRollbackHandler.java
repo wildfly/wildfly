@@ -60,12 +60,6 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         try {
             // Rollback
             final PatchingResult result = taskRunner.rollback(patchId, overrideAll);
-            if(result.hasFailures()) {
-                final ModelNode failureDescription = context.getFailureDescription();
-                failureDescription.get("content-items").set("TODO");
-                context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
-                return;
-            }
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
@@ -81,6 +75,9 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
 
             });
         } catch (PatchingException e) {
+            if(e.hasConflicts()) {
+                // TODO report conflicting items
+            }
             throw new OperationFailedException(e.getMessage(), e);
         } finally {
             //
