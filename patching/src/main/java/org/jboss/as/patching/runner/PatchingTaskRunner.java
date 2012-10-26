@@ -193,7 +193,7 @@ public class PatchingTaskRunner {
             throw new PatchingException(e);
         }
         // Process the resolved tasks
-        return executeTasks(patch, finishTask, definitions, context);
+        return executeTasks(finishTask, definitions, context);
     }
 
 
@@ -205,7 +205,7 @@ public class PatchingTaskRunner {
      * @return the result of the patching action
      * @throws PatchingException
      */
-    private PatchingResult executeTasks(final Patch patch, final PatchingContext.TaskFinishCallback finishTask, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions, final PatchingContext context) throws PatchingException {
+    private PatchingResult executeTasks(final PatchingContext.TaskFinishCallback finishTask, final Map<Location, PatchingTasks.ContentTaskDefinition> definitions, final PatchingContext context) throws PatchingException {
         // Create the modification tasks
         final List<PatchingTask> tasks = new ArrayList<PatchingTask>();
         final List<ContentItem> problems = new ArrayList<ContentItem>();
@@ -228,10 +228,8 @@ public class PatchingTaskRunner {
         }
         // If there were problems report them
         if(! problems.isEmpty()) {
-            finishTask.rollbackCallback();
-            return new FailedResult(patch.getPatchId(), context.getPatchInfo(), problems);
+            throw new PatchingException(problems);
         }
-        //
         try {
             // Execute the tasks
             for(final PatchingTask task : tasks) {
@@ -263,8 +261,7 @@ public class PatchingTaskRunner {
         final int index = patchInfo.getPatchIDs().indexOf(patchId);
         if(index == -1 ) {
             if(!patchInfo.getCumulativeID().equals(patchId)) {
-                PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-                return new FailedResult(patchId, patchInfo);
+                throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
             }
         }
 
@@ -285,20 +282,17 @@ public class PatchingTaskRunner {
                 }
             } else {
                 // TODO perhaps we can allow this as well?
-                PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-                return new FailedResult(patchId, patchInfo);
+                throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
             }
         }
 
         final File historyDir = structure.getHistoryDir(patchId);
         if(! historyDir.exists()) {
-            PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-            return new FailedResult(patchId, patchInfo);
+            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
         }
         final File patchXml = new File(historyDir, PatchingContext.ROLLBACK_XML);
         if(! patchXml.exists()) {
-            PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
-            return new FailedResult(patchId, patchInfo);
+            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
         }
         File workDir = createTempDir();
         try {
@@ -335,8 +329,12 @@ public class PatchingTaskRunner {
                 }
                 // Rollback
                 final PatchingContext.TaskFinishCallback task = new PatchingRollbackCallback(patchId, patch, patches, cumulative, structure);
-                return executeTasks(patch, task, definitions, context);
-
+                try {
+                    return executeTasks(task, definitions, context);
+                } catch (Exception e) {
+                    task.rollbackCallback();
+                    throw rethrowException(e);
+                }
             } finally {
                 PatchUtils.safeClose(is);
             }
@@ -426,53 +424,6 @@ public class PatchingTaskRunner {
             return (PatchingException) e;
         } else {
             return new PatchingException(e);
-        }
-    }
-
-    static class FailedResult implements PatchingResult {
-
-        private final String patch;
-        private final PatchInfo info;
-        private final Collection<ContentItem> problems;
-
-        FailedResult(String patch, PatchInfo info) {
-            this(patch, info, Collections.<ContentItem>emptyList());
-        }
-
-        FailedResult(String patch, PatchInfo info, Collection<ContentItem> problems) {
-            this.patch = patch;
-            this.info = info;
-            this.problems = problems;
-        }
-
-        @Override
-        public String getPatchId() {
-            return patch;
-        }
-
-        @Override
-        public boolean hasFailures() {
-            return true;
-        }
-
-        @Override
-        public Collection<ContentItem> getProblems() {
-            return problems;
-        }
-
-        @Override
-        public PatchInfo getPatchInfo() {
-            return info;
-        }
-
-        @Override
-        public void commit() {
-            //
-        }
-
-        @Override
-        public void rollback() {
-            //
         }
     }
 

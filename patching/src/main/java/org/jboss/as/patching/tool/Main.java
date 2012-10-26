@@ -28,6 +28,7 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
+import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.ModuleLoader;
@@ -124,33 +125,32 @@ public class Main {
         debug(info, structure);
 
         final PatchTool tool = new PatchTool(info, structure);
-        final PatchingResult result;
-        // Rollback
-        if(operation == Argument.ROLLBACK) {
-            result = tool.rollback(param, overrideAll);
-        // Apply patch
-        } else if (operation == Argument.PATCH) {
-            final File file = new File(param);
-            assert file.exists();
-            final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
-            result = tool.applyPatch(file, policy);
-        } else {
-            // TODO
-            return;
-        }
-        if(result.hasFailures()) {
-            log.errorf("Failed to complete operation for patch: \"%s\"", result.getPatchId());
-            final Collection<ContentItem> problems = result.getProblems();
-            if(problems != null && ! problems.isEmpty()) {
+        try {
+            final PatchingResult result;
+            // Rollback
+            if(operation == Argument.ROLLBACK) {
+                result = tool.rollback(param, overrideAll);
+            // Apply patch
+            } else if (operation == Argument.PATCH) {
+                final File file = new File(param);
+                assert file.exists();
+                final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
+                result = tool.applyPatch(file, policy);
+            } else {
+                // TODO
+                return;
+            }
+            result.commit();
+            log.infof("Operation completed successfully: %s", result.getPatchId());
+        } catch (PatchingException e) {
+            if(e.hasConflicts()) {
+                log.errorf("Failed to complete operation for patch.");
                 log.errorf("Conflicting items are:");
-                for(final ContentItem item : result.getProblems()) {
+                for(final ContentItem item : e.getConflicts()) {
                     log.error(item);
                 }
                 log.infof("Run with '--override-all' to force overriding all content conflicts.");
             }
-        } else {
-            result.commit();
-            log.infof("Operation completed successfully: %s", result.getPatchId());
         }
     }
 

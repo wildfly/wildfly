@@ -281,7 +281,7 @@ class PatchingContext {
         try {
             newInfo = task.finalizePatch(rollbackPatch, this);
         } catch (IOException e) {
-            throw  new PatchingException(e);
+            throw new PatchingException(e);
         }
         try {
             // Persist

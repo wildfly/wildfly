@@ -48,11 +48,7 @@ public interface PatchLogger extends BasicLogger {
     void moduleContentChanged(String moduleIdentifier, String hash);
 
     @LogMessage(level = INFO)
-    @Message(id = 16801, value = "cannot rollback patch (%s)")
-    void cannotRollbackPatch(String id);
-
-    @LogMessage(level = INFO)
-    @Message(id = 16802, value = "using module path: %s")
+    @Message(id = 16801, value = "using module path: %s")
     void usingModulePath(List<File> modulePath);
 
 }
