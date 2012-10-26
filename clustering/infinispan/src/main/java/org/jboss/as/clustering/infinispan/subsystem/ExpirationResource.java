@@ -22,7 +22,6 @@ import org.jboss.dmr.ModelType;
 public class ExpirationResource extends SimpleResourceDefinition {
 
     private static final PathElement EXPIRATION_PATH = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-    public static final ExpirationResource INSTANCE = new ExpirationResource();
 
     // attributes
     static final SimpleAttributeDefinition INTERVAL =

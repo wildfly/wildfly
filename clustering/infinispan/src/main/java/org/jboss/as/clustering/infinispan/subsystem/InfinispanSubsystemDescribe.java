@@ -168,7 +168,7 @@ public class InfinispanSubsystemDescribe implements OperationStepHandler {
                 ModelNode transport = container.getValue().get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
                 ModelNode transportAddress = address.clone() ;
                 transportAddress.add(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME) ;
-                result.add(TransportAdd.createOperation(transportAddress, transport));
+                result.add(createOperation(TransportResource.TRANSPORT_ATTRIBUTES, transportAddress, transport));
             }
         }
     }

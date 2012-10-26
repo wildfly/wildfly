@@ -19,7 +19,6 @@ import org.jboss.dmr.ModelType;
 public class StorePropertyResource extends SimpleResourceDefinition {
 
     private static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
-    public static final StorePropertyResource INSTANCE = new StorePropertyResource();
 
     // attributes
     static final SimpleAttributeDefinition VALUE =

@@ -3,6 +3,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -21,7 +22,6 @@ import org.jboss.dmr.ModelType;
 public class TransportResource extends SimpleResourceDefinition {
 
     private static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-    public static final TransportResource INSTANCE = new TransportResource();
 
     // attributes
     static final SimpleAttributeDefinition CLUSTER =
@@ -60,8 +60,8 @@ public class TransportResource extends SimpleResourceDefinition {
     public TransportResource() {
         super(TRANSPORT_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSPORT),
-                TransportAdd.INSTANCE,
-                TransportRemove.INSTANCE);
+                CacheConfigOperationHandlers.TRANSPORT_ADD,
+                ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

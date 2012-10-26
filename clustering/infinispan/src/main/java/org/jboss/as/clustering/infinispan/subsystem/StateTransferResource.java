@@ -22,7 +22,6 @@ import org.jboss.dmr.ModelType;
 public class StateTransferResource extends SimpleResourceDefinition {
 
     private static final PathElement STATE_TRANSFER_PATH = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-    public static final StateTransferResource INSTANCE = new StateTransferResource();
 
     // attributes
     static final SimpleAttributeDefinition CHUNK_SIZE =

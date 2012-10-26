@@ -23,7 +23,6 @@ import org.jboss.dmr.ModelType;
 public class CacheContainerResource extends SimpleResourceDefinition {
 
     public static final PathElement CONTAINER_PATH = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
-    public static final CacheContainerResource INSTANCE = new CacheContainerResource();
 
     // attributes
     static final SimpleAttributeDefinition ALIAS =

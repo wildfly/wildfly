@@ -11,7 +11,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class InvalidationCacheResource extends ClusteredCacheResource {
 
     public static final PathElement INVALIDATION_CACHE_PATH = PathElement.pathElement(ModelKeys.INVALIDATION_CACHE);
-    public static final InvalidationCacheResource INSTANCE = new InvalidationCacheResource();
 
     // attributes
 

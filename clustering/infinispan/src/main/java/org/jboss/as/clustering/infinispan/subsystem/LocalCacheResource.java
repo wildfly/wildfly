@@ -11,7 +11,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class LocalCacheResource extends CacheResource {
 
     public static final PathElement LOCAL_CACHE_PATH = PathElement.pathElement(ModelKeys.LOCAL_CACHE);
-    public static final LocalCacheResource INSTANCE = new LocalCacheResource();
 
     // attributes
 

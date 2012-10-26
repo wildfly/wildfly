@@ -23,7 +23,6 @@ import org.jboss.dmr.ModelType;
 public class EvictionResource extends SimpleResourceDefinition {
 
     private static final PathElement EVICTION_PATH = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-    public static final EvictionResource INSTANCE = new EvictionResource();
 
     // attributes
     static final SimpleAttributeDefinition EVICTION_STRATEGY =

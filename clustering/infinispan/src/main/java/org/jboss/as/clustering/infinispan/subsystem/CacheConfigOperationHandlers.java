@@ -1,5 +1,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.TransportResource.TRANSPORT_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.EvictionResource.EVICTION_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.ExpirationResource.EXPIRATION_ATTRIBUTES;
 import static org.jboss.as.clustering.infinispan.subsystem.LockingResource.LOCKING_ATTRIBUTES;
@@ -33,6 +34,7 @@ import org.jboss.msc.service.ServiceController;
  */
 public class CacheConfigOperationHandlers {
 
+    static final OperationStepHandler TRANSPORT_ADD = new CacheConfigAdd(TRANSPORT_ATTRIBUTES);
     static final OperationStepHandler LOCKING_ADD = new CacheConfigAdd(LOCKING_ATTRIBUTES);
     static final OperationStepHandler TRANSACTION_ADD = new CacheConfigAdd(TRANSACTION_ATTRIBUTES);
     static final OperationStepHandler EVICTION_ADD = new CacheConfigAdd(EVICTION_ATTRIBUTES);
@@ -53,7 +55,7 @@ public class CacheConfigOperationHandlers {
      * When additional configuration is added, services need to be restarted; we restart all of them, for now
      * by indicating reload required.
      */
-    private static class CacheConfigAdd extends AbstractAddStepHandler  {
+    public static class CacheConfigAdd extends AbstractAddStepHandler  {
         private final AttributeDefinition[] attributes;
 
         CacheConfigAdd(final AttributeDefinition[] attributes) {

@@ -24,7 +24,6 @@ import org.jboss.dmr.ModelType;
 public class StoreWriteBehindResource extends SimpleResourceDefinition {
 
     private static final PathElement STORE_WRITE_BEHIND_PATH = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
-    public static final StoreWriteBehindResource INSTANCE = new StoreWriteBehindResource();
 
     // attributes
     static final SimpleAttributeDefinition FLUSH_LOCK_TIMEOUT =

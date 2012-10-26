@@ -20,7 +20,6 @@ import org.jboss.dmr.ModelType;
 public class DistributedCacheResource extends SharedCacheResource {
 
     public static final PathElement DISTRIBUTED_CACHE_PATH = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
-    public static final DistributedCacheResource INSTANCE = new DistributedCacheResource();
 
     // attributes
     static final SimpleAttributeDefinition L1_LIFESPAN =

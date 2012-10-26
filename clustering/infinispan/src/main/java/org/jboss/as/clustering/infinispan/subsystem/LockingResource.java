@@ -62,9 +62,6 @@ public class LockingResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] LOCKING_ATTRIBUTES = { ACQUIRE_TIMEOUT, CONCURRENCY_LEVEL, ISOLATION, STRIPING};
 
-    // had problems with classloading when nxt line was at top!?
-    static final LockingResource INSTANCE = new LockingResource();
-
     public LockingResource() {
         super(LOCKING_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCKING),

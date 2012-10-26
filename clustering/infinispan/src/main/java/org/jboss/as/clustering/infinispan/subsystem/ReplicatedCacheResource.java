@@ -11,7 +11,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class ReplicatedCacheResource extends SharedCacheResource {
 
     public static final PathElement REPLICATED_CACHE_PATH = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
-    public static final ReplicatedCacheResource INSTANCE = new ReplicatedCacheResource();
 
     // attributes
 

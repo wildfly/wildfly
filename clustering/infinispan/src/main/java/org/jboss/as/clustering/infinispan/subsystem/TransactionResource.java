@@ -54,8 +54,6 @@ public class TransactionResource extends SimpleResourceDefinition {
 
     static final AttributeDefinition[] TRANSACTION_ATTRIBUTES = {MODE, STOP_TIMEOUT, LOCKING};
 
-    public static final TransactionResource INSTANCE = new TransactionResource();
-
     public TransactionResource() {
         super(TRANSACTION_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.TRANSACTION),

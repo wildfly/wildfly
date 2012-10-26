@@ -26,7 +26,6 @@ import org.jboss.dmr.ModelType;
 public class FileStoreResource extends BaseStoreResource {
 
     private static final PathElement FILE_STORE_PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-    public static final FileStoreResource INSTANCE = new FileStoreResource();
 
     // attributes
     static final SimpleAttributeDefinition PATH =
