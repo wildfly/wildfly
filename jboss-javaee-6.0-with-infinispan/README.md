@@ -13,7 +13,7 @@ To use the BOM, import into your dependency management:
             <dependency>
                <groupId>org.jboss.bom</groupId>
                <artifactId>jboss-javaee-6.0-with-infinispan</artifactId>
-               <version>1.0.2-SNAPSHOT</version>
+               <version>1.0.2.Final</version>
                <type>pom</type>
                <scope>import</scope>
             </dependency>
