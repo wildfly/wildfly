@@ -55,7 +55,7 @@ public class ValveUtil {
 
     private static Logger log = Logger.getLogger(ValveUtil.class);
 
-    public static void createValve(ModelControllerClient client, String name, String filename) throws Exception {
+    public static void createValveModule(ModelControllerClient client, String name, String modulename, String classname) throws Exception {
         List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
@@ -63,38 +63,13 @@ public class ValveUtil {
         op.get(OP_ADDR).add(SUBSYSTEM, "web");
         op.get(OP_ADDR).add("valve", name);
         op.get(NAME).set("enabled");
-        op.get("enabled").set("false");
-        op.get(NAME).set("class-name");
-        op.get("class-name").set("myclass");
-        updates.add(op);
-        
-        op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add("valve", name);
-        op.get(OP_ADDR).add("setting", "file");
-        op.get(NAME).set("path");
-        op.get("path").set(filename);
-        updates.add(op);
-        applyUpdates(updates, client);
-
-        updates = new ArrayList<ModelNode>();
-        op = new ModelNode();
-        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add("valve", name);
-        op.get(NAME).set("enabled");
         op.get("enabled").set("true");
+        op.get(NAME).set("class-name");
+        op.get("class-name").set(classname);
+        op.get(NAME).set("module");
+        op.get("module").set(modulename);
         updates.add(op);
         applyUpdates(updates, client);
-
-        /* That doesn't work: AS7-5133
-        updates = new ArrayList<ModelNode>();
-        op = new ModelNode();
-        op.get(OP).set("reload");
-        updates.add(op);
-        applyUpdates(updates, client);
-        */
     }
 
     public static void removeValve(final ModelControllerClient client, String name) throws Exception {
@@ -123,6 +98,24 @@ public class ValveUtil {
             }
         }
     }
+    
+    public static String readASPath(final ModelControllerClient client) throws Exception {
+        ModelNode op = new ModelNode();
+        op.get(OP).set("read-attribute");
+        op.get(OP_ADDR).add("path", "jboss.home.dir");
+        op.get(NAME).set("name");
+        op.get("name").set("path");
+        ModelNode result = client.execute(new OperationBuilder(op).build());
+        if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
+            if (result.hasDefined("result"))
+                return result.get("result").asString();
+        } else if (result.hasDefined("failure-description")) {
+            throw new RuntimeException(result.get("failure-description").toString());
+        } else {
+            throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
+        }
+        return null;
+    }
 
     /**
      * Access http://localhost/
@@ -139,6 +132,9 @@ public class ValveUtil {
         assertTrue("Wrong response code: " + statusCode + " On " + url, statusCode == HttpURLConnection.HTTP_OK);
         assertTrue("X-Exception(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
 
-        return EntityUtils.toString(response.getEntity());
+        Header[] valveHeaders = response.getHeaders("valve");
+        if (valveHeaders == null || valveHeaders.length == 0)
+            return "";
+        return valveHeaders[0].getValue();
     }
 }

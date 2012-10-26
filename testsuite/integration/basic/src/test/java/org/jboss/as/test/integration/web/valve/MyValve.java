@@ -19,6 +19,7 @@ public class MyValve
 
     public void invoke(Request request, Response response)
         throws IOException, ServletException {
+        response.addHeader("valve", "MyParam");
         getNext().invoke(request, response);
     }
 }
