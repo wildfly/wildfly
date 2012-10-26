@@ -34,9 +34,9 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
 
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.patching.PatchInfoService;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepositoryService;
@@ -55,6 +55,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -166,8 +169,13 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ServerPathManagerService serverPathManagerService = new ServerPathManagerService();
         ServerPathManagerService.addService(serviceTarget, serverPathManagerService, serverEnvironment);
 
-        // Install the patch service
-        serviceTarget.addService(PatchInfoService.NAME, new PatchInfoService(config, serverEnvironment.getHomeDir()))
+        // Add directory and product config services
+        final Value<DirectoryStructure> directoryStructure = new ImmediateValue<DirectoryStructure>(DirectoryStructure.createDefault(serverEnvironment.getHomeDir()));
+        serviceTarget.addService(Services.JBOSS_DIRECTORY_STRUCTURE_SERVICE, new ValueService<DirectoryStructure>(directoryStructure))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        final Value<ProductConfig> productConfigValue = new ImmediateValue<ProductConfig>(config);
+        serviceTarget.addService(Services.JBOSS_PRODUCT_CONFIG_SERVICE, new ValueService<ProductConfig>(productConfigValue))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 

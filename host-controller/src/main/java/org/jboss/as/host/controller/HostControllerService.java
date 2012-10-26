@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static java.security.AccessController.doPrivileged;
+import org.jboss.as.boot.DirectoryStructure;
 import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
 import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
 
@@ -40,11 +41,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.remoting.HttpListenerRegistryService;
-import org.jboss.as.patching.PatchInfoService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
 import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.jboss.as.server.Services;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
@@ -55,6 +56,9 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.Value;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.JBossThreadFactory;
 
@@ -145,8 +149,13 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         HttpListenerRegistryService.install(serviceTarget);
 
-        // Install the patch service
-        serviceTarget.addService(PatchInfoService.NAME, new PatchInfoService(config, environment.getHomeDir()))
+        // Add directory and product config services
+        final Value<DirectoryStructure> directoryStructure = new ImmediateValue<DirectoryStructure>(DirectoryStructure.createDefault(environment.getHomeDir()));
+        serviceTarget.addService(Services.JBOSS_DIRECTORY_STRUCTURE_SERVICE, new ValueService<DirectoryStructure>(directoryStructure))
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .install();
+        final Value<ProductConfig> productConfigValue = new ImmediateValue<ProductConfig>(config);
+        serviceTarget.addService(Services.JBOSS_PRODUCT_CONFIG_SERVICE, new ValueService<ProductConfig>(productConfigValue))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 

@@ -48,7 +48,6 @@ import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefiniti
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
-import org.jboss.as.patching.PatchResourceRegistration;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.version.Version;
@@ -93,7 +92,7 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
         final String hostName = operation.require(NAME).asString();
 
         // Set up the host model registrations
-        ManagementResourceRegistration rootRegistration = context.getResourceRegistrationForUpdate();
+        final ManagementResourceRegistration rootRegistration = context.getResourceRegistrationForUpdate();
         hostModelRegistrar.registerHostModel(hostName, rootRegistration);
 
         final PathAddress hostAddress =  PathAddress.pathAddress(PathElement.pathElement(HOST, hostName));
@@ -109,9 +108,6 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
         context.createResource(hostAddress.append(PathElement.pathElement(CORE_SERVICE, HOST_ENVIRONMENT)));
 
         management.registerChild(AccessAuthorizationResourceDefinition.PATH_ELEMENT, AccessAuthorizationResourceDefinition.RESOURCE);
-
-        // Patching resource
-        PatchResourceRegistration.registerPatchResource(rootResource);
 
         // Wire in the platform mbean resources. We're bypassing the context.createResource API here because
         // we want to use our own resource type. But it's ok as the createResource calls above have taken the lock
