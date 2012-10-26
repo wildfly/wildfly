@@ -17,11 +17,10 @@
             <env-entry>
                 <env-entry-name>other-server-host-address</env-entry-name>
                 <env-entry-type>java.lang.String</env-entry-type>
-                <!-- We don't have a system property for the other server's host address.
-                    If at all we need to be able to control this more, then we can later
-                    have this value as a system property expression. For now, relying on
-                    this value is fine IMO -->
-                <env-entry-value>localhost</env-entry-value>
+                <!-- We *haven't* enabled system property replacement for spec DDs, in this testcase
+                    since we can just pass along this value literally to the EJB client API which
+                    does the necessary system property replacement -->
+                <env-entry-value>${node1:localhost}</env-entry-value>
             </env-entry>
 
             <env-entry>
