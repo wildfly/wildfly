@@ -74,8 +74,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-version</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-version</artifactId>
         </dependency>
 
         <dependency>

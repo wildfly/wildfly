@@ -27,7 +27,9 @@ import static java.security.AccessController.doPrivileged;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -52,12 +55,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
-<<<<<<< HEAD
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
-=======
-import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.patching.PatchResourceRegistration;
->>>>>>> add patching model resource
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.remoting.HttpListenerRegistryService;
@@ -374,8 +372,16 @@ public final class ServerService extends AbstractControllerService {
 
         // Platform MBeans
         rootResource.registerChild(PlatformMBeanConstants.ROOT_PATH, new RootPlatformMBeanResource());
-        // Patching resource
-        PatchResourceRegistration.registerPatchResource(rootResource);
+    }
+
+    @Override
+    protected void performControllerInitialization(ServiceTarget target, Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        final ServiceLoader<ModelControllerServiceInitialization> sl = ServiceLoader.load(ModelControllerServiceInitialization.class);
+        final Iterator<ModelControllerServiceInitialization> iterator = sl.iterator();
+        while(iterator.hasNext()) {
+            final ModelControllerServiceInitialization init = iterator.next();
+            init.initializeStandalone(target, rootRegistration, rootResource);
+        }
     }
 
     /** Temporary replacement for QueuelessThreadPoolService */

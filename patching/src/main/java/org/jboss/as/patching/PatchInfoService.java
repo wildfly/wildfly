@@ -36,16 +36,18 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Emanuel Muckenhuber
  */
-public final class PatchInfoService implements Service<PatchInfoService> {
+public class PatchInfoService implements Service<PatchInfoService> {
 
     public static ServiceName NAME = ServiceName.JBOSS.append("patch").append("info");
 
-    private final ProductConfig config;
-    private final DirectoryStructure structure;
+    private final InjectedValue<ProductConfig> productConfig = new InjectedValue<ProductConfig>();
+    private final InjectedValue<DirectoryStructure> directoryStructure = new InjectedValue<DirectoryStructure>();
+
     private volatile PatchInfo patchInfo;
 
     /**
@@ -55,13 +57,14 @@ public final class PatchInfoService implements Service<PatchInfoService> {
      */
     private final AtomicBoolean reloadRequired = new AtomicBoolean(false);
 
-    public PatchInfoService(final ProductConfig config, final File jbossHome) {
-        this.config = config;
-        this.structure = DirectoryStructure.createDefault(jbossHome);
+    protected PatchInfoService() {
+        //
     }
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
+        final ProductConfig config = productConfig.getValue();
+        final DirectoryStructure structure = directoryStructure.getValue();
         try {
             this.patchInfo = LocalPatchInfo.load(config, structure);
             ROOT_LOGGER.usingModulePath(asList(patchInfo.getModulePath()));
@@ -80,8 +83,16 @@ public final class PatchInfoService implements Service<PatchInfoService> {
         return this;
     }
 
+    InjectedValue<DirectoryStructure> getDirectoryStructure() {
+        return directoryStructure;
+    }
+
+    InjectedValue<ProductConfig> getProductConfig() {
+        return productConfig;
+    }
+
     public DirectoryStructure getStructure() {
-        return structure;
+        return directoryStructure.getValue();
     }
 
     public PatchInfo getPatchInfo() {
