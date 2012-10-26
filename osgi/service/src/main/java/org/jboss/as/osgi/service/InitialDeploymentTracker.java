@@ -67,6 +67,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
     private ServiceTarget listenerTarget;
 
     public InitialDeploymentTracker(OperationContext context, ServiceVerificationHandler verificationHandler) {
+        super(InitialDeploymentTracker.class.getSimpleName());
 
         serviceTarget = context.getServiceTarget();
         deploymentNames = getDeploymentNames(context);

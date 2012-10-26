@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -137,7 +136,7 @@ public final class BundleLifecycleIntegration extends AbstractIntegrationService
         if (OperationAssociation.INSTANCE.getAssociation() != null) {
             LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
             BundleManager bundleManager = injectedBundleManager.getValue();
-            bundleManager.installBundle(dep, null);
+            bundleManager.installBundle(dep, bundleManager.getServiceTarget(), null);
         } else {
             LOGGER.debugf("Install deployment: %s", dep);
             String runtimeName = getRuntimeName(dep);
@@ -207,8 +206,7 @@ public final class BundleLifecycleIntegration extends AbstractIntegrationService
 
         LOGGER.infoActivateDeferredModulePhase(bundle);
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        ServiceTracker<Object> serviceTracker = new ServiceTracker<Object>(true) {
+        ServiceTracker<Object> serviceTracker = new ServiceTracker<Object>("DeferredActivation") {
             private final AtomicInteger count = new AtomicInteger();
 
             @Override
@@ -229,7 +227,6 @@ public final class BundleLifecycleIntegration extends AbstractIntegrationService
             @Override
             protected void complete() {
                 LOGGER.debugf("Complete: [%d]", count.get());
-                latch.countDown();
             }
         };
         phaseService.addListener(Inheritance.ALL, serviceTracker);
@@ -238,7 +235,7 @@ public final class BundleLifecycleIntegration extends AbstractIntegrationService
         phaseService.setMode(Mode.ACTIVE);
 
         try {
-            latch.await();
+            serviceTracker.awaitCompletion();
         } catch (InterruptedException ex) {
             // ignore
         }
