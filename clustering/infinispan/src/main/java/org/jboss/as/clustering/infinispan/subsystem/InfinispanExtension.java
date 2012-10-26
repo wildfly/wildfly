@@ -38,6 +38,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
@@ -81,7 +82,7 @@ public class InfinispanExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource());
-        registration.registerOperationHandler(InfinispanSubsystemDescribe.DEFINITON, InfinispanSubsystemDescribe.INSTANCE);
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         ManagementResourceRegistration cacheContainer = registration.registerSubModel(new CacheContainerResource());
 
