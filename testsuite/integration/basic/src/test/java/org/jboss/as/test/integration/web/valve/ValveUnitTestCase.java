@@ -21,8 +21,9 @@
  */
 package org.jboss.as.test.integration.web.valve;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.InputStream;
+import java.io.FileWriter;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -56,23 +57,51 @@ public class ValveUnitTestCase {
 
     private static Logger log = Logger.getLogger(ValveUnitTestCase.class);
 
+    static String path = null;
+
     static class ValveSetup implements ServerSetupTask {
 
-        static final String filename = "/tmp/valve.jar";
+        static final String modulename = "org.my.valve";
+        static final String classname = "org.jboss.as.test.integration.web.valve.MyValve";
+        static final String baseModulePath = "/../modules/org/my/valve/main";
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            File file = new File(filename);
-            if (file.exists())
-                file.delete();
-            createJar(file);
-            ValveUtil.createValve(managementClient.getControllerClient(), "myvalve", filename);
+            path = ValveUtil.readASPath(managementClient.getControllerClient());
+            File file = new File(path);
+            if (file.exists()) {
+                file = new File(path + baseModulePath);
+                file.mkdirs();
+                file = new File(path + baseModulePath + "/valves.jar");
+                if (file.exists())
+                    file.delete();
+                createJar(file);
+                file = new File(path + baseModulePath + "/module.xml");
+                if (file.exists())
+                    file.delete();              
+                FileWriter fstream = new FileWriter(path + baseModulePath + "/module.xml");
+                BufferedWriter out = new BufferedWriter(fstream);
+                out.write("<module xmlns=\"urn:jboss:module:1.1\" name=\"org.my.valve\">\n");
+                out.write("    <properties>\n");
+                out.write("        <property name=\"jboss.api\" value=\"private\"/>\n");
+                out.write("    </properties>\n");
+
+                out.write("    <resources>\n");
+                out.write("        <resource-root path=\"valves.jar\"/>\n");
+                out.write("    </resources>\n");
+
+                out.write("    <dependencies>\n");
+                out.write("        <module name=\"sun.jdk\"/>\n");
+                out.write("        <module name=\"javax.servlet.api\"/>\n");
+                out.write("        <module name=\"org.jboss.as.web\"/>\n");
+                out.write("    </dependencies>\n");
+                out.write("</module>");
+                out.close();
+            }
+            ValveUtil.createValveModule(managementClient.getControllerClient(), "myvalve", modulename, classname);
         }
 
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            File file = new File(filename);
-            if (file.exists())
-                file.delete();           
             ValveUtil.removeValve(managementClient.getControllerClient(), "myvalve");
         }
     }
@@ -98,7 +127,7 @@ public class ValveUnitTestCase {
     @OperateOnDeployment("valve")
     public void testValve(@ArquillianResource URL url) throws Exception {
         String response = ValveUtil.hitValve(log, url);
-        // AS7-5133 assertTrue(response.contains("MyParam"));
+        assertTrue(response.contains("MyParam"));
     }
 
 }
