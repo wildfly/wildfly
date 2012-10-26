@@ -281,7 +281,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
                 }
             }
         }
-        return false;
+        // check if it's registered with the root (a.k.a platform) MBean server
+        return rootMBeanServer.isRegistered(name);
     }
 
     @Override
