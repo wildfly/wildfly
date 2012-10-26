@@ -55,7 +55,9 @@ public class XaDataSourceService extends AbstractDataSourceService {
                 XAResourceRecoveryRegistry rr = transactionIntegrationValue.getValue().getRecoveryRegistry();
 
                 for (XAResourceRecovery recovery : deploymentMD.getRecovery()) {
-                    rr.removeXAResourceRecovery(recovery);
+                    if (recovery != null) {
+                        rr.removeXAResourceRecovery(recovery);
+                    }
                 }
             }
         }
