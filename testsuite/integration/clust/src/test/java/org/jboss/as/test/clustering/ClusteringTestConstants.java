@@ -39,6 +39,7 @@ public class ClusteringTestConstants {
     /**
      * Manual container with unmanaged deployments names.
      */
+    public static final String CONTAINER_SINGLE = "container-single";
     public static final String CONTAINER_1 = "container-0";
     public static final String CONTAINER_2 = "container-1";
     public static final String[] CONTAINERS = new String[] { CONTAINER_1, CONTAINER_2 };
