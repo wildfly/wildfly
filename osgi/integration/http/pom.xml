@@ -79,6 +79,7 @@
                             org.jboss.msc.service.management,
                             org.jboss.msc.value,
                             org.jboss.osgi.framework,
+                            org.jboss.osgi.framework.spi,
                             org.jboss.osgi.resolver,
                             !org.apache.catalina*, 
                             !org.apache.tomcat*, 
