@@ -67,7 +67,7 @@ import org.osgi.service.http.HttpService;
  * @author Thomas.Diesler@jboss.com
  * @since 19-Jul-2012
  */
-final class HttpServiceActivator implements Service<StandardContext> {
+final class HttpServiceFactoryService implements Service<StandardContext> {
 
     static final ServiceName JBOSS_WEB_HTTPSERVICE_FACTORY = JBOSS_WEB.append("httpservice", "factory");
 
@@ -85,7 +85,7 @@ final class HttpServiceActivator implements Service<StandardContext> {
     private ServiceRegistration registration;
 
     static ServiceController<StandardContext> addService(ServiceTarget serviceTarget) {
-        HttpServiceActivator service = new HttpServiceActivator();
+        HttpServiceFactoryService service = new HttpServiceFactoryService();
         ServiceBuilder<StandardContext> builder = serviceTarget.addService(JBOSS_WEB_HTTPSERVICE_FACTORY, service);
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.injectedServerEnvironment);
         builder.addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.injectedPathManager);
@@ -96,7 +96,7 @@ final class HttpServiceActivator implements Service<StandardContext> {
         return builder.install();
     }
 
-    private HttpServiceActivator() {
+    private HttpServiceFactoryService() {
         this.context = new StandardContext();
     }
 
