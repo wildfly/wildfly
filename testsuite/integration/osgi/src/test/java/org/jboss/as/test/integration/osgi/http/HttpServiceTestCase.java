@@ -45,6 +45,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -59,6 +60,7 @@ import org.osgi.service.http.HttpService;
  * @since 19-Jul-2011
  */
 @RunWith(Arquillian.class)
+@Ignore("AS7-5828")
 public class HttpServiceTestCase {
 
     static StringAsset STRING_ASSET = new StringAsset("Hello from Resource");
@@ -92,7 +94,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletAccess() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
         String reqspec = "/httpservice/servlet?test=param&param=Kermit";
         try {
             HttpService httpService = (HttpService) context.getService(sref);
@@ -115,7 +118,8 @@ public class HttpServiceTestCase {
     @Test
     public void testResourceAccess() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
         String reqspec = "/httpservice/resource/message.txt";
         try {
             HttpService httpService = (HttpService) context.getService(sref);
@@ -140,7 +144,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletInitProps() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
         String reqspec = "/httpservice/servlet?test=init&init=someKey";
         try {
             HttpService httpService = (HttpService) context.getService(sref);
@@ -163,7 +168,8 @@ public class HttpServiceTestCase {
     @Test
     public void testServletInstance() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
         String reqspec = "/httpservice/servlet?test=instance";
         try {
             HttpService httpService = (HttpService) context.getService(sref);
