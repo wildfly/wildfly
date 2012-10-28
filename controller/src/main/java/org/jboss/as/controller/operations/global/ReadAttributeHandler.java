@@ -78,15 +78,6 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
         final String attributeName = operation.require(GlobalOperationHandlers.NAME.getName()).asString();
         final boolean defaults = operation.get(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName()).asBoolean(true);
 
-        //final ModelNode subModel = safeReadModel(context);
-        Resource resource = null;
-        try {
-            resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
-        } catch (Exception e) {
-            context.stepCompleted();
-            return;
-        }
-        final ModelNode subModel = resource.getModel();
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         final AttributeAccess attributeAccess = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
 
@@ -95,28 +86,34 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
             final Set<String> children = context.getResourceRegistration().getChildNames(PathAddress.EMPTY_ADDRESS);
             if (children.contains(attributeName)) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.attributeRegisteredOnResource(attributeName, operation.get(OP_ADDR))));
-            } else if (subModel.hasDefined(attributeName)) {
-                final ModelNode result = subModel.get(attributeName);
-                context.getResult().set(result);
             } else {
-                // No defined value in the model. See if we should reply with a default from the metadata,
-                // reply with undefined, or fail because it's a non-existent attribute name
-                final ModelNode nodeDescription = getNodeDescription(registry, context, operation);
-                if (defaults && nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
-                        nodeDescription.get(ATTRIBUTES, attributeName).hasDefined(DEFAULT)) {
-                    final ModelNode result = nodeDescription.get(ATTRIBUTES, attributeName, DEFAULT);
+                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
+                final ModelNode subModel = resource.getModel();
+                if (subModel.hasDefined(attributeName)) {
+                    final ModelNode result = subModel.get(attributeName);
                     context.getResult().set(result);
-                } else if (subModel.has(attributeName) || nodeDescription.get(ATTRIBUTES).has(attributeName)) {
-                    // model had no defined value, but we treat its existence in the model or the metadata
-                    // as proof that it's a legit attribute name
-                    context.getResult(); // this initializes the "result" to ModelType.UNDEFINED
                 } else {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
+                    // No defined value in the model. See if we should reply with a default from the metadata,
+                    // reply with undefined, or fail because it's a non-existent attribute name
+                    final ModelNode nodeDescription = getNodeDescription(registry, context, operation);
+                    if (defaults && nodeDescription.get(ATTRIBUTES).hasDefined(attributeName) &&
+                            nodeDescription.get(ATTRIBUTES, attributeName).hasDefined(DEFAULT)) {
+                        final ModelNode result = nodeDescription.get(ATTRIBUTES, attributeName, DEFAULT);
+                        context.getResult().set(result);
+                    } else if (subModel.has(attributeName) || nodeDescription.get(ATTRIBUTES).has(attributeName)) {
+                        // model had no defined value, but we treat its existence in the model or the metadata
+                        // as proof that it's a legit attribute name
+                        context.getResult(); // this initializes the "result" to ModelType.UNDEFINED
+                    } else {
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
+                    }
                 }
             }
             // Complete the step for the unregistered attribute case
             context.stepCompleted();
         } else if (attributeAccess.getReadHandler() == null) {
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
+            final ModelNode subModel = resource.getModel();
             // We know the attribute name is legit as it's in the registry, so this case is simpler
             if (subModel.hasDefined(attributeName) || !defaults) {
                 final ModelNode result = subModel.get(attributeName);

@@ -159,9 +159,7 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
 
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(NAME).set("name");
-        result = executeForResult(operation);
-        assertNotNull(result);
-        assertFalse(result.isDefined());
+        executeForFailure(operation);
 
         operation = createOperation(READ_ATTRIBUTE_OPERATION, "profile", "profileC", "subsystem", "subsystem5");
         operation.get(NAME).set("name");

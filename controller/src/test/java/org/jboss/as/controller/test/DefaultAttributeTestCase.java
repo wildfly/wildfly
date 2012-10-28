@@ -65,8 +65,7 @@ public class DefaultAttributeTestCase extends AbstractControllerTestBase {
         //This should fail
         op = createOperation(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION, "test", "notthere");
         op.get(ModelDescriptionConstants.NAME).set("attr");
-        result = executeForResult(op);
-        Assert.assertFalse(result.isDefined());
+        executeForFailure(op);
     }
 
 

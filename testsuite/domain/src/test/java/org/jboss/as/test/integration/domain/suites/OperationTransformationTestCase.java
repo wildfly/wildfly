@@ -22,11 +22,6 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import junit.framework.Assert;
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -42,24 +37,27 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
-import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
-import org.jboss.as.test.integration.domain.extension.VersionedExtensionCommon;
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.createOperation;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForFailure;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.exists;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getHostAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getRunningServerAddress;
+import junit.framework.Assert;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.extension.ExtensionSetup;
+import org.jboss.as.test.integration.domain.extension.VersionedExtensionCommon;
+import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -213,12 +211,12 @@ public class OperationTransformationTestCase {
         final ModelNode writeIgnoredString = writeAttribute(ignored, "string", "${org.jboss.domain.tests.string:abc}");
         executeForResult(writeIgnoredString, client);
         Assert.assertTrue(executeForResult(readAttribute(ignored, "string"), client).isDefined());
-        Assert.assertFalse(executeForResult(readAttribute(ignored, "string"), slaveClient).isDefined());
+        executeForFailure(readAttribute(ignored, "string"), slaveClient);
 
         final ModelNode writeIgnoredInt = writeAttribute(ignored, "int", "${org.jboss.domain.tests.int:1}");
         executeForResult(writeIgnoredInt, client);
         Assert.assertTrue(executeForResult(readAttribute(ignored, "int"), client).isDefined());
-        Assert.assertFalse(executeForResult(readAttribute(ignored, "int"), slaveClient).isDefined());
+        executeForFailure(readAttribute(ignored, "int"), slaveClient);
     }
 
     static ModelNode createAdd(PathAddress address) {
