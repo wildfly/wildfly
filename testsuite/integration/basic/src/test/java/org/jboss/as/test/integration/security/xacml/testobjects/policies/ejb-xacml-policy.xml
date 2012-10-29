@@ -8,7 +8,7 @@
 	<Description>Policy for Subject RBAC</Description>
 	<Target />
 	<Rule RuleId="urn:oasis:names:tc:xacml:2.0:jboss-test:XVI:rule"
-		Effect="Deny">
+		Effect="Permit">
 		<Description>
 		</Description>
 		<Target>
@@ -24,7 +24,7 @@
 <!-- 
 				<Subject>				
 					<SubjectMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">TestRole</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">TestRole2</AttributeValue>
 						<SubjectAttributeDesignator
 							AttributeId="urn:oasis:names:tc:xacml:2.0:subject:role" DataType="http://www.w3.org/2001/XMLSchema#string" />
 					</SubjectMatch>
@@ -44,7 +44,7 @@
 			<Actions>
 				<Action>
 					<ActionMatch MatchId="urn:oasis:names:tc:xacml:1.0:function:string-equal">
-						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">sayHello</AttributeValue>
+						<AttributeValue DataType="http://www.w3.org/2001/XMLSchema#string">sayHelloWorld</AttributeValue>
 						<ActionAttributeDesignator
 							AttributeId="urn:oasis:names:tc:xacml:1.0:action:action-id"
 							DataType="http://www.w3.org/2001/XMLSchema#string" />
