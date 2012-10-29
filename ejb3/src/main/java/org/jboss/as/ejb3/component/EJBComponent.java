@@ -479,7 +479,7 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     /**
-     * Returns the {@link EJBRemoteTransactionsRepository} if there is atleast one remote view (either
+     * Returns the {@link EJBRemoteTransactionsRepository} if there is at least one remote view (either
      * ejb3.x business remote, ejb2.x remote component or home view) is exposed. Else returns null.
      *
      * @return
