@@ -33,9 +33,9 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
     void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
         super.populate(fromModel, toModel);
 
-        CommonAttributes.OWNERS.validateAndSet(fromModel, toModel);
-        CommonAttributes.VIRTUAL_NODES.validateAndSet(fromModel, toModel);
-        CommonAttributes.L1_LIFESPAN.validateAndSet(fromModel, toModel);
+        DistributedCacheResource.OWNERS.validateAndSet(fromModel, toModel);
+        DistributedCacheResource.VIRTUAL_NODES.validateAndSet(fromModel, toModel);
+        DistributedCacheResource.L1_LIFESPAN.validateAndSet(fromModel, toModel);
     }
 
     /**
@@ -54,9 +54,9 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         // process the basic clustered configuration
         super.processModelNode(context, containerName, cache, builder, dependencies);
 
-        final int owners = CommonAttributes.OWNERS.resolveModelAttribute(context, cache).asInt();
-        final int virtualNodes = CommonAttributes.VIRTUAL_NODES.resolveModelAttribute(context, cache).asInt();
-        final long lifespan = CommonAttributes.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
+        final int owners = DistributedCacheResource.OWNERS.resolveModelAttribute(context, cache).asInt();
+        final int virtualNodes = DistributedCacheResource.VIRTUAL_NODES.resolveModelAttribute(context, cache).asInt();
+        final long lifespan = DistributedCacheResource.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
 
         // process the additional distributed attributes and elements
         builder.clustering().hash()

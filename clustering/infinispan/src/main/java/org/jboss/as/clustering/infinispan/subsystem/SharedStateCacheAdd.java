@@ -50,9 +50,9 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
         if (cache.hasDefined(ModelKeys.STATE_TRANSFER) && cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
             ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
 
-            final boolean enabled = CommonAttributes.ENABLED.resolveModelAttribute(context, stateTransfer).asBoolean();
-            final long timeout = CommonAttributes.TIMEOUT.resolveModelAttribute(context, stateTransfer).asLong();
-            final int chunkSize = CommonAttributes.CHUNK_SIZE.resolveModelAttribute(context, stateTransfer).asInt();
+            final boolean enabled = StateTransferResource.ENABLED.resolveModelAttribute(context, stateTransfer).asBoolean();
+            final long timeout = StateTransferResource.TIMEOUT.resolveModelAttribute(context, stateTransfer).asLong();
+            final int chunkSize = StateTransferResource.CHUNK_SIZE.resolveModelAttribute(context, stateTransfer).asInt();
 
             builder.clustering().stateTransfer().fetchInMemoryState(enabled);
             builder.clustering().stateTransfer().timeout(timeout);

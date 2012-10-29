@@ -22,23 +22,25 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.EntryType;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
@@ -53,32 +55,21 @@ import org.jboss.staxmapper.XMLElementReader;
  */
 public class InfinispanExtension implements Extension {
 
-    static final String SUBSYSTEM_NAME = "infinispan";
-
-    private static final PathElement containerPath = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
-    private static final PathElement localCachePath = PathElement.pathElement(ModelKeys.LOCAL_CACHE);
-    private static final PathElement invalidationCachePath = PathElement.pathElement(ModelKeys.INVALIDATION_CACHE);
-    private static final PathElement replicatedCachePath = PathElement.pathElement(ModelKeys.REPLICATED_CACHE);
-    private static final PathElement distributedCachePath = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
-    private static final PathElement transportPath = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-
-    private static final PathElement lockingPath = PathElement.pathElement(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
-    private static final PathElement transactionPath = PathElement.pathElement(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
-    private static final PathElement evictionPath = PathElement.pathElement(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-    private static final PathElement expirationPath = PathElement.pathElement(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-    private static final PathElement stateTransferPath = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
-    private static final PathElement storePath = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
-    private static final PathElement storeWriteBehindPath = PathElement.pathElement(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
-    private static final PathElement storePropertyPath = PathElement.pathElement(ModelKeys.PROPERTY);
-    private static final PathElement fileStorePath = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
-    private static final PathElement stringKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
-    private static final PathElement binaryKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
-    private static final PathElement mixedKeyedJdbcStorePath = PathElement.pathElement(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
-    private static final PathElement remoteStorePath = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
+    public static final String SUBSYSTEM_NAME = "infinispan";
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
+    public static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + "." +"LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+           StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+           for (String kp : keyPrefix) {
+               prefix.append('.').append(kp);
+           }
+            return new InfinispanResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, InfinispanExtension.class.getClassLoader());
+    }
 
     /**
      * {@inheritDoc}
@@ -89,64 +80,22 @@ public class InfinispanExtension implements Extension {
         // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
         SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+
+        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new InfinispanSubsystemRootResource());
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+
+        ManagementResourceRegistration cacheContainer = registration.registerSubModel(new CacheContainerResource());
+
         subsystem.registerXMLElementWriter(new InfinispanSubsystemXMLWriter());
-
-        ManagementResourceRegistration registration = subsystem.registerSubsystemModel(InfinispanSubsystemProviders.SUBSYSTEM);
-        registration.registerOperationHandler(ADD, InfinispanSubsystemAdd.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_ADD, false);
-        registration.registerOperationHandler(DESCRIBE, InfinispanSubsystemDescribe.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_DESCRIBE, false, EntryType.PRIVATE);
-        registration.registerOperationHandler(REMOVE, ReloadRequiredRemoveStepHandler.INSTANCE, InfinispanSubsystemProviders.SUBSYSTEM_REMOVE, false);
-
-        ManagementResourceRegistration container = registration.registerSubModel(containerPath, InfinispanSubsystemProviders.CACHE_CONTAINER);
-        container.registerOperationHandler(ADD, CacheContainerAdd.INSTANCE, InfinispanSubsystemProviders.CACHE_CONTAINER_ADD, false);
-        container.registerOperationHandler(REMOVE, CacheContainerRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_CONTAINER_REMOVE, false);
-        container.registerOperationHandler("add-alias", AddAliasCommand.INSTANCE, InfinispanSubsystemProviders.ADD_ALIAS, false);
-        container.registerOperationHandler("remove-alias", RemoveAliasCommand.INSTANCE, InfinispanSubsystemProviders.REMOVE_ALIAS, false);
-        CacheContainerWriteAttributeHandler.INSTANCE.registerAttributes(container);
-
-        // add /subsystem=infinispan/cache-container=*/singleton=transport:write-attribute
-        final ManagementResourceRegistration transport = container.registerSubModel(transportPath,InfinispanSubsystemProviders.TRANSPORT);
-        transport.registerOperationHandler(ADD, TransportAdd.INSTANCE, InfinispanSubsystemProviders.TRANSPORT_ADD, false);
-        transport.registerOperationHandler(REMOVE, TransportRemove.INSTANCE, InfinispanSubsystemProviders.TRANSPORT_REMOVE, false);
-        TransportWriteAttributeHandler.INSTANCE.registerAttributes(transport);
-
-        // add /subsystem=infinispan/cache-container=*/local-cache=*
-        ManagementResourceRegistration local = container.registerSubModel(localCachePath, InfinispanSubsystemProviders.LOCAL_CACHE);
-        local.registerOperationHandler(ADD, LocalCacheAdd.INSTANCE, InfinispanSubsystemProviders.LOCAL_CACHE_ADD, false);
-        local.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
-        registerCommonCacheAttributeHandlers(local);
-
-        // add /subsystem=infinispan/cache-container=*/invalidation-cache=*
-        ManagementResourceRegistration invalidation = container.registerSubModel(invalidationCachePath, InfinispanSubsystemProviders.INVALIDATION_CACHE);
-        invalidation.registerOperationHandler(ADD, InvalidationCacheAdd.INSTANCE, InfinispanSubsystemProviders.INVALIDATION_CACHE_ADD, false);
-        invalidation.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
-        registerCommonCacheAttributeHandlers(invalidation);
-        registerClusteredCacheAttributeHandlers(invalidation);
-
-        // add /subsystem=infinispan/cache-container=*/replicated-cache=*
-        ManagementResourceRegistration replicated = container.registerSubModel(replicatedCachePath, InfinispanSubsystemProviders.REPLICATED_CACHE);
-        replicated.registerOperationHandler(ADD, ReplicatedCacheAdd.INSTANCE, InfinispanSubsystemProviders.REPLICATED_CACHE_ADD, false);
-        replicated.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
-        registerCommonCacheAttributeHandlers(replicated);
-        registerClusteredCacheAttributeHandlers(replicated);
-        registerSharedStateCacheAttributeHandlers(replicated);
-
-        // add /subsystem=infinispan/cache-container=*/distributed-cache=*
-        ManagementResourceRegistration distributed = container.registerSubModel(distributedCachePath, InfinispanSubsystemProviders.DISTRIBUTED_CACHE);
-        distributed.registerOperationHandler(ADD, DistributedCacheAdd.INSTANCE, InfinispanSubsystemProviders.DISTRIBUTED_CACHE_ADD, false);
-        distributed.registerOperationHandler(REMOVE, CacheRemove.INSTANCE, InfinispanSubsystemProviders.CACHE_REMOVE, false);
-        registerCommonCacheAttributeHandlers(distributed);
-        registerClusteredCacheAttributeHandlers(distributed);
-        registerSharedStateCacheAttributeHandlers(distributed);
-        CacheWriteAttributeHandler.DISTRIBUTED_CACHE_ATTR.registerAttributes(distributed);
 
         // Register the model transformers
         TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 3), new InfinispanSubsystemTransformer_1_3());
-        TransformersSubRegistration containerReg = reg.registerSubResource(containerPath);
+        TransformersSubRegistration containerReg = reg.registerSubResource(CacheContainerResource.CONTAINER_PATH);
         InfinispanOperationTransformer_1_3 ot = new InfinispanOperationTransformer_1_3();
-        containerReg.registerSubResource(localCachePath).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(invalidationCachePath).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(replicatedCachePath).registerOperationTransformer(ADD, ot);
-        containerReg.registerSubResource(distributedCachePath).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(LocalCacheResource.LOCAL_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(InvalidationCacheResource.INVALIDATION_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(ReplicatedCacheResource.REPLICATED_CACHE_PATH).registerOperationTransformer(ADD, ot);
+        containerReg.registerSubResource(DistributedCacheResource.DISTRIBUTED_CACHE_PATH).registerOperationTransformer(ADD, ot);
     }
 
     private static class InfinispanOperationTransformer_1_3 extends AbstractOperationTransformer {
@@ -173,110 +122,135 @@ public class InfinispanExtension implements Extension {
         }
     }
 
-    private void registerCommonCacheAttributeHandlers(ManagementResourceRegistration resource) {
 
-        // register the basic cache attribute handler
-        CacheWriteAttributeHandler.CACHE_ATTR.registerAttributes(resource);
+    private static class InfinispanResourceDescriptionResolver extends StandardResourceDescriptionResolver {
 
-        // register the locking=LOCKING handlers
-        final ManagementResourceRegistration locking = resource.registerSubModel(lockingPath, InfinispanSubsystemProviders.LOCKING);
-        locking.registerOperationHandler(ADD, CacheConfigOperationHandlers.LOCKING_ADD, InfinispanSubsystemProviders.LOCKING_ADD);
-        locking.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.LOCKING_REMOVE);
-        CacheConfigOperationHandlers.LOCKING_ATTR.registerAttributes(locking);
+        // a static map, mapping attribute names to the prefixes that should be used to look up their descriptions
+        private static final Map<String, String> sharedAttributeResolver = new HashMap<String, String>() ;
 
-        // register the transaction=TRANSACTION handlers
-        final ManagementResourceRegistration transaction = resource.registerSubModel(transactionPath, InfinispanSubsystemProviders.TRANSACTION);
-        transaction.registerOperationHandler(ADD, CacheConfigOperationHandlers.TRANSACTION_ADD, InfinispanSubsystemProviders.TRANSACTION_ADD);
-        transaction.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.TRANSACTION_REMOVE);
-        CacheConfigOperationHandlers.TRANSACTION_ATTR.registerAttributes(transaction);
+        static {
+            // shared cache attributes
+            sharedAttributeResolver.put(CacheResource.BATCHING.getName(), "cache");
+            sharedAttributeResolver.put(CacheResource.CACHE_MODULE.getName(), "cache");
+            sharedAttributeResolver.put(CacheResource.INDEXING.getName(), "cache");
+            sharedAttributeResolver.put(CacheResource.INDEXING_PROPERTIES.getName(), "cache");
+            sharedAttributeResolver.put(CacheResource.JNDI_NAME.getName(), "cache");
+            sharedAttributeResolver.put(CacheResource.NAME.getName(), "cache");
+            sharedAttributeResolver.put(CacheResource.START.getName(), "cache");
 
-        // register the eviction=EVICTION handlers
-        final ManagementResourceRegistration eviction = resource.registerSubModel(evictionPath, InfinispanSubsystemProviders.EVICTION);
-        eviction.registerOperationHandler(ADD, CacheConfigOperationHandlers.EVICTION_ADD, InfinispanSubsystemProviders.EVICTION_ADD);
-        eviction.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.EVICTION_REMOVE);
-        CacheConfigOperationHandlers.EVICTION_ATTR.registerAttributes(eviction);
+            sharedAttributeResolver.put(ClusteredCacheResource.ASYNC_MARSHALLING.getName(), "clustered-cache");
+            sharedAttributeResolver.put(ClusteredCacheResource.MODE.getName(), "clustered-cache");
+            sharedAttributeResolver.put(ClusteredCacheResource.QUEUE_FLUSH_INTERVAL.getName(), "clustered-cache");
+            sharedAttributeResolver.put(ClusteredCacheResource.QUEUE_SIZE.getName(), "clustered-cache");
+            sharedAttributeResolver.put(ClusteredCacheResource.REMOTE_TIMEOUT.getName(), "clustered-cache");
 
-        // register the expiration=EXPIRATION handlers
-        final ManagementResourceRegistration expiration = resource.registerSubModel(expirationPath, InfinispanSubsystemProviders.EXPIRATION);
-        expiration.registerOperationHandler(ADD, CacheConfigOperationHandlers.EXPIRATION_ADD, InfinispanSubsystemProviders.EXPIRATION_ADD);
-        expiration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.EXPIRATION_REMOVE);
-        CacheConfigOperationHandlers.EXPIRATION_ATTR.registerAttributes(expiration);
+            sharedAttributeResolver.put(BaseStoreResource.FETCH_STATE.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.PASSIVATION.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.PRELOAD.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.PURGE.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.SHARED.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.SINGLETON.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.PROPERTY.getName(), "store");
+            sharedAttributeResolver.put(BaseStoreResource.PROPERTIES.getName(), "store");
 
-        // register the store=STORE handlers
-        final ManagementResourceRegistration store = resource.registerSubModel(storePath, InfinispanSubsystemProviders.STORE);
-        store.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_ADD, InfinispanSubsystemProviders.STORE_ADD);
-        store.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.STORE_ATTR.registerAttributes(store);
-        createStoreWriteBehindRegistration(store);
-        createPropertyRegistration(store);
+            sharedAttributeResolver.put(BaseJDBCStoreResource.DATA_SOURCE.getName(), "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.BATCH_SIZE.getName(), "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.FETCH_SIZE.getName(), "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.PREFIX.getName(), "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.ID_COLUMN.getName()+".column", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.DATA_COLUMN.getName()+".column", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.TIMESTAMP_COLUMN.getName()+".column", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.ENTRY_TABLE.getName()+"table", "jdbc-store");
+            sharedAttributeResolver.put(BaseJDBCStoreResource.BUCKET_TABLE.getName()+"table", "jdbc-store");
 
-        // register the file-store=FILE_STORE handlers
-        final ManagementResourceRegistration fileStore = resource.registerSubModel(fileStorePath, InfinispanSubsystemProviders.FILE_STORE);
-        fileStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.FILE_STORE_ADD, InfinispanSubsystemProviders.FILE_STORE_ADD);
-        fileStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.FILE_STORE_ATTR.registerAttributes(fileStore);
-        createStoreWriteBehindRegistration(fileStore);
-        createPropertyRegistration(fileStore);
+            // shared children - this avoids having to describe the children for each parent resource
+            sharedAttributeResolver.put(ModelKeys.TRANSPORT, null);
+            sharedAttributeResolver.put(ModelKeys.LOCKING, null);
+            sharedAttributeResolver.put(ModelKeys.TRANSACTION, null);
+            sharedAttributeResolver.put(ModelKeys.EVICTION, null);
+            sharedAttributeResolver.put(ModelKeys.EXPIRATION, null);
+            sharedAttributeResolver.put(ModelKeys.STATE_TRANSFER, null);
+            sharedAttributeResolver.put(ModelKeys.STORE, null);
+            sharedAttributeResolver.put(ModelKeys.FILE_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.REMOTE_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.STRING_KEYED_JDBC_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.BINARY_KEYED_JDBC_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.MIXED_KEYED_JDBC_STORE, null);
+            sharedAttributeResolver.put(ModelKeys.WRITE_BEHIND, null);
+            sharedAttributeResolver.put(ModelKeys.PROPERTY, null);
+        }
 
-        // register the string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE handlers
-        final ManagementResourceRegistration stringKeyedJdbcStore = resource.registerSubModel(stringKeyedJdbcStorePath, InfinispanSubsystemProviders.STRING_KEYED_JDBC_STORE);
-        stringKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.STRING_KEYED_JDBC_STORE_ADD);
-        stringKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.STRING_KEYED_JDBC_STORE_ATTR.registerAttributes(stringKeyedJdbcStore);
-        createStoreWriteBehindRegistration(stringKeyedJdbcStore);
-        createPropertyRegistration(stringKeyedJdbcStore);
+        private InfinispanResourceDescriptionResolver(String keyPrefix, String bundleBaseName, ClassLoader bundleLoader) {
+            super(keyPrefix, bundleBaseName, bundleLoader, true, false);
+        }
 
-        // register the string-keyed-jdbc-store=STRING_KEYED_JDBC_STORE handlers
-        final ManagementResourceRegistration binaryKeyedJdbcStore = resource.registerSubModel(binaryKeyedJdbcStorePath, InfinispanSubsystemProviders.BINARY_KEYED_JDBC_STORE);
-        binaryKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.BINARY_KEYED_JDBC_STORE_ADD);
-        binaryKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.BINARY_KEYED_JDBC_STORE_ATTR.registerAttributes(binaryKeyedJdbcStore);
-        createStoreWriteBehindRegistration(binaryKeyedJdbcStore);
-        createPropertyRegistration(binaryKeyedJdbcStore);
+        @Override
+        public String getResourceAttributeDescription(String attributeName, Locale locale, ResourceBundle bundle) {
+            // don't apply the default bundle prefix to these attributes
+            if (sharedAttributeResolver.containsKey(attributeName)) {
+               return bundle.getString(getBundleKey(attributeName));
+            }
+            return super.getResourceAttributeDescription(attributeName, locale, bundle);
+        }
 
-        // register the mixed-keyed-jdbc-store=MIXED_KEYED_JDBC_STORE handlers
-        final ManagementResourceRegistration mixedKeyedJdbcStore = resource.registerSubModel(mixedKeyedJdbcStorePath, InfinispanSubsystemProviders.MIXED_KEYED_JDBC_STORE);
-        mixedKeyedJdbcStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.MIXED_KEYED_JDBC_STORE_ADD, InfinispanSubsystemProviders.MIXED_KEYED_JDBC_STORE_ADD);
-        mixedKeyedJdbcStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.MIXED_KEYED_JDBC_STORE_ATTR.registerAttributes(mixedKeyedJdbcStore);
-        createStoreWriteBehindRegistration(mixedKeyedJdbcStore);
-        createPropertyRegistration(mixedKeyedJdbcStore);
+        @Override
+        public String getResourceAttributeValueTypeDescription(String attributeName, Locale locale, ResourceBundle bundle, String... suffixes) {
+            // don't apply the default bundle prefix to these attributes
+            if (sharedAttributeResolver.containsKey(attributeName)) {
+               return bundle.getString(getVariableBundleKey(attributeName, suffixes));
+            }
+            return super.getResourceAttributeValueTypeDescription(attributeName, locale, bundle, suffixes);
+        }
 
-        // register the remote-store=REMOTE_STORE handlers
-        final ManagementResourceRegistration remoteStore = resource.registerSubModel(remoteStorePath, InfinispanSubsystemProviders.REMOTE_STORE);
-        remoteStore.registerOperationHandler(ADD, CacheConfigOperationHandlers.REMOTE_STORE_ADD, InfinispanSubsystemProviders.REMOTE_STORE_ADD);
-        remoteStore.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_REMOVE);
-        CacheConfigOperationHandlers.REMOTE_STORE_ATTR.registerAttributes(remoteStore);
-        createStoreWriteBehindRegistration(remoteStore);
-        createPropertyRegistration(remoteStore);
+        @Override
+        public String getOperationParameterDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle) {
+            // don't apply the default bundle prefix to these attributes
+            if (sharedAttributeResolver.containsKey(paramName)) {
+               return bundle.getString(getBundleKey(paramName));
+            }
+            return super.getOperationParameterDescription(operationName, paramName, locale, bundle);
+        }
+
+        @Override
+        public String getOperationParameterValueTypeDescription(String operationName, String paramName, Locale locale, ResourceBundle bundle, String... suffixes) {
+            // don't apply the default bundle prefix to these attributes
+            if (sharedAttributeResolver.containsKey(paramName)) {
+               return bundle.getString(getVariableBundleKey(paramName, suffixes));
+            }
+            return super.getOperationParameterValueTypeDescription(operationName, paramName, locale, bundle, suffixes);
+        }
+
+        @Override
+        public String getChildTypeDescription(String childType, Locale locale, ResourceBundle bundle) {
+            // don't apply the default bundle prefix to these attributes
+            if (sharedAttributeResolver.containsKey(childType)) {
+               return bundle.getString(getBundleKey(childType));
+            }
+            return super.getChildTypeDescription(childType, locale, bundle);
+        }
+
+        private String getBundleKey(final String name) {
+            return getVariableBundleKey(name);
+        }
+
+        private String getVariableBundleKey(final String name, final String... variable) {
+            final String prefix = sharedAttributeResolver.get(name);
+            StringBuilder sb = new StringBuilder(SUBSYSTEM_NAME);
+            // construct the key prefix
+            if (prefix == null) {
+                sb = sb.append('.').append(name);
+            } else {
+                sb = sb.append('.').append(prefix).append('.').append(name);
+            }
+            // construct the key suffix
+            if (variable != null) {
+                for (String arg : variable) {
+                    if (sb.length() > 0)
+                        sb.append('.');
+                    sb.append(arg);
+                }
+            }
+            return sb.toString();
+        }
     }
-
-    private void registerClusteredCacheAttributeHandlers(ManagementResourceRegistration resource) {
-        // register the clustered attributes handler
-        CacheWriteAttributeHandler.CLUSTERED_CACHE_ATTR.registerAttributes(resource);
-    }
-
-    private void registerSharedStateCacheAttributeHandlers(ManagementResourceRegistration resource) {
-        // register the state-transfer=STATE_TRANSFER handlers
-        final ManagementResourceRegistration stateTransfer = resource.registerSubModel(stateTransferPath, InfinispanSubsystemProviders.STATE_TRANSFER);
-        stateTransfer.registerOperationHandler(ADD, CacheConfigOperationHandlers.STATE_TRANSFER_ADD, InfinispanSubsystemProviders.STATE_TRANSFER_ADD);
-        stateTransfer.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STATE_TRANSFER_REMOVE);
-        CacheConfigOperationHandlers.STATE_TRANSFER_ATTR.registerAttributes(stateTransfer);
-    }
-
-    static void createStoreWriteBehindRegistration(final ManagementResourceRegistration parent) {
-        // register the write-behind=WRITE_BEHIND handlers
-        final ManagementResourceRegistration registration = parent.registerSubModel(storeWriteBehindPath, InfinispanSubsystemProviders.STORE_WRITE_BEHIND);
-        registration.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ADD, InfinispanSubsystemProviders.STORE_WRITE_BEHIND_ADD);
-        registration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_WRITE_BEHIND_REMOVE);
-        CacheConfigOperationHandlers.STORE_WRITE_BEHIND_ATTR.registerAttributes(registration);
-    }
-
-    static void createPropertyRegistration(final ManagementResourceRegistration parent) {
-        final ManagementResourceRegistration registration = parent.registerSubModel(storePropertyPath, InfinispanSubsystemProviders.STORE_PROPERTY);
-        registration.registerOperationHandler(ADD, CacheConfigOperationHandlers.STORE_PROPERTY_ADD, InfinispanSubsystemProviders.STORE_PROPERTY_ADD);
-        registration.registerOperationHandler(REMOVE, CacheConfigOperationHandlers.REMOVE, InfinispanSubsystemProviders.STORE_PROPERTY_REMOVE);
-        registration.registerReadWriteAttribute("value", null, CacheConfigOperationHandlers.STORE_PROPERTY_ATTR, EnumSet.of(AttributeAccess.Flag.RESTART_ALL_SERVICES));
-    }
-
 }

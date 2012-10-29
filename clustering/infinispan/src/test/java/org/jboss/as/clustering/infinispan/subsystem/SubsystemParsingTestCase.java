@@ -64,7 +64,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices services = super.installInController(subsystemXml) ;
+        KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // print out the resulting model
         ModelNode model = services.readWholeModel() ;
@@ -82,7 +82,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // list the names of the services which have been installed
         System.out.println("service names = " + servicesA.getContainer().getServiceNames());
@@ -93,7 +93,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         System.out.println("marshalled XML = " + marshalled);
 
         // install the persisted xml from the first controller into a second controller
-        KernelServices servicesB = super.installInController(marshalled) ;
+        KernelServices servicesB = createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
         ModelNode modelB = servicesB.readWholeModel() ;
 
         // make sure the models are identical
@@ -106,7 +106,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
-        KernelServices servicesA = super.installInController(subsystemXml) ;
+        KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // list the names of the services which have been installed
         System.out.println("service names = " + servicesA.getContainer().getServiceNames());

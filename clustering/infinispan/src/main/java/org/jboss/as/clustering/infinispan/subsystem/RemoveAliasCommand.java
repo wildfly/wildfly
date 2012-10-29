@@ -4,6 +4,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 
 import java.util.List;
 
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -35,14 +36,14 @@ public class RemoveAliasCommand implements OperationStepHandler {
         nameValidator.validate(operation);
         final String aliasToRemove = operation.require(NAME).asString();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        final ModelNode currentValue = submodel.get(CommonAttributes.ALIASES.getName()).clone();
+        final ModelNode currentValue = submodel.get(CacheContainerResource.ALIASES.getName()).clone();
 
         ModelNode newValue = removeAliasFromList(currentValue, aliasToRemove) ;
 
         // now set the new ALIAS attribute
         final ModelNode syntheticOp = new ModelNode();
-        syntheticOp.get(CommonAttributes.ALIASES.getName()).set(newValue);
-        CommonAttributes.ALIASES.validateAndSet(syntheticOp, submodel);
+        syntheticOp.get(CacheContainerResource.ALIASES.getName()).set(newValue);
+        CacheContainerResource.ALIASES.validateAndSet(syntheticOp, submodel);
 
         // since we modified the model, set reload required
         if (requiresRuntime(context)) {
@@ -84,7 +85,7 @@ public class RemoveAliasCommand implements OperationStepHandler {
 
         // check for undefined list (AS7-3476)
         if (!list.isDefined()) {
-            throw new OperationFailedException(new ModelNode().set("cannot remove alias " + alias + " from empty list"));
+            throw InfinispanMessages.MESSAGES.cannotRemoveAliasFromEmptyList(alias);
         }
 
         ModelNode newList = new ModelNode() ;
