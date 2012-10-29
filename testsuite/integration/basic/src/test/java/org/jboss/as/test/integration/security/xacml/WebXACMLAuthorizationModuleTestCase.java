@@ -109,7 +109,6 @@ public class WebXACMLAuthorizationModuleTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-8773")
     @OperateOnDeployment("CustomXACML")
     public void testWebUsingCustomXACMLAuthz(@ArquillianResource URL webAppURL) throws Exception {
         testWebAccess(webAppURL);
