@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="6"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd">
+    <initialize-in-order>true</initialize-in-order>
+
+    <module>
+        <ejb>dd-based.jar</ejb>
+    </module>
+
+    <env-entry>
+        <env-entry-name>java:app/value</env-entry-name>
+        <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>${from.jboss.props1}${file.separator}${from.jboss.props2}</env-entry-value>
+    </env-entry>
+</application>
