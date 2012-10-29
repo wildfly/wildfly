@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
+
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -29,12 +31,11 @@ import org.jboss.jca.deployers.DeployersLogger;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 
 /**
  * A ResourceAdapterXmlDeploymentService.
@@ -49,9 +50,9 @@ public final class InactiveResourceAdapterDeploymentService implements
     private final InactiveResourceAdapterDeployment value;
 
     public InactiveResourceAdapterDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor,
-                                                    Module module, final String deployment, final String deploymentUnitName,
+                                                    Module module, final String deployment, final String deploymentUnitName, final ServiceName deploymentUnitServiceName,
                                                     final ManagementResourceRegistration registration, final ServiceTarget serviceTarget, final Resource resource) {
-        this.value = new InactiveResourceAdapterDeployment(connectorXmlDescriptor, module, deployment, deploymentUnitName, registration, serviceTarget, resource);
+        this.value = new InactiveResourceAdapterDeployment(connectorXmlDescriptor, module, deployment, deploymentUnitName, deploymentUnitServiceName, registration, serviceTarget, resource);
     }
 
 
@@ -80,17 +81,20 @@ public final class InactiveResourceAdapterDeploymentService implements
         private final ConnectorXmlDescriptor connectorXmlDescriptor;
         private final String deployment;
         private final String deploymentUnitName;
+        private final ServiceName deploymentUnitServiceName;
         private final ManagementResourceRegistration registration;
         private final ServiceTarget serviceTarget;
-private final Resource resource;
+        private final Resource resource;
+
 
         public InactiveResourceAdapterDeployment(final ConnectorXmlDescriptor connectorXmlDescriptor, final Module module, final String deployment,
-                                                 final String deploymentUnitName, final ManagementResourceRegistration registration,
+                                                 final String deploymentUnitName, final ServiceName deploymentUnitServiceName, final ManagementResourceRegistration registration,
                                                  final ServiceTarget serviceTarget, final Resource resource) {
             this.connectorXmlDescriptor = connectorXmlDescriptor;
             this.module = module;
             this.deployment = deployment;
             this.deploymentUnitName = deploymentUnitName;
+            this.deploymentUnitServiceName = deploymentUnitServiceName;
             this.registration = registration;
             this.serviceTarget = serviceTarget;
             this.resource = resource;
@@ -114,6 +118,10 @@ private final Resource resource;
 
         public String getDeploymentUnitName() {
             return deploymentUnitName;
+        }
+
+        public ServiceName getDeploymentUnitServiceName() {
+            return deploymentUnitServiceName;
         }
 
         public ManagementResourceRegistration getRegistration() {

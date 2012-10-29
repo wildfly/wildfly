@@ -22,6 +22,18 @@
 
 package org.jboss.as.web.deployment;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.security.jacc.PolicyConfiguration;
+
 import org.apache.catalina.ContainerListener;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleListener;
@@ -73,17 +85,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-
-import javax.security.jacc.PolicyConfiguration;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * {@code DeploymentUnitProcessor} creating the actual deployment services.
@@ -283,7 +284,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
                     .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
-                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 
             // add any dependencies required by the setup action
             for (final SetupAction action : setupActions) {

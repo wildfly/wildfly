@@ -22,55 +22,87 @@
 
 package org.jboss.as.naming;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import javax.naming.CompositeName;
-import javax.naming.Name;
-import javax.naming.NameNotFoundException;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.NamingStoreService;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.naming.CompositeName;
+import javax.naming.Name;
+import javax.naming.NameNotFoundException;
+
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
+import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
+import org.jboss.as.naming.service.NamingStoreService;
+import org.jboss.msc.service.AbstractServiceListener;
+import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author John Bailey
+ * @author Eduardo Martins
  */
 public class WritableServiceBasedNamingStoreTestCase {
     private ServiceContainer container;
     private WritableServiceBasedNamingStore store;
+    private static final ServiceName owner = ServiceName.of("Foo");
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setup() throws Exception {
         container = ServiceContainer.Factory.create();
+        final CountDownLatch latch1 = new CountDownLatch(1);
+        container.addService(JndiNamingDependencyProcessor.serviceName(owner), new RuntimeBindReleaseService())
+        .setInitialMode(ServiceController.Mode.ACTIVE)
+        .addListener(new AbstractServiceListener() {
+            public void transition(ServiceController controller, ServiceController.Transition transition) {
+                switch (transition) {
+                    case STARTING_to_UP: {
+                        latch1.countDown();
+                        break;
+                    }
+                    case STARTING_to_START_FAILED: {
+                        latch1.countDown();
+                        fail("Did not install store service - " + controller.getStartException().getMessage());
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        })
+        .install();
+        latch1.await(10, TimeUnit.SECONDS);
         store = new WritableServiceBasedNamingStore(container, ContextNames.JAVA_CONTEXT_SERVICE_NAME);
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch2 = new CountDownLatch(1);
         container.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService(store))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(new AbstractServiceListener<NamingStore>() {
                     public void transition(ServiceController<? extends NamingStore> controller, ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                latch.countDown();
+                                latch2.countDown();
                                 break;
                             }
                             case STARTING_to_START_FAILED: {
-                                latch.countDown();
+                                latch2.countDown();
                                 fail("Did not install store service - " + controller.getStartException().getMessage());
                                 break;
                             }
+                            default:
+                                break;
                         }
                     }
                 })
                 .install();
-        latch.await(10, TimeUnit.SECONDS);
+        latch2.await(10, TimeUnit.SECONDS);
     }
 
     @After
@@ -102,7 +134,7 @@ public class WritableServiceBasedNamingStoreTestCase {
     public void testBind() throws Exception {
         final Name name = new CompositeName("test");
         final Object value = new Object();
-        WritableServiceBasedNamingStore.pushOwner(container);
+        WritableServiceBasedNamingStore.pushOwner(owner);
         try {
             store.bind(name, value);
         } finally {
@@ -115,7 +147,7 @@ public class WritableServiceBasedNamingStoreTestCase {
     public void testBindNested() throws Exception {
         final Name name = new CompositeName("nested/test");
         final Object value = new Object();
-        WritableServiceBasedNamingStore.pushOwner(container);
+        WritableServiceBasedNamingStore.pushOwner(owner);
         try {
             store.bind(name, value);
         } finally {
@@ -128,7 +160,7 @@ public class WritableServiceBasedNamingStoreTestCase {
     public void testUnbind() throws Exception {
         final Name name = new CompositeName("test");
         final Object value = new Object();
-        WritableServiceBasedNamingStore.pushOwner(container);
+        WritableServiceBasedNamingStore.pushOwner(owner);
         try {
             store.bind(name, value);
             store.unbind(name);
@@ -153,7 +185,7 @@ public class WritableServiceBasedNamingStoreTestCase {
 
     @Test
     public void testCreateSubcontext() throws Exception {
-        WritableServiceBasedNamingStore.pushOwner(container);
+        WritableServiceBasedNamingStore.pushOwner(owner);
         try {
             assertTrue(((NamingContext) store.createSubcontext(new CompositeName("test"))).getNamingStore() instanceof WritableServiceBasedNamingStore);
         } finally {
@@ -175,7 +207,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         final Name name = new CompositeName("test");
         final Object value = new Object();
         final Object newValue = new Object();
-        WritableServiceBasedNamingStore.pushOwner(container);
+        WritableServiceBasedNamingStore.pushOwner(owner);
         try {
             store.bind(name, value);
             store.rebind(name, newValue);
