@@ -31,7 +31,9 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.dmr.ModelNode;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,19 +81,22 @@ public class EjbDDWithPropertyTestCase {
 
 
     @Deployment
-    public static JavaArchive getDeployment() throws Exception {
+    public static Archive getDeployment() throws Exception {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
         jar.addPackage(TestSessionBean.class.getPackage());
         jar.addAsManifestResource(TestSessionBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
-        jar.addAsManifestResource(TestSessionBean.class.getPackage(), "jboss.properties", "jboss.properties");
-        return jar;
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "test.ear");
+        ear.addAsModule(jar);
+        ear.addAsManifestResource(EjbDDWithPropertyTestCase.class.getPackage(), "application.xml", "application.xml");
+        ear.addAsManifestResource(TestSessionBean.class.getPackage(), "jboss.properties", "jboss.properties");
+        return ear;
     }
 
     @Test
     public void testPropertyBasedEnvEntry() throws Exception {
         Context ctx = new InitialContext();
         String ejbName = TestSessionBean.class.getSimpleName();
-        TestBean bean = (TestBean) ctx.lookup("java:global/" + MODULE_NAME + "/" + ejbName + "!" + TestBean.class.getName());
+        TestBean bean = (TestBean) ctx.lookup("java:global/test/" + MODULE_NAME + "/" + ejbName + "!" + TestBean.class.getName());
         assertEquals("foo" + System.getProperty("file.separator") + "bar", bean.getValue());
     }
 
@@ -99,7 +104,15 @@ public class EjbDDWithPropertyTestCase {
     public void testPropertyBasedEnvEntryWithOverride() throws Exception {
         Context ctx = new InitialContext();
         String ejbName = TestSessionBean.class.getSimpleName();
-        TestBean bean = (TestBean) ctx.lookup("java:global/" + MODULE_NAME + "/" + ejbName + "!" + TestBean.class.getName());
+        TestBean bean = (TestBean) ctx.lookup("java:global/test/" + MODULE_NAME + "/" + ejbName + "!" + TestBean.class.getName());
         assertEquals("foo-|-bar", bean.getValueOverride());
+    }
+
+
+    @Test
+    public void testApplicationXmlEnvEntry() throws Exception {
+        Context ctx = new InitialContext();
+        String value = (String) ctx.lookup("java:app/value");
+        assertEquals("foo" + System.getProperty("file.separator") + "bar", value);
     }
 }
