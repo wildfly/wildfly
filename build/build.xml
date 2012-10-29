@@ -156,15 +156,6 @@
             <mapper type="flatten"/>
         </unzip>
 
-        <!-- Copy the IronJacamar specific schemas to the JBOSS_HOME/docs/schema folder -->
-        <unzip src="${org.jboss.ironjacamar:ironjacamar-common-api:jar}" dest="${output.dir}/docs/schema/">
-            <patternset>
-                <include name="*.dtd"/>
-                <include name="*.xsd"/>
-            </patternset>
-            <mapper type="flatten"/>
-        </unzip>
-
     </target>
 
     <target name="copy-client">
