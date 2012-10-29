@@ -3,6 +3,7 @@ Usage: jboss-cli.sh/jboss-cli.bat [--help] [--version] [--controller=host:port]
                                   [--commands=command_or_operation1,command_or_operation2...]
                                   [--command=command_or_operation]
                                   [--user=username --password=password]
+                                  [--timeout=timeout]
 
  --help (-h)          - prints (this) basic description of the command line utility.
  --version            - prints the version info of the JBoss AS release, JVM and system environment.
@@ -11,7 +12,7 @@ Usage: jboss-cli.sh/jboss-cli.bat [--help] [--version] [--controller=host:port]
                         the arguments. The default controller host is localhost and the port is 9999.
  --connect (-c)       - instructs the CLI to connect to the controller on start-up (to avoid issuing
                         a separate connect command later).
- --gui                - GUI built on top of the CLI, the only difference is that it brings up a GUI 
+ --gui                - GUI built on top of the CLI, the only difference is that it brings up a GUI
                         instead of a command line. In this mode, the CLI will automatically connect
                         during start-up. You can optionally specify --controller, if necessary.
  --file               - specifies a path to a file which contains commands and operations (one per line)
@@ -30,11 +31,13 @@ Usage: jboss-cli.sh/jboss-cli.bat [--help] [--version] [--controller=host:port]
                         at the end of the argument list will be assumed to be the list of commands and operations.
  --user               - if the controller requires user authentication, this argument can be used to specify the user name
                         as a command line argument. If the argument isn't specified and the authentication is required
-                        the user will be prompted to enter the user name when the connect command is issued. 
+                        the user will be prompted to enter the user name when the connect command is issued.
  --password           - specifies the password for authentication while connecting to the controller as
                         a command line argument. If the argument isn't specified and the authentication is required
                         the user will be prompted to enter the password when the connect command is issued.
- 
+ --timeout            - specifies home many milliseconds to wait for a given command to return. The value provided
+                        must be a positive integer. Defaults to 5000 milliseconds when not provided.
+
 
 During the command line session for a list of commands available in the current context execute
 

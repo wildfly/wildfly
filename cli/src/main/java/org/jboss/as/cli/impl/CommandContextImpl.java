@@ -187,6 +187,8 @@ class CommandContextImpl implements CommandContext {
     private char[] password;
     /** The SSLContext when managed by the CLI */
     private SSLContext sslContext;
+    /** Operation timeout */
+    private final int connectionTimeout;
     /** The TrustManager in use by the SSLContext, a reference is kept to rejected certificates can be captured. */
     private LazyDelagatingTrustManager trustManager;
     /** various key/value pairs */
@@ -226,6 +228,7 @@ class CommandContextImpl implements CommandContext {
         this.console = null;
         this.operationCandidatesProvider = null;
         this.cmdCompleter = null;
+        this.connectionTimeout = -1;
         operationHandler = new OperationRequestHandler();
         initCommands();
         config = CliConfigImpl.load(this);
@@ -236,14 +239,14 @@ class CommandContextImpl implements CommandContext {
     }
 
     CommandContextImpl(String username, char[] password) throws CliInitializationException {
-        this(null, -1, username, password, false);
+        this(null, -1, username, password, false, -1);
     }
 
     /**
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole)
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole, final int connectionTimeout)
             throws CliInitializationException {
 
         config = CliConfigImpl.load(this);
@@ -252,6 +255,8 @@ class CommandContextImpl implements CommandContext {
 
         this.username = username;
         this.password = password;
+        this.connectionTimeout = connectionTimeout;
+
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
         } else {
@@ -289,6 +294,8 @@ class CommandContextImpl implements CommandContext {
 
         this.username = username;
         this.password = password;
+        this.connectionTimeout = -1;
+
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
         } else {
@@ -764,7 +771,7 @@ class CommandContextImpl implements CommandContext {
                 if(log.isDebugEnabled()) {
                     log.debug("connecting to " + host + ':' + port + " as " + username);
                 }
-                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext);
+                ModelControllerClient tempClient = ModelControllerClient.Factory.create(host, port, cbh, sslContext, connectionTimeout);
                 retry = tryConnection(tempClient, host, port);
                 if(!retry) {
                     newClient = tempClient;
