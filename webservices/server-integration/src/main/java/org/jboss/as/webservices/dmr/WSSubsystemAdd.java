@@ -121,7 +121,6 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
-        WSServices.saveContainerRegistry(context.getServiceRegistry(false));
         ServiceTarget serviceTarget = context.getServiceTarget();
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true);
