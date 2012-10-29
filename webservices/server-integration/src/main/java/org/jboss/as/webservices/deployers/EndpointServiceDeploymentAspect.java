@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2011, Red Hat Inc., and individual contributors as indicated
+ * Copyright 2012, Red Hat Inc., and individual contributors as indicated
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -30,6 +30,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.EndpointLifecycleDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
+import org.jboss.wsf.spi.deployment.LifecycleHandler;
 
 /**
  * Creates Endpoint Service instance when starting the Endpoint
@@ -37,18 +38,48 @@ import org.jboss.wsf.spi.deployment.Endpoint;
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDeploymentAspect {
+public final class EndpointServiceDeploymentAspect extends EndpointLifecycleDeploymentAspect implements Cloneable {
+
+    private boolean stopServices = false;
 
     @Override
     public void start(final Deployment dep) {
-        super.start(dep);
         final ServiceTarget target = getOptionalAttachment(dep, ServiceTarget.class);
-        if (target != null) {
-            final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
-            for (final Endpoint ep : dep.getService().getEndpoints()) {
-                EndpointService.install(target, ep, unit);
-            }
+        final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
+        for (final Endpoint ep : dep.getService().getEndpoints()) {
+            EndpointService.install(target, ep, unit);
+            getLifecycleHandler(ep, true).start(ep);
         }
     }
 
+    @Override
+    public void stop(Deployment dep) {
+        if (stopServices) {
+            final DeploymentUnit unit = getRequiredAttachment(dep, DeploymentUnit.class);
+            for (final Endpoint ep : dep.getService().getEndpoints()) {
+                LifecycleHandler lifecycleHandler = getLifecycleHandler(ep, false);
+                if (lifecycleHandler != null)
+                   lifecycleHandler.stop(ep);
+                EndpointService.uninstall(ep, unit);
+            }
+        } else {
+            super.stop(dep);
+        }
+    }
+
+    public void setStopServices(boolean stopServices) {
+        this.stopServices = stopServices;
+    }
+
+    public Object clone() {
+        EndpointServiceDeploymentAspect clone = new EndpointServiceDeploymentAspect();
+        clone.setForJaxRpc(isForJaxRpc());
+        clone.setForJaxWs(isForJaxWs());
+        clone.setLast(isLast());
+        clone.setProvides(getProvides());
+        clone.setRelativeOrder(getRelativeOrder());
+        clone.setRequires(getRequires());
+        clone.setStopServices(stopServices);
+        return clone;
+    }
 }

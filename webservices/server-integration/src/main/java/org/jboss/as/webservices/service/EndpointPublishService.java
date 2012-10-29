@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -89,7 +89,7 @@ public final class EndpointPublishService implements Service<Context> {
     public void start(final StartContext ctx) throws StartException {
         ROOT_LOGGER.starting(name);
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost());
+            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost(), true);
             wsctx = publisher.publish(ctx.getChildTarget(), context, loader, urlPatternToClassName, jbwmd, wsmd);
         } catch (Exception e) {
             throw new StartException(e);
@@ -100,7 +100,7 @@ public final class EndpointPublishService implements Service<Context> {
     public void stop(final StopContext ctx) {
         ROOT_LOGGER.stopping(name);
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost());
+            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue().getHost(), true);
             publisher.destroy(wsctx);
         } catch (Exception e) {
             throw new RuntimeException(e);
