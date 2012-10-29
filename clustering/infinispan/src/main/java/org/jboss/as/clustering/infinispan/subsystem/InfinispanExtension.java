@@ -157,8 +157,6 @@ public class InfinispanExtension implements Extension {
             sharedAttributeResolver.put(BaseJDBCStoreResource.BATCH_SIZE.getName(), "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.FETCH_SIZE.getName(), "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.PREFIX.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.COLUMN_NAME.getName(), "jdbc-store");
-            sharedAttributeResolver.put(BaseJDBCStoreResource.COLUMN_TYPE.getName(), "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.ID_COLUMN.getName()+".column", "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.DATA_COLUMN.getName()+".column", "jdbc-store");
             sharedAttributeResolver.put(BaseJDBCStoreResource.TIMESTAMP_COLUMN.getName()+".column", "jdbc-store");
