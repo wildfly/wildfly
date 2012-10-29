@@ -182,6 +182,11 @@ public enum Phase {
     // must be before osgi
     public static final int STRUCTURE_JDBC_DRIVER                       = 0x0500;
     public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0600;
+    public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTIES          = 0x0560;
+    public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTY_RESOLVER   = 0x0561;
+    public static final int STRUCTURE_EE_VAULT_PROPERTY_RESOLVER        = 0x0562;
+    public static final int STRUCTURE_EE_SYSTEM_PROPERTY_RESOLVER       = 0x0563;
+    public static final int STRUCTURE_EE_PROPERTY_RESOLVER              = 0x0564;
     public static final int STRUCTURE_RAR                               = 0x0700;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0800;
     public static final int STRUCTURE_WAR                               = 0x0900;
@@ -206,11 +211,6 @@ public enum Phase {
     public static final int STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY    = 0x1C00;
 
     // PARSE
-    public static final int PARSE_EE_DEPLOYMENT_PROPERTIES              = 0x0001;
-    public static final int PARSE_EE_DEPLOYMENT_PROPERTY_RESOLVER       = 0x0002;
-    public static final int PARSE_EE_VAULT_PROPERTY_RESOLVER            = 0x0003;
-    public static final int PARSE_EE_SYSTEM_PROPERTY_RESOLVER           = 0x0004;
-    public static final int PARSE_EE_PROPERTY_RESOLVER                  = 0x0005;
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;
     public static final int PARSE_EJB_DEFAULT_DISTINCT_NAME             = 0x0110;
     public static final int PARSE_EAR_SUBDEPLOYMENTS_ISOLATION_DEFAULT  = 0x0200;
