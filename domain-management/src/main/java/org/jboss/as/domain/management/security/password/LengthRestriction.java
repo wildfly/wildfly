@@ -34,7 +34,7 @@ public class LengthRestriction extends PasswordRestriction {
      * @param desiredLength
      */
     public LengthRestriction(int desiredLength) {
-        super(MESSAGES.passwordNotLontEnough(desiredLength));
+        super(MESSAGES.passwordNotLongEnough(desiredLength));
         this.desiredLength = desiredLength;
     }
 

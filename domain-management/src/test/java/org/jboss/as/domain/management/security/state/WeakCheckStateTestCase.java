@@ -108,7 +108,7 @@ public class WeakCheckStateTestCase extends PropertyTestHelper {
         values.setPassword("1QwD%rf".toCharArray());
         WeakCheckState weakCheckState = new WeakCheckState(consoleMock, values);
 
-        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().expectedErrorMessage(MESSAGES.passwordNotLontEnough(8));
+        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().expectedErrorMessage(MESSAGES.passwordNotLongEnough(8));
         consoleMock.setResponses(consoleBuilder);
 
         State errorState = weakCheckState.execute();

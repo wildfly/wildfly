@@ -229,7 +229,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         this.addDependency(EJBUtilities.SERVICE_NAME, ServiceBuilder.DependencyType.REQUIRED);
         // setup a current invocation interceptor
         this.addCurrentInvocationContextFactory();
-        // setup a dependency on EJB remote tx repository service, if this EJB exposes atleast one remote view
+        // setup a dependency on EJB remote tx repository service, if this EJB exposes at least one remote view
         this.addRemoteTransactionsRepositoryDependency();
         this.transactionAttributes = new ApplicableMethodInformation<TransactionAttributeType>(componentName, TransactionAttributeType.REQUIRED);
         this.transactionTimeouts = new ApplicableMethodInformation<Integer>(componentName, null);
@@ -416,7 +416,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     /**
      * Adds a dependency for the ComponentConfiguration, on the {@link EJBRemoteTransactionsRepository} service,
-     * if the EJB exposes atleast one remote view
+     * if the EJB exposes at least one remote view
      */
     protected void addRemoteTransactionsRepositoryDependency() {
         this.getConfigurators().add(new ComponentConfigurator() {
@@ -434,7 +434,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             }
 
             /**
-             * Returns true if the passed EJB component description has atleast one remote view
+             * Returns true if the passed EJB component description has at least one remote view
              * @param ejbComponentDescription
              * @return
              */
