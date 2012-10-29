@@ -83,21 +83,24 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
                     if (element != Element.ENDPOINT_CONFIG && !encountered.add(element)) {
                         throw unexpectedElement(reader);
                     }
-                    final String value = parseElementNoAttributes(reader);
                     switch (element) {
                         case MODIFY_WSDL_ADDRESS: {
+                            final String value = parseElementNoAttributes(reader);
                             Attributes.MODIFY_WSDL_ADDRESS.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_HOST: {
+                            final String value = parseElementNoAttributes(reader);
                             Attributes.WSDL_HOST.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_PORT: {
+                            final String value = parseElementNoAttributes(reader);
                             Attributes.WSDL_PORT.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_SECURE_PORT: {
+                            final String value = parseElementNoAttributes(reader);
                             Attributes.WSDL_SECURE_PORT.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }

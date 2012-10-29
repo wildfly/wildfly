@@ -95,35 +95,35 @@ public final class WSExtension implements Extension {
                 .setAddOperation(HandlerChainAdd.INSTANCE)
                 .setRemoveOperation(HandlerChainRemove.INSTANCE)
                 .addReadWriteAttribute(Attributes.PROTOCOL_BINDINGS, null, new ReloadRequiredWriteAttributeHandler(Attributes.PROTOCOL_BINDINGS))
-                .addChild(handlerBuilder).end();
+                .pushChild(handlerBuilder).pop();
 
         ResourceBuilder postHandler = ResourceBuilder.Factory.create(POST_HANDLER_CHAIN_PATH, getResourceDescriptionResolver(Constants.POST_HANDLER_CHAIN))
                 .setAddOperation(HandlerChainAdd.INSTANCE)
                 .setRemoveOperation(HandlerChainRemove.INSTANCE)
                 .addReadWriteAttribute(Attributes.PROTOCOL_BINDINGS, null, new ReloadRequiredWriteAttributeHandler(Attributes.PROTOCOL_BINDINGS))
-                .addChild(handlerBuilder).end();
+                .pushChild(handlerBuilder).pop();
 
         ResourceDefinition subsystemResource = ResourceBuilder.Factory.createSubsystemRoot(SUBSYSTEM_PATH, getResourceDescriptionResolver(), WSSubsystemAdd.INSTANCE, WSSubsystemRemove.INSTANCE)
                 .addReadWriteAttribute(Attributes.WSDL_HOST, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_HOST))
                 .addReadWriteAttribute(Attributes.WSDL_PORT, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_PORT))
                 .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_SECURE_PORT))
                 .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new WSSubsystemAttributeChangeHandler(Attributes.MODIFY_WSDL_ADDRESS))
-                .addChild(ENDPOINT_CONFIG_PATH, EndpointConfigAdd.INSTANCE, EndpointConfigRemove.INSTANCE)
-                    .addChild(propertyResource).end()
-                    .addChild(preHandler).end()
-                    .addChild(postHandler).end()
-                .end()
-                .addChild(CLIENT_CONFIG_PATH, ClientConfigAdd.INSTANCE, ClientConfigRemove.INSTANCE)
-                    .addChild(propertyResource).end()
-                    .addChild(preHandler).end()
-                    .addChild(postHandler).end()
-                .end()
+                .pushChild(ENDPOINT_CONFIG_PATH, EndpointConfigAdd.INSTANCE, EndpointConfigRemove.INSTANCE)
+                    .pushChild(propertyResource).pop()
+                    .pushChild(preHandler).pop()
+                    .pushChild(postHandler).pop()
+                .pop()
+                .pushChild(CLIENT_CONFIG_PATH, ClientConfigAdd.INSTANCE, ClientConfigRemove.INSTANCE)
+                    .pushChild(propertyResource).pop()
+                    .pushChild(preHandler).pop()
+                    .pushChild(postHandler).pop()
+                .pop()
                 .build();
         subsystem.registerSubsystemModel(subsystemResource);
 
         if (registerRuntimeOnly) {
-            subsystem.registerDeploymentModel(ResourceBuilder.Factory.create(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployments"))
-                    .addChild(ENDPOINT_PATH)
+            subsystem.registerDeploymentModel(ResourceBuilder.Factory.create(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployment"))
+                    .pushChild(ENDPOINT_PATH)
                     .addMetrics(WSEndpointMetrics.INSTANCE, WSEndpointMetrics.ATTRIBUTES).build());
         }
     }
