@@ -45,13 +45,15 @@ public class PatchingRollbackCallback implements PatchingContext.TaskFinishCallb
     private final List<String> patches;
     private final String cumulativeTarget;
     private final DirectoryStructure structure;
+    private final boolean restoreConfiguration;
 
-    public PatchingRollbackCallback(String patchId, Patch patch, List<String> patches, String cumulativeTarget, DirectoryStructure structure) {
+    public PatchingRollbackCallback(String patchId, Patch patch, List<String> patches, String cumulativeTarget, boolean restoreConfiguration, DirectoryStructure structure) {
         this.patchId = patchId;
         this.patch = patch;
         this.patches = patches;
         this.cumulativeTarget = cumulativeTarget;
         this.structure = structure;
+        this.restoreConfiguration = restoreConfiguration;
     }
 
     @Override
@@ -59,7 +61,9 @@ public class PatchingRollbackCallback implements PatchingContext.TaskFinishCallb
 
         final PatchInfo patchInfo = context.getPatchInfo();
         // Restore the configuration of the original given patch-id
-        context.restoreConfiguration(patchId);
+        if(restoreConfiguration) {
+            context.restoreConfiguration(patchId);
+        }
         // Create the patch info
         if(context.getPatchType() == Patch.PatchType.CUMULATIVE) {
             // Use the cumulative version from the history

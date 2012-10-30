@@ -23,54 +23,200 @@
 package org.jboss.as.patching.tool;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
-import org.jboss.as.patching.runner.PatchingTaskRunner;
+import org.jboss.as.version.ProductConfig;
+import org.jboss.dmr.ModelNode;
+import org.jboss.modules.ModuleLoader;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
- * An interactive offline patch tool.
+ * The patch tool.
  *
  * @author Emanuel Muckenhuber
  */
-class PatchTool {
+public interface PatchTool {
 
-    private final PatchInfo info;
-    private final DirectoryStructure structure;
-    private final PatchingTaskRunner runner;
+    ContentVerificationPolicy DEFAULT = ContentVerificationPolicy.STRICT;
 
-    PatchTool(PatchInfo info, DirectoryStructure structure) {
-        this.info = info;
-        this.structure = structure;
-        this.runner = new PatchingTaskRunner(info, structure);
-    }
+    /**
+     * Apply a patch.
+     *
+     * @param file the patch file
+     * @param contentPolicy the content verification policy
+     * @return the patching result
+     * @throws PatchingException
+     */
+    PatchingResult applyPatch(File file, ContentVerificationPolicy contentPolicy) throws PatchingException;
 
-    PatchingResult applyPatch(final File file, final ContentVerificationPolicy policy) throws PatchingException {
-        try {
-            final InputStream is = new FileInputStream(file);
-            try {
-                return runner.executeDirect(is, policy);
-            } finally {
-                if(is != null) try {
-                    is.close();
-                } catch (IOException e) {
-                    PatchLogger.ROOT_LOGGER.debugf(e, "failed to close input stream");
+    /**
+     * Apply a patch.
+     *
+     * @param url the url to retrieve the patch from
+     * @param contentPolicy the content verification policy
+     * @return the patching result
+     * @throws PatchingException
+     */
+    PatchingResult applyPatch(URL url, ContentVerificationPolicy contentPolicy) throws PatchingException;
+
+    /**
+     * Apply a patch.
+     *
+     * @param is the content input stream
+     * @param contentPolicy the content verification policy
+     * @return the patching result
+     * @throws PatchingException
+     */
+    PatchingResult applyPatch(InputStream is, ContentVerificationPolicy contentPolicy) throws PatchingException;
+
+    /**
+     * Rollback a patch.
+     *
+     * @param patchId the patch id
+     * @param contentPolicy the content verification policy
+     * @param restoreConfiguration whether to restore the configuration from the backup
+     * @return the patching result
+     * @throws PatchingException
+     */
+    PatchingResult rollback(String patchId, ContentVerificationPolicy contentPolicy, boolean restoreConfiguration) throws PatchingException;
+
+    public class Factory {
+
+        private Factory() {
+            //
+        }
+
+        /**
+         * Create a new policy builder instance.
+         *
+         * @return a content policy builder
+         */
+        public static ContentPolicyBuilder policyBuilder() {
+            return new ContentPolicyBuilderImpl();
+        }
+
+        /**
+         * Create a content verification policy from a dmr model
+         *
+         * @param operation the model node
+         * @return the policy
+         */
+        public static ContentVerificationPolicy create(final ModelNode operation) {
+            final PatchTool.ContentPolicyBuilder builder = policyBuilder();
+            final boolean overrideModules = operation.get(Constants.OVERRIDE_MODULES).asBoolean(false);
+            if(overrideModules) {
+                builder.ignoreModuleChanges();
+            }
+            final boolean overrideAll = operation.get(Constants.OVERRIDE_ALL).asBoolean(false);
+            if(overrideAll) {
+                builder.overrideAll();
+            }
+            if(operation.hasDefined(Constants.OVERRIDES)) {
+                final ModelNode overrides = operation.get(Constants.OVERRIDES);
+                for(final ModelNode override : overrides.asList()) {
+                    builder.overrideItem(override.toString());
                 }
             }
-        } catch (IOException e) {
-            throw new PatchingException(e);
+            if(operation.hasDefined(Constants.PRESERVE)) {
+                final ModelNode preserves = operation.get(Constants.PRESERVE);
+                for(final ModelNode preserve : preserves.asList()) {
+                    builder.preserveItem(preserve.toString());
+                }
+            }
+            return builder.build();
         }
+
+        /**
+         * Create an offline local patch tool.
+         *
+         * @return the patch tool
+         * @throws IOException
+         */
+        public static PatchTool create(final File jbossHome) throws IOException {
+            final DirectoryStructure structure = DirectoryStructure.createDefault(jbossHome.getAbsoluteFile());
+            final ModuleLoader loader = ModuleLoader.forClass(Main.class);
+            final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath());
+            final PatchInfo info = LocalPatchInfo.load(config, structure);
+            return create(info, structure);
+        }
+
+        /**
+         * Create an offline local patch tool.
+         *
+         * @param patchInfo the patch info
+         * @param structure the directory structure
+         * @return the patch tool
+         */
+        public static PatchTool create(final PatchInfo patchInfo, final DirectoryStructure structure) {
+            return new LocalPatchTool(patchInfo, structure);
+        }
+
     }
 
-    PatchingResult rollback(final String patchId, boolean overrideAll) throws PatchingException {
-        return runner.rollback(patchId, overrideAll);
+    public interface ContentPolicyBuilder {
+
+        /**
+         * Build the resulting policy.
+         *
+         * @return the content verification policy
+         */
+        ContentVerificationPolicy build();
+
+        /**
+         * Ignore all local module changes.
+         *
+         * @return the builder
+         */
+        ContentPolicyBuilder ignoreModuleChanges();
+
+        /**
+         * Override all local changes.
+         *
+         * @return the builder
+         */
+        ContentPolicyBuilder overrideAll();
+
+        /**
+         * Override a misc content item.
+         *
+         * @param item the item to override
+         * @return the builder
+         */
+        ContentPolicyBuilder overrideItem(MiscContentItem item);
+
+        /**
+         * Override a misc content item.
+         *
+         * @param path the path of the item
+         * @return the builder
+         */
+        ContentPolicyBuilder overrideItem(String path);
+
+        /**
+         * Preserve an existing content item.
+         *
+         * @param item the item to preserve
+         * @return the builder
+         */
+        ContentPolicyBuilder preserveItem(MiscContentItem item);
+
+        /**
+         * Preserve an existing content item.
+         *
+         * @param path the path of the item
+         * @return the builder
+         */
+        ContentPolicyBuilder preserveItem(String path);
+
     }
 
 }

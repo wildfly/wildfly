@@ -22,17 +22,19 @@
 
 package org.jboss.as.patching;
 
-import static org.jboss.as.patching.Constants.OVERRIDE_ALL;
-import static org.jboss.as.patching.Constants.PATCH_ID;
+import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_ALL;
+import static org.jboss.as.patching.PatchResourceDefinition.PATCH_ID;
 import static org.jboss.as.patching.PatchMessages.MESSAGES;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.runner.PatchingTaskRunner;
+import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -56,18 +58,20 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
 
         final PatchInfo info = service.getPatchInfo();
         final DirectoryStructure structure = service.getStructure();
-        final PatchingTaskRunner taskRunner = new PatchingTaskRunner(info, structure);
+        final PatchTool runner = PatchTool.Factory.create(info, structure);
+        final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
+        final boolean rollbackConfiguration = operation.get(PatchResourceDefinition.RESTORE_CONFIGURATION.getName()).asBoolean(true);
         try {
             // Rollback
-            final PatchingResult result = taskRunner.rollback(patchId, overrideAll);
+            final PatchingResult result = runner.rollback(patchId, policy, rollbackConfiguration);
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
-                        result.commit();
                         service.reloadRequired();
-                        context.reloadRequired();
+                        context.restartRequired();
+                        result.commit();
                     } else {
                         result.rollback();
                     }

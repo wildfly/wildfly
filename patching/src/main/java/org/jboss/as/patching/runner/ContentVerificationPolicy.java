@@ -93,36 +93,4 @@ public interface ContentVerificationPolicy {
         }
     };
 
-    static class CustomVerificationPolicy implements ContentVerificationPolicy {
-
-        private final Set<ContentItem> override;
-        private final Set<ContentItem> preserve;
-
-        public CustomVerificationPolicy(Set<ContentItem> override, Set<ContentItem> preserve) {
-            this.override = override;
-            this.preserve = preserve;
-        }
-
-        public boolean ignoreContentValidation(final ContentItem item) {
-            final ContentType type = item.getContentType();
-            if(type == ContentType.MISC) {
-                if(override.contains(item)) {
-                   return true;
-                }
-                // Preserve should skip content verification
-                return preserve.contains(item);
-            }
-            return false;
-        }
-
-        public boolean preserveExisting(final ContentItem item) {
-            final ContentType type = item.getContentType();
-            if(type == ContentType.MISC) {
-                return preserve.contains(item);
-            }
-            return false;
-        }
-
-    }
-
 }

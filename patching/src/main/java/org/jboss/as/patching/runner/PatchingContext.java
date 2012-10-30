@@ -99,14 +99,13 @@ class PatchingContext {
      * @param patch the patch
      * @param current the current patch info
      * @param structure the directory structure
-     * @param overrideAll override all conflicting files
+     * @param policy the content verification policy
      * @param workDir the current work dir
      * @return the patching context for rollback
      */
-    static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final boolean overrideAll, final File workDir) {
+    static PatchingContext createForRollback(final Patch patch, final PatchInfo current, final DirectoryStructure structure, final ContentVerificationPolicy policy, final File workDir) {
         // backup is just a temp dir
         final File backup = workDir;
-        final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
         return new PatchingContext(patch, current, structure, backup, policy, true);
     }
 
@@ -292,16 +291,6 @@ class PatchingContext {
                 @Override
                 public String getPatchId() {
                     return patch.getPatchId();
-                }
-
-                @Override
-                public boolean hasFailures() {
-                    return false;
-                }
-
-                @Override
-                public Collection<ContentItem> getProblems() {
-                    return Collections.emptyList();
                 }
 
                 @Override

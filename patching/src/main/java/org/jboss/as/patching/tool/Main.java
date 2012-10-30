@@ -35,7 +35,6 @@ import org.jboss.modules.ModuleLoader;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -124,12 +123,13 @@ public class Main {
         // Debug information
         debug(info, structure);
 
-        final PatchTool tool = new PatchTool(info, structure);
+        final PatchTool tool = PatchTool.Factory.create(info, structure);
         try {
             final PatchingResult result;
             // Rollback
             if(operation == Argument.ROLLBACK) {
-                result = tool.rollback(param, overrideAll);
+                final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
+                result = tool.rollback(param, policy, true);
             // Apply patch
             } else if (operation == Argument.PATCH) {
                 final File file = new File(param);
