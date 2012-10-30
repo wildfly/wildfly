@@ -1,7 +1,6 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/local-cache=*
@@ -21,13 +20,5 @@ public class LocalCacheResource extends CacheResource {
                 CacheRemove.INSTANCE);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-    }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
 }

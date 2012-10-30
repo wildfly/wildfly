@@ -74,9 +74,4 @@ public class TransportResource extends SimpleResourceDefinition {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
 }
