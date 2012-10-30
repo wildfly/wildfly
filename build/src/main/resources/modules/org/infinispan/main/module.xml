@@ -35,5 +35,6 @@
         <module name="org.jboss.marshalling.river"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jgroups"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>
