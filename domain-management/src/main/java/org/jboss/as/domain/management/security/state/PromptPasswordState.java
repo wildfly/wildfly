@@ -50,7 +50,7 @@ public class PromptPasswordState implements State {
 
     @Override
     public State execute() {
-        State continuingState = new WeakCheckState(theConsole, stateValues);
+        State continuingState = new WeakPasswordCheckState(theConsole, stateValues);
         if (stateValues.isSilentOrNonInteractive() == false) {
             /*
             * Prompt for password.
