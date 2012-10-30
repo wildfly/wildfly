@@ -25,7 +25,7 @@ package org.jboss.as.connector.subsystems.jca;
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  * @author @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
-class Constants {
+public class Constants {
     static final String JCA = "jca";
 
     static final String ARCHIVE_VALIDATION = "archive-validation";
@@ -40,8 +40,8 @@ class Constants {
     static final String CACHED_CONNECTION_MANAGER_DEBUG = "debug";
     static final String CACHED_CONNECTION_MANAGER_ERROR = "error";
 
-    static final String DEFAULT_NAME = "default";
     static final String THREAD_POOL = "thread-pool";
+    public static final String DEFAULT_NAME = "default";
     static final String WORKMANAGER_SHORT_RUNNING = "short-running-threads";
     static final String WORKMANAGER_LONG_RUNNING = "long-running-threads";
 
