@@ -218,7 +218,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         weldServiceBuilder.addDependencies(jpaServices);
 
         //make sure JNDI bindings are up
-        weldServiceBuilder.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+        weldServiceBuilder.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 
         weldServiceBuilder.install();
 

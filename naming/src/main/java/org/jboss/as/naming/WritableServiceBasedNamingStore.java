@@ -27,11 +27,13 @@ import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 
 import java.util.Hashtable;
+import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -44,36 +46,39 @@ import org.jboss.msc.value.ImmediateValue;
 
 /**
  * @author John Bailey
+ * @author Eduardo Martins
  */
 public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore implements WritableNamingStore {
-    private static final ThreadLocalStack<WriteOwner> WRITE_OWNER = new ThreadLocalStack<WriteOwner>();
+    private static final ThreadLocalStack<ServiceName> WRITE_OWNER = new ThreadLocalStack<ServiceName>();
 
-    public WritableServiceBasedNamingStore(ServiceRegistry serviceRegistry, ServiceName serviceNameBase) {
+    private final ServiceTarget serviceTarget;
+
+    public WritableServiceBasedNamingStore(ServiceRegistry serviceRegistry, ServiceName serviceNameBase, ServiceTarget serviceTarget) {
         super(serviceRegistry, serviceNameBase);
+        this.serviceTarget = serviceTarget;
     }
 
+    @SuppressWarnings("unchecked")
     public void bind(final Name name, final Object object) throws NamingException {
-        final WriteOwner owner = requireOwner();
-
+        final ServiceName deploymentUnitServiceName = requireOwner();
         final ServiceName bindName = buildServiceName(name);
-        final BindListener listener = new BindListener();
-
-        final BinderService binderService = new BinderService(name.toString());
-        final ServiceBuilder<?> builder = owner.target.addService(bindName, binderService)
-                .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(object)))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .addListener(listener);
-        for(ServiceName dependency : owner.dependencies) {
-            builder.addDependency(dependency);
-        }
-        builder.install();
         try {
+            final BinderService binderService = new BinderService(name.toString());
+            final BindListener listener = new BindListener();
+            final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
+                    .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                    .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(object)))
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .addListener(listener);
+            builder.install();
             listener.await();
+            binderService.acquire();
+            // add the service name to runtime bindings management service, which on stop releases the services.
+            final Set<ServiceName> duBindingReferences = (Set<ServiceName>) getServiceRegistry().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
+            duBindingReferences.add(bindName);
         } catch (Exception e) {
             throw namingException("Failed to bind [" + object + "] at location [" + bindName + "]", e);
         }
-
     }
 
     public void bind(final Name name, final Object object, final Class<?> bindType) throws NamingException {
@@ -120,15 +125,15 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         return new NamingContext(name, WritableServiceBasedNamingStore.this, new Hashtable<String, Object>());
     }
 
-    private WriteOwner requireOwner() {
-        final WriteOwner owner = WRITE_OWNER.peek();
+    private ServiceName requireOwner() {
+        final ServiceName owner = WRITE_OWNER.peek();
         if (owner == null) {
             throw MESSAGES.readOnlyNamingContext();
         }
         return owner;
     }
 
-    private class BindListener extends AbstractServiceListener<Object> {
+    private static class BindListener extends AbstractServiceListener<Object> {
         private Exception exception;
         private boolean complete;
 
@@ -145,6 +150,8 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
                     notifyAll();
                     break;
                 }
+                default:
+                    break;
             }
         }
 
@@ -158,7 +165,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         }
     }
 
-    private class UnbindListener extends AbstractServiceListener<Object> {
+    private static class UnbindListener extends AbstractServiceListener<Object> {
         private boolean complete;
 
         public void listenerAdded(ServiceController<?> controller) {
@@ -172,6 +179,8 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
                     notifyAll();
                     break;
                 }
+                default:
+                    break;
             }
         }
 
@@ -182,21 +191,12 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         }
     }
 
-    public static void pushOwner(final ServiceTarget target, final ServiceName... dependencies) {
-        WRITE_OWNER.push(new WriteOwner(target, dependencies));
+    public static void pushOwner(final ServiceName du) {
+        WRITE_OWNER.push(du);
     }
 
     public static void popOwner() {
         WRITE_OWNER.pop();
     }
 
-    private static class WriteOwner {
-        private final ServiceTarget target;
-        private final ServiceName[] dependencies;
-
-        public WriteOwner(final ServiceTarget target, final ServiceName... dependencies) {
-            this.target = target;
-            this.dependencies = dependencies;
-        }
-    }
 }
