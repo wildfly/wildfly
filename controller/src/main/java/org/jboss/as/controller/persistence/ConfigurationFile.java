@@ -292,7 +292,6 @@ public class ConfigurationFile {
             } else {
                 copySource = new File(mainFile.getParentFile(), mainFile.getName() + ".boot");
                 FilePersistenceUtils.deleteFile(copySource);
-                copySource.deleteOnExit();
             }
 
             try {

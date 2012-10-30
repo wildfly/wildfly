@@ -395,4 +395,13 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.INFO)
     @Message(id = 14627, value = "Attribute %s is deprecated, and it might be removed in future version!")
     void attributeDeprecated(String name);
+
+    /**
+     * Logs a warnning message indicating a temp file could not be deleted.
+     *
+     * @param name temp filename
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 14628, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String name);
 }
