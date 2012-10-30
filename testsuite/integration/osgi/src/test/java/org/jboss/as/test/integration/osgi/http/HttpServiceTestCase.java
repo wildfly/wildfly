@@ -24,10 +24,14 @@ package org.jboss.as.test.integration.osgi.http;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,6 +61,7 @@ import org.osgi.service.http.HttpService;
  * Test the {@link HttpService} on JBossWeb
  *
  * @author thomas.diesler@jboss.com
+ * @author David Bosschaert
  * @since 19-Jul-2011
  */
 @RunWith(Arquillian.class)
@@ -186,6 +191,38 @@ public class HttpServiceTestCase {
         assertNotAvailable(reqspec);
     }
 
+    @Test
+    public void testServletContext() throws Exception {
+        BundleContext context = bundle.getBundleContext();
+        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
+        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
+        String reqspec = "/httpservice/servlet2?test=param&param=Kermit";
+        try {
+            HttpService httpService = (HttpService) context.getService(sref);
+
+            // Verify that the alias is not yet available
+            assertNotAvailable(reqspec);
+
+            // Register the test servlet
+            HttpServiceServlet servlet = new HttpServiceServlet(bundle);
+            Dictionary<String, String> parms = new Hashtable<String, String>();
+            parms.put("foo", "bar");
+            httpService.registerServlet("/servlet2", servlet, parms, null);
+
+            // Check that the ServletContext is available
+            Assert.assertEquals("/httpservice", servlet.getServletContext().getContextPath());
+
+            // Check that the ServletConfig is available
+            Assert.assertEquals("bar", servlet.getServletConfig().getInitParameter("foo"));
+
+            // Unregister the servlet alias
+            httpService.unregister("/servlet2");
+            assertNotAvailable(reqspec);
+        } finally {
+            context.ungetService(sref);
+        }
+    }
+
     private void assertNotAvailable(String reqspec) throws Exception {
         try {
             performCall(reqspec);
@@ -209,6 +246,24 @@ public class HttpServiceTestCase {
         HttpServiceServlet(Bundle bundle) {
             this.bundle = (XBundle) bundle;
         }
+
+
+
+        @Override
+        public void init(ServletConfig config) throws ServletException {
+            System.err.println("*** init() : " + config);
+            super.init(config);
+        }
+
+
+
+        @Override
+        public void init() throws ServletException {
+            System.err.println("### init()");
+            super.init();
+        }
+
+
 
         protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
             PrintWriter out = res.getWriter();

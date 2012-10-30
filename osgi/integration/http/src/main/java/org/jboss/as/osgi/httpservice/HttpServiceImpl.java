@@ -94,6 +94,7 @@ final class HttpServiceImpl implements HttpService {
             }
 
             registerInternal(registry.register(alias, bundle, wrapper, Type.SERVLET));
+            wrapper.allocate(); // Causes servlet.init() to be called, which must be done before we return
         }
     }
 
