@@ -187,6 +187,7 @@ public interface ContentRepository {
                 if(hasContent(sha1Bytes)) {
                     // we've already got this content
                     if (!tmp.delete()) {
+                        DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(tmp.getName());
                         tmp.deleteOnExit();
                     }
                     DeploymentRepositoryLogger.ROOT_LOGGER.debugf("Content was already present in repository at location %s", realFile.getAbsolutePath());
@@ -294,9 +295,11 @@ public interface ContentRepository {
 
                     } finally {
                         if (!tmpFile.delete()) {
+                            DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(tmpFile.getName());
                             tmpFile.deleteOnExit();
                         }
                         if (localTmp.exists() && !localTmp.delete()) {
+                            DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(localTmp.getName());
                             localTmp.deleteOnExit();
                         }
                     }
@@ -340,15 +343,18 @@ public interface ContentRepository {
 
                 File file = getDeploymentContentFile(hash, true);
                 if(!file.delete()) {
+                    DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(file.getName());
                     file.deleteOnExit();
                 }
                 File parent = file.getParentFile();
                 if (!parent.delete()) {
+                    DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(parent.getName());
                     parent.deleteOnExit();
                 }
                 parent = parent.getParentFile();
                 if (parent.list().length == 0) {
                     if (!parent.delete()) {
+                        DeploymentRepositoryLogger.ROOT_LOGGER.cannotDeleteTempFile(parent.getName());
                         parent.deleteOnExit();
                     }
                 }
