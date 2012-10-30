@@ -22,6 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.POLICY;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
 
@@ -32,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
+
 /**
  * Handles deployment into the runtime.
  *
@@ -55,12 +57,15 @@ public class DeploymentDeployHandler implements OperationStepHandler {
         ModelNode model = context.readModelForUpdate(PathAddress.EMPTY_ADDRESS);
         model.get(ENABLED.getName()).set(true);
 
+        POLICY.validateAndSet(operation, model);
+
         final ModelNode opAddr = operation.get(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
         final String runtimeName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
+        String policy = POLICY.resolveModelAttribute(context, model).asString();
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT_ALL.resolveModelAttribute(context, model));
-        DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contents);
+        DeploymentHandlerUtil.deploy(context, runtimeName, name, policy, vaultReader, contents);
 
         context.stepCompleted();
     }

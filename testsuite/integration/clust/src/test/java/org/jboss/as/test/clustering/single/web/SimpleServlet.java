@@ -24,6 +24,8 @@ package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -35,13 +37,24 @@ import javax.servlet.http.HttpSession;
 /**
  * @author Paul Ferraro
  */
-@WebServlet(urlPatterns = { "/simple" })
+@WebServlet(urlPatterns = { SimpleServlet.SERVLET_PATH })
 public class SimpleServlet extends HttpServlet {
+    public static final String SERVLET_NAME = "simple";
+    public static final String SERVLET_PATH = "/" + SERVLET_NAME;
     private static final long serialVersionUID = -592774116315946908L;
     public static final String REQUEST_DURATION_PARAM = "requestduration";
     public static final String HEADER_SERIALIZED = "serialized";
-    public static final String URL = "simple";
+    public static final String VALUE = "value";
+    public static final String URL = SERVLET_NAME;
 
+    public static final URI createURI(java.net.URL baseURL) throws URISyntaxException {
+        return baseURL.toURI().resolve(SERVLET_NAME);
+    }
+
+    public static final URI createURI(java.net.URL baseURL, int duration) throws URISyntaxException {
+        return baseURL.toURI().resolve(new StringBuilder(SERVLET_NAME).append("?").append(REQUEST_DURATION_PARAM).append(duration).toString());
+    }
+    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession(true);
@@ -52,7 +65,7 @@ public class SimpleServlet extends HttpServlet {
         } else {
             custom.increment();
         }
-        resp.setIntHeader("value", custom.getValue());
+        resp.setIntHeader(VALUE, custom.getValue());
         resp.setHeader(HEADER_SERIALIZED, Boolean.toString(custom.wasSerialized()));
 
         // Long running request?

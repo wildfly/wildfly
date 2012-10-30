@@ -28,7 +28,6 @@
         ucast_send_buf_size="640000"
         mcast_recv_buf_size="25000000"
         mcast_send_buf_size="640000"
-        discard_incompatible_packets="true"
         enable_bundling="false"
         max_bundle_size="64000"
         max_bundle_timeout="30"
@@ -51,7 +50,6 @@
     <TCP
         recv_buf_size="20000000"
         send_buf_size="640000"
-        discard_incompatible_packets="true"
         max_bundle_size="64000"
         max_bundle_timeout="30"
         enable_bundling="false"

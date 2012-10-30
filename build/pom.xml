@@ -843,6 +843,11 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-clustering-singleton-deployment</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-clustering-web-infinispan</artifactId>
                 </dependency>
 

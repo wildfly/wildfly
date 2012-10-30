@@ -40,36 +40,36 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     public static DeploymentActionImpl getAddAction(String deploymentName, String fileName, byte[] hash) {
         assert fileName != null : "fileName is null";
         assert hash != null : "hash is null";
-        return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, hash, null);
+        return new DeploymentActionImpl(Type.ADD, deploymentName, fileName, hash, null, null);
     }
 
-    public static DeploymentActionImpl getDeployAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.DEPLOY, deploymentName, null, null, null);
+    public static DeploymentActionImpl getDeployAction(String deploymentName, String policy) {
+        return new DeploymentActionImpl(Type.DEPLOY, deploymentName, null, null, null, policy);
     }
 
     public static DeploymentActionImpl getRedeployAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.REDEPLOY, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.REDEPLOY, deploymentName, null, null, null, null);
     }
 
     public static DeploymentActionImpl getUndeployAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.UNDEPLOY, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.UNDEPLOY, deploymentName, null, null, null, null);
     }
 
     public static DeploymentActionImpl getReplaceAction(String deploymentName, String replacedName) {
         if (replacedName == null) {
             throw MESSAGES.nullVar("replacedName");
         }
-        return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName);
+        return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName, null);
     }
 
     public static DeploymentActionImpl getFullReplaceAction(String deploymentName, String fileName, byte[] hash) {
         assert fileName != null : "fileName is null";
         assert hash != null : "hash is null";
-        return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, hash, null);
+        return new DeploymentActionImpl(Type.FULL_REPLACE, deploymentName, fileName, hash, null, null);
     }
 
     public static DeploymentActionImpl getRemoveAction(String deploymentName) {
-        return new DeploymentActionImpl(Type.REMOVE, deploymentName, null, null, null);
+        return new DeploymentActionImpl(Type.REMOVE, deploymentName, null, null, null, null);
     }
 
     private final UUID uuid = UUID.randomUUID();
@@ -78,8 +78,9 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
     private final String oldDeploymentUnitName;
     private final String newContentFileName;
     private final byte[] newContentHash;
+    private final String policy;
 
-    private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
+    private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName, String policy) {
         if (type == null) {
             throw MESSAGES.nullVar("type");
         }
@@ -91,6 +92,7 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
         this.newContentFileName = newContentFileName;
         this.newContentHash = newContentHash;
         this.oldDeploymentUnitName = replacedDeploymentUnitName;
+        this.policy = policy;
     }
 
     @Override
@@ -121,4 +123,7 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
         return newContentHash;
     }
 
+    public String getPolicy() {
+        return this.policy;
+    }
 }

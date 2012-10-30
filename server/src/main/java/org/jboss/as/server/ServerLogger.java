@@ -136,6 +136,10 @@ public interface ServerLogger extends BasicLogger {
     void undeploymentRolledBackWithNoMessage(String deployment);
 
     @LogMessage(level = INFO)
+    @Message(id = 15858, value = "Deployed \"%s\" using %s policy")
+    void deploymentDeployed(String deploymentUnitName, String policy);
+
+    @LogMessage(level = INFO)
     @Message(id = 18558, value = "Undeployed \"%s\"")
     void deploymentUndeployed(String deploymentName);
 

@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.naming.Context;
 
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -33,6 +32,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.arquillian.container.managed.ManagedDeployer;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
@@ -67,7 +67,7 @@ public class ReDeploymentTestCase extends ContainerResourceMgmtTestBase {
     private Context context;
 
     @ArquillianResource
-    private Deployer deployer;
+    private ManagedDeployer deployer;
 
     static class ReDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
 

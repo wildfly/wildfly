@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.singleton;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchServiceTarget;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -56,7 +54,7 @@ import org.jboss.msc.value.InjectedValue;
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
-public class SingletonService<T extends Serializable> implements Service<T>, ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
+public class SingletonService<T> implements Service<T>, ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
 
     public static final String DEFAULT_CONTAINER = "cluster";
 
@@ -102,13 +100,13 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String container) {
-        final BatchServiceTarget batchTarget = target.batchTarget();
-        batchTarget.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
-        batchTarget.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        final ServiceController<T> serviceController = target.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
+        final ServiceController<Singleton> singletonController = target.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
         final ServiceListener<T> listener = new AbstractServiceListener<T>() {
             @Override
             public void serviceRemoveRequested(ServiceController<? extends T> controller) {
-                batchTarget.removeServices();
+                singletonController.setMode(ServiceController.Mode.REMOVE);
+                serviceController.setMode(ServiceController.Mode.REMOVE);
             }
         };
         return AsynchronousService.addService(target, this.singletonServiceName, this)

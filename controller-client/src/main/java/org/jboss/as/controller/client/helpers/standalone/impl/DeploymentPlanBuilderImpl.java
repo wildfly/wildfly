@@ -198,8 +198,13 @@ class DeploymentPlanBuilderImpl
      */
     @Override
     public DeploymentPlanBuilder andDeploy() {
+        return this.andDeploy(null);
+    }
+
+    @Override
+    public DeploymentPlanBuilder andDeploy(String policy) {
         String addedKey = getAddedContentKey();
-        DeploymentActionImpl deployMod = DeploymentActionImpl.getDeployAction(addedKey);
+        DeploymentActionImpl deployMod = DeploymentActionImpl.getDeployAction(addedKey, policy);
         return new DeploymentPlanBuilderImpl(this, deployMod);
     }
 
@@ -214,7 +219,12 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public DeploymentPlanBuilder deploy(String key) {
-        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key);
+        return this.deploy(key, null);
+    }
+
+    @Override
+    public DeploymentPlanBuilder deploy(String key, String policy) {
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key, policy);
         return new DeploymentPlanBuilderImpl(this, mod);
     }
 
@@ -361,7 +371,6 @@ class DeploymentPlanBuilderImpl
         }
         return new DeploymentPlanBuilderImpl(this, -1);
     }
-
 
     private String getAddedContentKey() {
         DeploymentAction last = getLastAction();
