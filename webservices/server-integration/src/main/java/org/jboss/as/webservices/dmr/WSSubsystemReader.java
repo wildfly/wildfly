@@ -22,34 +22,27 @@
 package org.jboss.as.webservices.dmr;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.Constants.CLIENT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
-import static org.jboss.as.webservices.dmr.Constants.MODIFY_WSDL_ADDRESS;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
-import static org.jboss.as.webservices.dmr.Constants.VALUE;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
-import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -75,9 +68,8 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         // no attributes
         requireNoAttributes(reader);
 
-        final ModelNode subsystem = new ModelNode();
-        subsystem.get(OP).set(ADD);
-        subsystem.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME);
+        final PathAddress address = PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH);
+        final ModelNode subsystem = Util.createAddOperation(address);
 
         final List<ModelNode> endpointConfigs = new ArrayList<ModelNode>();
         final List<ModelNode> clientConfigs = new ArrayList<ModelNode>();
@@ -93,26 +85,27 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
                     }
                     switch (element) {
                         case MODIFY_WSDL_ADDRESS: {
-                            boolean b = Boolean.parseBoolean(parseElementNoAttributes(reader));
-                            subsystem.get(MODIFY_WSDL_ADDRESS).set(b);
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.MODIFY_WSDL_ADDRESS.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_HOST: {
-                            subsystem.get(WSDL_HOST).set(parseElementNoAttributes(reader));
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.WSDL_HOST.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_PORT: {
-                            int port = Integer.valueOf(parseElementNoAttributes(reader));
-                            subsystem.get(WSDL_PORT).set(port);
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.WSDL_PORT.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_SECURE_PORT: {
-                            int port = Integer.valueOf(parseElementNoAttributes(reader));
-                            subsystem.get(WSDL_SECURE_PORT).set(port);
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.WSDL_SECURE_PORT.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case ENDPOINT_CONFIG: {
-                            readConfig(reader, subsystem.get(OP_ADDR), endpointConfigs, false);
+                            readConfig(reader, address, endpointConfigs, false);
                             break;
                         }
                         default: {
@@ -128,30 +121,31 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
                     }
                     switch (element) {
                         case MODIFY_WSDL_ADDRESS: {
-                            boolean b = Boolean.parseBoolean(parseElementNoAttributes(reader));
-                            subsystem.get(MODIFY_WSDL_ADDRESS).set(b);
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.MODIFY_WSDL_ADDRESS.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_HOST: {
-                            subsystem.get(WSDL_HOST).set(parseElementNoAttributes(reader));
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.WSDL_HOST.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_PORT: {
-                            int port = Integer.valueOf(parseElementNoAttributes(reader));
-                            subsystem.get(WSDL_PORT).set(port);
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.WSDL_PORT.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case WSDL_SECURE_PORT: {
-                            int port = Integer.valueOf(parseElementNoAttributes(reader));
-                            subsystem.get(WSDL_SECURE_PORT).set(port);
+                            final String value = parseElementNoAttributes(reader);
+                            Attributes.WSDL_SECURE_PORT.parseAndSetParameter(value, subsystem, reader);
                             break;
                         }
                         case ENDPOINT_CONFIG: {
-                            readConfig(reader, subsystem.get(OP_ADDR), endpointConfigs, false);
+                            readConfig(reader, address, endpointConfigs, false);
                             break;
                         }
                         case CLIENT_CONFIG: {
-                            readConfig(reader, subsystem.get(OP_ADDR), clientConfigs, true);
+                            readConfig(reader, address, clientConfigs, true);
                             break;
                         }
                         default: {
@@ -178,7 +172,7 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         return reader.getElementText().trim();
     }
 
-    private void readConfig(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> operationList, final boolean client) throws XMLStreamException {
+    private void readConfig(final XMLExtendedStreamReader reader, final PathAddress parentAddress, final List<ModelNode> operationList, final boolean client) throws XMLStreamException {
         String configName = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -186,17 +180,15 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case NAME:
-                configName = value;
-                break;
-            default:
-                throw unexpectedAttribute(reader, i);
+                case NAME:
+                    configName = value;
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
-
-        final ModelNode node = new ModelNode();
-        node.get(OP).set(ADD);
-        node.get(OP_ADDR).set(address).add(client ? CLIENT_CONFIG : ENDPOINT_CONFIG, configName);
+        final PathAddress address = parentAddress.append(client ? CLIENT_CONFIG : ENDPOINT_CONFIG, configName);
+        final ModelNode node = Util.createAddOperation(address);
         operationList.add(node);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         while (reader.nextTag() != END_ELEMENT) {
@@ -207,15 +199,15 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
             }
             switch (element) {
                 case PRE_HANDLER_CHAIN: {
-                    parseHandlerChain(reader, configName, operationList, true, client);
+                    parseHandlerChain(reader, operationList, true, address);
                     break;
                 }
                 case POST_HANDLER_CHAIN: {
-                    parseHandlerChain(reader, configName, operationList, false, client);
+                    parseHandlerChain(reader, operationList, false, address);
                     break;
                 }
-                case PROPERTY : {
-                    final ModelNode operation = parseProperty(reader, configName, client);
+                case PROPERTY: {
+                    final ModelNode operation = parseProperty(reader, address);
                     operationList.add(operation);
                     break;
                 }
@@ -226,68 +218,56 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
         }
     }
 
-    private ModelNode parseProperty(final XMLExtendedStreamReader reader, final String configName, final boolean client) throws XMLStreamException {
+    private ModelNode parseProperty(final XMLExtendedStreamReader reader, PathAddress parentAddress) throws XMLStreamException {
+        final ModelNode operation = Util.createAddOperation(null);
         String propertyName = null;
-        String propertyValue = null;
+
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case NAME:
-                propertyName = value;
-                break;
-            case VALUE:
-                propertyValue = value;
-                break;
-            default:
-                throw unexpectedAttribute(reader, i);
+                case NAME:
+                    propertyName = value;
+                    break;
+                case VALUE:
+                    Attributes.VALUE.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
-
-        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            if (!encountered.add(element)) {
-                throw unexpectedElement(reader);
-            }
-            switch (element) {
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(client ? CLIENT_CONFIG : ENDPOINT_CONFIG, configName).add(PROPERTY, propertyName);
-        if (propertyValue != null) {
-            operation.get(VALUE).set(propertyValue);
-        }
+        ParseUtils.requireNoContent(reader);
+        operation.get(OP_ADDR).set(parentAddress.append(PROPERTY, propertyName).toModelNode());
         return operation;
     }
 
-    private void parseHandlerChain(final XMLExtendedStreamReader reader, final String configName,
-            final List<ModelNode> operationList, final boolean isPreHandlerChain, final boolean client)
+    private void parseHandlerChain(final XMLExtendedStreamReader reader, final List<ModelNode> operationList, final boolean isPreHandlerChain, PathAddress parentAddress)
             throws XMLStreamException {
+        final ModelNode operation = Util.createAddOperation();
+
         String handlerChainId = null;
-        String protocolBindings = null;
+
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case NAME:
-                handlerChainId = value;
-                break;
-            case PROTOCOL_BINDINGS:
-                protocolBindings = value;
-                break;
-            default:
-                throw unexpectedAttribute(reader, i);
+                case NAME:
+                    handlerChainId = value;
+                    break;
+                case PROTOCOL_BINDINGS:
+                    Attributes.PROTOCOL_BINDINGS.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
+        final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
+        PathAddress address = parentAddress.append(handlerChainType, handlerChainId);
+        operation.get(OP_ADDR).set(address.toModelNode());
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         final List<ModelNode> addHandlerOperations = new LinkedList<ModelNode>();
         while (reader.nextTag() != END_ELEMENT) {
@@ -297,7 +277,7 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
             }
             switch (element) {
                 case HANDLER: {
-                    parseHandler(reader, configName, handlerChainId, isPreHandlerChain, addHandlerOperations, client);
+                    parseHandler(reader, addHandlerOperations, address);
                     break;
                 }
                 default: {
@@ -305,55 +285,32 @@ final class WSSubsystemReader implements XMLElementReader<List<ModelNode>> {
                 }
             }
         }
-        final ModelNode operation = new ModelNode();
-        final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(client ? CLIENT_CONFIG : ENDPOINT_CONFIG, configName).add(handlerChainType, handlerChainId);
-        if (protocolBindings != null) {
-            operation.get(Constants.PROTOCOL_BINDINGS).set(protocolBindings);
-        }
         operationList.add(operation);
         operationList.addAll(addHandlerOperations);
     }
 
-    private void parseHandler(final XMLExtendedStreamReader reader, final String configName, final String handlerChainId,
-            final boolean isPreHandlerChain, final List<ModelNode> operations, final boolean client) throws XMLStreamException {
+    private void parseHandler(final XMLExtendedStreamReader reader, final List<ModelNode> operations, PathAddress parentAddress) throws XMLStreamException {
         String handlerName = null;
-        String handlerClass = null;
+        final ModelNode operation = Util.createAddOperation();
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
-            case NAME:
-                handlerName = value;
-                break;
-            case CLASS:
-                handlerClass = value;
-                break;
-            default:
-                throw unexpectedAttribute(reader, i);
+                case NAME:
+                    handlerName = value;
+                    break;
+                case CLASS:
+                    Attributes.CLASS.parseAndSetParameter(value, operation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
             }
         }
-        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
-        while (reader.nextTag() != END_ELEMENT) {
-            final Element element = Element.forName(reader.getLocalName());
-            if (!encountered.add(element)) {
-                throw unexpectedElement(reader);
-            }
-            switch (element) {
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
+        ParseUtils.requireNoContent(reader);
+        operation.get(OP_ADDR).set(parentAddress.append(HANDLER, handlerName).toModelNode());
 
-        final ModelNode operation = new ModelNode();
-        final String handlerChainType = isPreHandlerChain ? PRE_HANDLER_CHAIN : POST_HANDLER_CHAIN;
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).add(SUBSYSTEM, WSExtension.SUBSYSTEM_NAME).add(client ? CLIENT_CONFIG : ENDPOINT_CONFIG, configName).add(handlerChainType, handlerChainId).add(HANDLER, handlerName);
-        operation.get(CLASS).set(handlerClass);
         operations.add(operation);
     }
 }

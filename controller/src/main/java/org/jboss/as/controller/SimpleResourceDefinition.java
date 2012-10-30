@@ -101,32 +101,12 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
      *                            Can be {null}
      * @throws IllegalArgumentException if any parameter is {@code null}
-     * @deprecated use {@link #SimpleResourceDefinition(PathElement, org.jboss.as.controller.descriptions.ResourceDescriptionResolver, AbstractAddStepHandler, OperationStepHandler)}
      */
-    @Deprecated
-    @SuppressWarnings("deprecation")
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
         this(pathElement, descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
-    /**
-     * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
-     * {@link DefaultResourceDescriptionProvider} to describe the resource.
-     *
-     * @param pathElement         the path. Cannot be {@code null}.
-     * @param descriptionResolver the description resolver to use in the description provider. Cannot be {@code null}      *
-     * @param addHandler          a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "add" operation.
-     *                            Can be {null}
-     * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
-     *                            Can be {null}
-     * @throws IllegalArgumentException if any parameter is {@code null}.
-     */
-    @SuppressWarnings("deprecation")
-    public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
-                                    final AbstractAddStepHandler addHandler, final OperationStepHandler removeHandler) {
-        this(pathElement, descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-    }
 
     /**
      * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
@@ -139,9 +119,7 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
      *                            Can be {null}
      * @throws IllegalArgumentException if any parameter is {@code null}.
-     * @deprecated Use {@link #SimpleResourceDefinition(PathElement, ResourceDescriptionResolver, AbstractAddStepHandler, OperationStepHandler, OperationEntry.Flag, OperationEntry.Flag)}
      */
-    @Deprecated
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
                                     final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel) {
@@ -158,25 +136,6 @@ public class SimpleResourceDefinition implements ResourceDefinition {
         this.removeHandler = removeHandler;
         this.addRestartLevel = addRestartLevel == null ? OperationEntry.Flag.RESTART_NONE : validateRestartLevel("addRestartLevel", addRestartLevel);
         this.removeRestartLevel = removeRestartLevel == null ? OperationEntry.Flag.RESTART_ALL_SERVICES : validateRestartLevel("removeRestartLevel", removeRestartLevel);
-    }
-
-    /**
-     * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
-     * {@link DefaultResourceDescriptionProvider} to describe the resource.
-     *
-     * @param pathElement         the path. Cannot be {@code null}.
-     * @param descriptionResolver the description resolver to use in the description provider. Cannot be {@code null}      *
-     * @param addHandler          a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "add" operation.
-     *                            Can be {null}
-     * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
-     *                            Can be {null}
-     * @throws IllegalArgumentException if any parameter is {@code null}.
-     */
-    @SuppressWarnings("deprecation")
-    public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
-                                    final AbstractAddStepHandler addHandler, final OperationStepHandler removeHandler,
-                                    final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel) {
-        this(pathElement, descriptionResolver, (OperationStepHandler) addHandler, removeHandler, addRestartLevel, removeRestartLevel);
     }
 
     @Override

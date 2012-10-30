@@ -57,12 +57,16 @@ public class Util {
         return createOperation(ModelDescriptionConstants.ADD, address);
     }
 
+    public static ModelNode createAddOperation() {
+        return createEmptyOperation(ModelDescriptionConstants.ADD, null);
+    }
+
     public static ModelNode createRemoveOperation(final PathAddress address) {
         return createOperation(ModelDescriptionConstants.REMOVE, address);
     }
 
     public static ModelNode createOperation(final String operationName, final PathAddress address) {
-        return getEmptyOperation(operationName, address.toModelNode());
+        return createEmptyOperation(operationName, address);
     }
 
     public static ModelNode createOperation(final OperationDefinition operationDefinition, final PathAddress address) {

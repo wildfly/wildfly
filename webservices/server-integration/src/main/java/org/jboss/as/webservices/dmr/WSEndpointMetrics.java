@@ -27,16 +27,18 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointMetrics;
@@ -51,28 +53,41 @@ import org.jboss.wsf.spi.management.EndpointRegistry;
 final class WSEndpointMetrics implements OperationStepHandler {
 
     static final WSEndpointMetrics INSTANCE = new WSEndpointMetrics();
-    static final String[] ATTRIBUTES;
 
-    static final String MIN_PROCESSING_TIME = "min-processing-time";
-    static final String MAX_PROCESSING_TIME = "max-processing-time";
-    static final String AVERAGE_PROCESSING_TIME = "average-processing-time";
-    static final String TOTAL_PROCESSING_TIME = "total-processing-time";
-    static final String REQUEST_COUNT = "request-count";
-    static final String RESPONSE_COUNT = "response-count";
-    static final String FAULT_COUNT = "fault-count";
 
-    static {
-        ATTRIBUTES = new String[] {
-                MIN_PROCESSING_TIME, MAX_PROCESSING_TIME, AVERAGE_PROCESSING_TIME,
-                TOTAL_PROCESSING_TIME, REQUEST_COUNT, RESPONSE_COUNT, FAULT_COUNT
-        };
-    }
+    static final AttributeDefinition MIN_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("min-processing-time", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition MAX_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("max-processing-time", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition AVERAGE_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("average-processing-time", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition TOTAL_PROCESSING_TIME = new SimpleAttributeDefinitionBuilder("total-processing-time", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition RESPONSE_COUNT = new SimpleAttributeDefinitionBuilder("response-count", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition FAULT_COUNT = new SimpleAttributeDefinitionBuilder("fault-count", ModelType.INT, true)
+            .setStorageRuntime()
+            .build();
+
+
+    static final AttributeDefinition[] ATTRIBUTES = {MIN_PROCESSING_TIME, MAX_PROCESSING_TIME, AVERAGE_PROCESSING_TIME,
+            TOTAL_PROCESSING_TIME, REQUEST_COUNT, RESPONSE_COUNT, FAULT_COUNT};
+
 
     private WSEndpointMetrics() {
-        // forbidden instantiation
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
@@ -98,7 +113,7 @@ final class WSEndpointMetrics implements OperationStepHandler {
 
     private ModelNode getEndpointMetricsFragment(final ModelNode operation, final ServiceController<?> controller) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String endpointId = null;
+        String endpointId;
         try {
             endpointId = URLDecoder.decode(address.getLastElement().getValue(), "UTF-8");
         } catch (final UnsupportedEncodingException e) {
@@ -107,7 +122,7 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final String metricName = operation.require(NAME).asString();
         final String webContext = endpointId.substring(0, endpointId.indexOf(":"));
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);
-        ObjectName endpointObjectName = null;
+        ObjectName endpointObjectName;
         try {
             endpointObjectName = new ObjectName("jboss.ws:context=" + webContext + ",endpoint=" + endpointName);
         } catch (final MalformedObjectNameException e) {
@@ -120,19 +135,19 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final ModelNode result = new ModelNode();
         if (endpoint != null && endpoint.getEndpointMetrics() != null) {
             final EndpointMetrics endpointMetrics = endpoint.getEndpointMetrics();
-            if (MIN_PROCESSING_TIME.equals(metricName)) {
+            if (MIN_PROCESSING_TIME.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getMinProcessingTime()));
-            } else if (MAX_PROCESSING_TIME.equals(metricName)) {
+            } else if (MAX_PROCESSING_TIME.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getMaxProcessingTime()));
-            } else if (AVERAGE_PROCESSING_TIME.equals(metricName)) {
+            } else if (AVERAGE_PROCESSING_TIME.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getAverageProcessingTime()));
-            } else if (TOTAL_PROCESSING_TIME.equals(metricName)) {
+            } else if (TOTAL_PROCESSING_TIME.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getTotalProcessingTime()));
-            } else if (REQUEST_COUNT.equals(metricName)) {
+            } else if (REQUEST_COUNT.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getRequestCount()));
-            } else if (RESPONSE_COUNT.equals(metricName)) {
+            } else if (RESPONSE_COUNT.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getResponseCount()));
-            } else if (FAULT_COUNT.equals(metricName)) {
+            } else if (FAULT_COUNT.getName().equals(metricName)) {
                 result.set(String.valueOf(endpointMetrics.getFaultCount()));
             }
         } else {

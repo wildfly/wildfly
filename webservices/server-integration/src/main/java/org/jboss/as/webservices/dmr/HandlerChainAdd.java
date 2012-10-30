@@ -105,7 +105,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
 
     private static UnifiedHandlerChainMetaData getChain(final List<UnifiedHandlerChainMetaData> handlerChains, final String handlerChainId) {
         for (final UnifiedHandlerChainMetaData handlerChain : handlerChains) {
-            if (handlerChainId.equals(handlerChain.getId())) return handlerChain;
+            if (handlerChainId.equals(handlerChain.getId())) { return handlerChain; }
         }
         return null;
     }
@@ -116,9 +116,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(PROTOCOL_BINDINGS)) {
-            model.get(PROTOCOL_BINDINGS).set(operation.get(PROTOCOL_BINDINGS));
-        }
+        Attributes.PROTOCOL_BINDINGS.validateAndSet(operation, model);
     }
 
 }

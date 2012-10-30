@@ -61,7 +61,7 @@ final class PropertyAdd extends AbstractAddStepHandler {
             final PathElement confElem = address.getElement(address.size() - 2);
             final String configType = confElem.getKey();
             final String configName = confElem.getValue();
-            final String propertyValue = operation.has(VALUE) ? operation.get(VALUE).asString() : null;
+            final String propertyValue = operation.has(VALUE) ? Attributes.VALUE.resolveModelAttribute(context,operation).asString() : null;
             for (final CommonConfig cfg : getConfigs(config, configType)) {
                 if (configName.equals(cfg.getConfigName())) {
                     cfg.setProperty(propertyName, propertyValue);
@@ -77,9 +77,6 @@ final class PropertyAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        if (operation.hasDefined(VALUE)) {
-            final ModelNode propertyValue = operation.get(VALUE);
-            model.get(VALUE).set(propertyValue);
-        }
+        Attributes.VALUE.validateAndSet(operation,model);
     }
 }
