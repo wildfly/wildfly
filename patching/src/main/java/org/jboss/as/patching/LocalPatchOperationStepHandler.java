@@ -31,9 +31,15 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDES;
+import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_ALL;
+import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_MODULES;
+import static org.jboss.as.patching.PatchResourceDefinition.PRESERVE;
+import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.patching.runner.PatchingTaskRunner;
+import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -55,20 +61,21 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
 
         final PatchInfo info = service.getPatchInfo();
         final DirectoryStructure structure = service.getStructure();
-        final PatchingTaskRunner runner = new PatchingTaskRunner(info, structure);
+        final PatchTool runner = PatchTool.Factory.create(info, structure);
+        final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
 
         final int index = operation.get(ModelDescriptionConstants.INPUT_STREAM_INDEX).asInt(0);
         final InputStream is = context.getAttachmentStream(index);
         try {
-            final PatchingResult result = runner.executeDirect(is);
+            final PatchingResult result = runner.applyPatch(is, policy);
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
-                        result.commit();
                         service.reloadRequired();
-                        context.reloadRequired();
+                        context.restartRequired();
+                        result.commit();
                     } else {
                         result.rollback();
                     }

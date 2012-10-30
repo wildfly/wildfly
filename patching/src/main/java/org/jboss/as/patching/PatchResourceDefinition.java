@@ -22,9 +22,6 @@
 
 package org.jboss.as.patching;
 
-import static org.jboss.as.patching.Constants.OVERRIDE_ALL;
-import static org.jboss.as.patching.Constants.PATCH_ID;
-
 import java.io.File;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -68,12 +65,48 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
-    static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder("patch", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+    // Patch operation
+    static final AttributeDefinition INPUT_STREAM_IDX_DEF = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.INPUT_STREAM_INDEX, ModelType.INT)
+            .setDefaultValue(new ModelNode(0))
+            .setAllowNull(true)
+            .build();
+    static final AttributeDefinition OVERRIDE_MODULES = SimpleAttributeDefinitionBuilder.create(Constants.OVERRIDE_MODULES, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .build();
+    static final AttributeDefinition OVERRIDE_ALL = SimpleAttributeDefinitionBuilder.create(Constants.OVERRIDE_ALL, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .build();
+    static final AttributeDefinition OVERRIDES = PrimitiveListAttributeDefinition.Builder.of(Constants.OVERRIDES, ModelType.STRING)
+            .setAllowNull(true)
+            .build();
+    static final AttributeDefinition PRESERVE = PrimitiveListAttributeDefinition.Builder.of(Constants.PRESERVE, ModelType.STRING)
+            .setAllowNull(true)
             .build();
 
+    static final AttributeDefinition RESTORE_CONFIGURATION = SimpleAttributeDefinitionBuilder.create("restore-configuration", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .build();
+
+    static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder("patch", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+            .addParameter(INPUT_STREAM_IDX_DEF)
+            .addParameter(OVERRIDE_ALL)
+            .addParameter(OVERRIDE_MODULES)
+            .addParameter(OVERRIDES)
+            .addParameter(PRESERVE)
+            .build();
+
+    static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING)
+            .build();
     static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder("rollback", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
             .addParameter(OVERRIDE_ALL)
+            .addParameter(OVERRIDE_MODULES)
+            .addParameter(OVERRIDES)
+            .addParameter(PRESERVE)
+            .addParameter(RESTORE_CONFIGURATION)
             .build();
 
     static final OperationDefinition SHOW_HISTORY = new SimpleOperationDefinitionBuilder("show-history", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
@@ -130,3 +163,4 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
         registry.registerOperationHandler(SHOW_HISTORY, LocalShowHistoryHandler.INSTANCE);
     }
 }
+

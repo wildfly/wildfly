@@ -165,7 +165,6 @@ public class PatchingAssert {
     }
 
     static void assertPatchHasBeenApplied(PatchingResult result, Patch patch) {
-        assertFalse("encountered problems: " + result.getProblems(), result.hasFailures());
         if (CUMULATIVE == patch.getPatchType()) {
             assertEquals(patch.getPatchId(), result.getPatchInfo().getCumulativeID());
             assertEquals(patch.getResultingVersion(), result.getPatchInfo().getVersion());
@@ -185,7 +184,6 @@ public class PatchingAssert {
     }
 
     static void assertPatchHasBeenRolledBack(PatchingResult result, Patch patch, PatchInfo expectedPatchInfo) {
-        assertFalse("encountered problems: " + result.getProblems(), result.hasFailures());
         assertEquals(expectedPatchInfo.getVersion(), result.getPatchInfo().getVersion());
         assertEquals(expectedPatchInfo.getCumulativeID(), result.getPatchInfo().getCumulativeID());
         assertEquals(expectedPatchInfo.getPatchIDs(), result.getPatchInfo().getPatchIDs());

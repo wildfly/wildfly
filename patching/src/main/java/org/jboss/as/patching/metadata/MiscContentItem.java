@@ -76,6 +76,20 @@ public class MiscContentItem extends ContentItem {
         return path;
     }
 
+    /**
+     * Get the relative path.
+     *
+     * @return the relative path
+     */
+    public String getRelativePath() {
+        final StringBuilder builder = new StringBuilder();
+        for(final String p : path) {
+            builder.append(p).append("/");
+        }
+        builder.append(getName());
+        return builder.toString();
+    }
+
     @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();

@@ -252,11 +252,13 @@ public class PatchingTaskRunner {
      * Rollback an active patch.
      *
      * @param patchId the patch id to rollback
-     * @param overrideAll override all conflicting files
+     * @param contentPolicy the content verification policy
+     * @param rollbackTo rollback all one off patches until the given patch-id
+     * @param restoreConfiguration whether to restore the configuration or not
      * @return the result
      * @throws PatchingException
      */
-    public PatchingResult rollback(final String patchId, final boolean overrideAll) throws PatchingException {
+    public PatchingResult rollback(final String patchId, final ContentVerificationPolicy contentPolicy, boolean rollbackTo, boolean restoreConfiguration) throws PatchingException {
         // Check if the patch is currently active
         final int index = patchInfo.getPatchIDs().indexOf(patchId);
         if(index == -1 ) {
@@ -266,7 +268,6 @@ public class PatchingTaskRunner {
         }
 
         //
-        boolean rollbackTo = false; // TODO configure 'rollbackTo' somewhere?
         final List<String> patches = new ArrayList<String>();
         if(index == -1) {
             // Means we rollback a CP and all it's one-off patches
@@ -317,7 +318,7 @@ public class PatchingTaskRunner {
                 }
 
                 // Process potentially multiple rollbacks
-                final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, overrideAll, workDir);
+                final PatchingContext context = PatchingContext.createForRollback(patch, patchInfo, structure, contentPolicy, workDir);
                 final Map<Location, PatchingTasks.ContentTaskDefinition> definitions = new LinkedHashMap<Location, PatchingTasks.ContentTaskDefinition>();
                 for(final String rollback : patches) {
                     try {
@@ -328,7 +329,7 @@ public class PatchingTaskRunner {
                     }
                 }
                 // Rollback
-                final PatchingContext.TaskFinishCallback task = new PatchingRollbackCallback(patchId, patch, patches, cumulative, structure);
+                final PatchingContext.TaskFinishCallback task = new PatchingRollbackCallback(patchId, patch, patches, cumulative, restoreConfiguration, structure);
                 try {
                     return executeTasks(task, definitions, context);
                 } catch (Exception e) {

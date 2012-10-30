@@ -23,6 +23,7 @@
 package org.jboss.as.patching;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -32,14 +33,11 @@ import org.jboss.dmr.ModelType;
  */
 public class Constants {
 
-    static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING)
-            .build();
 
-    static final AttributeDefinition OVERRIDE_ALL = SimpleAttributeDefinitionBuilder.create("override-all", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(false))
-            .setAllowNull(true)
-            .build();
-
+    public static final String OVERRIDE_MODULES = "override-modules";
+    public static final String OVERRIDE_ALL = "override-all";
+    public static final String OVERRIDES = "override";
+    public static final String PRESERVE = "preserve";
 
     public static final String TIMESTAMP = "timestamp";
     public static final String APPLIED_AT = "applied-at";

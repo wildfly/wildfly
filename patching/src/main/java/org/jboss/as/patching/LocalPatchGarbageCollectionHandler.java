@@ -37,7 +37,7 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
 
     public static final LocalPatchGarbageCollectionHandler INSTANCE = new LocalPatchGarbageCollectionHandler();
 
-    private final String PATCH_ID = Constants.PATCH_ID.getName();
+    private final String PATCH_ID = PatchResourceDefinition.PATCH_ID.getName();
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

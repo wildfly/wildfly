@@ -43,20 +43,6 @@ public interface PatchingResult {
     String getPatchId();
 
     /**
-     * Has failures.
-     *
-     * @return
-     */
-    boolean hasFailures();
-
-    /**
-     * Get the content items which failed content verification.
-     *
-     * @return the content items
-     */
-    Collection<ContentItem> getProblems();
-
-    /**
      * Get the patch info.
      *
      * @return the patch info
