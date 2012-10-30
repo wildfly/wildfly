@@ -283,7 +283,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                             new WebContextInjector(webContext)).addDependencies(injectionContainer.getServiceNames())
                     .addDependency(realmServiceName, Realm.class, webDeploymentService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
-                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 
             //add any dependencies required by the setup action
             for(final SetupAction action : setupActions) {

@@ -24,6 +24,7 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -39,8 +40,8 @@ final class StartStopService extends AbstractService {
     private final Method startMethod;
     private final Method stopMethod;
 
-    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod) {
-        super(mBeanInstance);
+    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final ServiceName duServiceName) {
+        super(mBeanInstance, duServiceName);
         this.startMethod = startMethod;
         this.stopMethod = stopMethod;
     }

@@ -59,7 +59,7 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
      */
     public synchronized void start(final StartContext context) throws StartException {
         if(store == null) {
-            store = new WritableServiceBasedNamingStore(context.getController().getServiceContainer(), context.getController().getName());
+            store = new WritableServiceBasedNamingStore(context.getController().getServiceContainer(), context.getController().getName(),context.getChildTarget());
         }
     }
 

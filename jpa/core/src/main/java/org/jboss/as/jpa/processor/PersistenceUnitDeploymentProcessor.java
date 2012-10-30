@@ -297,7 +297,7 @@ public class PersistenceUnitDeploymentProcessor implements DeploymentUnitProcess
                 provider = lookupProvider(pu);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, persistenceUnitRegistry);
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, persistenceUnitRegistry, deploymentUnit.getServiceName());
 
             phaseContext.getDeploymentUnit().addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
