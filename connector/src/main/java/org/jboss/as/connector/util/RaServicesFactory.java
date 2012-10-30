@@ -24,12 +24,12 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, String deployment, ResourceAdapter raxml, final Resource deploymentResource) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource) {
         // Create the service
         ServiceName serviceName = ConnectorServices.registerDeployment(deploymentUnitName);
 
         ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
-                raxml, module, deployment, serviceName);
+                raxml, module, deployment, serviceName, deploymentUnitServiceName);
 
         ServiceBuilder builder = serviceTarget
                 .addService(serviceName, service)

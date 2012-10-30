@@ -283,7 +283,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, new WebContextInjector(webContext))
                     .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
-                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+                    .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
 
             // add any dependencies required by the setup action
             for (final SetupAction action : setupActions) {

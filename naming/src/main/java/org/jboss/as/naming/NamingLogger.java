@@ -104,4 +104,12 @@ public interface NamingLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11810, value = "Unexpected parameter type - expected: %d  received: %d")
     void unexpectedParameterType(byte expected, byte actual);
+
+    /**
+     * Creates an exception indicating that a class is not an {@link ObjectFactory} instance, from the specified module.
+     * @param cause
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11811, value = "Failed to release binder service, used for a runtime made JNDI binding")
+    void failedToReleaseBinderService(@Cause Throwable cause);
 }

@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Abstract service class.
@@ -38,9 +38,16 @@ import org.jboss.msc.service.ServiceContainer;
 abstract class AbstractService implements Service<Object> {
 
     private final Object mBeanInstance;
+    private final ServiceName duServiceName;
 
-    protected AbstractService(final Object mBeanInstance) {
+    /**
+     *
+     * @param mBeanInstance
+     * @param duServiceName the deployment unit's service name
+     */
+    protected AbstractService(final Object mBeanInstance, final ServiceName duServiceName) {
         this.mBeanInstance = mBeanInstance;
+        this.duServiceName = duServiceName;
     }
 
     /** {@inheritDoc} */
@@ -50,8 +57,7 @@ abstract class AbstractService implements Service<Object> {
 
     protected void invokeLifecycleMethod(final Method method, final LifecycleContext context) throws InvocationTargetException, IllegalAccessException {
         if (method != null) {
-            final ServiceContainer container = context.getController().getServiceContainer();
-            WritableServiceBasedNamingStore.pushOwner(container.subTarget());
+            WritableServiceBasedNamingStore.pushOwner(duServiceName);
             final ClassLoader old = SecurityActions.setThreadContextClassLoader(mBeanInstance.getClass().getClassLoader());
             try {
                 method.invoke(mBeanInstance);

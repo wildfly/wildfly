@@ -100,19 +100,19 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final ServiceTarget target = phaseContext.getServiceTarget();
         final Map<String,ServiceComponentInstantiator> serviceComponents = deploymentUnit.getAttachment(ServiceAttachments.SERVICE_COMPONENT_INSTANTIATORS);
         for (final JBossServiceConfig serviceConfig : serviceConfigs) {
-            addServices(target, serviceConfig, classLoader, reflectionIndex, serviceComponents != null ? serviceComponents.get(serviceConfig.getName()) : null);
+            addServices(target, serviceConfig, classLoader, reflectionIndex, serviceComponents != null ? serviceComponents.get(serviceConfig.getName()) : null, phaseContext);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator) throws DeploymentUnitProcessingException {
+    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, ServiceComponentInstantiator componentInstantiator, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
         final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target,componentInstantiator);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, phaseContext.getDeploymentUnit().getServiceName());
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         if (dependencyConfigs != null) {
