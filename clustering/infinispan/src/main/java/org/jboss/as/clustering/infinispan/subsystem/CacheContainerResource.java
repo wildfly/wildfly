@@ -108,11 +108,14 @@ public class CacheContainerResource extends SimpleResourceDefinition {
             .setParameters(NAME)
             .build();
 
-    public CacheContainerResource() {
+    private final boolean runtimeRegistration;
+
+    public CacheContainerResource(boolean runtimeRegistration) {
         super(CONTAINER_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER),
                 CacheContainerAdd.INSTANCE,
                 CacheContainerRemove.INSTANCE);
+        this.runtimeRegistration = runtimeRegistration ;
     }
 
     @Override
@@ -123,6 +126,11 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new CacheContainerWriteAttributeHandler(CACHE_CONTAINER_ATTRIBUTES);
         for (AttributeDefinition attr : CACHE_CONTAINER_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheContainerReadAttributeHandler.INSTANCE, writeHandler);
+        }
+
+        // register runtime cache container read-only metrics (attributes and handlers)
+        if(runtimeRegistration) {
+            CacheContainerMetricsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
     }
 
@@ -140,9 +148,13 @@ public class CacheContainerResource extends SimpleResourceDefinition {
 
         // child resources
         resourceRegistration.registerSubModel(new TransportResource());
-        resourceRegistration.registerSubModel(new LocalCacheResource());
-        resourceRegistration.registerSubModel(new InvalidationCacheResource());
-        resourceRegistration.registerSubModel(new ReplicatedCacheResource());
-        resourceRegistration.registerSubModel(new DistributedCacheResource());
+        resourceRegistration.registerSubModel(new LocalCacheResource(isRuntimeRegistration()));
+        resourceRegistration.registerSubModel(new InvalidationCacheResource(isRuntimeRegistration()));
+        resourceRegistration.registerSubModel(new ReplicatedCacheResource(isRuntimeRegistration()));
+        resourceRegistration.registerSubModel(new DistributedCacheResource(isRuntimeRegistration()));
+    }
+
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
     }
 }

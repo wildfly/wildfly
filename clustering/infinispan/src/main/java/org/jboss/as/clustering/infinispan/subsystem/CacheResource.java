@@ -98,8 +98,11 @@ public class CacheResource extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    public CacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler) {
+    private final boolean runtimeRegistration ;
+
+    public CacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, boolean runtimeRegistration) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
+        this.runtimeRegistration = runtimeRegistration ;
     }
 
     @Override
@@ -110,6 +113,11 @@ public class CacheResource extends SimpleResourceDefinition {
         final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(CACHE_ATTRIBUTES);
         for (AttributeDefinition attr : CACHE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+        }
+
+        // register runtime cache read-only metrics (attributes and handlers)
+        if(isRuntimeRegistration()) {
+            CacheMetricsHandler.INSTANCE.registerCommonMetrics(resourceRegistration);
         }
     }
 
@@ -132,5 +140,9 @@ public class CacheResource extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResource());
         resourceRegistration.registerSubModel(new MixedKeyedJDBCStoreResource());
         resourceRegistration.registerSubModel(new RemoteStoreResource());
+    }
+
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
     }
 }

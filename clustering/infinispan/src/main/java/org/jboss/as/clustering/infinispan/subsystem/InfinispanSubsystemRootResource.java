@@ -15,11 +15,14 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class InfinispanSubsystemRootResource extends SimpleResourceDefinition {
 
-    public InfinispanSubsystemRootResource() {
+    private final boolean runtimeRegistration;
+
+    public InfinispanSubsystemRootResource(boolean runtimeRegistration) {
         super(PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
                 InfinispanExtension.getResourceDescriptionResolver(),
                 InfinispanSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
+        this.runtimeRegistration = runtimeRegistration;
     }
 
     @Override
@@ -36,8 +39,10 @@ public class InfinispanSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new CacheContainerResource());
+        resourceRegistration.registerSubModel(new CacheContainerResource(isRuntimeRegistration()));
     }
 
-
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
+    }
 }

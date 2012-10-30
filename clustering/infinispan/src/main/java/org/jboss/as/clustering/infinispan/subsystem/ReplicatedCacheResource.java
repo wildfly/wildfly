@@ -13,10 +13,10 @@ public class ReplicatedCacheResource extends SharedCacheResource {
 
     // attributes
 
-    public ReplicatedCacheResource() {
+    public ReplicatedCacheResource(boolean runtimeRegistration) {
         super(REPLICATED_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.REPLICATED_CACHE),
                 ReplicatedCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, runtimeRegistration);
     }
 }

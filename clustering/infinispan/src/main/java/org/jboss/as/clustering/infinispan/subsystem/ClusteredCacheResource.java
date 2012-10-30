@@ -68,8 +68,8 @@ public class ClusteredCacheResource extends CacheResource  {
     static final AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
 
 
-    public ClusteredCacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler);
+    public ClusteredCacheResource(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, boolean runtimeRegistration) {
+        super(pathElement, descriptionResolver, addHandler, removeHandler, runtimeRegistration);
     }
 
     @Override
@@ -80,6 +80,11 @@ public class ClusteredCacheResource extends CacheResource  {
         final OperationStepHandler writeHandler = new CacheWriteAttributeHandler(CLUSTERED_CACHE_ATTRIBUTES);
         for (AttributeDefinition attr : CLUSTERED_CACHE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
+        }
+
+        // register runtime cache read-only metrics (attributes and handlers)
+        if(isRuntimeRegistration()) {
+            CacheMetricsHandler.INSTANCE.registerClusteredMetrics(resourceRegistration);
         }
     }
 
