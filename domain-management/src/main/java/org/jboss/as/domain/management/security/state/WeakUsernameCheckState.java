@@ -30,22 +30,20 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import org.jboss.as.domain.management.security.ConsoleWrapper;
-import org.jboss.as.domain.management.security.password.PasswordCheckResult;
-import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 
 /**
  * State to check the strength of the stateValues selected.
  * <p/>
- * TODO - Currently only very basic checks are performed, this could be updated to perform additional password strength
+ * TODO - Currently only very basic checks are performed, this could be updated to perform additional username strength
  * checks.
  */
-public class WeakCheckState implements State {
+public class WeakUsernameCheckState implements State {
 
     private ConsoleWrapper theConsole;
     private StateValues stateValues;
     private static char[] VALID_PUNCTUATION = {'.', '@', '\\', '=', ',','/'};
 
-    public WeakCheckState(ConsoleWrapper theConsole, StateValues stateValues) {
+    public WeakUsernameCheckState(ConsoleWrapper theConsole, StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
         if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
@@ -62,10 +60,6 @@ public class WeakCheckState implements State {
     public State execute() {
         State retryState = stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(theConsole, stateValues);
 
-        if (Arrays.equals(stateValues.getUserName().toCharArray(), stateValues.getPassword())) {
-            return new ErrorState(theConsole, MESSAGES.usernamePasswordMatch(), retryState, stateValues);
-        }
-
         for (char currentChar : stateValues.getUserName().toCharArray()) {
             if ((!isValidPunctuation(currentChar)) && (Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
                 return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(), retryState, stateValues);
@@ -80,25 +74,13 @@ public class WeakCheckState implements State {
             }
         }
 
-        State continuingState = new DuplicateUserCheckState(theConsole, stateValues);
+        State continuingState = new PromptPasswordState(theConsole, stateValues);
         if (weakUserName && stateValues.isSilentOrNonInteractive() == false) {
             String message = MESSAGES.usernameEasyToGuess(stateValues.getUserName());
             String prompt = MESSAGES.sureToAddUser(stateValues.getUserName());
             State noState = new PromptNewUserState(theConsole, stateValues);
 
             return new ConfirmationChoice(theConsole,message, prompt, continuingState, noState);
-        }
-
-        PasswordCheckResult result = PasswordCheckUtil.INSTANCE.check(false, stateValues.getUserName(), new String(stateValues.getPassword()));
-        if(result.getResult()==PasswordCheckResult.Result.WARN && stateValues.isSilentOrNonInteractive() == false){
-            String message = result.getMessage();
-            String prompt = MESSAGES.sureToSetPassword(new String(stateValues.getPassword()));
-            State noState = new PromptNewUserState(theConsole, stateValues);
-            return new ConfirmationChoice(theConsole,message, prompt, continuingState, noState);
-        }
-
-        if(result.getResult()==PasswordCheckResult.Result.REJECT){
-                return new ErrorState(theConsole, result.getMessage(), retryState);
         }
 
         return continuingState;

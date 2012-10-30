@@ -52,7 +52,7 @@ public class PromptNewUserState implements State {
 
     @Override
     public State execute() {
-        State continuingState = new PromptPasswordState(theConsole, stateValues);
+        State continuingState = new WeakUsernameCheckState(theConsole, stateValues);
         if (stateValues.isSilentOrNonInteractive() == false) {
             theConsole.printf(NEW_LINE);
             theConsole.printf(MESSAGES.enterNewUserDetails());
