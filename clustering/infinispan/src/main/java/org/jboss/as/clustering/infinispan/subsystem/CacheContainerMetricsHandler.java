@@ -86,7 +86,7 @@ public class CacheContainerMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             InfinispanLogger.ROOT_LOGGER.cacheContainerMetricNotDefined(metric.toString(), cacheContainerName);
         } else if (cacheManager == null) {
-            InfinispanLogger.ROOT_LOGGER.cacheContainerMetricNotDefined(metric.toString(), cacheContainerName);
+            InfinispanLogger.ROOT_LOGGER.cacheContainerMetricNotAvailable(metric.toString(), cacheContainerName);
         } else {
             switch (metric) {
                 case CACHE_MANAGER_STATUS:

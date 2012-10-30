@@ -134,7 +134,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
         if (metric == null) {
             InfinispanLogger.ROOT_LOGGER.cacheMetricNotDefined(metric.toString(), cacheName);
         } else if (cache == null) {
-            InfinispanLogger.ROOT_LOGGER.cacheMetricNotDefined(metric.toString(), cacheName);
+            InfinispanLogger.ROOT_LOGGER.cacheMetricNotAvailable(metric.toString(), cacheName);
         } else {
             switch (metric) {
                 case CACHE_STATUS:
