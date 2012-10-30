@@ -44,7 +44,9 @@ public class CmpEntityBeanEjbCreateMethodInterceptorFactory extends EntityBeanEj
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);
         final JDBCEntityPersistenceStore storeManager = cmpInstance.getComponent().getStoreManager();
         storeManager.initEntity(cmpInstance.getEjbContext());
-        ejbCreate.invoke(instance.getInstance(), params);
+
+        super.invokeEjbCreate(context, ejbCreate, cmpInstance, params);
+
         return storeManager.createEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
     }
 
@@ -53,7 +55,8 @@ public class CmpEntityBeanEjbCreateMethodInterceptorFactory extends EntityBeanEj
         final CmpEntityBeanComponent component = cmpInstance.getComponent();
         final JDBCEntityPersistenceStore storeManager = component.getStoreManager();
         storeManager.postCreateEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
-        ejbPostCreate.invoke(instance.getInstance(), params);
+
+        super.invokeEjbPostCreate(context, ejbPostCreate, cmpInstance, params);
 
         if (storeManager.getCmpConfig().isInsertAfterEjbPostCreate()) {
             storeManager.createEntity(context.getMethod(), context.getParameters(), cmpInstance.getEjbContext());
