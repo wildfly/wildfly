@@ -44,7 +44,6 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
 
     @Override
     protected void executeReadAttribute(final String attributeName, final OperationContext context, final DataSource dataSource, final PathAddress address) {
-
         final String target = address.getLastElement().getKey();
         if(target.equals(CONNECTION_PROPERTIES)) {
             handlePropertyAttribute(attributeName, context, dataSource, address.getLastElement().getValue());
@@ -68,7 +67,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             setStringIfNotNull(context, dataSource.getDriverClass());
         } else if (attributeName.equals(Constants.DATASOURCE_CLASS.getName())) {
             setStringIfNotNull(context, dataSource.getDataSourceClass());
-        } else if (attributeName.equals(Constants.JNDINAME.getName())) {
+        } else if (attributeName.equals(Constants.JNDI_NAME.getName())) {
             setStringIfNotNull(context, dataSource.getJndiName());
         } else if (attributeName.equals(Constants.DATASOURCE_DRIVER.getName())) {
             setStringIfNotNull(context, dataSource.getDriver());
@@ -114,7 +113,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getSecurity().getSecurityDomain());
-        } else if (attributeName.equals(Constants.REAUTHPLUGIN_CLASSNAME.getName())) {
+        } else if (attributeName.equals(Constants.REAUTH_PLUGIN_CLASSNAME.getName())) {
             if (dataSource.getSecurity() == null) {
                 return;
             }
@@ -141,17 +140,17 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getPool().getFlushStrategy().getName());
-        } else if (attributeName.equals(Constants.PREPAREDSTATEMENTSCACHESIZE.getName())) {
+        } else if (attributeName.equals(Constants.PREPARED_STATEMENTS_CACHE_SIZE.getName())) {
             if (dataSource.getStatement() == null) {
                 return;
             }
             setLongIfNotNull(context, dataSource.getStatement().getPreparedStatementsCacheSize());
-        } else if (attributeName.equals(Constants.SHAREPREPAREDSTATEMENTS.getName())) {
+        } else if (attributeName.equals(Constants.SHARE_PREPARED_STATEMENTS.getName())) {
             if (dataSource.getStatement() == null) {
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getStatement().isSharePreparedStatements());
-        } else if (attributeName.equals(Constants.TRACKSTATEMENTS.getName())) {
+        } else if (attributeName.equals(Constants.TRACK_STATEMENTS.getName())) {
             if (dataSource.getStatement() == null) {
                 return;
             }
@@ -179,17 +178,17 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getIdleTimeoutMinutes());
-        } else if (attributeName.equals(Constants.QUERYTIMEOUT.getName())) {
+        } else if (attributeName.equals(Constants.QUERY_TIMEOUT.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getQueryTimeout());
-        } else if (attributeName.equals(Constants.USETRYLOCK.getName())) {
+        } else if (attributeName.equals(Constants.USE_TRY_LOCK.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
             }
             setLongIfNotNull(context, dataSource.getTimeOut().getUseTryLock());
-        } else if (attributeName.equals(Constants.SETTXQUERYTIMEOUT.getName())) {
+        } else if (attributeName.equals(Constants.SET_TX_QUERY_TIMEOUT.getName())) {
             if (dataSource.getTimeOut() == null) {
                 return;
             }
@@ -199,12 +198,12 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getTransactionIsolation().name());
-        } else if (attributeName.equals(Constants.CHECKVALIDCONNECTIONSQL.getName())) {
+        } else if (attributeName.equals(Constants.CHECK_VALID_CONNECTION_SQL.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getCheckValidConnectionSql());
-        } else if (attributeName.equals(Constants.EXCEPTIONSORTERCLASSNAME.getName())) {
+        } else if (attributeName.equals(Constants.EXCEPTION_SORTER_CLASSNAME.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -212,7 +211,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getExceptionSorter().getClassName());
-        } else if (attributeName.equals(Constants.EXCEPTIONSORTER_PROPERTIES.getName())) {
+        } else if (attributeName.equals(Constants.EXCEPTION_SORTER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -226,7 +225,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
                 context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
             }
-        } else if (attributeName.equals(Constants.STALECONNECTIONCHECKERCLASSNAME.getName())) {
+        } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_CLASSNAME.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -234,7 +233,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getStaleConnectionChecker().getClassName());
-        } else if (attributeName.equals(Constants.STALECONNECTIONCHECKER_PROPERTIES.getName())) {
+        } else if (attributeName.equals(Constants.STALE_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -248,7 +247,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             for (final Map.Entry<String, String> entry : propertiesMap.entrySet()) {
                 context.getResult().asPropertyList().add(new ModelNode().set(entry.getKey(), entry.getValue()).asProperty());
             }
-        } else if (attributeName.equals(Constants.VALIDCONNECTIONCHECKERCLASSNAME.getName())) {
+        } else if (attributeName.equals(Constants.VALID_CONNECTION_CHECKER_CLASSNAME.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -256,7 +255,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setStringIfNotNull(context, dataSource.getValidation().getValidConnectionChecker().getClassName());
-        } else if (attributeName.equals(Constants.VALIDCONNECTIONCHECKER_PROPERTIES.getName())) {
+        } else if (attributeName.equals(Constants.VALID_CONNECTION_CHECKER_PROPERTIES.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }
@@ -285,7 +284,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setBooleanIfNotNull(context, dataSource.getValidation().isUseFastFail());
-        } else if (attributeName.equals(Constants.VALIDATEONMATCH.getName())) {
+        } else if (attributeName.equals(Constants.VALIDATE_ON_MATCH.getName())) {
             if (dataSource.getValidation() == null) {
                 return;
             }

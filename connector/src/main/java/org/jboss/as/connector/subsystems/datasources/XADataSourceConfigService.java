@@ -35,8 +35,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class XADataSourceConfigService implements Service<ModifiableXaDataSource> {
 

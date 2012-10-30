@@ -47,20 +47,17 @@ public class XaDataSourceAdd extends AbstractDataSourceAdd {
     }
 
     protected AbstractDataSourceService createDataSourceService(final String jndiName) throws OperationFailedException {
-
-        XaDataSourceService service = new XaDataSourceService(jndiName);
-        return service;
+        return new XaDataSourceService(jndiName);
     }
 
     @Override
-    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder,
-                                               AbstractDataSourceService dataSourceService, String jndiName, ServiceTarget serviceTarget, final ModelNode operation, final ServiceVerificationHandler handler)
-            throws OperationFailedException {
+    protected void startConfigAndAddDependency(ServiceBuilder<?> dataSourceServiceBuilder, AbstractDataSourceService dataSourceService,
+                                               String jndiName, ServiceTarget serviceTarget, final ModelNode operation,
+                                               final ServiceVerificationHandler handler) throws OperationFailedException {
 
         final ServiceName dataSourceCongServiceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName);
 
-        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableXaDataSource.class,
-                ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
+        dataSourceServiceBuilder.addDependency(dataSourceCongServiceName, ModifiableXaDataSource.class, ((XaDataSourceService) dataSourceService).getDataSourceConfigInjector());
 
     }
 }

@@ -48,7 +48,7 @@ import java.util.List;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.from;
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -109,7 +109,7 @@ public class DataSourceEnable implements OperationStepHandler {
 
         final ModelNode address = operation.require(OP_ADDR);
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
-        final String jndiName = model.get(JNDINAME.getName()).asString();
+        final String jndiName = model.get(JNDI_NAME.getName()).asString();
         final ServiceRegistry registry = context.getServiceRegistry(true);
         final List<ServiceName> serviceNames = registry.getServiceNames();
 
@@ -142,18 +142,13 @@ public class DataSourceEnable implements OperationStepHandler {
                     final ServiceController<?> xaConfigPropertyController = registry.getService(name);
                     XaDataSourcePropertiesService xaPropService = (XaDataSourcePropertiesService) xaConfigPropertyController.getService();
 
-                    if (xaConfigPropertyController != null) {
+                    if (!ServiceController.State.UP.equals(xaConfigPropertyController.getState())) {
+                        propertiesCount++;
+                        xaConfigPropertyController.setMode(ServiceController.Mode.ACTIVE);
+                        builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
 
-                        if (!ServiceController.State.UP.equals(xaConfigPropertyController.getState())) {
-                            propertiesCount++;
-                            xaConfigPropertyController.setMode(ServiceController.Mode.ACTIVE);
-                            builder.addDependency(name, String.class, xaDataSourceConfigService.getXaDataSourcePropertyInjector(xaPropService.getName()));
-
-                        } else {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.xa-config-property", name)));
-                        }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source.xa-config-property", name)));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.xa-config-property", name)));
                     }
                 }
             }
@@ -190,16 +185,12 @@ public class DataSourceEnable implements OperationStepHandler {
                     final ServiceController<?> dataSourceController = registry.getService(name);
                     ConnectionPropertiesService connPropService = (ConnectionPropertiesService) dataSourceController.getService();
 
-                    if (dataSourceController != null) {
-                        if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
-                            dataSourceController.setMode(ServiceController.Mode.ACTIVE);
-                            builder.addDependency(name, String.class, configService.getConnectionPropertyInjector(connPropService.getName()));
+                    if (!ServiceController.State.UP.equals(dataSourceController.getState())) {
+                        dataSourceController.setMode(ServiceController.Mode.ACTIVE);
+                        builder.addDependency(name, String.class, configService.getConnectionPropertyInjector(connPropService.getName()));
 
-                        } else {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.connectionProperty", name)));
-                        }
                     } else {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source.connectionProperty", name)));
+                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.connectionProperty", name)));
                     }
                 }
             }

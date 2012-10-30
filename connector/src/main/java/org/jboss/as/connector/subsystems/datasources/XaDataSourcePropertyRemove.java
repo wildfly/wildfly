@@ -45,10 +45,9 @@ public static final XaDataSourcePropertyRemove INSTANCE = new XaDataSourceProper
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
 
         final ServiceRegistry registry = context.getServiceRegistry(true);
-        final ModelNode address = operation.require(OP_ADDR);
-        PathAddress path = PathAddress.pathAddress(address);
+        PathAddress path = PathAddress.pathAddress(operation.require(OP_ADDR));
         final String jndiName = path.getElement(path.size() - 2).getValue();
-        final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String configPropertyName = path.getLastElement().getValue();
 
         ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(jndiName).append("xa-datasource-properties").append(configPropertyName);
 
