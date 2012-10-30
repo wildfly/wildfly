@@ -26,6 +26,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 
 import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.DenyAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ejb.Local;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
@@ -50,6 +51,11 @@ public class AnnotatedSLSB extends Base implements Restriction, FullAccess {
     @Override
     public void overriddenMethod() {
 
+    }
+
+    @RolesAllowed({}) // this should act like a @DenyAll
+    public void methodWithEmptyRolesAllowedAnnotation() {
+        throw new RuntimeException("This method was supposed to be restricted to all!");
     }
 
 }
