@@ -22,8 +22,8 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import org.jboss.as.connector.services.resourceadapters.deployment.AbstractResourceAdapterDeploymentService;
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -50,7 +50,6 @@ import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -71,6 +70,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
@@ -344,10 +344,14 @@ public class RaOperationUtil {
                     new ResourceAdaptersService()).setInitialMode(ServiceController.Mode.ACTIVE).addListener(verificationHandler).install();
         }
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
-
+        String bootStrapCtxName = DEFAULT_NAME;
+        if (resourceAdapter.getBootstrapContext() != null && ! resourceAdapter.getBootstrapContext().equals("undefined")) {
+            bootStrapCtxName = resourceAdapter.getBootstrapContext();
+        }
         ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
         serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
                 .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                 .addListener(verificationHandler).install();
     }
 }
