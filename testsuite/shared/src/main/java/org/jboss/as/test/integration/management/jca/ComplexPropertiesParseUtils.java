@@ -139,7 +139,7 @@ public class ComplexPropertiesParseUtils {
         Properties params = new Properties();
         params.put("archive", "some.rar");
         params.put("transaction-support", "XATransaction");
-        params.put("bootstrap-context", "someContext");
+        params.put("bootstrap-context", "default");
 
         return params;
     }
