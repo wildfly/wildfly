@@ -46,9 +46,11 @@ import org.jboss.as.naming.management.JndiViewExtensionRegistry;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -71,11 +73,11 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ROOT_LOGGER.activatingSubsystem();
 
         NamingContext.initializeNamingManager();
-
-        final ServiceBasedNamingStore namingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.JAVA_CONTEXT_SERVICE_NAME);
+        final ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
+        final ServiceTarget target = context.getServiceTarget();
 
         // Create the Naming Service
-        final ServiceTarget target = context.getServiceTarget();
+        final ServiceBasedNamingStore namingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.JAVA_CONTEXT_SERVICE_NAME,target);
         newControllers.add(target.addService(NamingService.SERVICE_NAME, new NamingService(namingStore))
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -83,14 +85,14 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .install());
 
         // Create the java:global namespace
-        final ServiceBasedNamingStore globalNamingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
+        final ServiceBasedNamingStore globalNamingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.GLOBAL_CONTEXT_SERVICE_NAME,target);
         newControllers.add(target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService(globalNamingStore))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
                 .install());
 
         // Create the java:jboss vendor namespace
-        final ServiceBasedNamingStore jbossNamingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.JBOSS_CONTEXT_SERVICE_NAME);
+        final ServiceBasedNamingStore jbossNamingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.JBOSS_CONTEXT_SERVICE_NAME,target);
         newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService(jbossNamingStore))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
@@ -98,7 +100,7 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Setup remote naming store
         //we always install the naming store, but we don't install the server unless it has been explicitly enabled
-        final ServiceBasedNamingStore remoteExposedNamingStore = new WritableServiceBasedNamingStore(context.getServiceRegistry(false), ContextNames.EXPORTED_CONTEXT_SERVICE_NAME);
+        final ServiceBasedNamingStore remoteExposedNamingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.EXPORTED_CONTEXT_SERVICE_NAME,target);
         newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService(remoteExposedNamingStore))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)

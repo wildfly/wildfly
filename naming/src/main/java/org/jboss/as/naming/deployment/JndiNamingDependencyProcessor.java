@@ -29,7 +29,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
@@ -55,21 +54,21 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         List<ServiceName> dependencies = deploymentUnit.getAttachmentList(Attachments.JNDI_DEPENDENCIES);
-        final ServiceName serviceName = serviceName(deploymentUnit);
-        final ServiceBuilder<Void> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, Service.NULL);
+        final ServiceName serviceName = serviceName(deploymentUnit.getServiceName());
+        final ServiceBuilder<?> serviceBuilder = phaseContext.getServiceTarget().addService(serviceName, new RuntimeBindReleaseService());
         serviceBuilder.addDependencies(dependencies);
         if(deploymentUnit.getParent() != null) {
             serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
         }
         serviceBuilder.install();
-
     }
 
-    public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
-        return deploymentUnit.getServiceName().append(JNDI_DEPENDENCY_SERVICE);
+    public static ServiceName serviceName(final ServiceName deploymentUnitServiceName) {
+        return deploymentUnitServiceName.append(JNDI_DEPENDENCY_SERVICE);
     }
 
     @Override
     public void undeploy(final DeploymentUnit context) {
     }
+
 }

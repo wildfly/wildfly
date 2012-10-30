@@ -72,6 +72,7 @@ import org.jboss.msc.service.ServiceTarget;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Eduardo Martins
  */
 public final class ComponentInstallProcessor implements DeploymentUnitProcessor {
 
@@ -86,7 +87,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         final List<ServiceName> dependencies = deploymentUnit.getAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES);
 
-        final ServiceName bindingDependencyService = JndiNamingDependencyProcessor.serviceName(deploymentUnit);
+        final ServiceName bindingDependencyService = JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName());
 
         // Iterate through each component, installing it into the container
         for (final ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
@@ -104,6 +105,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         }
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void deployComponent(final DeploymentPhaseContext phaseContext, final ComponentConfiguration configuration, final List<ServiceName> dependencies, final ServiceName bindingDependencyService) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -234,6 +236,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         startBuilder.install();
     }
 
+    @SuppressWarnings("unchecked")
     private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final List<ServiceName> dependencies, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor

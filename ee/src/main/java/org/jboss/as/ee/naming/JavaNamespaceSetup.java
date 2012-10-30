@@ -25,7 +25,6 @@ import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
 
 import java.util.Collections;
 import java.util.Map;
@@ -40,11 +39,11 @@ import java.util.Set;
 public class JavaNamespaceSetup implements SetupAction {
 
     private final NamespaceContextSelector namespaceSelector;
-    private final ServiceTarget serviceTarget;
+    private final ServiceName deploymentUnitServiceName;
 
-    public JavaNamespaceSetup(final NamespaceContextSelector namespaceSelector, final ServiceTarget serviceTarget) {
+    public JavaNamespaceSetup(final NamespaceContextSelector namespaceSelector, final ServiceName deploymentUnitServiceName) {
         this.namespaceSelector = namespaceSelector;
-        this.serviceTarget = serviceTarget;
+        this.deploymentUnitServiceName = deploymentUnitServiceName;
     }
 
     @Override
@@ -60,7 +59,7 @@ public class JavaNamespaceSetup implements SetupAction {
     @Override
     public void setup(Map<String, Object> properties) {
         NamespaceContextSelector.pushCurrentSelector(namespaceSelector);
-        WritableServiceBasedNamingStore.pushOwner(serviceTarget);
+        WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
     }
 
     @Override

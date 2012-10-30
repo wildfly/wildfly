@@ -2,6 +2,7 @@ package org.jboss.as.service;
 
 import java.lang.reflect.Method;
 
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -17,8 +18,8 @@ final class CreateDestroyService extends AbstractService {
     private final Method createMethod;
     private final Method destroyMethod;
 
-    CreateDestroyService(final Object mBeanInstance, final Method createMethod, final Method destroyMethod) {
-        super(mBeanInstance);
+    CreateDestroyService(final Object mBeanInstance, final Method createMethod, final Method destroyMethod, final ServiceName duServiceName) {
+        super(mBeanInstance, duServiceName);
         this.createMethod = createMethod;
         this.destroyMethod = destroyMethod;
     }

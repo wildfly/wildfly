@@ -96,19 +96,19 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final List<JBossServiceConfig> serviceConfigs = serviceXmlDescriptor.getServiceConfigs();
         final ServiceTarget target = phaseContext.getServiceTarget();
         for (final JBossServiceConfig serviceConfig : serviceConfigs) {
-            addServices(target, serviceConfig, classLoader, reflectionIndex);
+            addServices(target, serviceConfig, classLoader, reflectionIndex, phaseContext);
         }
     }
 
     public void undeploy(final DeploymentUnit context) {
     }
 
-    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index) throws DeploymentUnitProcessingException {
+    private void addServices(final ServiceTarget target, final JBossServiceConfig mBeanConfig, final ClassLoader classLoader, final DeploymentReflectionIndex index, final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final String mBeanClassName = mBeanConfig.getCode();
         final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target);
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, phaseContext.getDeploymentUnit().getServiceName());
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         if (dependencyConfigs != null) {

@@ -36,7 +36,6 @@ import org.jboss.jca.deployers.common.CommonDeployment;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -68,15 +67,17 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     private String raName;
     private ServiceName deploymentServiceName;
     private CommonDeployment raxmlDeployment = null;
+    private final ServiceName duServiceName;
 
     public ResourceAdapterXmlDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, ResourceAdapter raxml,
-                                               Module module, final String deployment, final ServiceName deploymentServiceName) {
+                                               Module module, final String deployment, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.raxml = raxml;
         this.module = module;
         this.deployment = deployment;
         this.raName = raxml.getArchive().substring(0, raxml.getArchive().indexOf(".rar"));
         this.deploymentServiceName = deploymentServiceName;
+        this.duServiceName = duServiceName;
     }
 
     /**
@@ -86,19 +87,17 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     public void start(StartContext context) throws StartException {
         try {
             Connector cmd = mdr.getValue().getResourceAdapter(deployment);
-            IronJacamar ijmd = mdr.getValue().getIronJacamar(deployment);
             File root = mdr.getValue().getRoot(deployment);
 
             cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(raxml, cmd);
 
-            final ServiceContainer container = context.getController().getServiceContainer();
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
                 raName, root, module.getClassLoader(), cmd, raxml, null, deploymentServiceName);
 
             raDeployer.setConfiguration(config.getValue());
 
             try {
-                WritableServiceBasedNamingStore.pushOwner(container.subTarget());
+                WritableServiceBasedNamingStore.pushOwner(duServiceName);
                 ClassLoader old = SecurityActions.getThreadContextClassLoader();
                 try {
                     SecurityActions.setThreadContextClassLoader(module.getClassLoader());

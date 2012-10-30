@@ -26,7 +26,7 @@ import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * An interceptor which imposes the given namespace context selector.
@@ -35,17 +35,17 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public final class NamespaceContextInterceptor implements Interceptor {
     private final NamespaceContextSelector selector;
-    private final ServiceTarget target;
+    private final ServiceName deploymentUnitServiceName;
 
-    public NamespaceContextInterceptor(final NamespaceContextSelector selector, final ServiceTarget target) {
+    public NamespaceContextInterceptor(final NamespaceContextSelector selector, final ServiceName deploymentUnitServiceName) {
         this.selector = selector;
-        this.target = target;
+        this.deploymentUnitServiceName = deploymentUnitServiceName;
     }
 
     public Object processInvocation(final InterceptorContext context) throws Exception {
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
-            WritableServiceBasedNamingStore.pushOwner(target);
+            WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
             try {
                 return context.proceed();
             } finally {

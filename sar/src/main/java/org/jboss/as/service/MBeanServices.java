@@ -59,7 +59,16 @@ final class MBeanServices {
     private final ServiceTarget target;
     private boolean installed;
 
-    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target) {
+    /**
+     *
+     * @param mBeanName
+     * @param mBeanInstance
+     * @param mBeanClassHierarchy
+     * @param target
+     * @param componentInstantiator
+     * @param duServiceName the deployment unit's service name
+     */
+    MBeanServices(final String mBeanName, final Object mBeanInstance, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ServiceTarget target, final ServiceName duServiceName) {
         if (mBeanClassHierarchy == null) {
             throw SarMessages.MESSAGES.nullVar("mBeanName");
         }
@@ -72,13 +81,13 @@ final class MBeanServices {
 
         final Method createMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, CREATE_METHOD_NAME, NO_ARGS, false);
         final Method destroyMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, DESTROY_METHOD_NAME, NO_ARGS, false);
-        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod);
+        createDestroyService = new CreateDestroyService(mBeanInstance, createMethod, destroyMethod, duServiceName);
         createDestroyServiceName = ServiceNameFactory.newCreateDestroy(mBeanName);
         createDestroyServiceBuilder = target.addService(createDestroyServiceName, createDestroyService);
 
         final Method startMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, START_METHOD_NAME, NO_ARGS, false);
         final Method stopMethod = ReflectionUtils.getMethod(mBeanClassHierarchy, STOP_METHOD_NAME, NO_ARGS, false);
-        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod);
+        startStopService = new StartStopService(mBeanInstance, startMethod, stopMethod, duServiceName);
         startStopServiceName = ServiceNameFactory.newStartStop(mBeanName);
         startStopServiceBuilder = target.addService(startStopServiceName, startStopService);
         startStopServiceBuilder.addDependency(createDestroyServiceName);
