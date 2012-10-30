@@ -143,4 +143,24 @@ public class EJBSecurityTestCase {
             // expected since only TestRole can call that method
         }
     }
+
+    /**
+     * Tests that if a method of a EJB is annotated with a {@link javax.annotation.security.RolesAllowed} with empty value for the annotation
+     * <code>@RolesAllowed({})</code> then access to that method by any user MUST throw an EJBAccessException. i.e. it should
+     * behave like a @DenyAll
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testEmptyRolesAllowedAnnotationValue() throws Exception {
+        final Context ctx = new InitialContext();
+
+        final AnnotatedSLSB annotatedBean = (AnnotatedSLSB) ctx.lookup("java:module/" + AnnotatedSLSB.class.getSimpleName() + "!" + AnnotatedSLSB.class.getName());
+        try {
+            annotatedBean.methodWithEmptyRolesAllowedAnnotation();
+            Assert.fail("Call to methodWithEmptyRolesAllowedAnnotation() method was expected to fail");
+        } catch (EJBAccessException ejbae) {
+            //expected
+        }
+    }
 }
