@@ -47,13 +47,9 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler {
 
     public static final XaDataSourcePropertyAdd INSTANCE = new XaDataSourcePropertyAdd();
 
-
-
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-
         XADATASOURCE_PROPERTY_VALUE.validateAndSet(operation, modelNode);
-
     }
 
     @Override
@@ -68,10 +64,7 @@ public class XaDataSourcePropertyAdd extends AbstractAddStepHandler {
         final String configPropertyName = PathAddress.pathAddress(address).getLastElement().getValue();
 
         ServiceName serviceName = XADataSourceConfigService.SERVICE_NAME_BASE.append(dsName).append("xa-datasource-properties").append(configPropertyName);
-
         final ServiceRegistry registry = context.getServiceRegistry(true);
-
-
         final ServiceName dataSourceConfigServiceName = XADataSourceConfigService.SERVICE_NAME_BASE
                 .append(dsName);
         final ServiceController<?> dataSourceConfigController = registry

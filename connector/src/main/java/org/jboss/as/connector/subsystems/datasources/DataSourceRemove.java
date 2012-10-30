@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
-
 /**
  * Operation handler responsible for removing a DataSource.
  *

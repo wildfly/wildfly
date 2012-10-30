@@ -47,12 +47,9 @@ public class ConnectionPropertyAdd extends AbstractAddStepHandler {
 
     public static final ConnectionPropertyAdd INSTANCE = new ConnectionPropertyAdd();
 
-
     @Override
     protected void populateModel(ModelNode operation, ModelNode modelNode) throws OperationFailedException {
-
         CONNECTION_PROPERTY_VALUE.validateAndSet(operation, modelNode);
-
     }
 
     @Override

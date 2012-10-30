@@ -103,7 +103,6 @@ public abstract class AbstractXMLDataSourceRuntimeHandler<T> extends AbstractRun
             String exceptionMessage = ConnectorMessages.MESSAGES.noDataSourceRegisteredForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
-
         return config;
     }
 

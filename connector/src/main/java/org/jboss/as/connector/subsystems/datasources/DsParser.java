@@ -36,7 +36,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_F
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
-import static org.jboss.as.connector.subsystems.datasources.Constants.CHECKVALIDCONNECTIONSQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CHECK_VALID_CONNECTION_SQL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
@@ -52,47 +52,47 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MOD
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTIONSORTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_TX_SEPARATE_POOL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME_NAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.PREPAREDSTATEMENTSCACHESIZE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.QUERYTIMEOUT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PREPARED_STATEMENTS_CACHE_SIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SETTXQUERYTIMEOUT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.SHAREPREPAREDSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUERY_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.STALECONNECTIONCHECKER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKSTATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.USETRYLOCK;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATEONMATCH;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKERCLASSNAME;
-import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDCONNECTIONCHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
-import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCECLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
@@ -334,8 +334,8 @@ public class DsParser extends AbstractParser {
                     break;
                 }
                 case JNDI_NAME: {
-                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
-                    JNDINAME.parseAndSetParameter(jndiName, operation, reader);
+                    final String jndiName = rawAttributeText(reader, JNDI_NAME.getXmlName());
+                    JNDI_NAME.parseAndSetParameter(jndiName, operation, reader);
                     break;
                 }
                 case POOL_NAME: {
@@ -425,7 +425,7 @@ public class DsParser extends AbstractParser {
                         }
                         case XA_DATASOURCE_CLASS: {
                             String value = rawElementText(reader);
-                            XADATASOURCECLASS.parseAndSetParameter(value, operation, reader);
+                            XA_DATASOURCE_CLASS.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case DRIVER: {
@@ -528,7 +528,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case REAUTH_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), operation, REAUTHPLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
+                            parseExtension(reader, tag.getLocalName(), operation, REAUTH_PLUGIN_CLASSNAME, REAUTHPLUGIN_PROPERTIES);
                             break;
                         }
                         default:
@@ -562,8 +562,8 @@ public class DsParser extends AbstractParser {
                     break;
                 }
                 case JNDI_NAME: {
-                    final String jndiName = rawAttributeText(reader, JNDINAME.getXmlName());
-                    JNDINAME.parseAndSetParameter(jndiName, operation, reader);
+                    final String jndiName = rawAttributeText(reader, JNDI_NAME.getXmlName());
+                    JNDI_NAME.parseAndSetParameter(jndiName, operation, reader);
                     break;
                 }
                 case POOL_NAME: {
@@ -848,7 +848,7 @@ public class DsParser extends AbstractParser {
                             //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
                             value = value == null ? "true" : value;
-                            NOTXSEPARATEPOOL.parseAndSetParameter(value, operation, reader);
+                            NO_TX_SEPARATE_POOL.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case PAD_XID: {
@@ -908,7 +908,7 @@ public class DsParser extends AbstractParser {
                             break;
                         }
                         case RECOVER_PLUGIN: {
-                            parseExtension(reader, tag.getLocalName(), operation, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+                            parseExtension(reader, tag.getLocalName(), operation, RECOVER_PLUGIN_CLASSNAME, RECOVER_PLUGIN_PROPERTIES);
                             break;
                         }
                         default:
@@ -997,15 +997,15 @@ public class DsParser extends AbstractParser {
                         }
                         case CHECK_VALID_CONNECTION_SQL: {
                             String value = rawElementText(reader);
-                            CHECKVALIDCONNECTIONSQL.parseAndSetParameter(value, operation, reader);
+                            CHECK_VALID_CONNECTION_SQL.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case EXCEPTION_SORTER: {
-                            parseExtension(reader, currTag.getLocalName(), operation, EXCEPTIONSORTERCLASSNAME, EXCEPTIONSORTER_PROPERTIES);
+                            parseExtension(reader, currTag.getLocalName(), operation, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
                             break;
                         }
                         case STALE_CONNECTION_CHECKER: {
-                            parseExtension(reader, currTag.getLocalName(), operation, STALECONNECTIONCHECKERCLASSNAME, STALECONNECTIONCHECKER_PROPERTIES);
+                            parseExtension(reader, currTag.getLocalName(), operation, STALE_CONNECTION_CHECKER_CLASSNAME, STALE_CONNECTION_CHECKER_PROPERTIES);
                             break;
                         }
                         case USE_FAST_FAIL: {
@@ -1015,11 +1015,11 @@ public class DsParser extends AbstractParser {
                         }
                         case VALIDATE_ON_MATCH: {
                             String value = rawElementText(reader);
-                            VALIDATEONMATCH.parseAndSetParameter(value, operation, reader);
+                            VALIDATE_ON_MATCH.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case VALID_CONNECTION_CHECKER: {
-                            parseExtension(reader, currTag.getLocalName(), operation, VALIDCONNECTIONCHECKERCLASSNAME, VALIDCONNECTIONCHECKER_PROPERTIES);
+                            parseExtension(reader, currTag.getLocalName(), operation, VALID_CONNECTION_CHECKER_CLASSNAME, VALID_CONNECTION_CHECKER_PROPERTIES);
                             break;
                         }
                         default: {
@@ -1073,19 +1073,19 @@ public class DsParser extends AbstractParser {
                         }
                         case QUERY_TIMEOUT: {
                             String value = rawElementText(reader);
-                            QUERYTIMEOUT.parseAndSetParameter(value, operation, reader);
+                            QUERY_TIMEOUT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case SET_TX_QUERY_TIMEOUT: {
                             //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
                             value = value == null ? "true" : value;
-                            SETTXQUERYTIMEOUT.parseAndSetParameter(value, operation, reader);
+                            SET_TX_QUERY_TIMEOUT.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case USE_TRY_LOCK: {
                             String value = rawElementText(reader);
-                            USETRYLOCK.parseAndSetParameter(value, operation, reader);
+                            USE_TRY_LOCK.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case XA_RESOURCE_TIMEOUT: {
@@ -1123,19 +1123,19 @@ public class DsParser extends AbstractParser {
                     switch (Statement.Tag.forName(reader.getLocalName())) {
                         case PREPARED_STATEMENT_CACHE_SIZE: {
                             String value = rawElementText(reader);
-                            PREPAREDSTATEMENTSCACHESIZE.parseAndSetParameter(value, operation, reader);
+                            PREPARED_STATEMENTS_CACHE_SIZE.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case TRACK_STATEMENTS: {
                             String value = rawElementText(reader);
-                            TRACKSTATEMENTS.parseAndSetParameter(value, operation, reader);
+                            TRACK_STATEMENTS.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         case SHARE_PREPARED_STATEMENTS: {
                             //tag presence is sufficient to set it to true
                             String value = rawElementText(reader);
                             value = value == null ? "true" : value;
-                            SHAREPREPAREDSTATEMENTS.parseAndSetParameter(value, operation, reader);
+                            SHARE_PREPARED_STATEMENTS.parseAndSetParameter(value, operation, reader);
                             break;
                         }
                         default:

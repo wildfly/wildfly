@@ -52,7 +52,7 @@ public class DisableRequiredWriteAttributeHandler extends AbstractWriteAttribute
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) {
         ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         if ((submodel.hasDefined(Constants.ENABLED.getName()) && submodel.get(Constants.ENABLED.getName()).asBoolean()) ||
-                Constants.JNDINAME.getName().equals(attributeName)) {
+                Constants.JNDI_NAME.getName().equals(attributeName)) {
            return true;
         } else {
             //do the job

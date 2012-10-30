@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
 
 import org.jboss.dmr.ModelNode;
@@ -43,7 +43,7 @@ public class Util {
      * @return the compliant jndi name
      */
     public static String getJndiName(final ModelNode modelNode) {
-        final String rawJndiName = modelNode.require(JNDINAME.getName()).asString();
+        final String rawJndiName = modelNode.require(JNDI_NAME.getName()).asString();
         final String jndiName;
         if (!rawJndiName.startsWith("java:") && modelNode.hasDefined(USE_JAVA_CONTEXT.getName()) && modelNode.get(USE_JAVA_CONTEXT.getName()).asBoolean()) {
             if(rawJndiName.startsWith("jboss/")) {
