@@ -106,8 +106,8 @@ public class StateParser {
 
         @Override
         public ParsingState leaveState() throws CommandFormatException {
-            callbackHandler.leavingState(this);
             stack.peek().getLeaveHandler().handle(this);
+            callbackHandler.leavingState(this);
             ParsingState pop = stack.pop();
             if(!stack.isEmpty()) {
                 stack.peek().getReturnHandler().handle(this);
