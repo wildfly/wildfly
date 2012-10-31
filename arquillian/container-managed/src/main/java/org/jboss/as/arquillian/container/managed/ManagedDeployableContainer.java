@@ -38,8 +38,9 @@ import org.jboss.as.arquillian.container.CommonDeployableContainer;
  */
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
 
-    private static final String CONFIG_PATH = "/configuration/";
+    private static final String CONFIG_DIR = "configuration";
     private static final String SERVER_BASE_DIR = "standalone";
+    private static final String LOG_DIR = "log";
 
     private static final int PORT_RANGE_MIN = 1;
     private static final int PORT_RANGE_MAX = 65535;
@@ -114,8 +115,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
 
             final String serverBaseDir = getSystemPropertyValue(cmd, "jboss.server.base.dir", SERVER_BASE_DIR);
-            final String bootLogFileDefaultValue = jbossHome + "/" + serverBaseDir + "/log/boot.log";
-            final String loggingConfigurationDefaultValue = "file:" + jbossHome + "/" + serverBaseDir + CONFIG_PATH + "logging.properties";
+            final String bootLogFileDefaultValue = jbossHome + File.separatorChar + serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "boot.log";
+            final String loggingConfigurationDefaultValue = "file:" + jbossHome + File.separatorChar + serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
             cmd.add("-Djboss.home.dir=" + jbossHome);
             cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", bootLogFileDefaultValue));
             cmd.add("-Dlogging.configuration=" + getSystemPropertyValue(cmd, "logging.configuration", loggingConfigurationDefaultValue));
