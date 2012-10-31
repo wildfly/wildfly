@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.EscapeCharacterState;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
 import org.jboss.as.cli.parsing.QuotesState;
@@ -37,8 +38,12 @@ import org.jboss.dmr.ModelType;
  */
 public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler {
 
+    private static byte QUOTES = 1;
+    private static byte ESCAPE = 2;
+
     private Deque<ValueState> stack;
     private ValueState currentState;
+    private byte flag;
 
     /* (non-Javadoc)
      * @see org.jboss.as.cli.parsing.ParsingStateCallbackHandler#enteredState(org.jboss.as.cli.parsing.ParsingContext)
@@ -75,17 +80,11 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         } else if(ListItemSeparatorState.ID.equals(stateId)) {
             currentState.itemSeparator();
         } else if(NameValueSeparatorState.ID.equals(stateId)) {
-            currentState.nameSeparator();
+            currentState.nameSeparator(ctx);
         } else if(QuotesState.ID.equals(stateId)) {
-            if(currentState != null) {
-                if (stack == null) {
-                    stack = new ArrayDeque<ValueState>();
-                }
-                stack.push(currentState);
-                currentState = new DefaultValueState(currentState.isList());
-            } else {
-                currentState = new DefaultValueState(false);
-            }
+            flag ^= QUOTES;
+        } else if(EscapeCharacterState.ID.equals(stateId)) {
+            flag ^= ESCAPE;
         }
     }
 
@@ -103,6 +102,10 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
                 stack.peek().addChild(currentState);
                 currentState = stack.pop();
             }
+        } else if(QuotesState.ID.equals(stateId)) {
+            flag ^= QUOTES;
+        } else if(EscapeCharacterState.ID.equals(stateId)) {
+            flag ^= ESCAPE;
         }
     }
 
@@ -125,7 +128,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         String getName();
 
-        void nameSeparator() throws CommandFormatException;
+        void nameSeparator(ParsingContext ctx) throws CommandFormatException;
 
         void itemSeparator() throws CommandFormatException;
 
@@ -145,6 +148,8 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         protected String name;
         protected StringBuilder buf;
+        protected int trimToSize = -1;
+        protected boolean dontQuote;
 
         public DefaultValueState(boolean list) {
             this(list, false);
@@ -162,19 +167,48 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
             return name;
         }
         @Override
-        public void nameSeparator() throws CommandFormatException {
+        public void nameSeparator(ParsingContext ctx) throws CommandFormatException {
             if(buf == null) {
                 throw new CommandFormatException("Property name is null.");
             }
-            name = buf.toString();
-            buf.setLength(0);
+            if(name != null) {
+                // the equals sign is a part of the content
+                buf.append(ctx.getCharacter());
+            } else {
+                name = getTrimmedString();
+                buf.setLength(0);
+            }
         }
         @Override
         public void character(char ch) {
             if(buf == null) {
                 buf = new StringBuilder();
             }
-            buf.append(ch);
+            if((byte)(flag & ESCAPE) > 0) {
+                buf.append(ch);
+            } else
+            // trim whitespaces unless in quotes
+            if((byte)(flag & QUOTES) > 0) {
+                if(ch == '"') {
+                    if(buf.length() == 0) {
+                        dontQuote = true;
+                    } else if(!dontQuote) {
+                        buf.append(ch);
+                    }
+                } else {
+                    buf.append(ch);
+                }
+            } else if(!Character.isWhitespace(ch)) {
+                buf.append(ch);
+                if(trimToSize >= 0) {
+                    trimToSize = -1;
+                }
+            } else if(buf.length() > 0) {
+                if(trimToSize < 0) {
+                    trimToSize = buf.length();
+                }
+                buf.append(ch);
+            }
         }
         @Override
         public void itemSeparator() {
@@ -211,6 +245,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         }
         @Override
         public void addChild(ValueState child) {
+
             if(wrapper != null) {
                 if(buf != null && buf.length() > 0) {
                     wrapper.add(getStringValue());
@@ -237,7 +272,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         private ModelNode getStringValue() {
             final ModelNode value = new ModelNode();
             if(buf != null) {
-                value.set(buf.toString());
+                value.set(getTrimmedString());
             }
             return value;
         }
@@ -260,6 +295,14 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         @Override
         public boolean isList() {
             return false;
+        }
+
+        protected String getTrimmedString() {
+            if(trimToSize >= 0) {
+                buf.setLength(trimToSize);
+                trimToSize = -1;
+            }
+            return buf.toString();
         }
     }
 
@@ -287,7 +330,7 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
         }
 
         @Override
-        public void nameSeparator() throws CommandFormatException {
+        public void nameSeparator(ParsingContext ctx) throws CommandFormatException {
             throw new UnsupportedOperationException();
         }
 

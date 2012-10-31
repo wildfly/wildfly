@@ -29,6 +29,8 @@ import org.jboss.as.cli.CommandFormatException;
 */
 public final class EscapeCharacterState extends BaseParsingState {
 
+    public static final String ID = "ESCAPED_CHARACTER";
+
 /*    private static final CharacterHandler EOC = GlobalCharacterHandlers.newErrorCharacterHandler(
     "Error parsing escaped character: the character after '\' is missing.");
 */
@@ -45,7 +47,7 @@ public final class EscapeCharacterState extends BaseParsingState {
     };
 
     EscapeCharacterState() {
-        super("ESCAPED_CHARACTER");
+        super(ID);
     }
 
     @Override
