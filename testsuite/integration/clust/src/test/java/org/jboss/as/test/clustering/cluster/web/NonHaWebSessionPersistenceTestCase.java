@@ -21,9 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.web;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_SINGLE;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-
 import java.io.IOException;
 import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
@@ -31,21 +28,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,10 +49,9 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  * @version Oct 2012
  */
-@Ignore("Enable after rebase")
 @RunWith(Arquillian.class)
 @RunAsClient
-public class NonHaWebSessionPersistenceTestCase {
+public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_SINGLE)
@@ -69,16 +62,14 @@ public class NonHaWebSessionPersistenceTestCase {
         return war;
     }
 
-    @ArquillianResource
-    private ContainerController controller;
-    @ArquillianResource
-    private Deployer deployer;
+    @Override
+    public void testSetup() {
+        // TODO rethink how this can be done faster with one less stopping (eg. make this test last)
+        stop(CONTAINER_1);
+        stop(CONTAINER_2);
 
-    @Test
-    @InSequence(-1)
-    public void testStartContainerAndDeployment() {
-        controller.start(CONTAINER_SINGLE);
-        deployer.deploy(DEPLOYMENT_1);
+        start(CONTAINER_SINGLE);
+        deploy(DEPLOYMENT_1);
     }
 
     @Test
@@ -102,8 +93,8 @@ public class NonHaWebSessionPersistenceTestCase {
                     Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
-            controller.stop(CONTAINER_SINGLE);
-            controller.start(CONTAINER_SINGLE);
+            stop(CONTAINER_SINGLE);
+            start(CONTAINER_SINGLE);
 
             response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
@@ -115,7 +106,7 @@ public class NonHaWebSessionPersistenceTestCase {
             client.getConnectionManager().shutdown();
         }
 
-        deployer.undeploy(DEPLOYMENT_1);
-        controller.stop(CONTAINER_SINGLE);
+        undeploy(DEPLOYMENT_1);
+        stop(CONTAINER_SINGLE);
     }
 }
