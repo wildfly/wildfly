@@ -296,7 +296,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     private void failDueToRunning() throws LifecycleException {
         throw new LifecycleException(
                 "The server is already running! " +
-                        "Managed containers does not support connecting to running server instances due to the " +
+                        "Managed containers do not support connecting to running server instances due to the " +
                         "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
                         "change to another type of container.\n" +
                         "To disable this check and allow Arquillian to connect to a running server, " +
