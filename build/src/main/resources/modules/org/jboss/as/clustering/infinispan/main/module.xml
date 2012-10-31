@@ -38,7 +38,7 @@
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.cachestore.jdbc"/>
         <module name="org.infinispan.cachestore.remote"/>
-        <module name="org.infinispan.hotrod.client" optional="true"/>
+        <module name="org.infinispan.client.hotrod" optional="true"/>
         <module name="org.jboss.as.clustering.api"/>
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.impl" services="import"/>
