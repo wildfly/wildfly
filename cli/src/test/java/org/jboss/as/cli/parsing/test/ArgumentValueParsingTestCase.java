@@ -298,6 +298,50 @@ public class ArgumentValueParsingTestCase {
         assertEquals("match(\"Scanning\"))", item.asString());
     }
 
+    @Test
+    public void testQuotesAndSpaces() throws Exception {
+        ModelNode value = parse("\" \"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(" ", value.asString());
+
+        value = parse(" \" \"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(" ", value.asString());
+
+        value = parse(" \" \\\"\"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals(" \"", value.asString());
+    }
+
+    @Test
+    public void testLoginModules() throws Exception {
+        ModelNode value = parse("[{code=Database, flag=required, module-options=[unauthenticatedIdentity=guest," +
+        		"dsJndiName=java:jboss/jdbc/ApplicationDS," +
+        		"principalsQuery= select password from users where username=? ," +
+        		"rolesQuery = \"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\" ," +
+        		"hashAlgorithm = MD5,hashEncoding = hex] }]");
+        assertNotNull(value);
+        assertEquals(ModelType.LIST, value.getType());
+        List<ModelNode> list = value.asList();
+        assertEquals(1, list.size());
+        value = list.get(0);
+        assertEquals("Database", value.get("code").asString());
+        assertEquals("required", value.get("flag").asString());
+        value = value.get("module-options");
+        assertEquals(ModelType.LIST, value.getType());
+        list = value.asList();
+        assertEquals(6, list.size());
+        assertEquals("guest", list.get(0).get("unauthenticatedIdentity").asString());
+        assertEquals("java:jboss/jdbc/ApplicationDS", list.get(1).get("dsJndiName").asString());
+        assertEquals("select password from users where username=?", list.get(2).get("principalsQuery").asString());
+        assertEquals("select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id", list.get(3).get("rolesQuery").asString());
+        assertEquals("MD5", list.get(4).get("hashAlgorithm").asString());
+        assertEquals("hex", list.get(5).get("hashEncoding").asString());
+    }
+
     protected ModelNode parse(String str) throws CommandFormatException {
         final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
         StateParser.parse(str, handler, ArgumentValueInitialState.INSTANCE);
