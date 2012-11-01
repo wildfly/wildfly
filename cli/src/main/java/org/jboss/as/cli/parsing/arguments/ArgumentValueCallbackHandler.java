@@ -350,6 +350,11 @@ public class ArgumentValueCallbackHandler implements ParsingStateCallbackHandler
 
         @Override
         public ModelNode getValue() {
+            if(list == null) {
+                final ModelNode node = new ModelNode();
+                node.setEmptyList();
+                return node;
+            }
             return list;
         }
 
