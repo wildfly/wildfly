@@ -28,23 +28,20 @@ import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.spi.ObjectFactory;
 
-import org.jboss.as.naming.ManagedReferenceObjectFactory;
-
 /**
  * An {@link ObjectFactory} which verifies the environment received on
  * {@link ObjectFactory#getObjectInstance(Object, Name, Context, Hashtable)}, is the same that a test case used in the factory's
  * binding operation.
- * 
+ *
  * @author Eduardo Martins
- * 
+ * @author Stuart Douglas
+ *
  */
-public class ObjectFactoryWithEnvironmentBinding extends ManagedReferenceObjectFactory {
+public class ObjectFactoryWithEnvironmentBinding implements ObjectFactory {
 
     @Override
-    public Object getObjectInstance(Object serviceValue, Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment)
-            throws Exception {
+    public Object getObjectInstance(final Object obj, final Name name, final Context nameCtx, final Hashtable<?, ?> environment) throws Exception {
         ObjectFactoryWithEnvironmentBindingTestCase.validateEnvironmentProperties(environment);
-        return super.getObjectInstance(serviceValue, obj, name, nameCtx, environment);
+        return environment.get("p1");
     }
-
 }
