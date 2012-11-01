@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.parsing.StateParser;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueCallbackHandler;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
@@ -319,10 +320,35 @@ public class ArgumentValueParsingTestCase {
     @Test
     public void testLoginModules() throws Exception {
         ModelNode value = parse("[{code=Database, flag=required, module-options=[unauthenticatedIdentity=guest," +
-        		"dsJndiName=java:jboss/jdbc/ApplicationDS," +
-        		"principalsQuery= select password from users where username=? ," +
-        		"rolesQuery = \"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\" ," +
-        		"hashAlgorithm = MD5,hashEncoding = hex] }]");
+                "dsJndiName=java:jboss/jdbc/ApplicationDS," +
+                "principalsQuery= select password from users where username=? ," +
+                "rolesQuery = \"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\" ," +
+                "hashAlgorithm = MD5,hashEncoding = hex] }]");
+        assertLoginModules(value);
+    }
+
+    @Test
+    public void testLoginModulesWithLineBreaks() throws Exception {
+        final StringBuilder buf = new StringBuilder();
+        buf.append("[ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t{ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\tcode=Database, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\tflag= \\").append(Util.LINE_SEPARATOR).append("required, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("module-options=[ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("unauthenticatedIdentity=guest, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("dsJndiName=java:jboss/jdbc/ApplicationDS, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("principalsQuery= select password from users where username=? , \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("rolesQuery = \"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\" , \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("hashAlgorithm = MD5, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t\t").append("hashEncoding = hex \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("] \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t} \\").append(Util.LINE_SEPARATOR);
+        buf.append(']');
+        ModelNode value = parse(buf.toString());
+        assertLoginModules(value);
+    }
+
+    protected void assertLoginModules(ModelNode value) {
         assertNotNull(value);
         assertEquals(ModelType.LIST, value.getType());
         List<ModelNode> list = value.asList();
