@@ -24,7 +24,7 @@ package org.jboss.as.cli.parsing.arguments;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
-import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
+import org.jboss.as.cli.parsing.LineBreakHandler;
 import org.jboss.as.cli.parsing.ParsingContext;
 
 /**
@@ -44,7 +44,13 @@ public class ListState extends DefaultParsingState {
                     ctx.enterState(value);
                 }
             }});
-        setDefaultHandler(new EnterStateCharacterHandler(value));
+        setDefaultHandler(new LineBreakHandler(false, false){
+            @Override
+            protected void doHandle(ParsingContext ctx) throws CommandFormatException {
+                ctx.enterState(value);
+            }
+        });
+        setIgnoreWhitespaces(true);
         enterState(',', ListItemSeparatorState.INSTANCE);
         leaveState(']');
         setReturnHandler(new CharacterHandler(){
