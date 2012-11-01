@@ -90,7 +90,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <module.path>${basedir}\src\test\resources\modules${path.separator}${basedir}\src\test\resources\modules2</module.path>
+                        <module.path>${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}modules${path.separator}${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}modules2</module.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
