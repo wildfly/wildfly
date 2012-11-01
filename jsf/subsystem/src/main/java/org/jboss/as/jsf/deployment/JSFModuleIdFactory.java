@@ -96,6 +96,12 @@ public class JSFModuleIdFactory {
         baseDirBuilder.append(File.separator);
         baseDirBuilder.append(moduleName.replace(".", File.separator));
 
+        System.out.println("***************");
+        System.out.println("moduleRootDir=" + moduleRootDir);
+        System.out.println("moduleName=" + moduleName);
+        System.out.println("baseDirBuilder=" + baseDirBuilder.toString());
+        System.out.println("**************");
+
         File moduleBaseDir = new File(baseDirBuilder.toString());
         File[] slots = moduleBaseDir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
