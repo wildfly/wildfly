@@ -85,7 +85,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         PatchingResult result = executePatch(info, zippedPatch);
 
         assertPatchHasBeenApplied(result, patch);
-        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        tree(env.getInstalledImage().getJbossHome());
         assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newHash);
     }
 
@@ -130,14 +130,14 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         assertPatchHasBeenApplied(result, patch);
         assertFileExists(standaloneShellFile);
         assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
-        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
-        assertDirExists(result.getPatchInfo().getEnvironment().getPatchDirectory(patchID));
+        tree(env.getInstalledImage().getJbossHome());
+        assertDirExists(env.getPatchDirectory(patchID));
         assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
 
         // rollback the patch based on the updated PatchInfo
         PatchingResult rollbackResult = rollback(result.getPatchInfo(), patchID);
 
-        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        tree(env.getInstalledImage().getJbossHome());
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
         assertFileExists(standaloneShellFile);
         assertArrayEquals(existingHash, hashFile(standaloneShellFile));
@@ -263,7 +263,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         // rollback the cumulative patch, this should also rollback the one-off patch
         PatchingResult resultOfCumulativePatchRollback = rollback(resultOfOneOffPatch.getPatchInfo(), culumativePatchID);
 
-        tree(resultOfCumulativePatchRollback.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        tree(env.getInstalledImage().getJbossHome());
         assertPatchHasBeenRolledBack(resultOfCumulativePatchRollback, cumulativePatch, info);
         // assertNoResourcesForPatch(resultOfCumulativePatchRollback.getPatchInfo(), oneOffPatch);
 

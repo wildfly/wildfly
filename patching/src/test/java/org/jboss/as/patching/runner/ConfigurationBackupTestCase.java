@@ -142,11 +142,11 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         assertPatchHasBeenApplied(result, patch);
 
         // check the AS7 config files have been backed up
-        File backupAppclientXmlFile = assertFileExists(result.getPatchInfo().getEnvironment().getHistoryDir(patch.getPatchId()), "configuration", "appclient", "appclient.xml");
+        File backupAppclientXmlFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "configuration", "appclient", "appclient.xml");
         assertFileContent(originalAppClientHash, backupAppclientXmlFile);
-        File backupStandaloneXmlFile = assertFileExists(result.getPatchInfo().getEnvironment().getHistoryDir(patch.getPatchId()), "configuration", "standalone", "standalone.xml");
+        File backupStandaloneXmlFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "configuration", "standalone", "standalone.xml");
         assertFileContent(originalStandaloneHash, backupStandaloneXmlFile);
-        File backupDomainXmlFile = assertFileExists(result.getPatchInfo().getEnvironment().getHistoryDir(patch.getPatchId()), "configuration", "domain", "domain.xml");
+        File backupDomainXmlFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "configuration", "domain", "domain.xml");
         assertFileContent(originalDomainHash, backupDomainXmlFile);
 
         // let's change the standalone.xml file
@@ -156,7 +156,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         PatchingResult rollbackResult = rollback(result.getPatchInfo(), patch.getPatchId());
 
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
-        File rolledBackStandaloneXmlFile = assertFileExists(rollbackResult.getPatchInfo().getEnvironment().getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
+        File rolledBackStandaloneXmlFile = assertFileExists(env.getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
         assertEquals("updated content was " + bytesToHexString(updatedStandaloneXmlFile), bytesToHexString(originalStandaloneHash), bytesToHexString(hashFile(rolledBackStandaloneXmlFile)));
     }
 

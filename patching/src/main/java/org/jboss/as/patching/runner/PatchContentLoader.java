@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching.runner;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
@@ -38,9 +39,9 @@ import java.io.InputStream;
  */
 class PatchContentLoader {
 
-    public static final String MODULES = "modules";
-    public static final String BUNDLES = "bundles";
-    public static final String MISC = "misc";
+    public static final String MODULES = Constants.MODULES;
+    public static final String BUNDLES = Constants.BUNDLES;
+    public static final String MISC = Constants.MISC;
 
     private final File miscRoot;
     private final File bundlesRoot;

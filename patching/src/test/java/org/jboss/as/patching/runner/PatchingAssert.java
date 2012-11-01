@@ -191,9 +191,9 @@ public class PatchingAssert {
         // assertNoResourcesForPatch(result.getPatchInfo(), patch);
     }
 
-    static void assertNoResourcesForPatch(PatchInfo patchInfo, Patch patch) {
-        assertDirDoesNotExist(patchInfo.getEnvironment().getModulePatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(patchInfo.getEnvironment().getBundlesPatchDirectory(patch.getPatchId()));
-        assertDirDoesNotExist(patchInfo.getEnvironment().getPatchDirectory(patch.getPatchId()));
+    static void assertNoResourcesForPatch(DirectoryStructure structure, Patch patch) {
+        assertDirDoesNotExist(structure.getModulePatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(structure.getBundlesPatchDirectory(patch.getPatchId()));
+        assertDirDoesNotExist(structure.getPatchDirectory(patch.getPatchId()));
     }
 }

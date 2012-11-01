@@ -119,4 +119,7 @@ public interface PatchMessages {
     @Message(id = 16852, value = "Cannot rollback patch (%s)")
     PatchingException cannotRollbackPatch(String id);
 
+    @Message(id = 16853, value = "Patch '%s' already applied")
+    PatchingException alreadyApplied(String patchId);
+
 }

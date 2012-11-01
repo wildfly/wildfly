@@ -43,9 +43,18 @@ import java.net.URL;
  */
 class LocalPatchTool implements PatchTool {
 
+
+    private final PatchInfo patchInfo;
     private final PatchingTaskRunner runner;
     LocalPatchTool(PatchInfo info, DirectoryStructure structure) {
+        this.patchInfo = info;
         this.runner = new PatchingTaskRunner(info, structure);
+
+    }
+
+    @Override
+    public PatchInfo getPatchInfo() {
+        return patchInfo;
     }
 
     @Override
