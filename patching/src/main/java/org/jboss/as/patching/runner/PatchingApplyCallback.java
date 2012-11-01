@@ -91,10 +91,10 @@ public class PatchingApplyCallback implements PatchingContext.TaskFinishCallback
             final List<String> patches = new ArrayList<String>(patchInfo.getPatchIDs());
             patches.add(0, patchId);
             final String resultingVersion = patchInfo.getVersion();
-            return new LocalPatchInfo(resultingVersion, patchInfo.getCumulativeID(), patches, patchInfo.getEnvironment());
+            return new LocalPatchInfo(resultingVersion, patchInfo.getCumulativeID(), patches, structure);
         } else {
             final String resultingVersion = patch.getResultingVersion();
-            return new LocalPatchInfo(resultingVersion, patchId, Collections.<String>emptyList(), patchInfo.getEnvironment());
+            return new LocalPatchInfo(resultingVersion, patchId, Collections.<String>emptyList(), structure);
         }
     }
 

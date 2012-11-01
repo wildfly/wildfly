@@ -67,7 +67,6 @@ class PatchingContext {
     private final List<ContentModification> rollbackActions = new ArrayList<ContentModification>();
     private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
 
-    private boolean rollbackOnly;
     private boolean rollback;
 
     /**
@@ -79,12 +78,13 @@ class PatchingContext {
      * @param policy the content verification policy
      * @param workDir the current work dir
      * @return the patching context
+     * @throws IOException
      */
-    static PatchingContext create(final Patch patch, final PatchInfo info, final DirectoryStructure structure, final ContentVerificationPolicy policy, final File workDir) {
+    static PatchingContext create(final Patch patch, final PatchInfo info, final DirectoryStructure structure, final ContentVerificationPolicy policy, final File workDir) throws IOException {
         //
         final File backup = structure.getHistoryDir(patch.getPatchId());
         if(!backup.mkdirs()) {
-            PatchMessages.MESSAGES.cannotCreateDirectory(backup.getAbsolutePath());
+            throw PatchMessages.MESSAGES.cannotCreateDirectory(backup.getAbsolutePath());
         }
         final PatchingContext context = new PatchingContext(patch, info, structure, backup, policy, false);
         // Register the patch loader
@@ -272,9 +272,6 @@ class PatchingContext {
      * @throws PatchingException
      */
     PatchingResult finish(final TaskFinishCallback task) throws PatchingException {
-        if(rollbackOnly) {
-            throw new IllegalStateException();
-        }
         final PatchInfo newInfo;
         final Patch rollbackPatch = new RollbackPatch();
         try {
@@ -336,8 +333,6 @@ class PatchingContext {
      * Undo the changes we've done so far.
      */
     void undo() {
-        //
-        rollbackOnly = true;
         // Use the misc backup location for the content items
         final PatchContentLoader loader = new PatchContentLoader(miscBackup, null, null);
         final File backup = null; // We skip the prepare step, so there should be no backup
@@ -373,19 +368,19 @@ class PatchingContext {
      */
     PatchInfo persist(final PatchInfo newPatchInfo) throws IOException {
         final String cumulativeID = newPatchInfo.getCumulativeID();
-        final DirectoryStructure environment = newPatchInfo.getEnvironment();
+        final DirectoryStructure environment = structure;
         final File cumulative = environment.getCumulativeLink();
         final File cumulativeRefs = environment.getCumulativeRefs(cumulativeID);
         if(! cumulative.exists()) {
             final File metadata = environment.getPatchesMetadata();
             if(! metadata.exists() && ! metadata.mkdirs()) {
-                PatchMessages.MESSAGES.cannotCreateDirectory(metadata.getAbsolutePath());
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(metadata.getAbsolutePath());
             }
         }
         if(! cumulativeRefs.exists()) {
             final File references = cumulativeRefs.getParentFile();
             if(! references.exists() && ! references.mkdirs()) {
-                PatchMessages.MESSAGES.cannotCreateDirectory(references.getAbsolutePath());
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(references.getAbsolutePath());
             }
         }
         PatchUtils.writeRef(cumulative, cumulativeID);

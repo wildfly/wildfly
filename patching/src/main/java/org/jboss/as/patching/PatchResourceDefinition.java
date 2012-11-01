@@ -90,7 +90,7 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .build();
 
-    static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder("patch", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+    static final OperationDefinition PATCH = new SimpleOperationDefinitionBuilder(Constants.PATCH, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(INPUT_STREAM_IDX_DEF)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)
@@ -98,14 +98,14 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .addParameter(PRESERVE)
             .build();
 
-    static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING)
+    static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create(Constants.PATCH_ID, ModelType.STRING)
             .build();
-    static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create("rollback-to", ModelType.BOOLEAN)
+    public static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create("rollback-to", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .build();
 
-    static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder("rollback", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+    static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)

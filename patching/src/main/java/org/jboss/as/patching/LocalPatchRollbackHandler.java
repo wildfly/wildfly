@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching;
 
-import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_ALL;
 import static org.jboss.as.patching.PatchResourceDefinition.PATCH_ID;
 import static org.jboss.as.patching.PatchResourceDefinition.RESTORE_CONFIGURATION;
 import static org.jboss.as.patching.PatchResourceDefinition.ROLLBACK_TO;
@@ -48,7 +47,6 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String patchId = PATCH_ID.resolveModelAttribute(context, operation).asString();
-        final boolean overrideAll = OVERRIDE_ALL.resolveModelAttribute(context, operation).asBoolean();
         final boolean rollbackTo = ROLLBACK_TO.resolveModelAttribute(context, operation).asBoolean();
         final boolean restoreConfiguration = RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 

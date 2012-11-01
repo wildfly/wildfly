@@ -59,13 +59,6 @@ public interface PatchInfo {
     List<String> getPatchIDs();
 
     /**
-     * Get the local patch environment.
-     *
-     * @return the patch environment
-     */
-    DirectoryStructure getEnvironment();
-
-    /**
      * Get the current path for patching.
      * Note this does not include the module.path.
      *

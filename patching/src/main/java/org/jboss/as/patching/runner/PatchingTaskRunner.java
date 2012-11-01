@@ -120,10 +120,10 @@ public class PatchingTaskRunner {
                 throw PatchMessages.MESSAGES.doesNotApply(appliesTo, patchInfo.getVersion());
             }
             if(patchInfo.getCumulativeID().equals(patchId)) {
-                throw new PatchingException("already applied " + patchId);
+                throw PatchMessages.MESSAGES.alreadyApplied(patchId);
             }
             if(patchInfo.getPatchIDs().contains(patchId)) {
-                throw new PatchingException("already applied " + patchId);
+                throw PatchMessages.MESSAGES.alreadyApplied(patchId);
             }
 
             // Execute the patch itself

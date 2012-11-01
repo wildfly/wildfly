@@ -68,7 +68,7 @@ public class PatchingRollbackCallback implements PatchingContext.TaskFinishCallb
         if(context.getPatchType() == Patch.PatchType.CUMULATIVE) {
             // Use the cumulative version from the history
             final String resultingVersion = patch.getResultingVersion();
-            return new LocalPatchInfo(resultingVersion, cumulativeTarget, Collections.<String>emptyList(), patchInfo.getEnvironment());
+            return new LocalPatchInfo(resultingVersion, cumulativeTarget, Collections.<String>emptyList(), structure);
         } else {
             final List<String> oneOffs = new ArrayList<String>(patchInfo.getPatchIDs());
             for(final String patch : patches) {
@@ -76,7 +76,7 @@ public class PatchingRollbackCallback implements PatchingContext.TaskFinishCallb
             }
             // Remove all the patches we rolled back
             final String resultingVersion = patchInfo.getVersion();
-            return new LocalPatchInfo(resultingVersion, patchInfo.getCumulativeID(), oneOffs, patchInfo.getEnvironment());
+            return new LocalPatchInfo(resultingVersion, patchInfo.getCumulativeID(), oneOffs, structure);
         }
     }
 

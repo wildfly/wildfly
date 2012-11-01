@@ -35,13 +35,13 @@ import java.util.List;
  */
 class ContentPolicyBuilderImpl implements PatchTool.ContentPolicyBuilder {
 
-    private boolean overrideAll;
-    private boolean ignoreModulesChanges;
-    private final List<String> override = new ArrayList<String>();
-    private final List<String> preserve = new ArrayList<String>();
+    boolean overrideAll;
+    boolean ignoreModulesChanges;
+    final List<String> override = new ArrayList<String>();
+    final List<String> preserve = new ArrayList<String>();
 
     @Override
-    public ContentVerificationPolicy build() {
+    public ContentVerificationPolicy createPolicy() {
         return new ContentVerificationPolicy() {
             @Override
             public boolean ignoreContentValidation(ContentItem item) {

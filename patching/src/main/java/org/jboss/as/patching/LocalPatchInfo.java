@@ -67,11 +67,6 @@ public class LocalPatchInfo implements PatchInfo {
         return patches;
     }
 
-    @Override
-    public DirectoryStructure getEnvironment() {
-        return environment;
-    }
-
     /**
      * Load the local patch information.
      *

@@ -49,6 +49,13 @@ public interface PatchTool {
     ContentVerificationPolicy DEFAULT = ContentVerificationPolicy.STRICT;
 
     /**
+     * Get the patch info.
+     *
+     * @return the patch info
+     */
+    PatchInfo getPatchInfo();
+
+    /**
      * Apply a patch.
      *
      * @param file the patch file
@@ -133,7 +140,7 @@ public interface PatchTool {
                     builder.preserveItem(preserve.toString());
                 }
             }
-            return builder.build();
+            return builder.createPolicy();
         }
 
         /**
@@ -170,7 +177,7 @@ public interface PatchTool {
          *
          * @return the content verification policy
          */
-        ContentVerificationPolicy build();
+        ContentVerificationPolicy createPolicy();
 
         /**
          * Ignore all local module changes.
