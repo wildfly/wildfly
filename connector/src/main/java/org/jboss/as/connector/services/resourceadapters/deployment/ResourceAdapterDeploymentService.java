@@ -111,19 +111,22 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
 
         raName = raDeployment.getDeploymentName();
-        ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
-
-        value = new ResourceAdapterDeployment(raDeployment, raName, raServiceName);
-
-        managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
 
         if (raDeployer.checkActivation(cmd, ijmd)) {
+            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Activating: %s", raName);
+
+            ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
+            value = new ResourceAdapterDeployment(raDeployment, raName, raServiceName);
+
+            managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
             registry.getValue().registerResourceAdapterDeployment(value);
 
             context.getChildTarget()
                     .addService(raServiceName,
                                 new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
                     .install();
+        } else {
+            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Not activating: %s", raName);
         }
     }
 
@@ -133,11 +136,13 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
      */
     @Override
     public void stop(StopContext context) {
-        String deploymentName = value.getDeployment() != null ? value.getDeployment().getDeploymentName() : "";
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
-                        ConnectorServices.RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(deploymentName));
-        unregisterAll(deploymentName);
+        if (value != null && value.getDeployment() != null) {
+            String deploymentName = value.getDeployment().getDeploymentName();
 
+            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
+                                               ConnectorServices.RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(deploymentName));
+            unregisterAll(deploymentName);
+        }
     }
 
     @Override
