@@ -61,6 +61,7 @@ public class DynamicJNDIContextEJBInvocationTestCase {
     public static Archive createLocalDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, LOCAL_DEPLOYMENT_NAME + ".jar");
         jar.addClasses(StatefulBeanA.class, LocalServerStatefulRemote.class,PassivationConfigurationSetup.class, DynamicJNDIContextEJBInvocationTestCase.class, StatefulRemoteOnOtherServer.class, StatelessRemoteOnOtherServer.class);
+        jar.addClasses(StatefulRemoteHomeForBeanOnOtherServer.class);
         jar.addAsManifestResource(DynamicJNDIContextEJBInvocationTestCase.class.getPackage(), "MANIFEST.MF", "MANIFEST.MF");
         jar.addAsManifestResource(DynamicJNDIContextEJBInvocationTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return jar;
@@ -70,7 +71,7 @@ public class DynamicJNDIContextEJBInvocationTestCase {
     @TargetsContainer("multinode-server")
     public static Archive createDeploymentForRemoteServer() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, REMOTE_SERVER_DEPLOYMENT_NAME + ".jar");
-        jar.addClasses(StatefulRemoteOnOtherServer.class, StatelessRemoteOnOtherServer.class);
+        jar.addClasses(StatefulRemoteOnOtherServer.class, StatelessRemoteOnOtherServer.class, StatefulRemoteHomeForBeanOnOtherServer.class);
         jar.addClasses(StatefulBeanOnOtherServer.class, StatelessBeanOnOtherServer.class);
         return jar;
     }
@@ -209,4 +210,29 @@ public class DynamicJNDIContextEJBInvocationTestCase {
         }
 
     }
+
+    /**
+     * Tests that a SFSB hosted on server X can lookup and invoke a SFSB hosted on a different server, through the EJB 2.x
+     * home view, by using a JNDI context which was created by passing the EJB client context creation properties
+     * @see https://issues.jboss.org/browse/EJBCLIENT-51
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment("local-server-deployment")
+    public void testServerToServerSFSBUsingEJB2xHomeView() throws Exception {
+        final StatefulBeanA sfsbOnLocalServer = InitialContext.doLookup("java:module/" + StatefulBeanA.class.getSimpleName() + "!" + StatefulBeanA.class.getName());
+        final int countUsingEJB2xHomeView = sfsbOnLocalServer.getStatefulBeanCountUsingEJB2xHomeView();
+        Assert.assertEquals("Unexpected initial count from stateful bean", 0, countUsingEJB2xHomeView);
+
+        // now try the other create... method on the remote home
+        final int countUsingEJB2xHomeViewDifferentWay = sfsbOnLocalServer.getStatefulBeanCountUsingEJB2xHomeViewDifferentWay();
+        Assert.assertEquals("Unexpected initial count from stateful bean", 0, countUsingEJB2xHomeViewDifferentWay);
+
+        // yet another create method
+        final int initialCount = 54;
+        final int countUsingEJB2xHomeViewYetAnotherWay = sfsbOnLocalServer.getStatefulBeanCountUsingEJB2xHomeViewYetAnotherWay(initialCount);
+        Assert.assertEquals("Unexpected initial count from stateful bean", initialCount, countUsingEJB2xHomeViewYetAnotherWay);
+    }
+
 }

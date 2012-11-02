@@ -22,39 +22,17 @@
 
 package org.jboss.as.test.multinode.remotecall.scoped.context;
 
-import javax.ejb.Remote;
-import javax.ejb.RemoteHome;
-import javax.ejb.Stateful;
+import javax.ejb.CreateException;
+import javax.ejb.EJBHome;
 
 /**
  * @author Jaikiran Pai
  */
-@Stateful
-@Remote(StatefulRemoteOnOtherServer.class)
-@RemoteHome(StatefulRemoteHomeForBeanOnOtherServer.class)
-public class StatefulBeanOnOtherServer implements StatefulRemoteOnOtherServer {
-    private int count;
+public interface StatefulRemoteHomeForBeanOnOtherServer extends EJBHome {
 
-    @Override
-    public int getCount() {
-        return this.count;
-    }
+    StatefulRemoteOnOtherServer create() throws CreateException;
 
-    @Override
-    public int incrementCount() {
-        this.count++;
-        return this.count;
-    }
+    StatefulRemoteOnOtherServer createDifferentWay() throws CreateException;
 
-    public void ejbCreate() {
-
-    }
-
-    public void ejbCreateDifferentWay() {
-
-    }
-
-    public void ejbCreateYetAnotherWay(final int initialCount) {
-        this.count = initialCount;
-    }
+    StatefulRemoteOnOtherServer createYetAnotherWay(int initialCount) throws CreateException;
 }
