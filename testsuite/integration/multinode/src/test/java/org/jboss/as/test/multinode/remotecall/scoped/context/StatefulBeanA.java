@@ -26,6 +26,7 @@ import org.jboss.ejb3.annotation.Cache;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import javax.ejb.CreateException;
 import javax.ejb.LocalBean;
 import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
@@ -59,6 +60,7 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
 
     private StatefulRemoteOnOtherServer statefulBeanOnOtherServer;
     private StatelessRemoteOnOtherServer statelessRemoteOnOtherServer;
+    private StatefulRemoteHomeForBeanOnOtherServer statefulRemoteHomeForBeanOnOtherServer;
 
     private transient CountDownLatch passivationNotificationLatch;
     private boolean postActivateInvoked;
@@ -71,6 +73,8 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
         this.statefulBeanOnOtherServer = (StatefulRemoteOnOtherServer) context.lookup("ejb:/deployment-on-other-server//StatefulBeanOnOtherServer!" + StatefulRemoteOnOtherServer.class.getName() + "?stateful");
         // lookup and set the SLSB from remote server
         this.statelessRemoteOnOtherServer = (StatelessRemoteOnOtherServer) context.lookup("ejb:/deployment-on-other-server//StatelessBeanOnOtherServer!" + StatelessRemoteOnOtherServer.class.getName());
+        // EJB 2.x remote home view of bean on other server
+        this.statefulRemoteHomeForBeanOnOtherServer = (StatefulRemoteHomeForBeanOnOtherServer) context.lookup("ejb:/deployment-on-other-server//StatefulBeanOnOtherServer!" + StatefulRemoteHomeForBeanOnOtherServer.class.getName());
     }
 
     @Override
@@ -92,6 +96,36 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
         // invoke the SLSB which resides on a remote server and was looked up via JNDI
         // using the scoped EJB client context feature
         return this.statelessRemoteOnOtherServer.echo(msg);
+    }
+
+    public int getStatefulBeanCountUsingEJB2xHomeView() {
+        final StatefulRemoteOnOtherServer bean;
+        try {
+            bean = this.statefulRemoteHomeForBeanOnOtherServer.create();
+        } catch (CreateException e) {
+            throw new RuntimeException(e);
+        }
+        return bean.getCount();
+    }
+
+    public int getStatefulBeanCountUsingEJB2xHomeViewDifferentWay() {
+        final StatefulRemoteOnOtherServer bean;
+        try {
+            bean = this.statefulRemoteHomeForBeanOnOtherServer.createDifferentWay();
+        } catch (CreateException e) {
+            throw new RuntimeException(e);
+        }
+        return bean.getCount();
+    }
+
+    public int getStatefulBeanCountUsingEJB2xHomeViewYetAnotherWay(int initialCount) {
+        final StatefulRemoteOnOtherServer bean;
+        try {
+            bean = this.statefulRemoteHomeForBeanOnOtherServer.createYetAnotherWay(initialCount);
+        } catch (CreateException e) {
+            throw new RuntimeException(e);
+        }
+        return bean.getCount();
     }
 
     @Override
