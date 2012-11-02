@@ -177,7 +177,7 @@ public class DomainTestSupport {
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
             System.out.println("Failed response:");
             System.out.println(response);
-            Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
+            Assert.fail(response.get(FAILURE_DESCRIPTION).asString());
         }
 
         if (getResult) {
@@ -192,7 +192,7 @@ public class DomainTestSupport {
         if(! FAILED.equals(response.get(OUTCOME).asString())) {
             System.out.println("Response succeeded:");
             System.out.println(response);
-            Assert.fail(response.get(OUTCOME).toString());
+            Assert.fail(response.get(OUTCOME).asString());
         }
 
         Assert.assertTrue("failure description exists", response.has(FAILURE_DESCRIPTION));

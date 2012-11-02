@@ -113,7 +113,7 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
 
         ModelNode resultNode = mainServices.executeOperation(version_1_1_0,
                 mainServices.transformOperation(version_1_1_0, bindingAdd));
-        Assert.assertFalse(resultNode.get(FAILURE_DESCRIPTION).toString(), resultNode.get(FAILURE_DESCRIPTION).isDefined());
+        Assert.assertFalse(resultNode.get(FAILURE_DESCRIPTION).asString(), resultNode.get(FAILURE_DESCRIPTION).isDefined());
     }
 
     private void checkSimpleBindingTransformation(KernelServices mainServices, ModelVersion version_1_1_0)
@@ -170,7 +170,7 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
 
         ModelNode resultNode = mainServices.executeOperation(version_1_1_0,
                 mainServices.transformOperation(version_1_1_0, bindingAdd));
-        Assert.assertFalse(resultNode.get(FAILURE_DESCRIPTION).toString(), resultNode.get(FAILURE_DESCRIPTION).isDefined());
+        Assert.assertFalse(resultNode.get(FAILURE_DESCRIPTION).asString(), resultNode.get(FAILURE_DESCRIPTION).isDefined());
     }
 
 }

@@ -252,7 +252,7 @@ public class ModelControllerImplUnitTestCase {
     public void testModelStageUnhandledFailureExecution() throws Exception {
         ModelNode result = controller.execute(getOperation("evil", "attr1", 5), null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this handler is evil"));
+        assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains("this handler is evil"));
 
         // Confirm runtime state was unchanged
         assertTrue(sharedState.get());
@@ -321,7 +321,7 @@ public class ModelControllerImplUnitTestCase {
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().contains("runtime exception"));
+        assertTrue(result.get("failure-description").asString().contains("runtime exception"));
 
         // Confirm runtime state was changed (handler changes it and throws exception, does not fix state)
         assertFalse(sharedState.get());
@@ -345,7 +345,7 @@ public class ModelControllerImplUnitTestCase {
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get("failure-description").toString().contains("OFE"));
+        assertTrue(result.get("failure-description").asString().contains("OFE"));
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);

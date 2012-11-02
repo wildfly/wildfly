@@ -12,7 +12,7 @@ public class WriteEnableWelcomeRoot implements OperationStepHandler {
     static final WriteEnableWelcomeRoot INSTANCE = new WriteEnableWelcomeRoot();
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode virtualHost = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        boolean enable = Boolean.parseBoolean(operation.get("value").toString());
+        boolean enable = operation.get("value").asBoolean();
         if(enable && virtualHost.hasDefined(Constants.DEFAULT_WEB_MODULE)) {
             // That is no supported.
             throw new OperationFailedException(MESSAGES.noWelcomeWebappWithDefaultWebModule());

@@ -229,7 +229,7 @@ public class Utils {
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
             LOGGER.debug("Operation succeeded.");
         } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
+            throw new RuntimeException(result.get("failure-description").asString());
         } else {
             throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }

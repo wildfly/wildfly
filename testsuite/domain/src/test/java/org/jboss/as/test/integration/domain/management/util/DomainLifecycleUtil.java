@@ -494,11 +494,11 @@ public class DomainLifecycleUtil {
             if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
                 return result.get("result");
             } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
+                throw new RuntimeException(result.get("failure-description").asString());
             } else if (result.hasDefined("domain-failure-description")) {
-                throw new RuntimeException(result.get("domain-failure-description").toString());
+                throw new RuntimeException(result.get("domain-failure-description").asString());
             } else if (result.hasDefined("host-failure-descriptions")) {
-                throw new RuntimeException(result.get("host-failure-descriptions").toString());
+                throw new RuntimeException(result.get("host-failure-descriptions").asString());
             } else {
                 throw new RuntimeException("Operation outcome is " + result.get("outcome").asString());
             }

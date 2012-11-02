@@ -39,6 +39,6 @@ public class ParamsUtils {
     }
 
     public static String parseStringParameter(ModelNode operation, String name) {
-        return has(operation, name) ? operation.get(name).toString() : null;
+        return has(operation, name) ? operation.get(name).asString() : null;
     }
 }

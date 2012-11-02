@@ -86,7 +86,7 @@ public class WebCERTTestsSecurityDomainSetup implements ServerSetupTask {
                 System.out.println(result.get("result"));
             }
         } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").toString());
+            throw new RuntimeException(result.get("failure-description").asString());
         } else {
             throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }

@@ -127,7 +127,7 @@ public class ObjectFactoryWithEnvironmentBindingTestCase {
             }
             bindingAdd.get(OBJECT_FACTORY_ENV).set(environment);
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).asString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
             LOGGER.info("Object factory bound.");
 
         }

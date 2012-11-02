@@ -337,7 +337,7 @@ public class ServerManagementTestCase {
         if(! SUCCESS.equals(response.get(OUTCOME).asString())) {
             System.out.println("Failed response:");
             System.out.println(response);
-            Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
+            Assert.fail(response.get(FAILURE_DESCRIPTION).asString());
         }
 
         if (validateResult) {

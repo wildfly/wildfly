@@ -117,7 +117,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
+        assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains("this request is bad"));
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
@@ -137,7 +137,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         assertEquals(FAILED, result.get(OUTCOME).asString());
 
-        final String description = result.get("failure-description").toString();
+        final String description = result.get("failure-description").asString();
         assertTrue(description.contains("this handler is evil"));
         assertTrue(description.contains(" and was rolled back."));
 
@@ -161,7 +161,7 @@ public class CompositeOperationHandlerUnitTestCase {
         System.out.println(result);
         // Model stage failure should result in rollback regardless of the header
         assertEquals(FAILED, result.get(OUTCOME).asString());
-        assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
+        assertTrue(result.get(FAILURE_DESCRIPTION).asString().contains("this request is bad"));
 
 
         assertEquals(1, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
@@ -185,7 +185,7 @@ public class CompositeOperationHandlerUnitTestCase {
         // Model stage failure should result in rollback regardless of the header
         assertEquals(FAILED, result.get(OUTCOME).asString());
 
-        final String description = result.get("failure-description").toString();
+        final String description = result.get("failure-description").asString();
         assertTrue(description.contains("this handler is evil"));
         assertTrue(description.contains(" and was rolled back."));
 
@@ -205,7 +205,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step2 = getOperation("handleFailed", "attr2", 1, null, false);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-        final String description = result.get("failure-description").toString();
+        final String description = result.get("failure-description").asString();
         assertTrue(description.contains("handleFailed"));
         assertTrue(description.contains(" and was rolled back."));
 
@@ -271,7 +271,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode result = controller.execute(op, null, null, null);
         System.out.println(result);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
-        final String description = result.get("failure-description").toString();
+        final String description = result.get("failure-description").asString();
         assertTrue(description.contains("runtime exception"));
         assertTrue(description.contains(" and was rolled back."));
 

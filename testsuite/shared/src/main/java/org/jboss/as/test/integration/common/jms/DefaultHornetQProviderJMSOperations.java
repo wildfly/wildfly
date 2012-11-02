@@ -106,7 +106,7 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
         if (result.hasDefined(ClientConstants.OUTCOME) && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
             logger.info("Operation successful for update = " + update.toString());
         } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
-            final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
+            final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).asString();
             throw new JMSOperationsException(failureDesc);
         } else {
             throw new JMSOperationsException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));

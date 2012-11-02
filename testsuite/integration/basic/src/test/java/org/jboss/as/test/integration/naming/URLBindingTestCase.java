@@ -94,7 +94,7 @@ public class URLBindingTestCase {
         bindingAdd.get(TYPE).set(URL.class.getName());
         try {
             final ModelNode addResult = managementClient.getControllerClient().execute(bindingAdd);
-            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
+            Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).asString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
             Assert.assertEquals("http://localhost", ((URL) bean.lookupBind(name)).toString());
         } finally {
             // unbind it
@@ -103,7 +103,7 @@ public class URLBindingTestCase {
             bindingRemove.get(OP_ADDR).set(address);
             bindingRemove.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             final ModelNode removeResult = managementClient.getControllerClient().execute(bindingRemove);
-            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
+            Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).asString(), removeResult.get(FAILURE_DESCRIPTION)
                     .isDefined());
         }
     }

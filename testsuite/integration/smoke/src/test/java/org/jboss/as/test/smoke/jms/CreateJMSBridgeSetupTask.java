@@ -137,7 +137,7 @@ public class CreateJMSBridgeSetupTask extends CreateQueueSetupTask {
                 && ClientConstants.SUCCESS.equals(result.get(ClientConstants.OUTCOME).asString())) {
             logger.info("Operation successful for update = " + update.toString());
         } else if (result.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
-            final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).toString();
+            final String failureDesc = result.get(ClientConstants.FAILURE_DESCRIPTION).asString();
             throw new RuntimeException(failureDesc);
         } else {
             throw new RuntimeException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));

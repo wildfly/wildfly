@@ -244,13 +244,13 @@ public class DomainClientImpl implements DomainClient {
                 return result.get("result");
             }
             else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").toString());
+                throw new RuntimeException(result.get("failure-description").asString());
             }
             else if (result.hasDefined("domain-failure-description")) {
-                throw new RuntimeException(result.get("domain-failure-description").toString());
+                throw new RuntimeException(result.get("domain-failure-description").asString());
             }
             else if (result.hasDefined("host-failure-descriptions")) {
-                throw new RuntimeException(result.get("host-failure-descriptions").toString());
+                throw new RuntimeException(result.get("host-failure-descriptions").asString());
             }
             else {
                 throw MESSAGES.operationOutcome(result.get("outcome").asString());
