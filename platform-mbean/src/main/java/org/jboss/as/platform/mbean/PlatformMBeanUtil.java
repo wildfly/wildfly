@@ -35,6 +35,7 @@ import javax.management.ReflectionException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Utilities for working with platform mbeans.
@@ -185,7 +186,7 @@ public class PlatformMBeanUtil {
     private static ModelNode getDetypedStackTraceElement(final StackTraceElement stackTraceElement) {
         final ModelNode result = new ModelNode();
         if (stackTraceElement != null) {
-            result.get(PlatformMBeanConstants.FILE_NAME).set(stackTraceElement.getFileName());
+            nullSafeSet(result.get(PlatformMBeanConstants.FILE_NAME), stackTraceElement.getFileName());
             result.get(PlatformMBeanConstants.LINE_NUMBER).set(stackTraceElement.getLineNumber());
             result.get(PlatformMBeanConstants.CLASS_NAME).set(stackTraceElement.getClassName());
             result.get(PlatformMBeanConstants.METHOD_NAME).set(stackTraceElement.getMethodName());
