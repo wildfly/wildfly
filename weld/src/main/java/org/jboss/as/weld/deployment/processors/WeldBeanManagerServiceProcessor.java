@@ -28,8 +28,8 @@ import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -134,7 +134,7 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
 
     }
 
-    private static class BeanManagerManagedReferenceFactory implements ManagedReferenceFactory {
+    private static class BeanManagerManagedReferenceFactory implements ContextListManagedReferenceFactory {
         private final ServiceRegistry serviceRegistry;
         private final ServiceName beanManagerBindingServiceName;
 
@@ -152,6 +152,9 @@ public class WeldBeanManagerServiceProcessor implements DeploymentUnitProcessor 
             return null;
         }
 
-        ;
+        @Override
+        public String getInstanceClassName() {
+            return  javax.enterprise.inject.spi.BeanManager.class.getName();
+        }
     }
 }

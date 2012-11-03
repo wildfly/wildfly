@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -33,6 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * An {@link InjectionSource} which returns a {@link ManagedReference reference} to a {@link javax.ejb.TimerService}
@@ -51,13 +53,18 @@ public class TimerServiceBindingSource extends InjectionSource {
     /**
      * {@link ManagedReferenceFactory} for returning a {@link ManagedReference} to a {@link javax.ejb.TimerService}
      */
-    private static class TimerServiceManagedReferenceFactory implements ManagedReferenceFactory {
+    private static class TimerServiceManagedReferenceFactory implements ContextListManagedReferenceFactory {
 
         private final TimerServiceManagedReference timerServiceManagedReference = new TimerServiceManagedReference();
 
         @Override
         public ManagedReference getReference() {
             return timerServiceManagedReference;
+        }
+
+        @Override
+        public String getInstanceClassName() {
+            return javax.ejb.TimerService.class.getName();
         }
     }
 
