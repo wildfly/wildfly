@@ -131,7 +131,6 @@ public class InflowTestCase extends ContainerResourceMgmtTestBase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        assertEquals(1, ids.size());
 
         String piId = ids.iterator().next();
         assertNotNull(piId);

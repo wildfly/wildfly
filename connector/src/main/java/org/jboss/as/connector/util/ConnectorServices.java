@@ -377,7 +377,7 @@ public class ConnectorServices {
                            raName, resourceAdapterServiceNames.get(raName));
 
         if (resourceAdapterServiceNames.get(raName) == null || resourceAdapterServiceNames.get(raName).isEmpty()) {
-            return null;
+            return Collections.singleton(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName));
         }
 
         // Return all active service names for a resource adapter. If the dependent service needs the service name of
