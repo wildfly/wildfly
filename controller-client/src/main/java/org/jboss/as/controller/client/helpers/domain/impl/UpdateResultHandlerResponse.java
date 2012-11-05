@@ -59,14 +59,14 @@ public class UpdateResultHandlerResponse implements Serializable {
             return createCancellationResponse();
         }
         else {
-            String message = modelNode.hasDefined("failure-description") ? modelNode.get("failure-description").asString() : MESSAGES.noFailureDetails();
+            String message = modelNode.hasDefined("failure-description") ? modelNode.get("failure-description").toString() : MESSAGES.noFailureDetails();
             result = createFailureResponse(new UpdateFailedException(message));
         }
         if (modelNode.get("rolled-back").asBoolean(false)) {
             result = createRollbackResponse(result);
         }
         else if (modelNode.hasDefined("rollback-failure-description")) {
-            String message = modelNode.get("rollback-failure-description").asString();
+            String message = modelNode.get("rollback-failure-description").toString();
             result = createRollbackFailedResponse(result, new UpdateFailedException(message));
         }
         return result;
