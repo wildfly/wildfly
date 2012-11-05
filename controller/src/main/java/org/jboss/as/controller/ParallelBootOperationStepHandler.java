@@ -183,7 +183,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             if (txControl.transaction == null) {
                 String failureDesc;
                 if (txControl.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
-                    failureDesc = txControl.response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString();
+                    failureDesc = txControl.response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
                 } else {
                     failureDesc = MESSAGES.subsystemBootOperationFailed(entry.getKey());
                 }

@@ -107,7 +107,7 @@ public class JpaDsRestartTestCase {
 
         ModelNode result = controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
         if (expectFailure) {
-            System.out.println("Expected failure " + result.get(FAILURE_DESCRIPTION).asString());
+            System.out.println("Expected failure " + result.get(FAILURE_DESCRIPTION).toString());
             Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
         } else {
             Assert.assertEquals(result.get(FAILURE_DESCRIPTION).asString(), SUCCESS, result.get(OUTCOME).asString());

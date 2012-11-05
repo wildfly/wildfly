@@ -63,7 +63,7 @@ public class ModelReader {
     ModelNode execute(ModelNode operation) {
         ModelNode result = controller.execute(operation, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).toString());
         }
         return result.require(RESULT);
     }

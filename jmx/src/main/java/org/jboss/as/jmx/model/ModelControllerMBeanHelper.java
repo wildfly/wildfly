@@ -417,7 +417,7 @@ public class ModelControllerMBeanHelper {
 
     private String getFailureDescription(ModelNode result) {
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
-            return result.get(FAILURE_DESCRIPTION).asString();
+            return result.get(FAILURE_DESCRIPTION).toString();
         }
         return null;
     }

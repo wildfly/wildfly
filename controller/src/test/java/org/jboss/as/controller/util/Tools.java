@@ -70,7 +70,7 @@ public class Tools {
 
     static ModelNode getAndCheckResult(ModelNode result) {
         if (!result.get(OUTCOME).asString().equals(SUCCESS)) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).toString());
         }
         return result.get(RESULT);
     }

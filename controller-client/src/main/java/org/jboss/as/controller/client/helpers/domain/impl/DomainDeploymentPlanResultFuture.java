@@ -106,9 +106,9 @@ class DomainDeploymentPlanResultFuture implements Future<DeploymentPlanResult> {
                     final UpdateFailedException updateFailedException;
                     // Create the failure description
                     if (stepResult.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
-                        updateFailedException = new UpdateFailedException(stepResult.get(ClientConstants.FAILURE_DESCRIPTION).asString());
+                        updateFailedException = new UpdateFailedException(stepResult.get(ClientConstants.FAILURE_DESCRIPTION).toString());
                     } else if (planResultNode.hasDefined(ClientConstants.FAILURE_DESCRIPTION)) {
-                        updateFailedException = new UpdateFailedException(planResultNode.get(ClientConstants.FAILURE_DESCRIPTION).asString());
+                        updateFailedException = new UpdateFailedException(planResultNode.get(ClientConstants.FAILURE_DESCRIPTION).toString());
                     } else {
                         updateFailedException = new UpdateFailedException(ControllerClientMessages.MESSAGES.noFailureDetails());
                     }
