@@ -141,7 +141,7 @@ public class ExtensionRemoveTestCase {
 
         ModelNode result = client.execute(op);
         if (!fail) {
-            Assert.assertFalse(result.get(FAILURE_DESCRIPTION).asString(), result.get(FAILURE_DESCRIPTION).isDefined());
+            Assert.assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.get(FAILURE_DESCRIPTION).isDefined());
         } else {
             Assert.assertTrue(result.get(FAILURE_DESCRIPTION).isDefined());
         }

@@ -131,7 +131,7 @@ class ServerDeploymentPlanResultFuture implements Future<ServerDeploymentPlanRes
         if ("cancelled".equals(outcome)) {
             actionResult = new SimpleServerDeploymentActionResult(actionId, Result.NOT_EXECUTED);
         } else if ("failed".equals(outcome)) {
-            Exception e = actionResultNode.hasDefined("failure-description") ? new Exception(actionResultNode.get("failure-description").asString()) : null;
+            Exception e = actionResultNode.hasDefined("failure-description") ? new Exception(actionResultNode.get("failure-description").toString()) : null;
             if (actionResultNode.hasDefined("rolled-back") && actionResultNode.get("rolled-back").asBoolean()) {
                 if (e == null) {
                     actionResult = new SimpleServerDeploymentActionResult(actionId, Result.ROLLED_BACK);

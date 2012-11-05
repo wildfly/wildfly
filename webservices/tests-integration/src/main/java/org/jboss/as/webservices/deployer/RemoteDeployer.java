@@ -316,7 +316,7 @@ public final class RemoteDeployer implements Deployer {
                 LOGGER.info(result.get(RESULT));
             }
         } else if (result.hasDefined(FAILURE_DESCRIPTION)) {
-            throw new Exception(result.get(FAILURE_DESCRIPTION).asString());
+            throw new Exception(result.get(FAILURE_DESCRIPTION).toString());
         } else {
             throw new Exception("Operation not successful; outcome = " + result.get(OUTCOME));
         }

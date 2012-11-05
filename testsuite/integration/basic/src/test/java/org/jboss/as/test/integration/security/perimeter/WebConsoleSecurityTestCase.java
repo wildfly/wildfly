@@ -145,7 +145,8 @@ public class WebConsoleSecurityTestCase {
       private void checkSuccessful(final ModelNode result,
                                    final ModelNode operation) throws UnSuccessfulOperationException {
          if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw new UnSuccessfulOperationException(result.get(FAILURE_DESCRIPTION).asString());
+            throw new UnSuccessfulOperationException(result.get(
+               FAILURE_DESCRIPTION).toString());
          }
       }
 

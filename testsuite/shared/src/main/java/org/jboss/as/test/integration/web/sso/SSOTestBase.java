@@ -356,7 +356,7 @@ public abstract class SSOTestBase {
                 if (result.hasDefined("result"))
                     log.info(result.get("result"));
             } else if (result.hasDefined("failure-description")) {
-                throw new RuntimeException(result.get("failure-description").asString());
+                throw new RuntimeException(result.get("failure-description").toString());
             } else {
                 throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
             }

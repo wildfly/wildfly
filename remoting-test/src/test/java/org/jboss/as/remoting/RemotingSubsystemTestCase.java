@@ -145,7 +145,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         write.get(NAME).set(attrName);
         write.get(VALUE).set(after);
         ModelNode result = services.executeOperation(write);
-        assertFalse(result.get(FAILURE_DESCRIPTION).asString(), result.hasDefined(FAILURE_DESCRIPTION));
+        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
 
         assertEquals(after, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, attrName).asInt());
 
@@ -180,7 +180,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         write.get(NAME).set(VALUE);
         write.get(VALUE).set(2);
         ModelNode result = services.executeOperation(write);
-        assertFalse(result.get(FAILURE_DESCRIPTION).asString(), result.hasDefined(FAILURE_DESCRIPTION));
+        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
         assertEquals(2, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, "test-connector", CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS").require(VALUE).asInt());
         current.updateCurrentEndpoint(true);
         current.updateCurrentConnector(false);
@@ -191,7 +191,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         remove.remove(NAME);
         remove.remove(VALUE);
         result = services.executeOperation(remove);
-        assertFalse(result.get(FAILURE_DESCRIPTION).asString(), result.hasDefined(FAILURE_DESCRIPTION));
+        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
         assertFalse(services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, "test-connector", CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS").isDefined());
         current.updateCurrentEndpoint(true);
         current.updateCurrentConnector(false);
@@ -201,7 +201,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         add.get(OP).set(ADD);
         add.get(VALUE).set(1);
         result = services.executeOperation(add);
-        assertFalse(result.get(FAILURE_DESCRIPTION).asString(), result.hasDefined(FAILURE_DESCRIPTION));
+        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
         assertEquals(1, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, "test-connector", CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS").require(VALUE).asInt());
         current.updateCurrentEndpoint(true);
         current.updateCurrentConnector(false);

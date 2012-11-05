@@ -134,7 +134,7 @@ public class MessagingClientTestCase {
                 System.out.println(result.get("result"));
             }
         } else if (result.hasDefined("failure-description")) {
-            throw new RuntimeException(result.get("failure-description").asString());
+            throw new RuntimeException(result.get("failure-description").toString());
         } else {
             throw new RuntimeException("Operation not successful; outcome = " + result.get("outcome"));
         }
