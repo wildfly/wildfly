@@ -309,6 +309,28 @@ public class ABTestCase extends AbstractCmpTest {
         assertTrue(!(b1.contains(b1x[b1x.length - 1])));
     }
 
+    @Test
+    public void Xtest_toArray() throws Exception {
+        AHome aHome = getFKAHome();
+        BHome bHome = getFKBHome();
+        // Before change:
+        A a1 = aHome.create(new Integer(1));        
+
+        Collection b1 = a1.getB();        
+
+        B[] b1x = new B[20];
+
+        for (int i = 0; i < b1x.length; i++) {
+            b1x[i] = bHome.create(new Integer(10000 + i));
+            b1.add(b1x[i]);
+        }
+
+        Object[] b1Array = a1.getB().toArray();
+        for(int i = 0; i < b1Array.length; i++) {
+            assertTrue(b1.contains(b1Array[i]));
+        }
+    }
+
     public void tearDownEjb() throws Exception {
         AHome aHome;
         BHome bHome;
