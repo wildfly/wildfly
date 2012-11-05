@@ -24,6 +24,7 @@ package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +91,11 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
     }
 
     public Collection<Object> getEntityLocalCollection(List<Object> idList) {
-        return null;
+       final List<Object> result = new ArrayList<Object>(idList.size());
+       for (Object id:idList) {
+           result.add(getEJBLocalObject(id));
+       }
+       return result;
     }
 
     public void synchronizeEntitiesWithinTransaction(Transaction transaction) {
