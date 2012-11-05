@@ -255,6 +255,9 @@ public final class ServerService extends AbstractControllerService {
             serviceTarget.addService(org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT_EXTENSION_INDEX,
                     new ExtensionIndexService(newExtDirs)).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
+            // Initialize controller extensions
+            runPerformControllerInitialization(context);
+
             final DeploymentOverlayIndexService deploymentOverlayIndexService = new DeploymentOverlayIndexService();
             context.getServiceTarget().addService(DeploymentOverlayIndexService.SERVICE_NAME, deploymentOverlayIndexService).install();
 
