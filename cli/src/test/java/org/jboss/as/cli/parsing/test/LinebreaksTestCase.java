@@ -23,11 +23,17 @@ package org.jboss.as.cli.parsing.test;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.cli.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -37,7 +43,7 @@ import org.junit.Test;
  */
 public class LinebreaksTestCase {
 
-    private static final String LN = System.getProperty("line.separator");
+    private static final String LN = Util.LINE_SEPARATOR;
     private static CommandContext ctx;
 
     private final String[] headers = new String[]{"{","rollout"," main-server-group", "(",
@@ -68,13 +74,72 @@ public class LinebreaksTestCase {
     }
 
     @Test
+    @Ignore
     public void testOp() throws Exception {
         testPieces(op);
     }
 
     @Test
+    @Ignore
     public void testCmd() throws Exception {
         testPieces(cmd);
+    }
+
+    @Test
+    public void testLineBreaksAndTabs() throws Exception {
+        final StringBuilder buf = new StringBuilder();
+        buf.append("/subsystem=security/security-domain=DemoAuthRealm/authentication=classic:add( \\").append(Util.LINE_SEPARATOR);
+        buf.append('\t').append("login-modules=[ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t").append("{ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("\"code\" => \"Database\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("flag=>required, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("test1 = > required, \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("test2 =\"> required\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("\"module-options\" = [ \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("\"unauthenticatedIdentity\"=\"guest\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("\"dsJndiName\"=\"java:jboss/jdbc/ApplicationDS\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("\"principalsQuery\"=\"select password from users where username=?\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("\"rolesQuery\"=\"select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("\"hashAlgorithm\" = \"MD5\", \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t\t").append("hashEncoding = hex \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t\t").append("] \\").append(Util.LINE_SEPARATOR);
+        buf.append("\t\t").append("} \\").append(Util.LINE_SEPARATOR);
+        buf.append('\t').append(']').append(Util.LINE_SEPARATOR);
+        buf.append(')');
+
+        final ModelNode node = ctx.buildRequest(buf.toString());
+        ModelNode addr = new ModelNode();
+        addr.add("subsystem", "security");
+        addr.add("security-domain", "DemoAuthRealm");
+        addr.add("authentication", "classic");
+        assertEquals(addr, node.get(Util.ADDRESS));
+
+        assertEquals("add", node.get(Util.OPERATION).asString());
+
+        final ModelNode loginModules = node.get("login-modules");
+        assertTrue(loginModules.isDefined());
+        assertEquals(ModelType.LIST, loginModules.getType());
+        List<ModelNode> list = loginModules.asList();
+        assertEquals(1, list.size());
+        final ModelNode module = list.get(0);
+        assertTrue(module.isDefined());
+        assertEquals("Database", module.get("code").asString());
+        assertEquals("required", module.get("flag").asString());
+        assertEquals("> required", module.get("test1").asString());
+        assertEquals("> required", module.get("test2").asString());
+
+        final ModelNode options = module.get("module-options");
+        assertTrue(options.isDefined());
+        assertEquals(ModelType.LIST, options.getType());
+        list = options.asList();
+        assertEquals(6, list.size());
+
+        assertEquals("guest", list.get(0).get("unauthenticatedIdentity").asString());
+        assertEquals("java:jboss/jdbc/ApplicationDS", list.get(1).get("dsJndiName").asString());
+        assertEquals("select password from users where username=?", list.get(2).get("principalsQuery").asString());
+        assertEquals("select name, 'Roles' FROM user_roless ur, roles r, user u WHERE u.username=? and u.id = ur.user_id and ur.role_id = r.id", list.get(3).get("rolesQuery").asString());
+        assertEquals("MD5", list.get(4).get("hashAlgorithm").asString());
+        assertEquals("hex", list.get(5).get("hashEncoding").asString());
     }
 
     protected void testPieces(String[] arr) throws Exception {
