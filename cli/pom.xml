@@ -122,11 +122,6 @@
         </dependency>
 
         <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-controller</artifactId>
-        </dependency>
-
-        <dependency>
            <groupId>org.jboss.remotingjmx</groupId>
            <artifactId>remoting-jmx</artifactId>
         </dependency>

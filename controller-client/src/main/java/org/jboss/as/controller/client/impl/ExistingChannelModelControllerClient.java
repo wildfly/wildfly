@@ -19,10 +19,9 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.controller.remote;
+package org.jboss.as.controller.client.impl;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.remoting3.Channel;
