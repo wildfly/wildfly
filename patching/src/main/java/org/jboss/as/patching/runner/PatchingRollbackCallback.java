@@ -23,10 +23,10 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.Patch;
-import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,16 +84,16 @@ public class PatchingRollbackCallback implements PatchingContext.TaskFinishCallb
     public void commitCallback() {
         // delete all resources associated to the rolled back patches
         for(final String rollback : patches) {
-            recursiveDelete(structure.getHistoryDir(rollback));
+            IoUtils.recursiveDelete(structure.getHistoryDir(rollback));
             // Leave the patch dir to for the GC operation
             // recursiveDelete(structure.getPatchDirectory(rollback));
         }
-        recursiveDelete(structure.getHistoryDir(patchId));
+        IoUtils.recursiveDelete(structure.getHistoryDir(patchId));
         // Leave the patch dir to for the GC operation
         // recursiveDelete(structure.getPatchDirectory(patchId));
         if(patch.getPatchType() == Patch.PatchType.CUMULATIVE) {
             // Only remove the refs for rolling back a CP
-            recursiveDelete(structure.getCumulativeRefs(patchId));
+            IoUtils.recursiveDelete(structure.getCumulativeRefs(patchId));
         }
     }
 

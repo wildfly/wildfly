@@ -24,18 +24,12 @@ package org.jboss.as.patching;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.ModelControllerServiceInitialization;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.util.Set;
 
 /**
  * @author Emanuel Muckenhuber

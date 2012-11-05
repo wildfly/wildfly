@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
-import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.dmr.ModelNode;
 

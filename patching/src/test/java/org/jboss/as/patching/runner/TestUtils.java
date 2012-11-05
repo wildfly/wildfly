@@ -24,15 +24,16 @@ package org.jboss.as.patching.runner;
 
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
+import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
-import static org.jboss.as.patching.generator.PatchUtils.safeClose;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import org.jboss.as.patching.generator.ZipUtils;
+import org.jboss.as.patching.IoUtils;
+import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
@@ -93,7 +94,7 @@ public class TestUtils {
             os.write(content.getBytes(Charset.forName("UTF-8")));
             os.close();
         } finally {
-            PatchUtils.safeClose(os);
+            IoUtils.safeClose(os);
         }
     }
 

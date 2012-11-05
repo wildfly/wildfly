@@ -1,7 +1,7 @@
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasNotBeenApplied;
@@ -15,7 +15,6 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
@@ -48,7 +47,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         String fileName = "standalone.sh";
         modifiedFile = touch(binDir, fileName);
         dump(modifiedFile, "modified script to run standalone AS7");
-        expectedModifiedHash = calculateHash(modifiedFile);
+        expectedModifiedHash = hashFile(modifiedFile);
         // let's simulate that the file has been modified by the users by using a hash that is not the file checksum
         byte[] unmodifiedHash = randomString().getBytes();
 
@@ -59,7 +58,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
         File updatedFile = touch(patchDir, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
-        updatedHash = calculateHash(updatedFile);
+        updatedHash = hashFile(updatedFile);
         fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), unmodifiedHash, MODIFY);
 
         patch = PatchBuilder.create()
@@ -96,7 +95,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
             /// file has not been modified in the AS7 installation
             assertFileExists(modifiedFile);
-            assertArrayEquals(expectedModifiedHash, calculateHash(modifiedFile));
+            assertArrayEquals(expectedModifiedHash, hashFile(modifiedFile));
         }
     }
 
@@ -109,10 +108,10 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
         /// file has been updated in the AS7 installation
         // and it's the new one
         assertFileExists(modifiedFile);
-        assertArrayEquals(updatedHash, calculateHash(modifiedFile));
+        assertArrayEquals(updatedHash, hashFile(modifiedFile));
         // the existing file has been backed up
         File backupFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", modifiedFile.getName());
-        assertArrayEquals(expectedModifiedHash, calculateHash(backupFile));
+        assertArrayEquals(expectedModifiedHash, hashFile(backupFile));
     }
 
     @Test
@@ -124,7 +123,7 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
             /// file has not been modified in the AS7 installation
             assertFileExists(modifiedFile);
-            assertArrayEquals(expectedModifiedHash, calculateHash(modifiedFile));
+            assertArrayEquals(expectedModifiedHash, hashFile(modifiedFile));
         }
     }
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,8 +32,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,7 +43,10 @@ import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.patching.HashUtils;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
@@ -92,7 +95,6 @@ public class PatchGenerator {
     private final Map<DistributionContentItem, ContentModification> miscAdds = new TreeMap<DistributionContentItem, ContentModification>();
     private final Map<DistributionContentItem, ContentModification> miscUpdates = new TreeMap<DistributionContentItem, ContentModification>();
     private final Map<DistributionContentItem, ContentModification> miscRemoves = new TreeMap<DistributionContentItem, ContentModification>();
-    private final MessageDigest messageDigest;
     private File tmp;
 
     private PatchGenerator(File patchConfig, File oldRoot, File newRoot, File patchFile) {
@@ -100,12 +102,6 @@ public class PatchGenerator {
         this.oldRoot = oldRoot;
         this.newRoot = newRoot;
         this.patchFile = patchFile;
-
-        try {
-            this.messageDigest = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Cannot obtain SHA-1 MessageDigest");
-        }
     }
 
     private void process() throws IOException, XMLStreamException {
@@ -135,7 +131,7 @@ public class PatchGenerator {
             ZipUtils.zip(tmp, patchFile);
 
         } finally {
-            cleanFile(tmp);
+            IoUtils.recursiveDelete(tmp);
         }
 
     }
@@ -147,7 +143,7 @@ public class PatchGenerator {
             BufferedInputStream bis = new BufferedInputStream(fis);
             return PatchConfigXml.parse(bis);
         } finally {
-            PatchUtils.safeClose(fis);
+            IoUtils.safeClose(fis);
         }
     }
 
@@ -422,7 +418,7 @@ public class PatchGenerator {
         File moduleRootFile = bundleRoot.getFile(newRoot);
         byte[] moduleHash = getHash(moduleRootFile);
         BundleItem bi = new BundleItem(newStructure.getBundleName(bundleRoot), newStructure.getBundleSlot(bundleRoot), moduleHash);
-        ContentModification cm = new ContentModification(bi, PatchUtils.NO_CONTENT, ModificationType.ADD);
+        ContentModification cm = new ContentModification(bi, NO_CONTENT, ModificationType.ADD);
         bundleAdds.put(bundleRoot, cm);
     }
 
@@ -441,7 +437,7 @@ public class PatchGenerator {
 
     private void recordBundleRemove(DistributionContentItem oldItemPath) throws IOException {
         DistributionContentItem bundleRoot = getBundleRoot(oldItemPath);
-        BundleItem bi = new BundleItem(oldStructure.getBundleName(bundleRoot), oldStructure.getBundleSlot(bundleRoot), PatchUtils.NO_CONTENT);
+        BundleItem bi = new BundleItem(oldStructure.getBundleName(bundleRoot), oldStructure.getBundleSlot(bundleRoot), NO_CONTENT);
         File oldDir = bundleRoot.getFile(oldRoot);
         byte[] oldItemHash = getHash(oldDir);
         ContentModification cm = new ContentModification(bi, oldItemHash, ModificationType.REMOVE);
@@ -453,7 +449,7 @@ public class PatchGenerator {
         File moduleRootFile = moduleRoot.getFile(newRoot);
         byte[] moduleHash = getHash(moduleRootFile);
         ModuleItem mi = new ModuleItem(newStructure.getModuleName(moduleRoot), newStructure.getModuleSlot(moduleRoot), moduleHash);
-        ContentModification cm = new ContentModification(mi, PatchUtils.NO_CONTENT, ModificationType.ADD);
+        ContentModification cm = new ContentModification(mi, NO_CONTENT, ModificationType.ADD);
         moduleAdds.put(moduleRoot, cm);
     }
 
@@ -474,7 +470,7 @@ public class PatchGenerator {
         DistributionContentItem oldModuleRoot = getModuleRoot(removedPath);
         DistributionContentItem newModuleRoot = newStructure.getCurrentVersionPath(oldModuleRoot, oldStructure);
         if (!moduleUpdates.containsKey(newModuleRoot)) {
-            File newModuleRootFile = newModuleRoot.getFile(oldRoot);
+            File newModuleRootFile = newModuleRoot.getFile(newRoot);
             byte[] newItemHash = getHash(newModuleRootFile);
 
             ModuleItem mi = new ModuleItem(newStructure.getModuleName(newModuleRoot), newStructure.getModuleSlot(newModuleRoot), newItemHash);
@@ -486,7 +482,7 @@ public class PatchGenerator {
     }
 
     private void recordModuleRemove(DistributionContentItem oldModuleRoot) throws IOException {
-        ModuleItem mi = new ModuleItem(oldStructure.getModuleName(oldModuleRoot), oldStructure.getModuleSlot(oldModuleRoot), PatchUtils.NO_CONTENT);
+        ModuleItem mi = new ModuleItem(oldStructure.getModuleName(oldModuleRoot), oldStructure.getModuleSlot(oldModuleRoot), NO_CONTENT);
         File oldDir = oldModuleRoot.getFile(oldRoot);
         byte[] oldItemHash = getHash(oldDir);
         ContentModification cm = new ContentModification(mi, oldItemHash, ModificationType.REMOVE);
@@ -497,7 +493,7 @@ public class PatchGenerator {
         File added = itemPath.getFile(newRoot);
         byte[] hash = getHash(added);
         MiscContentItem mci = new MiscContentItem(itemPath.getName(), itemPath.getParent().getPathAsList(), hash, itemPath.isDirectory());
-        ContentModification cm = new ContentModification(mci, PatchUtils.NO_CONTENT, ModificationType.ADD);
+        ContentModification cm = new ContentModification(mci, NO_CONTENT, ModificationType.ADD);
         miscAdds.put(itemPath, cm);
     }
 
@@ -536,7 +532,7 @@ public class PatchGenerator {
 
     private byte[] getHash(File file) throws IOException {
 //        try {
-            return PatchUtils.hashFile(file, messageDigest);
+            return HashUtils.hashFile(file);
 //        } catch (Exception e) {
 //            throw new RuntimeException("Failed to hash file " + file.getAbsolutePath(), e);
 //        }
@@ -606,7 +602,7 @@ public class PatchGenerator {
             PatchXml.marshal(fos, pb.build());
 
         } finally {
-            PatchUtils.safeClose(fos);
+            IoUtils.safeClose(fos);
         }
 
         FileReader reader = new FileReader(patchXml);
@@ -617,7 +613,7 @@ public class PatchGenerator {
                 System.out.println(line);
             }
         } finally {
-            PatchUtils.safeClose(reader);
+            IoUtils.safeClose(reader);
         }
     }
 
@@ -655,24 +651,9 @@ public class PatchGenerator {
         File targetFile = targetItem.getFile(targetBaseDir);
         File sourceFile = targetItem.getFile(newRoot);
         try {
-            PatchUtils.copyFile(sourceFile, targetFile);
+            IoUtils.copyFile(sourceFile, targetFile);
         } catch (IOException e) {
             throw new RuntimeException("Cannot copy " + sourceFile + " to " + targetFile, e);
-        }
-    }
-
-    private void cleanFile(File file) {
-        if (file != null && file.exists()) {
-            if (file.isDirectory()) {
-                File[] children = file.listFiles();
-                if (children != null) {
-                    for (File child : children) {
-                        cleanFile(child);
-                    }
-                }
-            }
-
-            System.out.println("Cleaned " + file + " -- " + file.delete());
         }
     }
 

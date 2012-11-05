@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.cli;
 
 /**
- * @author Emanuel Muckenhuber
+ * Service provider interface to add extra command handlers to the CLI using
+ * <a href="http://docs.oracle.com/javase/tutorial/sound/SPI-intro.html">service provider mechanism</a>.
+ *
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class Constants {
+public interface CommandHandlerProvider {
 
+    CommandHandler createCommandHandler(CommandContext ctx);
 
-    public static final String OVERRIDE_MODULES = "override-modules";
-    public static final String OVERRIDE_ALL = "override-all";
-    public static final String OVERRIDES = "override";
-    public static final String PRESERVE = "preserve";
-
-    public static final String TIMESTAMP = "timestamp";
-    public static final String APPLIED_AT = "applied-at";
+    String[] getNames();
 }

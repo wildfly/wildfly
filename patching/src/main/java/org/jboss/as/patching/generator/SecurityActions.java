@@ -24,10 +24,6 @@ package org.jboss.as.patching.generator;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.Provider;
-import java.security.Security;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Security actions to access system environment information.  No methods in

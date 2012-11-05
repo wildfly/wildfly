@@ -22,16 +22,15 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
-import static org.jboss.as.patching.runner.PatchingAssert.assertNoResourcesForPatch;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
-import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
@@ -43,7 +42,6 @@ import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
@@ -52,7 +50,6 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.junit.Test;
 
@@ -73,7 +70,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
-        byte[] newHash = calculateHash(moduleDir);
+        byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
@@ -102,7 +99,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         String fileName = "standalone.sh";
         File standaloneShellFile = touch(binDir, fileName);
         dump(standaloneShellFile, "original script to run standalone AS7");
-        byte[] existingHash = calculateHash(standaloneShellFile);
+        byte[] existingHash = hashFile(standaloneShellFile);
 
         // build a CP patch for the base installation
         // with 1 added module
@@ -111,11 +108,11 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
-        byte[] newModuleHash = calculateHash(moduleDir);
+        byte[] newModuleHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newModuleHash), NO_CONTENT, ADD);
         File updatedFile = touch(patchDir, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
-        byte[] updatedHash = calculateHash(updatedFile);
+        byte[] updatedHash = hashFile(updatedFile);
         ContentModification fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), existingHash, MODIFY);
 
         Patch patch = PatchBuilder.create()
@@ -132,7 +129,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertPatchHasBeenApplied(result, patch);
         assertFileExists(standaloneShellFile);
-        assertArrayEquals(updatedHash, calculateHash(standaloneShellFile));
+        assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
         tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
         assertDirExists(result.getPatchInfo().getEnvironment().getPatchDirectory(patchID));
         assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
@@ -143,7 +140,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
         assertFileExists(standaloneShellFile);
-        assertArrayEquals(existingHash, calculateHash(standaloneShellFile));
+        assertArrayEquals(existingHash, hashFile(standaloneShellFile));
     }
 
     @Test
@@ -158,7 +155,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File cumulativePatchDir = mkdir(tempDir, culumativePatchID);
         String moduleName = randomString();
         File moduleDir = createModule(cumulativePatchDir, moduleName);
-        byte[] newHash = calculateHash(moduleDir);
+        byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT, ADD);
 
         Patch cumulativePatch = PatchBuilder.create()
@@ -181,7 +178,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File oneOffPatchDir = mkdir(tempDir, oneOffPatchID);
 
         File oneOffmoduleDir = createModule(oneOffPatchDir, moduleName, "update module resource");
-        byte[] updatedHash = calculateHash(oneOffmoduleDir);
+        byte[] updatedHash = hashFile(oneOffmoduleDir);
         ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHash), newHash, MODIFY);
 
         Patch oneOffPatch = PatchBuilder.create()
@@ -213,14 +210,14 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         createModule(env.getInstalledImage().getJbossHome(), moduleName);
 
         tree(env.getInstalledImage().getJbossHome());
-        byte[] existingHash = calculateHash(new File(env.getInstalledImage().getModulesDir(), moduleName));
+        byte[] existingHash = hashFile(new File(env.getInstalledImage().getModulesDir(), moduleName));
 
         // build a CP patch for the base installation
         // with 1 updated module
         String culumativePatchID = randomString() + "-CP";
         File cumulativePatchDir = mkdir(tempDir, culumativePatchID);
         File moduleDir = createModule(cumulativePatchDir, moduleName, "this is a module update in a cumulative patch");
-        byte[] updatedHashCP = calculateHash(moduleDir);
+        byte[] updatedHashCP = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, updatedHashCP), existingHash, MODIFY);
 
         Patch cumulativePatch = PatchBuilder.create()
@@ -243,7 +240,7 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
         File oneOffPatchDir = mkdir(tempDir, oneOffPatchID);
 
         File oneOffmoduleDir = createModule(oneOffPatchDir, moduleName, "update module resource");
-        byte[] updatedHashOneOff = calculateHash(oneOffmoduleDir);
+        byte[] updatedHashOneOff = hashFile(oneOffmoduleDir);
         ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHashOneOff), updatedHashCP, MODIFY);
 
         Patch oneOffPatch = PatchBuilder.create()

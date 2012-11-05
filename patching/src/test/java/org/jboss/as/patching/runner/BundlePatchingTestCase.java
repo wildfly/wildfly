@@ -22,36 +22,32 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.LocalPatchInfo;
-import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.metadata.BundleItem;
-import org.jboss.as.patching.metadata.ContentModification;
+import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
 import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
-import org.jboss.as.patching.metadata.ModuleItem;
-import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchBuilder;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertContains;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedAbsentBundle;
-import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedAbsentModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedBundle;
-import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
-import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createBundle;
-import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
-import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Collections;
+
+import org.jboss.as.patching.LocalPatchInfo;
+import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.metadata.BundleItem;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchBuilder;
+import org.junit.Test;
 
 /**
  * @author Emanuel Muckenhuber
@@ -69,7 +65,7 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
         File patchDir = mkdir(tempDir, patchID);
         String bundleName = randomString();
         File bundleDir = createBundle(patchDir, bundleName, true);
-        byte[] newHash = calculateHash(bundleDir);
+        byte[] newHash = hashFile(bundleDir);
         ContentModification bundleAdd = new ContentModification(new BundleItem(bundleName, newHash), NO_CONTENT, ADD);
 
         Patch patch = PatchBuilder.create()
@@ -100,14 +96,14 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
 
         // create a bundle in the AS7 installation
         createBundle(env.getInstalledImage().getJbossHome(), bundleName, true);
-        byte[] existingHash = calculateHash(new File(env.getInstalledImage().getBundlesDir(), bundleName));
+        byte[] existingHash = hashFile(new File(env.getInstalledImage().getBundlesDir(), bundleName));
 
         // build a one-off patch for the base installation
         // with 1 modified module
         String patchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
         File bundleDir = createBundle(patchDir, bundleName, true);
-        byte[] newHash = calculateHash(bundleDir);
+        byte[] newHash = hashFile(bundleDir);
 
         ContentModification bundleModify = new ContentModification(new BundleItem(bundleName, newHash), existingHash, MODIFY);
 
@@ -140,7 +136,7 @@ public class BundlePatchingTestCase extends AbstractTaskTestCase {
         String moduleName = randomString();
         File bundlesDir = env.getInstalledImage().getBundlesDir();
         createBundle(env.getInstalledImage().getJbossHome(), moduleName, true);
-        byte[] existingHash = calculateHash(new File(bundlesDir, moduleName));
+        byte[] existingHash = hashFile(new File(bundlesDir, moduleName));
 
         // build a one-off patch for the base installation
         // with 1 bundle removed

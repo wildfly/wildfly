@@ -22,8 +22,6 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.PatchInfo;
-import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
@@ -32,8 +30,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
+import org.jboss.as.patching.PatchInfo;
 import org.junit.After;
 import org.junit.Before;
+
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
@@ -57,7 +58,7 @@ public abstract class AbstractTaskTestCase {
 
     @After
     public void tearDown() {
-        recursiveDelete(tempDir);
+        IoUtils.recursiveDelete(tempDir);
         // reset the module.path sys prop
         if (storedModulesPath != null) {
             System.setProperty("module.path", storedModulesPath);

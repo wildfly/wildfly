@@ -22,38 +22,26 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.PatchInfo;
+import static org.jboss.as.patching.IoUtils.safeClose;
 
-import java.io.BufferedInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.DigestOutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.jboss.as.patching.PatchInfo;
+
 /**
  * @author Emanuel Muckenhuber
  */
 public final class PatchUtils {
-
-    private static final MessageDigest DIGEST;
-    static {
-        try {
-            DIGEST = MessageDigest.getInstance("SHA-1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     static final int DEFAULT_BUFFER_SIZE = 65536;
     public static final OutputStream NULL_OUTPUT_STREAM = new OutputStream() {
@@ -155,226 +143,8 @@ public final class PatchUtils {
         }
     }
 
-    static void createDirIfNotExists(final File dir) throws IOException {
-        if(! dir.exists()) {
-            if(!dir.mkdir() && !dir.exists()) {
-                throw new IOException("failed to create " + dir.getAbsolutePath());
-            }
-        }
-    }
-
-    /**
-     * Safely close some resource without throwing an exception.
-     *
-     * @param closeable the resource to close
-     */
-    public static void safeClose(final Closeable closeable) {
-        if(closeable != null) {
-            try {
-                closeable.close();
-            } catch (IOException e) {
-                //
-            }
-        }
-    }
-
-    /**
-     * Copy a file.
-     *
-     * @param in the
-     * @param out the output
-     *
-     * @throws IOException for any error
-     */
-    public static void copyFile(final File in, final File out) throws IOException {
-        final InputStream is = new FileInputStream(in);
-        try {
-            final OutputStream os = new FileOutputStream(out);
-            try {
-                copyStreamAndClose(is, os);
-            } finally {
-                safeClose(os);
-            }
-        } finally {
-            safeClose(is);
-        }
-    }
-
-    /**
-     * Copy input stream to output stream and close them both
-     *
-     * @param is input stream
-     * @param os output stream
-     *
-     * @throws IOException for any error
-     */
-    public static void copyStreamAndClose(InputStream is, OutputStream os) throws IOException {
-        copyStreamAndClose(is, os, DEFAULT_BUFFER_SIZE);
-    }
-
-    /**
-     * Copy input stream to output stream and close them both
-     *
-     * @param is input stream
-     * @param os output stream
-     * @param bufferSize the buffer size to use
-     *
-     * @throws IOException for any error
-     */
-    public static void copyStreamAndClose(InputStream is, OutputStream os, int bufferSize)
-            throws IOException {
-        try {
-            copyStream(is, os, bufferSize);
-            // throw an exception if the close fails since some data might be lost
-            is.close();
-            os.close();
-        }
-        finally {
-            // ...but still guarantee that they're both closed
-            safeClose(is);
-            safeClose(os);
-        }
-    }
-
-    /**
-     * Copy input stream to output stream without closing streams. Flushes output stream when done.
-     *
-     * @param is input stream
-     * @param os output stream
-     *
-     * @throws IOException for any error
-     */
-    public static void copyStream(InputStream is, OutputStream os) throws IOException {
-        copyStream(is, os, DEFAULT_BUFFER_SIZE);
-    }
-
-    /**
-     * Copy input stream to output stream without closing streams. Flushes output stream when done.
-     *
-     * @param is input stream
-     * @param os output stream
-     * @param bufferSize the buffer size to use
-     *
-     * @throws IOException for any error
-     */
-    public static void copyStream(InputStream is, OutputStream os, int bufferSize)
-            throws IOException {
-        if (is == null) {
-            throw new IllegalArgumentException("input stream is null");
-        }
-        if (os == null) {
-            throw new IllegalArgumentException("output stream is null");
-        }
-        byte[] buff = new byte[bufferSize];
-        int rc;
-        while ((rc = is.read(buff)) != -1) os.write(buff, 0, rc);
-        os.flush();
-    }
-
-    public static byte[] copyAndGetHash(final InputStream is, final OutputStream os) throws IOException {
-        byte[] sha1Bytes;
-        synchronized (DIGEST) {
-            DIGEST.reset();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            DigestOutputStream dos = new DigestOutputStream(os, DIGEST);
-            copyStream(bis, dos);
-            sha1Bytes = DIGEST.digest();
-        }
-        return sha1Bytes;
-    }
-
-
-    /**
-     * Calculate the hash of a file.
-     *
-     * @param file the file
-     * @return the hash
-     * @throws IOException
-     */
-    public static byte[] calculateHash(final File file) throws IOException {
-        synchronized (DIGEST) {
-            DIGEST.reset();
-            internalCalculateHash(file, DIGEST);
-            return DIGEST.digest();
-        }
-    }
-
-    static void internalCalculateHash(final File file, final MessageDigest digest) throws IOException {
-        if(file.isDirectory()) {
-            final File[] children = file.listFiles();
-            if(children != null && children.length > 0) {
-                for(final File child : children) {
-                    internalCalculateHash(child, digest);
-                }
-            }
-        } else {
-            final InputStream is = new FileInputStream(file);
-            try {
-                final DigestOutputStream os = new DigestOutputStream(PatchUtils.NULL_OUTPUT_STREAM, digest);
-                PatchUtils.copyStream(is, os);
-                is.close();
-            } finally {
-                safeClose(is);
-            }
-        }
-   }
-
-    private static final char[] table = "0123456789abcdef".toCharArray();
-    /**
-     * Convert a byte array into a hex string.
-     *
-     * @param bytes the bytes
-     * @return the string
-     */
-    public static String bytesToHexString(final byte[] bytes) {
-        final StringBuilder builder = new StringBuilder(bytes.length * 2);
-        for (byte b : bytes) {
-            builder.append(table[b >> 4 & 0x0f]).append(table[b & 0x0f]);
-        }
-        return builder.toString();
-    }
-
     // FIXME do we need to i18nize the timestamp?
     static String generateTimestamp() {
         return DateFormat.getInstance().format(new Date());
-    }
-
-    static boolean recursiveDelete(File root) {
-        boolean ok = true;
-        if (root.isDirectory()) {
-            final File[] files = root.listFiles();
-            for (File file : files) {
-                ok &= recursiveDelete(file);
-            }
-            return ok && (root.delete() || !root.exists());
-        } else {
-            ok &= root.delete() || !root.exists();
-        }
-        return ok;
-    }
-
-    static byte[] copy(File source, File target) throws IOException {
-        final FileInputStream is = new FileInputStream(source);
-        try {
-            byte[] backupHash = copy(is, target);
-            is.close();
-            return backupHash;
-        } finally {
-            safeClose(is);
-        }
-    }
-
-    static byte[] copy(final InputStream is, final File target) throws IOException {
-        if(! target.getParentFile().exists()) {
-            target.getParentFile().mkdirs(); // Hmm
-        }
-        final OutputStream os = new FileOutputStream(target);
-        try {
-            byte[] nh = copyAndGetHash(is, os);
-            os.close();
-            return nh;
-        } finally {
-            safeClose(os);
-        }
     }
 }

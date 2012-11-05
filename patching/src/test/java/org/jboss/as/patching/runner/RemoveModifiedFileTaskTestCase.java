@@ -1,12 +1,12 @@
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasNotBeenApplied;
-import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
@@ -48,7 +48,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         String fileName = "standalone.sh";
         removedFile = touch(binDir, fileName);
         dump(removedFile, "modified script to run standalone AS7");
-        expectedModifiedHash = calculateHash(removedFile);
+        expectedModifiedHash = hashFile(removedFile);
         // let's simulate that the file has been modified by the users by using a hash that is not the file checksum
         byte[] unmodifiedHash = randomString().getBytes();
 
@@ -94,7 +94,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
             /// file has not been modified in the AS7 installation
             assertFileExists(removedFile);
-            assertArrayEquals(expectedModifiedHash, calculateHash(removedFile));
+            assertArrayEquals(expectedModifiedHash, hashFile(removedFile));
         }
 
     }
@@ -110,7 +110,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
         assertFileDoesNotExist(removedFile);
         // the existing file has been backed up
         File backupFile = assertFileExists(env.getHistoryDir(patch.getPatchId()), "misc", "bin", removedFile.getName());
-        assertArrayEquals(expectedModifiedHash, calculateHash(backupFile));
+        assertArrayEquals(expectedModifiedHash, hashFile(backupFile));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class RemoveModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
             /// file has not been modified in the AS7 installation
             assertFileExists(removedFile);
-            assertArrayEquals(expectedModifiedHash, calculateHash(removedFile));
+            assertArrayEquals(expectedModifiedHash, hashFile(removedFile));
         }
     }
 }

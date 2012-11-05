@@ -44,7 +44,7 @@ import org.jboss.dmr.ModelType;
  */
 public class PatchResourceDefinition extends SimpleResourceDefinition {
 
-    static final String NAME = "patching";
+    public static final String NAME = "patching";
     static final String RESOURCE_NAME = PatchResourceDefinition.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, NAME);
 

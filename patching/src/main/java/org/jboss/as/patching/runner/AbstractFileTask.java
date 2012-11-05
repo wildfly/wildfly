@@ -22,6 +22,11 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+import static org.jboss.as.patching.IoUtils.copy;
+import static org.jboss.as.patching.IoUtils.safeClose;
+
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 
 import org.jboss.as.patching.metadata.ContentModification;
@@ -61,7 +66,7 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
     byte[] backup(PatchingContext context) throws IOException {
         if(target.isFile()) {
             // Backup the original in the history directory
-            return PatchUtils.copy(target, backup);
+            return IoUtils.copy(target, backup);
         }
         return NO_CONTENT;
     }
@@ -78,9 +83,9 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
             final InputStream is = loader.openContentStream(item);
             try {
                 // Replace the file
-                return PatchUtils.copy(is, target);
+                return copy(is, target);
             } finally {
-                PatchUtils.safeClose(is);
+                safeClose(is);
             }
         }
     }

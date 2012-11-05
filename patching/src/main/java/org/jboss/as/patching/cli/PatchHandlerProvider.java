@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,19 +20,25 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.cli;
+
+import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.CommandHandlerProvider;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class Constants {
+public class PatchHandlerProvider implements CommandHandlerProvider {
 
+    @Override
+    public CommandHandler createCommandHandler(CommandContext ctx) {
+        return new PatchHandler(ctx);
+    }
 
-    public static final String OVERRIDE_MODULES = "override-modules";
-    public static final String OVERRIDE_ALL = "override-all";
-    public static final String OVERRIDES = "override";
-    public static final String PRESERVE = "preserve";
+    @Override
+    public String[] getNames() {
+        return new String[] { PatchHandler.PATCH };
+    }
 
-    public static final String TIMESTAMP = "timestamp";
-    public static final String APPLIED_AT = "applied-at";
 }

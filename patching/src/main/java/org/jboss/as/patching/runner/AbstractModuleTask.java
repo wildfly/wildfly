@@ -22,6 +22,9 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+
+import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.BundleItem;
@@ -30,7 +33,6 @@ import org.jboss.as.patching.metadata.ModuleItem;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Base {@linkplain PatchingTask} for module updates.
@@ -59,7 +61,7 @@ abstract class AbstractModuleTask extends AbstractPatchingTask<ModuleItem> {
             final File moduleXml = new File(modulePath, MODULE_XML);
             if(moduleXml.exists()) {
                 PatchLogger.ROOT_LOGGER.debugf("found in path (%s)", moduleXml.getAbsolutePath());
-                return PatchUtils.calculateHash(modulePath);
+                return HashUtils.hashFile(modulePath);
             }
         }
         return NO_CONTENT;

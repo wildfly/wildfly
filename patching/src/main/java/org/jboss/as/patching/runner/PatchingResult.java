@@ -23,10 +23,6 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.Patch;
-
-import java.util.Collection;
 
 /**
  * The result when applying a patch.

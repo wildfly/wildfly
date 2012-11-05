@@ -242,6 +242,8 @@
             <maven-resource group="org.wildfly" artifact="wildfly-patching"/>
         </module-def>
 
+        <module-def name="org.jboss.as.patching.cli" />
+
         <module-def name="org.jboss.as.patching.tool" />
 
         <module-def name="org.jboss.as.patching.generator" />
