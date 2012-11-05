@@ -24,13 +24,13 @@ package org.jboss.as.patching.runner;
 
 import static junit.framework.Assert.assertEquals;
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
-import static org.jboss.as.patching.runner.PatchUtils.bytesToHexString;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
+import static org.jboss.as.patching.HashUtils.bytesToHexString;
+import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenRolledBack;
-import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
@@ -40,7 +40,6 @@ import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
@@ -48,7 +47,6 @@ import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.junit.After;
 import org.junit.Before;
@@ -72,13 +70,13 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         // with some files in the configuration directories
         File appClientXmlFile = touch(env.getInstalledImage().getAppClientDir(), "configuration", "appclient.xml");
         dump(appClientXmlFile, "<original content of appclient configuration>");
-        originalAppClientHash = calculateHash(appClientXmlFile);
+        originalAppClientHash = hashFile(appClientXmlFile);
         standaloneXmlFile = touch(env.getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
         dump(standaloneXmlFile, "<original content of standalone configuration>");
-        originalStandaloneHash = calculateHash(standaloneXmlFile);
+        originalStandaloneHash = hashFile(standaloneXmlFile);
         File domainXmlFile = touch(env.getInstalledImage().getDomainDir(), "configuration", "domain.xml");
         dump(domainXmlFile, "<original content of domain configuration>");
-        originalDomainHash = calculateHash(domainXmlFile);
+        originalDomainHash = hashFile(domainXmlFile);
     }
 
     @After
@@ -99,7 +97,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
-        byte[] newHash = calculateHash(moduleDir);
+        byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
@@ -121,7 +119,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
-        byte[] newHash = calculateHash(moduleDir);
+        byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT , ADD);
 
         Patch patch = PatchBuilder.create()
@@ -153,13 +151,13 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
         // let's change the standalone.xml file
         dump(standaloneXmlFile, "<updated standalone configuration with changes from the added module>");
-        byte[] updatedStandaloneXmlFile = calculateHash(standaloneXmlFile);
+        byte[] updatedStandaloneXmlFile = hashFile(standaloneXmlFile);
 
         PatchingResult rollbackResult = rollback(result.getPatchInfo(), patch.getPatchId());
 
         assertPatchHasBeenRolledBack(rollbackResult, patch, info);
         File rolledBackStandaloneXmlFile = assertFileExists(rollbackResult.getPatchInfo().getEnvironment().getInstalledImage().getStandaloneDir(), "configuration", "standalone.xml");
-        assertEquals("updated content was " + bytesToHexString(updatedStandaloneXmlFile), bytesToHexString(originalStandaloneHash), bytesToHexString(calculateHash(rolledBackStandaloneXmlFile)));
+        assertEquals("updated content was " + bytesToHexString(updatedStandaloneXmlFile), bytesToHexString(originalStandaloneHash), bytesToHexString(hashFile(rolledBackStandaloneXmlFile)));
     }
 
 }

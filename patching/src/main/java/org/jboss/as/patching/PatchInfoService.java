@@ -25,7 +25,6 @@ package org.jboss.as.patching;
 import static java.util.Arrays.asList;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 

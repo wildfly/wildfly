@@ -31,14 +31,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDES;
-import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_ALL;
-import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_MODULES;
-import static org.jboss.as.patching.PatchResourceDefinition.PRESERVE;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
-import org.jboss.as.patching.runner.PatchingTaskRunner;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.dmr.ModelNode;
 

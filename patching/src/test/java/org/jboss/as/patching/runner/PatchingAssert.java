@@ -25,10 +25,9 @@ package org.jboss.as.patching.runner;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertEquals;
-import org.jboss.as.boot.DirectoryStructure;
+import static org.jboss.as.patching.HashUtils.bytesToHexString;
+import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
-import static org.jboss.as.patching.runner.PatchUtils.bytesToHexString;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -38,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;
@@ -95,7 +95,7 @@ public class PatchingAssert {
     }
 
     static void assertFileContent(String message, byte[] expected, File f) throws Exception {
-        assertEquals(message, bytesToHexString(expected), bytesToHexString(calculateHash(f)));
+        assertEquals(message, bytesToHexString(expected), bytesToHexString(hashFile(f)));
     }
 
     static void assertDefinedModule(File[] modulesPath, String moduleName, byte[] expectedHash) throws Exception {
@@ -105,7 +105,7 @@ public class PatchingAssert {
             if (moduleXml.exists()) {
                 assertDefinedModuleWithRootElement(moduleXml, moduleName, "<module");
                 if (expectedHash != null) {
-                    byte[] actualHash = PatchUtils.calculateHash(modulePath);
+                    byte[] actualHash = hashFile(modulePath);
                     assertTrue("content of module differs", Arrays.equals(expectedHash, actualHash));
                 }
                 return;
@@ -119,7 +119,7 @@ public class PatchingAssert {
             final File bundlePath = PatchContentLoader.getModulePath(path, moduleName, "main");
             if(bundlePath.exists()) {
                 if(expectedHash != null) {
-                    byte[] actualHash = PatchUtils.calculateHash(bundlePath);
+                    byte[] actualHash = hashFile(bundlePath);
                     assertTrue("content of bundle differs", Arrays.equals(expectedHash, actualHash));
                 }
                 return;

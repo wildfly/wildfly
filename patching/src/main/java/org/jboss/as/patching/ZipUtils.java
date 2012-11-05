@@ -20,14 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.generator;
+package org.jboss.as.patching;
+
+import static org.jboss.as.patching.IoUtils.copy;
+import static org.jboss.as.patching.IoUtils.copyStream;
+import static org.jboss.as.patching.IoUtils.safeClose;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -81,13 +88,59 @@ public class ZipUtils {
 
         BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
 
-        byte[] bytesIn = new byte[4096];
-        int read;
-        while ((read = bis.read(bytesIn)) != -1) {
-            zos.write(bytesIn, 0, read);
+        try {
+            copyStream(bis, zos);
+        } finally {
+            safeClose(bis);
         }
 
         zos.closeEntry();
+    }
+
+    /**
+     * unpack...
+     *
+     * @param zip the zip
+     * @param patchDir the patch dir
+     * @throws IOException
+     */
+    public static void unzip(final File zip, final File patchDir) throws IOException {
+        final ZipFile zipFile = new ZipFile(zip);
+        try {
+            unzip(zipFile, patchDir);
+            zipFile.close();
+        } finally {
+            safeClose(zipFile);
+        }
+    }
+
+    /**
+     * unpack...
+     *
+     * @param zip the zip
+     * @param patchDir the patch dir
+     * @throws IOException
+     */
+    private static void unzip(final ZipFile zip, final File patchDir) throws IOException {
+        final Enumeration<? extends ZipEntry> entries = zip.entries();
+        while(entries.hasMoreElements()) {
+            final ZipEntry entry = entries.nextElement();
+            final String name = entry.getName();
+            final File current = new File(patchDir, name);
+            if(entry.isDirectory()) {
+                continue;
+            } else {
+                if(! current.getParentFile().exists()) {
+                    current.getParentFile().mkdirs();
+                }
+                final InputStream eis = zip.getInputStream(entry);
+                try {
+                    copy(eis, current);
+                } finally {
+                    safeClose(eis);
+                }
+            }
+        }
     }
 
 }

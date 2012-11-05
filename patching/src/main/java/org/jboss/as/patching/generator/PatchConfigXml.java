@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.IoUtils.safeClose;
+
 import java.io.InputStream;
 
 import javax.xml.namespace.QName;
@@ -75,7 +77,7 @@ public class PatchConfigXml {
             MAPPER.parseDocument(builder, streamReader);
             return builder;
         } finally {
-            org.jboss.as.patching.runner.PatchUtils.safeClose(stream);
+            safeClose(stream);
         }
     }
 

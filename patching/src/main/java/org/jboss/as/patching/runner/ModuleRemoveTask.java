@@ -22,17 +22,17 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.IoUtils.copy;
+
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
-import org.jboss.marshalling.ByteInputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 /**
@@ -55,12 +55,11 @@ class ModuleRemoveTask extends AbstractModuleTask {
             throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
         }
         final File moduleXml = new File(targetDir, MODULE_XML);
-        final OutputStream os = new FileOutputStream(moduleXml);
+        final ByteArrayInputStream is = new ByteArrayInputStream(getFileContent(contentItem));
         try {
-            final ByteArrayInputStream is = new ByteArrayInputStream(getFileContent(contentItem));
-            return PatchUtils.copyAndGetHash(is, os);
+            return copy(is, moduleXml);
         } finally {
-            PatchUtils.safeClose(os);
+            IoUtils.safeClose(is);
         }
     }
 

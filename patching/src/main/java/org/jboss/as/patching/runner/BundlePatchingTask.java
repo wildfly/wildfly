@@ -22,6 +22,10 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+
+import org.jboss.as.patching.HashUtils;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
@@ -58,7 +62,7 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
                 if(children == null || children.length == 0) {
                     return NO_CONTENT;
                 }
-                return PatchUtils.calculateHash(bundlePath);
+                return HashUtils.hashFile(bundlePath);
             }
         }
         return NO_CONTENT;
@@ -78,7 +82,7 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
         }
         for(final File file : moduleResources) {
             final File target = new File(targetDir, file.getName());
-            PatchUtils.copy(file, target);
+            IoUtils.copy(file, target);
         }
         return contentItem.getContentHash();
     }

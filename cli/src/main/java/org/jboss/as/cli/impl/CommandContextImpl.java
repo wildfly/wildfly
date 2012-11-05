@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import javax.net.ssl.KeyManager;
@@ -68,6 +69,7 @@ import org.jboss.as.cli.CommandCompleter;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHandler;
+import org.jboss.as.cli.CommandHandlerProvider;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
@@ -436,6 +438,15 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         // supported but hidden from tab-completion until stable implementation
         cmdRegistry.registerHandler(new ArchiveHandler(this), false, "archive");
+
+        registerExtraHandlers();
+    }
+
+    private void registerExtraHandlers() {
+        ServiceLoader<CommandHandlerProvider> loader = ServiceLoader.load(CommandHandlerProvider.class);
+        for (CommandHandlerProvider provider : loader) {
+            cmdRegistry.registerHandler(provider.createCommandHandler(this), provider.getNames());
+        }
     }
 
     public int getExitCode() {

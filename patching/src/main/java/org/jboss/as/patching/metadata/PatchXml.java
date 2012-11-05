@@ -22,6 +22,11 @@
 
 package org.jboss.as.patching.metadata;
 
+import static org.jboss.as.patching.IoUtils.safeClose;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -33,7 +38,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.staxmapper.XMLMapper;
 
 /**
@@ -99,7 +103,16 @@ public class PatchXml {
             MAPPER.parseDocument(builder, streamReader);
             return builder.build();
         } finally {
-            PatchUtils.safeClose(stream);
+            safeClose(stream);
+        }
+    }
+
+    public static Patch parse(final File patchXml) throws IOException, XMLStreamException {
+        final InputStream is = new FileInputStream(patchXml);
+        try {
+            return parse(is);
+        } finally {
+            safeClose(is);
         }
     }
 
@@ -108,5 +121,4 @@ public class PatchXml {
             inputFactory.setProperty(property, value);
         }
     }
-
 }

@@ -28,9 +28,7 @@ import org.jboss.as.version.ProductConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -149,7 +147,7 @@ public class LocalPatchInfo implements PatchInfo {
         for(final String patch : patches) {
             path.add(environment.getModulePatchDirectory(patch));
         }
-        if(cumulativeId != BASE) {
+        if(!BASE.equals(cumulativeId)) {
             path.add(environment.getModulePatchDirectory(cumulativeId));
         }
         return path;
@@ -161,7 +159,7 @@ public class LocalPatchInfo implements PatchInfo {
         for(final String patch : patches) {
             path.add(environment.getBundlesPatchDirectory(patch));
         }
-        if(cumulativeId != BASE) {
+        if(!BASE.equals(cumulativeId)) {
             path.add(environment.getBundlesPatchDirectory(cumulativeId));
         }
         final String bundleDir = System.getProperty(BUNDLES_DIR);

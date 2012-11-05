@@ -22,16 +22,16 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
 import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertContains;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedAbsentModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
-import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createModule;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
@@ -40,7 +40,6 @@ import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
@@ -68,7 +67,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         File patchDir = mkdir(tempDir, patchID);
         String moduleName = randomString();
         File moduleDir = createModule(patchDir, moduleName);
-        byte[] newHash = calculateHash(moduleDir);
+        byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newHash), NO_CONTENT, ADD);
 
         Patch patch = PatchBuilder.create()
@@ -101,7 +100,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         // create an empty module in the AS7 installation
         createModule(env.getInstalledImage().getJbossHome(), moduleName);
-        byte[] existingHash = calculateHash(new File(env.getInstalledImage().getModulesDir(), moduleName));
+        byte[] existingHash = hashFile(new File(env.getInstalledImage().getModulesDir(), moduleName));
 
         // build a one-off patch for the base installation
         // with 1 module removed
@@ -141,7 +140,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
         createModule(env.getInstalledImage().getJbossHome(), moduleName);
 
         tree(env.getInstalledImage().getJbossHome());
-        byte[] existingHash = calculateHash(new File(env.getInstalledImage().getModulesDir(), moduleName));
+        byte[] existingHash = hashFile(new File(env.getInstalledImage().getModulesDir(), moduleName));
 
         // build a one-off patch for the base installation
         // with 1 module updated
@@ -151,7 +150,7 @@ public class ModuleTaskTestCase extends AbstractTaskTestCase{
 
         // create the patch with the update module
         File moduleDir = createModule(patchDir, moduleName, "new resource in the module");
-        byte[] updatedHash = calculateHash(moduleDir);
+        byte[] updatedHash = hashFile(moduleDir);
         ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, updatedHash), existingHash, MODIFY);
 
         Patch patch = PatchBuilder.create()

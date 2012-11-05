@@ -22,12 +22,9 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
-import org.jboss.as.patching.metadata.ModuleItem;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,8 +35,6 @@ import java.io.IOException;
  * @author Emanuel Muckenhuber
  */
 public interface PatchingTask {
-
-    byte[] NO_CONTENT = new byte[0];
 
     /**
      * Get the content item modified by this task.

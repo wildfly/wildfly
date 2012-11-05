@@ -39,7 +39,8 @@ public class PatchingException extends Exception {
     }
 
     public PatchingException(Collection<ContentItem> conflicts) {
-        // FIXME message
+        // FIXME message is mandatory to wrap it into a OperationFailedException
+        super("Conficts detected: " + conflicts.toString());
         this.conflicts = conflicts;
     }
 

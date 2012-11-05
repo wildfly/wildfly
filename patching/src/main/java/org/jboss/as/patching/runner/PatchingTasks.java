@@ -22,26 +22,19 @@
 
 package org.jboss.as.patching.runner;
 
+
 import org.jboss.as.boot.DirectoryStructure;
-import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -243,22 +236,13 @@ class PatchingTasks {
     static Patch loadPatchInformation(final String patchId, final DirectoryStructure structure) throws IOException, XMLStreamException {
         final File patchDir = structure.getPatchDirectory(patchId);
         final File patchXml = new File(patchDir, PatchXml.PATCH_XML);
-        return parse(patchXml);
+        return PatchXml.parse(patchXml);
     }
 
     static Patch loadRollbackInformation(final String patchId, final DirectoryStructure structure) throws IOException, XMLStreamException {
         final File historyDir = structure.getHistoryDir(patchId);
         final File patchXml = new File(historyDir, PatchingContext.ROLLBACK_XML);
-        return parse(patchXml);
-    }
-
-    static Patch parse(final File patchXml) throws IOException, XMLStreamException {
-        final InputStream is = new FileInputStream(patchXml);
-        try {
-            return PatchXml.parse(is);
-        } finally {
-            PatchUtils.safeClose(is);
-        }
+        return PatchXml.parse(patchXml);
     }
 
 }

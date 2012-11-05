@@ -22,32 +22,30 @@
 
 package org.jboss.as.patching.runner;
 
-import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
+import static org.jboss.as.patching.IoUtils.safeClose;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.PatchXml;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * The main patching task runner.
@@ -79,25 +77,16 @@ public class PatchingTaskRunner {
 
             // Save the content
             final File cachedContent = new File(workDir, "content");
-            FileOutputStream os = null;
-            try {
-                // Cache the content first
-                os = new FileOutputStream(cachedContent);
-                PatchUtils.copyStream(content, os);
-                os.close();
-            } finally {
-                PatchUtils.safeClose(os);
-            }
-
+            IoUtils.copy(content, cachedContent);
             // Unpack to the work dir
-            unpack(cachedContent, workDir);
+            ZipUtils.unzip(cachedContent, workDir);
 
             // Execute
             return execute(workDir, policy);
         } catch (IOException e) {
             throw new PatchingException(e);
         } finally {
-            if(workDir != null && ! recursiveDelete(workDir)) {
+            if(workDir != null && ! IoUtils.recursiveDelete(workDir)) {
                 PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
             }
         }
@@ -121,7 +110,7 @@ public class PatchingTaskRunner {
                 patch = PatchXml.parse(patchIS);
                 patchIS.close();
             } finally {
-                PatchUtils.safeClose(patchIS);
+                safeClose(patchIS);
             }
 
             // Check if we can apply this patch
@@ -337,72 +326,15 @@ public class PatchingTaskRunner {
                     throw rethrowException(e);
                 }
             } finally {
-                PatchUtils.safeClose(is);
+                safeClose(is);
             }
         } catch (IOException e) {
             throw new PatchingException(e);
         } catch (XMLStreamException e) {
             throw new PatchingException(e);
         } finally {
-            if(workDir != null && ! recursiveDelete(workDir)) {
+            if(workDir != null && ! IoUtils.recursiveDelete(workDir)) {
                 PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
-            }
-        }
-    }
-
-    /**
-     * unpack...
-     *
-     * @param zip the zip
-     * @param patchDir the patch dir
-     * @throws IOException
-     */
-    static void unpack(final File zip, final File patchDir) throws IOException {
-        final ZipFile zipFile = new ZipFile(zip);
-        try {
-            unpack(zipFile, patchDir);
-            zipFile.close();
-        } finally {
-            if(zip != null) try {
-                zipFile.close();
-            } catch (IOException ignore) {
-                //
-            }
-        }
-    }
-
-    /**
-     * unpack...
-     *
-     * @param zip the zip
-     * @param patchDir the patch dir
-     * @throws IOException
-     */
-    static void unpack(final ZipFile zip, final File patchDir) throws IOException {
-        final Enumeration<? extends ZipEntry> entries = zip.entries();
-        while(entries.hasMoreElements()) {
-            final ZipEntry entry = entries.nextElement();
-            final String name = entry.getName();
-            final File current = new File(patchDir, name);
-            if(entry.isDirectory()) {
-                continue;
-            } else {
-                if(! current.getParentFile().exists()) {
-                    current.getParentFile().mkdirs();
-                }
-                final InputStream eis = zip.getInputStream(entry);
-                try {
-                    final FileOutputStream eos = new FileOutputStream(current);
-                    try {
-                        PatchUtils.copyStream(eis, eos);
-                        eis.close();
-                        eos.close();
-                    } finally {
-                        PatchUtils.safeClose(eos);
-                    }
-                } finally {
-                    PatchUtils.safeClose(eis);
-                }
             }
         }
     }

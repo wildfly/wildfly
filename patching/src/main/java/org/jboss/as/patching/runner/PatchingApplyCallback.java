@@ -24,12 +24,12 @@ package org.jboss.as.patching.runner;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.LocalPatchInfo;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import static org.jboss.as.patching.runner.PatchUtils.generateTimestamp;
-import static org.jboss.as.patching.runner.PatchUtils.recursiveDelete;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,8 +107,8 @@ public class PatchingApplyCallback implements PatchingContext.TaskFinishCallback
     public void rollbackCallback() {
         // In case we rollback delete the patch directory and history
         // TODO this might remove existing information
-        recursiveDelete(structure.getPatchDirectory(patchId));
-        recursiveDelete(structure.getHistoryDir(patchId));
+        IoUtils.recursiveDelete(structure.getPatchDirectory(patchId));
+        IoUtils.recursiveDelete(structure.getHistoryDir(patchId));
     }
 
 }

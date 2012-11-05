@@ -22,21 +22,13 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 /**
  * Adding or updating a module will add a module in the patch overlay directory {@linkplain org.jboss.as.boot.DirectoryStructure#getModulePatchDirectory(String)}.
@@ -57,7 +49,7 @@ class ModuleUpdateTask extends AbstractModuleTask {
         final File[] moduleResources = sourceDir.listFiles();
         for(final File file : moduleResources) {
             final File target = new File(targetDir, file.getName());
-            PatchUtils.copy(file, target);
+            IoUtils.copy(file, target);
         }
         return contentItem.getContentHash();
     }

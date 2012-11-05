@@ -25,8 +25,6 @@ package org.jboss.as.patching.runner;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 
-import java.util.Set;
-
 /**
  * Policy for content verification.
  *

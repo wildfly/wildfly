@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
@@ -41,7 +42,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -470,7 +470,7 @@ class PatchingContext {
             try {
                 PatchXml.marshal(os, patch);
             } finally {
-                PatchUtils.safeClose(os);
+                IoUtils.safeClose(os);
             }
         } catch (XMLStreamException e) {
             throw new IOException(e);
@@ -494,7 +494,7 @@ class PatchingContext {
         final File[] files = source.listFiles(CONFIG_FILTER);
         for(final File file : files) {
             final File t = new File(target, file.getName());
-            PatchUtils.copyFile(file, t);
+            IoUtils.copyFile(file, t);
         }
     }
 

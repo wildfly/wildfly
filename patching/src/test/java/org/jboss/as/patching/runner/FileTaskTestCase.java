@@ -22,14 +22,14 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModificationType.ADD;
 import static org.jboss.as.patching.metadata.ModificationType.MODIFY;
 import static org.jboss.as.patching.metadata.ModificationType.REMOVE;
-import static org.jboss.as.patching.runner.PatchUtils.calculateHash;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
-import static org.jboss.as.patching.runner.PatchingTask.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createPatchXMLFile;
 import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
@@ -39,7 +39,6 @@ import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Collections;
 
 import org.jboss.as.patching.LocalPatchInfo;
@@ -68,7 +67,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         String fileName =  "my-new-standalone.sh";
         File newFile = touch(patchDir, "misc", "bin", fileName);
         dump(newFile, "new file resource");
-        byte[] newHash = calculateHash(newFile);
+        byte[] newHash = hashFile(newFile);
         ContentModification fileAdded = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, newHash), NO_CONTENT, ADD);
 
         Patch patch = PatchBuilder.create()
@@ -97,7 +96,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         String fileName = "standalone.sh";
         File standaloneShellFile = touch(env.getInstalledImage().getJbossHome(), "bin", fileName );
         dump(standaloneShellFile, "original script to run standalone AS7");
-        byte[] existingHash = calculateHash(standaloneShellFile);
+        byte[] existingHash = hashFile(standaloneShellFile);
 
         // build a one-off patch for the base installation
         // with 1 removed file
@@ -135,7 +134,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         String fileName = "standalone.sh";
         File standaloneShellFile = touch(binDir, fileName);
         dump(standaloneShellFile, "original script to run standalone AS7");
-        byte[] existingHash = calculateHash(standaloneShellFile);
+        byte[] existingHash = hashFile(standaloneShellFile);
 
         // build a one-off patch for the base installation
         // with 1 updated file
@@ -144,7 +143,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
 
         File updatedFile = touch(patchDir, "misc", "bin", fileName);
         dump(updatedFile, "updated script");
-        byte[] updatedHash = calculateHash(updatedFile);
+        byte[] updatedHash = hashFile(updatedFile);
         ContentModification fileUpdated = new ContentModification(new MiscContentItem(fileName, new String[] { "bin" }, updatedHash), existingHash, MODIFY);
 
         Patch patch = PatchBuilder.create()
@@ -165,9 +164,9 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         /// file has been updated in the AS7 installation
         // and it's the new one
         assertFileExists(standaloneShellFile);
-        assertArrayEquals(updatedHash, calculateHash(standaloneShellFile));
+        assertArrayEquals(updatedHash, hashFile(standaloneShellFile));
         // the existing file has been backed up
         File backupFile = assertFileExists(env.getHistoryDir(patchID), "misc", "bin", fileName);
-        assertArrayEquals(existingHash, calculateHash(backupFile));
+        assertArrayEquals(existingHash, hashFile(backupFile));
     }
 }

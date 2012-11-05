@@ -22,15 +22,11 @@
 
 package org.jboss.as.patching.runner;
 
-import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * Task modifying an existing file.

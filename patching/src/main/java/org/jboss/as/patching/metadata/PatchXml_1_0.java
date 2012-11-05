@@ -27,8 +27,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.patching.generator.PatchUtils.bytesToHexString;
-import static org.jboss.as.patching.generator.PatchUtils.hexStringToByteArray;
+import static org.jboss.as.patching.HashUtils.bytesToHexString;
+import static org.jboss.as.patching.HashUtils.hexStringToByteArray;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.metadata.ModuleItem.MAIN_SLOT;
 
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.patching.runner.PatchingTask;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -55,7 +55,6 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 class PatchXml_1_0 implements XMLStreamConstants, XMLElementReader<PatchBuilder>, XMLElementWriter<Patch> {
 
     private static final String PATH_DELIMITER = "/";
-    public static final byte[] NO_CONTENT = PatchingTask.NO_CONTENT;
 
     enum Element {
 

@@ -22,25 +22,23 @@
 
 package org.jboss.as.patching.runner;
 
-import static org.jboss.as.patching.runner.PatchUtils.copyAndGetHash;
-import static org.jboss.as.patching.runner.PatchUtils.safeClose;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+import static org.jboss.as.patching.IoUtils.copy;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.jboss.as.patching.HashUtils;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Task for removing a file. In case the removed file is a directory, this task will create multiple rollback operation
@@ -78,14 +76,14 @@ class FileRemoveTask implements PatchingTask {
         // See if the hash matches the metadata
 
         final byte[] expected = description.getModification().getTargetHash();
-        final byte[] actual = PatchUtils.calculateHash(target);
+        final byte[] actual = HashUtils.hashFile(target);
         return Arrays.equals(expected, actual);
     }
 
     @Override
     public void execute(PatchingContext context) throws IOException {
         // delete the file or directory recursively
-        boolean ok = PatchUtils.recursiveDelete(target);
+        boolean ok = IoUtils.recursiveDelete(target);
         for(ContentModification mod : rollback) {
             // Add the rollback (add actions)
             context.recordRollbackAction(mod);
@@ -121,26 +119,4 @@ class FileRemoveTask implements PatchingTask {
         final MiscContentItem backupItem = new MiscContentItem(name, path, backupHash, directory);
         return new ContentModification(backupItem, NO_CONTENT, ModificationType.ADD);
     }
-
-    static byte[] copy(File source, File target) throws IOException {
-        final FileInputStream is = new FileInputStream(source);
-        try {
-            return copy(is, target);
-        } finally {
-            safeClose(is);
-        }
-    }
-
-    static byte[] copy(final InputStream is, final File target) throws IOException {
-        if(! target.getParentFile().exists()) {
-            target.getParentFile().mkdirs(); // Hmm
-        }
-        final OutputStream os = new FileOutputStream(target);
-        try {
-            return copyAndGetHash(is, os);
-        } finally {
-            safeClose(os);
-        }
-    }
-
 }
