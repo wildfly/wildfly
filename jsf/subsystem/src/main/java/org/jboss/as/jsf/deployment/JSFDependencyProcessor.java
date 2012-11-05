@@ -43,14 +43,7 @@ import org.jboss.modules.filter.PathFilters;
  */
 public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
-
- //   private static final ModuleIdentifier JSF_IMPL = ModuleIdentifier.create("com.sun.jsf-impl");
- //   private static final ModuleIdentifier JSF_API = ModuleIdentifier.create("javax.faces.api");
     private static final ModuleIdentifier JSF_SUBSYSTEM = ModuleIdentifier.create("org.jboss.as.jsf");
- //   private static final ModuleIdentifier JSF_INJECTION = ModuleIdentifier.create("org.jboss.as.jsf-injection");
- //   private static final ModuleIdentifier JSF_INJECTION_1_2 = ModuleIdentifier.create("org.jboss.as.jsf-injection", "1.2");
- //   private static final ModuleIdentifier JSF_1_2_IMPL = ModuleIdentifier.create("com.sun.jsf-impl", "1.2");
- //   private static final ModuleIdentifier JSF_1_2_API = ModuleIdentifier.create("javax.faces.api", "1.2");
     private static final ModuleIdentifier BEAN_VALIDATION = ModuleIdentifier.create("org.hibernate.validator");
     private static final ModuleIdentifier JSTL = ModuleIdentifier.create("javax.servlet.jstl.api");
 
