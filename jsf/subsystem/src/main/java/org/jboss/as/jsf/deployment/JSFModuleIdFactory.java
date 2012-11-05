@@ -57,12 +57,23 @@ public class JSFModuleIdFactory {
 
     private JSFModuleIdFactory() {
         String modulePath = System.getProperty("module.path", System.getenv("JAVA_MODULEPATH"));
-
-        if (modulePath == null) {
+        if (isBogusPath(modulePath)) {
             loadIdsManually();
         } else {
             loadIdsFromModulePath(modulePath);
+            if (activeVersions.isEmpty()) loadIdsManually();
         }
+    }
+
+    private boolean isBogusPath(String path) {
+        if (path == null) return true;
+
+        // must have at least one existing directory in the path
+        for (String dir : path.split(File.pathSeparator)) {
+            if (new File(dir).exists()) return false;
+        }
+
+        return true; // no directory in the path exists
     }
 
     // just provide the default implementations
@@ -96,18 +107,14 @@ public class JSFModuleIdFactory {
         baseDirBuilder.append(File.separator);
         baseDirBuilder.append(moduleName.replace(".", File.separator));
 
-        System.out.println("***************");
-        System.out.println("moduleRootDir=" + moduleRootDir);
-        System.out.println("moduleName=" + moduleName);
-        System.out.println("baseDirBuilder=" + baseDirBuilder.toString());
-        System.out.println("**************");
-
         File moduleBaseDir = new File(baseDirBuilder.toString());
         File[] slots = moduleBaseDir.listFiles(new FileFilter() {
             public boolean accept(File pathname) {
                 return pathname.isDirectory();
             }
         });
+
+        if (slots == null) return;
 
         for (File slot : slots) {
             if (!new File(slot, "module.xml").exists()) continue; // make sure directory represents a real module
