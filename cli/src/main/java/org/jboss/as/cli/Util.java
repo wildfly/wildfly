@@ -179,7 +179,7 @@ public class Util {
             if(descr.get(Util.ROLLED_BACK).asBoolean()) {
                 buf.append("(The operation was rolled back)");
             } else if(descr.hasDefined(Util.ROLLBACK_FAILURE_DESCRIPTION)){
-                buf.append(descr.get(Util.ROLLBACK_FAILURE_DESCRIPTION).asString());
+                buf.append(descr.get(Util.ROLLBACK_FAILURE_DESCRIPTION).toString());
             } else {
                 buf.append("(The operation also failed to rollback, failure description is not available.)");
             }
