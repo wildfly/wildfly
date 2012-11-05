@@ -116,7 +116,7 @@ public class ValidateModelTestCase {
         op.get(OPERATIONS).set(true);
         ModelNode result = managementClient.getControllerClient().execute(op);
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).toString());
         }
         return result.require(RESULT);
     }
