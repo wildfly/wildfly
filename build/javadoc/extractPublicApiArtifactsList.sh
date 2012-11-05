@@ -72,7 +72,7 @@ convertModuleNameToGA $TARGET/modules.exclude.txt $TARGET/artifacts.ex.tmp.txt;
 ###  Blacklisted ->  prepend '#'.
   echo > $TARGET/artifacts.in.tmp-blist.txt;
   while read -r ARTIFACT ; do
-    if grep --quiet "$ARTIFACT" $DIRNAME/artifactsBlacklist.txt ; then echo -n "# " >> $TARGET/artifacts.in.tmp-blist.txt; fi
+    if grep --quiet "$ARTIFACT\$" $DIRNAME/artifactsBlacklist.txt ; then echo -n "# " >> $TARGET/artifacts.in.tmp-blist.txt; fi
     echo "$ARTIFACT" >> $TARGET/artifacts.in.tmp-blist.txt;
   done < $TARGET/artifacts.in.tmp.txt;
 
