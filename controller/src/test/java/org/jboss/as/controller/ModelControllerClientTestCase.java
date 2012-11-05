@@ -39,7 +39,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.remote.ExistingChannelModelControllerClient;
+import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.support.RemoteChannelPairSetup;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;

@@ -79,7 +79,6 @@ call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\protocol\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\dmr\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\controller-client\main"
 call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\threads\main"
-call :SearchForJars "%JBOSS_MODULEPATH%\org\jboss\as\controller\main"
 
 rem echo %CLASSPATH%
 
