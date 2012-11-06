@@ -94,13 +94,12 @@ public class ServerDeploymentTestCase {
 
     @Test
     public void testAutoStart() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
 
         // Deploy the bundle
         InputStream input = deployer.getDeployment(GOOD_BUNDLE);
-        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
         String runtimeName = server.deploy("auto-start", input);
 
-        // Find the deployed bundle
         // Find the deployed bundle
         Bundle bundle = packageAdmin.getBundles(GOOD_BUNDLE, null)[0];
         assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
@@ -111,14 +110,41 @@ public class ServerDeploymentTestCase {
 
     @Test
     public void testBadBundleVersion() throws Exception {
-        InputStream input = deployer.getDeployment(BAD_BUNDLE_VERSION);
         ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        InputStream input = deployer.getDeployment(BAD_BUNDLE_VERSION);
         try {
             server.deploy(BAD_BUNDLE_VERSION, input);
             fail("Deployment exception expected");
         } catch (Exception ex) {
             // expected
         }
+    }
+
+    @Test
+    public void testRedeployAfterUndeploy() throws Exception {
+        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+
+        // Deploy the bundle
+        InputStream input = deployer.getDeployment(GOOD_BUNDLE);
+        String runtimeName = server.deploy("redeploy", input);
+
+        // Find the deployed bundle
+        Bundle bundle = packageAdmin.getBundles(GOOD_BUNDLE, null)[0];
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        server.undeploy(runtimeName);
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
+
+        // Redeploy the same bundle
+        input = deployer.getDeployment(GOOD_BUNDLE);
+        runtimeName = server.deploy("redeploy", input);
+
+        // Find the deployed bundle
+        bundle = packageAdmin.getBundles(GOOD_BUNDLE, null)[0];
+        assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
+
+        server.undeploy(runtimeName);
+        assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
     }
 
     private ModelControllerClient getModelControllerClient() {
