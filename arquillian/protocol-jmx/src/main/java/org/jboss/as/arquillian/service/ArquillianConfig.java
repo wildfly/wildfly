@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -78,13 +79,9 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
     ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
         ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
+        builder.addDependency(DependencyType.OPTIONAL, Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
         builder.addDependency(depController.getName());
         return builder;
-    }
-
-    void addFrameworkDependency(ServiceBuilder<ArquillianConfig> builder) {
-        builder.addDependency(Services.SYSTEM_CONTEXT, BundleContext.class, injectedBundleContext);
-        builder.addDependency(Services.FRAMEWORK_ACTIVATOR);
     }
 
     ServiceName getServiceName() {

@@ -22,6 +22,10 @@
 
 package org.jboss.as.osgi;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -29,13 +33,9 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
-import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.osgi.framework.Bundle;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Logging Id ranges: 11900-11949
@@ -80,11 +80,11 @@ public interface OSGiLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 11907, value = "Register module: %s")
-    void infoRegisterModule(Module module);
+    void infoRegisterModule(ModuleIdentifier identifier);
 
     @LogMessage(level = INFO)
     @Message(id = 11908, value = "Unregister module: %s")
-    void infoUnregisterModule(Module module);
+    void infoUnregisterModule(ModuleIdentifier identifier);
 
     @LogMessage(level = ERROR)
     @Message(id = 11909, value = "Management operation '%s' failed")

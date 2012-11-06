@@ -44,6 +44,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -61,6 +62,9 @@ public class SimpleModuleRegistrationTestCase {
 
     @Inject
     public ServiceContainer container;
+
+    @Inject
+    public BundleContext context;
 
     @Deployment
     public static JavaArchive createdeployment() {
