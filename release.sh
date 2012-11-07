@@ -20,6 +20,12 @@ EAP_SUBJECT="\${RELEASEVERSION} of JBoss BOMs released, please merge with http:/
 EAP_EMAIL_TO="pgier@redhat.com kpiwko@redhat.com"
 EAP_EMAIL_FROM="\"JDF Publish Script\" <benevides@redhat.com>"
 
+JIRA_PROJECT="12310321"
+#JIRA PLAYGROUND -- JIRA_PROJECT="10073"
+JIRA_TO="pgier"
+JIRA_SUMMARY="Upgrade jboss-bom project in EAP"
+JIRA_DESCRIPTION="The \${RELEASEVERSION} version of the jboss-bom project has been released upstream. This needs to be merge with the eap branch and built for the eap Maven repo."
+
 
 # SCRIPT
 
@@ -52,7 +58,14 @@ notifyEmail()
 
 notifyJira()
 {
-   echo "TODO"
+    echo "Please enter your JIRA username:"
+    read username
+    echo "Please enter your JIRA password:"
+    read password
+    description=`eval echo $JIRA_DESCRIPTION`
+    curl -u $username:$password -X POST -H 'Content-Type: application/json' -d "{ \"fields\": { \"project\": {  \"id\": \"$JIRA_PROJECT\" },\"issuetype\": {\"id\": \"12\" },\"assignee\": { \"name\": \"$JIRA_TO\"}, \"summary\": \"$JIRA_SUMMARY\", \"description\": \"$description\"}}"   https://issues.jboss.org/rest/api/2/issue
+    echo
+    echo "JIRA Opened"
 }
 
 release()
@@ -67,6 +80,7 @@ release()
    git push upstrem HEAD --tags
    echo "***** JBoss BOMs released"
    notifyEmail
+   notifyJira
 }
 
 SNAPSHOTVERSION="UNDEFINED"
