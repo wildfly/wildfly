@@ -22,12 +22,20 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.jar.JarInputStream;
+import java.util.zip.ZipEntry;
+
 import javax.naming.InitialContext;
-import javax.naming.NameClassPair;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -105,5 +113,46 @@ public class ClassFileTransformerTestCase {
         }
     }
 
+    @Test
+    public void test_persistenceUnitInfoURLS() throws Exception {
+        try {
+            assertTrue("testing that PersistenceUnitInfo.getPersistenceUnitRootUrl() url is vfs based, failed because getPersistenceUnitRootUrl is " +
+                    TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol(),
+                    "vfs".equals(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().getProtocol()));
+            InputStream inputStream = TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream();
+            assertNotNull("getPersistenceUnitRootUrl().openStream() returned non-null value", inputStream);
+
+            assertTrue("getPersistenceUnitRootUrl returned a JarInputStream" , inputStream instanceof JarInputStream);
+
+            JarInputStream jarInputStream = (JarInputStream)inputStream;
+            ZipEntry entry = jarInputStream.getNextEntry();
+            assertNotNull("got zip entry from getPersistenceUnitRootUrl", entry);
+
+            while(entry != null && ! entry.getName().contains("persistence.xml")) {
+                entry = jarInputStream.getNextEntry();
+            }
+            assertNotNull("didn't find persistence.xml in getPersistenceUnitRootUrl, details=" +
+                    urlOpenStreamDetails(TestPersistenceProvider.getPersistenceUnitInfo("mypc").getPersistenceUnitRootUrl().openStream()),
+                    entry);
+        } finally {
+            TestPersistenceProvider.clearLastPersistenceUnitInfo();
+        }
+    }
+
+    private String urlOpenStreamDetails(InputStream urlStream) {
+        String result = null;
+        try {
+            JarInputStream jarInputStream = (JarInputStream)urlStream;
+            ZipEntry entry = jarInputStream.getNextEntry();
+            while(entry !=null){
+                result+=entry.getName() + ", ";
+                entry = jarInputStream.getNextEntry();
+            }
+        } catch (IOException e) {
+            return "couldn't get content, caught error " + e.getMessage();
+        }
+        return result;
+
+    }
 
 }

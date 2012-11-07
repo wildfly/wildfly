@@ -23,6 +23,9 @@
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
 import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
@@ -39,6 +42,13 @@ import org.jboss.as.jpa.container.EntityManagerUnwrappedTargetInvocationHandler;
  */
 public class TestPersistenceProvider implements PersistenceProvider {
 
+    // key = pu name
+    private static Map<String,PersistenceUnitInfo> persistenceUnitInfo = new HashMap<String,PersistenceUnitInfo>();
+
+    public static PersistenceUnitInfo getPersistenceUnitInfo(String name) {
+        return persistenceUnitInfo.get(name);
+    }
+
     @Override
     public EntityManagerFactory createEntityManagerFactory(String emName, Map map) {
         return null;
@@ -46,7 +56,7 @@ public class TestPersistenceProvider implements PersistenceProvider {
 
     @Override
     public EntityManagerFactory createContainerEntityManagerFactory(PersistenceUnitInfo info, Map map) {
-
+        persistenceUnitInfo.put(info.getPersistenceUnitName(), info);
         TestClassTransformer testClassTransformer = new TestClassTransformer();
         info.addTransformer(testClassTransformer);
 
@@ -81,5 +91,9 @@ public class TestPersistenceProvider implements PersistenceProvider {
     @Override
     public ProviderUtil getProviderUtil() {
         return null;
+    }
+
+    public static void clearLastPersistenceUnitInfo() {
+        persistenceUnitInfo.clear();
     }
 }
