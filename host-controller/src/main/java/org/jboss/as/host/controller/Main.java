@@ -573,7 +573,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(value);
             } catch (UnknownHostException e) {
                 parseFailed = true;
-                System.out.println(MESSAGES.invalidValue(key, "InetAddress", value));
+                System.err.println(MESSAGES.invalidValue(key, "InetAddress", value));
             }
         }
     }
