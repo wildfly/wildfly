@@ -16,7 +16,7 @@ IF NOT DEFINED JAVA (
     IF DEFINED JAVA_HOME (
         set JAVA="%JAVA_HOME%\bin\java"
     ) ELSE (
-        JAVA=java
+        set JAVA=java
     )
 
 )
@@ -26,7 +26,7 @@ IF NOT DEFINED MODULEPATH (
 	call :DeQuote MODULEPATH
 )
 
-rem 
+rem
 rem Setup the JBoss Vault Tool classpath
 rem
 
