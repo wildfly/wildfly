@@ -32,6 +32,7 @@ import org.jboss.as.jsf.JSFLogger;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
+ * This class finds all the installed JSF implementations and provides their ModuleId's.
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -63,6 +64,8 @@ public class JSFModuleIdFactory {
             loadIdsFromModulePath(modulePath);
             if (activeVersions.isEmpty()) loadIdsManually();
         }
+
+        JSFLogger.ROOT_LOGGER.activatedJSFImplementations(activeVersions);
     }
 
     private boolean isBogusPath(String path) {
