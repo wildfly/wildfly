@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
@@ -48,7 +50,7 @@ public class ProductConfig implements Serializable {
         String consoleSlot = null;
 
         try {
-            FileReader reader = new FileReader(home + File.separator + "bin" + File.separator + "product.conf");
+            FileReader reader = new FileReader(getProductConf(home));
             Properties props = new Properties();
             props.load(reader);
 
@@ -74,6 +76,28 @@ public class ProductConfig implements Serializable {
 
         name = productName;
         version = productVersion;
+        this.consoleSlot = consoleSlot;
+    }
+
+    private static String getProductConf(String home) {
+        final String defaultVal = home + File.separator + "bin" + File.separator + "product.conf";
+        PrivilegedAction<String> action = new PrivilegedAction<String>() {
+            public String run() {
+                String env = System.getenv("JBOSS_PRODUCT_CONF");
+                if (env == null) {
+                    env = defaultVal;
+                }
+                return env;
+            }
+        };
+
+        return System.getSecurityManager() == null ? action.run() : AccessController.doPrivileged(action);
+    }
+
+    /** Solely for use in unit testing */
+    public ProductConfig(final String productName, final String productVersion, final String consoleSlot) {
+        this.name = productName;
+        this.version = productVersion;
         this.consoleSlot = consoleSlot;
     }
 
