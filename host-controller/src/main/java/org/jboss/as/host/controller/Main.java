@@ -177,15 +177,7 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
-                        || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
-                    System.out.println(productConfig.getPrettyVersionString());
-                    return null;
-                } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
-                    usage();
-                    return null;
-                } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
+                if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
                         || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
                     if (!processProperties(arg, args[++i], hostSystemProperties)) {
