@@ -119,7 +119,10 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
                 return MethodIntf.LOCAL;
             case Remote:
                 return MethodIntf.REMOTE;
-            // TODO: Need to handle more recent ones (like timer, mdb)
+            case Timer:
+                return MethodIntf.TIMER;
+            case MessageEndpoint:
+                return MethodIntf.MESSAGE_ENDPOINT;
         }
         return MethodIntf.BEAN;
     }
@@ -129,7 +132,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
         if (methodParametersMetaData == null) {
             return null;
         }
-        return methodParametersMetaData.toArray(new String[0]);
+        return methodParametersMetaData.toArray(new String[methodParametersMetaData.size()]);
     }
 
     @Override
