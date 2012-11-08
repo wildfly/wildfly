@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import java.util.List;
@@ -37,7 +36,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -50,7 +48,6 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-
 public class PropertyResource extends SimpleResourceDefinition {
 
     static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);

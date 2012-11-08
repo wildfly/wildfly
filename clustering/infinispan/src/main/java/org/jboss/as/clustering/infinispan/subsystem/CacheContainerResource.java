@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -48,7 +47,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
     public static final PathElement CONTAINER_PATH = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
 
     // attributes
-    static final SimpleAttributeDefinition ALIAS =
+    static final AttributeDefinition ALIAS =
             new SimpleAttributeDefinitionBuilder(ModelKeys.ALIAS, ModelType.STRING, true)
                     .setXmlName(Attribute.NAME.getLocalName())
                     .setAllowExpression(false)
