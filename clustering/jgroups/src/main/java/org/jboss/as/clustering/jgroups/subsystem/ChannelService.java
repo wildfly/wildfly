@@ -34,14 +34,11 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.protocols.pbcast.STATE;
-import org.jgroups.protocols.pbcast.STATE_SOCK;
-import org.jgroups.protocols.pbcast.STATE_TRANSFER;
+import org.jgroups.ChannelListener;
 
-public class ChannelService implements Service<Channel> {
+public class ChannelService implements Service<Channel>, ChannelListener {
 
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(JGroupsExtension.SUBSYSTEM_NAME).append("channel");
-    private static final long STATE_TRANSFER_TIMEOUT = 60000;
 
     public static ServiceName getServiceName(String id) {
         return SERVICE_NAME.append(id);
@@ -66,11 +63,9 @@ public class ChannelService implements Service<Channel> {
         ChannelFactory factory = this.factory.getValue();
         try {
             this.channel = factory.createChannel(this.id);
-            if (this.channel.getProtocolStack().findProtocol(STATE_TRANSFER.class, STATE.class, STATE_SOCK.class) != null) {
-                this.channel.connect(this.id, null, STATE_TRANSFER_TIMEOUT);
-            } else {
-                this.channel.connect(this.id);
-            }
+            this.channel.addChannelListener(this);
+            // Don't connect the channel here
+            // This will be done by Infinispan (see AS7-5904)
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -79,23 +74,37 @@ public class ChannelService implements Service<Channel> {
             String output = this.channel.getProtocolStack().printProtocolSpec(true);
             ROOT_LOGGER.tracef("JGroups channel named %s created with configuration:\n %s", this.id, output);
         }
+    }
 
+    @Override
+    public void stop(StopContext context) {
+        if (this.channel != null) {
+            this.channel.removeChannelListener(this);
+        }
+        this.channel = null;
+    }
+
+    @Override
+    public void channelClosed(Channel channel) {
+        // Do nothing
+    }
+
+    @Override
+    public void channelConnected(Channel channel) {
         // Validate view
-        String localName = this.channel.getName();
-        Address localAddress = this.channel.getAddress();
-        for (Address address: this.channel.getView()) {
-            String name = this.channel.getName(address);
+        String localName = channel.getName();
+        Address localAddress = channel.getAddress();
+        for (Address address: channel.getView()) {
+            String name = channel.getName(address);
             if ((name != null) && name.equals(localName) && !address.equals(localAddress)) {
-                this.channel.close();
-                throw JGroupsMessages.MESSAGES.duplicateNodeName(factory.getProtocolStackConfiguration().getEnvironment().getNodeName());
+                channel.close();
+                throw JGroupsMessages.MESSAGES.duplicateNodeName(this.factory.getValue().getProtocolStackConfiguration().getEnvironment().getNodeName());
             }
         }
     }
 
     @Override
-    public void stop(StopContext context) {
-        if ((this.channel != null) && this.channel.isOpen()) {
-            this.channel.close();
-        }
+    public void channelDisconnected(Channel channel) {
+        // Do nothing
     }
 }
