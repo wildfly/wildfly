@@ -185,10 +185,10 @@ class CommandContextImpl implements CommandContext {
     private String username;
     /** the command line specified password */
     private char[] password;
+    /** the time to connect to a controller */
+    private final int connectionTimeout;
     /** The SSLContext when managed by the CLI */
     private SSLContext sslContext;
-    /** Operation timeout */
-    private final int connectionTimeout;
     /** The TrustManager in use by the SSLContext, a reference is kept to rejected certificates can be captured. */
     private LazyDelagatingTrustManager trustManager;
     /** various key/value pairs */
@@ -228,13 +228,13 @@ class CommandContextImpl implements CommandContext {
         this.console = null;
         this.operationCandidatesProvider = null;
         this.cmdCompleter = null;
-        this.connectionTimeout = -1;
         operationHandler = new OperationRequestHandler();
         initCommands();
         config = CliConfigImpl.load(this);
         defaultControllerHost = config.getDefaultControllerHost();
         defaultControllerPort = config.getDefaultControllerPort();
         resolveParameterValues = config.isResolveParameterValues();
+        this.connectionTimeout = config.getConnectionTimeout();
         initSSLContext();
     }
 
@@ -255,7 +255,7 @@ class CommandContextImpl implements CommandContext {
 
         this.username = username;
         this.password = password;
-        this.connectionTimeout = connectionTimeout;
+        this.connectionTimeout = connectionTimeout != -1 ? connectionTimeout : config.getConnectionTimeout();
 
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
@@ -294,7 +294,7 @@ class CommandContextImpl implements CommandContext {
 
         this.username = username;
         this.password = password;
-        this.connectionTimeout = -1;
+        this.connectionTimeout = config.getConnectionTimeout();
 
         if (defaultControllerHost != null) {
             this.defaultControllerHost = defaultControllerHost;
