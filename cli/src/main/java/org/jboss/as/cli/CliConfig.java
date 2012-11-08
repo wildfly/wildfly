@@ -72,6 +72,13 @@ public interface CliConfig {
     int getHistoryMaxSize();
 
     /**
+     * Connection timeout period in milliseconds.
+     *
+     * @return connection timeout in milliseconds
+     */
+    int getConnectionTimeout();
+
+    /**
      * The global SSL configuration if it has been defined.
      *
      * @return The SSLConfig

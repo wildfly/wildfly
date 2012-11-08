@@ -52,11 +52,13 @@
                     </xs:annotation>
                 </xs:element>
 
+                <xs:element ref="connection-timeout" minOccurs="0" maxOccurs="1"/>
+
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="default-controller">
         <xs:annotation>
             <xs:documentation>
@@ -71,7 +73,7 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="validate-operation-requests" type="xs:boolean" default="true">
         <xs:annotation>
             <xs:documentation>
@@ -81,7 +83,7 @@
             </xs:documentation>
         </xs:annotation>
     </xs:element>
-    
+
     <xs:element name="history">
         <xs:annotation>
             <xs:documentation>
@@ -97,7 +99,15 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
+    <xs:element name="connection-timeout" type="xs:int" default="5000">
+        <xs:annotation>
+            <xs:documentation>
+                The time allowed to establish a connection with the controller.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
     <xs:element name="ssl">
         <xs:annotation>
             <xs:documentation>
@@ -110,7 +120,7 @@
                 <xs:element name="key-store" type="xs:string" minOccurs="0" />
                 <xs:element name="key-store-password" type="xs:string" minOccurs="0" />
                 <xs:element name="alias" type="xs:string" minOccurs="0" />
-                <xs:element name="key-password" type="xs:string" minOccurs="0" />                
+                <xs:element name="key-password" type="xs:string" minOccurs="0" />
                 <xs:element name="trust-store" type="xs:string" minOccurs="0" />
                 <xs:element name="trust-store-password" type="xs:string" minOccurs="0" />
                 <xs:element name="modify-trust-store" type="xs:boolean" default="true" minOccurs="0">

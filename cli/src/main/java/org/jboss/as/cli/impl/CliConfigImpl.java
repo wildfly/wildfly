@@ -62,6 +62,7 @@ class CliConfigImpl implements CliConfig {
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
     private static final String PORT = "port";
+    private static final String CONNECTION_TIMEOUT = "connection-timeout";
     private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
 
@@ -171,6 +172,8 @@ class CliConfigImpl implements CliConfig {
         historyFileName = ".jboss-cli-history";
         historyFileDir = SecurityActions.getSystemProperty("user.home");
         historyMaxSize = 500;
+
+        connectionTimeout = 5000;
     }
 
     private String defaultControllerHost;
@@ -180,6 +183,8 @@ class CliConfigImpl implements CliConfig {
     private String historyFileName;
     private String historyFileDir;
     private int historyMaxSize;
+
+    private int connectionTimeout;
 
     private boolean validateOperationRequests = true;
     private boolean resolveParameterValues = false;
@@ -214,6 +219,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public int getHistoryMaxSize() {
         return historyMaxSize;
+    }
+
+    @Override
+    public int getConnectionTimeout() {
+        return connectionTimeout;
     }
 
     @Override
@@ -342,6 +352,13 @@ class CliConfigImpl implements CliConfig {
                         config.validateOperationRequests = resolveBoolean(reader.getElementText());
                     } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
                         config.resolveParameterValues = resolveBoolean(reader.getElementText());
+                    } else if (CONNECTION_TIMEOUT.equals(localName)) {
+                        final String text = reader.getElementText();
+                        try {
+                            config.connectionTimeout = Integer.parseInt(text);
+                        } catch(NumberFormatException e) {
+                            throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
+                        }
                     } else {
                         throw new XMLStreamException("Unexpected element: " + localName);
                     }

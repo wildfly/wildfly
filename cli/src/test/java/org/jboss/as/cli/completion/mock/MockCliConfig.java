@@ -67,6 +67,11 @@ public class MockCliConfig implements CliConfig {
     }
 
     @Override
+    public int getConnectionTimeout() {
+        return 5000;
+    }
+
+    @Override
     public boolean isValidateOperationRequests() {
         return true;
     }
