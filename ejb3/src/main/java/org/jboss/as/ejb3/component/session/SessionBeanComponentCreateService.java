@@ -98,7 +98,7 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
 
         if (sessionBeanComponentDescription.getScheduleMethods() != null) {
             for (Method method : sessionBeanComponentDescription.getScheduleMethods().keySet()) {
-                processTxAttr(sessionBeanComponentDescription, MethodIntf.BEAN, method);
+                processTxAttr(sessionBeanComponentDescription, MethodIntf.TIMER, method);
             }
         }
         final EJBViewDescription local = sessionBeanComponentDescription.getEjbLocalView();
