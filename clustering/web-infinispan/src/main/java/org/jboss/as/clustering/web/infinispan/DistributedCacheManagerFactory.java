@@ -41,7 +41,6 @@ import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.lock.SharedLocalYieldingClusterLockManager;
 import org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerService;
 import org.jboss.as.clustering.msc.AsynchronousService;
@@ -141,7 +140,6 @@ public class DistributedCacheManagerFactory implements org.jboss.as.clustering.w
         AsynchronousService.addService(target, cacheServiceName, new CacheService<Object, Object>(cacheName, dependencies))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
-                .addDependency(DependencyType.OPTIONAL, ChannelService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
