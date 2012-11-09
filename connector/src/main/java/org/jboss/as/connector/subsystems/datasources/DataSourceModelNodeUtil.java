@@ -89,7 +89,9 @@ import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.common.api.metadata.Defaults;
@@ -345,7 +347,7 @@ class DataSourceModelNodeUtil {
         }
     }
 
-    private static Extension extractExtension(final OperationContext operationContext, final ModelNode dataSourceNode, final SimpleAttributeDefinition className, final SimpleAttributeDefinition propertyName)
+    private static Extension extractExtension(final OperationContext operationContext, final ModelNode dataSourceNode, final SimpleAttributeDefinition className, final PropertiesAttributeDefinition propertyName)
             throws ValidateException, OperationFailedException {
         if (dataSourceNode.hasDefined(className.getName())) {
             String exceptionSorterClassName = dataSourceNode.get(className.getName()).asString();
