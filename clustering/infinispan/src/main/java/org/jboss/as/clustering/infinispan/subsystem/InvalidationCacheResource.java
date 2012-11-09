@@ -13,10 +13,10 @@ public class InvalidationCacheResource extends ClusteredCacheResource {
 
     // attributes
 
-    public InvalidationCacheResource() {
+    public InvalidationCacheResource(boolean runtimeRegistration) {
         super(INVALIDATION_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.INVALIDATION_CACHE),
                 InvalidationCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, runtimeRegistration);
     }
 }

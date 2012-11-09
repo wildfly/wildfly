@@ -13,11 +13,11 @@ public class LocalCacheResource extends CacheResource {
 
     // attributes
 
-    public LocalCacheResource() {
+    public LocalCacheResource(boolean runtimeRegistration) {
         super(LOCAL_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.LOCAL_CACHE),
                 LocalCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, runtimeRegistration);
     }
 
 

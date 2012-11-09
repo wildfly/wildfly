@@ -49,11 +49,11 @@ public class DistributedCacheResource extends SharedCacheResource {
 
     static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, VIRTUAL_NODES, L1_LIFESPAN};
 
-    public DistributedCacheResource() {
+    public DistributedCacheResource(boolean runtimeRegistration) {
         super(DISTRIBUTED_CACHE_PATH,
                 InfinispanExtension.getResourceDescriptionResolver(ModelKeys.DISTRIBUTED_CACHE),
                 DistributedCacheAdd.INSTANCE,
-                CacheRemove.INSTANCE);
+                CacheRemove.INSTANCE, runtimeRegistration);
     }
 
     @Override
