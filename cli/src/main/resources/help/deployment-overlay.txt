@@ -1,51 +1,105 @@
 SYNOPSIS
 
-NOTE: --server-group argument in all the use-cases below is described as optional
-      with brackets, which means its appearance depends on the mode:
-      it is required in the domain mode and it is *not* allowed for standalone.
+Covering all the actions and options in one line is difficult to compose
+correctly and difficult to read and understand. Instead, the synopsis
+will be described per action. 
+
+The command supports the following actions (action is always the first
+argument of the command): add, link, list-content, list-links,
+list-content, list-links, redeploy-affected, remove, upload.
+ 
+NOTE: --server-group, --all-server-groups and --all-relevant-server-groups
+      arguments in all the descriptions below are shown as optional
+      in brackets, in fact, their appearance depends on the mode:
+      one of them is allowed or required in the domain mode
+      but in the standalone mode none of them is allowed.
       
-Adding a new overlay with content and optionally linking it to existing deployments
+ACTION: add
+
+    Depending on the arguments the action
+    - always creates a new overlay with content;
+    - optionally links it to the specified existing deployments;
+    - also optionally re-deploys the affected (linked) deployments.
 
     deployment-overlay add --name=overlay_name
         --content=archive_path=fs_path(,archive_path=fs_path)*
-        [--server-group=server_group_name]
-        [--deployment=deployment_name(,deployment_name)*]
+        [--server-groups=server_group_name(,server-group-name)* | --all-server-groups]
+        [--deployments=deployment_name(,deployment_name)*]
+        [--wildcards=wildcard_name(,wildcard_name)*]
+        [--redeploy-affected]
         [--headers={operation_header (;operation_header)*}]
 
-Unlinking deployments and/or removing overlay content and/or removing an overlay completely
+ACTION: remove
 
+    Depending on the arguments the action may:
+    - unlink deployments (if --deployments or --wildcards argument is specified);
+    - remove content (if --content argument is specified);
+    - remove the overlay altogether with its content and links;
+    - re-deploy affected deployments.
+    
     deployment-overlay remove --name=overlay_name
         [--content=archive_path=(,archive_path)*]
-        [--server-group=server_group_name]
-        [--deployment=deployment_name(,deployment_name)*]
+        [--server-groups=server_group_name(,server_group_name)* | --all-relevant-server-groups]
+        [--deployments=deployment_name(,deployment_name)*]
+        [--wildcards=wildcard_name(,wildcard_name)*]
+        [--redeploy-affected]
         [--headers={operation_header (;operation_header)*}]
         
     If the remove command specifies only the name of the overlay, the overlay
     will be removed including its content and deployment links (from all server groups
-    in the domain mode). If other arguments are specified, the overlay
-    will not be removed completely.
-    
-    If in the domain mode remove command contains only --name and --server-group,
-    all the links to the overlay will be removed from the specified server group.
-    
-    --content and --deployment target specific content and deployments.
+    in the domain mode). 
 
-Adding content to an existing overlay
+    If in the domain mode remove command contains only --name and --server-groups
+    (or --all-relevant-server-groups), all the links to the overlay will be removed
+    from the specified server groups. The content will remain untouched.
+
+    --content, --deployments and --wildcards target specific content and links
+    to the specified deployments and wildcards.
+
+ACTION: upload
+
+    Adds content to an existing overlay and optionally re-deploys the linked deployments.
 
     deployment-overlay upload --name=overlay_name
         --content=archive_path=fs_path(,archive_path=fs_path)*
+        [--redeploy-affected]
         [--headers={operation_header (;operation_header)*}]
 
-Linking deployments
+ACTION: link
+
+    Creates links between an overlay and existing deployments and
+    optionally re-deploys linked deployments.
 
     deployment-overlay link --name=overlay_name
-        [--server-group=server_group_name]
-        --deployment=deployment_name(,deployment_name)*
+        [--server-groups=server_group_name(,server_group_name)* | --all-server-groups]
+        (--deployment=deployment_name(,deployment_name)* |
+         --wildcards=wildcard_name(,wildcard_name)*)
+        [--redeploy-affected]
         [--headers={operation_header (;operation_header)*}]
 
-Listing overlay content or linked deployments
+ACTION: redeploy-affected
 
-    deployment-overlay [list-content | list-deployments] --name=overlay_name [--server-group=server_group_name] [-l]
+    Re-deploys all the linked deployments.
+    
+    deployment-overlay redeploy-affected --name=overlay_name
+        [--headers={operation_header (;operation_header)*}]
+
+ACTION: list-content
+
+    Lists content of the overlay.
+    
+    deployment-overlay list-content --name=overlay_name [-l]
+
+ACTION: list-links
+
+    Lists deployments the overlay is linked to.
+    
+    deployment-overlay list-links --name=overlay_name [-l]
+    [--server-groups=server_group_name(,server_group_name)*]
+
+NOTE: deployment-overlay executed without an action lists existing overlay names.
+
+    deployment-overlay [-l]
 
 
 DESCRIPTION
@@ -57,32 +111,6 @@ DESCRIPTION
     - link an overlay to existing deployments;
     - unlink an overlay from deployments;
     - remove an existing overlay.
-    
-    The first argument of the command is the action name, which can be one of the following:
-    
-    - add     - creates a new deployment overlay;
-    
-    - remove  - depending on the arguments, it may:
-    
-                - if --content argument is provided,
-                  remove the specified content from an existing overlay;
-                  
-                - if --deployment argument is provided,
-                  unlink the specified deployments from an existing overlay;
-                  
-                - in case there are no other arguments than the --name,
-                  remove the overlay with its content and links altogether.
-    
-    - link      - link an overlay to the specified deployments;
-    
-    - upload    - upload and add content to an existing overlay;
-    
-    - list-content  - list content of the specified overlay;
-    
-    - list-deployments  - list linked deployments of the specified overlay.
-    
-    If the command is executed without an action name,
-    it will list all the existing deployment overlay names.    
 
 
 ARGUMENTS
@@ -92,8 +120,9 @@ ARGUMENTS
 
  --content           - specifies the deployment overlay content.
  
-                           If used with 'add' action, the format will be
-                       a comma-separated list of archive_path=fs_path pairs,
+                           If used with 'add' or 'upload' action, the format
+                       will be of the value a comma-separated list of
+                       archive_path=fs_path pairs,
                        where archive_path is the path as it will appear
                        in the linked deployment archive and fs_path is
                        the filesystem path to the file which should be
@@ -104,15 +133,36 @@ ARGUMENTS
                        a comma-separated list of archive_path that should be
                        removed from the overlay.
 
- --server-group      - is required in for the domain mode and is not allowed
-                       for standalone. Specifies the target server group.
+ --server-groups     - may appear only in the domain mode and is not allowed
+                       in the standalone. The value is a comma-separated list
+                       of the target server groups.
 
- --deployment        - a comma-separated list of deployment names that,
+ --all-server-groups - may appear only in the domain mode and is not allowed
+                       in the standalone. The argument does not expect any
+                       value. It signifies that all the available server
+                       groups should be targeted by the command.
+
+ --all-relevant-server-groups  - may appear only in the domain mode and is not
+                                 allowed in the standalone. The argument
+                                 does not expect any value. It signifies that
+                                 all the relevant (according to the other
+                                 specified arguments) server groups should be targeted.
+
+ --deployments       - a comma-separated list of deployment names that,
                        depending on the action, should be linked to or
                        unlinked from the specified overlay.
 
+ --wildcards         - a comma-separated list of wildcarded deployment names
+                       that, depending on the action, should be linked to or
+                       unlinked from the specified overlay. 
+
+ --redeploy-affected - signifies that in addition to the specified action,
+                       all the affected by the action deployments should
+                       also be re-deployed as part of the command.
+ 
  -l                  - lists items one per line instead of organizing
                        them in columns;
                        
- --headers           - a list of operation headers separated by a semicolon. For the list of supported
-                       headers, please, refer to the domain management documentation or use tab-completion.
+ --headers           - a list of operation headers separated by a semicolon.
+                       For the list of supported headers, please, refer to
+                       the domain management documentation or use tab-completion.
