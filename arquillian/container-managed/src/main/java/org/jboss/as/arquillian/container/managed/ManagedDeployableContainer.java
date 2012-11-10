@@ -114,12 +114,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 cmd.add("-ea");
             }
 
-            final String serverBaseDir = getSystemPropertyValue(cmd, "jboss.server.base.dir", SERVER_BASE_DIR);
-            final String bootLogFileDefaultValue = jbossHome + File.separatorChar + serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "boot.log";
-            final String loggingConfigurationDefaultValue = "file:" + jbossHome + File.separatorChar + serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
+            final String serverBaseDir = getSystemPropertyValue(cmd, "jboss.server.base.dir", jbossHome + File.separatorChar + SERVER_BASE_DIR);
+            final String bootLogFileDefaultValue = serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "boot.log";
+            final String loggingConfigurationDefaultValue = serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
             cmd.add("-Djboss.home.dir=" + jbossHome);
-            cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", bootLogFileDefaultValue));
-            cmd.add("-Dlogging.configuration=" + getSystemPropertyValue(cmd, "logging.configuration", loggingConfigurationDefaultValue));
+            cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", getFile(bootLogFileDefaultValue, jbossHome).getAbsolutePath()));
+            cmd.add("-Dlogging.configuration=" + getSystemPropertyValue(cmd, "logging.configuration", getFile(loggingConfigurationDefaultValue, jbossHome).toURI().toString()));
             cmd.add("-Djboss.bundles.dir=" + bundlesPath);
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
@@ -361,5 +361,26 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
         }
         return defaultValue;
+    }
+
+    /**
+     * Get a File from a file pathname.<br/>
+     * If the file or directory denoted by {@code pathname} doesn't exist,
+     * check if a relative path to the {@code jbossHome} dir exists.
+     *
+     * @param filePathname the file pathname
+     * @param jbossHome the jboss home directory
+     * @return the File form for the file pathname.
+     */
+    private File getFile(final String filePathname, final String jbossHome) {
+        File result = new File(filePathname);
+        // AS7-1752 see if a non-existent relative path exists relative to the home dir
+        if (!result.exists() && !result.isAbsolute()) {
+            File relative = new File(jbossHome, filePathname);
+            if (relative.exists()) {
+                result = relative;
+            }
+        }
+        return result;
     }
 }
