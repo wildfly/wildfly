@@ -95,6 +95,65 @@
 		        </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>modular-karaf</id>
+            <activation>
+                <property>
+                	<name>modular</name>
+                	<value>karaf</value>
+                </property>
+            </activation>
+            <properties>
+            	<modular.config.name>karaf</modular.config.name>
+            	<standalone.subsystems>logging:osgi,osgi:karaf,configadmin</standalone.subsystems>
+            	<standalone.template>configuration/standalone/template-osgi.xml</standalone.template>
+            	<console.enabled>false</console.enabled>
+            	<domain.enabled>false</domain.enabled>
+            </properties>
+            <build>
+		        <plugins>
+		            <plugin>
+		                <groupId>org.apache.maven.plugins</groupId>
+		                <artifactId>maven-antrun-plugin</artifactId>
+		                <inherited>false</inherited>
+		                <executions>
+		                    <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+		                    <execution>
+		                        <id>modular-config</id>
+		                        <goals>
+		                            <goal>run</goal>
+		                        </goals>
+		                        <phase>generate-resources</phase>
+		                        <configuration>
+		                            <target>
+		                                <ant antfile="build-modular-config.xml" inheritRefs="true">
+		                                    <target name="all"/>
+		                                </ant>
+		                                <property name="server.output.dir" value="target/jboss-as-${modular.config.name}-${jboss.as.release.version}" />
+		                                <echo file="${server.output.dir}/bin/standalone.conf" append="true">
+# Karaf system properties
+JBHOME=`cd "$DIRNAME/.."; pwd`
+KARAF_HOME="${JBHOME}/standalone/data/karaf"
+KARAF_BASE="${KARAF_HOME}"
+JAVA_OPTS="$JAVA_OPTS -Dkaraf.home=${KARAF_HOME} -Dkaraf.base=${KARAF_BASE} -Dkaraf.startRemoteShell=true -Dkaraf.startLocalConsole=false"
+		                                </echo>
+		                                <copy file="${user.home}/.ssh/authorized_keys" tofile="${server.output.dir}/standalone/data/karaf/etc/authorized_keys"/>
+		                                <echo>
+		                                
+Connect using
+=============
+ssh -o StrictHostKeyChecking=no -p 8101 localhost
+		                                
+		                                </echo>
+		                            </target>
+		                        </configuration>
+		                    </execution>
+		                </executions>
+		            </plugin>
+		        </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
