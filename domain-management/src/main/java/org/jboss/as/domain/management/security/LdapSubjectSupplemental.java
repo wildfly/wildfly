@@ -70,6 +70,7 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
     private final String resultPattern;
     private final Boolean reverseGroupMember;
     private final String userDn;
+    private final String userFilter;
 
     public LdapSubjectSupplemental(boolean recursive, String rolesDn, String baseDn, String userDn,String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern, Boolean reverseGroupMember) {
         this.recursive = recursive;
@@ -85,6 +86,7 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
         }
         this.usernameAttribute = userNameAttribute;
         this.advancedFilter = advancedFilter;
+        this.userFilter = "(" + usernameAttribute + "={0})";
     }
 
     /*
@@ -154,11 +156,8 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
 
     private String getDistinguishedName(InitialDirContext searchContext, SearchControls searchControls, Object[] filterArguments) throws NamingException, IOException {
         String distinguishedUserDN = (String) filterArguments[0];
-        if (reverseGroupMember) {
-            distinguishedUserDN = (String) filterArguments[0];
-        } else if (usernameAttribute != null) {
-            String filter = "(" + usernameAttribute + "={0})";
-            NamingEnumeration<SearchResult> searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
+        if ((!reverseGroupMember) && (usernameAttribute != null)) {
+            NamingEnumeration<SearchResult> searchEnumeration = searchContext.search(baseDn, userFilter, filterArguments, searchControls);
             if (searchEnumeration.hasMore() == true) {
                 SearchResult result = searchEnumeration.next();
                 if (userDn == null || userDn.equalsIgnoreCase("dn")) {
@@ -183,7 +182,7 @@ public class LdapSubjectSupplemental implements Service<SubjectSupplementalServi
         String userDN = getDistinguishedName(searchContext,searchControls, new Object[]{username});
         String[] filter = new String[2];
         if (reverseGroupMember) {
-            filter[0] = "(" + usernameAttribute + "={0})";
+            filter[0] = userFilter;
             filter[1] = userDN;
         } else {
             filter[0] = advancedFilter != null ? advancedFilter : "(member={0})";
