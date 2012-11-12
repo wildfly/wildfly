@@ -248,9 +248,10 @@ public class OperationCoordinatorStepHandler {
             }
             else if (address.size() == 1 && DEPLOYMENT.equals(address.getElement(0).getKey())
                     && ADD.equals(opNode.get(OP).asString()) && hasStorableContent(opNode)) {
+                String name = address.getElement(0).getValue();
                 byte[] hash = DeploymentUploadUtil.storeDeploymentContent(context, opNode, contentRepository);
-                    opNode.get(CONTENT).get(0).remove(INPUT_STREAM_INDEX);
-                    opNode.get(CONTENT).get(0).get(HASH).set(hash);
+                opNode.get(CONTENT).get(0).remove(INPUT_STREAM_INDEX);
+                opNode.get(CONTENT).get(0).get(HASH).set(hash);
             }
         } catch (IOException ioe) {
             throw MESSAGES.caughtExceptionStoringDeploymentContent(ioe.getClass().getSimpleName(), ioe);

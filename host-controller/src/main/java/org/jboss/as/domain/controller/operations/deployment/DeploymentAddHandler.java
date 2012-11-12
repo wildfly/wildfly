@@ -44,6 +44,7 @@ import java.util.Locale;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -185,7 +186,11 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         subModel.get(RUNTIME_NAME).set(runtimeName);
         subModel.get(CONTENT).set(content);
 
-        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+        if (context.completeStep() == ResultAction.KEEP) {
+            if (contentRepository != null && hash != null) {
+                contentRepository.addContentReference(hash, name);
+            }
+        }
     }
 
     private static InputStream getInputStream(OperationContext context, ModelNode operation) throws OperationFailedException {
