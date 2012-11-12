@@ -36,14 +36,23 @@ public class SFSB1 {
 
     public static volatile boolean preDestroyCalled = false;
 
+    private boolean shouldDenyDestruction = false;
+
     @PreDestroy
     private void preDestroy() {
         preDestroyCalled = true;
+        if(shouldDenyDestruction)
+            throw new RuntimeException("Denying bean destruction");
     }
 
     // always throws a TransactionRequiredException
     @Remove
     public void done() {
 
+    }
+
+    @Remove
+    public void doneAndDenyDestruction() {
+        shouldDenyDestruction = true;
     }
 }
