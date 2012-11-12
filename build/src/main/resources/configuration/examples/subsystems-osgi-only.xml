@@ -4,7 +4,7 @@
    <subsystems>
       <subsystem supplement="osgi">configuration/subsystems/logging.xml</subsystem>
       <subsystem>configuration/subsystems/configadmin.xml</subsystem>
-      <subsystem supplement="eager">configuration/subsystems/osgi.xml</subsystem>
+      <subsystem supplement="minimal">configuration/subsystems/osgi.xml</subsystem>
       <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>
       <subsystem>configuration/subsystems/naming.xml</subsystem>

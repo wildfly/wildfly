@@ -176,17 +176,16 @@ public class GenerateModulesDefinition {
         if (dep.isOptional()) {
             moduleNode.addAttribute("optional", new AttributeValue("true"));
         }
-
         if (dependencies.contains(moduleId)) {
             moduleNode.addAttribute("defined", new AttributeValue("true"));
             parentNode.addChild(moduleNode);
         } else {
             parentNode.addChild(moduleNode);
-
-            String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
-            File moduleFile = new File(resourcesDir + File.separator + "modules" + File.separator + path + File.separator + "module.xml");
-            if (moduleFile.exists() || !dep.isOptional()) {
+            if (!dep.isOptional()) {
                 dependencies.add(moduleId);
+
+                String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
+                File moduleFile = new File(resourcesDir + File.separator + "modules" + File.separator + path + File.separator + "module.xml");
 
                 ModuleParser moduleParser = new ModuleParser(moduleFile);
                 moduleParser.parse();
