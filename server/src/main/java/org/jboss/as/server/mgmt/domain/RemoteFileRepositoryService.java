@@ -22,11 +22,16 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import static org.jboss.as.server.ServerMessages.MESSAGES;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.repository.LocalDeploymentFileRepository;
-import static org.jboss.as.server.ServerMessages.MESSAGES;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -35,10 +40,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author Emanuel Muckenhuber
@@ -110,8 +111,8 @@ public class RemoteFileRepositoryService implements CompositeContentRepository, 
     }
 
     @Override
-    public void removeContent(byte[] hash) {
-        contentRepository.removeContent(hash);
+    public void removeContent(byte[] hash, Object reference) {
+        contentRepository.removeContent(hash, reference);
     }
 
     @Override
@@ -141,6 +142,11 @@ public class RemoteFileRepositoryService implements CompositeContentRepository, 
     @Override
     public void deleteDeployment(byte[] deploymentHash) {
         localRepository.deleteDeployment(deploymentHash);
+    }
+
+    @Override
+    public void addContentReference(byte[] hash, Object reference) {
+        contentRepository.addContentReference(hash, reference);
     }
 
 }

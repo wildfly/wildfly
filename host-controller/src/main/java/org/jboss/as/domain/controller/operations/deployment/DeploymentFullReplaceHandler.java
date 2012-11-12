@@ -83,7 +83,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             def.validateOperation(operation);
         }
 
-        String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
+        final String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
         String runtimeName = operation.hasDefined(RUNTIME_NAME) ? DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(RUNTIME_NAME).resolveModelAttribute(context, operation).asString() : name;
         byte[] hash;
 
@@ -162,19 +162,18 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
                         if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
                             byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
                             if (!Arrays.equals(originalHash, newHash)) {
-                                contentRepository.removeContent(originalHash);
+                                contentRepository.removeContent(originalHash, name);
                             }
                         }
                     }
                 } else {
                     if (contentRepository != null && operation.get(CONTENT).get(0).hasDefined(HASH)) {
                         byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
-                        contentRepository.removeContent(newHash);
+                        contentRepository.removeContent(newHash, name);
                     }
                 }
             }
         });
-
     }
 
     private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {

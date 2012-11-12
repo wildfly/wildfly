@@ -107,7 +107,7 @@ public class DeploymentAddHandlerTestCase {
     private ContentRepository contentRepository = new ContentRepository() {
 
         @Override
-        public void removeContent(byte[] hash) {
+        public void removeContent(byte[] hash, Object reference) {
         }
 
         @Override
@@ -128,6 +128,10 @@ public class DeploymentAddHandlerTestCase {
         @Override
         public byte[] addContent(InputStream stream) throws IOException {
             return null;
+        }
+
+        @Override
+        public void addContentReference(byte[] hash, Object reference) {
         }
     };
 }

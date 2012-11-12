@@ -65,6 +65,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         checkCanRemove(context, operation);
+        final String name = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final List<byte[]> deploymentHashes = DeploymentUtils.getDeploymentHash(resource);
 
@@ -77,7 +78,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
                     @Override
                     public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                         if (resultAction != ResultAction.ROLLBACK) {
-                            removeContent(deploymentHashes);
+                            removeContent(name, deploymentHashes);
                         }
                     }
                 });
@@ -105,7 +106,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
     }
 
-    abstract void removeContent(List<byte[]> hashes);
+    abstract void removeContent(String name, List<byte[]> hashes);
 
     private static class MasterDeploymentRemoveHandler extends DeploymentRemoveHandler {
         final ContentRepository contentRepository;
@@ -116,11 +117,11 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
 
         @Override
-        void removeContent(List<byte[]> hashes) {
+        void removeContent(String name, List<byte[]> hashes) {
             for (byte[] hash : hashes) {
                 try {
                     if (contentRepository != null) {
-                        contentRepository.removeContent(hash);
+                        contentRepository.removeContent(hash, name);
                     }
                 } catch (Exception e) {
                     DEPLOYMENT_LOGGER.debugf(e, "Exception occurred removing %s", Arrays.asList(hash));
@@ -139,7 +140,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
         }
 
         @Override
-        void removeContent(List<byte[]> hashes) {
+        void removeContent(String name, List<byte[]> hashes) {
             for (byte[] hash : hashes) {
                 try {
                     if (fileRepository != null) {
