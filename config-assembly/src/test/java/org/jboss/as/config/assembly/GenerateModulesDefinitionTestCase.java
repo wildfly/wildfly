@@ -89,7 +89,6 @@ public class GenerateModulesDefinitionTestCase {
         Assert.assertEquals("org/jboss/as/web/main/**", br.readLine());
         Assert.assertEquals("org/jboss/osgi/framework/main/**", br.readLine());
         Assert.assertEquals("org/osgi/core/main/**", br.readLine());
-        Assert.assertEquals("org/osgi/enterprise/main/**", br.readLine());
         Assert.assertEquals("org/slf4j/jcl-over-slf4j/main/**", br.readLine());
         Assert.assertEquals("org/slf4j/main/**", br.readLine());
         Assert.assertNull(br.readLine());
