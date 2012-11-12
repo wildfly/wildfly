@@ -18,7 +18,7 @@ DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 EAP_SUBJECT="\${RELEASEVERSION} of JBoss BOMs released, please merge with http://github.com/jboss-eap/jboss-bom, tag and add to EAP maven repo build"
 # EAP team email To ?
 EAP_EMAIL_TO="pgier@redhat.com kpiwko@redhat.com"
-EAP_EMAIL_FROM="\"JDF Publish Script\" <benevides@redhat.com>"
+EMAIL_FROM="\"JDF Publish Script\" <benevides@redhat.com>"
 
 JIRA_PROJECT="12310321"
 #JIRA PLAYGROUND -- JIRA_PROJECT="10073"
@@ -48,19 +48,19 @@ notifyEmail()
    echo "***** Performing JBoss BOM release notifications"
    echo "*** Notifying JBoss EAP team"
    subject=`eval echo $EAP_SUBJECT`
-   echo "Email from: " $EAP_EMAIL_FROM
+   echo "Email from: " $EMAIL_FROM
    echo "Email to: " $EAP_EMAIL_TO
    echo "Subject: " $subject
    # send email using /bin/mail
-   echo "See \$subject :-)" | /usr/bin/env mail -r "$EAP_EMAIL_FROM" -s "$subject" "$EAP_EMAIL_TO"
+   echo "See \$subject :-)" | /usr/bin/env mail -r "$EMAIL_FROM" -s "$subject" "$EAP_EMAIL_TO"
 
 }
 
 notifyJira()
 {
-    echo "Please enter your JIRA username:"
+    echo -n "Please enter your JIRA username: "
     read username
-    echo "Please enter your JIRA password:"
+    echo -n "Please enter your JIRA password: "
     read password
     description=`eval echo $JIRA_DESCRIPTION`
     curl -u $username:$password -X POST -H 'Content-Type: application/json' -d "{ \"fields\": { \"project\": {  \"id\": \"$JIRA_PROJECT\" },\"issuetype\": {\"id\": \"12\" },\"assignee\": { \"name\": \"$JIRA_TO\"}, \"summary\": \"$JIRA_SUMMARY\", \"description\": \"$description\"}}"   https://issues.jboss.org/rest/api/2/issue
@@ -79,8 +79,11 @@ release()
    git commit -a -m "Prepare for development of $NEWSNAPSHOTVERSION"
    git push upstrem HEAD --tags
    echo "***** JBoss BOMs released"
-   notifyEmail
-   notifyJira
+   read -p "Do you want to send release notifcations to $NOTIFICATION_EMAIL_TO[y/N]? " yn
+   case $yn in
+       [Yy]* ) notifyEmail; notifyJira;;
+       * ) exit;
+   esac
 }
 
 SNAPSHOTVERSION="UNDEFINED"
