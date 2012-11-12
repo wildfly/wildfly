@@ -20,14 +20,14 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_LOGGER;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.dmr.ModelNode;
-
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Base class for operation handlers that can handle the upload of deployment content.

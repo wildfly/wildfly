@@ -64,6 +64,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final String name = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final List<byte[]> removedHashes = DeploymentUtils.getDeploymentHash(resource);
 
@@ -102,7 +103,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler, Descriptio
 
                         for (byte[] hash : removedHashes) {
                             try {
-                                contentRepository.removeContent(hash);
+                                contentRepository.removeContent(hash, name);
                             } catch (Exception e) {
                                 //TODO
                                 ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));

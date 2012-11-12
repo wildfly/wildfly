@@ -184,7 +184,8 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
             throw createFailureException(MESSAGES.noDeploymentContentWithName(name));
         }
 
-        final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));
+
+        final Resource deployment = context.readResourceForUpdate(PathAddress.pathAddress(deploymentPath));
         ModelNode deployNode = deployment.getModel();
         byte[] originalHash = deployNode.get(CONTENT).get(0).hasDefined(HASH) ? deployNode.get(CONTENT).get(0).get(HASH).asBytes() : null;
         deployNode.get(NAME).set(name);
@@ -207,14 +208,17 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
                 if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
                     byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
                     if (!Arrays.equals(originalHash, newHash)) {
-                        contentRepository.removeContent(originalHash);
+                        contentRepository.removeContent(originalHash, name);
+                    }
+                    if (contentRepository != null && newHash != null) {
+                        contentRepository.addContentReference(newHash, name);
                     }
                 }
             }
         } else {
             if (contentRepository != null && operation.get(CONTENT).get(0).hasDefined(HASH)) {
                 byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
-                contentRepository.removeContent(newHash);
+                contentRepository.removeContent(newHash, name);
             }
         }
 

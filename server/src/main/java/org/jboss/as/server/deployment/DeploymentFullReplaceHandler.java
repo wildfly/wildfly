@@ -186,14 +186,17 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler, Descr
                 if (replaceNode.get(CONTENT).get(0).hasDefined(HASH)) {
                     byte[] newHash = replaceNode.get(CONTENT).get(0).get(HASH).asBytes();
                     if (!Arrays.equals(originalHash, newHash)) {
-                        contentRepository.removeContent(originalHash);
+                        contentRepository.removeContent(originalHash, name);
+                    }
+                    if (contentRepository != null && newHash != null) {
+                        contentRepository.addContentReference(newHash, name);
                     }
                 }
             }
         } else {
             if (replaceNode.get(CONTENT).get(0).hasDefined(HASH)) {
                 byte[] newHash = replaceNode.get(CONTENT).get(0).get(HASH).asBytes();
-                contentRepository.removeContent(newHash);
+                contentRepository.removeContent(newHash, name);
             }
         }
     }

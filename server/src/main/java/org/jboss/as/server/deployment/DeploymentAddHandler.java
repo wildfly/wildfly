@@ -18,34 +18,6 @@
  */
 package org.jboss.as.server.deployment;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
-
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.common.DeploymentDescription;
-import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
-import org.jboss.as.controller.operations.validation.ListValidator;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersOfValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.repository.DeploymentFileRepository;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -67,6 +39,35 @@ import static org.jboss.as.server.deployment.AbstractDeploymentHandler.createFai
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getInputStream;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.hasValidContentAdditionParameterDefined;
 import static org.jboss.as.server.deployment.AbstractDeploymentHandler.validateOnePieceOfContent;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
+import org.jboss.as.controller.operations.validation.AbstractParameterValidator;
+import org.jboss.as.controller.operations.validation.ListValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParametersOfValidator;
+import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
+import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.services.security.AbstractVaultReader;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Handles addition of a deployment to the model.
@@ -147,10 +148,11 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             byte[] hash = contentItemNode.require(HASH).asBytes();
             contentItem = addFromHash(hash, name, context);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
-            contentItem = addFromContentAdditionParameter(context, contentItemNode);
+            contentItem = addFromContentAdditionParameter(context, name, contentItemNode);
         } else {
             contentItem = addUnmanaged(contentItemNode);
         }
+
 
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         ModelNode subModel = resource.getModel();
@@ -165,7 +167,12 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
         }
 
-        context.completeStep();
+        if (context.completeStep() == ResultAction.KEEP) {
+            if (contentRepository != null && contentItem.getHash() != null) {
+                contentRepository.addContentReference(contentItem.getHash(), name);
+            }
+        }
+
     }
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {
@@ -186,7 +193,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         return new DeploymentHandlerUtil.ContentItem(hash);
     }
 
-    DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {
+    DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, String name, ModelNode contentItemNode) throws OperationFailedException {
         byte[] hash;
         InputStream in = getInputStream(context, contentItemNode);
         try {
@@ -229,7 +236,7 @@ public class DeploymentAddHandler implements OperationStepHandler, DescriptionPr
         }
 
         @Override
-        DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {
+        DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, String name, ModelNode contentItemNode) throws OperationFailedException {
             throw MESSAGES.onlyHashAllowedForDeploymentFullReplaceInDomainServer(contentItemNode);
         }
     }
