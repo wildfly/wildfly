@@ -25,11 +25,11 @@
 <module xmlns="urn:jboss:module:1.1" name="javax.activation.api">
     <dependencies>
         <module name="javax.api" />
-        <module name="javax.mail.api">
+        <module name="javax.mail.api" optional="true">
             <imports><include path="META-INF"/></imports>
         </module>
-        <module name="com.sun.xml.messaging.saaj"/>
-        <module name="org.jboss.ws.native.jbossws-native-core"/>
+        <module name="com.sun.xml.messaging.saaj" optional="true"/>
+        <module name="org.jboss.ws.native.jbossws-native-core" optional="true"/>
         <module name="org.apache.cxf" optional="true"/>
     </dependencies>
 

@@ -20,12 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server;
+package org.jboss.as.embedded;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.xml.namespace.QName;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -45,20 +41,28 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.namespace.QName;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.TransientConfigurationPersister;
-import org.jboss.as.embedded.ServerStartException;
-import org.jboss.as.embedded.StandaloneServer;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.Bootstrap;
+import org.jboss.as.server.Main;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceActivator;
@@ -225,7 +229,7 @@ public class EmbeddedStandAloneServerFactory {
         return standaloneServer;
     }
 
-    public static void setupCleanDirectories(Properties props) {
+    static void setupCleanDirectories(Properties props) {
         File jbossHomeDir = new File(props.getProperty(ServerEnvironment.HOME_DIR));
         setupCleanDirectories(jbossHomeDir, props);
     }

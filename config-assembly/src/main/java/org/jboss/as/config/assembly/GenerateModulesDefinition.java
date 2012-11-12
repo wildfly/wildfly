@@ -37,6 +37,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.config.assembly.ModuleParser.ModuleDependency;
+import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -47,6 +48,8 @@ import org.jboss.modules.ModuleIdentifier;
  * @since 06-Sep-2012
  */
 public class GenerateModulesDefinition {
+
+    static Logger log = Logger.getLogger(GenerateModulesDefinition.class);
 
     static final String SPLIT_PATTERN = ",(\\s*)";
     static final String SKIP_SUBSYSTEMS = "skip-subsystems";
@@ -171,30 +174,30 @@ public class GenerateModulesDefinition {
 
     private void processModuleDependency(List<ModuleIdentifier> dependencies, ElementNode parentNode, ModuleDependency dep) throws IOException, XMLStreamException {
         ModuleIdentifier moduleId = dep.getModuleId();
+        if (dependencies.contains(moduleId)) {
+            log.debugf("Already defined: %s", moduleId);
+            return;
+        }
+
         ElementNode moduleNode = new ElementNode(parentNode, "module");
         moduleNode.addAttribute("name", new AttributeValue(moduleId.toString()));
-        if (dep.isOptional()) {
-            moduleNode.addAttribute("optional", new AttributeValue("true"));
-        }
-        if (dependencies.contains(moduleId)) {
-            moduleNode.addAttribute("defined", new AttributeValue("true"));
-            parentNode.addChild(moduleNode);
-        } else {
-            parentNode.addChild(moduleNode);
-            if (!dep.isOptional()) {
-                dependencies.add(moduleId);
+        parentNode.addChild(moduleNode);
 
-                String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
-                File moduleFile = new File(resourcesDir + File.separator + "modules" + File.separator + path + File.separator + "module.xml");
+        if (!dep.isOptional()) {
+            dependencies.add(moduleId);
 
-                ModuleParser moduleParser = new ModuleParser(moduleFile);
-                moduleParser.parse();
+            String path = moduleId.getName().replace('.', '/') + '/' + moduleId.getSlot();
+            File moduleFile = new File(resourcesDir + File.separator + "modules" + File.separator + path + File.separator + "module.xml");
 
-                List<ModuleDependency> moduledeps = moduleParser.getDependencies();
-                for (ModuleDependency aux : moduledeps) {
-                    processModuleDependency(dependencies, moduleNode, aux);
-                }
+            ModuleParser moduleParser = new ModuleParser(moduleFile);
+            moduleParser.parse();
+
+            List<ModuleDependency> moduledeps = moduleParser.getDependencies();
+            for (ModuleDependency aux : moduledeps) {
+                processModuleDependency(dependencies, moduleNode, aux);
             }
+        } else {
+            moduleNode.addAttribute("optional", new AttributeValue("true"));
         }
     }
 }

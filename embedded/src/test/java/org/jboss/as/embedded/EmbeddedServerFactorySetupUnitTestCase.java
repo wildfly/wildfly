@@ -19,15 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server;
+package org.jboss.as.embedded;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.jboss.as.server.ServerEnvironment;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  *
