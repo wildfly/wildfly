@@ -56,7 +56,7 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         super.populate(fromModel, toModel);
 
         DistributedCacheResource.OWNERS.validateAndSet(fromModel, toModel);
-        DistributedCacheResource.VIRTUAL_NODES.validateAndSet(fromModel, toModel);
+        DistributedCacheResource.SEGMENTS.validateAndSet(fromModel, toModel);
         DistributedCacheResource.L1_LIFESPAN.validateAndSet(fromModel, toModel);
     }
 
@@ -77,13 +77,13 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
         super.processModelNode(context, containerName, cache, builder, dependencies);
 
         final int owners = DistributedCacheResource.OWNERS.resolveModelAttribute(context, cache).asInt();
-        final int virtualNodes = DistributedCacheResource.VIRTUAL_NODES.resolveModelAttribute(context, cache).asInt();
+        final int segments = DistributedCacheResource.SEGMENTS.resolveModelAttribute(context, cache).asInt();
         final long lifespan = DistributedCacheResource.L1_LIFESPAN.resolveModelAttribute(context, cache).asLong();
 
         // process the additional distributed attributes and elements
         builder.clustering().hash()
             .numOwners(owners)
-            .numSegments(virtualNodes)
+            .numSegments(segments)
         ;
         if (lifespan > 0) {
             builder.clustering().l1().lifespan(lifespan);

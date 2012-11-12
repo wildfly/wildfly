@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -62,15 +63,26 @@ public class DistributedCacheResource extends SharedCacheResource {
                     .setDefaultValue(new ModelNode().set(2))
                     .build();
 
-    static final SimpleAttributeDefinition VIRTUAL_NODES =
+    @SuppressWarnings("deprecation")
+    @Deprecated
+    private static final SimpleAttributeDefinition VIRTUAL_NODES =
             new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
                     .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode().set(1))
+                    .setDeprecated(ModelVersion.create(1, 4, 0))
                     .build();
 
-    static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, VIRTUAL_NODES, L1_LIFESPAN};
+    static final SimpleAttributeDefinition SEGMENTS =
+            new SimpleAttributeDefinitionBuilder(ModelKeys.SEGMENTS, ModelType.INT, true)
+                    .setXmlName(Attribute.SEGMENTS.getLocalName())
+                    .setAllowExpression(false)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
+                    .build();
+
+    static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, SEGMENTS, L1_LIFESPAN};
 
     public DistributedCacheResource(final ResolvePathHandler resolvePathHandler) {
         super(DISTRIBUTED_CACHE_PATH,
@@ -88,5 +100,8 @@ public class DistributedCacheResource extends SharedCacheResource {
         for (AttributeDefinition attr : DISTRIBUTED_CACHE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
+
+        // Legacy attributes
+        resourceRegistration.registerReadOnlyAttribute(VIRTUAL_NODES, null);
     }
 }

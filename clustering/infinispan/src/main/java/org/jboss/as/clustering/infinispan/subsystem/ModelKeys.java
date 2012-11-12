@@ -112,6 +112,7 @@ public class ModelKeys {
     static final String REMOTE_TIMEOUT = "remote-timeout";
     static final String REPLICATED_CACHE = "replicated-cache";
     static final String REPLICATION_QUEUE_EXECUTOR = "replication-queue-executor";
+    static final String SEGMENTS = "segments";
     static final String SHARED = "shared";
     static final String SHUTDOWN_TIMEOUT = "shutdown-timeout";
     static final String SINGLETON = "singleton";
@@ -135,7 +136,7 @@ public class ModelKeys {
     static final String TRANSPORT = "transport";
     static final String TRANSPORT_NAME = "TRANSPORT";
     static final String TYPE = "type";
-    static final String VIRTUAL_NODES = "virtual-nodes";
+    @Deprecated static final String VIRTUAL_NODES = "virtual-nodes";
     static final String WAIT = "wait";
     static final String WRITE_BEHIND = "write-behind";
     static final String WRITE_BEHIND_NAME = "WRITE_BEHIND";

@@ -317,8 +317,8 @@ public final class InfinispanSubsystemXMLReader_1_4 implements XMLElementReader<
                     DistributedCacheResource.OWNERS.parseAndSetParameter(value, cache, reader);
                     break;
                 }
-                case VIRTUAL_NODES: {
-                    DistributedCacheResource.VIRTUAL_NODES.parseAndSetParameter(value, cache, reader);
+                case SEGMENTS: {
+                    DistributedCacheResource.SEGMENTS.parseAndSetParameter(value, cache, reader);
                     break;
                 }
                 case L1_LIFESPAN: {

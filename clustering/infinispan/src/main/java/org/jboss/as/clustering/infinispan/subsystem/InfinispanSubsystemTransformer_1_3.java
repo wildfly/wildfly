@@ -59,6 +59,10 @@ public class InfinispanSubsystemTransformer_1_3 extends AbstractSubsystemTransfo
             if (cache.has(ModelKeys.INDEXING_PROPERTIES)) {
                 cache.remove(ModelKeys.INDEXING_PROPERTIES);
             }
+            if (cache.has(ModelKeys.SEGMENTS)) {
+                cache.remove(ModelKeys.SEGMENTS);
+            }
+
             model.get(ModelKeys.CACHE_CONTAINER, containerName, cacheType, c.getName()).set(cache);
         }
     }

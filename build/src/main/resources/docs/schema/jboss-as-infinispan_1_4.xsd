@@ -417,9 +417,9 @@
                         <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-                <xs:attribute name="virtual-nodes" type="xs:int" default="1">
+                <xs:attribute name="segments" type="xs:int" default="80">
                     <xs:annotation>
-                        <xs:documentation>Controls the number of virtual nodes per "real" node.</xs:documentation>
+                        <xs:documentation>Number of hash space segments (per cluster). The recommended value is 10 * cluster size.</xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="l1-lifespan" type="xs:long" default="600000">
