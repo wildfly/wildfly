@@ -64,6 +64,10 @@
             <artifactId>jboss-as-controller-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jandex</artifactId>
         </dependency>

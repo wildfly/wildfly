@@ -101,31 +101,19 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<systemProperties>
-						<property>
-							<name>java.util.logging.manager</name>
-							<value>org.jboss.logmanager.LogManager</value>
-						</property>
-						<property>
-							<name>jboss.home</name>
-							<value>${basedir}/target/jbossas</value>
-						</property>
-						<property>
-							<name>module.path</name>
-							<value>${jboss.home}/modules</value>
-						</property>
-						<property>
-							<name>bundle.path</name>
-							<value>${jboss.home}/bundles</value>
-						</property>
-					</systemProperties>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <jboss.home>${basedir}/target/jbossas</jboss.home>
+                        <module.path>${jboss.home}/modules</module.path>
+                        <bundle.path>${jboss.home}/modules</bundle.path>
+                    </systemPropertyVariables>
+                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 </project>

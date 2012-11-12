@@ -44,16 +44,11 @@
 	
 	<!-- See ServerDependenciesProcessor -->
 	<property name="common.dependencies" value="
-		sun.jdk,
-		ibm.jdk,
-		javaee.api,
-		javax.api,
 		org.jboss.logging,
 		org.jboss.vfs,
-		org.apache.commons.logging,
-		org.apache.log4j,
 		org.slf4j,
-		org.jboss.logging.jul-to-slf4j-stub"/>
+		org.jboss.logging.jul-to-slf4j-stub"
+	/>
 
 	<target name="all" depends="generate-standalone-configs,generate-domain-configs,build-standalone-server,build-domain-server" />
 
