@@ -48,13 +48,14 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
+public class DeploymentOverlayHandler extends BatchModeCommandHandler {//CommandHandlerWithHelp {
 
     private static final String ADD = "add";
     private static final String LINK = "link";
@@ -82,7 +83,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
     private final FilenameTabCompleter pathCompleter;
 
     public DeploymentOverlayHandler(CommandContext ctx) {
-        super("deployment-overlay", true);
+        super(ctx, "deployment-overlay", true);
 
         l = new ArgumentWithoutValue(this, "-l") {
             @Override
@@ -273,18 +274,18 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                             if(groupsStr != null) {
                                 final String[] groups = groupsStr.split(",+");
                                 if(groups.length == 1) {
-                                    return loadLinks(client, overlay, groups[0]);
+                                    return filterLinks(loadLinkResources(client, overlay, groups[0]), false);
                                 } else if(groups.length > 1) {
                                     final Set<String> commonLinks = new HashSet<String>();
-                                    commonLinks.addAll(loadLinks(client, overlay, groups[0]));
+                                    commonLinks.addAll(filterLinks(loadLinkResources(client, overlay, groups[0]), false));
                                     for(int i = 1; i < groups.length; ++i) {
-                                        commonLinks.retainAll(loadLinks(client, overlay, groups[i]));
+                                        commonLinks.retainAll(filterLinks(loadLinkResources(client, overlay, groups[i]), false));
                                     }
                                     return commonLinks;
                                 }
                             }
                         } else {
-                            return loadLinks(client, overlay, null);
+                            return filterLinks(loadLinkResources(client, overlay, null), false);
                         }
                     } catch(CommandLineException e) {
                     }
@@ -316,7 +317,37 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         wildcards = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
             protected Collection<String> getAllCandidates(CommandContext ctx) {
-                return Util.getDeployments(ctx.getModelControllerClient());
+                final String actionValue = action.getValue(ctx.getParsedCommandLine());
+                final ModelControllerClient client = ctx.getModelControllerClient();
+                if(REMOVE.equals(actionValue)) {
+                    final String overlay = name.getValue(ctx.getParsedCommandLine());
+                    if(overlay == null) {
+                        return Collections.emptyList();
+                    }
+                    try {
+                        if(ctx.isDomainMode()) {
+                            final String groupsStr = serverGroups.getValue(ctx.getParsedCommandLine());
+                            if(groupsStr != null) {
+                                final String[] groups = groupsStr.split(",+");
+                                if(groups.length == 1) {
+                                    return filterLinks(loadLinkResources(client, overlay, groups[0]), true);
+                                } else if(groups.length > 1) {
+                                    final Set<String> commonLinks = new HashSet<String>();
+                                    commonLinks.addAll(filterLinks(loadLinkResources(client, overlay, groups[0]), true));
+                                    for(int i = 1; i < groups.length; ++i) {
+                                        commonLinks.retainAll(filterLinks(loadLinkResources(client, overlay, groups[i]), true));
+                                    }
+                                    return commonLinks;
+                                }
+                            }
+                        } else {
+                            return filterLinks(loadLinkResources(client, overlay, null), true);
+                        }
+                    } catch(CommandLineException e) {
+                    }
+                    return Collections.emptyList();
+                }
+                return Util.getDeployments(client);
             }}, "--wildcards") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -330,7 +361,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 if(actionStr == null) {
                     return false;
                 }
-                if(ADD.equals(actionStr) || LINK.equals(actionStr)) {
+                if(ADD.equals(actionStr) || LINK.equals(actionStr) || REMOVE.equals(actionStr)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
@@ -352,6 +383,15 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 return false;
             }
         };
+    }
+
+    @Override
+    public boolean isBatchMode(CommandContext ctx) {
+        final String action = this.action.getValue(ctx.getParsedCommandLine());
+        if(action != null && (LIST_LINKS.equals(action) || LIST_CONTENT.equals(action))) {
+            return false;
+        }
+        return super.isBatchMode(ctx);
     }
 
     @Override
@@ -395,25 +435,44 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
 
         final String action = this.action.getValue(args, true);
         if(ADD.equals(action)) {
-            add(ctx);
-        } else if(REMOVE.equals(action)) {
-            remove(ctx);
+            add(ctx, true);
         } else if(UPLOAD.equals(action)) {
-            upload(ctx);
+            upload(ctx, true);
         } else if(LIST_CONTENT.equals(action)) {
             listContent(ctx);
         } else if(LIST_LINKS.equals(action)) {
             listLinks(ctx);
-        } else if(LINK.equals(action)) {
-            link(ctx);
-        } else if(REDEPLOY_AFFECTED.equals(action)) {
-            redeployAffected(ctx);
         } else {
-            throw new CommandFormatException("Unrecognized action: '" + action + "'");
+            super.doHandle(ctx);
         }
     }
 
-    protected void redeployAffected(CommandContext ctx) throws CommandLineException {
+    @Override
+    protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
+        final ParsedCommandLine args = ctx.getParsedCommandLine();
+        final String action = this.action.getValue(args, true);
+        try {
+            if (REMOVE.equals(action)) {
+                return remove(ctx);
+            } else if (LINK.equals(action)) {
+                return link(ctx);
+            } else if (REDEPLOY_AFFECTED.equals(action)) {
+                return redeployAffected(ctx);
+            } else if (ADD.equals(action)) {
+                return add(ctx, false);
+            } else if (UPLOAD.equals(action)) {
+                return upload(ctx, false);
+            } else {
+                throw new CommandFormatException("Doesn't know how to build request for action '" + action + "'");
+            }
+        } catch (CommandFormatException e) {
+            throw e;
+        } catch (CommandLineException e) {
+            throw new CommandFormatException("Failed to build " + action + " request.", e);
+        }
+    }
+
+    protected ModelNode redeployAffected(CommandContext ctx) throws CommandLineException {
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         assertNotPresent(serverGroups, args);
         assertNotPresent(allServerGroups, args);
@@ -439,11 +498,11 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             addRemoveRedeployLinksSteps(client, steps, overlay, null, null, false, REDEPLOY_ALL);
         }
 
-        if(steps.asList().isEmpty()) {
-            return;
+        if(!steps.isDefined() || steps.asList().isEmpty()) {
+            throw new CommandFormatException("None of the deployments affected.");
         }
-
-        try {
+        return redeployOp;
+/*        try {
             final ModelNode result = client.execute(redeployOp);
             if (!Util.isSuccess(result)) {
                 throw new CommandLineException(Util.getFailureDescription(result));
@@ -451,7 +510,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         } catch (IOException e) {
             throw new CommandFormatException("Failed to redeploy affected deployments", e);
         }
-
+*/
     }
 
     protected void listLinks(CommandContext ctx) throws CommandLineException {
@@ -526,7 +585,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         }
     }
 
-    protected void remove(CommandContext ctx) throws CommandLineException {
+    protected ModelNode remove(CommandContext ctx) throws CommandLineException {
 
         final ModelControllerClient client = ctx.getModelControllerClient();
 
@@ -638,7 +697,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             steps.add(op);
         }
 
-        try {
+        return composite;
+/*        try {
             final ModelNode result = client.execute(composite);
             if (!Util.isSuccess(result)) {
                 ctx.printLine("failed request: " + composite.toString());
@@ -648,9 +708,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         } catch (IOException e) {
             throw new CommandFormatException("Failed to remove overlay", e);
         }
-    }
+*/    }
 
-    protected void add(CommandContext ctx) throws CommandLineException {
+    protected ModelNode add(CommandContext ctx, boolean stream) throws CommandLineException {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         assertNotPresent(allRelevantServerGroups, args);
@@ -692,7 +752,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ModelControllerClient client = ctx.getModelControllerClient();
 
         final ModelNode composite = new ModelNode();
-        final OperationBuilder opBuilder = new OperationBuilder(composite, true);
+        final OperationBuilder opBuilder = stream ? new OperationBuilder(composite, true) : null;
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
@@ -712,8 +772,12 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             address.add(Util.DEPLOYMENT_OVERLAY, name);
             address.add(Util.CONTENT, contentName);
             op.get(Util.OPERATION).set(Util.ADD);
-            op.get(Util.CONTENT).get(Util.INPUT_STREAM_INDEX).set(i);
-            opBuilder.addFileAsAttachment(contentPaths[i]);
+            if(opBuilder != null) {
+                op.get(Util.CONTENT).get(Util.INPUT_STREAM_INDEX).set(i);
+                opBuilder.addFileAsAttachment(contentPaths[i]);
+            } else {
+                op.get(Util.CONTENT).get(Util.BYTES).set(Util.readBytes(contentPaths[i]));
+            }
             steps.add(op);
         }
 
@@ -749,6 +813,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                     " nor " + this.wildcards.getFullName() + " is.");
         }
 
+        if(opBuilder == null) {
+            return composite;
+        }
+
         try {
             final ModelNode result = client.execute(opBuilder.build());
             if (!Util.isSuccess(result)) {
@@ -757,9 +825,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         } catch (IOException e) {
             throw new CommandFormatException("Failed to add overlay", e);
         }
+        return null;
     }
 
-    protected void link(CommandContext ctx) throws CommandLineException {
+    protected ModelNode link(CommandContext ctx) throws CommandLineException {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
         assertNotPresent(allRelevantServerGroups, args);
@@ -803,8 +872,8 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
                 addAddRedeployLinksSteps(ctx, steps, name, null, wildcards, true);
             }
         }
-
-        try {
+        return composite;
+/*        try {
             final ModelNode result = client.execute(composite);
             if (!Util.isSuccess(result)) {
                 throw new CommandFormatException(Util.getFailureDescription(result));
@@ -812,9 +881,9 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         } catch (IOException e) {
             throw new CommandFormatException("Failed to link overlay", e);
         }
-    }
+*/    }
 
-    protected void upload(CommandContext ctx) throws CommandLineException {
+    protected ModelNode upload(CommandContext ctx, boolean stream) throws CommandLineException {
 
         final ParsedCommandLine args = ctx.getParsedCommandLine();
 
@@ -860,7 +929,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         final ModelControllerClient client = ctx.getModelControllerClient();
 
         final ModelNode composite = new ModelNode();
-        final OperationBuilder opBuilder = new OperationBuilder(composite, true);
+        final OperationBuilder opBuilder = stream ? new OperationBuilder(composite, true) : null;
         composite.get(Util.OPERATION).set(Util.COMPOSITE);
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
@@ -872,8 +941,12 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             address.add(Util.DEPLOYMENT_OVERLAY, name);
             address.add(Util.CONTENT, contentNames[i]);
             op.get(Util.OPERATION).set(Util.ADD);
-            op.get(Util.CONTENT).get(Util.INPUT_STREAM_INDEX).set(i);
-            opBuilder.addFileAsAttachment(contentPaths[i]);
+            if(opBuilder != null) {
+                op.get(Util.CONTENT).get(Util.INPUT_STREAM_INDEX).set(i);
+                opBuilder.addFileAsAttachment(contentPaths[i]);
+            } else {
+                op.get(Util.CONTENT).get(Util.BYTES).set(Util.readBytes(contentPaths[i]));
+            }
             steps.add(op);
         }
 
@@ -887,6 +960,10 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
             }
         }
 
+        if(opBuilder == null) {
+            return composite;
+        }
+
         try {
             final ModelNode result = client.execute(opBuilder.build());
             if (!Util.isSuccess(result)) {
@@ -895,6 +972,7 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         } catch (IOException e) {
             throw new CommandFormatException("Failed to add overlay", e);
         }
+        return null;
     }
 
     protected List<String> loadContentFor(final ModelControllerClient client, final String overlay) throws CommandLineException {
@@ -1194,5 +1272,22 @@ public class DeploymentOverlayHandler extends CommandHandlerWithHelp {
         if(arg.isPresent(args)) {
             throw new CommandFormatException(arg.getFullName() + " is not allowed with action '" + action.getValue(args) + "'");
         }
+    }
+
+    protected List<String> filterLinks(final ModelNode linkResources, boolean regexp) {
+        if(linkResources != null && !linkResources.keys().isEmpty()) {
+            final List<Property> links = linkResources.asPropertyList();
+            final List<String> linkNames = new ArrayList<String>(links.size());
+            for(Property link : links) {
+                final ModelNode value = link.getValue();
+                final boolean linkRegexp = value.has(Util.REGULAR_EXPRESSION) &&
+                        value.get(Util.REGULAR_EXPRESSION).asBoolean();
+                if(linkRegexp == regexp) {
+                    linkNames.add(link.getName());
+                }
+            }
+            return linkNames;
+        }
+        return Collections.emptyList();
     }
 }

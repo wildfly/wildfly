@@ -24,7 +24,6 @@ package org.jboss.as.cli.handlers;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,7 +47,6 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.spi.MountHandle;
 
@@ -601,7 +599,7 @@ public class DeployHandler extends DeploymentHandler {
             request.get(Util.RUNTIME_NAME).set(runtimeName);
         }
 
-        byte[] bytes = readBytes(f);
+        byte[] bytes = Util.readBytes(f);
         request.get(Util.CONTENT).get(0).get(Util.BYTES).set(bytes);
         return request;
     }
@@ -618,7 +616,7 @@ public class DeployHandler extends DeploymentHandler {
             content.get(Util.PATH).set(f.getAbsolutePath());
             content.get(Util.ARCHIVE).set(f.isFile());
         } else {
-            byte[] bytes = readBytes(f);
+            byte[] bytes = Util.readBytes(f);
             request.get(Util.CONTENT).get(0).get(Util.BYTES).set(bytes);
         }
         return request;
@@ -675,23 +673,5 @@ public class DeployHandler extends DeploymentHandler {
         }
         request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
         execute(ctx, request, f, false);
-    }
-
-    protected byte[] readBytes(File f) throws OperationFormatException {
-        byte[] bytes;
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(f);
-            bytes = new byte[(int) f.length()];
-            int read = is.read(bytes);
-            if(read != bytes.length) {
-                throw new OperationFormatException("Failed to read bytes from " + f.getAbsolutePath() + ": " + read + " from " + f.length());
-            }
-        } catch (Exception e) {
-            throw new OperationFormatException("Failed to read file " + f.getAbsolutePath(), e);
-        } finally {
-            StreamUtils.safeClose(is);
-        }
-        return bytes;
     }
 }
