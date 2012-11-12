@@ -19,6 +19,7 @@
 package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
@@ -60,6 +61,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final String name = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final List<byte[]> removedHashes = DeploymentUtils.getDeploymentHash(resource);
 
@@ -104,7 +106,7 @@ public class DeploymentRemoveHandler implements OperationStepHandler {
 
                                 for (byte[] hash : removedHashes) {
                                     try {
-                                        contentRepository.removeContent(hash);
+                                        contentRepository.removeContent(hash, name);
                                     } catch (Exception e) {
                                         //TODO
                                         ServerLogger.DEPLOYMENT_LOGGER.failedToRemoveDeploymentContent(e, HashUtil.bytesToHexString(hash));

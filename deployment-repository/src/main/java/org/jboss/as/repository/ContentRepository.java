@@ -32,6 +32,10 @@ import java.io.InputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -56,7 +60,7 @@ public interface ContentRepository {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("content-repository");
 
     /**
-     * Add the given content to the repository.
+     * Add the given content to the repository along with a reference tracked by {@code name}.
      *
      * @param stream stream from which the content can be read. Cannot be <code>null</code>
      * @return the hash of the content that will be used as an internal identifier
@@ -64,6 +68,14 @@ public interface ContentRepository {
      * @throws IOException if there is a problem reading the stream
      */
     byte[] addContent(InputStream stream) throws IOException;
+
+    /**
+     * Adds a reference to the content hash.
+     *
+     * @param hash the hash of the deployment
+     * @param reference An identifier which must honour the equals() and hashCode() contracts. In the case of a deployment, this will be the deployment name. This is also used in {@link #removeContent(byte[], String)}
+     */
+    void addContentReference(byte[] hash, Object reference);
 
     /**
      * Get the content as a virtual file.
@@ -95,9 +107,11 @@ public interface ContentRepository {
     /**
      * Remove the given content from the repository.
      *
+     * Remove the given content from the repository. The reference for {@code name} will be removed, and if there are no references left the deployment will be totally removed
      * @param hash the hash. Cannot be {@code null}
+     * @param reference An identifier which must honour the equals() and hashCode() contracts. In the case of a deployment, this will be the deployment name. This is also used in {@link #addContentReference(byte[], Object)}
      */
-    void removeContent(byte[] hash);
+    void removeContent(byte[] hash, Object reference);
 
     static class Factory {
 
@@ -119,6 +133,7 @@ public interface ContentRepository {
             protected static final String CONTENT = "content";
             private final File repoRoot;
             protected final MessageDigest messageDigest;
+            private final Map<String, Set<Object>> deploymentHashReferences = new HashMap<String, Set<Object>>();
 
             protected ContentRepositoryImpl(final File repoRoot) {
                 if (repoRoot == null)
@@ -181,6 +196,19 @@ public interface ContentRepository {
                 }
 
                 return sha1Bytes;
+            }
+
+            @Override
+            public void addContentReference(byte[] hash, Object reference) {
+                String hashString = HashUtil.bytesToHexString(hash);
+                synchronized (deploymentHashReferences) {
+                    Set<Object> references = deploymentHashReferences.get(hashString);
+                    if (references == null) {
+                        references = new HashSet<Object>();
+                        deploymentHashReferences.put(hashString, references);
+                    }
+                    references.add(reference);
+                }
             }
 
             @Override
@@ -297,7 +325,19 @@ public interface ContentRepository {
             }
 
             @Override
-            public void removeContent(byte[] hash) {
+            public void removeContent(byte[] hash, Object reference) {
+                String hashString = HashUtil.bytesToHexString(hash);
+                synchronized (deploymentHashReferences) {
+                    final Set<Object> references = deploymentHashReferences.get(hashString);
+                    if (references != null) {
+                        references.remove(reference);
+                        if (references.size() != 0) {
+                            return;
+                        }
+                        deploymentHashReferences.remove(hashString);
+                    }
+                }
+
                 File file = getDeploymentContentFile(hash, true);
                 if(!file.delete()) {
                     file.deleteOnExit();

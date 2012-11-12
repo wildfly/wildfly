@@ -478,7 +478,11 @@ public class ServerControllerUnitTestCase {
         }
 
         @Override
-        public void removeContent(byte[] hash) {
+        public void removeContent(byte[] hash, Object reference) {
+        }
+
+        @Override
+        public void addContentReference(byte[] hash, Object reference) {
         }
 
     }

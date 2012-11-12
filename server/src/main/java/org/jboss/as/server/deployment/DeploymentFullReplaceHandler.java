@@ -82,7 +82,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             def.validateOperation(operation);
         }
 
-        String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
+        final String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
         final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
 
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
@@ -137,10 +137,13 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                 if (resultAction == ResultAction.KEEP) {
                     if (originalHash != null  && newHash != null && !Arrays.equals(originalHash, newHash)) {
-                        contentRepository.removeContent(originalHash);
+                        contentRepository.removeContent(originalHash, name);
+                        if (contentRepository != null && newHash != null) {
+                            contentRepository.addContentReference(newHash, name);
+                        }
                     }
                 } else if (newHash != null) {
-                    contentRepository.removeContent(newHash);
+                    contentRepository.removeContent(newHash, name);
                 }
             }
         });

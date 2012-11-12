@@ -40,6 +40,7 @@ import java.io.InputStream;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -113,7 +114,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
             byte[] hash = contentItemNode.require(CONTENT_HASH.getName()).asBytes();
             contentItem = addFromHash(hash, name, context);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
-            contentItem = addFromContentAdditionParameter(context, contentItemNode);
+            contentItem = addFromContentAdditionParameter(context, name, contentItemNode);
             contentItemNode = new ModelNode();
             contentItemNode.get(CONTENT_HASH.getName()).set(contentItem.getHash());
             content = new ModelNode();
@@ -128,7 +129,18 @@ public class DeploymentAddHandler implements OperationStepHandler {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
         }
 
-        context.stepCompleted();
+        if (contentRepository != null && contentItem.getHash() != null) {
+            final byte[] contentHash = contentItem.getHash();
+            context.completeStep(new OperationContext.ResultHandler() {
+                public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
+                    if (resultAction == ResultAction.KEEP) {
+                        contentRepository.addContentReference(contentHash, name);
+                    }
+                }
+            });
+        } else {
+            context.stepCompleted();
+        }
     }
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash, String deploymentName, OperationContext context) throws OperationFailedException {
@@ -149,7 +161,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
         return new DeploymentHandlerUtil.ContentItem(hash);
     }
 
-    DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {
+    DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, String name, ModelNode contentItemNode) throws OperationFailedException {
         byte[] hash;
         InputStream in = getInputStream(context, contentItemNode);
         try {
@@ -171,5 +183,4 @@ public class DeploymentAddHandler implements OperationStepHandler {
         final boolean archive = contentItemNode.require(CONTENT_ARCHIVE.getName()).asBoolean();
         return new DeploymentHandlerUtil.ContentItem(path, relativeTo, archive);
     }
-
 }
