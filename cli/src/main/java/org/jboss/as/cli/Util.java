@@ -21,6 +21,8 @@
  */
 package org.jboss.as.cli;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -895,5 +898,23 @@ public class Util {
 
     public static String resolveProperties(String s) {
         return StringPropertyReplacer.replaceProperties(s);
+    }
+
+    public static byte[] readBytes(File f) throws OperationFormatException {
+        byte[] bytes;
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(f);
+            bytes = new byte[(int) f.length()];
+            int read = is.read(bytes);
+            if(read != bytes.length) {
+                throw new OperationFormatException("Failed to read bytes from " + f.getAbsolutePath() + ": " + read + " from " + f.length());
+            }
+        } catch (Exception e) {
+            throw new OperationFormatException("Failed to read file " + f.getAbsolutePath(), e);
+        } finally {
+            StreamUtils.safeClose(is);
+        }
+        return bytes;
     }
 }
