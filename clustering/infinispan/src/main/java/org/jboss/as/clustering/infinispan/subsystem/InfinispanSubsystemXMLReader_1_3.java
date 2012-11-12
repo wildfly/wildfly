@@ -49,7 +49,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Tristan Tarrant
  */
-public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<ModelNode>> {
+public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<ModelNode>> {
 
     /**
      * {@inheritDoc}
@@ -456,7 +456,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
     }
 
 
-    protected void parseCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseCacheElement(XMLExtendedStreamReader reader, Element element, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
         switch (element) {
             case LOCKING: {
                 this.parseLocking(reader, cache, operations);
@@ -534,7 +534,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.add(stateTransfer);
     }
 
-    protected void parseLocking(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseLocking(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress lockingAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
         ModelNode locking = Util.createAddOperation(lockingAddress);
@@ -568,7 +568,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.add(locking);
     }
 
-    protected void parseTransaction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseTransaction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress transactionAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
         ModelNode transaction = Util.createAddOperation(transactionAddress);
@@ -598,7 +598,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.add(transaction);
     }
 
-    protected void parseEviction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseEviction(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress evictionAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
         ModelNode eviction = Util.createAddOperation(evictionAddress);
@@ -624,7 +624,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.add(eviction);
     }
 
-    protected void parseExpiration(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseExpiration(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress expirationAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
         ModelNode expiration = Util.createAddOperation(expirationAddress);
@@ -654,7 +654,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.add(expiration);
     }
 
-    protected void parseCustomStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseCustomStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STORE, ModelKeys.STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
@@ -683,7 +683,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.addAll(additionalConfigurationOperations);
     }
 
-    protected void parseFileStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseFileStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
@@ -712,7 +712,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.addAll(additionalConfigurationOperations);
     }
 
-    protected void parseRemoteStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseRemoteStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
@@ -782,7 +782,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         ParseUtils.requireNoContent(reader);
     }
 
-    protected void parseStringKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseStringKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
@@ -827,7 +827,7 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.addAll(additionalConfigurationOperations);
     }
 
-    protected void parseBinaryKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+    private void parseBinaryKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
@@ -871,7 +871,8 @@ public class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<List<M
         operations.add(store);
         operations.addAll(additionalConfigurationOperations);
     }
-    protected void parseMixedKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
+
+    private void parseMixedKeyedJDBCStore(XMLExtendedStreamReader reader, ModelNode cache, List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);

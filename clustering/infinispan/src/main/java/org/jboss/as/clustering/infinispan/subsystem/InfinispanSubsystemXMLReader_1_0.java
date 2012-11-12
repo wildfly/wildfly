@@ -47,7 +47,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  * @author Tristan Tarrant
  */
-public class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<ModelNode>> {
+public final class InfinispanSubsystemXMLReader_1_0 implements XMLElementReader<List<ModelNode>> {
 
     /**
      * {@inheritDoc}
