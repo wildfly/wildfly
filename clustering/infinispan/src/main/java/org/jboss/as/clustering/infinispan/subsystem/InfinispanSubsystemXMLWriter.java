@@ -137,7 +137,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                         writer.writeAttribute(Attribute.NAME.getLocalName(), distributedCacheName);
                         // distributed cache attributes
                         this.writeOptional(writer, Attribute.OWNERS, distributedCache, ModelKeys.OWNERS);
-                        this.writeOptional(writer, Attribute.VIRTUAL_NODES, distributedCache, ModelKeys.VIRTUAL_NODES);
+                        this.writeOptional(writer, Attribute.SEGMENTS, distributedCache, ModelKeys.SEGMENTS);
                         this.writeOptional(writer, Attribute.L1_LIFESPAN, distributedCache, ModelKeys.L1_LIFESPAN);
 
                         processCommonClusteredCacheAttributes(writer, distributedCache);

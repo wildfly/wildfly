@@ -78,7 +78,6 @@ public interface InfinispanLogger extends BasicLogger {
     /**
      * Logs a warning message indicating that the eager attribute of the transactional element
      * is no longer valid
-     *
      */
     @LogMessage(level = WARN)
     @Message(id = 10283, value = "The 'eager' attribute specified on the 'transaction' element of a cache is no longer valid")
@@ -99,5 +98,12 @@ public interface InfinispanLogger extends BasicLogger {
     @LogMessage(level = DEBUG)
     @Message(id = 10285, value = "'%s' cache container installed.")
     void cacheContainerInstalled(String containerName);
+
+    /**
+     * Logs a warning message stating that the 'virtual-nodes' attribute is deprecated.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10286, value = "Attribute 'virtual-nodes' has been deprecated and has no effect.")
+    void virtualNodesAttributeDeprecated();
 
 }

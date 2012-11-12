@@ -110,6 +110,9 @@ public class InfinispanExtension implements Extension {
             if (operation.has(ModelKeys.INDEXING_PROPERTIES)){
                 operation.remove(ModelKeys.INDEXING_PROPERTIES);
             }
+            if (operation.has(ModelKeys.SEGMENTS)) {
+                operation.remove(ModelKeys.SEGMENTS);
+            }
             return operation;
         }
     }
