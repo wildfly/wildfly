@@ -583,7 +583,7 @@ public interface CommonAttributes {
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = new SimpleAttributeDefinition("transformer-class-name", ModelType.STRING, true);
 
     SimpleAttributeDefinition TYPE = new SimpleAttributeDefinition("type", "type",
-            null, ModelType.STRING,  true, false, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
+            null, ModelType.STRING,  true, true, MeasurementUnit.NONE, GroupingHandlerTypeValidator.INSTANCE);
 
     SimpleAttributeDefinition CONNECTION_FACTORY_TYPE = new SimpleAttributeDefinition("factory-type", "factory-type",
             null, ModelType.STRING,  true, false, MeasurementUnit.NONE, ConnectionFactoryTypeValidator.INSTANCE);
