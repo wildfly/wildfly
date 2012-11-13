@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jboss.as.jsf.JSFLogger;
+import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.modules.ModuleIdentifier;
 
 /**
@@ -37,13 +38,14 @@ import org.jboss.modules.ModuleIdentifier;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class JSFModuleIdFactory {
-    public static final String DEFAULT_SLOT = "main";
-
     private static final String API_MODULE = "javax.faces.api";
     private static final String IMPL_MODULE = "com.sun.jsf-impl";
     private static final String INJECTION_MODULE = "org.jboss.as.jsf-injection";
 
     private static final JSFModuleIdFactory instance = new JSFModuleIdFactory();
+
+    // The default JSF impl slot.  This can be overridden by the management layer.
+    private String defaultSlot = JSFResourceDefinition.DEFAULT_SLOT;
 
     private Map<String, ModuleIdentifier> apiIds = new HashMap<String, ModuleIdentifier>();
     private Map<String, ModuleIdentifier> implIds = new HashMap<String, ModuleIdentifier>();
@@ -66,6 +68,14 @@ public class JSFModuleIdFactory {
         }
 
         JSFLogger.ROOT_LOGGER.activatedJSFImplementations(activeVersions);
+    }
+
+    void setDefaultSlot(String defaultSlot) {
+        this.defaultSlot = defaultSlot;
+    }
+
+    String getDefaultSlot() {
+        return this.defaultSlot;
     }
 
     private boolean isBogusPath(String path) {
@@ -155,9 +165,9 @@ public class JSFModuleIdFactory {
      * @param jsfVersion The version value from JSFVersionMarker, or null for default slot.
      * @return The equivalent slot value.
      */
-    static String computeSlot(String jsfVersion) {
-        if (jsfVersion == null) return DEFAULT_SLOT;
-        if (JsfVersionMarker.JSF_2_0.equals(jsfVersion)) return DEFAULT_SLOT;
+    String computeSlot(String jsfVersion) {
+        if (jsfVersion == null) return defaultSlot;
+        if (JsfVersionMarker.JSF_2_0.equals(jsfVersion)) return defaultSlot;
         if (JsfVersionMarker.JSF_1_2.equals(jsfVersion)) return "1.2";
         return jsfVersion;
     }
@@ -184,7 +194,7 @@ public class JSFModuleIdFactory {
      *
      * @return The slot id's of all active JSF versions.
      */
-    List<String> getActiveJSFVersions() {
+    public List<String> getActiveJSFVersions() {
         return Collections.unmodifiableList(activeVersions);
     }
 

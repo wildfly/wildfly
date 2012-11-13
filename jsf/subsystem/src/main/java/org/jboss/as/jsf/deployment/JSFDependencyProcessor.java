@@ -70,7 +70,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
             JSFLogger.ROOT_LOGGER.unknownJSFVersion(jsfVersion);
-            jsfVersion = JSFModuleIdFactory.DEFAULT_SLOT;
+            jsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
         }
 
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
