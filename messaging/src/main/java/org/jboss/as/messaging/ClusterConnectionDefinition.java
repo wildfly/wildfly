@@ -22,11 +22,11 @@
 
 package org.jboss.as.messaging;
 
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_CONNECTION_TTL;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS;
-import static org.hornetq.core.config.impl.ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER;
+import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER_CONNECTION_TTL;
+import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER_FAILURE_CHECK_PERIOD;
+import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_RETRY_INTERVAL;
+import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER_RECONNECT_ATTEMPTS;
+import static org.hornetq.api.config.HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL_MULTIPLIER;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
@@ -42,7 +42,7 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.EnumSet;
 
-import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
@@ -123,13 +123,13 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition FORWARD_WHEN_NO_CONSUMERS = create("forward-when-no-consumers", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS))
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition MAX_HOPS = create("max-hops", INT)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_MAX_HOPS))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_MAX_HOPS))
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
@@ -142,7 +142,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition RETRY_INTERVAL = create("retry-interval", LONG)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_RETRY_INTERVAL))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
@@ -161,7 +161,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_DUPLICATE_DETECTION))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_DUPLICATE_DETECTION))
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();

@@ -27,6 +27,7 @@ import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.STRING;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -61,7 +62,7 @@ public class DivertDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition EXCLUSIVE = create("exclusive", BOOLEAN)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_DIVERT_EXCLUSIVE))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_DIVERT_EXCLUSIVE))
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)
             .build();

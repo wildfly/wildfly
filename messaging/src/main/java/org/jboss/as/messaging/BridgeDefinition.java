@@ -31,6 +31,7 @@ import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -77,26 +78,26 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition PASSWORD = create("password", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USER = create("user", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_CLUSTER_USER))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_DUPLICATE_DETECTION))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BRIDGE_DUPLICATE_DETECTION))
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setAllowNull(true)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS))
             .setRestartAllServices()
             .build();
 

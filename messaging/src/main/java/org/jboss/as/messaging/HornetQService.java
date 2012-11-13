@@ -34,6 +34,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.BroadcastGroupConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -259,7 +260,7 @@ class HornetQService implements Service<HornetQServer> {
 
             // Now start the server
             server = new HornetQServerImpl(configuration, mbeanServer.getOptionalValue(), hornetQSecurityManagerAS7);
-            if (ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
+            if (HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD.equals(server.getConfiguration().getClusterPassword())) {
                 server.getConfiguration().setClusterPassword(java.util.UUID.randomUUID().toString());
             }
 

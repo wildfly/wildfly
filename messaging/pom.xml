@@ -72,7 +72,12 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-core</artifactId>
+            <artifactId>hornetq-core-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-server</artifactId>
         </dependency>
 
         <dependency>
@@ -87,7 +92,12 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
-            <artifactId>hornetq-jms</artifactId>
+            <artifactId>hornetq-jms-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-jms-server</artifactId>
         </dependency>
 
         <dependency>

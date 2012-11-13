@@ -34,6 +34,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.HornetQExceptionType;
 import org.hornetq.api.core.TransportConfiguration;
@@ -41,6 +42,7 @@ import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.hornetq.core.security.CheckType;
@@ -103,7 +105,7 @@ public class SecurityTestCase {
     public void testDefaultClusterUser() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         try {
-            sf.createSession(ConfigurationImpl.DEFAULT_CLUSTER_USER, ConfigurationImpl.DEFAULT_CLUSTER_PASSWORD, false, true, true, false, 1);
+            sf.createSession(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER, HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD, false, true, true, false, 1);
             fail("must not allow to create a session with the default cluster user credentials");
         } catch (HornetQException e) {
             assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());

@@ -40,6 +40,7 @@ import static org.jboss.dmr.ModelType.STRING;
 
 import java.util.EnumSet;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -69,7 +70,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
-            .setDefaultValue(new ModelNode().set(ConfigurationImpl.DEFAULT_BROADCAST_PERIOD))
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setFlags(RESTART_ALL_SERVICES)

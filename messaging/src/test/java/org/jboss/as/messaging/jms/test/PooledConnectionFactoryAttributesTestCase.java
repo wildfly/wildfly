@@ -34,6 +34,8 @@ public class PooledConnectionFactoryAttributesTestCase extends AttributesTestBas
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("passwordCodec");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("useMaskedPassword");
 
+        UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("connectionPoolName");
+
         // FIXME HORNETQ-1048 we need to bind these properties to AS7 clustering subsystem
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsChannelName");
         UNSUPPORTED_HORNETQ_RA_PROPERTIES.add("jgroupsFile");

@@ -46,6 +46,8 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("incomingInterceptorClassNames");
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("outgoingInterceptorClassNames");
 
         //stuff we arent bothered about
         KNOWN_ATTRIBUTES = new TreeSet<String>();
