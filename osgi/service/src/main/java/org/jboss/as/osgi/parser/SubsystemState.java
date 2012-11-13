@@ -85,7 +85,11 @@ public class SubsystemState  extends Observable implements Service<SubsystemStat
 
     @Override
     public void start(StartContext context) throws StartException {
-        // Nothing to do
+        // prime with framework configuration properties set as System Properties
+        for (String n : System.getProperties().stringPropertyNames()) {
+            if (n.startsWith("org.osgi."))
+                properties.put(n, System.getProperty(n));
+        }
     }
 
     @Override

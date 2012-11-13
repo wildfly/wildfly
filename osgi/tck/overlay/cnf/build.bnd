@@ -1,0 +1,104 @@
+# Very general
+project.dependson       = ${p-dependson;:}
+project.bootclasspath   = ${p-bootclasspath;:}
+project.buildpath       = ${p-buildpath;:}
+project.sourcepath      = ${p-sourcepath;:}
+project.allsourcepath   = ${p-allsourcepath;:}
+project.output          = ${p-output}
+project.testpath        = ${p-testpath;:}
+project.workspace		= ${workspace}
+project.dir				= ${project}
+
+-verbose				= true
+src                     = src
+bin                     = bin
+target					= ${project}/${target-dir}
+release.target			= ${if;${def;top};${def;top};${target}}
+build					= ${workspace}/cnf
+licensed				= ${workspace}/licensed
+repo					= ${build}/repo
+licensed-repo			= ${licensed}/repo
+target-dir				= generated
+p                       = ${basename;${project}}
+project.name            = ${p}
+bin.includes			= ${project.name}.jar
+prebuild				= 
+
+# Java compiler options
+java 					= java
+javac 					= javac
+javac.debug				= on
+javac.source 			= 1.3
+javac.target 			= 1.2
+
+
+#Bnd options
+-sources               	= true
+-sourcepath             = ${project}/src 
+
+-plugin	            	= aQute.lib.deployer.FileRepo; \
+                                location=${repo}, \
+  						  aQute.lib.deployer.FileRepo; \
+  						        location=${licensed-repo}; \
+  						        readonly=true, \
+  						  aQute.bnd.signing.JartoolSigner; \
+  						        keystore=${build}/keystore; \
+  						        keypass=testtest; \
+  						        storepass=testtest, \
+                          Packaging; \
+                                path:=${build}/${bin}; \
+                                command:=-pack, \
+                          SignatureTest; \
+                                path:=${build}/${bin}; \
+                                command:="-signaturetest"
+
+
+-make                   =  \
+  (*).(jar);                             type=bnd;  recipe="bnd/$1.bnd", \
+  (*).(ipa);                             type=bnd;  recipe="ipa/$1.bnd"
+
+
+junit					= com.springsource.junit;version=3.8;export="junit.framework;version=3.8,junit.extensions;version=3.8"
+
+# Time options
+# base.modified is used by bnd to not make when files are not changed
+base.modified			= ${fmodified;${build}/build.xml,${build}/build.bnd,${project}/build.properties,${project}/bnd.bnd,${project}/build.xml}
+base.modified.readable	= ${long2date;${base.modified}}
+project.build			= ${tstamp;yyyyMMddhhmm}
+
+copyright = Copyright (c) OSGi Alliance (2000, ${tstamp;yyyy}). All Rights Reserved.
+copyright.html = Copyright &copy; OSGi Alliance (2000, ${tstamp;yyyy}). All Rights Reserved.
+
+osgi.release				= 4
+osgi.version				= 4.2.0
+-versionpolicy				= "[${version;==;${@}},${version;+;${@}})"
+
+osgi.release.version		= ${osgi.version}.${project.build}
+core.release.version		= ${osgi.release.version}
+cmpn.release.version		= ${osgi.release.version}
+mobile.release.version		= ${osgi.release.version}
+enterprise.release.version	= ${osgi.release.version}
+proposed.release.version	= ${osgi.release.version}
+
+
+# Documentation
+Bundle-Copyright       	= ${copyright}
+Bundle-Vendor			= OSGi Alliance
+-removeheaders			= Include-Resource, Private-Package
+
+-runpath							= \
+    @jboss-as-embedded@;version=file, \
+    @jboss-modules@;version=file, \
+    @jboss-logging@;version=file, \
+    @jboss-as-controller-client@;version=file, \
+    @jboss-logmanager@;version=file, \
+    @jboss-dmr@;version=file, \
+    @jboss-msc@;version=file, \
+    @jboss-osgi-core@;version=file, \
+    @jboss-osgi-launcher@;version=file, \
+    @jboss-as-dir@/osgi/tck/lib/osgix.jar;version=file, \
+	com.springsource.junit; version=3.8;    export="junit.framework;version=3.8"
+
+testcases = ${classes;extending;junit.framework.TestCase|*DefaultTestBundleControl;concrete}
+
+
