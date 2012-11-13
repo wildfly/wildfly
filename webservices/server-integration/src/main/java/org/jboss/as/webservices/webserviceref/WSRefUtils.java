@@ -57,7 +57,7 @@ import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedInitParamMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedStubPropertyMetaData;
-import org.jboss.wsf.spi.serviceref.ServiceRefHandler.Type;
+import org.jboss.wsf.spi.serviceref.ServiceRefType;
 
 /**
  * Translates WS Refs from JBossAS MD to JBossWS UMDM format.
@@ -241,7 +241,7 @@ final class WSRefUtils {
 
     static void processType(final UnifiedServiceRefMetaData serviceRefUMDM) {
         final boolean isJAXRPC = serviceRefUMDM.getMappingFile() != null || "javax.xml.rpc.Service".equals(serviceRefUMDM.getServiceInterface());
-        serviceRefUMDM.setType(isJAXRPC ? Type.JAXRPC : Type.JAXWS);
+        serviceRefUMDM.setType(isJAXRPC ? ServiceRefType.JAXRPC : ServiceRefType.JAXWS);
     }
 
     static void processAnnotatedElement(final AnnotatedElement anElement, final UnifiedServiceRefMetaData serviceRefUMDM) {
