@@ -26,9 +26,7 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -36,7 +34,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.jsf.JSFLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -48,16 +45,14 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.util.List;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
 /**
  * Domain extension used to initialize the jsf subsystem.
  *
  * @author Stuart Douglas
  * @author Emanuel Muckenhuber
+ * @author Stan Silvert
  */
 public class JSFExtension implements Extension {
 
@@ -65,7 +60,7 @@ public class JSFExtension implements Extension {
     public static final String NAMESPACE = "urn:jboss:domain:jsf:1.0";
 
     private static final JSFSubsystemParser PARSER = new JSFSubsystemParser();
-    private static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
     private static final String RESOURCE_NAME = JSFExtension.class.getPackage().getName() + ".LocalDescriptions";
@@ -82,11 +77,7 @@ public class JSFExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JSFExtension.class.getClassLoader(), true, false);
     }
 
-    private static final ResourceDefinition JSF_SUBSYSTEM_RESOURCE = new SimpleResourceDefinition(
-            PATH_SUBSYSTEM,
-            getResourceDescriptionResolver(),
-            JSFSubsystemAdd.INSTANCE,
-            ReloadRequiredRemoveStepHandler.INSTANCE);
+    private static final ResourceDefinition JSF_SUBSYSTEM_RESOURCE = new JSFResourceDefinition();
 
     /** {@inheritDoc} */
     @Override
@@ -110,16 +101,24 @@ public class JSFExtension implements Extension {
         /** {@inheritDoc} */
         @Override
         public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-            // Require no attributes or content
-            requireNoAttributes(reader);
-            requireNoContent(reader);
-            list.add(Util.createAddOperation(PathAddress.pathAddress(PATH_SUBSYSTEM)));
+            ModelNode addJSFSub = Util.createAddOperation(PathAddress.pathAddress(PATH_SUBSYSTEM));
+            for (int i=0; i < reader.getAttributeCount(); i++) {
+                if (!reader.getAttributeLocalName(i).equals(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME)) continue;
+                JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT.parseAndSetParameter(reader.getAttributeValue(i), addJSFSub, reader);
+            }
+            list.add(addJSFSub);
+            reader.nextTag();
         }
 
         /** {@inheritDoc} */
         @Override
-        public void writeContent(final XMLExtendedStreamWriter streamWriter, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(JSFExtension.NAMESPACE, true);
+        public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
+            context.startSubsystemElement(JSFExtension.NAMESPACE, false);
+            ModelNode defaultSlot = context.getModelNode().get(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME);
+            if (defaultSlot.isDefined()) {
+                writer.writeAttribute(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME, defaultSlot.asString());
+            }
+            writer.writeEndElement();
         }
 
     }

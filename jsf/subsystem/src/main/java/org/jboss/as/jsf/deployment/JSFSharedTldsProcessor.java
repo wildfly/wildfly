@@ -116,9 +116,9 @@ public class JSFSharedTldsProcessor implements DeploymentUnitProcessor {
 
         String slot = jsfVersion;
         if (!JSFModuleIdFactory.getInstance().isValidJSFSlot(slot)) {
-            slot = JSFModuleIdFactory.DEFAULT_SLOT;
+            slot = JSFModuleIdFactory.getInstance().getDefaultSlot();
         }
-        slot = JSFModuleIdFactory.computeSlot(slot);
+        slot = JSFModuleIdFactory.getInstance().computeSlot(slot);
 
         List<TldMetaData> jsfTlds = this.jsfTldMap.get(slot);
         if (jsfTlds != null) tldsMetaData.addAll(jsfTlds);

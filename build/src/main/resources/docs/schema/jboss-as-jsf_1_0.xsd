@@ -30,6 +30,8 @@
     <!-- The naming subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
 
-    <xs:complexType name="subsystem"/>
+    <xs:complexType name="subsystem">
+        <xs:attribute name="default-jsf-impl-slot" type="xs:string" use="optional"/>
+    </xs:complexType>
 
 </xs:schema>

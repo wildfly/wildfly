@@ -22,6 +22,8 @@
 
 package org.jboss.as.jsf;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.annotations.Cause;
@@ -35,6 +37,7 @@ import org.jboss.logging.Messages;
  * 12650 - 12699
  *
  * @author Stuart Douglas
+ * @author Stan Silvert
  */
 @MessageBundle(projectCode = "JBAS")
 public interface JSFMessages {
@@ -61,4 +64,7 @@ public interface JSFMessages {
 
     @Message(id = 12655, value = "@ManagedBean is only allowed at class level %s")
     String invalidManagedBeanAnnotation(AnnotationTarget target);
+
+    @Message(id= 12656, value = "'%s' is not a valid JSF implementation slot")
+    OperationFailedException invalidJSFImplSlot(String slot);
 }
