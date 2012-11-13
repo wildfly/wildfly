@@ -23,11 +23,6 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -49,6 +44,7 @@ import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
+import static org.jboss.as.messaging.GroupingHandlerDefinition.TYPE;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
@@ -79,7 +75,6 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.JMSQueueDefinition;
@@ -100,7 +95,7 @@ import org.jboss.dmr.Property;
  *       <li>Management model: 1.2.0
  *     </ul>
  *   </dd>
- *   <dt>AS 7.1.2<dt>
+ *   <dt>AS 7.1.2, 7.1.3<dt>
  *   <dd>
  *     <ul>
  *       <li>XML namespace: urn:jboss:domain:messaging:1.2
@@ -374,5 +369,10 @@ public class MessagingExtension implements Extension {
             }
         });
         pooledConnectionFactory.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformers.FailUnignoredAttributesOperationTransformer(transformerdPooledCFAttributes));
+
+        RejectExpressionValuesTransformer rejectTypeExpressionTransformer = new RejectExpressionValuesTransformer(TYPE);
+        TransformersSubRegistration groupingHandler = server.registerSubResource(GroupingHandlerDefinition.PATH);
+        groupingHandler.registerOperationTransformer(ADD, rejectTypeExpressionTransformer);
+        groupingHandler.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectTypeExpressionTransformer.getWriteAttributeTransformer());
     }
 }

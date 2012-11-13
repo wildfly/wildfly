@@ -44,6 +44,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.GROUPING_HANDLER);
+
     public static final SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = create("grouping-handler-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
             .setDefaultValue(null)
@@ -62,6 +64,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setDefaultValue(null)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setValidator(GroupingHandlerTypeValidator.INSTANCE)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
@@ -71,7 +74,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public GroupingHandlerDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.GROUPING_HANDLER),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.GROUPING_HANDLER),
                 GroupingHandlerAdd.INSTANCE,
                 GroupingHandlerRemove.INSTANCE);

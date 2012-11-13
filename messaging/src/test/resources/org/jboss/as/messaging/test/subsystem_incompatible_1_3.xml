@@ -198,7 +198,7 @@
                 </cluster-connection>
             </cluster-connections>
             <grouping-handler name="grouping-handler">
-                <type>LOCAL</type>
+                <type>${grouping.type:LOCAL}</type>
                 <address>handler-address</address>
                 <timeout>5000</timeout>
             </grouping-handler>
