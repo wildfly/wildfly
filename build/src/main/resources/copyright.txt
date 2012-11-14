@@ -37,7 +37,7 @@ John Bailey <baileyje@gmail.com>
 John E. Bailey <baileyje@gmail.com>
 John E. Bailey <jbailey@redhat.com>
 Jonathan Pearlin <jdp.grails.dev@gmail.com>
-Kabir Kahn <kkhan@redhat.com>
+Kabir Khan <kkhan@redhat.com>
 Marcus Moyses <marcus.moyses@gmail.com>
 Marcus Moyses <mmoyses@redhat.com>
 Marius Bogoevici <marius.bogoevici@gmail.com>
