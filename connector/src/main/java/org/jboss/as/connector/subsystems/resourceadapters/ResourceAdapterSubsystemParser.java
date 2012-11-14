@@ -46,6 +46,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
@@ -130,6 +131,22 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
             streamWriter.writeEndElement();
         }
+
+        if (ra.hasDefined(MODULE.getName())) {
+            streamWriter.writeStartElement(MODULE.getXmlName());
+            String module = ra.get(MODULE.getName()).asString();
+            int separatorIndex = module.indexOf(":");
+            if (separatorIndex != -1) {
+                streamWriter.writeAttribute("id", module.substring(0, separatorIndex));
+                streamWriter.writeAttribute("slot", module.substring(separatorIndex + 1));
+            } else {
+                streamWriter.writeAttribute("id", module);
+
+            }
+
+            streamWriter.writeEndElement();
+        }
+
         BOOTSTRAP_CONTEXT.marshallAsElement(ra, streamWriter);
 
         if (ra.hasDefined(BEANVALIDATION_GROUPS.getName())) {

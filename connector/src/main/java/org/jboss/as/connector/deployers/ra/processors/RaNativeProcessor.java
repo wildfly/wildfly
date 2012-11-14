@@ -60,6 +60,10 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final VirtualFile deploymentRoot = phaseContext.getDeploymentUnit().getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
 
+        process(deploymentRoot);
+    }
+
+    public static void process(VirtualFile deploymentRoot) throws DeploymentUnitProcessingException {
         if (deploymentRoot == null || !deploymentRoot.exists())
             return;
 

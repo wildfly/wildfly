@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
@@ -58,17 +59,31 @@ public class RaAdd extends AbstractAddStepHandler {
         // Compensating is remove
         final ModelNode address = operation.require(OP_ADDR);
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
-        String archiveName =  model.get(ARCHIVE.getName()).asString();
-        if (name.startsWith(archiveName) && (name.substring(archiveName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveName))) {
-            archiveName = name;
+        String archiveOrModuleName;
+        if (model.get(ARCHIVE.getName()).isDefined()) {
+            archiveOrModuleName = model.get(ARCHIVE.getName()).asString();
         } else {
-           Integer identifier = ConnectorServices.getResourceIdentifier(archiveName);
+            archiveOrModuleName = model.get(MODULE.getName()).asString();
+        }
+
+        if (name.startsWith(archiveOrModuleName) && (name.substring(archiveOrModuleName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveOrModuleName))) {
+            archiveOrModuleName = name;
+        } else {
+           Integer identifier = ConnectorServices.getResourceIdentifier(archiveOrModuleName);
             if (identifier != null && identifier != 0) {
-                archiveName = archiveName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
+                archiveOrModuleName = archiveOrModuleName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
             }
         }
-        model.get(ARCHIVE.getName()).set(archiveName);
-        ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation);
-        RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
+        ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation, archiveOrModuleName);
+
+        if (model.get(ARCHIVE.getName()).isDefined()) {
+            model.get(ARCHIVE.getName()).set(archiveOrModuleName);
+            RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
+        } else {
+            model.get(MODULE.getName()).set(archiveOrModuleName);
+            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, name, resourceAdapter, archiveOrModuleName);
+        }
+
+
     }
 }

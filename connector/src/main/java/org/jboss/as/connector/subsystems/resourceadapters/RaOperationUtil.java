@@ -21,6 +21,13 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.deployers.Util;
+import org.jboss.as.connector.deployers.ra.processors.IronJacamarDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.ra.processors.ParsedRaDeploymentProcessor;
+import org.jboss.as.connector.deployers.ra.processors.RaDeploymentParsingProcessor;
+import org.jboss.as.connector.deployers.ra.processors.RaNativeProcessor;
+import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
+import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.AbstractResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -30,7 +37,15 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.server.deployment.Attachments;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
+import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.module.MountHandle;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.jandex.Index;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
 import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.common.CommonSecurity;
@@ -50,16 +65,30 @@ import org.jboss.jca.common.metadata.common.CommonTimeOutImpl;
 import org.jboss.jca.common.metadata.common.CommonValidationImpl;
 import org.jboss.jca.common.metadata.common.CommonXaPoolImpl;
 import org.jboss.jca.common.metadata.common.CredentialImpl;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarInputStream;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -74,7 +103,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANVALIDATION_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
@@ -99,12 +127,14 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
 public class RaOperationUtil {
+    private static final String RAR_EXTENSION = ".rar";
+    private static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
 
-    public static ModifiableResourceAdapter buildResourceAdaptersObject(final OperationContext context, ModelNode operation) throws OperationFailedException {
+
+    public static ModifiableResourceAdapter buildResourceAdaptersObject(final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
         Map<String, String> configProperties = new HashMap<String, String>(0);
         List<CommonConnDef> connectionDefinitions = new ArrayList<CommonConnDef>(0);
         List<CommonAdminObject> adminObjects = new ArrayList<CommonAdminObject>(0);
-        String archive = ARCHIVE.resolveModelAttribute(context, operation).asString();
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
                 .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
         String bootstrapContext = BOOTSTRAP_CONTEXT.resolveModelAttribute(context, operation).asString();
@@ -117,7 +147,7 @@ public class RaOperationUtil {
 
         }
         ModifiableResourceAdapter ra;
-        ra = new ModifiableResourceAdapter(archive, transactionSupport, connectionDefinitions,
+        ra = new ModifiableResourceAdapter(archiveOrModule, transactionSupport, connectionDefinitions,
                 adminObjects, configProperties, beanValidationGroups, bootstrapContext);
 
         return ra;
@@ -272,7 +302,7 @@ public class RaOperationUtil {
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource());
     }
 
-    public static void installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter) {
+    public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter) {
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         final ServiceController<?> resourceAdaptersService = context.getServiceRegistry(false).getService(
@@ -292,5 +322,91 @@ public class RaOperationUtil {
                 .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
                 .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootStrapCtxName))
                 .addListener(verificationHandler).install();
+        return raServiceName;
     }
+
+    public static void installRaServicesAndDeployFromModule(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, String moduleName) throws OperationFailedException{
+        ServiceName raServiceName =  installRaServices(context, verificationHandler, name, resourceAdapter);
+        final boolean resolveProperties = true;
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+        String deploymentName = moduleName;//.substring(0, deploymentRoot.getName().indexOf(".rar"));
+
+        if (moduleName.contains("->")) {
+            moduleName = moduleName.substring(0, moduleName.indexOf("->"));
+        }
+        //load module
+        String slot = "main";
+        if (moduleName.contains(":")) {
+            slot = moduleName.substring(moduleName.indexOf(":") + 1);
+            moduleName = moduleName.substring(0, moduleName.indexOf(":"));
+        }
+
+        Module module;
+        try {
+            ModuleIdentifier moduleId = ModuleIdentifier.create(moduleName, slot);
+            module = Module.getCallerModuleLoader().loadModule(moduleId);
+        } catch (ModuleLoadException e) {
+            throw new OperationFailedException(MESSAGES.failedToLoadModuleRA(moduleName), e);
+        }
+        URL path = module.getExportedResource("META-INF/ra.xml");
+        Closeable closable = null;
+            try {
+                VirtualFile child;
+                if (path.getPath().contains("!")) {
+                    child = VFS.getChild(path.getPath().split("!")[0].split(":")[1]);
+
+                    closable = VFS.mountZip(new File(path.getPath().split("!")[0].split(":")[1]), child, TempFileProviderService.provider());
+                } else {
+                    child = VFS.getChild(path.getPath().split("META-INF")[0]);
+
+                    closable = VFS.mountReal(new File(path.getPath().split("META-INF")[0]), child);
+                }
+                //final Closeable closable = VFS.mountZip((InputStream) new JarInputStream(new FileInputStream(path.getPath().split("!")[0].split(":")[1])), path.getPath().split("!")[0].split(":")[1], child, TempFileProviderService.provider());
+
+                final MountHandle mountHandle = new MountHandle(closable);
+                final ResourceRoot resourceRoot = new ResourceRoot(child, mountHandle);
+
+                final VirtualFile deploymentRoot = resourceRoot.getRoot();
+                if (deploymentRoot == null || !deploymentRoot.exists())
+                    return;
+                ConnectorXmlDescriptor connectorXmlDescriptor = RaDeploymentParsingProcessor.process(resolveProperties, deploymentRoot, null, deploymentName);
+                IronJacamarXmlDescriptor ironJacamarXmlDescriptor = IronJacamarDeploymentParsingProcessor.process(deploymentRoot, resolveProperties);
+                RaNativeProcessor.process(deploymentRoot);
+                Map<ResourceRoot, Index> annotationIndexes = new HashMap<ResourceRoot, Index>();
+                ResourceRootIndexer.indexResourceRoot(resourceRoot);
+                Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
+                if (index != null) {
+                    annotationIndexes.put(resourceRoot, index);
+                }
+
+                ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(deploymentName));
+                builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+                String rarName = resourceAdapter.getArchive();
+                Integer identifier = null;
+                if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                    rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
+                }
+                if (deploymentName.equals(rarName)) {
+                    RaServicesFactory.createDeploymentService(connectorXmlDescriptor, module, serviceTarget, deploymentName, RAR_MODULE.append(deploymentName), resourceAdapter);
+
+
+                }
+
+            } catch (Exception e) {
+                throw new OperationFailedException(MESSAGES.failedToLoadModuleRA(moduleName), e);
+            } finally {
+                if (closable != null) {
+                    try {
+                        closable.close();
+                    } catch (IOException e) {
+
+                    }
+                }
+            }
+
+
+    }
+
+
 }

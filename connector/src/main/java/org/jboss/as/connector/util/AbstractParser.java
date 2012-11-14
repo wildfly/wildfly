@@ -75,7 +75,11 @@ public abstract class AbstractParser {
      * @return the string representing raw attribute text
      */
     public String rawAttributeText(XMLStreamReader reader, String attributeName) {
-        String attributeString = reader.getAttributeValue("", attributeName) == null ? null : reader.getAttributeValue(
+        return rawAttributeText(reader, attributeName, null);
+    }
+
+    public String rawAttributeText(XMLStreamReader reader, String attributeName, String defaultValue) {
+        String attributeString = reader.getAttributeValue("", attributeName) == null ? defaultValue : reader.getAttributeValue(
                 "", attributeName)
                 .trim();
         return attributeString;

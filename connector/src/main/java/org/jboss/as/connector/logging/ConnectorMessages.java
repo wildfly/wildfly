@@ -475,4 +475,14 @@ public interface ConnectorMessages {
      */
     @Message(id = 10472, value = "Deployment %s failed")
     DeployException deploymentFailed(@Cause Throwable cause, String className);
+
+    /**
+     * A message indicating a failure to load the module for a RA deployed as module.
+     *
+     * @param moduleName the module name.
+     * @return the message.
+     */
+    @Message(id = 10473, value = "Failed to load module for RA [%s]")
+    String failedToLoadModuleRA(String moduleName);
+
 }

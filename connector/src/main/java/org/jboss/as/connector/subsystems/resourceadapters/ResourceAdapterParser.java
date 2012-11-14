@@ -30,6 +30,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -51,6 +52,7 @@ import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
 import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
+import org.jboss.logging.processor.validation.StringFormatValidator;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
@@ -140,7 +142,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
 
-        String archiveName = null;
+        String archiveOrModuleName = null;
         HashMap<String, ModelNode> configPropertiesOperations = new HashMap<String, ModelNode>();
         HashMap<String, ModelNode> connectionDefinitionsOperations = new HashMap<String, ModelNode>();
         HashMap<String, HashMap<String, ModelNode>> cfConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
@@ -149,21 +151,21 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         HashMap<String, HashMap<String, ModelNode>> aoConfigPropertiesOperations = new HashMap<String, HashMap<String, ModelNode>>();
 
 
-        boolean archiveMatched = false;
+        boolean archiveOrModuleMatched = false;
         boolean txSupportMatched = false;
         boolean isXa = false;
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case END_ELEMENT: {
                     if (ResourceAdapters.Tag.forName(reader.getLocalName()) == ResourceAdapters.Tag.RESOURCE_ADAPTER) {
-                        if (archiveName != null) {
+                        if (archiveOrModuleName != null) {
 
-                            Integer identifier = ConnectorServices.getResourceIdentifier(archiveName);
+                            Integer identifier = ConnectorServices.getResourceIdentifier(archiveOrModuleName);
                             if (identifier != null && identifier != 0) {
-                                archiveName = archiveName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
+                                archiveOrModuleName = archiveOrModuleName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
                             }
 
-                            raAddress.add(RESOURCEADAPTER_NAME, archiveName);
+                            raAddress.add(RESOURCEADAPTER_NAME, archiveOrModuleName);
 
                             raAddress.protect();
 
@@ -227,14 +229,14 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
 
                         }
                     } else {
-                        if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.UNKNOWN) {
+                        if (AS7ResourceAdapterTags.forName(reader.getLocalName()) == AS7ResourceAdapterTags.UNKNOWN) {
                             throw new ParserException(bundle.unexpectedEndTag(reader.getLocalName()));
                         }
                     }
                     break;
                 }
                 case START_ELEMENT: {
-                    switch (ResourceAdapter.Tag.forName(reader.getLocalName())) {
+                    switch (AS7ResourceAdapterTags.forName(reader.getLocalName())) {
                         case ADMIN_OBJECTS:
                         case CONNECTION_DEFINITIONS:
                         case BEAN_VALIDATION_GROUPS: {
@@ -276,12 +278,25 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             break;
                         }
                         case ARCHIVE: {
-                            if (archiveMatched) {
+                            if (archiveOrModuleMatched) {
                                 throw new ParserException(bundle.unexpectedElement(ARCHIVE.getXmlName()));
                             }
-                            archiveName = rawElementText(reader);
-                            ARCHIVE.parseAndSetParameter(archiveName, operation, reader);
-                            archiveMatched = true;
+                            archiveOrModuleName = rawElementText(reader);
+                            ARCHIVE.parseAndSetParameter(archiveOrModuleName, operation, reader);
+                            archiveOrModuleMatched = true;
+                            break;
+                        }
+                        case MODULE: {
+
+                            String moduleId = rawAttributeText(reader, "id");
+                            String moduleSlot = rawAttributeText(reader, "slot", "main");
+                            archiveOrModuleName = moduleId + ":" + moduleSlot;
+                            MODULE.parseAndSetParameter(archiveOrModuleName, operation, reader);
+                            if (archiveOrModuleMatched) {
+                                throw new ParserException(bundle.unexpectedElement(MODULE.getXmlName()));
+                            }
+
+                            archiveOrModuleMatched = true;
                             break;
                         }
                         default:

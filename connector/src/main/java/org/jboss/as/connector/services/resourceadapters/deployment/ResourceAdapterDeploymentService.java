@@ -66,7 +66,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
     private static final DeployersLogger DEPLOYERS_LOGGER = Logger.getMessageLogger(DeployersLogger.class, "org.jboss.as.connector.deployers.RADeployer");
 
-    private final Module module;
+    private final ClassLoader classLoader;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
     private final Connector cmd;
     private final IronJacamar ijmd;
@@ -81,16 +81,16 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
      * @param connectorXmlDescriptor
      * @param cmd
      * @param ijmd
-     * @param module
+     * @param classLoader
      * @param deploymentServiceName
      * @param duServiceName the deployment unit's service name
      */
     public ResourceAdapterDeploymentService(final ConnectorXmlDescriptor connectorXmlDescriptor, final Connector cmd,
-                                            final IronJacamar ijmd, final Module module, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
+                                            final IronJacamar ijmd, final ClassLoader classLoader, final ServiceName deploymentServiceName, final ServiceName duServiceName) {
         this.connectorXmlDescriptor = connectorXmlDescriptor;
         this.cmd = cmd;
         this.ijmd = ijmd;
-        this.module = module;
+        this.classLoader = classLoader;
         this.deploymentServiceName = deploymentServiceName;
         this.duServiceName = duServiceName;
     }
@@ -102,13 +102,13 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final AS7RaDeployer raDeployer =
-            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, module.getClassLoader(), cmd, ijmd, deploymentServiceName);
+            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, ijmd, deploymentServiceName);
         raDeployer.setConfiguration(config.getValue());
 
         ClassLoader old = SecurityActions.getThreadContextClassLoader();
         try {
             WritableServiceBasedNamingStore.pushOwner(duServiceName);
-            SecurityActions.setThreadContextClassLoader(module.getClassLoader());
+            SecurityActions.setThreadContextClassLoader(classLoader);
             raDeployment = raDeployer.doDeploy();
             deploymentName = raDeployment.getDeploymentName();
         } catch (Throwable t) {
