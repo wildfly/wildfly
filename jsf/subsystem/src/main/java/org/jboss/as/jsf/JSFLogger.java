@@ -63,8 +63,8 @@ public interface JSFLogger extends BasicLogger {
     void managedBeansConfigParseFailed(VirtualFile facesConfig);
 
     @LogMessage(level = WARN)
-    @Message(id = 12603, value = "Unknown JSF version '%s'.  Default version will be used instead.")
-    void unknownJSFVersion(String version);
+    @Message(id = 12603, value = "Unknown JSF version '%s'.  Default version '%s' will be used instead.")
+    void unknownJSFVersion(String version, String defaultVersion);
 
     @LogMessage(level = WARN)
     @Message(id = 12604, value = "JSF version slot '%s' is missing from module %s")
