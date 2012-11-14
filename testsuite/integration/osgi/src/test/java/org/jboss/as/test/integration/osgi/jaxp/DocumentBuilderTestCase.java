@@ -33,6 +33,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -41,7 +42,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,6 +65,7 @@ public class DocumentBuilderTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "dom-parser.jar");
+        archive.addClasses(FrameworkUtils.class);
         archive.addAsResource(DocumentBuilderTestCase.class.getPackage(), "simple.xml", "simple.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -71,6 +73,7 @@ public class DocumentBuilderTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(DocumentBuilder.class, Document.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -85,9 +88,7 @@ public class DocumentBuilderTestCase {
 
     @Test
     public void testDocumentBuilderFactoryService() throws Exception {
-        ServiceReference sref = context.getServiceReference(DocumentBuilderFactory.class.getName());
-        assertNotNull("ServiceReference not null");
-        DocumentBuilderFactory factory = (DocumentBuilderFactory) context.getService(sref);
+        DocumentBuilderFactory factory = FrameworkUtils.waitForService(context, DocumentBuilderFactory.class);
         parse(factory);
     }
 

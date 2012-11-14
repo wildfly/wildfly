@@ -42,9 +42,9 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Test bundle deployment using the {@link ModelControllerClient}
@@ -85,7 +85,7 @@ public class ServerDeploymentTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ClientConstants.class, ModelControllerClient.class, DeploymentPlanBuilder.class);
-                builder.addImportPackages(PackageAdmin.class, StartLevel.class);
+                builder.addImportPackages(PackageAdmin.class, StartLevel.class, ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -94,7 +94,8 @@ public class ServerDeploymentTestCase {
 
     @Test
     public void testAutoStart() throws Exception {
-        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        ModelControllerClient client = FrameworkUtils.waitForService(context, ModelControllerClient.class);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(client);
 
         // Deploy the bundle
         InputStream input = deployer.getDeployment(GOOD_BUNDLE);
@@ -110,7 +111,8 @@ public class ServerDeploymentTestCase {
 
     @Test
     public void testBadBundleVersion() throws Exception {
-        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        ModelControllerClient client = FrameworkUtils.waitForService(context, ModelControllerClient.class);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(client);
         InputStream input = deployer.getDeployment(BAD_BUNDLE_VERSION);
         try {
             server.deploy(BAD_BUNDLE_VERSION, input);
@@ -122,7 +124,8 @@ public class ServerDeploymentTestCase {
 
     @Test
     public void testRedeployAfterUndeploy() throws Exception {
-        ServerDeploymentHelper server = new ServerDeploymentHelper(getModelControllerClient());
+        ModelControllerClient client = FrameworkUtils.waitForService(context, ModelControllerClient.class);
+        ServerDeploymentHelper server = new ServerDeploymentHelper(client);
 
         // Deploy the bundle
         InputStream input = deployer.getDeployment(GOOD_BUNDLE);
@@ -145,11 +148,6 @@ public class ServerDeploymentTestCase {
 
         server.undeploy(runtimeName);
         assertEquals("Bundle UNINSTALLED", Bundle.UNINSTALLED, bundle.getState());
-    }
-
-    private ModelControllerClient getModelControllerClient() {
-        ServiceReference sref = context.getServiceReference(ModelControllerClient.class.getName());
-        return (ModelControllerClient) context.getService(sref);
     }
 
     @Deployment(name = GOOD_BUNDLE, managed = false, testable = false)

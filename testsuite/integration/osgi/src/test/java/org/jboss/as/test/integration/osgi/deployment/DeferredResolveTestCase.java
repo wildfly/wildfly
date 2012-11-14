@@ -17,7 +17,6 @@
 package org.jboss.as.test.integration.osgi.deployment;
 
 import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -121,10 +120,10 @@ public class DeferredResolveTestCase {
             startLevel.setBundleStartLevel(bundle, 2);
             bundle.start();
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-            FrameworkUtils.changeStartLevel(context, 2, 5, TimeUnit.SECONDS);
+            FrameworkUtils.changeStartLevel(context, 2);
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         } finally {
-            startLevel.setStartLevel(orglevel);
+            FrameworkUtils.changeStartLevel(context, orglevel);
             bundle.uninstall();
         }
     }
@@ -185,14 +184,14 @@ public class DeferredResolveTestCase {
             startLevel.setBundleStartLevel(bundle, 2);
             bundle.start();
             Assert.assertEquals("Bundle INSTALLED", Bundle.INSTALLED, bundle.getState());
-            FrameworkUtils.changeStartLevel(context, 2, 5, TimeUnit.SECONDS);
+            FrameworkUtils.changeStartLevel(context, 2);
             Assert.assertEquals("Bundle RESOLVED", Bundle.RESOLVED, bundle.getState());
 
             // Attempt restarting after failure
             bundle.start();
             Assert.assertEquals("Bundle ACTIVE", Bundle.ACTIVE, bundle.getState());
         } finally {
-            startLevel.setStartLevel(orglevel);
+            FrameworkUtils.changeStartLevel(context, orglevel);
             bundle.uninstall();
         }
     }

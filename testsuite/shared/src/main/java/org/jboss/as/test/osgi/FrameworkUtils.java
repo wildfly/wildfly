@@ -46,6 +46,10 @@ public final class FrameworkUtils {
     private FrameworkUtils() {
     }
 
+    public static void changeStartLevel(final BundleContext context, final int level) throws InterruptedException, TimeoutException {
+        changeStartLevel(context, level, 10, TimeUnit.SECONDS);
+    }
+
     /**
      * Changes the framework start level and waits for the STARTLEVEL_CHANGED event
      * Note, changing the framework start level is an asynchronous operation.
@@ -69,7 +73,7 @@ public final class FrameworkUtils {
     }
 
     public static <T> T waitForService(BundleContext context, Class<T> clazz) {
-        return waitForService(context, clazz, 5000, TimeUnit.MILLISECONDS);
+        return waitForService(context, clazz, 10, TimeUnit.SECONDS);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,16 +81,32 @@ public final class FrameworkUtils {
         ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
         tracker.open();
         T service = null;
-        long start = System.currentTimeMillis();
-        do {
-            try {
-                service = (T) tracker.waitForService(unit.toMillis(timeout));
-            } catch (InterruptedException intEx) {
-                // service will be null
-            }
-        } while (System.currentTimeMillis() - start < unit.toMillis(timeout));
+        try {
+            service = (T) tracker.waitForService(unit.toMillis(timeout));
+        } catch (InterruptedException intEx) {
+            // service will be null
+        }
         tracker.close();
         Assert.assertNotNull("Service registered: " + clazz.getName(), service);
         return service;
+    }
+
+    public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz) {
+        return waitForServiceReference(context, clazz, 10, TimeUnit.SECONDS);
+    }
+
+    public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz, long timeout, TimeUnit unit) {
+        ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
+        tracker.open();
+        ServiceReference sref = null;
+        try {
+            tracker.waitForService(unit.toMillis(timeout));
+            sref = tracker.getServiceReference();
+        } catch (InterruptedException intEx) {
+            // service will be null
+        }
+        tracker.close();
+        Assert.assertNotNull("Service registered: " + clazz.getName(), sref);
+        return sref;
     }
 }
