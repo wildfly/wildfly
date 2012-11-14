@@ -87,6 +87,7 @@ public class JSFExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JSF_SUBSYSTEM_RESOURCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        registration.registerOperationHandler(JSFImplListHandler.DEFINITION, new JSFImplListHandler());
         subsystem.registerXMLElementWriter(PARSER);
     }
 

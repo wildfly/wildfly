@@ -24,6 +24,7 @@ package org.jboss.as.jsf.deployment;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.jsf.JSFLogger;
+import org.jboss.as.jsf.JSFMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -67,10 +68,15 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
+        String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
         String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
-            JSFLogger.ROOT_LOGGER.unknownJSFVersion(jsfVersion);
-            jsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
+            JSFLogger.ROOT_LOGGER.unknownJSFVersion(jsfVersion, defaultJsfVersion);
+            jsfVersion = defaultJsfVersion;
+        }
+
+        if (jsfVersion.equals(defaultJsfVersion) && !moduleIdFactory.isValidJSFSlot(jsfVersion)) {
+            throw JSFMessages.MESSAGES.invalidDefaultJSFImpl(defaultJsfVersion);
         }
 
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);

@@ -46,29 +46,9 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
     public static final String DEFAULT_SLOT = "main";
     public static final String JSF_IMPLS_ATTR_NAME = "active-jsf-impls";
 
-    protected static final ParameterValidator jsfSlotValidator = new ParameterValidator() {
-        @Override
-        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            validate(value.asString());
-        }
-
-        @Override
-        public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-            // I don't see this one being called.  Also, the above version is already a resolved value.
-            validate(value.asString());
-        }
-
-        private void validate(String value) throws OperationFailedException {
-            if (!JSFModuleIdFactory.getInstance().getActiveJSFVersions().contains(value)) {
-                throw JSFMessages.MESSAGES.invalidJSFImplSlot(value);
-            }
-        }
-    };
-
     protected static final SimpleAttributeDefinition DEFAULT_JSF_IMPL_SLOT =
             new SimpleAttributeDefinitionBuilder(DEFAULT_SLOT_ATTR_NAME, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setValidator(jsfSlotValidator)
             .setXmlName(DEFAULT_SLOT_ATTR_NAME)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setDefaultValue(new ModelNode(DEFAULT_SLOT))
