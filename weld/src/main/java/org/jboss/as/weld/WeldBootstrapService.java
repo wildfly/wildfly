@@ -31,29 +31,47 @@ import javax.enterprise.inject.spi.BeanManager;
 
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
+import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
+import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
+import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
-import org.jboss.weld.bootstrap.api.Service;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.security.spi.SecurityServices;
+import org.jboss.weld.transaction.spi.TransactionServices;
 
 /**
- * Provides access to a running weld deployment.
- * <p/>
- * Thread Safety: This class is thread safe, and requires a happens before action between construction and usage
+ * Provides the initial bootstrap of the Weld container. This does not actually finish starting the container,
+ * merely gets it to the point that the bean manager is available.
  *
  * @author Stuart Douglas
  */
-public class WeldContainer {
+public class WeldBootstrapService implements Service<WeldBootstrapService> {
+
+    public static final ServiceName SERVICE_NAME = ServiceName.of("WeldBootstrapService");
 
     private final WeldBootstrap bootstrap;
     private final WeldDeployment deployment;
     private final Environment environment;
     private final Map<String, BeanDeploymentArchive> beanDeploymentArchives;
+    private final String deploymentName;
+
+    private final InjectedValue<WeldResourceInjectionServices> resourceInjectionServices = new InjectedValue<WeldResourceInjectionServices>();
+    private final InjectedValue<WeldSecurityServices> securityServices = new InjectedValue<WeldSecurityServices>();
+    private final InjectedValue<WeldTransactionServices> weldTransactionServices = new InjectedValue<WeldTransactionServices>();
+
     private volatile boolean started;
 
-    public WeldContainer(WeldDeployment deployment, Environment environment) {
+    public WeldBootstrapService(WeldDeployment deployment, Environment environment, final String deploymentName) {
         this.deployment = deployment;
         this.environment = environment;
+        this.deploymentName = deploymentName;
         this.bootstrap = new WeldBootstrap();
         Map<String, BeanDeploymentArchive> bdas = new HashMap<String, BeanDeploymentArchive>();
         for (BeanDeploymentArchive archive : deployment.getBeanDeploymentArchives()) {
@@ -68,20 +86,26 @@ public class WeldContainer {
      *
      * @throws IllegalStateException if the container is already running
      */
-    public synchronized void start() {
+    public synchronized void start(final StartContext context) {
         if (started) {
             throw WeldMessages.MESSAGES.alreadyRunning("WeldContainer");
         }
-        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(), deployment.getSubDeploymentClassLoaders());
         started = true;
+
+        WeldLogger.DEPLOYMENT_LOGGER.startingWeldService(deploymentName);
+        // set up injected services
+        addWeldService(SecurityServices.class, securityServices.getValue());
+        addWeldService(TransactionServices.class, weldTransactionServices.getValue());
+
+        for (BeanDeploymentArchive bda : getBeanDeploymentArchives()) {
+            bda.getServices().add(ResourceInjectionServices.class, resourceInjectionServices.getValue());
+        }
+
+        ModuleGroupSingletonProvider.addClassLoaders(deployment.getModule().getClassLoader(), deployment.getSubDeploymentClassLoaders());
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
             bootstrap.startContainer(environment, deployment);
-            bootstrap.startInitialization();
-            bootstrap.deployBeans();
-            bootstrap.validateBeans();
-            bootstrap.endInitialization();
         } finally {
             SecurityActions.setContextClassLoader(oldTccl);
         }
@@ -93,10 +117,11 @@ public class WeldContainer {
      *
      * @throws IllegalStateException if the container is not running
      */
-    public synchronized void stop() {
+    public synchronized void stop(final StopContext context) {
         if (!started) {
             throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }
+        WeldLogger.DEPLOYMENT_LOGGER.stoppingWeldService(deploymentName);
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(deployment.getModule().getClassLoader());
@@ -106,18 +131,6 @@ public class WeldContainer {
             ModuleGroupSingletonProvider.removeClassLoader(deployment.getModule().getClassLoader());
         }
         started = false;
-    }
-
-    /**
-     * Gets the {@link BeanManager} for a given bean deployment archive.
-     *
-     * @throws IllegalStateException if the container is not running
-     */
-    public BeanManager getBeanManager(BeanDeploymentArchive archive) {
-        if (!started) {
-            throw WeldMessages.MESSAGES.notStarted("WeldContainer");
-        }
-        return bootstrap.getManager(archive);
     }
 
     /**
@@ -140,10 +153,7 @@ public class WeldContainer {
     /**
      * Adds a {@link Service} to the deployment. This method must not be called after the container has started
      */
-    public <T extends Service> void addWeldService(Class<T> type, T service) {
-        if (started) {
-            throw WeldMessages.MESSAGES.cannotAddServicesAfterStart();
-        }
+    public <T extends org.jboss.weld.bootstrap.api.Service> void addWeldService(Class<T> type, T service) {
         deployment.getServices().add(type, service);
         deployment.getAdditionalBeanDeploymentArchive().getServices().add(type, service);
     }
@@ -172,4 +182,24 @@ public class WeldContainer {
         return started;
     }
 
+    WeldBootstrap getBootstrap() {
+        return bootstrap;
+    }
+
+    @Override
+    public WeldBootstrapService getValue() throws IllegalStateException, IllegalArgumentException {
+        return this;
+    }
+
+    public InjectedValue<WeldResourceInjectionServices> getResourceInjectionServices() {
+        return resourceInjectionServices;
+    }
+
+    public InjectedValue<WeldSecurityServices> getSecurityServices() {
+        return securityServices;
+    }
+
+    public InjectedValue<WeldTransactionServices> getWeldTransactionServices() {
+        return weldTransactionServices;
+    }
 }

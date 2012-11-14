@@ -32,7 +32,7 @@ import javax.enterprise.inject.spi.Bean;
 
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.weld.WeldContainer;
+import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -51,7 +51,7 @@ import org.jboss.weld.manager.BeanManagerImpl;
 public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Service<WeldManagedReferenceFactory> {
 
     private final Class<?> componentClass;
-    private final InjectedValue<WeldContainer> weldContainer;
+    private final InjectedValue<WeldBootstrapService> weldContainer;
     private final String ejbName;
     private final Set<Class<?>> interceptorClasses;
     private final Map<Class<?>, WeldEEInjection> interceptorInjections = new HashMap<Class<?>, WeldEEInjection>();
@@ -74,7 +74,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
         this.ejbName = ejbName;
         this.beanDeploymentArchiveId = beanDeploymentArchiveId;
         this.delegateProduce = delegateProduce;
-        this.weldContainer = new InjectedValue<WeldContainer>();
+        this.weldContainer = new InjectedValue<WeldBootstrapService>();
         this.interceptorClasses = interceptorClasses;
         this.classLoader = classLoader;
     }
@@ -171,7 +171,7 @@ public class WeldManagedReferenceFactory implements ManagedReferenceFactory, Ser
         return this;
     }
 
-    public InjectedValue<WeldContainer> getWeldContainer() {
+    public InjectedValue<WeldBootstrapService> getWeldContainer() {
         return weldContainer;
     }
 }
