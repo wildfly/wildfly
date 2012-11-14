@@ -34,7 +34,7 @@ import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
-import org.jboss.as.weld.WeldContainer;
+import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -187,7 +187,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
 
     public static class Factory extends ComponentInstanceInterceptorFactory {
 
-        private final InjectedValue<WeldContainer> weldContainer = new InjectedValue<WeldContainer>();
+        private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
         private final String beanArchiveId;
         private final String ejbName;
         private final InterceptionType interceptionType;
@@ -209,7 +209,7 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
             return interceptor;
         }
 
-        public InjectedValue<WeldContainer> getWeldContainer() {
+        public InjectedValue<WeldBootstrapService> getWeldContainer() {
             return weldContainer;
         }
     }

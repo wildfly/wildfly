@@ -54,16 +54,16 @@ import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
-import org.jboss.as.weld.WeldContainer;
+import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;
 import org.jboss.as.weld.deployment.CdiAnnotationMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.TCCLSingletonService;
-import org.jboss.as.weld.services.WeldService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
 import org.jboss.as.weld.services.bootstrap.WeldJpaInjectionServices;
@@ -108,8 +108,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         //add a dependency on the weld service to web deployments
-        final ServiceName weldServiceName = parent.getServiceName().append(WeldService.SERVICE_NAME);
-        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldServiceName);
+        final ServiceName weldBootstrapServiceName = parent.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
+        deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, weldBootstrapServiceName);
 
         final Set<ServiceName> jpaServices = new HashSet<ServiceName>();
 
@@ -189,38 +189,41 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WeldDeployment deployment = new WeldDeployment(beanDeploymentArchives, extensions, module, subDeploymentLoaders);
 
-        final WeldContainer weldContainer = new WeldContainer(deployment, Environments.EE_INJECT);
+        final WeldBootstrapService weldBootstrapService = new WeldBootstrapService(deployment, Environments.EE_INJECT, deploymentUnit.getName());
         //hook up validation service
         //TODO: we need to change weld so this is a per-BDA service
         final ValidatorFactory factory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
-        weldContainer.addWeldService(ValidationServices.class, new WeldValidationServices(factory));
+        weldBootstrapService.addWeldService(ValidationServices.class, new WeldValidationServices(factory));
 
         final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
-        weldContainer.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
+        weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
         rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
 
-        weldContainer.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
+        weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
 
 
         final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
-        weldContainer.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
+        weldBootstrapService.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
 
-        final WeldService weldService = new WeldService(weldContainer, deploymentUnit.getName());
         // add the weld service
-        final ServiceBuilder<WeldContainer> weldServiceBuilder = serviceTarget.addService(weldServiceName, weldService);
+        final ServiceBuilder<WeldBootstrapService> weldBootstrapServiceBuilder = serviceTarget.addService(weldBootstrapServiceName, weldBootstrapService);
 
-        weldServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
+        weldBootstrapServiceBuilder.addDependencies(TCCLSingletonService.SERVICE_NAME);
 
-        installResourceInjectionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
-        installSecurityService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
-        installTransactionService(serviceTarget, deploymentUnit, weldService, weldServiceBuilder);
+        installResourceInjectionService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
+        installSecurityService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
+        installTransactionService(serviceTarget, deploymentUnit, weldBootstrapService, weldBootstrapServiceBuilder);
 
-        weldServiceBuilder.addDependencies(jpaServices);
+        weldBootstrapServiceBuilder.install();
 
-        //make sure JNDI bindings are up
-        weldServiceBuilder.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
+        final WeldStartService weldStartService = new WeldStartService(module.getClassLoader());
 
-        weldServiceBuilder.install();
+        serviceTarget.addService(deploymentUnit.getServiceName().append(WeldStartService.SERVICE_NAME), weldStartService)
+                .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap())
+                        //make sure JNDI bindings are up
+                .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()))
+                .addDependencies(jpaServices)
+                .install();
 
     }
 
@@ -244,7 +247,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
 
     private ServiceName installSecurityService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-                                               WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
+                                               WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldSecurityServices service = new WeldSecurityServices();
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldSecurityServices.SERVICE_NAME);
@@ -258,7 +261,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName installResourceInjectionService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-                                                        WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
+                                                        WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldResourceInjectionServices service = new WeldResourceInjectionServices();
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldResourceInjectionServices.SERVICE_NAME);
@@ -272,7 +275,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName installTransactionService(final ServiceTarget serviceTarget, final DeploymentUnit deploymentUnit,
-                                                  WeldService weldService, ServiceBuilder<WeldContainer> weldServiceBuilder) {
+                                                  WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldTransactionServices weldTransactionServices = new WeldTransactionServices();
 
         final ServiceName weldTransactionServiceName = deploymentUnit.getServiceName().append(
