@@ -21,6 +21,8 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -39,6 +41,9 @@ import org.jboss.jca.common.api.metadata.common.v10.CommonConnDef;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
 import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 
 /**
@@ -89,6 +94,8 @@ public class Constants {
 
     private static final String ARCHIVE_NAME = "archive";
 
+    private static final String MODULE_NAME = "module";
+
     private static final String BOOTSTRAPCONTEXT_NAME = "bootstrap-context";
 
     private static final String TRANSACTIONSUPPORT_NAME = "transaction-support";
@@ -138,7 +145,25 @@ public class Constants {
 
     static final SimpleAttributeDefinition CONFIG_PROPERTY_VALUE = new SimpleAttributeDefinition(CONFIG_PROPERTY_VALUE_NAME, CommonConnDef.Tag.CONFIG_PROPERTY.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
-    static final SimpleAttributeDefinition ARCHIVE = new SimpleAttributeDefinition(ARCHIVE_NAME, ResourceAdapter.Tag.ARCHIVE.getLocalName(),  new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
+    static final SimpleAttributeDefinition ARCHIVE = SimpleAttributeDefinitionBuilder.create(ARCHIVE_NAME, ModelType.STRING)
+            .setXmlName(ResourceAdapter.Tag.ARCHIVE.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setAlternatives(MODULE_NAME).build();
+
+    static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(MODULE_NAME, ModelType.STRING)
+            .setXmlName(AS7ResourceAdapterTags.MODULE.getLocalName())
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    //TODO
+                }
+            })
+            .setAlternatives(ARCHIVE_NAME).build();
 
     static final SimpleAttributeDefinition BOOTSTRAP_CONTEXT = new SimpleAttributeDefinition(BOOTSTRAPCONTEXT_NAME, ResourceAdapter.Tag.BOOTSTRAP_CONTEXT.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 

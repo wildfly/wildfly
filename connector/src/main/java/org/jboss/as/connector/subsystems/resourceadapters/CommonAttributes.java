@@ -43,6 +43,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFI
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
@@ -70,6 +71,7 @@ public class CommonAttributes {
 
     static final AttributeDefinition[] RESOURCE_ADAPTER_ATTRIBUTE = {
             ARCHIVE,
+            MODULE,
             TRANSACTION_SUPPORT,
             BOOTSTRAP_CONTEXT,
             CONFIG_PROPERTIES,

@@ -46,6 +46,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
 
 public class RaServicesFactory {
+    public static void createDeploymentService(ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, ResourceAdapter raxml)  {
+        createDeploymentService(null, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnitServiceName, deploymentUnitName,  raxml, null);
+
+    }
     public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource) {
         // Create the service
         ServiceName serviceName = ConnectorServices.registerDeployment(deploymentUnitName);
@@ -73,18 +77,20 @@ public class RaServicesFactory {
                 .addDependency(ConnectorServices.CONNECTION_VALIDATOR_SERVICE)
                 .addDependency(NamingService.SERVICE_NAME)
                 .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(connectorXmlDescriptor.getDeploymentName()));
-        builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource) {
+        if (registration != null && deploymentResource != null) {
+            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource) {
 
-            @Override
-            protected void registerIronjacamar(ServiceController<? extends Object> controller, ManagementResourceRegistration subRegistration, Resource subsystemResource) {
-                //do nothing, no ironjacamar registration for raxml activated ra
-            }
+                @Override
+                protected void registerIronjacamar(ServiceController<? extends Object> controller, ManagementResourceRegistration subRegistration, Resource subsystemResource) {
+                    //do nothing, no ironjacamar registration for raxml activated ra
+                }
 
-            @Override
-            protected CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller) {
-                return ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
-            }
-        });
+                @Override
+                protected CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller) {
+                    return ((ResourceAdapterXmlDeploymentService) controller.getService()).getRaxmlDeployment();
+                }
+            });
+        }
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
     }

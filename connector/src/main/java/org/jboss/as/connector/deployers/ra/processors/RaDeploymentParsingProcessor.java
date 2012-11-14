@@ -82,6 +82,21 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
         }
 
         final VirtualFile alternateDescriptor = deploymentRoot.getAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR);
+        String prefix = "";
+
+        if (deploymentUnit.getParent() != null) {
+            prefix = deploymentUnit.getParent().getName() + "#";
+        }
+
+        String deploymentName = prefix + file.getName().substring(0, file.getName().indexOf(".rar"));
+        ConnectorXmlDescriptor xmlDescriptor = process(resolveProperties, file, alternateDescriptor, deploymentName);
+
+
+        phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+
+    }
+
+    public static ConnectorXmlDescriptor process(boolean resolveProperties, VirtualFile file, VirtualFile alternateDescriptor, String deploymentName) throws DeploymentUnitProcessingException {
         // Locate the descriptor
         final VirtualFile serviceXmlFile;
         if (alternateDescriptor != null) {
@@ -103,15 +118,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             }
             File root = file.getPhysicalFile();
             URL url = root.toURI().toURL();
-            String prefix = "";
-
-            if (deploymentUnit.getParent() != null) {
-                prefix = deploymentUnit.getParent().getName() + "#";
-            }
-
-            String deploymentName = prefix + file.getName().substring(0, file.getName().indexOf(".rar"));
-            ConnectorXmlDescriptor xmlDescriptor = new ConnectorXmlDescriptor(result, root, url, deploymentName);
-            phaseContext.getDeploymentUnit().putAttachment(ConnectorXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
+            return new ConnectorXmlDescriptor(result, root, url, deploymentName);
 
         } catch (Exception e) {
             throw MESSAGES.failedToParseServiceXml(e, serviceXmlFile);
