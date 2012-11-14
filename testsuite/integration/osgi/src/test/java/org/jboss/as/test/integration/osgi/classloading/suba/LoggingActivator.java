@@ -25,18 +25,27 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogService;
+import org.osgi.util.tracker.ServiceTracker;
 
 public class LoggingActivator implements BundleActivator {
 
+    private ServiceTracker tracker;
     @Override
     public void start(BundleContext context) throws Exception {
-        ServiceReference sref = context.getServiceReference(LogService.class.getName());
-        LogService logservice = (LogService) context.getService(sref);
-        logservice.log(LogService.LOG_INFO, "Hello from " + context.getBundle());
+        tracker = new ServiceTracker(context, LogService.class.getName(), null) {
+            @Override
+            public Object addingService(ServiceReference reference) {
+                LogService service = (LogService) super.addingService(reference);
+                service.log(LogService.LOG_INFO, "Hello from " + context.getBundle());
+                return service;
+            }
+        };
+        tracker.open();
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
+        tracker.close();
     }
 
 }

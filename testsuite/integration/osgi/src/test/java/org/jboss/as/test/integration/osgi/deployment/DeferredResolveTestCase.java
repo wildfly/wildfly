@@ -45,6 +45,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Test deferred bundle resolution
@@ -89,7 +90,7 @@ public class DeferredResolveTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ModelControllerClient.class, ModelNode.class, ManagementClient.class);
-                builder.addImportPackages(PackageAdmin.class, StartLevel.class);
+                builder.addImportPackages(PackageAdmin.class, StartLevel.class, ServiceTracker.class);
                 builder.addImportPackages(XBundle.class, BundleManager.class);
                 return builder.openStream();
             }

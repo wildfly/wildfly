@@ -41,6 +41,7 @@ import org.jboss.as.test.configadmin.ConfigAdminManagement;
 import org.jboss.as.test.integration.osgi.api.ConfiguredService;
 import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfigAdminBundleActivatorA;
 import org.jboss.as.test.integration.osgi.configadmin.bundle.ConfigAdminBundleActivatorB;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -59,6 +60,7 @@ import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Test {@link ConfigurationAdmin}/{@link ConfigAdmin} integration.
@@ -91,7 +93,7 @@ public class ConfigAdminIntegrationTestCase {
     @Deployment
     public static JavaArchive deployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "osgi-configadmin-tests");
-        archive.addClasses(ConfiguredService.class, ConfigAdminManagement.class);
+        archive.addClasses(ConfiguredService.class, ConfigAdminManagement.class, FrameworkUtils.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -101,7 +103,7 @@ public class ConfigAdminIntegrationTestCase {
                 builder.addExportPackages(ConfiguredService.class);
                 builder.addImportPackages(ConfigurationAdmin.class, ModelNode.class, ModelControllerClient.class);
                 builder.addImportPackages(ConfigAdmin.class, ServiceContainer.class, ManagementClient.class);
-                builder.addImportPackages(PackageAdmin.class);
+                builder.addImportPackages(PackageAdmin.class, ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -118,7 +120,7 @@ public class ConfigAdminIntegrationTestCase {
 
             BundleContext context = bundle.getBundleContext();
             ConfigAdmin configAdmin = getConfigAdmin(context);
-            ConfigurationAdmin configurationAdmin = getConfigurationAdmin(context);
+            ConfigurationAdmin configurationAdmin = FrameworkUtils.waitForService(context, ConfigurationAdmin.class);
 
             Configuration config = configurationAdmin.getConfiguration(CONFIG_ADMIN_PID_A);
             Dictionary<String, Object> props = new Hashtable<String, Object>();
@@ -152,7 +154,7 @@ public class ConfigAdminIntegrationTestCase {
 
             BundleContext context = bundle.getBundleContext();
             ConfigAdmin configAdmin = getConfigAdmin(context);
-            ConfigurationAdmin configurationAdmin = getConfigurationAdmin(context);
+            ConfigurationAdmin configurationAdmin = FrameworkUtils.waitForService(context, ConfigurationAdmin.class);
 
             final CountDownLatch latch = new CountDownLatch(1);
             ConfigAdminListener listener = new ConfigAdminListener() {
@@ -205,7 +207,7 @@ public class ConfigAdminIntegrationTestCase {
 
             BundleContext context = bundle.getBundleContext();
             ConfigAdmin configAdmin = getConfigAdmin(context);
-            ConfigurationAdmin configurationAdmin = getConfigurationAdmin(context);
+            ConfigurationAdmin configurationAdmin = FrameworkUtils.waitForService(context, ConfigurationAdmin.class);
 
             final CountDownLatch latch = new CountDownLatch(1);
             ConfigAdminListener listener = new ConfigAdminListener() {
@@ -257,7 +259,7 @@ public class ConfigAdminIntegrationTestCase {
 
             BundleContext context = bundle.getBundleContext();
             ConfigAdmin configAdmin = getConfigAdmin(context);
-            ConfigurationAdmin configurationAdmin = getConfigurationAdmin(context);
+            ConfigurationAdmin configurationAdmin = FrameworkUtils.waitForService(context, ConfigurationAdmin.class);
 
             Configuration config = configurationAdmin.getConfiguration(CONFIG_ADMIN_BUNDLE_B);
             try {
@@ -282,11 +284,6 @@ public class ConfigAdminIntegrationTestCase {
 
     private ModelControllerClient getControllerClient() {
         return managementClient.getControllerClient();
-    }
-
-    private ConfigurationAdmin getConfigurationAdmin(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(ConfigurationAdmin.class.getName());
-        return (ConfigurationAdmin) context.getService(sref);
     }
 
     private ConfigAdmin getConfigAdmin(BundleContext context) {
@@ -328,6 +325,7 @@ public class ConfigAdminIntegrationTestCase {
                 builder.addBundleActivator(ConfigAdminBundleActivatorB.class);
                 builder.addImportPackages(BundleActivator.class, ManagedService.class);
                 builder.addImportPackages(ConfiguredService.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });

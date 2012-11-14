@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.osgi.configadmin.bundle;
 
+import java.io.IOException;
 import java.util.Hashtable;
 
 import org.jboss.as.test.integration.osgi.api.ConfiguredService;
@@ -31,6 +32,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedService;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * A simple activator that creates a configuration
@@ -40,25 +42,34 @@ import org.osgi.service.cm.ManagedService;
  */
 public class ConfigAdminBundleActivatorB implements BundleActivator {
 
+    private ServiceTracker tracker;
+
     @Override
     public void start(BundleContext context) throws Exception {
         Hashtable<String, String> props = new Hashtable<String, String>();
         props.put(Constants.SERVICE_PID, context.getBundle().getLocation());
         context.registerService(new String[] { ManagedService.class.getName(), ConfiguredService.class.getName() }, new ConfiguredService(), props);
 
-        ConfigurationAdmin configurationAdmin = getConfigurationAdmin(context);
-        Configuration config = configurationAdmin.getConfiguration(context.getBundle().getLocation());
-        props = new Hashtable<String, String>();
-        props.put("foo", "bar");
-        config.update(props);
+        tracker = new ServiceTracker(context, ConfigurationAdmin.class.getName(), null) {
+            @Override
+            public Object addingService(ServiceReference reference) {
+                ConfigurationAdmin service = (ConfigurationAdmin) super.addingService(reference);
+                try {
+                    Configuration config = service.getConfiguration(context.getBundle().getLocation());
+                    Hashtable<String, String> props = new Hashtable<String, String>();
+                    props.put("foo", "bar");
+                    config.update(props);
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                return service;
+            }
+        };
+        tracker.open();
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-    }
-
-    private ConfigurationAdmin getConfigurationAdmin(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(ConfigurationAdmin.class.getName());
-        return (ConfigurationAdmin) context.getService(sref);
+        tracker.close();
     }
 }
