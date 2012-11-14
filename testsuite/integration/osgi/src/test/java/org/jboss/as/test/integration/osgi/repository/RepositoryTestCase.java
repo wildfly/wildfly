@@ -25,6 +25,7 @@ import java.util.Collection;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.repository.XRequirementBuilder;
@@ -46,6 +47,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.repository.RepositoryContent;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Test that the EventAdmin can be installed through the Repository bundle.
@@ -62,6 +64,7 @@ public class RepositoryTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "osgi-repository-bundle");
+        archive.addClasses(FrameworkUtils.class);
         archive.setManifest(new Asset() {
             @Override
             public InputStream openStream() {
@@ -70,6 +73,7 @@ public class RepositoryTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(BundleActivator.class, Repository.class, Resource.class);
                 builder.addImportPackages(XRequirementBuilder.class, XRequirement.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -79,7 +83,7 @@ public class RepositoryTestCase {
     @Test
     public void testRepositoryService() throws Exception {
 
-        XRepository repo = getRepository();
+        XRepository repo = FrameworkUtils.waitForService(context, XRepository.class);
         MavenCoordinates coordinates = MavenCoordinates.parse("org.apache.felix:org.apache.felix.eventadmin:1.2.6");
         XRequirement req = XRequirementBuilder.create(coordinates).getRequirement();
         assertNotNull("Requirement not null", req);
@@ -105,10 +109,5 @@ public class RepositoryTestCase {
         } finally {
             content.close();
         }
-    }
-
-    private XRepository getRepository() {
-        ServiceReference sref = context.getServiceReference(XRepository.class.getName());
-        return (XRepository) context.getService(sref);
     }
 }

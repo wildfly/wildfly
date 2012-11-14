@@ -22,8 +22,6 @@
 package org.jboss.as.test.integration.osgi.jaxp;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.io.InputStream;
 import java.net.URL;
 
@@ -33,6 +31,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -41,7 +40,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -62,6 +61,7 @@ public class SAXParserTestCase {
     @Deployment
     public static JavaArchive createdeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "sax-parser.jar");
+        archive.addClasses(FrameworkUtils.class);
         archive.addAsResource(SAXParserTestCase.class.getPackage(), "simple.xml", "simple.xml");
         archive.setManifest(new Asset() {
             public InputStream openStream() {
@@ -69,6 +69,7 @@ public class SAXParserTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(SAXParser.class, SAXException.class, DefaultHandler.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -83,9 +84,7 @@ public class SAXParserTestCase {
 
     @Test
     public void testSAXParserFactoryService() throws Exception {
-        ServiceReference sref = context.getServiceReference(SAXParserFactory.class.getName());
-        assertNotNull("ServiceReference not null");
-        SAXParserFactory factory = (SAXParserFactory) context.getService(sref);
+        SAXParserFactory factory = FrameworkUtils.waitForService(context, SAXParserFactory.class);
         parse(factory);
     }
 

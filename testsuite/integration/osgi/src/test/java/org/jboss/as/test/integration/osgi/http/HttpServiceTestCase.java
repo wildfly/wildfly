@@ -27,9 +27,7 @@ import java.io.PrintWriter;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -40,10 +38,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.shrinkwrap.api.Archive;
@@ -81,7 +79,7 @@ public class HttpServiceTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "http-service-example");
-        archive.addClasses(HttpRequest.class);
+        archive.addClasses(HttpRequest.class, FrameworkUtils.class);
         archive.addAsResource(STRING_ASSET, "res/message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -100,86 +98,41 @@ public class HttpServiceTestCase {
     }
 
     @Test
-    @InSequence(0)
     public void testServletAccess() throws Exception {
+        BundleContext context = bundle.getBundleContext();
+        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = (HttpService) context.getService(sref);
+        String reqspec = "/httpservice/servlet?test=param&param=Kermit";
+        try {
+            // Verify that the alias is not yet available
+            assertNotAvailable(reqspec);
 
-        // The first test in sequence tracks the HttpService
-        // instead of assuming that it is already available.
+            // Register the test servlet and make a call
+            httpService.registerServlet("/servlet", new HttpServiceServlet(bundle), null, null);
+            Assert.assertEquals("Hello: Kermit", performCall(reqspec));
 
-        class TestHandler {
-            private final CountDownLatch latch = new CountDownLatch(1);
-            Exception lastException;
+            // Unregister the servlet alias
+            httpService.unregister("/servlet");
+            assertNotAvailable(reqspec);
 
-            void performTest(HttpService httpService) {
-                String reqspec = "/httpservice/servlet?test=param&param=Kermit";
-                try {
-                    // Verify that the alias is not yet available
-                    assertNotAvailable(reqspec);
-
-                    // Register the test servlet and make a call
-                    httpService.registerServlet("/servlet", new HttpServiceServlet(bundle), null, null);
-                    Assert.assertEquals("Hello: Kermit", performCall(reqspec));
-
-                    // Unregister the servlet alias
-                    httpService.unregister("/servlet");
-                    assertNotAvailable(reqspec);
-
-                } catch (Exception ex) {
-                    lastException = ex;
-                } finally {
-                    complete();
-                }
-            }
-
-            void complete() {
-                latch.countDown();
-            }
-
-            void awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
-                if (!latch.await(timeout, unit))
-                    throw new TimeoutException();
-            }
-        }
-
-        final TestHandler handler = new TestHandler();
-        final BundleContext context = bundle.getBundleContext();
-        final ServiceReference[] srefholder = new ServiceReference[1];
-        ServiceTracker tracker = new ServiceTracker(context, HttpService.class.getName(), null) {
-            @Override
-            public Object addingService(ServiceReference sref) {
-                srefholder[0] = sref;
-                HttpService httpService = (HttpService) super.addingService(sref);
-                handler.performTest(httpService);
-                return httpService;
-            }
-        };
-        tracker.open();
-
-        handler.awaitCompletion(30, TimeUnit.SECONDS);
-
-        if (handler.lastException != null)
-            throw handler.lastException;
-
-        ServiceReference sref = srefholder[0];
-        if (sref != null) {
+            // Verify that the alias is not available any more
+            assertNotAvailable(reqspec);
+        } finally {
             context.ungetService(sref);
         }
     }
 
     @Test
-    @InSequence(1)
     public void testResourceAccess() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
-        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
+        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = (HttpService) context.getService(sref);
         String reqspec = "/httpservice/resource/message.txt";
         try {
-            HttpService httpService = (HttpService) context.getService(sref);
-
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
 
-            // Register the test servlet and make a call
+            // Register the test resource and make a call
             httpService.registerResources("/resource", "/res", null);
             Assert.assertEquals("Hello from Resource", performCall(reqspec));
 
@@ -194,15 +147,12 @@ public class HttpServiceTestCase {
     }
 
     @Test
-    @InSequence(1)
     public void testServletInitProps() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
-        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
+        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = (HttpService) context.getService(sref);
         String reqspec = "/httpservice/servlet?test=init&init=someKey";
         try {
-            HttpService httpService = (HttpService) context.getService(sref);
-
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
 
@@ -219,15 +169,12 @@ public class HttpServiceTestCase {
     }
 
     @Test
-    @InSequence(1)
     public void testServletInstance() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
-        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
+        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = (HttpService) context.getService(sref);
         String reqspec = "/httpservice/servlet?test=instance";
         try {
-            HttpService httpService = (HttpService) context.getService(sref);
-
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
 
@@ -243,12 +190,10 @@ public class HttpServiceTestCase {
     @Test
     public void testServletContext() throws Exception {
         BundleContext context = bundle.getBundleContext();
-        final ServiceReference sref = context.getServiceReference(HttpService.class.getName());
-        Assert.assertNotNull("ServiceReference was not found for " + HttpService.class.getName(), sref);
+        ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
+        HttpService httpService = (HttpService) context.getService(sref);
         String reqspec = "/httpservice/servlet2?test=param&param=Kermit";
         try {
-            HttpService httpService = (HttpService) context.getService(sref);
-
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
 
