@@ -42,10 +42,10 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.cm.ManagedService;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * A test that shows how an OSGi {@link ManagedService} can be configured through the {@link ConfigurationAdmin}.
@@ -82,6 +82,7 @@ public class ConfigurationAdminTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ConfigurationAdmin.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
@@ -93,7 +94,7 @@ public class ConfigurationAdminTestCase {
 
         // Get the {@link Configuration} for the given PID
         BundleContext context = bundle.getBundleContext();
-        ConfigurationAdmin configAdmin = getConfigurationAdmin(context);
+        ConfigurationAdmin configAdmin = FrameworkUtils.waitForService(context, ConfigurationAdmin.class);
         Configuration config = configAdmin.getConfiguration(PID_A);
         Assert.assertNotNull("Config not null", config);
         Assert.assertNull("Config is empty, but was: " + config.getProperties(), config.getProperties());
@@ -133,10 +134,5 @@ public class ConfigurationAdminTestCase {
         // Wait a little for the update to happen
         Assert.assertTrue(service.awaitUpdate(3, TimeUnit.SECONDS));
         Assert.assertEquals("test value", service.getProperties().get("testkey"));
-    }
-
-    private ConfigurationAdmin getConfigurationAdmin(BundleContext context) {
-        ServiceReference sref = context.getServiceReference(ConfigurationAdmin.class.getName());
-        return (ConfigurationAdmin) context.getService(sref);
     }
 }

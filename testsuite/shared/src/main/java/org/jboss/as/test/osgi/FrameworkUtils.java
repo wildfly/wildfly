@@ -78,15 +78,8 @@ public final class FrameworkUtils {
 
     @SuppressWarnings("unchecked")
     public static <T> T waitForService(BundleContext context, Class<T> clazz, long timeout, TimeUnit unit) {
-        ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
-        tracker.open();
-        T service = null;
-        try {
-            service = (T) tracker.waitForService(unit.toMillis(timeout));
-        } catch (InterruptedException intEx) {
-            // service will be null
-        }
-        tracker.close();
+        ServiceReference sref = waitForServiceReference(context, clazz, timeout, unit);
+        T service = sref != null ? (T) context.getService(sref) : null;
         Assert.assertNotNull("Service registered: " + clazz.getName(), service);
         return service;
     }
@@ -98,14 +91,18 @@ public final class FrameworkUtils {
     public static ServiceReference waitForServiceReference(BundleContext context, Class<?> clazz, long timeout, TimeUnit unit) {
         ServiceTracker tracker = new ServiceTracker(context, clazz.getName(), null);
         tracker.open();
+
         ServiceReference sref = null;
         try {
-            tracker.waitForService(unit.toMillis(timeout));
-            sref = tracker.getServiceReference();
-        } catch (InterruptedException intEx) {
+            if (tracker.waitForService(unit.toMillis(timeout)) != null) {
+                sref = context.getServiceReference(clazz.getName());
+            }
+        } catch (InterruptedException e) {
             // service will be null
+        } finally {
+            tracker.close();
         }
-        tracker.close();
+
         Assert.assertNotNull("Service registered: " + clazz.getName(), sref);
         return sref;
     }

@@ -37,6 +37,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.service.startlevel.StartLevel;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Test framework/bundle start level
@@ -71,6 +72,7 @@ public class StartLevelTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(StartLevel.class);
+                builder.addImportPackages(ServiceTracker.class);
                 return builder.openStream();
             }
         });
