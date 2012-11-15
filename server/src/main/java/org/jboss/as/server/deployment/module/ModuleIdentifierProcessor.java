@@ -21,11 +21,14 @@
  */
 package org.jboss.as.server.deployment.module;
 
+import java.util.jar.Manifest;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ManifestHelper;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.vfs.VirtualFile;
@@ -41,14 +44,19 @@ public class ModuleIdentifierProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        // OSGi fragments do not have a module
+        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
+        if (ManifestHelper.hasMainAttributeValue(manifest, "Fragment-Host")) {
+            return;
+        }
+
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
         final DeploymentUnit parent = deploymentUnit.getParent();
         final DeploymentUnit topLevelDeployment = parent == null ? deploymentUnit : parent;
         final VirtualFile toplevelRoot = topLevelDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final ModuleIdentifier moduleIdentifier = createModuleIdentifier(deploymentUnit.getName(), deploymentRoot, topLevelDeployment, toplevelRoot, deploymentUnit.getParent() == null);
-
-
         deploymentUnit.putAttachment(Attachments.MODULE_IDENTIFIER, moduleIdentifier);
     }
 
