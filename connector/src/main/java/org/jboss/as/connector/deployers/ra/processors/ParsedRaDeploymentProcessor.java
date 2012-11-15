@@ -124,10 +124,13 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
             Map<ResourceRoot, Index> indexes = AnnotationIndexUtils.getAnnotationIndexes(deploymentUnit);
             if (indexes != null && indexes.size() > 0) {
                 DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: Found %d indexes", indexes.size());
-                for (Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
-                    AnnotationRepository repository = new JandexAnnotationRepositoryImpl(entry.getValue(), classLoader);
-                    cmd = annotator.merge(cmd, repository, classLoader);
-                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: CMD=%s", cmd);
+                for (Index index : indexes.values()) {
+                    // Don't apply any empty indexes, as IronJacamar doesn't like that atm.
+                    if (index.getKnownClasses() != null && index.getKnownClasses().size() > 0) {
+                        AnnotationRepository repository = new JandexAnnotationRepositoryImpl(index, classLoader);
+                        cmd = annotator.merge(cmd, repository, classLoader);
+                        DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: CMD=%s", cmd);
+                    }
                 }
             }
             if (indexes == null || indexes.size() == 0)
