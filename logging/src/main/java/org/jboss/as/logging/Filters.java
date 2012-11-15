@@ -133,10 +133,10 @@ class Filters {
             } else {
                 result.append(SUBSTITUTE);
             }
-            return result.append("(").
-                    append(escapeString(CommonAttributes.PATTERN, replace)).
-                    append(",").append(escapeString(CommonAttributes.REPLACEMENT, replace)).
-                    append(")").toString();
+            return result.append("(")
+                    .append(escapeString(CommonAttributes.PATTERN, replace))
+                    .append(",").append(escapeString(CommonAttributes.REPLACEMENT, replace))
+                    .append(")").toString();
         }
         final String name = value.hasDefined(CommonAttributes.FILTER.getName()) ? value.get(CommonAttributes.FILTER.getName()).asString() : value.asString();
         throw Logging.createOperationFailure(LoggingMessages.MESSAGES.invalidFilter(name));

@@ -1094,10 +1094,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case CHANGE_LEVEL: {
-                    filter.append(Filters.LEVEL_CHANGE).
-                            append('(').
-                            append(readStringAttributeElement(reader, CommonAttributes.NEW_LEVEL.getName())).
-                            append(')');
+                    filter.append(Filters.LEVEL_CHANGE)
+                            .append('(')
+                            .append(readStringAttributeElement(reader, CommonAttributes.NEW_LEVEL.getName()))
+                            .append(')');
                     break;
                 }
                 case DENY: {
@@ -1106,10 +1106,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case LEVEL: {
-                    filter.append(Filters.LEVELS).
-                            append('(').
-                            append(readStringAttributeElement(reader, NAME.getName())).
-                            append(')');
+                    filter.append(Filters.LEVELS)
+                            .append('(')
+                            .append(readStringAttributeElement(reader, NAME.getName()))
+                            .append(')');
                     break;
                 }
                 case LEVEL_RANGE: {
@@ -1154,13 +1154,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     } else {
                         filter.append(Filters.SUBSTITUTE);
                     }
-                    filter.append("(\"").
-                            append(reader.getAttributeValue(null, PATTERN.getName())).
-                            append('"').
-                            append(delimiter).
-                            append('"').
-                            append(reader.getAttributeValue(null, REPLACEMENT.getName())).
-                            append("\")");
+                    filter.append("(\"")
+                            .append(reader.getAttributeValue(null, PATTERN.getName()))
+                            .append('"')
+                            .append(delimiter)
+                            .append('"')
+                            .append(reader.getAttributeValue(null, REPLACEMENT.getName()))
+                            .append("\")");
                     break;
                 }
                 default:
