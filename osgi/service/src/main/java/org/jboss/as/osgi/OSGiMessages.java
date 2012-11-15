@@ -112,4 +112,7 @@ public interface OSGiMessages {
 
     @Message(id = 11970, value = "Cannot deactivate deferred module phase for: %s")
     BundleException cannotDeactivateDeferredModulePhase(@Cause Throwable cause, Bundle bundle);
+
+    @Message(id = 11971, value = "Servlet %s already registered with HttpService")
+    String servletAlreadyRegistered(String info);
 }
