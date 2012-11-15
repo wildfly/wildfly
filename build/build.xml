@@ -177,6 +177,10 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
+    	<module-def name="io.undertow">
+            <maven-resource group="io.undertow" artifact="undertow-core"/>
+        </module-def>
+
         <module-def name="javax.api"/>
 
         <module-def name="javax.xml.stream.api"/>
@@ -249,6 +253,10 @@
 
         <module-def name="org.jboss.as.threads">
             <maven-resource group="org.jboss.as" artifact="jboss-as-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.undertow-domain-http-interface">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-undertow-domain-http-interface"/>
         </module-def>
 
         <module-def name="org.jboss.com.sun.httpserver">

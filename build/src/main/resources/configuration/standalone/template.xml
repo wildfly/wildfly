@@ -28,7 +28,7 @@
             <native-interface security-realm="ManagementRealm">
                 <socket-binding native="management-native"/>
             </native-interface>
-            <http-interface security-realm="ManagementRealm">
+            <http-interface>
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
