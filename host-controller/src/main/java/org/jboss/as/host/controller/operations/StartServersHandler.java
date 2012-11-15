@@ -19,6 +19,7 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.HashUtil;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -130,8 +131,9 @@ public class StartServersHandler implements OperationStepHandler {
                     ROOT_LOGGER.failedToStartServer(e, serverName);
                 }
             } else if (info != null){
-                //Reconnect the server
-                serverInventory.reconnectServer(serverName, domainModel, info.isRunning(), info.isStopping());
+                // Reconnect the server using the current authKey
+                final byte[] authKey = info.getAuthKey();
+                serverInventory.reconnectServer(serverName, domainModel, authKey, info.isRunning(), info.isStopping());
             }
         }
     }

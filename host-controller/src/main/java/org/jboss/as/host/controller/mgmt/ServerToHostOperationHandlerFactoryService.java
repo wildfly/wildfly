@@ -31,6 +31,7 @@ import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
+import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -105,6 +106,7 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
     public HandleableCloseable.Key startReceiving(final Channel channel) {
         final ManagementChannelHandler channelHandler = new ManagementChannelHandler(channel, executorService);
         final ServerToHostProtocolHandler registrationHandler = new ServerToHostProtocolHandler(serverInventory.getValue(), operationExecutor, domainController, channelHandler, registrations, expressionResolver);
+        channelHandler.addHandlerFactory(new ManagementPongRequestHandler());
         channelHandler.addHandlerFactory(registrationHandler);
         channel.receiveMessage(channelHandler.getReceiver());
         return null;

@@ -95,6 +95,15 @@ public class ProtocolConnectionManager {
     }
 
     /**
+     * Get the connection.
+     *
+     * @return the connection
+     */
+    public Connection getConnection() {
+        return connection;
+    }
+
+    /**
      * Shutdown the connection manager.
      */
     public void shutdown() {
