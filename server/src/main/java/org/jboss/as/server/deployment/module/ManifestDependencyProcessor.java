@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.ManifestHelper;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.modules.Module;
@@ -71,7 +72,7 @@ public final class ManifestDependencyProcessor implements DeploymentUnitProcesso
             if (manifest == null)
                 continue;
 
-            final String dependencyString = manifest.getMainAttributes().getValue(DEPENDENCIES_ATTR);
+            final String dependencyString = ManifestHelper.getMainAttributeValue(manifest, DEPENDENCIES_ATTR);
             if (dependencyString == null)
                 continue;
 

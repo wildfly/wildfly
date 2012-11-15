@@ -47,6 +47,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.ManifestHelper;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logging.Logger;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -328,7 +329,7 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
         String contextRoot = mergedMetaData.getContextRoot();
         Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (contextRoot == null && manifest != null) {
-            contextRoot = manifest.getMainAttributes().getValue("Web-ContextPath");
+            contextRoot = ManifestHelper.getMainAttributeValue(manifest, "Web-ContextPath");
             mergedMetaData.setContextRoot(contextRoot);
         }
         warMetaData.setMergedJBossWebMetaData(mergedMetaData);

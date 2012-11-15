@@ -23,7 +23,6 @@
 package org.jboss.as.web.deployment;
 
 import java.util.Locale;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.jboss.as.ee.structure.DeploymentType;
@@ -33,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ManifestHelper;
 
 /**
  * Processor that marks a war deployment.
@@ -52,8 +52,7 @@ public class WarDeploymentInitializingProcessor implements DeploymentUnitProcess
         // JAR deployments may contain OSGi metadata with a "Web-ContextPath" header
         // This qualifies them as OSGi Web Application Bundle (WAB)
         else if (manifest != null && deploymentName.endsWith(".jar")) {
-            Attributes mainAttributes = manifest.getMainAttributes();
-            if (mainAttributes.getValue("Web-ContextPath") != null) {
+            if (ManifestHelper.hasMainAttributeValue(manifest, "Web-ContextPath")) {
                 DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
             }
         }
