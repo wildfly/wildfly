@@ -16,9 +16,11 @@
     </xsl:template>
 
     <xsl:template match="//j:subsystem/j:orb">
-                <xsl:copy>
-                        <initializers transactions="on" security="on"/>
-                </xsl:copy>
+        <xsl:copy>
+            <xsl:attribute name="socket-binding"><xsl:value-of select="@socket-binding"/></xsl:attribute>
+            <xsl:attribute name="ssl-socket-binding"><xsl:value-of select="@ssl-socket-binding"/></xsl:attribute>
+            <j:initializers transactions="on" security="on"/>
+        </xsl:copy>
     </xsl:template>
 
     <xsl:template match="//t:subsystem">
