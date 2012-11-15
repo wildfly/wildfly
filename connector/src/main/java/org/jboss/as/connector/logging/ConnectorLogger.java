@@ -55,12 +55,12 @@ public interface ConnectorLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.jboss.as.deployment.connector}.
      */
-    ConnectorLogger DEPLOYMENT_CONNECTOR_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.deployment.connector");
+    ConnectorLogger DEPLOYMENT_CONNECTOR_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.deployment");
 
     /**
      * A logger with the category {@code org.jboss.as.deployment.connector.registry}.
      */
-    ConnectorLogger DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.deployment.connector.registry");
+    ConnectorLogger DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector.deployment.registry");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.deployer.dsdeployer}.
