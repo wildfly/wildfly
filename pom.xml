@@ -97,6 +97,7 @@
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.6.2.Final</version.io.netty>
+        <version.io.undertow>1.0.0.Alpha1-SNAPSHOT</version.io.undertow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
@@ -156,7 +157,7 @@
         <version.org.jboss.as.console>1.5.1.Final</version.org.jboss.as.console>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>
-        <version.org.jboss.classfilewriter>1.0.3.Final</version.org.jboss.classfilewriter>
+        <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.jboss-common-core>2.2.17.GA</version.org.jboss.jboss-common-core>
         <version.org.jboss.com.sun.httpserver>1.0.1.Final</version.org.jboss.com.sun.httpserver>
@@ -237,7 +238,7 @@
         <version.org.jboss.ws.jbossws-native>4.1.1.Final</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.1.0.Beta7</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.2.7.Final</version.org.jgroups>
@@ -1299,7 +1300,11 @@
                 <artifactId>jboss-as-transactions</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+	            <groupId>org.jboss.as</groupId>
+	            <artifactId>jboss-as-undertow-domain-http-interface</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-version</artifactId>
@@ -4804,6 +4809,12 @@
             </dependency>
 
             <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${version.io.undertow}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-console</artifactId>
                 <version>${version.org.jboss.as.console}</version>
@@ -6428,6 +6439,7 @@
                 <module>security-util</module>
                 <module>spec-api</module>
                 <module>transactions</module>
+                <module>undertow-domain-http-interface</module>
                 <module>web</module>
                 <module>web-common</module>
                 <module>webservices</module>
