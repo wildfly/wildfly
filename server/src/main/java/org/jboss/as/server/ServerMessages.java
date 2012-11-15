@@ -596,8 +596,8 @@ public interface ServerMessages {
     @Message(id = 18759, value = "Failed to load module: %s")
     StartException failedToLoadModule(ModuleIdentifier module, @Cause ModuleLoadException cause);
 
-    @Message(id = 18760, value = "Timeout waiting for module service: %s")
-    ModuleLoadException timeoutWaitingForModuleService(ModuleIdentifier module);
+    //@Message(id = 18760, value = "Timeout waiting for module service: %s")
+    //ModuleLoadException timeoutWaitingForModuleService(ModuleIdentifier module);
 
     @Message(id = 18761, value = "%s cannot be defined when %s is also defined")
     OperationFailedException conflictingConfigs(String choice, String alternative);
