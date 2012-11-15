@@ -29,6 +29,7 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
@@ -52,14 +53,23 @@ public class WebValveParamRemove extends AbstractRemoveStepHandler {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.paramNameRequiredForRemoveParam()));
         }
 
-        // TODO deal with runtime https://issues.jboss.org/browse/AS7-3854
+        if (!context.isBooting() && context.isNormalServer()) {
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    // TODO deal with runtime https://issues.jboss.org/browse/AS7-3854
 
-        context.reloadRequired();
-        context.completeStep(new OperationContext.RollbackHandler() {
-            @Override
-            public void handleRollback(OperationContext context, ModelNode operation) {
-                context.revertReloadRequired();
-            }
-        });
+                    context.reloadRequired();
+                    context.completeStep(new OperationContext.RollbackHandler() {
+                        @Override
+                        public void handleRollback(OperationContext context, ModelNode operation) {
+                            context.revertReloadRequired();
+                        }
+                    });
+                }
+            }, OperationContext.Stage.RUNTIME);
+        }
+
+        context.stepCompleted();
     }
 }
