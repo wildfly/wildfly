@@ -22,7 +22,11 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -32,8 +36,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.repository.RemoteFileRequestAndHandler;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;
-import org.jboss.remoting3.Channel;
 
 import java.io.Closeable;
 import java.io.DataInput;
@@ -53,6 +57,7 @@ public class HostControllerClient implements Closeable {
     private final HostControllerConnection connection;
     private final ManagementChannelHandler channelHandler;
     private final RemoteFileRepositoryExecutorImpl executor;
+    private volatile ModelController controller;
 
     HostControllerClient(final String serverName, final ManagementChannelHandler channelHandler, final HostControllerConnection connection) {
         this.serverName = serverName;
@@ -79,8 +84,22 @@ public class HostControllerClient implements Closeable {
      */
     void resolveBootUpdates(final ModelController controller, final ActiveOperation.CompletedCallback<ModelNode> callback) throws Exception {
         connection.openConnection(controller, callback);
+        // Keep a reference to the the controller
+        this.controller = controller;
     }
 
+    public void reconnect(final String hostName, final int port, final byte[] authKey) throws IOException, URISyntaxException {
+        final String host = NetworkUtils.formatPossibleIpv6Address(hostName);
+        final URI uri = new URI("remote://" + host + ":" + port);
+        // In case the server is out of sync after the reconnect, set reload required
+        if(! connection.reConnect(uri, authKey)) {
+            // It would be nicer if we'd have direct access to the ControlledProcessState
+            final ModelNode operation = new ModelNode();
+            operation.get(ModelDescriptionConstants.OP).set(ServerRestartRequiredHandler.OPERATION_NAME); // TODO only require reload
+            operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
+            controller.execute(operation, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
+        }
+    }
     /**
      * Get the remote file repository.
      *
@@ -95,13 +114,6 @@ public class HostControllerClient implements Closeable {
         if(connection != null) {
             connection.close();
         }
-    }
-
-    public void reconnect(final String hostName, final int port, final byte[] authKey) throws IOException, URISyntaxException {
-        final String host = NetworkUtils.formatPossibleIpv6Address(hostName);
-        final URI uri = new URI("remote://" + host + ":" + port);
-
-        connection.reConnect(uri, authKey);
     }
 
     private static class GetFileRequest extends AbstractManagementRequest<File, Void> {

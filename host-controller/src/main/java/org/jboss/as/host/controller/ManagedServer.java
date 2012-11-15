@@ -120,9 +120,9 @@ class ManagedServer {
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
 
-    ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
-            final InetSocketAddress managementSocket, final ManagedServer.ManagedServerBootConfiguration bootConfiguration,
-            final TransformationTarget transformationTarget) {
+    ManagedServer(final String hostControllerName, final String serverName, final byte[] authKey,
+                  final ProcessControllerClient processControllerClient, final InetSocketAddress managementSocket,
+                  final ManagedServer.ManagedServerBootConfiguration bootConfiguration, final TransformationTarget transformationTarget) {
 
         assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
@@ -137,8 +137,6 @@ class ManagedServer {
         this.bootConfiguration = bootConfiguration;
         this.transformationTarget = transformationTarget;
 
-        final byte[] authKey = new byte[16];
-        new Random(new SecureRandom().nextLong()).nextBytes(authKey);
         this.authKey = authKey;
         serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
     }
@@ -320,10 +318,29 @@ class ManagedServer {
 
     /**
      * Unregister the mgmt channel.
+     *
+     * @param old the proxy controller to unregister
+     * @param shuttingDown whether the server inventory is shutting down
      */
-    protected synchronized void callbackUnregistered(final ProxyController old) {
+    protected synchronized void callbackUnregistered(final ProxyController old, final boolean shuttingDown) {
         if(proxyController == old) {
             this.proxyController = null;
+        }
+        // If the connection dropped without us stopping the process ask for reconnection
+        if(! shuttingDown && requiredState == InternalState.SERVER_STARTED) {
+            final InternalState state = internalState;
+            if(state == InternalState.PROCESS_STOPPED
+                    || state == InternalState.PROCESS_STOPPING
+                    || state == InternalState.STOPPED) {
+                // In case it stopped we don't reconnect
+                return;
+            }
+            try {
+                HostControllerLogger.ROOT_LOGGER.tracef("trying to reconnect to %s current-state (%s) required-state (%s)", serverName, state, requiredState);
+                internalSetState(new ReconnectTask(), state, InternalState.SERVER_STARTING);
+            } catch (Exception e) {
+                HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to send reconnect task");
+            }
         }
     }
 
