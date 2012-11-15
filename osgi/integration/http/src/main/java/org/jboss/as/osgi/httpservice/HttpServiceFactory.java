@@ -31,10 +31,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.Servlet;
+
 import org.apache.catalina.Host;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.osgi.OSGiMessages;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.web.WebServer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
@@ -46,6 +49,7 @@ import org.osgi.service.http.NamespaceException;
  * A {@link ServiceFactory} for {@link HttpService}
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 19-Jul-2012
  */
 final class HttpServiceFactory implements ServiceFactory {
@@ -53,19 +57,19 @@ final class HttpServiceFactory implements ServiceFactory {
     private final GlobalRegistry registry;
     private final WebServer webServer;
     private final Host virtualHost;
-    private StandardContext context;
+    private final ServerEnvironment serverEnvironment;
 
-    HttpServiceFactory(WebServer webServer, Host virtualHost, StandardContext context) {
+    HttpServiceFactory(WebServer webServer, Host virtualHost, ServerEnvironment serverEnvironment) {
         this.registry= GlobalRegistry.INSTANCE;
         this.webServer = webServer;
         this.virtualHost = virtualHost;
-        this.context = context;
+        this.serverEnvironment = serverEnvironment;
     }
 
     @Override
     public Object getService(final Bundle bundle, final ServiceRegistration registration) {
         synchronized (registry) {
-            return new HttpServiceImpl(context, webServer, virtualHost, bundle);
+            return new HttpServiceImpl(serverEnvironment, webServer, virtualHost, bundle);
         }
     }
 
@@ -88,17 +92,24 @@ final class HttpServiceFactory implements ServiceFactory {
         private GlobalRegistry() {
         }
 
-        synchronized Registration register(String alias, Bundle bundle, Wrapper wrapper, Registration.Type type) throws NamespaceException {
-
+        synchronized Registration register(String alias, Bundle bundle, StandardContext context, Wrapper wrapper, Registration.Type type) throws NamespaceException {
             if (exists(alias))
                 throw new NamespaceException(OSGiMessages.MESSAGES.aliasMappingAlreadyExists(alias));
 
             LOGGER.infoRegisterHttpServiceAlias(alias);
 
-            Registration result = new Registration(alias, bundle, wrapper, type);
+            Registration result = new Registration(alias, bundle, context, wrapper, type);
             registrations.put(alias, result);
 
             return result;
+        }
+
+        synchronized boolean contains(Servlet servlet) {
+            for (Registration reg : registrations.values()) {
+                if (servlet.equals(reg.getWrapper().getServlet()))
+                    return true;
+            }
+            return false;
         }
 
         synchronized boolean exists(String alias) {
@@ -141,12 +152,14 @@ final class HttpServiceFactory implements ServiceFactory {
 
         private final String alias;
         private final Bundle bundle;
+        private final StandardContext context;
         private final Wrapper wrapper;
         private final Type type;
 
-        Registration(String alias, Bundle bundle, Wrapper wrapper, Type type) {
+        Registration(String alias, Bundle bundle, StandardContext context, Wrapper wrapper, Type type) {
             this.alias = alias;
             this.bundle = bundle;
+            this.context = context;
             this.wrapper = wrapper;
             this.type = type;
         }
@@ -157,6 +170,10 @@ final class HttpServiceFactory implements ServiceFactory {
 
         Bundle getBundle() {
             return bundle;
+        }
+
+        StandardContext getContext() {
+            return context;
         }
 
         Wrapper getWrapper() {

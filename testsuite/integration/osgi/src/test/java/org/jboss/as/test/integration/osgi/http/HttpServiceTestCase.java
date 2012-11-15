@@ -30,8 +30,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -102,7 +100,7 @@ public class HttpServiceTestCase {
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
-        String reqspec = "/httpservice/servlet?test=param&param=Kermit";
+        String reqspec = "/servlet?test=param&param=Kermit";
         try {
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
@@ -127,7 +125,7 @@ public class HttpServiceTestCase {
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
-        String reqspec = "/httpservice/resource/message.txt";
+        String reqspec = "/resource/message.txt";
         try {
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
@@ -151,7 +149,7 @@ public class HttpServiceTestCase {
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
-        String reqspec = "/httpservice/servlet?test=init&init=someKey";
+        String reqspec = "/servlet?test=init&init=someKey";
         try {
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
@@ -173,7 +171,7 @@ public class HttpServiceTestCase {
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
-        String reqspec = "/httpservice/servlet?test=instance";
+        String reqspec = "/servlet?test=instance";
         try {
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
@@ -192,7 +190,7 @@ public class HttpServiceTestCase {
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
-        String reqspec = "/httpservice/servlet2?test=param&param=Kermit";
+        String reqspec = "/servlet2?test=param&param=Kermit";
         try {
             // Verify that the alias is not yet available
             assertNotAvailable(reqspec);
@@ -204,7 +202,7 @@ public class HttpServiceTestCase {
             httpService.registerServlet("/servlet2", servlet, parms, null);
 
             // Check that the ServletContext is available
-            Assert.assertEquals("/httpservice", servlet.getServletContext().getContextPath());
+            Assert.assertEquals("/servlet2", servlet.getServletContext().getContextPath());
 
             // Check that the ServletConfig is available
             Assert.assertEquals("bar", servlet.getServletConfig().getInitParameter("foo"));
@@ -240,24 +238,6 @@ public class HttpServiceTestCase {
         HttpServiceServlet(Bundle bundle) {
             this.bundle = (XBundle) bundle;
         }
-
-
-
-        @Override
-        public void init(ServletConfig config) throws ServletException {
-            System.err.println("*** init() : " + config);
-            super.init(config);
-        }
-
-
-
-        @Override
-        public void init() throws ServletException {
-            System.err.println("### init()");
-            super.init();
-        }
-
-
 
         protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
             PrintWriter out = res.getWriter();

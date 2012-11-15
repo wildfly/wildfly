@@ -22,18 +22,12 @@
 
 package org.jboss.as.osgi.httpservice;
 
-import static org.jboss.as.web.WebLogger.WEB_LOGGER;
 import static org.jboss.as.web.WebSubsystemServices.JBOSS_WEB;
 
-import java.io.File;
 import java.util.Hashtable;
 
 import org.apache.catalina.Host;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Loader;
 import org.apache.catalina.core.StandardContext;
-import org.apache.catalina.startup.ContextConfig;
-import org.apache.tomcat.InstanceManager;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.server.ServerEnvironment;
@@ -41,10 +35,8 @@ import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.VirtualHost;
-import org.jboss.as.web.WebMessages;
 import org.jboss.as.web.WebServer;
 import org.jboss.as.web.WebSubsystemServices;
-import org.jboss.as.web.deployment.WebCtxLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
@@ -65,6 +57,7 @@ import org.osgi.service.http.HttpService;
  * A service that installs a {@link ServiceFactory} for {@link HttpService}
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 19-Jul-2012
  */
 final class HttpServiceFactoryService implements Service<StandardContext> {
@@ -73,7 +66,6 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
 
     // [TODO] Make these configurable
     static final String VIRTUAL_HOST = "default-host";
-    static final String CONTEXT_NAME = "/httpservice";
 
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
@@ -81,7 +73,6 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
     private final InjectedValue<VirtualHost> injectedVirtualHost = new InjectedValue<VirtualHost>();
     private final InjectedValue<HttpManagement> injectedHttpManagement = new InjectedValue<HttpManagement>();
     private final InjectedValue<WebServer> injectedWebServer = new InjectedValue<WebServer>();
-    private final StandardContext context;
     private ServiceRegistration registration;
 
     static ServiceController<StandardContext> addService(ServiceTarget serviceTarget) {
@@ -97,103 +88,29 @@ final class HttpServiceFactoryService implements Service<StandardContext> {
     }
 
     private HttpServiceFactoryService() {
-        this.context = new StandardContext();
     }
 
     @Override
     public void start(StartContext startContext) throws StartException {
-
-        ServerEnvironment env = injectedServerEnvironment.getValue();
+        ServerEnvironment serverEnvironment = injectedServerEnvironment.getValue();
         Host virtualHost = injectedVirtualHost.getValue().getHost();
         BundleContext syscontext = injectedSystemContext.getValue();
         WebServer webServer = injectedWebServer.getValue();
 
-        File storageDir = new File(env.getServerTempDir() + File.separator + CONTEXT_NAME + File.separator + "httpservice-root");
-        context.setDocBase(storageDir.getPath());
-        storageDir.mkdirs();
-
-        context.setPath(CONTEXT_NAME);
-        context.addLifecycleListener(new ContextConfig());
-        Loader loader = new WebCtxLoader(getClass().getClassLoader());
-        loader.setContainer(virtualHost);
-        context.setLoader(loader);
-        context.setInstanceManager(new LocalInstanceManager());
-
-        context.addMimeMapping("html", "text/html");
-        context.addMimeMapping("jpg", "image/jpeg");
-        context.addMimeMapping("png", "image/png");
-        context.addMimeMapping("gif", "image/gif");
-        context.addMimeMapping("css", "text/css");
-        context.addMimeMapping("js", "text/javascript");
-
-        virtualHost.addChild(context);
-
-        WEB_LOGGER.registerWebapp(context.getName());
-        try {
-            context.create();
-        } catch (Exception ex) {
-            throw new StartException(WebMessages.MESSAGES.createContextFailed(), ex);
-        }
-        try {
-            context.start();
-        } catch (LifecycleException ex) {
-            throw new StartException(WebMessages.MESSAGES.startContextFailed(), ex);
-        }
-
         Hashtable<String, Object> props = new Hashtable<String, Object>();
         props.put("provider", getClass().getPackage().getName());
 
-        ServiceFactory serviceFactory = new HttpServiceFactory(webServer, virtualHost, context);
+        ServiceFactory serviceFactory = new HttpServiceFactory(webServer, virtualHost, serverEnvironment);
         registration = syscontext.registerService(HttpService.class.getName(), serviceFactory, props);
     }
 
     @Override
     public void stop(StopContext stopContext) {
         registration.unregister();
-        try {
-            context.stop();
-        } catch (LifecycleException e) {
-            WEB_LOGGER.stopContextFailed(e);
-        }
-        try {
-            context.destroy();
-        } catch (Exception e) {
-            WEB_LOGGER.destroyContextFailed(e);
-        }
     }
 
     @Override
     public StandardContext getValue() throws IllegalStateException {
-        return context;
-    }
-
-    private static class LocalInstanceManager implements InstanceManager {
-
-        LocalInstanceManager() {
-        }
-
-        @Override
-        public Object newInstance(String className) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object newInstance(String className, ClassLoader classLoader) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Object newInstance(Class<?> clazz) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void newInstance(Object instance) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void destroyInstance(Object instance) {
-        }
+        return null;
     }
 }
