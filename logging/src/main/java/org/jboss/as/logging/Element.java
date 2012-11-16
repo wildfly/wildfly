@@ -63,7 +63,7 @@ enum Element {
     PATTERN_FORMATTER(CommonAttributes.PATTERN_FORMATTER),
     PERIODIC_ROTATING_FILE_HANDLER(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER),
     PROPERTIES(CommonAttributes.PROPERTIES),
-    PROPERTY(CommonAttributes.PROPERTY),
+    PROPERTY("property"),
     QUEUE_LENGTH(CommonAttributes.QUEUE_LENGTH),
     REPLACE(CommonAttributes.REPLACE),
     ROOT_LOGGER(CommonAttributes.ROOT_LOGGER),

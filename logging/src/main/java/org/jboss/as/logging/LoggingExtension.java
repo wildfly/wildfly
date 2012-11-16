@@ -44,6 +44,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -242,10 +243,10 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.MAX_BACKUP_INDEX.getName(), "logging.size-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.MODULE.getName(), "logging.custom-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.OVERFLOW_ACTION.getName(), "logging.async-handler");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.PATH.getName(), null);
+            COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.PATH.getName(), null);
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.PROPERTIES.getName(), "logging.custom-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.QUEUE_LENGTH.getName(), "logging.async-handler");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.RELATIVE_TO.getName(), null);
+            COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.RELATIVE_TO.getName(), null);
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ROTATE_SIZE.getName(), "logging.size-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.SUBHANDLERS.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.SUFFIX.getName(), "logging.periodic-rotating-file-handler");

@@ -84,47 +84,32 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
         throw LoggingMessages.MESSAGES.unsupportedMethod("setPropertyValue", getClass().getName());
     }
 
-
-
-    @Override
-    public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (resourceModel.hasDefined(getName())) {
-            writer.writeStartElement(getXmlName());
-            for (ModelNode handler : resourceModel.get(getName()).asList()) {
-                getValueType().marshallAsElement(handler, writer);
-            }
-            writer.writeEndElement();
-        }
-    }
-
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, LogHandlerListAttributeDefinition> {
 
         private String propertyName;
-        private AttributeDefinition valueType;
 
 
-        Builder(final String name, final SimpleAttributeDefinition valueType) {
+        Builder(final String name) {
             super(name, ModelType.LIST);
-            this.valueType = valueType;
         }
 
         /**
          * Creates a builder for {@link LogHandlerListAttributeDefinition}.
          *
          * @param name      the name of the attribute
-         * @param valueType the value type for the list entry
          *
          * @return the builder
          */
-        public static Builder of(final String name, final SimpleAttributeDefinition valueType) {
-            return new Builder(name, valueType);
+        public static Builder of(final String name) {
+            return new Builder(name);
         }
 
         public LogHandlerListAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             if (propertyName == null) propertyName = name;
-            return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            if (attributeMarshaller == null) attributeMarshaller = HandlersAttributeMarshaller.INSTANCE;
+            return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, CommonAttributes.HANDLER, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 
         public Builder setPropertyName(final String propertyName) {

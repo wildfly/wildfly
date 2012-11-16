@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
@@ -142,19 +141,6 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
         }
     }
 
-    @Override
-    public void marshallAsElement(final ModelNode resourceModel, final boolean marshalDefault, final XMLStreamWriter writer) throws XMLStreamException {
-        if (resourceModel.hasDefined(getName())) {
-            writer.writeStartElement(getXmlName());
-            for (AttributeDefinition valueType : valueTypes) {
-                for (ModelNode handler : resourceModel.get(getName()).asList()) {
-                    valueType.marshallAsElement(handler, writer);
-                }
-            }
-            writer.writeEndElement();
-        }
-    }
-
     private ModelNode getValueTypeDescription(final AttributeDefinition valueType, final boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(valueType.getType());
@@ -247,6 +233,22 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
+            if (attributeMarshaller == null) {
+                attributeMarshaller = new AttributeMarshaller() {
+                    @Override
+                    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                        if (resourceModel.hasDefined(attribute.getName())) {
+                            writer.writeStartElement(attribute.getXmlName());
+                            for (AttributeDefinition valueType : valueTypes) {
+                                for (ModelNode handler : resourceModel.get(attribute.getName()).asList()) {
+                                    valueType.marshallAsElement(handler, writer);
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
+                };
+            }
             return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 

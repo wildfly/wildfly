@@ -22,7 +22,16 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
+import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
+
+import java.util.Locale;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CaseParameterCorrector;
+import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -54,6 +63,7 @@ public interface CommonAttributes {
 
     // Attributes
     PropertyAttributeDefinition APPEND = PropertyAttributeDefinition.Builder.of("append", ModelType.BOOLEAN, true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setDefaultValue(new ModelNode(true))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
@@ -75,22 +85,42 @@ public interface CommonAttributes {
 
     String CUSTOM_HANDLER = "custom-handler";
 
-    PropertyAttributeDefinition ENCODING = PropertyAttributeDefinition.Builder.of("encoding", ModelType.STRING, true).build();
+    PropertyAttributeDefinition ENCODING = PropertyAttributeDefinition.Builder.of("encoding", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
+            .build();
 
     String FILE_HANDLER = "file-handler";
 
     PropertyAttributeDefinition FILTER_SPEC = PropertyAttributeDefinition.Builder.of("filter-spec", ModelType.STRING, true)
             .addAlternatives("filter")
             .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .build();
 
     PropertyAttributeDefinition FORMATTER = PropertyAttributeDefinition.Builder.of("formatter", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel, marshallDefault)) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        writer.writeStartElement(PATTERN_FORMATTER);
+                        final String content = resourceModel.get(attribute.getName()).asString();
+                        writer.writeAttribute(PATTERN.getXmlName(), content);
+                        writer.writeEndElement();
+                        writer.writeEndElement();
+                    }
+                }
+            })
             .setDefaultValue(new ModelNode("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"))
             .build();
 
-    SimpleAttributeDefinition HANDLER = SimpleAttributeDefinitionBuilder.create("handler", ModelType.STRING).build();
+    SimpleAttributeDefinition HANDLER = SimpleAttributeDefinitionBuilder.create("handler", ModelType.STRING)
+            .setAttributeMarshaller(ElementAttributeMarshaller.NAME_ATTRIBUTE_MARSHALLER)
+            .build();
 
-    LogHandlerListAttributeDefinition HANDLERS = LogHandlerListAttributeDefinition.Builder.of("handlers", HANDLER)
+    LogHandlerListAttributeDefinition HANDLERS = LogHandlerListAttributeDefinition.Builder.of("handlers")
             .setAllowNull(true)
             .build();
 
@@ -98,6 +128,8 @@ public interface CommonAttributes {
 
     // JUL doesn't allow for null levels. Use ALL as the default
     PropertyAttributeDefinition LEVEL = PropertyAttributeDefinition.Builder.of("level", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.NAME_ATTRIBUTE_MARSHALLER)
             .setCorrector(CaseParameterCorrector.TO_UPPER)
             .setDefaultValue(new ModelNode(Level.ALL.getName()))
             .setResolver(LevelResolver.INSTANCE)
@@ -111,6 +143,8 @@ public interface CommonAttributes {
     String LOGGING_PROFILES = "logging-profiles";
 
     PropertyAttributeDefinition MAX_BACKUP_INDEX = PropertyAttributeDefinition.Builder.of("max-backup-index", ModelType.INT, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setDefaultValue(new ModelNode(1))
             .setPropertyName("maxBackupIndex")
             .setValidator(new IntRangeValidator(1, true))
@@ -124,40 +158,61 @@ public interface CommonAttributes {
             .setDeprecated(ModelVersion.create(1, 2, 0))
             .build();
 
-    SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create("value", ModelType.STRING).build();
-
     PropertyAttributeDefinition OVERFLOW_ACTION = PropertyAttributeDefinition.Builder.of("overflow-action", ModelType.STRING)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel, marshallDefault)) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        String content = resourceModel.get(attribute.getName()).asString().toLowerCase(Locale.ENGLISH);
+                        writer.writeAttribute("value", content);
+                        writer.writeEndElement();
+                    }
+                }
+            })
             .setDefaultValue(new ModelNode(OverflowAction.BLOCK.name()))
             .setPropertyName("overflowAction")
             .setResolver(OverflowActionResolver.INSTANCE)
             .setValidator(EnumValidator.create(OverflowAction.class, false, false))
             .build();
 
-    SimpleAttributeDefinition PATH = SimpleAttributeDefinitionBuilder.create("path", ModelType.STRING).build();
-
     String PATTERN_FORMATTER = "pattern-formatter";
 
     String PERIODIC_ROTATING_FILE_HANDLER = "periodic-rotating-file-handler";
 
-    SimpleAttributeDefinition PROPERTY = SimpleAttributeDefinitionBuilder.create("property", ModelType.PROPERTY).build();
-
     SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder("properties", true)
             .setAllowExpression(true)
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    resourceModel = resourceModel.get(attribute.getName());
+                    writer.writeStartElement(attribute.getName());
+                    for (ModelNode property : resourceModel.asList()) {
+                        writer.writeEmptyElement(Element.PROPERTY.getLocalName());
+                        writer.writeAttribute("name", property.asProperty().getName());
+                        writer.writeAttribute("value", property.asProperty().getValue().asString());
+                    }
+                    writer.writeEndElement();
+                }
+            })
             .build();
 
     PropertyAttributeDefinition QUEUE_LENGTH = PropertyAttributeDefinition.Builder.of("queue-length", ModelType.INT)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setPropertyName("queueLength")
             .setValidator(new IntRangeValidator(1, false))
             .build();
-
-    SimpleAttributeDefinition RELATIVE_TO = SimpleAttributeDefinitionBuilder.create("relative-to", ModelType.STRING, true).build();
 
     String ROOT_LOGGER = "root-logger";
 
     String ROOT_LOGGER_ATTRIBUTE_NAME = "ROOT";
 
     PropertyAttributeDefinition ROTATE_SIZE = PropertyAttributeDefinition.Builder.of("rotate-size", ModelType.STRING)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setDefaultValue(new ModelNode("2m"))
             .setPropertyName("rotateSize")
             .setResolver(SizeResolver.INSTANCE)
@@ -166,15 +221,19 @@ public interface CommonAttributes {
 
     String SIZE_ROTATING_FILE_HANDLER = "size-rotating-file-handler";
 
-    LogHandlerListAttributeDefinition SUBHANDLERS = LogHandlerListAttributeDefinition.Builder.of("subhandlers", HANDLER)
+    LogHandlerListAttributeDefinition SUBHANDLERS = LogHandlerListAttributeDefinition.Builder.of("subhandlers")
             .setAllowNull(true)
             .build();
 
     PropertyAttributeDefinition SUFFIX = PropertyAttributeDefinition.Builder.of("suffix", ModelType.STRING)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setValidator(new SuffixValidator())
             .build();
 
     PropertyAttributeDefinition TARGET = PropertyAttributeDefinition.Builder.of("target", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.NAME_ATTRIBUTE_MARSHALLER)
             .setDefaultValue(new ModelNode(Target.SYSTEM_OUT.toString()))
             .setResolver(TargetResolver.INSTANCE)
             .setValidator(EnumValidator.create(Target.class, true, false))
@@ -188,6 +247,18 @@ public interface CommonAttributes {
     // Global object types
 
     PropertyObjectTypeAttributeDefinition FILE = PropertyObjectTypeAttributeDefinition.Builder.of("file", RELATIVE_TO, PATH)
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel, marshallDefault)) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        final ModelNode file = resourceModel.get(attribute.getName());
+                        RELATIVE_TO.marshallAsAttribute(file, marshallDefault, writer);
+                        PATH.marshallAsAttribute(file, marshallDefault, writer);
+                        writer.writeEndElement();
+                    }
+                }
+            })
             .setCorrector(FileCorrector.INSTANCE)
             .setPropertyName("fileName")
             .setResolver(FileResolver.INSTANCE)
