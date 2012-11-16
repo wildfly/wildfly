@@ -103,7 +103,6 @@ public class ValveUtil {
         ModelNode op = new ModelNode();
         op.get(OP).set("read-attribute");
         op.get(OP_ADDR).add("path", "jboss.home.dir");
-        op.get(NAME).set("name");
         op.get("name").set("path");
         ModelNode result = client.execute(new OperationBuilder(op).build());
         if (result.hasDefined("outcome") && "success".equals(result.get("outcome").asString())) {
