@@ -92,7 +92,6 @@ public class WebExtension implements Extension {
     protected static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
 
     protected static final PathElement FILE_PATH = PathElement.pathElement(Constants.SETTING, Constants.FILE);
-    protected static final PathElement FILE_ALIAS = PathElement.pathElement(Constants.FILE, Constants.CONFIGURATION);
 
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
 
