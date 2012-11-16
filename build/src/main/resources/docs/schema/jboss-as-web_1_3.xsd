@@ -317,7 +317,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:attribute name="path" type="xs:string" use="optional" />
-      <xs:attribute name="relative-to" type="xs:string" use="optional" default="jboss.server.log.dir" />
+      <xs:attribute name="relative-to" type="xs:string" use="optional" />
    </xs:complexType>
 
    <xs:complexType name="mime-mappingType">
