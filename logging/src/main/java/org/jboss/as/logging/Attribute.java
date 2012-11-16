@@ -45,7 +45,7 @@ enum Attribute {
     MAX_INCLUSIVE(CommonAttributes.MAX_INCLUSIVE),
     MAX_LEVEL(CommonAttributes.MAX_LEVEL),
     MODULE(CommonAttributes.MODULE),
-    NAME(CommonAttributes.HANDLER_NAME),
+    NAME("name"),
     NEW_LEVEL(CommonAttributes.NEW_LEVEL),
     OVERFLOW_ACTION(CommonAttributes.OVERFLOW_ACTION),
     PATH(PathResourceDefinition.PATH),
@@ -58,7 +58,7 @@ enum Attribute {
     SUFFIX(CommonAttributes.SUFFIX),
     TARGET(CommonAttributes.TARGET),
     USE_PARENT_HANDLERS(CommonAttributes.USE_PARENT_HANDLERS),
-    VALUE(CommonAttributes.VALUE),;
+    VALUE("value"),;
 
     private final String name;
     private final AttributeDefinition definition;

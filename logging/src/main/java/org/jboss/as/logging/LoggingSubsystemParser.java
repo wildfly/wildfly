@@ -75,7 +75,6 @@ import static org.jboss.as.logging.CommonAttributes.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.SUFFIX;
 import static org.jboss.as.logging.CommonAttributes.TARGET;
 import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
-import static org.jboss.as.logging.CommonAttributes.VALUE;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
@@ -93,7 +92,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -1064,7 +1062,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             parseFilterChildren(filter, false, reader);
             node.get(FILTER_SPEC.getName()).set(filter.toString());
         } else {
-            FILTER_SPEC.parseAndSetParameter(readStringAttributeElement(reader, VALUE.getName()), node, reader);
+            FILTER_SPEC.parseAndSetParameter(readStringAttributeElement(reader, Attribute.VALUE.getLocalName()), node, reader);
         }
     }
 
@@ -1221,10 +1219,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
                 final ModelNode handler = handlerProp.getValue();
-                if (!handler.isDefined()) {
-                    continue;
+                if (handler.isDefined()) {
+                    writeAsynchHandler(writer, handler, name);
                 }
-                writeAsynchHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(CONSOLE_HANDLER)) {
@@ -1233,10 +1230,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
                 final ModelNode handler = handlerProp.getValue();
-                if (!handler.isDefined()) {
-                    continue;
+                if (handler.isDefined()) {
+                    writeConsoleHandler(writer, handler, name);
                 }
-                writeConsoleHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(FILE_HANDLER)) {
@@ -1245,10 +1241,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
                 final ModelNode handler = handlerProp.getValue();
-                if (!handler.isDefined()) {
-                    continue;
+                if (handler.isDefined()) {
+                    writeFileHandler(writer, handler, name);
                 }
-                writeFileHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(CUSTOM_HANDLER)) {
@@ -1257,10 +1252,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
                 final ModelNode handler = handlerProp.getValue();
-                if (!handler.isDefined()) {
-                    continue;
+                if (handler.isDefined()) {
+                    writeCustomHandler(writer, handler, name);
                 }
-                writeCustomHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(PERIODIC_ROTATING_FILE_HANDLER)) {
@@ -1269,10 +1263,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
                 final ModelNode handler = handlerProp.getValue();
-                if (!handler.isDefined()) {
-                    continue;
+                if (handler.isDefined()) {
+                    writePeriodicRotatingFileHandler(writer, handler, name);
                 }
-                writePeriodicRotatingFileHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(SIZE_ROTATING_FILE_HANDLER)) {
@@ -1281,10 +1274,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             for (Property handlerProp : handlers.asPropertyList()) {
                 final String name = handlerProp.getName();
                 final ModelNode handler = handlerProp.getValue();
-                if (!handler.isDefined()) {
-                    continue;
+                if (handler.isDefined()) {
+                    writeSizeRotatingFileHandler(writer, handler, name);
                 }
-                writeSizeRotatingFileHandler(writer, handler, name);
             }
         }
         if (node.hasDefined(LOGGER)) {
@@ -1297,22 +1289,26 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
     }
 
+    private void writeCommonLogger(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        LEVEL.marshallAsElement(node, writer);
+        FILTER_SPEC.marshallAsElement(node, writer);
+        HANDLERS.marshallAsElement(node, writer);
+    }
+
+    private void writeCommonHandler(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+        LEVEL.marshallAsElement(node, writer);
+        ENCODING.marshallAsElement(node, writer);
+        FILTER_SPEC.marshallAsElement(node, writer);
+        FORMATTER.marshallAsElement(node, writer);
+    }
+
     private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name)
             throws XMLStreamException {
         writer.writeStartElement(Element.CONSOLE_HANDLER.getLocalName());
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
-        writeLevel(writer, node);
-        writeEncoding(writer, node);
-        writeFilter(writer, node);
-        writeFormatter(writer, node);
-        writeProperties(writer, node);
-        if (TARGET.isMarshallable(node)) {
-            writer.writeStartElement(Element.TARGET.getLocalName());
-            writeAttribute(writer, Attribute.NAME, node.get(TARGET.getName()));
-            writer.writeEndElement();
-        }
-
+        writeCommonHandler(writer, node);
+        TARGET.marshallAsElement(node, writer);
         writer.writeEndElement();
     }
 
@@ -1320,13 +1316,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeStartElement(Element.FILE_HANDLER.getLocalName());
         writer.writeAttribute(Attribute.NAME.getLocalName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
-        writeLevel(writer, node);
-        writeEncoding(writer, node);
-        writeFilter(writer, node);
-        writeFormatter(writer, node);
-        writeProperties(writer, node);
-        writeFile(writer, node);
-        writeAppend(writer, node);
+        writeCommonHandler(writer, node);
+        FILE.marshallAsElement(node, writer);
+        APPEND.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }
@@ -1337,11 +1329,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         CLASS.marshallAsAttribute(node, writer);
         MODULE.marshallAsAttribute(node, writer);
-        writeLevel(writer, node);
-        writeEncoding(writer, node);
-        writeFilter(writer, node);
-        writeFormatter(writer, node);
-        writeProperties(writer, node);
+        writeCommonHandler(writer, node);
+        PROPERTIES.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }
@@ -1350,18 +1339,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeStartElement(Element.PERIODIC_ROTATING_FILE_HANDLER.getLocalName());
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
-        writeLevel(writer, node);
-        writeEncoding(writer, node);
-        writeFilter(writer, node);
-        writeFormatter(writer, node);
-        writeProperties(writer, node);
-        writeFile(writer, node);
-        if (SUFFIX.isMarshallable(node)) {
-            writer.writeStartElement(Element.SUFFIX.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(SUFFIX.getName()));
-            writer.writeEndElement();
-        }
-        writeAppend(writer, node);
+        writeCommonHandler(writer, node);
+        FILE.marshallAsElement(node, writer);
+        SUFFIX.marshallAsElement(node, writer);
+        APPEND.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }
@@ -1370,23 +1351,11 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeStartElement(Element.SIZE_ROTATING_FILE_HANDLER.getLocalName());
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
-        writeLevel(writer, node);
-        writeEncoding(writer, node);
-        writeFilter(writer, node);
-        writeFormatter(writer, node);
-        writeProperties(writer, node);
-        writeFile(writer, node);
-        if (ROTATE_SIZE.isMarshallable(node)) {
-            writer.writeStartElement(Element.ROTATE_SIZE.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(ROTATE_SIZE.getName()));
-            writer.writeEndElement();
-        }
-        if (MAX_BACKUP_INDEX.isMarshallable(node)) {
-            writer.writeStartElement(Element.MAX_BACKUP_INDEX.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(MAX_BACKUP_INDEX.getName()));
-            writer.writeEndElement();
-        }
-        writeAppend(writer, node);
+        writeCommonHandler(writer, node);
+        FILE.marshallAsElement(node, writer);
+        ROTATE_SIZE.marshallAsElement(node, writer);
+        MAX_BACKUP_INDEX.marshallAsElement(node, writer);
+        APPEND.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }
@@ -1394,24 +1363,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
     private void writeAsynchHandler(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
         writer.writeStartElement(Element.ASYNC_HANDLER.getLocalName());
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
-        writeLevel(writer, node);
-        writeFilter(writer, node);
-        writeFormatter(writer, node);
-        writeProperties(writer, node);
-        if (QUEUE_LENGTH.isMarshallable(node)) {
-            writer.writeStartElement(Element.QUEUE_LENGTH.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(QUEUE_LENGTH.getName()));
-            writer.writeEndElement();
-        }
-        if (OVERFLOW_ACTION.isMarshallable(node)) {
-            writer.writeStartElement(Element.OVERFLOW_ACTION.getLocalName());
-            writer.writeAttribute(Attribute.VALUE.getLocalName(), node.get(OVERFLOW_ACTION.getName()).asString().toLowerCase(Locale.ENGLISH));
-            writer.writeEndElement();
-        }
-        if (SUBHANDLERS.isMarshallable(node)) {
-            final ModelNode handlers = node.get(SUBHANDLERS.getName());
-            writeHandlersContent(writer, Element.SUBHANDLERS, handlers);
-        }
+        LEVEL.marshallAsElement(node, writer);
+        FILTER_SPEC.marshallAsElement(node, writer);
+        FORMATTER.marshallAsElement(node, writer);
+        QUEUE_LENGTH.marshallAsElement(node, writer);
+        OVERFLOW_ACTION.marshallAsElement(node, writer);
+        SUBHANDLERS.marshallAsElement(node, writer);
 
         writer.writeEndElement();
     }
@@ -1420,108 +1377,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeStartElement(Element.LOGGER.getLocalName());
         writer.writeAttribute(CATEGORY.getXmlName(), name);
         USE_PARENT_HANDLERS.marshallAsAttribute(node, writer);
-        writeLevel(writer, node);
-        writeFilter(writer, node);
-        writeHandlers(writer, node);
+        writeCommonLogger(writer, node);
         writer.writeEndElement();
     }
 
     private void writeRootLogger(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
         writer.writeStartElement(Element.ROOT_LOGGER.getLocalName());
-        writeLevel(writer, node);
-        writeFilter(writer, node);
-        writeHandlers(writer, node);
+        writeCommonLogger(writer, node);
         writer.writeEndElement();
-    }
-
-    private void writeLevel(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (LEVEL.isMarshallable(node)) {
-            writer.writeStartElement(Element.LEVEL.getLocalName());
-            writeAttribute(writer, Attribute.NAME, node.get(LEVEL.getName()));
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeFilter(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (FILTER_SPEC.isMarshallable(node)) {
-            writer.writeStartElement(FILTER_SPEC.getXmlName());
-            writeAttribute(writer, Attribute.VALUE, node.get(FILTER_SPEC.getName()));
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeProperties(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (node.hasDefined(PROPERTIES.getName())) {
-            writer.writeStartElement(Element.PROPERTIES.getLocalName());
-            final List<Property> props = node.get(PROPERTIES.getName()).asPropertyList();
-            for (Property prop : props) {
-                writer.writeStartElement(Element.PROPERTY.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                writeAttribute(writer, Attribute.VALUE, prop.getValue());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeFormatter(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (FORMATTER.isMarshallable(node)) {
-            writer.writeStartElement(Element.FORMATTER.getLocalName());
-            writer.writeStartElement(Element.PATTERN_FORMATTER.getLocalName());
-            writeAttribute(writer, Attribute.PATTERN, node.get(FORMATTER.getName()));
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeFile(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (FILE.isMarshallable(node)) {
-            writer.writeStartElement(Element.FILE.getLocalName());
-            final ModelNode file = node.get(FILE.getName());
-            RELATIVE_TO.marshallAsAttribute(file, writer);
-            PATH.marshallAsAttribute(file, writer);
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeEncoding(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (ENCODING.isMarshallable(node)) {
-            writer.writeStartElement(Element.ENCODING.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(ENCODING.getName()));
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeHandlers(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (HANDLERS.isMarshallable(node)) {
-            final ModelNode handlers = node.get(HANDLERS.getName());
-            writeHandlersContent(writer, Element.HANDLERS, handlers);
-        }
-    }
-
-    private void writeHandlersContent(final XMLExtendedStreamWriter writer, Element element, final ModelNode handlers) throws XMLStreamException {
-        if (handlers.getType() == ModelType.LIST) {
-            writer.writeStartElement(element.getLocalName());
-            for (ModelNode handler : handlers.asList()) {
-                if (handler.isDefined()) {
-                    writer.writeStartElement(Element.HANDLER.getLocalName());
-                    writeAttribute(writer, Attribute.NAME, handler);
-                    writer.writeEndElement();
-                }
-            }
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeAppend(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        if (APPEND.isMarshallable(node)) {
-            writer.writeStartElement(Element.APPEND.getLocalName());
-            writeAttribute(writer, Attribute.VALUE, node.get(APPEND.getName()));
-            writer.writeEndElement();
-        }
-    }
-
-    private void writeAttribute(final XMLExtendedStreamWriter writer, final Attribute attr, final ModelNode value) throws XMLStreamException {
-        writer.writeAttribute(attr.getLocalName(), value.asString());
     }
 }
