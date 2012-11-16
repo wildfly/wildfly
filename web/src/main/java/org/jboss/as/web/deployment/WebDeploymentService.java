@@ -27,6 +27,7 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -38,6 +39,7 @@ import org.apache.catalina.core.StandardContext;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -62,6 +64,8 @@ public class WebDeploymentService implements Service<StandardContext> {
     private final WebInjectionContainer injectionContainer;
     private final List<SetupAction> setupActions;
     final List<ServletContextAttribute> attributes;
+    // used for blocking tasks in this Service's start/stop
+    private final InjectedValue<ExecutorService> serverExecutor = new InjectedValue<ExecutorService>();
 
     public WebDeploymentService(final StandardContext context, final WebInjectionContainer injectionContainer, final List<SetupAction> setupActions,
             final List<ServletContextAttribute> attributes) {
@@ -76,7 +80,57 @@ public class WebDeploymentService implements Service<StandardContext> {
     }
 
     @Override
-    public synchronized void start(StartContext startContext) throws StartException {
+    public synchronized void start(final StartContext startContext) throws StartException {
+        // https://issues.jboss.org/browse/AS7-5969 WebDeploymentService start can trigger the web app context initialization
+        // which involves blocking tasks like servlet context initialization, startup servlet
+        // initialization lifecycles and such. Hence this needs to be done asynchronously
+        // to prevent the MSC threads from blocking
+        startContext.asynchronous();
+        serverExecutor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doStart();
+                    startContext.complete();
+                } catch (Throwable e) {
+                    startContext.failed(new StartException(e));
+                }
+            }
+        });
+    }
+
+    @Override
+    public synchronized void stop(final StopContext stopContext) {
+        // https://issues.jboss.org/browse/AS7-5969 WebDeploymentService stop can trigger the web app context destruction
+        // which involves blocking tasks like servlet context destruction, startup servlet
+        // destruction lifecycles and such. Hence this needs to be done asynchronously
+        // to prevent the MSC threads from blocking
+        stopContext.asynchronous();
+        serverExecutor.getValue().submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    doStop();
+                } finally {
+                    stopContext.complete();
+                }
+            }
+        });
+    }
+
+    @Override
+    public synchronized StandardContext getValue() throws IllegalStateException {
+        if (context == null) {
+            throw new IllegalStateException();
+        }
+        return context;
+    }
+
+    Injector<ExecutorService> getServerExecutorInjector() {
+        return this.serverExecutor;
+    }
+
+    private void doStart() throws StartException {
         if (attributes != null) {
             final ServletContext context = this.context.getServletContext();
             for (ServletContextAttribute attribute : attributes) {
@@ -111,8 +165,7 @@ public class WebDeploymentService implements Service<StandardContext> {
         }
     }
 
-    @Override
-    public synchronized void stop(StopContext stopContext) {
+    private void doStop() {
         WEB_LOGGER.unregisterWebapp(context.getName());
         try {
             context.stop();
@@ -124,14 +177,7 @@ public class WebDeploymentService implements Service<StandardContext> {
         } catch (Exception e) {
             WEB_LOGGER.destroyContextFailed(e);
         }
-    }
 
-    @Override
-    public synchronized StandardContext getValue() throws IllegalStateException {
-        if (context == null) {
-            throw new IllegalStateException();
-        }
-        return context;
     }
 
     /**
