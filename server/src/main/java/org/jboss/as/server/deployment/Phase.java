@@ -329,7 +329,8 @@ public enum Phase {
     public static final int DEPENDENCIES_JAXR                           = 0x1600;
     public static final int DEPENDENCIES_DRIVERS                        = 0x1700;
     public static final int DEPENDENCIES_JSF                            = 0x1800;
-    public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1900;
+    public static final int DEPENDENCIES_BUNDLE                         = 0x1900;
+    public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
