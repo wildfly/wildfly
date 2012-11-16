@@ -39,6 +39,7 @@ import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -284,6 +285,11 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependencies(injectionContainer.getServiceNames()).addDependency(realmServiceName, Realm.class, webappService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                     .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
+
+            // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
+            // of that service
+            Services.addServerExecutorDependency(webappBuilder, webappService.getServerExecutorInjector(), false);
+
 
             // add any dependencies required by the setup action
             for (final SetupAction action : setupActions) {
