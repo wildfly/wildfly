@@ -317,7 +317,7 @@
          </xs:documentation>
       </xs:annotation>
       <xs:attribute name="path" type="xs:string" use="optional" />
-      <xs:attribute name="relative-to" type="xs:string" use="optional" />
+      <xs:attribute name="relative-to" type="xs:string" use="optional" default="jboss.server.log.dir" />
    </xs:complexType>
 
    <xs:complexType name="mime-mappingType">
@@ -429,11 +429,10 @@
    <xs:element name="valve">
       <xs:complexType>
          <xs:sequence>
-            <xs:element name="file" type="fileType" minOccurs="0" maxOccurs="1" />
             <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
          </xs:sequence>
          <xs:attribute name="class-name" type="xs:string" use="required" />
-         <xs:attribute name="module" type="xs:string" use="optional" />
+         <xs:attribute name="module" type="xs:string" use="required" />
          <xs:attribute name="enabled" default="true" type="xs:boolean" />
       </xs:complexType>
    </xs:element>
@@ -441,19 +440,6 @@
    <xs:complexType name="paramType">
        <xs:attribute name="param-name" use="required"/>
        <xs:attribute name="param-value" use="optional"/>
-   </xs:complexType>
-
-   <xs:complexType name="fileType">
-      <xs:annotation>
-         <xs:documentation>
-            <![CDATA[
-                The "relative-to" references a global path configuration in the domain model.
-                The "path" is the filename based on the referenced path.
-            ]]>
-         </xs:documentation>
-      </xs:annotation>
-      <xs:attribute name="path" type="xs:string" use="required" />
-      <xs:attribute name="relative-to" type="xs:string" use="optional" default="jboss.server.log.dir" />
    </xs:complexType>
 
 </xs:schema>

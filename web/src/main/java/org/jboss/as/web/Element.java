@@ -48,7 +48,6 @@ enum Element {
     WELCOME_FILE(Constants.WELCOME_FILE),
     VALVE(Constants.VALVE),
     PARAM(Constants.PARAM),
-    FILE(Constants.FILE),
     ;
 
     private final String name;

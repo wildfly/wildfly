@@ -41,15 +41,12 @@ import static org.jboss.as.web.Constants.CONNECTOR;
 import static org.jboss.as.web.Constants.CONTAINER;
 import static org.jboss.as.web.Constants.ENABLED;
 import static org.jboss.as.web.Constants.EXTENDED;
-import static org.jboss.as.web.Constants.FILE;
 import static org.jboss.as.web.Constants.FLAGS;
 import static org.jboss.as.web.Constants.JSP_CONFIGURATION;
 import static org.jboss.as.web.Constants.MIME_MAPPING;
 import static org.jboss.as.web.Constants.MODULE;
 import static org.jboss.as.web.Constants.NAME;
 import static org.jboss.as.web.Constants.PARAM;
-import static org.jboss.as.web.Constants.PARAM_NAME;
-import static org.jboss.as.web.Constants.PARAM_VALUE;
 import static org.jboss.as.web.Constants.PATH;
 import static org.jboss.as.web.Constants.PATTERN;
 import static org.jboss.as.web.Constants.PREFIX;
@@ -66,7 +63,6 @@ import static org.jboss.as.web.Constants.VALVE;
 import static org.jboss.as.web.Constants.WELCOME_FILE;
 import static org.jboss.as.web.WebExtension.ACCESS_LOG_PATH;
 import static org.jboss.as.web.WebExtension.DIRECTORY_PATH;
-import static org.jboss.as.web.WebExtension.FILE_PATH;
 import static org.jboss.as.web.WebExtension.SSL_PATH;
 import static org.jboss.as.web.WebExtension.SSO_PATH;
 
@@ -232,18 +228,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             writer.writeEmptyElement(Element.PARAM.getLocalName());
                             writer.writeAttribute(Attribute.PARAM_NAME.getLocalName(), entry.getName());
                             writer.writeAttribute(Attribute.PARAM_VALUE.getLocalName(), entry.getValue().asString());
-                        }
-                    }
-                    if (config.get(FILE_PATH.getKey(), FILE_PATH.getValue()).isDefined()) {
-                        ModelNode file = config.get(FILE_PATH.getKey(), FILE_PATH.getValue());
-                        String name = Element.FILE.getLocalName();
-                        boolean startwritten = false;
-                        startwritten = writeAttribute(writer, WebValveDefinition.PATH, file, startwritten,
-                                name);
-                        startwritten = writeAttribute(writer, WebValveDefinition.RELATIVE_TO, file,
-                                startwritten, name);
-                        if (startwritten) {
-                            writer.writeEndElement();
                         }
                     }
 
@@ -486,9 +470,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             Attribute.PARAM_VALUE.getLocalName());
                     valve.get(PARAM).get(array[0]).set(array[1]);
                     requireNoContent(reader);
-                    break;
-                case FILE:
-                    parseDirOrFile(reader, address, list, WebExtension.FILE_PATH);
                     break;
                 default:
                     throw unexpectedElement(reader);

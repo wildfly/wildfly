@@ -135,6 +135,5 @@ public interface Constants {
     String PARAM_NAME = "param-name";
     String PARAM_VALUE = "param-value";
     String PARAM = "param";
-    String FILE = "file";
 
 }

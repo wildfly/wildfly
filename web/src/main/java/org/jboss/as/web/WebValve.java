@@ -22,10 +22,6 @@
 
 package org.jboss.as.web;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-
 import org.apache.catalina.Valve;
 import org.jboss.modules.ModuleClassLoader;
 
@@ -36,15 +32,6 @@ import org.jboss.modules.ModuleClassLoader;
  */
 
 public class WebValve {
-    public static Valve createValve(String filename, String classname, ClassLoader parent) throws InstantiationException,
-            IllegalAccessException, ClassNotFoundException, MalformedURLException {
-
-        URLClassLoader child = new URLClassLoader(new URL[] { new URL("file:////" + filename) }, parent);
-        Valve valve = (Valve) child.loadClass(classname).newInstance();
-        return valve;
-
-    }
-
     public static Valve createValve(String classname, ModuleClassLoader classLoader) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
         Valve valve = (Valve) classLoader.loadClass(classname).newInstance();
         return valve;
