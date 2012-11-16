@@ -258,15 +258,16 @@ public class PatchingTaskRunner {
 
         //
         final List<String> patches = new ArrayList<String>();
+        final List<String> oneOffs = patchInfo.getPatchIDs();
         if(index == -1) {
             // Means we rollback a CP and all it's one-off patches
-            patches.addAll(patchInfo.getPatchIDs());
+            patches.addAll(oneOffs);
             patches.add(patchId);
         } else if (index == 0) {
             patches.add(patchId);
         } else {
             if (rollbackTo) {
-                final List<String> oneOffs = new ArrayList<String>();
+                // rollback one-offs up to the given patchId
                 for(int i = 0; i <= index; i++) {
                     patches.add(oneOffs.get(i));
                 }

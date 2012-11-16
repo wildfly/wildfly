@@ -24,6 +24,8 @@ package org.jboss.as.patching;
 
 import static org.jboss.as.patching.PatchResourceDefinition.OVERRIDE_ALL;
 import static org.jboss.as.patching.PatchResourceDefinition.PATCH_ID;
+import static org.jboss.as.patching.PatchResourceDefinition.RESTORE_CONFIGURATION;
+import static org.jboss.as.patching.PatchResourceDefinition.ROLLBACK_TO;
 import static org.jboss.as.patching.PatchMessages.MESSAGES;
 
 import org.jboss.as.boot.DirectoryStructure;
@@ -47,6 +49,8 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String patchId = PATCH_ID.resolveModelAttribute(context, operation).asString();
         final boolean overrideAll = OVERRIDE_ALL.resolveModelAttribute(context, operation).asBoolean();
+        final boolean rollbackTo = ROLLBACK_TO.resolveModelAttribute(context, operation).asBoolean();
+        final boolean restoreConfiguration = RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 
         // FIXME can we check whether the process is reload-required directly from the operation context?
         context.acquireControllerLock();
@@ -59,10 +63,9 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         final DirectoryStructure structure = service.getStructure();
         final PatchTool runner = PatchTool.Factory.create(info, structure);
         final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
-        final boolean rollbackConfiguration = operation.get(PatchResourceDefinition.RESTORE_CONFIGURATION.getName()).asBoolean(true);
         try {
             // Rollback
-            final PatchingResult result = runner.rollback(patchId, policy, rollbackConfiguration);
+            final PatchingResult result = runner.rollback(patchId, policy, rollbackTo, restoreConfiguration);
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override

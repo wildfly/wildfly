@@ -143,5 +143,91 @@ public class OneOffPatchTestCase extends AbstractTaskTestCase {
         assertArrayEquals(existingHash, hashFile(standaloneShellFile));
     }
 
-    // TODO test to apply 2 one-off patches and roll back to the oldest one
+    @Test
+    public void apply2OneOffPatchesAndRollbackTheFirstOne() throws Exception {
+
+        // start from a base installation
+        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        // create an existing file in the AS7 installation
+        File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
+        String standaloneFileName = "standalone.sh";
+        File standaloneShellFile = touch(binDir, standaloneFileName);
+        dump(standaloneShellFile, "original script to run standalone AS7");
+        byte[] existingHashForStandaloneShell = hashFile(standaloneShellFile);
+        String domainFileName = "domain.sh";
+        File domainShellFile = touch(binDir, domainFileName);
+        dump(domainShellFile, "original script to run domain AS7");
+        byte[] existingHashForDomainShell = hashFile(domainShellFile);
+
+        // build a one-off patch for the base installation
+        // with 1 added module
+        // and 1 updated file
+        String patchID = "patch-1-" + randomString();
+        File patchDir = mkdir(tempDir, patchID);
+        String moduleName = randomString();
+        File moduleDir = createModule(patchDir, moduleName);
+        byte[] newModuleHash = hashFile(moduleDir);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, newModuleHash), NO_CONTENT, ADD);
+        File updatedStandaloneShell = touch(patchDir, "misc", "bin", standaloneFileName);
+        dump(updatedStandaloneShell, "updated script");
+        byte[] updatedHashForStandaloneShell = hashFile(updatedStandaloneShell);
+        ContentModification standaloneShellUpdated = new ContentModification(new MiscContentItem(standaloneFileName, new String[] { "bin" }, updatedHashForStandaloneShell), existingHashForStandaloneShell, MODIFY);
+
+        Patch patch = PatchBuilder.create()
+                .setPatchId(patchID)
+                .setDescription(randomString())
+                .setOneOffType(info.getVersion())
+                .addContentModification(moduleAdded)
+                .addContentModification(standaloneShellUpdated)
+                .build();
+        createPatchXMLFile(patchDir, patch);
+        File zippedPatch = createZippedPatchFile(patchDir, patchID);
+
+        PatchingResult result = executePatch(info, zippedPatch);
+
+        assertPatchHasBeenApplied(result, patch);
+        assertFileExists(standaloneShellFile);
+        assertArrayEquals(updatedHashForStandaloneShell, hashFile(standaloneShellFile));
+        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        assertDirExists(result.getPatchInfo().getEnvironment().getPatchDirectory(patchID));
+        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, newModuleHash);
+
+        // build a 2nd one-off patch for the base installation
+        // with 1 updated file
+        String patchID_2 = "patch-2-" + randomString();
+        File patchDir_2 = mkdir(tempDir, patchID_2);
+        File updatedDomainShell = touch(patchDir_2, "misc", "bin", domainFileName);
+        dump(updatedDomainShell, "updated script to run domain AS7");
+        byte[] updatedHashForDomainShell = hashFile(updatedDomainShell);
+        ContentModification domainShellUpdated = new ContentModification(new MiscContentItem(domainFileName, new String[] { "bin" }, updatedHashForDomainShell), existingHashForDomainShell, MODIFY);
+
+        Patch patch_2 = PatchBuilder.create()
+                .setPatchId(patchID_2)
+                .setDescription(randomString())
+                .setOneOffType(info.getVersion())
+                .addContentModification(domainShellUpdated)
+                .build();
+        createPatchXMLFile(patchDir_2, patch_2);
+        File zippedPatch_2 = createZippedPatchFile(patchDir_2, patchID_2);
+
+        PatchingResult result_2 = executePatch(result.getPatchInfo(), zippedPatch_2);
+
+        assertPatchHasBeenApplied(result_2, patch_2);
+        assertFileExists(domainShellFile);
+        assertArrayEquals(updatedHashForDomainShell, hashFile(domainShellFile));
+        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        assertDirExists(result.getPatchInfo().getEnvironment().getPatchDirectory(patchID_2));
+
+        // rollback the *first* patch based on the updated PatchInfo
+        PatchingResult rollbackResult = rollback(result_2.getPatchInfo(), patchID, true);
+
+        // both patches must be rolled back
+        tree(result.getPatchInfo().getEnvironment().getInstalledImage().getJbossHome());
+        assertPatchHasBeenRolledBack(rollbackResult, patch, info);
+        assertPatchHasBeenRolledBack(rollbackResult, patch_2, info);
+        assertFileExists(standaloneShellFile);
+        assertArrayEquals(existingHashForStandaloneShell, hashFile(standaloneShellFile));
+        assertFileExists(domainShellFile);
+        assertArrayEquals(existingHashForDomainShell, hashFile(domainShellFile));
+    }
 }

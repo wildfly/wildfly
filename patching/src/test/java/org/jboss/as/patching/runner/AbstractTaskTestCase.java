@@ -73,8 +73,12 @@ public abstract class AbstractTaskTestCase {
     }
 
     PatchingResult rollback(final PatchInfo info, final String patchId) throws PatchingException {
+        return rollback(info, patchId, false);
+    }
+
+    PatchingResult rollback(final PatchInfo info, final String patchId, final boolean rollbackTo) throws PatchingException {
         final PatchingTaskRunner runner = new PatchingTaskRunner(info, env);
-        final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, false, true);
+        final PatchingResult result = runner.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
         result.commit();
         return result;
     }

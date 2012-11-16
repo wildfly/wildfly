@@ -100,12 +100,18 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
 
     static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create("patch-id", ModelType.STRING)
             .build();
+    static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create("rollback-to", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .build();
+
     static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder("rollback", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)
             .addParameter(OVERRIDES)
             .addParameter(PRESERVE)
+            .addParameter(ROLLBACK_TO)
             .addParameter(RESTORE_CONFIGURATION)
             .build();
 

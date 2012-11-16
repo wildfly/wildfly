@@ -90,8 +90,8 @@ class LocalPatchTool implements PatchTool {
     }
 
     @Override
-    public PatchingResult rollback(String patchId, ContentVerificationPolicy policy, boolean restoreConfiguration) throws PatchingException {
-        return runner.rollback(patchId, policy, false, restoreConfiguration);
+    public PatchingResult rollback(String patchId, ContentVerificationPolicy policy, boolean rollbackTo, boolean restoreConfiguration) throws PatchingException {
+        return runner.rollback(patchId, policy, rollbackTo, restoreConfiguration);
     }
 
 }

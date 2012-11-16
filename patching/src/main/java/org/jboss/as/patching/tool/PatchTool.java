@@ -83,11 +83,12 @@ public interface PatchTool {
      *
      * @param patchId the patch id
      * @param contentPolicy the content verification policy
+     * @param rollbackTo rollback all one off patches until the given patch-id
      * @param restoreConfiguration whether to restore the configuration from the backup
      * @return the patching result
      * @throws PatchingException
      */
-    PatchingResult rollback(String patchId, ContentVerificationPolicy contentPolicy, boolean restoreConfiguration) throws PatchingException;
+    PatchingResult rollback(String patchId, ContentVerificationPolicy contentPolicy, boolean rollbackTo, boolean restoreConfiguration) throws PatchingException;
 
     public class Factory {
 
