@@ -21,8 +21,7 @@
  */
 package org.jboss.as.test.integration.security.loginmodules;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -111,6 +110,7 @@ public class LdapExtLoginModuleTestCase {
     private static final String DEP2 = "DEP2";
     private static final String DEP3 = "DEP3";
     private static final String DEP4 = "DEP4";
+    private static final String DEP5 = "DEP5";
 
     private static final String[] ROLE_NAMES = { "TheDuke", "Echo", "TheDuke2", "Echo2", "JBossAdmin", "jduke", "jduke2",
             "RG1", "RG2", "RG3", "R1", "R2", "R3", "R4", "R5", "Roles" };
@@ -157,13 +157,23 @@ public class LdapExtLoginModuleTestCase {
     }
 
     /**
-     * Creates {@link WebArchive} for {@link #test3(URL)}.
+     * Creates {@link WebArchive} for {@link #test4(URL)}.
      * 
      * @return
      */
     @Deployment(name = DEP4)
     public static WebArchive deployment4() {
         return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP4);
+    }
+
+    /**
+     * Creates {@link WebArchive} for {@link #test5(URL)}.
+     * 
+     * @return
+     */
+    @Deployment(name = DEP5)
+    public static WebArchive deployment5() {
+        return createWar(SECURITY_DOMAIN_NAME_PREFIX + DEP5);
     }
 
     /**
@@ -228,6 +238,27 @@ public class LdapExtLoginModuleTestCase {
                 + PrincipalPrintingServlet.SERVLET_PATH.substring(1) + "?" + QUERY_ROLES);
         final String principal = Utils.makeCallWithBasicAuthn(principalPrintingURL, userName, "theduke", 200);
         assertEquals("Unexpected Principal name", userName, principal);
+    }
+
+    /**
+     * Test case for Example 5.
+     * 
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment(DEP5)
+    public void test5(@ArquillianResource URL webAppURL) throws Exception {
+        final URL rolesPrintingURL = new URL(webAppURL.toExternalForm() + RolePrintingServlet.SERVLET_PATH.substring(1) + "?"
+                + QUERY_ROLES);
+        final String rolesResponse = Utils.makeCallWithBasicAuthn(rolesPrintingURL, "jduke", "theduke", 200);
+
+        assertInRole(rolesResponse, "R1");
+        assertNotInRole(rolesResponse, "R2");
+        assertNotInRole(rolesResponse, "jduke");
+        assertNotInRole(rolesResponse, "Java Duke");
+        assertNotInRole(rolesResponse, "Roles");
+        assertNotInRole(rolesResponse, "JBossAdmin");
+        assertNotInRole(rolesResponse, "RG1");
     }
 
     // Private methods -------------------------------------------------------
@@ -391,7 +422,18 @@ public class LdapExtLoginModuleTestCase {
                                     .putOption("roleFilter", "(member={1})").putOption("roleAttributeID", "cn")
                                     .putOption("roleRecursion", "1").putOption("throwValidateError", "true").build()) //
                     .build();
-            return new SecurityDomain[] { sd1, sd2, sd3, sd4 };
+            final SecurityDomain sd5 = new SecurityDomain.Builder()
+                    .name(SECURITY_DOMAIN_NAME_PREFIX + DEP5)
+                    .loginModules(
+                            new SecurityModule.Builder().name(LdapExtLoginModule.class.getName()).options(getCommonOptions())
+                                    .putOption("java.naming.provider.url", "ldap://" + secondaryTestAddress + ":" + LDAP_PORT) //
+                                    .putOption("baseCtxDN", "ou=People,o=example5,dc=jboss,dc=org") //
+                                    .putOption("baseFilter", "(uid={0})") //
+                                    .putOption("rolesCtxDN", "ou=People,o=example5,dc=jboss,dc=org") //
+                                    .putOption("roleFilter", "(uid={0})") //
+                                    .putOption("roleAttributeID", "employeeNumber").build()) //
+                    .build();
+            return new SecurityDomain[] { sd1, sd2, sd3, sd4, sd5 };
         }
 
         private Map<String, String> getCommonOptions() {
