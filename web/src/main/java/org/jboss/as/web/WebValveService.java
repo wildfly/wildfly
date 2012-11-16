@@ -54,8 +54,6 @@ public class WebValveService implements Service<Valve> {
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private Valve valve;
 
-    private PathManager.Callback.Handle callbackHandle;
-
     public WebValveService(String name, String classname, String module) {
         this.classname = classname;
         this.module = module;
@@ -89,9 +87,6 @@ public class WebValveService implements Service<Valve> {
 
     /** {@inheritDoc} */
     public synchronized void stop(StopContext context) {
-        if (callbackHandle != null) {
-            callbackHandle.remove();
-        }
         final Valve valve = this.valve;
         this.valve = null;
         final WebServer server = webServer.getValue();
