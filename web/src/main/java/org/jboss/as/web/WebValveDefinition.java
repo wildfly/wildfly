@@ -21,7 +21,7 @@ public class WebValveDefinition extends SimpleResourceDefinition {
     protected static final WebValveDefinition INSTANCE = new WebValveDefinition();
 
     protected static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(Constants.MODULE,
-            ModelType.STRING).setXmlName(Constants.MODULE).setAllowNull(true)
+            ModelType.STRING).setXmlName(Constants.MODULE).setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).setValidator(new StringLengthValidator(1)).build();
 
     protected static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder(Constants.CLASS_NAME,

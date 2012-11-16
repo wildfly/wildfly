@@ -24,7 +24,6 @@ package org.jboss.as.web;
 
 import org.apache.catalina.Valve;
 import org.apache.tomcat.util.IntrospectionUtils;
-import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
@@ -47,10 +46,6 @@ public class WebValveService implements Service<Valve> {
     private final String module;
     private ModelNode params;
 
-    private volatile String filePath;
-    private volatile String fileRelativeTo;
-
-    private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private Valve valve;
 
@@ -63,15 +58,10 @@ public class WebValveService implements Service<Valve> {
     public synchronized void start(StartContext context) throws StartException {
         Valve valve = null;
         try {
-            if (module == null) {
-                String filename = pathManagerInjector.getValue().resolveRelativePathEntry(filePath, fileRelativeTo);
-                valve = WebValve.createValve(filename, classname, this.getClass().getClassLoader());
-            } else {
-                final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                final ModuleIdentifier id = ModuleIdentifier.create(module);
-                Module valveModule = moduleLoader.loadModule(id);
-                valve = WebValve.createValve(classname, valveModule.getClassLoader());
-            }
+            final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+            final ModuleIdentifier id = ModuleIdentifier.create(module);
+            Module valveModule = moduleLoader.loadModule(id);
+            valve = WebValve.createValve(classname, valveModule.getClassLoader());
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -102,17 +92,8 @@ public class WebValveService implements Service<Valve> {
         return valve;
     }
 
-    public InjectedValue<PathManager> getPathManagerInjector() {
-        return pathManagerInjector;
-    }
-
     public InjectedValue<WebServer> getWebServer() {
         return webServer;
-    }
-
-    void setFilePaths(String path, String relativeTo) {
-        this.filePath = path;
-        this.fileRelativeTo = relativeTo;
     }
 
     public ModelNode getParam() {

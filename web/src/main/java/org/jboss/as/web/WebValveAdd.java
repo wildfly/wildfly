@@ -23,7 +23,6 @@
 package org.jboss.as.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.web.WebExtension.FILE_PATH;
 import static org.jboss.as.web.Constants.PARAM;
 import java.util.List;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -33,8 +32,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -79,19 +76,7 @@ class WebValveAdd extends AbstractAddStepHandler {
         final WebValveService service = new WebValveService(name, classname, module);
         final ServiceTarget serviceTarget = context.getServiceTarget();
         final ServiceBuilder<?> serviceBuilder = serviceTarget.addService(WebSubsystemServices.JBOSS_WEB_VALVE.append(name), service)
-                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, service.getPathManagerInjector())
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getWebServer());
-
-        if (operation.get(FILE_PATH.getKey(), FILE_PATH.getValue()).isDefined()) {
-            final ModelNode directory = operation.get(FILE_PATH.getKey(), FILE_PATH.getValue());
-            String relativeTo = null;
-            if (WebValveFileDefinition.RELATIVE_TO.resolveModelAttribute(context, directory).isDefined())
-                relativeTo = WebValveFileDefinition.RELATIVE_TO.resolveModelAttribute(context, directory).asString();
-            String path = null;
-            if (WebValveFileDefinition.PATH.resolveModelAttribute(context, directory).isDefined())
-                path = WebValveFileDefinition.PATH.resolveModelAttribute(context, directory).asString();
-            service.setFilePaths(path, relativeTo);
-        }
 
         if (operation.hasDefined(PARAM)) {
             service.setParam(operation.get(PARAM).clone());

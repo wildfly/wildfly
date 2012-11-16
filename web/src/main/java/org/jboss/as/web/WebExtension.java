@@ -23,7 +23,6 @@
 package org.jboss.as.web;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -46,7 +45,6 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
 import org.jboss.as.controller.transform.AliasOperationTransformer;
 import org.jboss.as.controller.transform.AliasOperationTransformer.AddressTransformer;
@@ -90,8 +88,6 @@ public class WebExtension implements Extension {
     protected static final PathElement REWRITECOND_PATH = PathElement.pathElement(Constants.CONDITION);
 
     protected static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
-
-    protected static final PathElement FILE_PATH = PathElement.pathElement(Constants.SETTING, Constants.FILE);
 
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
 
@@ -161,8 +157,7 @@ public class WebExtension implements Extension {
         deployments.registerSubModel(WebDeploymentServletDefinition.INSTANCE);
 
         // Global valve.
-        final ManagementResourceRegistration valve = registration.registerSubModel(WebValveDefinition.INSTANCE);
-        valve.registerSubModel(WebValveFileDefinition.INSTANCE);
+        registration.registerSubModel(WebValveDefinition.INSTANCE);
         registerTransformers_1_1_0(subsystem);
     }
 
