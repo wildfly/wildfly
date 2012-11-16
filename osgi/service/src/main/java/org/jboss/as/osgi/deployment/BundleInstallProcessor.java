@@ -22,7 +22,6 @@
 
 package org.jboss.as.osgi.deployment;
 
-import static org.jboss.as.osgi.service.InitialDeploymentTracker.INITIAL_DEPLOYMENTS_COMPLETE;
 import static org.jboss.as.server.deployment.Attachments.BUNDLE_STATE_KEY;
 
 import org.jboss.as.osgi.OSGiConstants;
@@ -33,8 +32,6 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
@@ -72,7 +69,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
             if (deploymentTracker.hasDeploymentName(depUnit.getName())) {
                 restoreStorageState(phaseContext, deployment);
             }
-            serviceName = bundleManager.installBundle(deployment, null);
+            serviceName = bundleManager.installBundle(deployment, phaseContext.getServiceTarget(), null);
         } catch (BundleException ex) {
             throw new DeploymentUnitProcessingException(ex);
         }
@@ -80,23 +77,13 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
         // Add a dependency on the next phase for this bundle to be installed
         phaseContext.addDeploymentDependency(serviceName, OSGiConstants.BUNDLE_KEY);
 
-        // Add a dependency on the next phase for all persisten bundles to be installed
-        if (deploymentTracker.isComplete() == false) {
-            phaseContext.addDeploymentDependency(INITIAL_DEPLOYMENTS_COMPLETE, AttachmentKey.create(Object.class));
-        }
-
         depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.INSTALLED);
         depUnit.putAttachment(BUNDLE_INSTALL_SERVICE, serviceName);
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        ServiceName serviceName = depUnit.getAttachment(BUNDLE_INSTALL_SERVICE);
-        ServiceController<?> controller = serviceName != null ? depUnit.getServiceRegistry().getService(serviceName) : null;
-        if (controller != null) {
-            controller.setMode(Mode.REMOVE);
-            depUnit.putAttachment(BUNDLE_STATE_KEY, BundleState.UNINSTALLED);
-        }
+        // uninstall is done in the bundle's install service
     }
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {

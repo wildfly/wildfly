@@ -72,9 +72,10 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         serviceTarget = context.getServiceTarget();
         deploymentNames = getDeploymentNames(context);
 
-        // Track the persistent REGISTER services
+        // Track the persistent DEPENDENCIES services
+        // This makes sure that Bundle.INSTALL services have completed
         for (String name : deploymentNames) {
-            expectedServices.add(Services.deploymentUnitName(name, Phase.REGISTER));
+            expectedServices.add(Services.deploymentUnitName(name, Phase.DEPENDENCIES));
         }
 
         // Register this tracker with the server controller

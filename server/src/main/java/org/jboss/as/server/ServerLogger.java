@@ -386,9 +386,9 @@ public interface ServerLogger extends BasicLogger {
     @Message(id = 15966, value = "Failed to unmount deployment overlay")
     void failedToUnmountContentOverride(@Cause Throwable cause);
 
-    @LogMessage(level = WARN)
-    @Message(id = 15967, value= "Cannot install reflection index for unresolved bundle: %s")
-    void warnCannotInstallReflectionIndexForUnresolvedBundle(String bundle);
+    //@LogMessage(level = WARN)
+    //@Message(id = 15967, value= "Cannot install reflection index for unresolved bundle: %s")
+    //void warnCannotInstallReflectionIndexForUnresolvedBundle(String bundle);
 
     @LogMessage(level = WARN)
     @Message(id = 15968, value= "jboss-deployment-dependencies cannot be used in a sub deployment, it must be specified at ear level: %s")
