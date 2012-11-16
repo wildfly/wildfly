@@ -54,6 +54,8 @@ public class Main {
         PATCH("patch"),
         ROLLBACK("rollback"),
         OVERRIDE_ALL("--override-all"),
+        ROLLBACK_TO("--rollback-to"),
+        RESTORE_CONFIGURATION("--restore-configuration"),
 
         UNKNOWN(null),
         ;
@@ -85,6 +87,7 @@ public class Main {
         Argument operation = null;
         String param = null;
         boolean overrideAll = false;
+        boolean rollbackTo = false;
 
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
@@ -100,6 +103,9 @@ public class Main {
                     break;
                 case OVERRIDE_ALL:
                     overrideAll = true;
+                    break;
+                case ROLLBACK_TO:
+                    rollbackTo = true;
                     break;
                 default:
                     System.out.println("Illegal argument: " + arg);
@@ -129,7 +135,7 @@ public class Main {
             // Rollback
             if(operation == Argument.ROLLBACK) {
                 final ContentVerificationPolicy policy = overrideAll ? ContentVerificationPolicy.OVERRIDE_ALL : ContentVerificationPolicy.STRICT;
-                result = tool.rollback(param, policy, true);
+                result = tool.rollback(param, policy, rollbackTo, true);
             // Apply patch
             } else if (operation == Argument.PATCH) {
                 final File file = new File(param);
@@ -159,8 +165,8 @@ public class Main {
         stream.println();
         stream.println("The available commands are:");
         stream.println("   patch     <file> [<--override-all>]");
-        stream.println("   rollback  <patch-id> [<--override-all>]");
-        stream.println("   gc        [<patch-id>]");
+        stream.println("   rollback  <patch-id> [<--override-all> <--rollback-to>]");
+        stream.println("   gc        <patch-id>");
         stream.println();
     }
 
