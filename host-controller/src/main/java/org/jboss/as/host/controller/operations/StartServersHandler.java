@@ -132,7 +132,8 @@ public class StartServersHandler implements OperationStepHandler, DescriptionPro
                 }
             } else if (info != null){
                 //Reconnect the server
-                serverInventory.reconnectServer(serverName, domainModel, info.isRunning());
+                final byte[] authkey = info.getAuthKey();
+                serverInventory.reconnectServer(serverName, domainModel, authkey, info.isRunning());
             }
         }
     }

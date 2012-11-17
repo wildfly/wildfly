@@ -30,8 +30,10 @@ import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
+import org.jboss.as.protocol.mgmt.ManagementPingRequest;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
+import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -44,11 +46,15 @@ import javax.net.ssl.X509TrustManager;
 import javax.security.auth.callback.CallbackHandler;
 import java.io.DataInput;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The connection to the host-controller. In case the channel is closed it's the host-controllers responsibility
@@ -102,12 +108,27 @@ public class HostControllerServerConnection extends ManagementClientChannelStrat
      * @throws IOException
      */
     public synchronized void reconnect(final URI connectionURI, final CallbackHandler callbackHandler, final ActiveOperation.CompletedCallback<Boolean> callback) throws IOException {
+        if(connection != null) {
+            try {
+                final Future<Long> result = channelHandler.executeRequest(ManagementPingRequest.INSTANCE, null).getResult();
+                result.get(15, TimeUnit.SECONDS); // Hmm, perhaps 15 is already too much
+                return;
+            } catch (Exception e) {
+                ServerLogger.AS_ROOT_LOGGER.debugf(e, "failed to ping the host-controller, going to reconnect");
+            }
+            StreamUtils.safeClose(connection);
+        }
         boolean ok = false;
         try {
             configuration.setUri(connectionURI);
             openChannel(callbackHandler);
-            channelHandler.executeRequest(new ServerReconnectRequest(), null, callback);
-            ok = true;
+            final ActiveOperation<Boolean, Void> result = channelHandler.executeRequest(new ServerReconnectRequest(), null, callback);
+            try {
+                result.getResult().await();
+                ok = true;
+            } catch (InterruptedException e) {
+                throw new InterruptedIOException();
+            }
         } finally {
             if(!ok) {
                 close();

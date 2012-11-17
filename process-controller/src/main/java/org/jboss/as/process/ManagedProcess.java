@@ -169,7 +169,9 @@ final class ManagedProcess {
             stdin.write(asAuthKey);
             stdin.flush();
         } catch (IOException e) {
-            log.failedToSendReconnect(e, processName);
+            if(state == State.STARTED) {
+                log.failedToSendReconnect(e, processName);
+            }
         }
     }
 

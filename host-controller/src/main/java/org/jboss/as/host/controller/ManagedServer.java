@@ -119,9 +119,9 @@ class ManagedServer {
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
 
-    ManagedServer(final String hostControllerName, final String serverName, final ProcessControllerClient processControllerClient,
-            final InetSocketAddress managementSocket, final ManagedServer.ManagedServerBootConfiguration bootConfiguration,
-            final TransformationTarget transformationTarget) {
+    ManagedServer(final String hostControllerName, final String serverName, final byte[] authKey,
+                  final ProcessControllerClient processControllerClient, final InetSocketAddress managementSocket,
+                  final ManagedServer.ManagedServerBootConfiguration bootConfiguration, final TransformationTarget transformationTarget) {
 
         assert hostControllerName  != null : "hostControllerName is null";
         assert serverName  != null : "serverName is null";
@@ -136,8 +136,6 @@ class ManagedServer {
         this.bootConfiguration = bootConfiguration;
         this.transformationTarget = transformationTarget;
 
-        final byte[] authKey = new byte[16];
-        new Random(new SecureRandom().nextLong()).nextBytes(authKey);
         this.authKey = authKey;
         serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
     }
@@ -227,6 +225,14 @@ class ManagedServer {
     }
 
     /**
+     * On host controller reload, remove a not running server registered in the process controller declared as down.
+     */
+    protected synchronized void removeServerProcess() {
+        this.requiredState = InternalState.STOPPED;
+        internalSetState(new ProcessRemoveTask(), InternalState.STOPPED, InternalState.PROCESS_REMOVING);
+    }
+
+    /**
      * Await a state.
      *
      * @param expected the expected state
@@ -272,18 +278,25 @@ class ManagedServer {
         finishTransition(InternalState.PROCESS_STARTING, InternalState.PROCESS_STARTED);
     }
 
-    protected synchronized void channelRegistered(final ManagementChannelHandler channelAssociation) {
-        internalSetState(new TransitionTask() {
-            @Override
-            public void execute(final ManagedServer server) throws Exception {
-
-                server.proxyController = TransformingProxyController.Factory.create(channelAssociation,
-                        Transformers.Factory.create(transformationTarget),
-                        PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
-                        ProxyOperationAddressTranslator.SERVER);
-            }
-        // TODO we just check that we are in the correct state, perhaps introduce a new state
-        }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
+    protected synchronized ProxyController channelRegistered(final ManagementChannelHandler channelAssociation) {
+        final InternalState current = this.internalState;
+        final TransformingProxyController proxy = TransformingProxyController.Factory.create(channelAssociation,
+                                Transformers.Factory.create(transformationTarget),
+                                PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
+                                ProxyOperationAddressTranslator.SERVER);
+        // TODO better handling for server :reload operation
+        if(current == InternalState.SERVER_STARTED && proxyController == null) {
+            this.proxyController = proxy;
+        } else {
+            internalSetState(new TransitionTask() {
+                @Override
+                public void execute(final ManagedServer server) throws Exception {
+                    server.proxyController = proxy;
+                }
+            // TODO we just check that we are in the correct state, perhaps introduce a new state
+            }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
+        }
+        return proxyController;
     }
 
     protected synchronized void serverStarted(final TransitionTask task) {
@@ -296,9 +309,27 @@ class ManagedServer {
 
     /**
      * Unregister the mgmt channel.
+     *
+     * @param shuttingDown whether the server inventory is shutting down
      */
-    protected synchronized void callbackUnregistered() {
+    protected synchronized void callbackUnregistered(final boolean shuttingDown) {
         this.proxyController = null;
+        // If the connection dropped without us stopping the process ask for reconnection
+        if(! shuttingDown && requiredState == InternalState.SERVER_STARTED) {
+            final InternalState state = internalState;
+            if(state == InternalState.PROCESS_STOPPED
+                    || state == InternalState.PROCESS_STOPPING
+                    || state == InternalState.STOPPED) {
+                // In case it stopped we don't reconnect
+                return;
+            }
+            try {
+                HostControllerLogger.ROOT_LOGGER.tracef("trying to reconnect to %s current-state (%s) required-state (%s)", serverName, state, requiredState);
+                internalSetState(new ReconnectTask(), state, InternalState.SERVER_STARTING);
+            } catch (Exception e) {
+                HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to send reconnect task");
+            }
+        }
     }
 
     /**

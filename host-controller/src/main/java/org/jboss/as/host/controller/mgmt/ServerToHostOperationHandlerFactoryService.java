@@ -40,6 +40,7 @@ import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementChannelReceiver;
+import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementProtocolHeader;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
@@ -175,6 +176,8 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                         CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, channel);
                         // Create the server mgmt handler
                         final ManagementChannelHandler handler = new ManagementChannelHandler(channel, executorService, new ServerHandlerFactory(serverName));
+                        // Ping/Pong
+                        handler.addHandlerFactory(new ManagementPongRequestHandler());
                         // Register the communication channel
                         inventory.serverCommunicationRegistered(serverName, handler);
                         // Send the response once the server is fully registered
@@ -201,6 +204,8 @@ public class ServerToHostOperationHandlerFactoryService implements ManagementCha
                         } else {
                             param = DomainServerProtocol.PARAM_RESTART_REQUIRED;
                         }
+                        // Ping/Pong
+                        handler.addHandlerFactory(new ManagementPongRequestHandler());
                         // Notify the server whether configuration is still in sync or it requires a reload
                         safeWriteResponse(channel, header, param);
                         // Onto the next message
