@@ -160,7 +160,7 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
                                 }
                                 final String workingDirectory = readUTFZBytes(dataStream);
                                 SERVER_LOGGER.tracef("Received add_process for process %s", processName);
-                                processController.addProcess(processName, Arrays.asList(command), env, workingDirectory, false, false);
+                                processController.addProcess(processName, authKey, Arrays.asList(command), env, workingDirectory, false, false);
                             } else {
                                 SERVER_LOGGER.tracef("Ignoring add_process message from untrusted source");
                             }

@@ -111,7 +111,7 @@ public final class ProcessControllerClient implements Closeable {
                             final byte[] processAuthCode = new byte[16];
                             readFully(dataStream, processAuthCode);
                             final boolean processRunning = StreamUtils.readBoolean(dataStream);
-                            inventory.put(processName, new ProcessInfo(processName, authCode, processRunning));
+                            inventory.put(processName, new ProcessInfo(processName, processAuthCode, processRunning));
                         }
                         dataStream.close();
                         CLIENT_LOGGER.tracef("Received process_inventory");

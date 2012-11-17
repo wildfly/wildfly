@@ -157,10 +157,11 @@ public interface ServerInventory {
      *
      * @param serverName the name of the server
      * @param domainModel the configuration model for the domain
+     * @param authKey the authentication key
      * @param running whether the process was running. If {@code false}, the existence of the server will be
      *                recorded but no attempt to contact it will be made
      */
-    void reconnectServer(final String serverName, final ModelNode domainModel, final boolean running);
+    void reconnectServer(String serverName, ModelNode domainModel, byte[] authKey, boolean running);
 
     /**
      * Gets a callback handler security services can use for handling authentication data provided by

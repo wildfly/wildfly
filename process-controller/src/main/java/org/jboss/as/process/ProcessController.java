@@ -54,7 +54,6 @@ public final class ProcessController {
      */
     private final Object lock = new Object();
 
-    private final Random rng;
     private final ProtocolServer server;
     private final Map<String, ManagedProcess> processes = new HashMap<String, ManagedProcess>();
     private final Map<Key, ManagedProcess> processesByKey = new HashMap<Key, ManagedProcess>();
@@ -68,7 +67,6 @@ public final class ProcessController {
     public ProcessController(final ProtocolServer.Configuration configuration, final PrintStream stdout, final PrintStream stderr) throws IOException {
         this.stdout = stdout;
         this.stderr = stderr;
-        rng = new Random(new SecureRandom().nextLong());
         //noinspection ThisEscapedInObjectConstruction
         configuration.setConnectionHandler(new ProcessControllerServerHandler(this));
         final ProtocolServer server = new ProtocolServer(configuration);
@@ -90,6 +88,14 @@ public final class ProcessController {
     }
 
     public void addProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final boolean isPrivileged, final boolean respawn) {
+        // Create a new authKey
+        final byte[] authKey = new byte[16];
+        new Random(new SecureRandom().nextLong()).nextBytes(authKey);
+        //
+        addProcess(processName, authKey, command, env, workingDirectory, isPrivileged, respawn);
+    }
+
+    public void addProcess(final String processName, final byte[] authKey, final List<String> command, final Map<String, String> env, final String workingDirectory, final boolean isPrivileged, final boolean respawn) {
         for (String s : command) {
             if (s == null) {
                 throw MESSAGES.nullCommandComponent();
@@ -105,8 +111,6 @@ public final class ProcessController {
                 // ignore
                 return;
             }
-            final byte[] authKey = new byte[16];
-            rng.nextBytes(authKey);
             final ManagedProcess process = new ManagedProcess(processName, command, env, workingDirectory, lock, this, authKey, isPrivileged, respawn);
             processes.put(processName, process);
             processesByKey.put(new Key(authKey), process);
@@ -292,7 +296,6 @@ public final class ProcessController {
                     }
                 } catch (IOException e) {
                     ROOT_LOGGER.failedToWriteMessage("PROCESS_REMOVED " + processName, e);
-                    e.printStackTrace();
                     removeManagedConnection(connection);
                 }
             }
