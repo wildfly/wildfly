@@ -283,7 +283,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
         try {
             VirtualFile metaData = persistence_xml;// di.getMetaDataFile("persistence.xml");
             return convertVFS ?
-                    metaData.getPhysicalFile().getParentFile().getParentFile().toURI().toURL() :
+                    metaData.getParent().getParent().getPhysicalFile().toURI().toURL() :
                     metaData.getParent().getParent().toURL();
 
         } catch (Exception e) {
