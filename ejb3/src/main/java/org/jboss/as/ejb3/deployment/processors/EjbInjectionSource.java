@@ -133,7 +133,6 @@ public class EjbInjectionSource extends InjectionSource {
                         } else {
                             error = EjbMessages.MESSAGES.moreThanOneEjbFound(typeName, beanName, bindingName, ejbsForViewName);
                         }
-                        error = "More than 1 component found for type '" + typeName + "' and bean name " + beanName + " for binding " + bindingName;
                     } else {
                         final EJBViewDescription description = ejbsForViewName.iterator().next();
                         final EJBViewDescription ejbViewDescription = (EJBViewDescription) description;
