@@ -21,6 +21,10 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
+import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -42,7 +46,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import javax.ejb.EJBException;
-import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
@@ -79,10 +82,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ejb3.EjbLogger.EJB3_LOGGER;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * MK2 implementation of EJB3.1 {@link TimerService}
@@ -658,7 +657,8 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
                         //the timers have the same method.
                         //now lets make sure the schedule is the same
-                        if (this.doesScheduleMatch(entity.getScheduleExpression(), timer.getScheduleExpression())) {
+                        // and the timer does not change the persistence
+                        if (this.doesScheduleMatch(entity.getScheduleExpression(), timer.getScheduleExpression()) && timer.getTimerConfig().isPersistent()) {
                             it.remove();
                             found = true;
                             break;
