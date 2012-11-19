@@ -58,10 +58,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.osgi.framework.spi.FrameworkBuilderFactory;
 import org.jboss.osgi.framework.spi.FrameworkBuilder;
-import org.jboss.osgi.framework.spi.SystemPathsPlugin;
 import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
+import org.jboss.osgi.framework.spi.FrameworkBuilderFactory;
+import org.jboss.osgi.framework.spi.SystemPathsPlugin;
 import org.osgi.framework.Constants;
 
 /**
@@ -165,7 +165,7 @@ public class FrameworkBootstrapService implements Service<Void> {
     private void setupIntegrationProperties(StartContext context, Map<String, Object> props) {
 
         // Setup the Framework's storage area.
-        String storage = (String) props.get(Constants.FRAMEWORK_STORAGE);
+        String storage = getFrameworkProperty(Constants.FRAMEWORK_STORAGE, props);
         if (storage == null) {
             ServerEnvironment environment = injectedServerEnvironment.getValue();
             File dataDir = environment.getServerDataDir();
@@ -179,7 +179,7 @@ public class FrameworkBootstrapService implements Service<Void> {
             props.put(ModuleLogger.class.getName(), moduleLogger.getClass().getName());
 
         // Setup default system modules
-        String sysmodules = (String) props.get(PROP_JBOSS_OSGI_SYSTEM_MODULES);
+        String sysmodules = getFrameworkProperty(PROP_JBOSS_OSGI_SYSTEM_MODULES, props);
         if (sysmodules == null) {
             Set<String> sysModules = new LinkedHashSet<String>();
             sysModules.addAll(Arrays.asList(SystemPackagesIntegration.DEFAULT_SYSTEM_MODULES));
@@ -189,7 +189,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         // Setup default system packages
-        String syspackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES);
+        String syspackages = getFrameworkProperty(Constants.FRAMEWORK_SYSTEMPACKAGES, props);
         if (syspackages == null) {
             Set<String> sysPackages = new LinkedHashSet<String>();
             sysPackages.addAll(Arrays.asList(SystemPackagesIntegration.JAVAX_API_PACKAGES));
@@ -200,9 +200,18 @@ public class FrameworkBootstrapService implements Service<Void> {
             props.put(Constants.FRAMEWORK_SYSTEMPACKAGES, syspackages);
         }
 
-        String extrapackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
+        String extrapackages = getFrameworkProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, props);
         if (extrapackages != null) {
             props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extrapackages);
         }
+    }
+
+    private String getFrameworkProperty(String name, Map<String, Object> props) {
+        Object p = props.get(name);
+        if (p instanceof String)
+            return (String) p;
+
+        // not set, revert to system properties
+        return System.getProperty(name);
     }
 }
