@@ -71,7 +71,6 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         JPADefinition.DEFAULT_DATASOURCE.validateAndSet(operation, model);
         JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.validateAndSet(operation, model);
-        JPADefinition.DEFAULT_VFS.validateAndSet(operation, model);
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws
@@ -122,14 +121,9 @@ class JPASubSystemAdd extends AbstractBoottimeAddStepHandler {
                 ExtendedPersistenceInheritance.valueOf(defaultExtendedPersistenceInheritanceNode.resolve().asString());
         }
 
-        boolean defaultVFS = true;
-        if (operation.hasDefined(CommonAttributes.DEFAULT_VFS)) {
-            final ModelNode defaultVFSNODE = operation.get(CommonAttributes.DEFAULT_VFS);
-            defaultVFS = defaultVFSNODE.resolve().asBoolean();
-        }
 
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance, defaultVFS, verificationHandler));
+        newControllers.add(JPAService.addService(target, dataSourceName, defaultExtendedPersistenceInheritance, verificationHandler));
         newControllers.add(JPAUserTransactionListenerService.addService(target, verificationHandler));
 
     }

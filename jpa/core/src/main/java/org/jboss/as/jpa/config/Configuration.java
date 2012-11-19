@@ -142,12 +142,6 @@ public class Configuration {
     public static final String JPA_CONTAINER_MANAGED = "jboss.as.jpa.managed";
 
     /**
-     * defaults to true, if changed to false (in the persistence.xml),
-     * PersistenceUnitInfo.getJarFileUrls()/getPersistenceUnitRootUrl() will return standard FILE based urls.
-     */
-    public static final String JPA_ENABLE_VFS_URLS = "jboss.as.jpa.vfs";
-
-    /**
      * defaults to true, if false, persistence unit will not support javax.persistence.spi.ClassTransformer Interface
      * which means no application class rewriting
      */
