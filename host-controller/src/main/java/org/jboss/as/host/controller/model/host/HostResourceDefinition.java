@@ -55,6 +55,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
+import org.jboss.as.domain.management.connections.database.DatabaseConnectionResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.host.controller.DirectoryGrouping;
@@ -308,6 +309,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreServiceResourceDefinition.INSTANCE);
         management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+        management.registerSubModel(DatabaseConnectionResourceDefinition.INSTANCE);
         management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
         management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
 

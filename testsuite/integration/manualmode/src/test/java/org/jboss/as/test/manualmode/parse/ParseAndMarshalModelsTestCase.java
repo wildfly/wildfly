@@ -97,6 +97,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
+import org.jboss.as.domain.management.connections.database.DatabaseConnectionResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -775,6 +776,7 @@ public class ParseAndMarshalModelsTestCase {
                 ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreManagementDefinition.INSTANCE);
                 management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
                 management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+                management.registerSubModel(DatabaseConnectionResourceDefinition.INSTANCE);
                 management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
                 management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, null));
 

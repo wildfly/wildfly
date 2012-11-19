@@ -22,13 +22,13 @@
 
 package org.jboss.as.domain.management;
 
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
@@ -67,6 +67,13 @@ public interface DomainManagementLogger extends BasicLogger {
     @Message(id = 15202, value = "The attribute 'password' is deprecated, 'keystore-password' should be used instead.")
     void passwordAttributeDeprecated();
 
+    /**
+     * Indicate it failed to shutdown the database connection manager service
+     *
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15203, value = "Failed to shutdown database connection manager service")
+    void databaseConnectionManagerServiceShutdown();
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages
      * also contains messages in this range commencing 15220.

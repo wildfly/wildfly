@@ -23,6 +23,7 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DATABASE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
@@ -33,10 +34,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.ALLOWED_USERS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
 import java.security.KeyStore;
@@ -56,6 +58,7 @@ import org.jboss.as.controller.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.database.DatabaseConnectionManagerService;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -147,7 +150,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                         realmServiceName, realmName, serviceTarget, newControllers);
             } else if (authentication.hasDefined(USERS)) {
                 authenticationName = addUsersService(context, authentication.require(USERS), realmServiceName, realmName, serviceTarget, newControllers);
+            } else if (authentication.hasDefined(DATABASE)) {
+                authenticationName = addDatabaseAuthenticationService(context,authentication.require(DATABASE), realmServiceName, serviceTarget, realmName, newControllers);
             }
+
         }
         if (authorization != null) {
             if (authorization.hasDefined(PROPERTIES)) {
@@ -156,6 +162,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             } else if (authorization.hasDefined(PLUG_IN)) {
                 authorizationName = addPlugInAuthorizationService(context, authorization.require(PLUG_IN), realmServiceName,
                         plugInLoaderName, realmName, serviceTarget, newControllers);
+            } else if (authorization.hasDefined(DATABASE)) {
+                authorizationName = addDatabaseAuthorizationService(context,authorization.require(DATABASE), realmServiceName, serviceTarget, realmName, newControllers);
             }
         }
         if (authenticationName != null) {
@@ -186,6 +194,39 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         if (newControllers != null) {
             newControllers.add(sc);
         }
+    }
+
+    private ServiceName addDatabaseAuthenticationService(OperationContext context, ModelNode database, ServiceName realmServiceName, ServiceTarget serviceTarget, String realmName, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        ServiceName databaseServiceName = realmServiceName.append(DatabaseCallbackHandler.SERVICE_SUFFIX);
+        DatabaseCallbackHandler databaseCallbackHandler = new DatabaseCallbackHandler(realmName,database);
+
+        ServiceBuilder<?> databaseBuilder = serviceTarget.addService(databaseServiceName, databaseCallbackHandler);
+        String connectionManager = DatabaseResourceDefinition.REF.resolveModelAttribute(context, database).asString();
+        databaseBuilder.addDependency(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, databaseCallbackHandler.getConnectionManagerInjector());
+
+        final ServiceController<?> serviceController = databaseBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
+
+        return databaseServiceName;
+    }
+
+    private ServiceName addDatabaseAuthorizationService(OperationContext context, ModelNode database, ServiceName realmServiceName, ServiceTarget serviceTarget, String realmName, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        ServiceName databaseServiceName = realmServiceName.append(DatabaseSubjectSupplemental.SERVICE_SUFFIX);
+
+        DatabaseSubjectSupplemental databaseSubjectSupplemental = new DatabaseSubjectSupplemental(realmName,database);
+
+        ServiceBuilder<?> databaseBuilder = serviceTarget.addService(databaseServiceName, databaseSubjectSupplemental);
+        String connectionManager = DatabaseResourceDefinition.REF.resolveModelAttribute(context, database).asString();
+        databaseBuilder.addDependency(DatabaseConnectionManagerService.BASE_SERVICE_NAME.append(connectionManager), ConnectionManager.class, databaseSubjectSupplemental.getConnectionManagerInjector());
+
+        final ServiceController<?> serviceController = databaseBuilder.setInitialMode(ON_DEMAND).install();
+        if(newControllers != null) {
+            newControllers.add(serviceController);
+        }
+
+        return databaseServiceName;
     }
 
     private ServiceName addPlugInLoaderService(ServiceName realmServiceName, ModelNode plugInModel,

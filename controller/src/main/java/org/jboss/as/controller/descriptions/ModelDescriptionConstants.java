@@ -62,6 +62,7 @@ public class ModelDescriptionConstants {
     public static final String CHILDREN = "children";
     public static final String CLIENT_MAPPINGS = "client-mappings";
     public static final String CODE = "code";
+    public static final String CONNECTION_URL = "connection-url";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONNECTION = "connection";
@@ -71,6 +72,10 @@ public class ModelDescriptionConstants {
     public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
+    public static final String DATABASE = "database";
+    public static final String DATABASE_DATASOURCE = "database-datasource";
+    public static final String DATABASE_CONNECTION = "database-connection";
+    public static final String DATA_SOURCE = "data-source";
     public static final String DEFAULT = "default";
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEPLOY = "deploy";
@@ -84,6 +89,8 @@ public class ModelDescriptionConstants {
     public static final String DIRECTORY = "directory";
     public static final String DIRECTORY_GROUPING = "directory-grouping";
     public static final String DISABLE = "disable";
+    public static final String DRIVER = "driver";
+    public static final String DRIVER_CLASS = "driver-class";
     public static final String DOMAIN = "domain";
     public static final String DOMAIN_FAILURE_DESCRIPTION = "domain-failure-description";
     public static final String DOMAIN_CONTROLLER = "domain-controller";
@@ -148,6 +155,8 @@ public class ModelDescriptionConstants {
     public static final String MAX_LENGTH = "max-length";
     public static final String MAX_OCCURS = "max-occurs";
     public static final String MAX_THREADS = "max-threads";
+    public static final String MAX_POOL_SIZE = "max-pool-size";
+    public static final String MIN_POOL_SIZE = "min-pool-size";
     public static final String MIN = "min";
     public static final String MIN_LENGTH = "min-length";
     public static final String MIN_OCCURS = "min-occurs";
@@ -176,6 +185,7 @@ public class ModelDescriptionConstants {
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OUTCOME = "outcome";
     public static final String PASSWORD = "password";
+    public static final String PASSWORD_FIELD = "password-field";
     public static final String PATH = "path";
     public static final String PERSISTENT = "persistent";
     public static final String PLAIN_TEXT = "plain-text";
@@ -206,6 +216,7 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_METRICS = "read-resource-metrics";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String READ_TRANSFORMED_RESOURCE_OPERATION = "read-transformed-resource";
+    public static final String REF = "ref";
     public static final String RECURSIVE = "recursive";
     public static final String RECURSIVE_DEPTH = "recursive-depth";
     public static final String REDEPLOY = "redeploy";
@@ -227,6 +238,7 @@ public class ModelDescriptionConstants {
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String REASON = "reason";
+    public static final String ROLES_FIELD = "roles-field";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
@@ -243,6 +255,7 @@ public class ModelDescriptionConstants {
     public static final String SEARCH_CREDENTIAL = "search-credential";
     public static final String SEARCH_DN = "search-dn";
     public static final String SECRET = "secret";
+    public static final String SECURITY = "security";
     public static final String SECURE_PORT = "secure-port";
     public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";
     public static final String SECURITY_REALM = "security-realm";
@@ -256,6 +269,11 @@ public class ModelDescriptionConstants {
     public static final String SERVER_IDENTITY = "server-identity";
     public static final String SERVER_OPERATIONS = "server-operations";
     public static final String SERVICE_CONTAINER = "service-container";
+    public static final String SIMPLE_SELECT_USERS = "simple-select-users";
+    public static final String SIMPLE_SELECT_ROLES = "simple-select-roles";
+    public static final String SIMPLE_SELECT_TABLE = "table";
+    public static final String SIMPLE_SELECT_USERNAME_FIELD = "username-field";
+    public static final String SIMPLE_SELECT_USERS_PASSWORD_FIELD = "password-field";
     public static final String SOURCE_NETWORK = "source-network";
     public static final String SINCE = "since";
     public static final String OPERATION_REQUIRES_RELOAD = "operation-requires-reload";
@@ -283,12 +301,16 @@ public class ModelDescriptionConstants {
     public static final String SUCCESS = "success";
     public static final String SYSTEM_PROPERTY = "system-property";
     public static final String SYSTEM_PROPERTIES = "system-properties";
+    public static final String SQL_SELECT_USERS = "sql-select-users";
+    public static final String SQL_SELECT_ROLES = "sql-select-roles";
+    public static final String SQL_SELECT_USERS_ROLES_STATEMENT = "sql";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
     public static final String TO_REPLACE = "to-replace";
     public static final String TRUSTSTORE = "truststore";
     public static final String TYPE = "type";
     public static final String UNDEFINE_ATTRIBUTE_OPERATION = "undefine-attribute";
     public static final String UNDEPLOY = "undeploy";
+    public static final String USERNAME_FIELD = "username-field";
     public static final String UPLOAD_DEPLOYMENT_BYTES = "upload-deployment-bytes";
     public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";
     public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
