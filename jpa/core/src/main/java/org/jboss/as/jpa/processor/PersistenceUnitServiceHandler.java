@@ -27,7 +27,6 @@ import static org.jboss.as.jpa.JpaLogger.ROOT_LOGGER;
 import static org.jboss.as.jpa.JpaMessages.MESSAGES;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -422,27 +421,14 @@ public class PersistenceUnitServiceHandler {
 
         final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
 
-        boolean convertVFS = (false == JPAService.isDefaultVFS()); // convert VFS url to FILE based url if JPA_ENABLE_VFS_URLS == false
-        for (PersistenceUnitMetadata pu : puHolder.getPersistenceUnits()) {
-            String enableVFS = pu.getProperties().getProperty(Configuration.JPA_ENABLE_VFS_URLS);
-            if (enableVFS != null && Boolean.parseBoolean(enableVFS) == false) {
-                convertVFS = true;
-            }
-        }
-
         do {
             for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
                 final Index index = root.getAttachment(Attachments.ANNOTATION_INDEX);
                 if (index != null) {
                     try {
                         JPA_LOGGER.tracef("adding '%s' to annotation index map", root.getRoot().toURL());
-                        annotationIndexes.put(root.getRoot().toURL(), index);   // always save the VFS url
-                        if (convertVFS) {                                       // also save the FILE url
-                            annotationIndexes.put(root.getRoot().getPhysicalFile().toURI().toURL(), index);
-                        }
+                        annotationIndexes.put(root.getRoot().toURL(), index);
                     } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }

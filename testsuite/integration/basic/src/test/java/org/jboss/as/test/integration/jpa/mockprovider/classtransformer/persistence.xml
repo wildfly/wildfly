@@ -24,11 +24,11 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence"	version="2.0">
 	<persistence-unit name="mypc">
         <provider>org.jboss.as.test.integration.jpa.mockprovider.classtransformer.TestPersistenceProvider</provider>
+        <jar-file>lib/jarfile.jar</jar-file>
 		<description>Persistence Unit.</description>
 		<jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
 		<properties>
             <property name="hibernate.ejb.use_class_enhancer" value="true" />
-            <property name="jboss.as.jpa.vfs" value="false" />
 		</properties>
 	</persistence-unit>
 </persistence>

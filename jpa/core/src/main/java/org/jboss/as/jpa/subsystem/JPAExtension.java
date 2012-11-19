@@ -129,9 +129,7 @@ public class JPAExtension implements Extension {
         RejectExpressionValuesTransformer rejectNewerExpressions =
                 new RejectExpressionValuesTransformer(
                          JPADefinition.DEFAULT_DATASOURCE,
-                         JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE,
-                         JPADefinition.DEFAULT_VFS);
-        //TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(oldVersion, rejectNewerExpressions);
+                         JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
 
         // Register the model transformers
         TransformersSubRegistration reg = subsystemRegistration.registerModelTransformers(ModelVersion.create(1, 1, 0), new JPASubsystemTransformer_1_1());
@@ -142,9 +140,6 @@ public class JPAExtension implements Extension {
             protected ModelNode transform(TransformationContext context, PathAddress address, ModelNode operation) {
                 if (operation.has(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName())) {
                     operation.remove(JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.getName());
-                }
-                if (operation.has(JPADefinition.DEFAULT_VFS.getName())) {
-                    operation.remove(JPADefinition.DEFAULT_VFS.getName());
                 }
                 return operation;
             }
@@ -199,9 +194,6 @@ public class JPAExtension implements Extension {
                     case DEFAULT_EXTENDEDPERSISTENCEINHERITANCE_NAME:
                         JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.parseAndSetParameter(value, operation, reader);
                         break;
-                    case DEFAULT_VFS_NAME:
-                        JPADefinition.DEFAULT_VFS.parseAndSetParameter(value, operation, reader);
-                        break;
                     default: {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
@@ -224,14 +216,12 @@ public class JPAExtension implements Extension {
 
             ModelNode node = context.getModelNode();
             if (node.hasDefined(CommonAttributes.DEFAULT_DATASOURCE) ||
-                    node.hasDefined(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE) ||
-                    node.hasDefined(CommonAttributes.DEFAULT_VFS)
+                    node.hasDefined(CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
                     ) {
                 context.startSubsystemElement(Namespace.JPA_1_1.getUriString(), false);
                 writer.writeStartElement(Element.JPA.getLocalName());
                 JPADefinition.DEFAULT_DATASOURCE.marshallAsAttribute(node, writer);
                 JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE.marshallAsAttribute(node, writer);
-                JPADefinition.DEFAULT_VFS.marshallAsAttribute(node,writer);
                 writer.writeEndElement();
                 writer.writeEndElement();
             } else {

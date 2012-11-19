@@ -27,7 +27,6 @@ import java.util.ServiceLoader;
 import javax.persistence.spi.PersistenceProvider;
 
 import org.jboss.as.jpa.config.Configuration;
-import org.jboss.as.jpa.service.JPAService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;

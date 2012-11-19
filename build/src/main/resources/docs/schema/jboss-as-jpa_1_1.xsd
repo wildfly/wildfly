@@ -39,7 +39,6 @@
     <xs:complexType name="jpa-config">
         <xs:attribute name="default-datasource" use="optional" type="xs:string" default=""/>
         <xs:attribute name="default-extended-persistence-inheritance" type="inheritance_type" use="optional" default="DEEP"/>
-        <xs:attribute name="default-vfs" use="optional" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:simpleType name="inheritance_type">

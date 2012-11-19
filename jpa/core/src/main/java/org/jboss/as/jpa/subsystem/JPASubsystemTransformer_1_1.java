@@ -38,7 +38,6 @@ public class JPASubsystemTransformer_1_1 extends AbstractSubsystemTransformer {
     @Override
     public ModelNode transformModel(TransformationContext context, ModelNode model) {
         remove(model, CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
-        remove(model, CommonAttributes.DEFAULT_VFS);
         return model;
     }
 

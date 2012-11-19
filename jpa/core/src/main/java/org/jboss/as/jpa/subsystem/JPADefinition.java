@@ -71,18 +71,9 @@ public class JPADefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString()))
                     .build();
 
-    protected static final SimpleAttributeDefinition DEFAULT_VFS =
-            new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_VFS, ModelType.BOOLEAN, true)
-                    .setAllowExpression(true)
-                    .setXmlName(CommonAttributes.DEFAULT_VFS)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(true))
-                    .build();
-
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
         registration.registerReadWriteAttribute(DEFAULT_DATASOURCE, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_DATASOURCE));
         registration.registerReadWriteAttribute(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE));
-        registration.registerReadWriteAttribute(DEFAULT_VFS, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_VFS));
     }
 }
