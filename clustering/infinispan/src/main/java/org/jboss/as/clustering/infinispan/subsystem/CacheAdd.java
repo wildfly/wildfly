@@ -42,11 +42,11 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.configuration.cache.CacheStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.LoadersConfigurationBuilder;
-import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.cache.FileCacheStoreConfigurationBuilder.FsyncMode;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
@@ -492,7 +492,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     .preload(preload)
                     .passivation(passivation)
             ;
-            StoreConfigurationBuilder<?, ?> storeBuilder = this.buildCacheStore(context, loadersBuilder, containerName, store, storeKey, dependencies)
+            CacheStoreConfigurationBuilder<?, ?> storeBuilder = this.buildCacheStore(context, loadersBuilder, containerName, store, storeKey, dependencies)
                     .fetchPersistentState(fetchState)
                     .purgeOnStartup(purge)
                     .purgeSynchronously(true)
@@ -557,7 +557,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
 
-    private StoreConfigurationBuilder<?, ?> buildCacheStore(OperationContext context, LoadersConfigurationBuilder loadersBuilder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies) throws OperationFailedException {
+    private CacheStoreConfigurationBuilder<?, ?> buildCacheStore(OperationContext context, LoadersConfigurationBuilder loadersBuilder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies) throws OperationFailedException {
 
         ModelNode resolvedValue = null;
         if (storeKey.equals(ModelKeys.FILE_STORE)) {
