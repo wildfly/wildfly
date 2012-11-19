@@ -23,6 +23,7 @@
 package org.jboss.as.server;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ControlledProcessState;
@@ -47,8 +48,15 @@ import org.jboss.threads.JBossExecutors;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 final class BootstrapImpl implements Bootstrap {
+
     private static final int MAX_THREADS = ServerEnvironment.getBootstrapMaxThreads();
-    private final ServiceContainer container = ServiceContainer.Factory.create("jboss-as", MAX_THREADS, 30, TimeUnit.SECONDS);
+    private final ShutdownHook shutdownHook;
+    private final ServiceContainer container;
+
+    public BootstrapImpl() {
+        this.shutdownHook = new ShutdownHook();
+        this.container = shutdownHook.register();
+    }
 
     @Override
     public AsyncFuture<ServiceContainer> bootstrap(final Configuration configuration, final List<ServiceActivator> extraServices) {
@@ -73,6 +81,7 @@ final class BootstrapImpl implements Bootstrap {
         final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
         final ControlledProcessState processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
+        shutdownHook.setControlledProcessState(processState);
         ControlledProcessStateService.addService(tracker, processState);
         final Service<?> applicationServerService = new ApplicationServerService(extraServices, configuration, processState);
         tracker.addService(Services.JBOSS_AS, applicationServerService)
@@ -161,6 +170,64 @@ final class BootstrapImpl implements Bootstrap {
 
         void failed(Throwable t) {
             setFailed(t);
+        }
+    }
+
+    private static class ShutdownHook extends Thread {
+        private boolean down;
+        private ControlledProcessState processState;
+        private ServiceContainer container;
+
+        private ServiceContainer register() {
+
+            Runtime.getRuntime().addShutdownHook(this);
+            synchronized (this) {
+                if (!down) {
+                    container = ServiceContainer.Factory.create("jboss-as", MAX_THREADS, 30, TimeUnit.SECONDS, false);
+                    return container;
+                } else {
+                    throw new IllegalStateException();
+                }
+            }
+        }
+
+        private synchronized void setControlledProcessState(final ControlledProcessState ps) {
+            this.processState = ps;
+        }
+
+        @Override
+        public void run() {
+            final ServiceContainer sc;
+            final ControlledProcessState ps;
+            synchronized (this) {
+                down = true;
+                sc = container;
+                ps = processState;
+            }
+            try {
+                if (ps != null) {
+                    ps.setStopping();
+                }
+            } finally {
+                if (sc != null) {
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    sc.addTerminateListener(new ServiceContainer.TerminateListener() {
+                        @Override
+                        public void handleTermination(Info info) {
+                            latch.countDown();
+                        }
+                    });
+                    sc.shutdown();
+                    // wait for all services to finish.
+                    for (;;) {
+                        try {
+                            latch.await();
+                            break;
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            }
         }
     }
 }

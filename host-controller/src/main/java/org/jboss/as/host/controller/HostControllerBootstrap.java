@@ -22,6 +22,8 @@
 
 package org.jboss.as.host.controller;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.msc.service.ServiceContainer;
@@ -36,13 +38,16 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class HostControllerBootstrap {
 
-    private final ServiceContainer serviceContainer = ServiceContainer.Factory.create("host-controller");
+    private final ShutdownHook shutdownHook;
+    private final ServiceContainer serviceContainer;
     private final HostControllerEnvironment environment;
     private final byte[] authCode;
 
     public HostControllerBootstrap(final HostControllerEnvironment environment, final byte[] authCode) {
         this.environment = environment;
         this.authCode = authCode;
+        this.shutdownHook = new ShutdownHook();
+        this.serviceContainer = shutdownHook.register();
     }
 
     /**
@@ -54,10 +59,69 @@ public class HostControllerBootstrap {
 
         final HostRunningModeControl runningModeControl = environment.getRunningModeControl();
         final ControlledProcessState processState = new ControlledProcessState(true);
+        shutdownHook.setControlledProcessState(processState);
         ServiceTarget target = serviceContainer.subTarget();
         ControlledProcessStateService.addService(target, processState);
         final HostControllerService hcs = new HostControllerService(environment, runningModeControl, authCode, processState);
         target.addService(HostControllerService.HC_SERVICE_NAME, hcs).install();
+    }
+
+    private static class ShutdownHook extends Thread {
+        private boolean down;
+        private ControlledProcessState processState;
+        private ServiceContainer container;
+
+        private ServiceContainer register() {
+
+            Runtime.getRuntime().addShutdownHook(this);
+            synchronized (this) {
+                if (!down) {
+                    container = ServiceContainer.Factory.create("host-controller", false);
+                    return container;
+                } else {
+                    throw new IllegalStateException();
+                }
+            }
+        }
+
+        private synchronized void setControlledProcessState(final ControlledProcessState ps) {
+            this.processState = ps;
+        }
+
+        @Override
+        public void run() {
+            final ServiceContainer sc;
+            final ControlledProcessState ps;
+            synchronized (this) {
+                down = true;
+                sc = container;
+                ps = processState;
+            }
+            try {
+                if (ps != null) {
+                    ps.setStopping();
+                }
+            } finally {
+                if (sc != null) {
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    sc.addTerminateListener(new ServiceContainer.TerminateListener() {
+                        @Override
+                        public void handleTermination(Info info) {
+                            latch.countDown();
+                        }
+                    });
+                    sc.shutdown();
+                    // wait for all services to finish.
+                    for (;;) {
+                        try {
+                            latch.await();
+                            break;
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
