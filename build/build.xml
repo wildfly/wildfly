@@ -537,8 +537,8 @@
             <maven-resource group="org.jboss.spec.javax.xml.ws" artifact="jboss-jaxws-api_2.2_spec"/>
         </module-def>
 
-        <module-def name="org.jboss.jreadline">
-            <maven-resource group="org.jboss.jreadline" artifact="jreadline"/>
+        <module-def name="org.jboss.aesh">
+            <maven-resource group="org.jboss.aesh" artifact="aesh"/>
         </module-def>
 
         <module-def name="org.fusesource.jansi">

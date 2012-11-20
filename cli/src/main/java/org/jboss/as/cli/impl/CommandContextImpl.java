@@ -140,7 +140,7 @@ import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.jreadline.console.settings.Settings;
+import org.jboss.aesh.console.settings.Settings;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
 import org.jboss.sasl.callback.DigestHashCallback;

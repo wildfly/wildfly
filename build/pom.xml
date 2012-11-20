@@ -389,8 +389,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.jreadline</groupId>
-                    <artifactId>jreadline</artifactId>
+                    <groupId>org.jboss.aesh</groupId>
+                    <artifactId>aesh</artifactId>
                 </dependency>
 
                 <dependency>

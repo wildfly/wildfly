@@ -81,7 +81,7 @@ public class CLIWrapper {
 
         consoleOut = new ByteArrayOutputStream();
         final char[] password = getPassword() == null ? null : getPassword().toCharArray();
-        System.setProperty("jreadline.terminal","org.jboss.jreadline.terminal.TestTerminal");
+        System.setProperty("aesh.terminal","org.jboss.aesh.terminal.TestTerminal");
         ctx = CLITestUtil.getCommandContext(
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), getUsername(), password,
                 createConsoleInput(), consoleOut);
