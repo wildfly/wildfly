@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.modcluster</extension-module>
-   <subsystem xmlns="urn:jboss:domain:modcluster:1.1">
+   <subsystem xmlns="urn:jboss:domain:modcluster:1.1"
+        xsi:schemaLocation="urn:jboss:domain:modcluster:1.1 http://www.jboss.org/j2ee/jboss-as-mod-cluster_1_1.xsd">
        <mod-cluster-config advertise-socket="modcluster" connector="ajp">
            <dynamic-load-provider>
                <load-metric type="busyness"/>

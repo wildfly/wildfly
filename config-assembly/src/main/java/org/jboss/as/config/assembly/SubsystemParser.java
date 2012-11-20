@@ -102,10 +102,10 @@ class SubsystemParser extends NodeParser {
                         parseSupplement(reader, ((ElementNode)subsystem).getNamespace());
                     } else if (reader.getLocalName().equals("socket-binding")) {
                         ElementNode socketBinding = new NodeParser(socketBindingNamespace).parseNode(reader, "socket-binding");
-                        socketBindings.put(socketBinding.getAttributeValue("name"), socketBinding);
+                        socketBindings.put(socketBinding.getAttributeValue(localQNameOf("name")), socketBinding);
                     } else if (reader.getLocalName().equals("outbound-socket-binding")) {
                         ElementNode socketBinding = new NodeParser(socketBindingNamespace).parseNode(reader, "outbound-socket-binding");
-                        outboundSocketBindings.put(socketBinding.getAttributeValue("name"), socketBinding);
+                        outboundSocketBindings.put(socketBinding.getAttributeValue(localQNameOf("name")), socketBinding);
                     }
                 }
             }

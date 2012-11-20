@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config default-supplement="default">
+<config default-supplement="default" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.jmx</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jmx:1.2">
+   <subsystem xmlns="urn:jboss:domain:jmx:1.2"
+        xsi:schemaLocation="urn:jboss:domain:jmx:1.2 http://www.jboss.org/j2ee/jboss-as-jmx_1_2.xsd" >
        <expose-resolved-model/>
        <expose-expression-model/>
        <?REMOTING-CONNECTOR?>

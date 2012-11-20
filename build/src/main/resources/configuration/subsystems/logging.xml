@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config default-supplement="default">
+<config default-supplement="default" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.logging</extension-module>
-   <subsystem xmlns="urn:jboss:domain:logging:1.2">
+   <subsystem xmlns="urn:jboss:domain:logging:1.2"
+        xsi:schemaLocation="urn:jboss:domain:logging:1.2 http://www.jboss.org/j2ee/jboss-as-logging_1_2.xsd">
        <console-handler name="CONSOLE">
            <level name="INFO"/>
            <formatter>

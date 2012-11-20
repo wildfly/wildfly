@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config default-supplement="default">
+<config default-supplement="default" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <extension-module>org.jboss.as.osgi</extension-module>
-    <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="@@activation@@">
-    <?PROPERTIES?>
-    <?CAPABILITIES?>
+    <subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="@@activation@@"
+        xsi:schemaLocation="urn:jboss:domain:osgi:1.2 http://www.jboss.org/j2ee/jboss-as-osgi_1_2.xsd">
+        <?PROPERTIES?>
+        <?CAPABILITIES?>
     </subsystem>
     <supplement name="default">
         <replacement placeholder="@@activation@@" attributeValue="lazy" />

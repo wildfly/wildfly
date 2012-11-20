@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.sar</extension-module>
-   <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
+   <subsystem xmlns="urn:jboss:domain:sar:1.0"
+        xsi:schemaLocation="urn:jboss:domain:sar:1.0 http://www.jboss.org/j2ee/jboss-as-sar_1_0.xsd" />
 </config>

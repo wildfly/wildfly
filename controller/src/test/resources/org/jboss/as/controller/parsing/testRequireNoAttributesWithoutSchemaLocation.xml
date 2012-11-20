@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<test xmlns="urn:test:1.0" >
+    <nested foo='bar'>
+    </nested>
+</test>

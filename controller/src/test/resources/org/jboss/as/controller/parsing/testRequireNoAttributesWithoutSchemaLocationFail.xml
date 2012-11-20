@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<test xmlns="urn:test:1.0"
+    unexpected="attributeValue">
+    
+    <nested foo='bar'>
+    </nested>
+</test>

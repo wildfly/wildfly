@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.connector</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jca:1.1">
+   <subsystem xmlns="urn:jboss:domain:jca:1.1"
+        xsi:schemaLocation="urn:jboss:domain:jca:1.1 http://www.jboss.org/j2ee/jboss-as-jca_1_1.xsd" >
        <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
        <bean-validation enabled="true"/>
        <default-workmanager>

@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -48,6 +49,10 @@ class NodeParser {
 
     NodeParser(String namespaceURI){
         this.namespaceURI = namespaceURI;
+    }
+
+    QName localQNameOf(String name) {
+        return new QName(namespaceURI, name);
     }
 
     ElementNode parseNode(XMLStreamReader reader, String nodeName) throws XMLStreamException {
@@ -109,9 +114,12 @@ class NodeParser {
         ElementNode childNode = new ElementNode(parent, reader.getLocalName(), namespace);
         int count = reader.getAttributeCount();
         for (int i = 0 ; i < count ; i++) {
-            String name = reader.getAttributeLocalName(i);
+            QName name = reader.getAttributeName(i);
             String value = reader.getAttributeValue(i);
             childNode.addAttribute(name, createAttributeValue(value));
+        }
+        for (int i = 0; i < reader.getNamespaceCount(); ++i) {
+            childNode.addNamespace(reader.getNamespacePrefix(i), reader.getNamespaceURI(i));
         }
         return childNode;
     }

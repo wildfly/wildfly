@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 
@@ -132,7 +133,7 @@ class ConfigurationAssembler {
             final ProcessingInstructionNode extensionNode = templateParser.getExtensionPlaceHolder();
             for (String extension : extensions) {
                 final ElementNode extensionElement = new ElementNode(null, "extension", templateParser.getRootNode().getNamespace());
-                extensionElement.addAttribute("module", new AttributeValue(extension));
+                extensionElement.addAttribute(QName.valueOf("module"), new AttributeValue(extension));
                 extensionNode.addDelegate(extensionElement);
             }
         } else {

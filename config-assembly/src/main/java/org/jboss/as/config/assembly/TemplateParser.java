@@ -117,7 +117,7 @@ public class TemplateParser extends NodeParser {
             if (data.size() > 1) {
                 throw new IllegalStateException("Only 'socket-binding-group' is valid <?" + TemplateParser.SUBSYSTEMS_PI + "?> data");
             }
-            String profileName = parent.getAttributeValue("name", "");
+            String profileName = parent.getAttributeValue(localQNameOf("name"), "");
             node = new ProcessingInstructionNode(profileName, data);
             subsystemPlaceHolders.put(profileName, node);
         } else if (pi.equals(TemplateParser.SOCKET_BINDINGS_PI)) {
@@ -128,7 +128,7 @@ public class TemplateParser extends NodeParser {
                 throw new IllegalStateException("<?" + TemplateParser.SOCKET_BINDINGS_PI + "?> should not take any data");
             }
 
-            String groupName = parent.getAttributeValue("name", "");
+            String groupName = parent.getAttributeValue(localQNameOf("name"), "");
             node = new ProcessingInstructionNode(TemplateParser.SOCKET_BINDINGS_PI, data);
             socketBindingsPlaceHolder.put(groupName, node);
         } else {

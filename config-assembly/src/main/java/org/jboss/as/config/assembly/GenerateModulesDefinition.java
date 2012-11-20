@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -172,12 +173,12 @@ public class GenerateModulesDefinition {
     private void processModuleDependency(List<ModuleIdentifier> dependencies, ElementNode parentNode, ModuleDependency dep) throws IOException, XMLStreamException {
         ModuleIdentifier moduleId = dep.getModuleId();
         ElementNode moduleNode = new ElementNode(parentNode, "module");
-        moduleNode.addAttribute("name", new AttributeValue(moduleId.toString()));
+        moduleNode.addAttribute(QName.valueOf("name"), new AttributeValue(moduleId.toString()));
         if (dep.isOptional()) {
-            moduleNode.addAttribute("optional", new AttributeValue("true"));
+            moduleNode.addAttribute(QName.valueOf("optional"), new AttributeValue("true"));
         }
         if (dependencies.contains(moduleId)) {
-            moduleNode.addAttribute("defined", new AttributeValue("true"));
+            moduleNode.addAttribute(QName.valueOf("defined"), new AttributeValue("true"));
             parentNode.addChild(moduleNode);
         } else {
             parentNode.addChild(moduleNode);

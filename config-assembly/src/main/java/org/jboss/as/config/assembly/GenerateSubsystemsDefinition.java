@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -108,14 +109,14 @@ public class GenerateSubsystemsDefinition {
         for (String profile : profiles) {
             ElementNode subsystems = new ElementNode(config, "subsystems");
             if (!profile.isEmpty()) {
-                subsystems.addAttribute("name", new AttributeValue(profile));
+                subsystems.addAttribute(QName.valueOf("name"), new AttributeValue(profile));
             }
             config.addChild(subsystems);
 
             for (SubsystemConfig sub : configs) {
                 ElementNode subsystem = new ElementNode(config, "subsystem");
                 if (sub.getSupplement() != null) {
-                    subsystem.addAttribute("supplement", new AttributeValue(sub.getSupplement()));
+                    subsystem.addAttribute(QName.valueOf("supplement"), new AttributeValue(sub.getSupplement()));
                 }
                 subsystem.addChild(new TextNode(filePrefix + sub.getSubsystem() + ".xml"));
                 subsystems.addChild(subsystem);

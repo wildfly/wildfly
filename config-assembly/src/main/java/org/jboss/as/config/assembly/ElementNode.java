@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -40,7 +41,10 @@ class ElementNode extends Node {
     private final ElementNode parent;
     private final String name;
     private final String namespace;
-    private final Map<String, AttributeValue> attributes = new LinkedHashMap<String, AttributeValue>();
+    private final Map<QName, AttributeValue> attributes = new LinkedHashMap<QName, AttributeValue>();
+
+    private final Map<String, String> namespaceUriToPrefixMap = new LinkedHashMap<String, String>();
+
     private List<Node> children = new ArrayList<Node>();
 
     ElementNode(final ElementNode parent, final String name) {
@@ -61,12 +65,16 @@ class ElementNode extends Node {
         return name;
     }
 
-    void addAttribute(String name, AttributeValue value) {
+    void addAttribute(QName name, AttributeValue value) {
         attributes.put(name, value);
     }
 
     void addChild(Node child) {
         children.add(child);
+    }
+
+    void addNamespace(String namespacePrefix, String namespaceURI) {
+        namespaceUriToPrefixMap.put(namespaceURI, namespacePrefix);
     }
 
     Iterator<Node> getChildren() {
@@ -81,7 +89,7 @@ class ElementNode extends Node {
         return children.iterator();
     }
 
-    String getAttributeValue(String name) {
+    String getAttributeValue(QName name) {
         AttributeValue av = attributes.get(name);
         if (av == null) {
             return null;
@@ -89,7 +97,7 @@ class ElementNode extends Node {
         return av.getValue();
     }
 
-    String getAttributeValue(String name, String defaultValue) {
+    String getAttributeValue(QName name, String defaultValue) {
         String s = getAttributeValue(name);
         if (s == null) {
             return defaultValue;
@@ -112,7 +120,6 @@ class ElementNode extends Node {
             else {
                 writer.writeStartElement(name);
             }
-            writer.writeNamespace(null, namespace);
         }
         else {
             if (empty) {
@@ -123,8 +130,14 @@ class ElementNode extends Node {
             }
         }
 
-        for (Map.Entry<String, AttributeValue> attr : attributes.entrySet()) {
-            writer.writeAttribute(attr.getKey(), attr.getValue().getValue());
+        for (Map.Entry<String, String> namespaceDeclaration : namespaceUriToPrefixMap.entrySet()) {
+            writer.writeNamespace(namespaceDeclaration.getValue(), namespaceDeclaration.getKey());
+        }
+
+        for (Map.Entry<QName, AttributeValue> attr : attributes.entrySet()) {
+            QName attrName = attr.getKey();
+            writer.writeAttribute(attrName.getPrefix(), attrName.getNamespaceURI(),
+                    attrName.getLocalPart(), attr.getValue().getValue());
         }
 
         for (Node child : children) {
@@ -156,4 +169,5 @@ class ElementNode extends Node {
     public String toString() {
         return "Element(name=" + name + ",ns=" + namespace + ")";
     }
+
 }

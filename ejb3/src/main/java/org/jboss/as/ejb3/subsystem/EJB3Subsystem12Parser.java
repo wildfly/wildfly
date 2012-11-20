@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -274,8 +275,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>>,
     }
 
     protected void readAttribute(final ModelNode subsystemAddOperation, final XMLExtendedStreamReader reader, final int i) throws XMLStreamException {
-        ParseUtils.requireNoNamespaceAttribute(reader, i);
-        throw ParseUtils.unexpectedAttribute(reader, i);
+        if (!XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(reader.getAttributeNamespace(i)))
+            throw unexpectedAttribute(reader, i);
     }
 
     protected void readAttributes(final ModelNode subsystemAddOperation, final XMLExtendedStreamReader reader) throws XMLStreamException {

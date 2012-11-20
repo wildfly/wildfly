@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.clustering.jgroups</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="udp">
+   <subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="udp"
+        xsi:schemaLocation="urn:jboss:domain:jgroups:1.1 http://www.jboss.org/j2ee/jboss-as-jgroups_1_1.xsd" >
        <stack name="udp">
            <transport type="UDP" socket-binding="jgroups-udp"/>
            <protocol type="PING"/>
