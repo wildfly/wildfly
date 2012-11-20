@@ -22,11 +22,11 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -339,17 +339,19 @@ public class ServerInventoryImpl implements ServerInventory {
             return null;
         }
         try {
-            final ProxyController proxy = server.channelRegistered(channelAssociation);
+            final TransactionalProtocolClient client = server.channelRegistered(channelAssociation);
             final Channel channel = channelAssociation.getChannel();
             channel.addCloseHandler(new CloseHandler<Channel>() {
 
                 public void handleClose(final Channel closed, final IOException exception) {
                     final boolean shuttingDown = shutdown || connectionFinished;
-                    server.callbackUnregistered(proxy, shuttingDown);
-                    domainController.unregisterRunningServer(server.getServerName());
+                    // Unregister right away
+                    if(server.callbackUnregistered(client, shuttingDown)) {
+                        domainController.unregisterRunningServer(server.getServerName());
+                    }
                 }
             });
-            return proxy;
+            return server.getProxyController();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -357,13 +359,14 @@ public class ServerInventoryImpl implements ServerInventory {
 
     @Override
     public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {
-        // For now just reuse the existing register and started notification
-        final ProxyController controller = serverCommunicationRegistered(serverProcessName, channelHandler);
+        final String serverName = ManagedServer.getServerName(serverProcessName);
+        final ManagedServer server = servers.get(serverName);
+        // Register the new communication channel
+        serverCommunicationRegistered(serverProcessName, channelHandler);
+        // Mark the server as started
         serverStarted(serverProcessName);
-        domainController.registerRunningServer(controller);
-        final boolean inSync = true;
-        // TODO determine whether the server is in sync
-        return inSync;
+        // If the server requires a reload, means we are out of sync
+        return server.isRequiresReload() == false;
     }
 
     @Override
@@ -374,6 +377,8 @@ public class ServerInventoryImpl implements ServerInventory {
             ROOT_LOGGER.noServerAvailable(serverName);
             return;
         }
+        // always un-register in case the process exits
+        domainController.unregisterRunningServer(server.getServerName());
         server.processFinished();
         synchronized (shutdownCondition) {
             shutdownCondition.notifyAll();
