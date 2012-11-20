@@ -43,18 +43,18 @@ public abstract class LifecyclePojoPhase extends AbstractPojoPhase {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    protected void startInternal(StartContext context) throws StartException {
         try {
             dispatchJoinpoint(getUpConfig(), defaultUp());
         } catch (Throwable t) {
             throw new StartException(t);
         }
-        super.start(context);
+        super.startInternal(context);
     }
 
     @Override
-    public void stop(StopContext context) {
-        super.stop(context);
+    protected void stopInternal(StopContext context) {
+        super.stopInternal(context);
         try {
             dispatchJoinpoint(getDownConfig(), defaultDown());
         } catch (Throwable t) {
