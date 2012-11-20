@@ -6,7 +6,7 @@
        <stack name="udp">
            <transport type="UDP" socket-binding="jgroups-udp"/>
            <protocol type="PING"/>
-           <protocol type="MERGE2"/>
+           <protocol type="MERGE3"/>
            <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
            <protocol type="FD"/>
            <protocol type="VERIFY_SUSPECT"/>
