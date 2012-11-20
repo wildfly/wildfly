@@ -71,6 +71,10 @@ public interface TransformingProxyController extends ProxyController {
 
         public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
             final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
+            return create(client, transformers, pathAddress, addressTranslator);
+        }
+
+        public static TransformingProxyController create(final TransactionalProtocolClient client, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
             final RemoteProxyController proxy = RemoteProxyController.create(client, pathAddress, addressTranslator);
             final Transformers delegating = new Transformers() {
                 @Override
