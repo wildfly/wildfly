@@ -1,0 +1,47 @@
+<project default="setup.vi">
+  <target name="init">
+    <property environment="env" />
+    <property name="tck.checkout.dir" value="${env.TCKCHECKOUT}" />
+    <available property="tck.checkout.dir.available" file="${tck.checkout.dir}" />
+  </target>
+
+  <target name="setup.vi" description="Set up AS7 to run in the OSGi TCK" depends="init">
+    <copy todir="${tck.checkout.dir}" overwrite="true">
+      <fileset dir="${basedir}/overlay"/> 
+      <filterset>
+        <filter token="jboss-as-dir" value="${basedir}/../.."/>
+        <filter token="jboss-as-buildname" value="${env.JBOSS_AS_BUILD_NAME}"/>
+        <filter token="jboss-as-embedded" value="${env.JBOSS_AS_EMBEDDED}"/>
+        <filter token="jboss-modules" value="${env.JBOSS_MODULES}"/>
+        <filter token="jboss-logging" value="${env.JBOSS_LOGGING}"/>
+        <filter token="jboss-as-controller-client" value="${env.JBOSS_AS_CONTROLLER_CLIENT}"/>
+        <filter token="jboss-logmanager" value="${env.JBOSS_LOGMANAGER}"/>
+        <filter token="jboss-dmr" value="${env.JBOSS_DMR}"/>
+        <filter token="jboss-msc" value="${env.JBOSS_MSC}"/>
+        <filter token="jboss-osgi-core" value="${env.JBOSS_OSGI_CORE}"/>
+        <filter token="jboss-osgi-launcher" value="${env.JBOSS_OSGI_LAUNCHER}"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <target name="run-core-tests" description="Run the TCK Core tests" depends="init">
+    <fail message="Cannot find: ${tck.checkout.dir}" unless="tck.checkout.dir.available" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.framework" target="clean" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.framework" target="publish" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.framework" target="test" />
+  </target>
+  
+  <target name="run-packageadmin-tests" description="Run the TCK Package Admin service tests" depends="init">
+    <fail message="Cannot find: ${tck.checkout.dir}" unless="tck.checkout.dir.available" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.packageadmin" target="clean" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.packageadmin" target="publish" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.packageadmin" target="test" />
+  </target>
+  
+  <target name="run-httpservice-tests" description="Run the TCK HTTP Service tests" depends="init">
+    <fail message="Cannot find: ${tck.checkout.dir}" unless="tck.checkout.dir.available" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.http" target="clean" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.http" target="publish" />
+    <ant dir="${tck.checkout.dir}/org.osgi.test.cases.http" target="test" />
+  </target>
+</project>

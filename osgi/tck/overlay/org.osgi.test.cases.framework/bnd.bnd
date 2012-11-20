@@ -1,0 +1,231 @@
+Bundle-Version						: 4.2.0.${project.build}
+Bundle-Description					: Framework test cases.
+
+Private-Package						= org.osgi.test.support.*, \
+	${p}.junit.*
+	
+Export-Package						= \
+	${p}.classpath.exported, \
+	${p}.dynpkgimport.exported, \
+	${p}.lifecycle.servicereferencegetter
+	
+Import-Package	= org.osgi.framework, org.osgi.framework.launch, org.osgi.framework.hooks.service, *
+
+Bundle-ClassPath: .,div.tb6.jar
+
+Include-Resource = \
+	activationpolicy.tbchain1.jar, \
+	activationpolicy.tbchain2.jar, \
+	activationpolicy.tbchain3.jar, \
+	activationpolicy.tbchain4.jar, \
+	activationpolicy.tbchain5.jar, \
+	activationpolicy.tblazy1.jar, \
+	activationpolicy.tblazy2.jar, \
+	activationpolicy.tblazy3.jar, \
+	activationpolicy.tblazy4.jar, \
+	activationpolicy.tblazy5.jar, \
+	activationpolicy.tblazy6.jar, \
+	classloading.tb1.jar, \
+	classloading.tb1a.jar, \
+	classloading.tb1b.jar, \
+	classloading.tb2.jar, \
+	classloading.tb2a.jar, \
+	classloading.tb3.jar, \
+	classloading.tb4a.jar, \
+	classloading.tb4b.jar, \
+	classloading.tb4c.jar, \
+	classloading.tb4d.jar, \
+	classloading.tb4e.jar, \
+	classloading.tb4f.jar, \
+	classloading.tb4g.jar, \
+	classloading.tb5.jar, \
+	classloading.tb5a.jar, \
+	classloading.tb5b.jar, \
+	classloading.tb5c.jar, \
+	classloading.tb7a.jar, \
+	classloading.tb7b.jar, \
+	classloading.tb7c.jar, \
+	classloading.tb7d.jar, \
+	classloading.tb7e.jar, \
+	classloading.tb8a.jar, \
+	classloading.tb8b.jar, \
+	classloading.tb8c.jar, \
+	classloading.tb8d.jar, \
+	classloading.tb8e.jar, \
+	classloading.tb8f.jar, \
+	classloading.tb9a.jar, \
+	classloading.tb9b.jar, \
+	classloading.tb9c.jar, \
+	classloading.tb9d.jar, \
+	classloading.tb10a.jar, \
+	classloading.tb11a.jar, \
+	classloading.tb11b.jar, \
+	classloading.tb11c.jar, \
+	classloading.tb11d.jar, \
+	classloading.tb11e.jar, \
+	classloading.tb12a.jar, \
+	classloading.tb12b.jar, \
+	classloading.tb13a.jar, \
+	classloading.tb13b.jar, \
+	classloading.tb13c.jar, \
+	classloading.tb13d.jar, \
+	classloading.tb13e.jar, \
+	classloading.tb13f.jar, \
+	classloading.tb13g.jar, \
+	classloading.tb13h.jar, \
+	classloading.tb13i.jar, \
+	classloading.tb13j.jar, \
+	classloading.tb13k.jar, \
+	classloading.tb13l.jar, \
+	classloading.tb13m.jar, \
+	classloading.tb13n.jar, \
+	classloading.tb13o.jar, \
+	classloading.tb13p.jar, \
+	classloading.tb14a.jar, \
+	classloading.tb14b.jar, \
+	classloading.tb14c.jar, \
+	classloading.tb14d.jar, \
+	classloading.tb14e.jar, \
+	classloading.tb14f.jar, \
+	classloading.tb14g.jar, \
+	classloading.tb14h.jar, \
+	classloading.tb15a.jar, \
+	classloading.tb15b.jar, \
+	classloading.tb15c.jar, \
+	classloading.tb15d.jar, \
+	classloading.tb15e.jar, \
+	classloading.tb15f.jar, \
+	classloading.tb15g.jar, \
+	classloading.tb15h.jar, \
+	classloading.tb15i.jar, \
+	classloading.tb16a.jar, \
+	classloading.tb16b.jar, \
+	classloading.tb16c.jar, \
+	classloading.tb16e.jar, \
+	classloading.tb16f.jar, \
+	classloading.tb16g.jar, \
+	classloading.tb16h.jar, \
+	classloading.tb16i.jar, \
+	classloading.tb16j.jar, \
+	classloading.tb16k.jar, \
+	classloading.tb17a.jar, \
+	classloading.tb17b.jar, \
+	classloading.tb17c.jar, \
+	classloading.tb17d.jar, \
+	classloading.tb17e.jar, \
+	classloading.tb17f.jar, \
+	classloading.tb17g.jar, \
+	classloading.tb17h.jar, \
+	classloading.tb17i.jar, \
+	classloading.tb17j.jar, \
+	classpath.tb1.jar, \
+	classpath.tb2.jar, \
+	classpath.tb3.jar, \
+	classpath.tb4a.jar, \
+	classpath.tb4b.jar, \
+	div.tb1.jar, \
+	div.tb2.jar, \
+	div.tb3.jar, \
+	div.tb5.jar, \
+	div.tb6.jar, \
+	div.tb7a.jar, \
+	div.tb7b.jar, \
+	div.tb8.jar, \
+	div.tb9.jar, \
+	div.tb9a.jar, \
+	div.tb10.jar, \
+	div.tb11.jar, \
+	div.tb12.jar, \
+	div.tb13.jar, \
+	div.tb14.jar, \
+	div.tb15.jar, \
+	div.tb16.jar, \
+	div.tb17.jar, \
+	div.tb18.jar, \
+	div.tb19.jar, \
+	div.tb20.jar, \
+	div.tb21.jar, \
+	div.tb22.jar, \
+	div.tb23.jar, \
+	div.tb24a.jar, \
+	div.tb24b.jar, \
+	div.tb24c.jar, \
+	dynpkgimport.tb0.jar, \
+	dynpkgimport.tb1.jar, \
+	dynpkgimport.tb2.jar, \
+	dynpkgimport.tb3.jar, \
+	dynpkgimport.tlx.jar, \
+	filter.tb1.jar, \
+	fragments.tb1a.jar, \
+	fragments.tb1b.jar, \
+	fragments.tb1c.jar, \
+	fragments.tb1d.jar, \
+	fragments.tb1e.jar, \
+	fragments.tb1f.jar, \
+	fragments.tb1g.jar, \
+	fragments.tb1h.jar, \
+	fragments.tb1i.jar, \
+	fragments.tb3a.jar, \
+	fragments.tb3c.jar, \
+	fragments.tb3d.jar, \
+	fragments.tb3e.jar, \
+	fragments.tb3f.jar, \
+	fragments.tb7a.jar, \
+	fragments.tb7b.jar, \
+	fragments.tb7c.jar, \
+	fragments.tb7d.jar, \
+	fragments.tb7e.jar, \
+	fragments.tb7h.jar, \
+	fragments.tb8a.jar, \
+	fragments.tb8b.jar, \
+	fragments.tb8c.jar, \
+	fragments.tb8d.jar, \
+	fragments.tb20.jar, \
+	fragments.tb4.jar, \
+	fragments.tb5.jar, \
+	fragments.tb6.jar, \
+	fragments.tb21.jar, \
+	fragments.tb22.jar, \
+	fragments.tb9.jar, \
+	fragments.tb10.jar, \
+	fragments.tb12.jar, \
+	fragments.tb13.jar, \
+	fragments.tb15.jar, \
+	lifecycle.tb1.jar, \
+	lifecycle.tb2a.jar, \
+	lifecycle.tb2b.jar, \
+	lifecycle.tb4.jar, \
+	lifecycle.tb5.jar, \
+	lifecycle.tb6a.jar, \
+	lifecycle.tb6b.jar, \
+	lifecycle.tb7.jar, \
+	lifecycle.tb8.jar, \
+	lifecycle.tb9.jar, \
+	resources.tb1.jar, \
+	resources.tb2.jar, \
+	syncbundlelistener.tb3.jar
+	
+-buildpath							= \
+    org.osgi.test.support;                  version=project , \
+	org.osgi.framework;						version=project	, \
+	osgi.core;								version=4.2	, \
+	osgi.cmpn;								version=4.0	, \
+	ee.minimum; 							version=1.2, \
+	${junit}
+
+Test-Cases							= ${testcases}
+-testbundles						= ${p}
+-signaturetest                      = org.osgi.framework, org.osgi.framework.launch, org.osgi.framework.hooks.service
+
+-runbundles							= \
+
+-runproperties = report=true, \
+jboss.home="@jboss-as-dir@/build/target/@jboss-as-buildname@", \
+	osgi.compatibility.bootdelegation=false, \
+	osgi.resolverMode=strict, \
+	osgi.support.multipleHosts=true, \
+	org.osgi.framework.executionenvironment = "div/tb7a,OSGi/Minimum-1.0,OSGi/Minimum-1.1,OSGi/Minimum-1.2,JRE-1.1,J2SE-1.2,J2SE-1.3,J2SE-1.4,J2SE-1.5", \
+	${p}.div.tb12=abc, \
+	${p}.div.tb15=abc, \
+	${p}.div.tb16=xyz
+	

@@ -1,0 +1,31 @@
+Bundle-Description: Test Bundle for Http Service tests
+Bundle-Version: 4.2.0.${project.build}
+Import-Package: javax.servlet;version=2.1,javax.servlet.http;version=2.1,*
+
+Private-Package						= org.osgi.test.support.*, \
+	${p}.junit.*
+	
+Include-Resource					= \
+	tb1.jar
+
+Test-Cases							= ${testcases}
+-signaturetest                      = org.osgi.service.http
+
+-buildpath							= \
+    org.osgi.test.support;                  version=project , \
+    org.osgi.service.http;                  version=project , \
+	org.osgi.impl.bundle.servlet;			version=2.1, \
+	osgi.core;								version=4.0	, \
+	ee.minimum;								version=1.2		, \
+	${junit}
+
+-runbundles							= \
+	org.osgi.impl.service.log; version=latest, \
+	org.osgi.impl.bundle.servlet;		version=2.1, \
+	org.osgi.impl.service.http; version=project
+
+
+-runproperties = report=true, \
+jboss.home="@jboss-as-dir@/build/target/@jboss-as-buildname@", \
+	org.osgi.service.http.hostname=127.0.0.1, \
+	org.osgi.service.http.port=8080
