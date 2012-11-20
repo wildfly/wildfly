@@ -114,6 +114,10 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
             super(name, ModelType.OBJECT, allowNull);
         }
 
+        public Builder(final SimpleMapAttributeDefinition basis) {
+            super(basis);
+        }
+
         public Builder(final PropertiesAttributeDefinition basis) {
             super(basis);
         }

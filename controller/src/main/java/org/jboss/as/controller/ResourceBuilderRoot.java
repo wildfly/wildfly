@@ -82,6 +82,18 @@ class ResourceBuilderRoot implements ResourceBuilder {
     }
 
     @Override
+    public ResourceBuilder setAddOperation(RestartParentResourceAddHandler handler) {
+        this.addHandler = handler;
+        return this;
+    }
+
+    @Override
+    public ResourceBuilder setRemoveOperation(RestartParentResourceRemoveHandler handler) {
+        this.removeHandler = handler;
+        return this;
+    }
+
+    @Override
     public ResourceBuilder addReadWriteAttribute(AttributeDefinition attributeDefinition, OperationStepHandler reader, OperationStepHandler writer) {
         attributes.add(new AttributeBinding(attributeDefinition, reader, writer, AttributeAccess.AccessType.READ_WRITE));
         return this;

@@ -34,7 +34,7 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
 
     public static final ClassicAuthenticationResourceDefinition INSTANCE = new ClassicAuthenticationResourceDefinition();
 
-    public static final LoginModulesAttributeDefinition LOGIN_MODULES = new LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
+    //public static final LoginModulesAttributeDefinition LOGIN_MODULES = new LoginModulesAttributeDefinition(Constants.LOGIN_MODULES, Constants.LOGIN_MODULE);
 
     private ClassicAuthenticationResourceDefinition() {
         super(PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC),
@@ -42,14 +42,19 @@ public class ClassicAuthenticationResourceDefinition extends SimpleResourceDefin
                 new ClassicAuthenticationResourceDefinitionAdd(), new SecurityDomainReloadRemoveHandler());
     }
 
-    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+    /*public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(LOGIN_MODULES, null, new SecurityDomainReloadWriteHandler(LOGIN_MODULES));
-    }
+    }*/
+    @Override
+        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+            super.registerChildren(resourceRegistration);
+            resourceRegistration.registerSubModel(new LoginModulesDefinition(Constants.LOGIN_MODULE));
+        }
 
     static class ClassicAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            LOGIN_MODULES.validateAndSet(operation, model);
+            //LOGIN_MODULES.validateAndSet(operation, model);
         }
 
     }

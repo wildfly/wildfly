@@ -27,7 +27,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -36,7 +35,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class SecurityDomainReloadWriteHandler extends RestartParentWriteAttributeHandler {
 
-    protected SecurityDomainReloadWriteHandler(final AttributeDefinition definition) {
+    protected SecurityDomainReloadWriteHandler(final AttributeDefinition ... definition) {
         super(Constants.SECURITY_DOMAIN, definition);
     }
 

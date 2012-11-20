@@ -34,7 +34,11 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 public interface ResourceBuilder {
     ResourceBuilder setAddOperation(AbstractAddStepHandler handler);
 
+    ResourceBuilder setAddOperation(RestartParentResourceAddHandler handler);
+
     ResourceBuilder setRemoveOperation(AbstractRemoveStepHandler handler);
+
+    ResourceBuilder setRemoveOperation(RestartParentResourceRemoveHandler handler);
 
     ResourceBuilder addReadWriteAttribute(AttributeDefinition attributeDefinition, OperationStepHandler reader, OperationStepHandler writer);
 
