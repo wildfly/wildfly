@@ -51,6 +51,7 @@ import org.jboss.dmr.ModelType;
 /**
 * @author Jason T. Greene
 */
+@Deprecated
 public class ProviderModulesAttributeDefinition extends ListAttributeDefinition {
 
 

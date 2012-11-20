@@ -35,7 +35,7 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
     public static final AuditResourceDefinition INSTANCE = new AuditResourceDefinition();
 
-    public static final ListAttributeDefinition PROVIDER_MODULES = new ProviderModulesAttributeDefinition(Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
+    //public static final ListAttributeDefinition PROVIDER_MODULES = new ProviderModulesAttributeDefinition(Constants.PROVIDER_MODULES, Constants.PROVIDER_MODULE);
 
     private AuditResourceDefinition() {
         super(PathElement.pathElement(Constants.AUDIT, Constants.CLASSIC),
@@ -44,8 +44,14 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
     }
 
-    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+    /*public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(PROVIDER_MODULES, null, new SecurityDomainReloadWriteHandler(PROVIDER_MODULES));
+    }*/
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new MappingModuleDefinition(Constants.PROVIDER));
     }
 
     static class AuditResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -53,9 +59,9 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            PROVIDER_MODULES.validateAndSet(operation, model);
+            //PROVIDER_MODULES.validateAndSet(operation, model);
         }
-
     }
+
 
 }

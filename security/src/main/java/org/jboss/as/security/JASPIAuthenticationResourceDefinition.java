@@ -21,7 +21,6 @@
  */
 package org.jboss.as.security;
 
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -35,7 +34,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
 
     public static final JASPIAuthenticationResourceDefinition INSTANCE = new JASPIAuthenticationResourceDefinition();
 
-    public static final ListAttributeDefinition AUTH_MODULES = new JASPIAuthenticationModulesAttributeDefinition();
+    //public static final ListAttributeDefinition AUTH_MODULES = new JASPIAuthenticationModulesAttributeDefinition();
 
     private JASPIAuthenticationResourceDefinition() {
         super(PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI),
@@ -43,8 +42,14 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
                 JASPIAuthenticationResourceDefinitionAdd.INSTANCE, new SecurityDomainReloadRemoveHandler());
     }
 
-    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+    /*public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(AUTH_MODULES, null, new SecurityDomainReloadWriteHandler(AUTH_MODULES));
+    }*/
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new JASPIMappingModuleDefinition(Constants.AUTH_MODULE));
     }
 
     static class JASPIAuthenticationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -52,7 +57,7 @@ public class JASPIAuthenticationResourceDefinition extends SimpleResourceDefinit
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            AUTH_MODULES.validateAndSet(operation, model);
+            //AUTH_MODULES.validateAndSet(operation, model);
         }
 
     }

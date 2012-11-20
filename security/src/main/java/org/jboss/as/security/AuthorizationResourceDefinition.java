@@ -35,7 +35,7 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
 
     public static final AuthorizationResourceDefinition INSTANCE = new AuthorizationResourceDefinition();
 
-    public static final ListAttributeDefinition POLICY_MODULES = new LoginModulesAttributeDefinition(Constants.POLICY_MODULES, Constants.POLICY_MODULE);
+    //public static final ListAttributeDefinition POLICY_MODULES = new LoginModulesAttributeDefinition(Constants.POLICY_MODULES, Constants.POLICY_MODULE);
 
     private AuthorizationResourceDefinition() {
         super(PathElement.pathElement(Constants.AUTHORIZATION, Constants.CLASSIC),
@@ -44,7 +44,13 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
     }
 
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(POLICY_MODULES, null, new SecurityDomainReloadWriteHandler(POLICY_MODULES));
+        //resourceRegistration.registerReadWriteAttribute(POLICY_MODULES, null, new SecurityDomainReloadWriteHandler(POLICY_MODULES));
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(new LoginModulesDefinition(Constants.POLICY_MODULE));
     }
 
     static class AuthorizationResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
@@ -52,7 +58,7 @@ public class AuthorizationResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            POLICY_MODULES.validateAndSet(operation, model);
+            //POLICY_MODULES.validateAndSet(operation, model);
         }
 
     }

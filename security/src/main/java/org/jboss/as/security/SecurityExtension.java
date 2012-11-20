@@ -57,9 +57,19 @@ public class SecurityExtension implements Extension {
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
 
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, true);
     }
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+           StringBuilder prefix = new StringBuilder();
+           for (String kp : keyPrefix) {
+               if (prefix.length()>0){
+                   prefix.append('.');
+               }
+               prefix.append(kp);
+           }
+           return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, SecurityExtension.class.getClassLoader(), true, false);
+       }
 
     @Override
     public void initialize(ExtensionContext context) {

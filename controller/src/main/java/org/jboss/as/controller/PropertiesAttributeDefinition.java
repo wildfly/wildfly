@@ -140,6 +140,10 @@ public final class PropertiesAttributeDefinition extends MapAttributeDefinition 
             super(basis);
         }
 
+        public Builder(final MapAttributeDefinition basis) {
+            super(basis);
+        }
+
         public Builder setWrapXmlElement(boolean wrap) {
             this.wrapXmlElement = wrap;
             return this;

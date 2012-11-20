@@ -54,6 +54,7 @@ import org.jboss.dmr.ModelType;
  * @author Jason T. Greene
  */
 //todo convert to simple attribute (rd+ad)
+@Deprecated
 public class JASPIAuthenticationModulesAttributeDefinition extends ListAttributeDefinition {
 
     private static final ParameterValidator validator;

@@ -34,8 +34,8 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
 
     public static final ACLResourceDefinition INSTANCE = new ACLResourceDefinition();
 
-    @Deprecated
-    public static final ListAttributeDefinition ACL_MODULES = new LoginModulesAttributeDefinition(Constants.ACL_MODULES, Constants.ACL_MODULE);
+    //@Deprecated
+    //public static final ListAttributeDefinition ACL_MODULES = new LoginModulesAttributeDefinition(Constants.ACL_MODULES, Constants.ACL_MODULE);
 
     private ACLResourceDefinition() {
         super(SecurityExtension.ACL_PATH,
@@ -51,7 +51,7 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(LoginModulesDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(new LoginModulesDefinition(Constants.LOGIN_MODULE));
     }
 
     static class ACLResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
