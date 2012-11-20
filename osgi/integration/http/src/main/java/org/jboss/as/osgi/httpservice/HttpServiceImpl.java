@@ -24,13 +24,20 @@ package org.jboss.as.osgi.httpservice;
 import static org.jboss.as.web.WebLogger.WEB_LOGGER;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
@@ -114,6 +121,7 @@ final class HttpServiceImpl implements HttpService {
             ctx = new ShareableContext(actx);
         } else {
             ctx = new ShareableContext(null);
+            httpContext = new DefaultHttpContext(bundle);
         }
 
         ctx.setDocBase(storageDir.getPath());
@@ -147,7 +155,7 @@ final class HttpServiceImpl implements HttpService {
         String wrapperName = alias.substring(1);
         Wrapper wrapper = ctx.createWrapper();
         wrapper.setName(wrapperName);
-        wrapper.setServlet(servlet);
+        wrapper.setServlet(new SecurityServletWrapper(servlet, httpContext));
         wrapper.setServletClass(servlet.getClass().getName());
 
         // Init parameters
@@ -159,7 +167,7 @@ final class HttpServiceImpl implements HttpService {
                 wrapper.addInitParameter(key, val);
             }
         }
-        registry.register(alias, bundle, ctx, wrapper, type);
+        registry.register(alias, bundle, ctx, servlet, type);
 
         String pattern = "/*";
         ctx.addChild(wrapper);
@@ -255,4 +263,84 @@ final class HttpServiceImpl implements HttpService {
             return context; // will not be null at this point
         }
     }
+
+    /* This wrapper class takes care of handling the security through the HttpContext.
+     */
+    static class SecurityServletWrapper implements Servlet {
+        private final HttpContext httpContext;
+        private final Servlet delegate;
+
+        SecurityServletWrapper(Servlet servlet, HttpContext ctx) {
+            if (servlet == null)
+                throw new NullPointerException();
+            delegate = servlet;
+
+            if (ctx == null)
+                throw new NullPointerException();
+            httpContext = ctx;
+        }
+
+        @Override
+        public void destroy() {
+            delegate.destroy();
+        }
+
+        @Override
+        public ServletConfig getServletConfig() {
+            return delegate.getServletConfig();
+        }
+
+        @Override
+        public String getServletInfo() {
+            return delegate.getServletInfo();
+        }
+
+        @Override
+        public void init(ServletConfig sc) throws ServletException {
+            delegate.init(sc);
+        }
+
+        @Override
+        public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+            if (request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+                HttpServletRequest httpRequest = (HttpServletRequest) request;
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
+                if (!httpContext.handleSecurity(httpRequest, httpResponse))
+                    return;
+
+                Object u = httpRequest.getAttribute(HttpContext.REMOTE_USER);
+                String remoteUser = u instanceof String ? (String) u : null;
+                Object a = httpRequest.getAttribute(HttpContext.AUTHENTICATION_TYPE);
+                String authType = a instanceof String ? (String) a : null;
+
+                if (remoteUser != null || authType != null) {
+                    request = new SecurityRequestWrapper(remoteUser, authType, httpRequest);
+                }
+            }
+            delegate.service(request, response);
+        }
+    }
+
+    /* This wrapper class can provide the remote user and auth type information if provided through the HttpContext.
+     */
+    static class SecurityRequestWrapper extends HttpServletRequestWrapper implements HttpServletRequest {
+        private final String remoteUser;
+        private final String authType;
+
+        SecurityRequestWrapper(String remoteUser, String authType, HttpServletRequest request) {
+            super(request);
+            this.remoteUser = remoteUser;
+            this.authType = authType;
+        }
+
+        @Override
+        public String getAuthType() {
+            return authType;
+        }
+
+        @Override
+        public String getRemoteUser() {
+            return remoteUser;
+        }
+   }
 }

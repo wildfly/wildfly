@@ -34,7 +34,6 @@ import java.util.Set;
 import javax.servlet.Servlet;
 
 import org.apache.catalina.Host;
-import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.jboss.as.osgi.OSGiMessages;
 import org.jboss.as.server.ServerEnvironment;
@@ -92,13 +91,13 @@ final class HttpServiceFactory implements ServiceFactory {
         private GlobalRegistry() {
         }
 
-        synchronized Registration register(String alias, Bundle bundle, StandardContext context, Wrapper wrapper, Registration.Type type) throws NamespaceException {
+        synchronized Registration register(String alias, Bundle bundle, StandardContext context, Servlet servlet, Registration.Type type) throws NamespaceException {
             if (exists(alias))
                 throw new NamespaceException(OSGiMessages.MESSAGES.aliasMappingAlreadyExists(alias));
 
             LOGGER.infoRegisterHttpServiceAlias(alias);
 
-            Registration result = new Registration(alias, bundle, context, wrapper, type);
+            Registration result = new Registration(alias, bundle, context, servlet, type);
             registrations.put(alias, result);
 
             return result;
@@ -106,7 +105,7 @@ final class HttpServiceFactory implements ServiceFactory {
 
         synchronized boolean contains(Servlet servlet) {
             for (Registration reg : registrations.values()) {
-                if (servlet.equals(reg.getWrapper().getServlet()))
+                if (servlet.equals(reg.getServlet()))
                     return true;
             }
             return false;
@@ -153,14 +152,14 @@ final class HttpServiceFactory implements ServiceFactory {
         private final String alias;
         private final Bundle bundle;
         private final StandardContext context;
-        private final Wrapper wrapper;
+        private final Servlet servlet;
         private final Type type;
 
-        Registration(String alias, Bundle bundle, StandardContext context, Wrapper wrapper, Type type) {
+        Registration(String alias, Bundle bundle, StandardContext context, Servlet servlet, Type type) {
             this.alias = alias;
             this.bundle = bundle;
             this.context = context;
-            this.wrapper = wrapper;
+            this.servlet = servlet;
             this.type = type;
         }
 
@@ -176,8 +175,8 @@ final class HttpServiceFactory implements ServiceFactory {
             return context;
         }
 
-        Wrapper getWrapper() {
-            return wrapper;
+        Servlet getServlet() {
+            return servlet;
         }
 
         public Type getType() {
