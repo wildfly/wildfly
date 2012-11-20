@@ -244,7 +244,7 @@
         <version.org.jboss.xnio>3.0.7.GA</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.2.0.Final</version.org.jgroups>
+        <version.org.jgroups>3.2.1.Final</version.org.jgroups>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.8.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.1-1</version.org.opensaml.opensaml>
