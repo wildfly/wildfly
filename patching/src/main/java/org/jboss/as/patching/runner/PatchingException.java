@@ -35,6 +35,7 @@ public class PatchingException extends Exception {
     private final Collection<ContentItem> conflicts;
 
     public PatchingException() {
+        super("patching exception");
         conflicts = Collections.emptyList();
     }
 

@@ -28,16 +28,17 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.PatchInfo;
-import org.jboss.as.patching.PatchResourceDefinition;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.dmr.ModelNode;
 
 import java.io.File;
@@ -49,13 +50,6 @@ import java.io.IOException;
 public abstract class PatchOperationTarget {
 
     static final PathElement CORE_SERVICES = PathElement.pathElement(CORE_SERVICE, "patching");
-
-    /**
-     * Get the patch info.
-     *
-     * @return the patch info
-     */
-    public abstract PatchInfo getPatchInfo();
 
     /**
      * Create a local target.
@@ -95,8 +89,8 @@ public abstract class PatchOperationTarget {
 
     //
 
-    protected abstract void applyPatch(final File file, final ContentPolicyBuilderImpl builder) throws PatchingException;
-    protected abstract void rollback(final String patchId, final ContentPolicyBuilderImpl builder, final boolean restoreConfiguration) throws PatchingException;
+    protected abstract ModelNode applyPatch(final File file, final ContentPolicyBuilderImpl builder) throws IOException;
+    protected abstract ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, final boolean restoreConfiguration) throws IOException;
 
     protected static class LocalPatchOperationTarget extends PatchOperationTarget {
 
@@ -106,21 +100,34 @@ public abstract class PatchOperationTarget {
         }
 
         @Override
-        public PatchInfo getPatchInfo() {
-            return tool.getPatchInfo();
-        }
-
-        @Override
-        protected void applyPatch(final File file, final ContentPolicyBuilderImpl builder) throws PatchingException {
+        protected ModelNode applyPatch(final File file, final ContentPolicyBuilderImpl builder) {
             final ContentVerificationPolicy policy = builder.createPolicy();
-            tool.applyPatch(file, policy);
+            ModelNode result = new ModelNode();
+            try {
+                PatchingResult apply = tool.applyPatch(file, policy);
+                apply.commit();
+                result.set(OUTCOME, SUCCESS);
+            } catch (PatchingException e) {
+                result.set(OUTCOME, FAILED);
+                result.set(FAILURE_DESCRIPTION, e.getLocalizedMessage());
+            }
+            return result;
         }
 
         @Override
-        protected void rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean restoreConfiguration) throws PatchingException {
+        protected ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean restoreConfiguration) {
             final ContentVerificationPolicy policy = builder.createPolicy();
             // FIXME expose rollbackTo parameter
-            tool.rollback(patchId, policy, PatchResourceDefinition.ROLLBACK_TO.getDefaultValue().asBoolean(), restoreConfiguration);
+            ModelNode result = new ModelNode();
+            try {
+                PatchingResult rollback = tool.rollback(patchId, policy, rollbackTo, restoreConfiguration);
+                rollback.commit();
+                result.set(OUTCOME, SUCCESS);
+            } catch (PatchingException e) {
+                result.set(OUTCOME, FAILED);
+                result.set(FAILURE_DESCRIPTION, e.getLocalizedMessage());
+            }
+            return result;
         }
 
     }
@@ -136,48 +143,19 @@ public abstract class PatchOperationTarget {
         }
 
         @Override
-        public PatchInfo getPatchInfo() {
-
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(READ_RESOURCE_OPERATION);
-            operation.get(OP_ADDR).set(address.toModelNode());
-
-            try {
-                final ModelNode result = client.execute(operation);
-
-                // TODO parse result
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void applyPatch(final File file, final ContentPolicyBuilderImpl policyBuilder) throws PatchingException {
+        protected ModelNode applyPatch(final File file, final ContentPolicyBuilderImpl policyBuilder) throws IOException {
             final ModelNode operation = createOperation(Constants.PATCH, address.toModelNode(), policyBuilder);
             operation.get(INPUT_STREAM_INDEX).set(0);
             final OperationBuilder operationBuilder = OperationBuilder.create(operation);
             operationBuilder.addFileAsAttachment(file);
-            try {
-                final ModelNode result = client.execute(operationBuilder.build());
-                checkConflicts(result);
-            } catch (IOException e) {
-                throw new PatchingException(e);
-            }
+            return client.execute(operationBuilder.build());
         }
 
         @Override
-        protected void rollback(String patchId, ContentPolicyBuilderImpl builder, boolean restoreConfiguration) throws PatchingException {
-            final ModelNode operation = createOperation(Constants.PATCH, address.toModelNode(), builder);
+        protected ModelNode rollback(String patchId, ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean restoreConfiguration) throws IOException {
+            final ModelNode operation = createOperation(Constants.ROLLBACK, address.toModelNode(), builder);
             operation.get(Constants.PATCH_ID).set(patchId);
-            try {
-                final ModelNode result = client.execute(operation);
-                checkConflicts(result);
-            } catch (IOException e) {
-                throw new PatchingException(e);
-            }
+            return client.execute(operation);
         }
     }
 
@@ -191,7 +169,7 @@ public abstract class PatchOperationTarget {
         operation.get(Constants.OVERRIDE_ALL).set(builder.overrideAll);
         if(! builder.override.isEmpty()) {
             for(final String o : builder.override) {
-                operation.get(Constants.OVERRIDES).add(o);
+                operation.get(Constants.OVERRIDE).add(o);
             }
         }
         if(! builder.preserve.isEmpty()) {
@@ -201,12 +179,4 @@ public abstract class PatchOperationTarget {
         }
         return operation;
     }
-
-    static void checkConflicts(final ModelNode result) throws PatchingException {
-        if(! ModelDescriptionConstants.SUCCESS.equals(result.get(ModelDescriptionConstants.OUTCOME))) {
-            // TODO format
-            throw new PatchingException(result.toString());
-        }
-    }
-
 }

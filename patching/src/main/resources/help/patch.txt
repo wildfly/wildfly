@@ -1,0 +1,94 @@
+SYNOPSIS
+
+    patch
+      <action> <action_arguments>*
+      [--override-all]
+      [--override-modules]
+      [--override=path(,path)*]
+      [--preserve=path(,path)*]
+      [--host=<host>]
+
+	where <action> can be
+
+    apply           - apply a patch
+	rollback        - rollback a patch that has been applied
+
+	and <action_arguments> depends on the <action>
+
+ACTION: apply
+
+    Apply a patch
+
+    patch apply <file_path>
+      [--override-all]
+      [--override-modules]
+      [--override=path(,path)*]
+      [--preserve=path(,path)*]
+      [--host=<host>]
+
+    <file_path>          - the path to the patch to apply.
+                           The path can be either absolute or relative to the
+                           current directory.
+
+ACTION: rollback
+
+    Rollback a patch that has been applied
+
+    patch rollback --patch-id=<id>
+      [--keep-configuration]
+      [--rollback-to]
+      [--override-all]
+      [--override-modules]
+      [--override=path(,path)*]
+      [--preserve=path(,path)*]
+      [--host=<host>]
+
+    --patch-id=<id>      - the ID of the patch to rollback
+
+    --keep-configuration - The argument does not expect any value and is 
+                           optional.
+                           It signifies that the rollback operation will not
+                           touch the installation configurations and will not
+                           restore the snapshots that were taken when the patch
+                           was applied.
+
+    --rollback-to        - The argument does not expect any value and is 
+                           optional.
+                           If the patch to rollback is a one-off patch, it
+                           signifies that the rollback operation will also
+                           rollback all the other one-off patches that have
+                           been applied on top of the patch to rollback.
+    
+DESCRIPTION
+
+    Apply a patch to the server or rollback a patch that has been applied.
+
+    This command does not required to be connected to the server.
+    If it is connected, it will patch the server's installation.
+    If it is not connected, it will patch the command-line interface's own
+    installation.
+
+ARGUMENTS:
+
+ --host=<host>       - may appear only in the domain mode and is not allowed
+                       in the standalone mode or if the cli is disconnected.
+                       The argument expects the name of the host of the 
+                       installation to patch.
+
+ --override          - The value is a comma-separated list of the miscellaneous
+                       items in the patch that can be overridden on the server
+                       wether the item reports a confict or not.
+                       
+ --preserve          - The value is a comma-separated list of the miscellaneous
+                       items that must be preserved and not modified by
+                       applying or rolling back a patch.
+
+ --override-all      - The argument does not expect any value and is 
+                       optional.
+                       It signifies to bypass any content verification on the
+                       miscellaneous items changed by the patch.
+
+ --override-modules - The argument does not expect any value and is 
+                       optional.
+                       It signifies to bypass any content verification on the
+                       modules and OSGi bundles changed by the patch.

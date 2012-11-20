@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
@@ -79,7 +80,7 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
             });
         } catch (PatchingException e) {
             if(e.hasConflicts()) {
-                // TODO report conflicting items
+                System.out.println(e.getConflicts());
             }
             throw new OperationFailedException(e.getMessage(), e);
         }

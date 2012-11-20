@@ -78,15 +78,10 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .build();
-    static final AttributeDefinition OVERRIDES = PrimitiveListAttributeDefinition.Builder.of(Constants.OVERRIDES, ModelType.STRING)
+    static final AttributeDefinition OVERRIDE = PrimitiveListAttributeDefinition.Builder.of(Constants.OVERRIDE, ModelType.STRING)
             .setAllowNull(true)
             .build();
     static final AttributeDefinition PRESERVE = PrimitiveListAttributeDefinition.Builder.of(Constants.PRESERVE, ModelType.STRING)
-            .setAllowNull(true)
-            .build();
-
-    static final AttributeDefinition RESTORE_CONFIGURATION = SimpleAttributeDefinitionBuilder.create("restore-configuration", ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
             .setAllowNull(true)
             .build();
 
@@ -94,31 +89,37 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .addParameter(INPUT_STREAM_IDX_DEF)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)
-            .addParameter(OVERRIDES)
+            .addParameter(OVERRIDE)
             .addParameter(PRESERVE)
             .build();
 
     static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create(Constants.PATCH_ID, ModelType.STRING)
             .build();
-    public static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create("rollback-to", ModelType.BOOLEAN)
+
+    static final AttributeDefinition RESTORE_CONFIGURATION = SimpleAttributeDefinitionBuilder.create("restore-configuration", ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .build();
+
+    static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create("rollback-to", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .build();
 
     static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
-            .addParameter(OVERRIDE_ALL)
-            .addParameter(OVERRIDE_MODULES)
-            .addParameter(OVERRIDES)
-            .addParameter(PRESERVE)
             .addParameter(ROLLBACK_TO)
             .addParameter(RESTORE_CONFIGURATION)
+            .addParameter(OVERRIDE_ALL)
+            .addParameter(OVERRIDE_MODULES)
+            .addParameter(OVERRIDE)
+            .addParameter(PRESERVE)
             .build();
 
     static final OperationDefinition SHOW_HISTORY = new SimpleOperationDefinitionBuilder("show-history", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .build();
 
-    public static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
+    static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
 
     private PatchResourceDefinition() {
         super(PATH, getResourceDescriptionResolver(NAME));

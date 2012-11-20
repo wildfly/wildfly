@@ -23,126 +23,263 @@
 package org.jboss.as.patching.cli;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.Arrays;
+import java.util.Collection;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
-import org.jboss.as.cli.handlers.BaseOperationCommand;
+import org.jboss.as.cli.handlers.CommandHandlerWithHelp;
 import org.jboss.as.cli.handlers.DefaultFilenameTabCompleter;
 import org.jboss.as.cli.handlers.FilenameTabCompleter;
+import org.jboss.as.cli.handlers.SimpleTabCompleter;
 import org.jboss.as.cli.handlers.WindowsFilenameTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.FileSystemPathArgument;
-import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-import org.jboss.as.controller.client.Operation;
-import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.patching.tool.PatchOperationBuilder;
+import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.dmr.ModelNode;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
-public class PatchHandler extends BaseOperationCommand {
+public class PatchHandler extends CommandHandlerWithHelp {
 
     static final String PATCH = "patch";
-    private static final String PATCHING = "patching";
+    static final String APPLY = "apply";
+    static final String ROLLBACK = "rollback";
 
-    private final ArgumentWithoutValue path;
     private final ArgumentWithValue host;
 
-    public PatchHandler(final CommandContext context) {
-        super(context, PATCH, true);
+    private final ArgumentWithValue action;
 
-        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(context) : new DefaultFilenameTabCompleter(context);
-        path = new FileSystemPathArgument(this, pathCompleter, 0, "--path");
+    private final ArgumentWithoutValue path;
+
+    private final ArgumentWithValue patchId;
+    private final ArgumentWithoutValue rollbackTo;
+    private final ArgumentWithoutValue keepConfiguration;
+
+    private final ArgumentWithoutValue overrideModules;
+    private final ArgumentWithoutValue overrideAll;
+    private final ArgumentWithValue override;
+    private final ArgumentWithValue preserve;
+
+    public PatchHandler(final CommandContext context) {
+        super(PATCH, false);
+
+        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK}), 0, "--action");
+
         host = new ArgumentWithValue(this, new DefaultCompleter(CandidatesProviders.HOSTS), "--host") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                return ctx.isDomainMode() && super.canAppearNext(ctx);
+                boolean connected = ctx.getControllerHost() != null;
+                return connected && ctx.isDomainMode() && super.canAppearNext(ctx);
             }
         };
-    }
 
-    @Override
-    protected ModelNode buildRequestWithoutHeaders(final CommandContext ctx) throws CommandFormatException {
+        // apply & rollback arguments
 
-        final ModelNode address = new ModelNode();
-        if (ctx.isDomainMode()) {
-            address.get(Util.HOST).set(host.getValue(ctx.getParsedCommandLine(), true));
-        }
-        address.get(Util.CORE_SERVICE).set(PATCHING);
-
-        final ModelNode request = new ModelNode();
-        request.get(Util.ADDRESS).set(address);
-        request.get(Util.OPERATION).set(PATCH);
-        return request;
-    }
-
-    protected byte[] readBytes(File f) throws OperationFormatException {
-        byte[] bytes;
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(f);
-            bytes = new byte[(int) f.length()];
-            int read = is.read(bytes);
-            if(read != bytes.length) {
-                throw new OperationFormatException("Failed to read bytes from " + f.getAbsolutePath() + ": " + read + " from " + f.length());
+        overrideModules = new ArgumentWithoutValue(this, "--override-modules") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, APPLY, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
             }
-        } catch (Exception e) {
-            throw new OperationFormatException("Failed to read file " + f.getAbsolutePath(), e);
-        } finally {
-            StreamUtils.safeClose(is);
+        };
+        overrideModules.addRequiredPreceding(action);
+
+        overrideAll = new ArgumentWithoutValue(this, "--override-all") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, APPLY, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        overrideAll.addRequiredPreceding(action);
+
+        override = new ArgumentWithValue(this, "--override") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, APPLY, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        override.addRequiredPreceding(action);
+
+        preserve = new ArgumentWithValue(this, "--preserve") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, APPLY, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        preserve.addRequiredPreceding(action);
+
+        // apply arguments
+
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(context) : new DefaultFilenameTabCompleter(context);
+        path = new FileSystemPathArgument(this, pathCompleter, 1, "--path") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, APPLY)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+
+        };
+        path.addRequiredPreceding(action);
+
+        // rollback arguments
+
+        patchId = new ArgumentWithValue(this, "--patch-id") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        patchId.addRequiredPreceding(action);
+        rollbackTo = new ArgumentWithoutValue(this, "--rollback-to") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        rollbackTo.addRequiredPreceding(action);
+        keepConfiguration = new ArgumentWithoutValue(this, "--keep-configuration") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                if (canOnlyAppearAfterActions(ctx, ROLLBACK)) {
+                    return super.canAppearNext(ctx);
+                }
+                return false;
+            }
+        };
+        keepConfiguration.addRequiredPreceding(action);
+    }
+
+    private boolean canOnlyAppearAfterActions(CommandContext ctx, String... actions) {
+        final String actionStr = this.action.getValue(ctx.getParsedCommandLine());
+        if(actionStr == null || actions.length == 0) {
+            return false;
         }
-        return bytes;
+        return Arrays.asList(actions).contains(actionStr);
     }
 
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
-        ParsedCommandLine args = ctx.getParsedCommandLine();
+        final PatchOperationTarget target = createPatchOperationTarget(ctx);
+        final PatchOperationBuilder builder = createPatchOperationBuilder(ctx.getParsedCommandLine());
 
-        final String path = this.path.getValue(args, true);
-
-        final File f = new File(path);
-        if(!f.exists()) {
-            // i18n?
-            throw new CommandFormatException("Path " + f.getAbsolutePath() + " doesn't exist.");
-        }
-        if(f.isDirectory()) {
-            throw new CommandFormatException(f.getAbsolutePath() + " is a directory.");
-        }
-
-        ModelNode request = buildRequest(ctx);
-
-        execute(ctx, request, f, false);
-    }
-
-    protected void execute(CommandContext ctx, ModelNode request, File f, boolean unmanaged) throws CommandFormatException {
-
-        addHeaders(ctx, request);
-
-        ModelNode result;
+        final ModelNode result;
         try {
-            if(!unmanaged) {
-                OperationBuilder op = new OperationBuilder(request);
-                op.addFileAsAttachment(f);
-                request.get(Util.CONTENT).get(0).get(Util.INPUT_STREAM_INDEX).set(0);
-                Operation operation = op.build();
-                result = ctx.getModelControllerClient().execute(operation);
-                operation.close();
-            } else {
-                result = ctx.getModelControllerClient().execute(request);
-            }
-        } catch (Exception e) {
-            throw new CommandFormatException("Failed to add the deployment content to the repository: " + e.getLocalizedMessage());
+            result = builder.execute(target);
+        } catch (IOException e) {
+            throw new CommandLineException("Unable to apply patch", e);
         }
         if (!Util.isSuccess(result)) {
             throw new CommandFormatException(Util.getFailureDescription(result));
         }
         ctx.printLine(result.toJSONString(false));
+
+    }
+
+    private PatchOperationBuilder createPatchOperationBuilder(ParsedCommandLine args) throws CommandFormatException {
+        boolean applyPatch = APPLY.equals(action.getValue(args, true));
+
+        PatchOperationBuilder builder;
+        if (applyPatch) {
+            final String path = this.path.getValue(args, true);
+
+            final File f = new File(path);
+            if(!f.exists()) {
+                // i18n?
+                throw new CommandFormatException("Path " + f.getAbsolutePath() + " doesn't exist.");
+            }
+            if(f.isDirectory()) {
+                throw new CommandFormatException(f.getAbsolutePath() + " is a directory.");
+            }
+            builder = PatchOperationBuilder.Factory.patch(f);
+        } else {
+            final String id = patchId.getValue(args, true);
+            final boolean rollbackTo = this.rollbackTo.isPresent(args);
+            final boolean keepConfiguration = this.keepConfiguration.isPresent(args);
+            builder = PatchOperationBuilder.Factory.rollback(id, rollbackTo, !keepConfiguration);
+        }
+        if (overrideModules.isPresent(args)) {
+            builder.ignoreModuleChanges();
+        }
+        if (overrideAll.isPresent(args)) {
+            builder.overrideAll();
+        }
+        if (override.isPresent(args)) {
+            String overrideList = override.getValue(args);
+            for (String path : overrideList.split(",+")) {
+                builder.overrideItem(path);
+            }
+        }
+        if (preserve.isPresent(args)) {
+            String overrideList = preserve.getValue(args);
+            for (String path : overrideList.split(",+")) {
+                builder.preserveItem(path);
+            }
+        }
+        return builder;
+    }
+
+    private PatchOperationTarget createPatchOperationTarget(CommandContext ctx) throws CommandLineException {
+        final PatchOperationTarget target;
+        boolean connected = ctx.getControllerHost() != null;
+        if (connected) {
+            if (ctx.isDomainMode()) {
+                String hostName = host.getValue(ctx.getParsedCommandLine(), true);
+                target = PatchOperationTarget.createHost(hostName, ctx.getModelControllerClient());
+            } else {
+                target = PatchOperationTarget.createStandalone(ctx.getModelControllerClient());
+            }
+        } else {
+            final String jbossHome = getJBossHome();
+            try {
+                target = PatchOperationTarget.createLocal(new File(jbossHome));
+            } catch (Exception e) {
+                throw new CommandLineException("Unable to apply patch to local JBOSS_HOME=" + jbossHome, e);
+            }
+        }
+        return target;
+    }
+
+    private static String getJBossHome() {
+        final String env = "JBOSS_HOME";
+        if (System.getSecurityManager() == null) {
+            return System.getenv(env);
+        } else {
+            return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                public Object run() {
+                    return System.getProperty(env);
+                }
+            });
+        }
     }
 }
