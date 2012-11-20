@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.zip.ZipFile;
 
 /**
  * @author Emanuel Muckenhuber
@@ -157,6 +158,16 @@ public class IoUtils {
     }
 
     public static void safeClose(final Closeable closeable) {
+        if(closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                //
+            }
+        }
+    }
+
+    public static void safeClose(final ZipFile closeable) {
         if(closeable != null) {
             try {
                 closeable.close();
