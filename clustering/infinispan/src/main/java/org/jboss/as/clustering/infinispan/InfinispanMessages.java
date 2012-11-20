@@ -190,4 +190,13 @@ public interface InfinispanMessages {
     @Message(id = 10303, value = "cannot remove alias % from empty list.")
     OperationFailedException cannotRemoveAliasFromEmptyList(String aliasName);
 
+    /**
+     * Creates an exception indicating that an attribute has been deprecated.
+     *
+     * @param attributeName the name of the deprecated attribute
+     * @return an {@link OperationFailedException} for the error
+     */
+    @Message(id = 10304, value = "Attribute '%s' has been deprecated.")
+    OperationFailedException attributeDeprecated(String attributeName);
+
 }

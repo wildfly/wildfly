@@ -22,8 +22,14 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -40,6 +46,7 @@ import org.jboss.dmr.ModelType;
  * Resource description for the addressable resource /subsystem=infinispan/cache-container=X/distributed-cache=*
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ * @author Radoslav Husar
  */
 public class DistributedCacheResource extends SharedCacheResource {
 
@@ -101,7 +108,18 @@ public class DistributedCacheResource extends SharedCacheResource {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
 
+        // Attribute virtual-nodes has been deprecated, so not to break management API, attempt to use it will fail.
+        final OperationStepHandler virtualNodesWriteHandler = new ModelOnlyWriteAttributeHandler(VIRTUAL_NODES) {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                if (operation.hasDefined(VALUE) && operation.get(VALUE).asInt() != 1) {
+                    throw InfinispanMessages.MESSAGES.attributeDeprecated(ModelKeys.VIRTUAL_NODES);
+                }
+                context.stepCompleted();
+            }
+        };
+
         // Legacy attributes
-        resourceRegistration.registerReadOnlyAttribute(VIRTUAL_NODES, null);
+        resourceRegistration.registerReadWriteAttribute(VIRTUAL_NODES, null, virtualNodesWriteHandler);
     }
 }
