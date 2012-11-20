@@ -41,4 +41,8 @@ public class PatchHandlerProvider implements CommandHandlerProvider {
         return new String[] { PatchHandler.PATCH };
     }
 
+    @Override
+    public boolean isTabComplete() {
+        return true;
+    }
 }

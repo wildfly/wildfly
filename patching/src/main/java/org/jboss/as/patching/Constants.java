@@ -37,7 +37,7 @@ public class Constants {
 
     public static final String OVERRIDE_MODULES = "override-modules";
     public static final String OVERRIDE_ALL = "override-all";
-    public static final String OVERRIDES = "override";
+    public static final String OVERRIDE = "override";
     public static final String PRESERVE = "preserve";
 
     public static final String TIMESTAMP = "timestamp";

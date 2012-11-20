@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
 
 /**
  * The patch tool.
@@ -128,8 +129,8 @@ public interface PatchTool {
             if(overrideAll) {
                 builder.overrideAll();
             }
-            if(operation.hasDefined(Constants.OVERRIDES)) {
-                final ModelNode overrides = operation.get(Constants.OVERRIDES);
+            if(operation.hasDefined(Constants.OVERRIDE)) {
+                final ModelNode overrides = operation.get(Constants.OVERRIDE);
                 for(final ModelNode override : overrides.asList()) {
                     builder.overrideItem(override.toString());
                 }
@@ -151,8 +152,8 @@ public interface PatchTool {
          */
         public static PatchTool create(final File jbossHome) throws IOException {
             final DirectoryStructure structure = DirectoryStructure.createDefault(jbossHome.getAbsoluteFile());
-            final ModuleLoader loader = ModuleLoader.forClass(Main.class);
-            final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath());
+            final ModuleLoader loader = ModuleLoader.forClass(PatchTool.class);
+            final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
             final PatchInfo info = LocalPatchInfo.load(config, structure);
             return create(info, structure);
         }

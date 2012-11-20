@@ -32,5 +32,7 @@ public interface CommandHandlerProvider {
 
     CommandHandler createCommandHandler(CommandContext ctx);
 
+    boolean isTabComplete();
+
     String[] getNames();
 }
