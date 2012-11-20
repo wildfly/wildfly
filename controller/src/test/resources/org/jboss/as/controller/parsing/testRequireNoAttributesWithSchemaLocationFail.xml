@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<test xmlns="urn:test:1.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="urn:test:1.0 http://somewhere.org/test_1_0.xsd"
+    unexpected="attributeValue">
+    
+    <nested foo='bar'>
+    </nested>
+</test>

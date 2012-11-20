@@ -22,11 +22,13 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -56,7 +58,6 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
         ModelNode subsystem = Util.createAddOperation(subsystemAddress);
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
             String value = reader.getAttributeValue(i);
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -65,7 +66,8 @@ public class JGroupsSubsystemXMLReader_1_1 implements XMLElementReader<List<Mode
                     break;
                 }
                 default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    if (!XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(reader.getAttributeNamespace(i)))
+                        throw ParseUtils.unexpectedAttribute(reader, i);
                 }
             }
         }

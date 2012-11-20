@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -98,7 +99,6 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
                 // Handle attributes
                 int count = reader.getAttributeCount();
                 for (int i = 0; i < count; i++) {
-                    requireNoNamespaceAttribute(reader, i);
                     final String attrValue = reader.getAttributeValue(i);
                     final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                     switch (attribute) {
@@ -107,7 +107,8 @@ class OSGiNamespace12Parser implements Namespace12, XMLStreamConstants, XMLEleme
                             break;
                         }
                         default:
-                            throw unexpectedAttribute(reader, i);
+                            if (!XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(reader.getAttributeNamespace(i)))
+                                throw unexpectedAttribute(reader, i);
                     }
                 }
                 break;

@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config default-supplement="default">
+<config default-supplement="default" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.ejb3</extension-module>
-   <subsystem xmlns="urn:jboss:domain:ejb3:1.4">
+   <subsystem xmlns="urn:jboss:domain:ejb3:1.4"
+        xsi:schemaLocation="urn:jboss:domain:ejb3:1.4 http://www.jboss.org/j2ee/jboss-as-ejb3_1_4.xsd">
        <session-bean>
            <stateless>
                <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>

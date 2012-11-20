@@ -1,6 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<domain xmlns="urn:jboss:domain:1.4">
+<domain xmlns="urn:jboss:domain:1.4"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:jboss:domain:1.4 http://www.jboss.org/j2ee/jboss-as-config_1_4.xsd" >
 
     <extensions>
         <?EXTENSIONS?>

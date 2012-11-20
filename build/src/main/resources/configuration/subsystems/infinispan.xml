@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config default-supplement="default">
+<config default-supplement="default" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <extension-module>org.jboss.as.clustering.infinispan</extension-module>
-    <subsystem xmlns="urn:jboss:domain:infinispan:1.4">
+    <subsystem xmlns="urn:jboss:domain:infinispan:1.4"
+        xsi:schemaLocation="urn:jboss:domain:infinispan:1.4 http://www.jboss.org/j2ee/jboss-as-infinispan_1_4.xsd" >
         <?CACHE-CONTAINERS?>
     </subsystem>
     <supplement name="default">

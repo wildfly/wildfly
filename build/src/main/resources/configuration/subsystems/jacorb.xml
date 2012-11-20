@@ -1,8 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <extension-module>org.jboss.as.jacorb</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jacorb:1.2">
+   <subsystem xmlns="urn:jboss:domain:jacorb:1.2"
+        xsi:schemaLocation="urn:jboss:domain:jacorb:1.2 http://www.jboss.org/j2ee/jboss-as-jacorb_1_2.xsd" >
        <orb socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
            <initializers transactions="spec" security="on"/>
        </orb>

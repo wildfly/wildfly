@@ -63,6 +63,8 @@ import static org.jboss.as.web.WebExtension.SSO_PATH;
 
 import java.util.Collections;
 import java.util.List;
+
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -315,7 +317,6 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         subsystem.get(OP_ADDR).set(address.toModelNode());
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
@@ -325,7 +326,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     subsystem.get(attribute.getLocalName()).set(value);
                     break;
                 default:
-                    throw unexpectedAttribute(reader, i);
+                    if (!XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(reader.getAttributeNamespace(i)))
+                        throw unexpectedAttribute(reader, i);
             }
         }
         list.add(subsystem);

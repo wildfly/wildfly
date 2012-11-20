@@ -34,6 +34,7 @@ import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,7 +49,7 @@ public final class ParseUtils {
     private ParseUtils() {
     }
 
-    public static Element nextElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+    public static Element nextElement(XMLStreamReader reader) throws XMLStreamException {
         if (reader.nextTag() == END_ELEMENT) {
             return null;
         }
@@ -64,7 +65,7 @@ public final class ParseUtils {
      * @return the element or null if the end is reached
      * @throws XMLStreamException if the namespace is wrong or there is a problem accessing the reader
      */
-    public static Element nextElement(XMLExtendedStreamReader reader, Namespace expectedNamespace) throws XMLStreamException {
+    public static Element nextElement(XMLStreamReader reader, Namespace expectedNamespace) throws XMLStreamException {
         Element element = nextElement(reader);
 
         if (element == null) {
@@ -81,7 +82,7 @@ public final class ParseUtils {
      * @param reader the stream reader
      * @return the exception
      */
-    public static XMLStreamException unexpectedElement(final XMLExtendedStreamReader reader) {
+    public static XMLStreamException unexpectedElement(final XMLStreamReader reader) {
         return MESSAGES.unexpectedElement(reader.getName(), reader.getLocation());
     }
 
@@ -90,7 +91,7 @@ public final class ParseUtils {
      * @param reader the stream reader
      * @return the exception
      */
-    public static XMLStreamException unexpectedEndElement(final XMLExtendedStreamReader reader) {
+    public static XMLStreamException unexpectedEndElement(final XMLStreamReader reader) {
         return MESSAGES.unexpectedEndElement(reader.getName(), reader.getLocation());
     }
 
@@ -100,7 +101,7 @@ public final class ParseUtils {
      * @param index the attribute index
      * @return the exception
      */
-    public static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int index) {
+    public static XMLStreamException unexpectedAttribute(final XMLStreamReader reader, final int index) {
         return MESSAGES.unexpectedAttribute(reader.getAttributeName(index), reader.getLocation());
     }
 
@@ -110,7 +111,7 @@ public final class ParseUtils {
      * @param index the attribute index
      * @return the exception
      */
-    public static XMLStreamException invalidAttributeValue(final XMLExtendedStreamReader reader, final int index) {
+    public static XMLStreamException invalidAttributeValue(final XMLStreamReader reader, final int index) {
         return MESSAGES.invalidAttributeValue(reader.getAttributeValue(index), reader.getAttributeName(index), reader.getLocation());
     }
 
@@ -121,7 +122,7 @@ public final class ParseUtils {
      *        attribute name
      * @return the exception
      */
-    public static XMLStreamException missingRequired(final XMLExtendedStreamReader reader, final Set<?> required) {
+    public static XMLStreamException missingRequired(final XMLStreamReader reader, final Set<?> required) {
         final StringBuilder b = new StringBuilder();
         Iterator<?> iterator = required.iterator();
         while (iterator.hasNext()) {
@@ -141,7 +142,7 @@ public final class ParseUtils {
      *        attribute name
      * @return the exception
      */
-    public static XMLStreamException missingRequiredElement(final XMLExtendedStreamReader reader, final Set<?> required) {
+    public static XMLStreamException missingRequiredElement(final XMLStreamReader reader, final Set<?> required) {
         final StringBuilder b = new StringBuilder();
         Iterator<?> iterator = required.iterator();
         while (iterator.hasNext()) {
@@ -161,7 +162,7 @@ public final class ParseUtils {
      *        attribute name
      * @return the exception
      */
-    public static XMLStreamException missingOneOf(final XMLExtendedStreamReader reader, final Set<?> required) {
+    public static XMLStreamException missingOneOf(final XMLStreamReader reader, final Set<?> required) {
         final StringBuilder b = new StringBuilder();
         Iterator<?> iterator = required.iterator();
         while (iterator.hasNext()) {
@@ -175,14 +176,16 @@ public final class ParseUtils {
     }
 
     /**
-     * Checks that the current element has no attributes, throwing an
-     * {@link javax.xml.stream.XMLStreamException} if one is found.
+     * Checks that the current element has no attributes except for those in the "http://www.w3.org/2001/XMLSchema-instance"
+     * namespace such as "schemaLocation", throwing {@link javax.xml.stream.XMLStreamException} if anything else is found.
      * @param reader the reader
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
-    public static void requireNoAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
-        if (reader.getAttributeCount() > 0) {
-            throw unexpectedAttribute(reader, 0);
+    public static void requireNoAttributes(final XMLStreamReader reader) throws XMLStreamException {
+        // Note that xmlns and xmlns:* attributes are parsed and handled by the XMLStreamReader
+        for (int i = 0; i < reader.getAttributeCount(); ++i) {
+            if (!XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI.equals(reader.getAttributeNamespace(i)))
+                throw unexpectedAttribute(reader, i);
         }
     }
 
@@ -193,7 +196,7 @@ public final class ParseUtils {
      * @param reader the reader
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
-    public static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public static void requireNoContent(final XMLStreamReader reader) throws XMLStreamException {
         if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             throw unexpectedElement(reader);
         }
@@ -206,7 +209,7 @@ public final class ParseUtils {
      * @param requiredNs the namespace required
      * @throws XMLStreamException if the current namespace does not match the required namespace
      */
-    public static void requireNamespace(final XMLExtendedStreamReader reader, final Namespace requiredNs) throws XMLStreamException {
+    public static void requireNamespace(final XMLStreamReader reader, final Namespace requiredNs) throws XMLStreamException {
         Namespace actualNs = Namespace.forUri(reader.getNamespaceURI());
         if (actualNs != requiredNs) {
             throw unexpectedElement(reader);
@@ -220,7 +223,7 @@ public final class ParseUtils {
      * @param name the name that was redeclared
      * @return the exception
      */
-    public static XMLStreamException duplicateAttribute(final XMLExtendedStreamReader reader, final String name) {
+    public static XMLStreamException duplicateAttribute(final XMLStreamReader reader, final String name) {
         return MESSAGES.duplicateAttribute(name, reader.getLocation());
     }
 
@@ -231,7 +234,7 @@ public final class ParseUtils {
      * @param name the name that was redeclared
      * @return the exception
      */
-    public static XMLStreamException duplicateNamedElement(final XMLExtendedStreamReader reader, final String name) {
+    public static XMLStreamException duplicateNamedElement(final XMLStreamReader reader, final String name) {
         return MESSAGES.duplicateNamedElement(name, reader.getLocation());
     }
 
@@ -244,7 +247,7 @@ public final class ParseUtils {
      *         element does not contain the specified attribute, contains other
      *         attributes, or contains child elements.
      */
-    public static boolean readBooleanAttributeElement(final XMLExtendedStreamReader reader, final String attributeName)
+    public static boolean readBooleanAttributeElement(final XMLStreamReader reader, final String attributeName)
             throws XMLStreamException {
         requireSingleAttribute(reader, attributeName);
         final boolean value = Boolean.parseBoolean(reader.getAttributeValue(0));
@@ -261,7 +264,7 @@ public final class ParseUtils {
      *         element does not contain the specified attribute, contains other
      *         attributes, or contains child elements.
      */
-    public static String readStringAttributeElement(final XMLExtendedStreamReader reader, final String attributeName)
+    public static String readStringAttributeElement(final XMLStreamReader reader, final String attributeName)
             throws XMLStreamException {
         requireSingleAttribute(reader, attributeName);
         final String value = reader.getAttributeValue(0);
@@ -291,7 +294,7 @@ public final class ParseUtils {
         return value;
     }
 
-    public static Property readProperty(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    public static Property readProperty(final XMLStreamReader reader) throws XMLStreamException {
         final int cnt = reader.getAttributeCount();
         String name = null;
         String value = null;
@@ -344,7 +347,7 @@ public final class ParseUtils {
      * @param attributeName the attribute name
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
-    public static void requireSingleAttribute(final XMLExtendedStreamReader reader, final String attributeName)
+    public static void requireSingleAttribute(final XMLStreamReader reader, final String attributeName)
             throws XMLStreamException {
         final int count = reader.getAttributeCount();
         if (count == 0) {
@@ -366,7 +369,7 @@ public final class ParseUtils {
      * @return the attribute values in order
      * @throws javax.xml.stream.XMLStreamException if an error occurs
      */
-    public static String[] requireAttributes(final XMLExtendedStreamReader reader, final String... attributeNames)
+    public static String[] requireAttributes(final XMLStreamReader reader, final String... attributeNames)
             throws XMLStreamException {
         final int length = attributeNames.length;
         final String[] result = new String[length];
@@ -381,20 +384,20 @@ public final class ParseUtils {
         return result;
     }
 
-    public static boolean isNoNamespaceAttribute(final XMLExtendedStreamReader reader, final int index) {
+    public static boolean isNoNamespaceAttribute(final XMLStreamReader reader, final int index) {
         String namespace = reader.getAttributeNamespace(index);
         // FIXME when STXM-8 is done, remove the null check
         return namespace == null || XMLConstants.NULL_NS_URI.equals(namespace);
     }
 
-    public static void requireNoNamespaceAttribute(final XMLExtendedStreamReader reader, final int index)
+    public static void requireNoNamespaceAttribute(final XMLStreamReader reader, final int index)
             throws XMLStreamException {
         if (!isNoNamespaceAttribute(reader, index)) {
             throw unexpectedAttribute(reader, index);
         }
     }
 
-    public static ModelNode parseBoundedIntegerAttribute(final XMLExtendedStreamReader reader, final int index,
+    public static ModelNode parseBoundedIntegerAttribute(final XMLStreamReader reader, final int index,
             final int minInclusive, final int maxInclusive, boolean allowExpression) throws XMLStreamException {
         final String stringValue = reader.getAttributeValue(index);
         if (allowExpression) {
