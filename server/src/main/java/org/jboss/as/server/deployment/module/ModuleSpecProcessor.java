@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -61,8 +60,6 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
-    private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
-
     private static final ServerLogger logger = ServerLogger.DEPLOYMENT_LOGGER;
 
     @Override
@@ -81,16 +78,12 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit deploymentUnit) {
-        deploymentUnit.removeAttachment(MARKER);
     }
 
     private void deployModuleSpec(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.hasAttachment(MARKER))
-            return;
-
-        deploymentUnit.putAttachment(MARKER, true);
+        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
 
         final ResourceRoot mainRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
         if (mainRoot == null)
@@ -114,8 +107,10 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             throw ServerMessages.MESSAGES.noModuleIdentifier(deploymentUnit.getName());
         }
 
+        final List<AdditionalModuleSpecification> additionalModules = topLevelDeployment.getAttachmentList(Attachments.ADDITIONAL_MODULES);
+
         // create the module service and set it to attach to the deployment in the next phase
-        final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpec, moduleIdentifier);
+        final ServiceName moduleServiceName = createModuleService(phaseContext, deploymentUnit, resourceRoots, moduleSpec, moduleIdentifier, additionalModules);
         phaseContext.addDeploymentDependency(moduleServiceName, Attachments.MODULE);
 
         for (final DeploymentUnit subDeployment : deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS)) {
@@ -125,14 +120,14 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        final List<AdditionalModuleSpecification> additionalModules = deploymentUnit.getAttachment(Attachments.ADDITIONAL_MODULES);
-        if (additionalModules == null) {
+        if (deploymentUnit.getParent() != null) {
+            //they have already been added by the parent
             return;
         }
         for (final AdditionalModuleSpecification module : additionalModules) {
             addSystemDependencies(moduleSpec, module);
             List<ResourceRoot> roots = module.getResourceRoots();
-            ServiceName serviceName = createModuleService(phaseContext, deploymentUnit, roots, module, module.getModuleIdentifier());
+            ServiceName serviceName = createModuleService(phaseContext, deploymentUnit, roots, module, module.getModuleIdentifier(), additionalModules);
             phaseContext.addToAttachmentList(Attachments.NEXT_PHASE_DEPS, serviceName);
         }
     }
@@ -152,7 +147,7 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
 
     private ServiceName createModuleService(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit,
                                             final List<ResourceRoot> resourceRoots, final ModuleSpecification moduleSpecification,
-                                            final ModuleIdentifier moduleIdentifier) throws DeploymentUnitProcessingException {
+                                            final ModuleIdentifier moduleIdentifier, List<AdditionalModuleSpecification> additionalModuleSpecifications) throws DeploymentUnitProcessingException {
         logger.debug("Creating module: " + moduleIdentifier);
         final ModuleSpec.Builder specBuilder = ModuleSpec.build(moduleIdentifier);
         for (final DependencySpec dep : moduleSpecification.getModuleSystemDependencies()) {
@@ -201,6 +196,23 @@ public class ModuleSpecProcessor implements DeploymentUnitProcessor {
         allDependencies.addAll(dependencies);
         allDependencies.addAll(localDependencies);
         allDependencies.addAll(userDependencies);
+
+
+        //this is not that nice, but there is a situation where additional modules cause problems
+        //due to re-exporting of dependencies, as required by the Class-Path transitivity requirement
+        //we hack around this by simply making every module load service dependent on all the additional
+        //modules
+        //this will mostly resolve the issue, except in cases where another deployment is depending on a
+        //module that suffers from this problem (i.e. if you have a cross-deployment dependency, and the
+        //dependency you are targeting exports another module, it is possible for a race condition to occur
+        //where a module is loaded before its dependency is ready. This should be a corner case and can
+        //be worked around using whole deployment inter-deployment dependencies, rather than just a module
+        //dependency
+        //for more details see AS7-5971
+        for (AdditionalModuleSpecification module : additionalModuleSpecifications) {
+            allDependencies.add(new ModuleDependency(null, module.getModuleIdentifier(), false, false, false, false));
+        }
+
         return ModuleLoadService.install(phaseContext.getServiceTarget(), moduleIdentifier, allDependencies);
     }
 
