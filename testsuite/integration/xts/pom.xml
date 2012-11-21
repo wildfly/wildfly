@@ -40,7 +40,12 @@
                     <groupId>org.jboss.byteman</groupId>
                     <artifactId>byteman</artifactId>
                     <scope>test</scope>
-		</dependency>
+		        </dependency>
+                <dependency>
+                    <groupId>org.jboss.byteman</groupId>
+                    <artifactId>byteman-submit</artifactId>
+                    <scope>test</scope>
+		        </dependency>
             </dependencies>
 
             <build>
@@ -108,7 +113,7 @@
                                         <server.jvm.args>-Xms64m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.byteman.verbose
                                             -Djboss.modules.system.pkgs=org.jboss.byteman
                                             -Dorg.jboss.byteman.transform.all
-                                            -javaagent:${project.build.directory}/lib/byteman.jar=script:${project.build.directory}/test-classes/participant_completion_coordinator_rules.btm</server.jvm.args>
+                                            -javaagent:${project.build.directory}/lib/byteman.jar=listener:true</server.jvm.args>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
