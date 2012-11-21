@@ -35,6 +35,7 @@ import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTER_CONNECTION;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
+import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.DISCOVERY_GROUP;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
@@ -44,6 +45,7 @@ import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
+import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.GroupingHandlerDefinition.TYPE;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
@@ -315,6 +317,13 @@ public class MessagingExtension implements Extension {
                                     oldModel.get(HORNETQ_SERVER, server.getName(), CONNECTION_FACTORY, connectionFactory.getName()).get(FACTORY_TYPE.getName()).set(new ModelNode());
                                 }
                             }
+                        }
+                        //TODO - a nicer way to automagically remove these runtime resources?
+                        if (server.getValue().hasDefined(CORE_ADDRESS)) {
+                            oldModel.get(HORNETQ_SERVER, server.getName()).remove(CORE_ADDRESS);
+                        }
+                        if (server.getValue().hasDefined(RUNTIME_QUEUE)) {
+                            oldModel.get(HORNETQ_SERVER, server.getName()).remove(RUNTIME_QUEUE);
                         }
                     }
                 }
