@@ -67,7 +67,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
         runningServerRemove.get(OP).set(REMOVE);
         runningServerRemove.get(OP_ADDR).set(running.toModelNode());
 
-        context.addStep(operation, new OperationStepHandler() {
+        context.addStep(runningServerRemove, new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 context.removeResource(PathAddress.EMPTY_ADDRESS);

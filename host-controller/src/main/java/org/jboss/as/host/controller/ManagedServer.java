@@ -150,8 +150,7 @@ class ManagedServer {
         final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(HOST, hostControllerName), serverPath);
         this.protocolClient = new ManagedServerProxy(this, address);
         this.proxyController = TransformingProxyController.Factory.create(protocolClient,
-                                Transformers.Factory.create(transformationTarget),
-                                address, ProxyOperationAddressTranslator.SERVER);
+                Transformers.Factory.create(transformationTarget), address, ProxyOperationAddressTranslator.SERVER);
     }
 
     /**

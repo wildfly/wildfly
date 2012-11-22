@@ -31,10 +31,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostResolver;
-import org.jboss.as.host.controller.operations.ServerRestartHandler;
-import org.jboss.as.host.controller.operations.ServerStartHandler;
 import org.jboss.as.host.controller.operations.ServerStatusHandler;
-import org.jboss.as.host.controller.operations.ServerStopHandler;
+import static org.jboss.as.host.controller.resources.ServerConfigResourceDefinition.registerServerLifecycleOperations;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.operations.LaunchTypeHandler;
@@ -59,23 +57,10 @@ public class StoppedServerResource extends SimpleResourceDefinition {
     public void registerOperations(final ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
 
-        //
+        // start,stop,restart
+        registerServerLifecycleOperations(resourceRegistration, serverInventory);
+
         resourceRegistration.registerMetric(ServerConfigResourceDefinition.STATUS, new ServerStatusHandler(serverInventory));
-
-        final ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
-        resourceRegistration.registerOperationHandler(ServerStartHandler.DEFINITION, startHandler);
-        final ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
-        resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
-        final ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
-        resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
-
-        resourceRegistration.registerMetric(ServerRootResourceDefinition.SERVER_STATE, new OperationStepHandler() {
-            @Override
-            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                context.getResult().set("stopped");
-                context.stepCompleted();
-            }
-        });
         resourceRegistration.registerMetric(ServerRootResourceDefinition.LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN));
 
     }

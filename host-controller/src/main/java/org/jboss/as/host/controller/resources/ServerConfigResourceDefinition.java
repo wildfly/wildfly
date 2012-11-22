@@ -156,17 +156,7 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
 
         if (serverInventory != null) {
-            // TODO convert these to use OperationDefinition
-            ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerStartHandler.DEFINITION, startHandler);
-            ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
-            ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
-            ServerProcessHandlers.ServerDestroyHandler destroyHandler = new ServerProcessHandlers.ServerDestroyHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerProcessHandlers.DESTROY_OPERATION, destroyHandler);
-            ServerProcessHandlers.ServerKillHandler killHandler = new ServerProcessHandlers.ServerKillHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerProcessHandlers.KILL_OPERATION, killHandler);
+            registerServerLifecycleOperations(resourceRegistration, serverInventory);
         }
     }
 
@@ -187,4 +177,19 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
         // Server jvm
         resourceRegistration.registerSubModel(JvmResourceDefinition.SERVER);
     }
+
+    public static void registerServerLifecycleOperations(final ManagementResourceRegistration resourceRegistration, final ServerInventory serverInventory) {
+            // TODO convert these to use OperationDefinition
+            ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
+            resourceRegistration.registerOperationHandler(ServerStartHandler.DEFINITION, startHandler);
+            ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
+            resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
+            ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
+            resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
+        ServerProcessHandlers.ServerDestroyHandler destroyHandler = new ServerProcessHandlers.ServerDestroyHandler(serverInventory);
+        resourceRegistration.registerOperationHandler(ServerProcessHandlers.DESTROY_OPERATION, destroyHandler);
+        ServerProcessHandlers.ServerKillHandler killHandler = new ServerProcessHandlers.ServerKillHandler(serverInventory);
+        resourceRegistration.registerOperationHandler(ServerProcessHandlers.KILL_OPERATION, killHandler);
+    }
+
 }
