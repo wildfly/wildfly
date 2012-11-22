@@ -31,6 +31,8 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
 import org.jboss.as.patching.runner.PatchingException;
 import org.jboss.as.patching.runner.PatchingResult;
@@ -80,9 +82,25 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
             });
         } catch (PatchingException e) {
             if(e.hasConflicts()) {
-                // TODO report conflicting items
+                final ModelNode failureDescription = context.getFailureDescription();
+                for(final ContentItem item : e.getConflicts()) {
+                    final ContentType type = item.getContentType();
+                    switch (type) {
+                        case BUNDLE:
+                            failureDescription.get(Constants.BUNDLES).add(item.toString());
+                            break;
+                        case MODULE:
+                            failureDescription.get(Constants.MODULES).add(item.toString());
+                            break;
+                        case MISC:
+                            failureDescription.get(Constants.MISC).add(item.toString());
+                            break;
+                    }
+                }
+                context.stepCompleted();
+            } else {
+                throw new OperationFailedException(e.getMessage(), e);
             }
-            throw new OperationFailedException(e.getMessage(), e);
         } finally {
             //
         }
