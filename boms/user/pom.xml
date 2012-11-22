@@ -6,7 +6,7 @@
 
     <groupId>org.jboss.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>1.0.3.Final</version>
+    <version>1.0.4-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -48,14 +48,14 @@
         
         <!-- Versions of JBoss projects -->
         <version.org.infinispan>5.1.2.FINAL</version.org.infinispan>
-        <version.org.jboss.arquillian>1.0.3.Final</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian>1.0.4-SNAPSHOT</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>1.1.0.Final</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>1.0.0.Final</version.org.jboss.arquillian.graphene>
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
         <version.org.jboss.errai>2.0.0.Final</version.org.jboss.errai>
         <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
-        <version.org.jboss.logging.processor>1.0.3.Final</version.org.jboss.logging.processor>
+        <version.org.jboss.logging.processor>1.0.4-SNAPSHOT</version.org.jboss.logging.processor>
         <version.org.jboss.security.negotiation>2.1.1.Final</version.org.jboss.security.negotiation>
         <version.org.jboss.spec.jboss.javaee.6.0>3.0.0.Final</version.org.jboss.spec.jboss.javaee.6.0>
         <version.org.richfaces>4.2.0.Final</version.org.richfaces>
