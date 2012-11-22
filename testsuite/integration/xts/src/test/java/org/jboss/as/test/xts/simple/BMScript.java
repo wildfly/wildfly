@@ -22,6 +22,8 @@ package org.jboss.as.test.xts.simple;
 
 import org.jboss.byteman.agent.submit.Submit;
 
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,14 +34,10 @@ public class BMScript {
 
     private static final Submit submit = new Submit();
 
-    public BMScript(String pathToBMScript) {
-    }
-
     public static void submit(String script) {
 
-        List<String> files = new ArrayList<String>();
-        files.add(script);
         try {
+            List<String> files = getScriptFiles(script);
             submit.addRulesFromFiles(files);
         } catch (Exception e) {
             throw new RuntimeException("Failed to submit Byteman script", e);
@@ -48,12 +46,28 @@ public class BMScript {
 
     public static void remove(String script) {
 
-        List<String> files = new ArrayList<String>();
-        files.add(script);
         try {
+            List<String> files = getScriptFiles(script);
             submit.deleteRulesFromFiles(files);
         } catch (Exception e) {
             throw new RuntimeException("Failed to remove Byteman script", e);
         }
+    }
+
+    private static List<String> getScriptFiles(String scriptResourcePath) {
+        URL resource=Thread.currentThread().getContextClassLoader().getResource(scriptResourcePath);
+        if (resource == null) {
+            throw new RuntimeException("'" + scriptResourcePath + "' can't be found on the classpath");
+        }
+        File file=new File(resource.getFile());
+
+        if(file.exists() && file.isFile()) {
+            List<String> files = new ArrayList<String>();
+            files.add(resource.getFile());
+            return files;
+        } else {
+            throw new RuntimeException("'" + scriptResourcePath + "' either doesn't exist or isn't a file");
+        }
+
     }
 }
