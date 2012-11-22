@@ -134,8 +134,10 @@ public class DomainXml extends CommonXml {
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
                 break;
             case DOMAIN_1_3:
-            case DOMAIN_1_4: {
                 readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
+                break;
+            case DOMAIN_1_4: {
+                readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
                 break;
             }
             default: {
@@ -366,7 +368,63 @@ public class DomainXml extends CommonXml {
                     EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
             element = nextElement(reader, expectedNs);
         }
-        if (element == Element.DEPLOYMENT_OVERLAYS && expectedNs.ordinal() >= Namespace.DOMAIN_1_4.ordinal()) {
+        if (element == Element.SERVER_GROUPS) {
+            parseServerGroups(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.MANAGEMENT_CLIENT_CONTENT) {
+            parseManagementClientContent(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        } else if (element == null) {
+            // Always add op(s) to set up management-client-content resources
+            initializeRolloutPlans(address, list);
+        } else {
+            throw unexpectedElement(reader);
+        }
+    }
+
+    void readDomainElement1_4(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
+        // attributes
+        readDomainElementAttributes_1_3(reader, expectedNs, address, list);
+
+        // Content
+        // Handle elements: sequence
+
+        Element element = nextElement(reader, expectedNs);
+        if (element == Element.EXTENSIONS) {
+            extensionXml.parseExtensions(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PATHS) {
+            parsePaths(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PROFILES) {
+            parseProfiles(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        final Set<String> interfaceNames = new HashSet<String>();
+        if (element == Element.INTERFACES) {
+            parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SOCKET_BINDING_GROUPS) {
+            parseDomainSocketBindingGroups(reader, address, expectedNs, list, interfaceNames);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENTS) {
+            parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENT_OVERLAYS) {
             parseDeploymentOverlays(reader, expectedNs, new ModelNode(), list);
             element = nextElement(reader, expectedNs);
         }
