@@ -53,6 +53,8 @@ import org.jboss.dmr.ModelType;
  */
 public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(SYSTEM_PROPERTY);
+
     public static final SimpleAttributeDefinition VALUE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.VALUE, ModelType.STRING, true)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(0, true, true))
@@ -70,7 +72,7 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
     final boolean useBoottime;
 
     private SystemPropertyResourceDefinition(Location location, ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, boolean useBoottime) {
-        super(PathElement.pathElement(SYSTEM_PROPERTY),
+        super(PATH,
                 new ReplaceResourceNameResourceDescriptionResolver(location, SYSTEM_PROPERTY),
                 new SystemPropertyAddHandler(systemPropertyUpdater, useBoottime, useBoottime ? ALL_ATTRIBUTES : SERVER_ATTRIBUTES),
                 new SystemPropertyRemoveHandler(systemPropertyUpdater));

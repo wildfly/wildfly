@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.controller;
+package org.jboss.as.domain.controller.transformers;
 
 import java.util.Map;
 
@@ -36,6 +36,8 @@ import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -59,8 +61,16 @@ public class DomainTransformers {
      */
     public static void initializeDomainRegistry(final TransformerRegistry registry) {
 
+
+        TransformersSubRegistration domain1_3 = registry.getDomainRegistration(VERSION_1_3);
         // Discard all operations to the newly introduced jsf extension
-        registry.getDomainRegistration(VERSION_1_3).registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
+        domain1_3.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
+
+        //Transform the system properties
+        SystemPropertyTransformers.registerTransformers(domain1_3);
+        TransformersSubRegistration serverGroup = domain1_3.registerSubResource(ServerGroupResourceDefinition.PATH);
+        SystemPropertyTransformers.registerTransformers(serverGroup);
+
 
         // Ignore the jsf subsystem as well
         registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
