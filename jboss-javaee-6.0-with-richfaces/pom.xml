@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.jboss.bom</groupId>
-        <version>1.0.3-SNAPSHOT</version>
+        <version>1.0.3.Final</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -59,25 +59,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- The Maven Surefire plugin tests your application. Here we ensure we are using a version compatible with Arquillian -->
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${version.surefire.plugin}</version>
-                </plugin>
-                <!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
-                <!-- To use, set the JBOSS_HOME environment variable and run:
-                    mvn package jboss-as:deploy -->
-                <plugin>
-                    <groupId>org.jboss.as.plugins</groupId>
-                    <artifactId>jboss-as-maven-plugin</artifactId>
-                    <version>${version.org.jboss.as.plugins.maven.plugin}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
 </project>

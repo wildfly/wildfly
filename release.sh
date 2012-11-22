@@ -79,7 +79,7 @@ release()
    git commit -a -m "Prepare for development of $NEWSNAPSHOTVERSION"
    git push upstrem HEAD --tags
    echo "***** JBoss BOMs released"
-   read -p "Do you want to send release notifcations to $NOTIFICATION_EMAIL_TO[y/N]? " yn
+   read -p "Do you want to send release notifcations to $EAP_EMAIL_TO[y/N]? " yn
    case $yn in
        [Yy]* ) notifyEmail; notifyJira;;
        * ) exit;

@@ -6,7 +6,7 @@
 
     <groupId>org.jboss.bom</groupId>
     <artifactId>jboss-bom-parent</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3.Final</version>
 
     <packaging>pom</packaging>
 
@@ -43,6 +43,9 @@
     </licenses>
 
     <properties>
+        <!-- Version of Deltaspike -->
+        <version.org.apache.deltaspike>0.3-incubating</version.org.apache.deltaspike>
+        
         <!-- Versions of JBoss projects -->
         <version.org.infinispan>5.1.2.FINAL</version.org.infinispan>
         <version.org.jboss.arquillian>1.0.3.Final</version.org.jboss.arquillian>
@@ -86,7 +89,7 @@
         <version.surefire.plugin>2.10</version.surefire.plugin>
         <version.org.codehaus.mojo.gwt.maven.plugin>${version.com.google.gwt}</version.org.codehaus.mojo.gwt.maven.plugin>
         <version.org.jboss.as.plugins.maven.plugin>7.3.Final</version.org.jboss.as.plugins.maven.plugin>
-
+        
 
         <!-- Repository Deployment URLs -->
 
@@ -99,6 +102,7 @@
     </properties>
 
     <modules>
+        <module>jboss-javaee-6.0-with-deltaspike</module>
         <module>jboss-javaee-6.0-with-errai</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
         <module>jboss-javaee-6.0-with-hibernate3</module>
