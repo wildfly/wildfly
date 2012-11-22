@@ -47,7 +47,7 @@ public class WSBAParticipantCompletionTestCase {
     private static final Logger log = Logger.getLogger(WSBAParticipantCompletionTestCase.class);
 
     public static final String DEPLOYMENT_NAME = "wsba-participant-completion";
-    private static final String BM_SCRIPT_PATH = "../test-classes/participant_completion_coordinator_rules.btm";
+    private static final String BM_SCRIPT_PATH = "participant_completion_coordinator_rules.btm";
 
     @Inject
     @ClientStub
