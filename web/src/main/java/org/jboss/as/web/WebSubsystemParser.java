@@ -441,13 +441,13 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     name = value;
                     break;
                 case MODULE:
-                    valve.get(MODULE).set(value);
+                    WebValveDefinition.MODULE.parseAndSetParameter(value, valve, reader);
                     break;
                 case CLASS_NAME:
-                    valve.get(CLASS_NAME).set(value);
+                    WebValveDefinition.CLASS_NAME.parseAndSetParameter(value, valve, reader);
                     break;
                 case ENABLED:
-                    valve.get(ENABLED).set(value);
+                    WebValveDefinition.ENABLED.parseAndSetParameter(value, valve, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
