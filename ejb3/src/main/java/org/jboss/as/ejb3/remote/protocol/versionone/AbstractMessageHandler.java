@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -205,6 +205,16 @@ abstract class AbstractMessageHandler implements MessageHandler {
                 final int byteToWrite = b & 0xff;
                 dataOutput.write(byteToWrite);
             }
+
+            @Override
+            public void write(final byte[] b) throws IOException {
+                dataOutput.write(b);
+            }
+
+            @Override
+            public void write(final byte[] b, final int off, final int len) throws IOException {
+                dataOutput.write(b, off, len);
+            }
         };
         final ByteOutput byteOutput = Marshalling.createByteOutput(outputStream);
         // start the marshaller
@@ -239,7 +249,7 @@ abstract class AbstractMessageHandler implements MessageHandler {
      * @return
      * @throws IOException
      */
-    protected Unmarshaller prepareForUnMarshalling(final MarshallerFactory marshallerFactory, final ClassResolver classResolver, final DataInput dataInput) throws IOException {
+    protected Unmarshaller prepareForUnMarshalling(final MarshallerFactory marshallerFactory, final ClassResolver classResolver, final DataInputStream dataInput) throws IOException {
         final Unmarshaller unmarshaller = this.getUnMarshaller(marshallerFactory, classResolver);
         final InputStream is = new InputStream() {
             @Override
@@ -251,6 +261,16 @@ abstract class AbstractMessageHandler implements MessageHandler {
                 } catch (EOFException eof) {
                     return -1;
                 }
+            }
+
+            @Override
+            public int read(final byte[] b, final int off, final int len) throws IOException {
+                return dataInput.read(b, off, len);
+            }
+
+            @Override
+            public int read(final byte[] b) throws IOException {
+                return dataInput.read(b);
             }
         };
         final ByteInput byteInput = Marshalling.createByteInput(is);
