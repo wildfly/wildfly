@@ -261,10 +261,11 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Runtime operations
         if (serverEnvironment != null) {
-            // Reload op -- does not work on a domain mode server
+            // Reload op
+            ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
+            resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DEFINITION, reloadHandler, false);
             if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN) {
-                ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
-                resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DEFINITION, reloadHandler, false);
+
             }
 
             // The System.exit() based shutdown command is only valid for a server process directly launched from the command line

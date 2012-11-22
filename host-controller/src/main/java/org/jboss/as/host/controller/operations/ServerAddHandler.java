@@ -19,16 +19,19 @@
 package org.jboss.as.host.controller.operations;
 
 
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -49,22 +52,38 @@ public class ServerAddHandler extends AbstractAddStepHandler {
     private ServerAddHandler() {
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
 
-        createCoreModel(model);
+        final ModelNode model = resource.getModel();
         for (AttributeDefinition attr : ServerConfigResourceDefinition.WRITABLE_ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
+
+        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        final PathAddress running = address.subAddress(0, 1).append(PathElement.pathElement(RUNNING_SERVER, address.getLastElement().getValue()));
+
+        final ModelNode runningServerAdd = new ModelNode();
+        runningServerAdd.get(OP).set(ADD);
+        runningServerAdd.get(OP_ADDR).set(running.toModelNode());
+
+        context.addStep(runningServerAdd, new OperationStepHandler() {
+            @Override
+            public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                context.createResource(PathAddress.EMPTY_ADDRESS);
+                context.stepCompleted();
+            }
+        }, OperationContext.Stage.IMMEDIATE);
+
+    }
+
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        //
     }
 
     protected boolean requiresRuntime(OperationContext context) {
         return false;
     }
 
-    private void createCoreModel(ModelNode root) {
-        root.get(PATH);
-        root.get(SYSTEM_PROPERTY);
-        root.get(INTERFACE);
-        root.get(JVM);
-    }
 }
