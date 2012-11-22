@@ -389,7 +389,7 @@ public class NamingContext implements EventContext {
 
     /** {@inheritDoc} */
     public Object lookupLink(String name) throws NamingException {
-        return lookup(parseName(name));
+        return lookupLink(parseName(name));
     }
 
     /** {@inheritDoc} */
