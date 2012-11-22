@@ -28,7 +28,9 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.protocol.ProtocolMessages;
@@ -58,10 +60,6 @@ class ManagedServerProxy implements TransactionalProtocolClient {
         this.remoteClient = DISCONNECTED;
     }
 
-    boolean isConnected() {
-        return remoteClient != DISCONNECTED;
-    }
-
     synchronized void connected(final TransactionalProtocolClient remoteClient) {
         this.remoteClient = remoteClient;
     }
@@ -81,11 +79,16 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 
     @Override
     public <T extends Operation> AsyncFuture<ModelNode> execute(final TransactionalOperationListener<T> listener, final T operation) throws IOException {
-        if(! isConnected()) {
-            final ModelNode op = operation.getOperation();
+        final ModelNode op = operation.getOperation();
+        if(remoteClient == DISCONNECTED) {
             // Handle the restartRequired operation also when disconnected
             if(ServerRestartRequiredHandler.OPERATION_NAME.equals(op.get(OP).asString())) {
                 server.requireReload();
+            }
+        } else {
+            // Handle reload state
+            if("reload".equals(op.get(OP).asString()) && op.get(OP_ADDR).asInt() == 0) {
+                server.reloading();
             }
         }
         return remoteClient.execute(listener, operation);
