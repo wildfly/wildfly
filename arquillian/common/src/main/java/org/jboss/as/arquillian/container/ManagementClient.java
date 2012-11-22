@@ -54,6 +54,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -74,6 +75,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
 public class ManagementClient {
+
+    private static final Logger logger = Logger.getLogger(ManagementClient.class);
 
     private static final String SUBDEPLOYMENT = "subdeployment";
 
@@ -321,6 +324,7 @@ public class ManagementClient {
     private void checkSuccessful(final ModelNode result,
                                  final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
+            logger.error("Operation " + operation + " did not succeed. Result was " + result);
             throw new UnSuccessfulOperationException(result.get(
                     FAILURE_DESCRIPTION).toString());
         }
