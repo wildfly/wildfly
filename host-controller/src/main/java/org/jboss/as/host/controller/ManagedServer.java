@@ -118,6 +118,7 @@ class ManagedServer {
     private final TransformingProxyController proxyController;
 
     private volatile boolean requiresReload;
+    private volatile boolean reloading;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
@@ -204,6 +205,10 @@ class ManagedServer {
                 }
             }
         }
+    }
+
+    protected void reloading() {
+        this.reloading = true;
     }
 
     protected boolean isRequiresReload() {
@@ -356,9 +361,7 @@ class ManagedServer {
         final InternalState current = this.internalState;
         // Create the remote controller client
         final TransactionalProtocolClient remoteClient = TransactionalProtocolHandlers.createClient(channelAssociation);
-
-        // TODO better handling for server :reload operation (reset reloadRequired)
-        if(current == InternalState.SERVER_STARTED && proxyController == null) {
+        if(reloading) {
             // Update the current remote connection
             protocolClient.connected(remoteClient);
             this.requiresReload = false;
@@ -372,6 +375,7 @@ class ManagedServer {
             // TODO we just check that we are in the correct state, perhaps introduce a new state
             }, InternalState.SEND_STDIN, InternalState.SERVER_STARTING);
         }
+        this.reloading = false;
         return remoteClient;
     }
 
@@ -393,6 +397,10 @@ class ManagedServer {
     protected synchronized boolean callbackUnregistered(final TransactionalProtocolClient old, final boolean shuttingDown) {
         // Disconnect the remote connection
         protocolClient.disconnected(old);
+
+        if(reloading) {
+            return true;
+        }
 
         // If the connection dropped without us stopping the process ask for reconnection
         if(! shuttingDown && requiredState == InternalState.SERVER_STARTED) {
