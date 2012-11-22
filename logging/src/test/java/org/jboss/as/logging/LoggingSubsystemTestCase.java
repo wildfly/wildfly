@@ -33,7 +33,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -72,7 +71,6 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    // @Ignore
     public void testTransformers_1_1() throws Exception {
         final String subsystemXml = getSubsystemXml();
         final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
@@ -88,6 +86,8 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
 

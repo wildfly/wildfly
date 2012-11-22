@@ -25,6 +25,9 @@ package org.jboss.as.logging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPRECATED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.logging.CommonAttributes.CATEGORY;
+import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,9 +35,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -45,9 +50,11 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.AbstractOperationTransformer;
-import org.jboss.as.controller.transform.AbstractSubsystemTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
@@ -108,18 +115,17 @@ public class LoggingExtension implements Extension {
                 LoggingProfileOperations.ADD_PROFILE,
                 LoggingProfileOperations.REMOVE_PROFILE)), resolvePathHandler, false);
 
-        final TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new AbstractSubsystemTransformer(SUBSYSTEM_NAME) {
+        final TransformersSubRegistration reg = subsystem.registerModelTransformers(ModelVersion.create(1, 1, 0), new ResourceTransformer() {
+
             @Override
-            protected ModelNode transformModel(final TransformationContext context, final ModelNode model) {
-                // Transform the filter expression string
-                if (model.hasDefined(CommonAttributes.FILTER_SPEC.getName())) {
-                    final String filterExpression = model.get(CommonAttributes.FILTER_SPEC.getName()).asString();
-                    model.get(CommonAttributes.FILTER.getName()).set(Filters.filterSpecToFilter(filterExpression));
-                }
-                model.remove(CommonAttributes.FILTER_SPEC.getName());
-                return model;
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                    throws OperationFailedException {
+                final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                childContext.processChildren(resource);
+
             }
         });
+
         registerTransformersSubModels(reg, reg.registerSubResource(LOGGING_PROFILE_PATH, true));
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
@@ -144,19 +150,19 @@ public class LoggingExtension implements Extension {
     }
 
     private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg) {
-        registerTransformersSubModels(registration, loggingProfileReg, RootLoggerResourceDefinition.ROOT_LOGGER_PATH, ADD,
+        registerTransformersSubModels(registration, loggingProfileReg, RootLoggerResourceDefinition.ROOT_LOGGER_PATH, new RemoveAttributeTransformer(NAME, FILTER_SPEC), ADD,
                 RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME);
-        registerTransformersSubModels(registration, loggingProfileReg, LoggerResourceDefinition.LOGGER_PATH, ADD);
-        registerTransformersSubModels(registration, loggingProfileReg, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH, ADD);
-        registerTransformersSubModels(registration, loggingProfileReg, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH, ADD);
-        registerTransformersSubModels(registration, loggingProfileReg, FileHandlerResourceDefinition.FILE_HANDLER_PATH, ADD);
-        registerTransformersSubModels(registration, loggingProfileReg, PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH, ADD);
-        registerTransformersSubModels(registration, loggingProfileReg, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH, ADD);
-        registerTransformersSubModels(registration, loggingProfileReg, CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, LoggerResourceDefinition.LOGGER_PATH, new RemoveAttributeTransformer(CATEGORY, FILTER_SPEC), ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH, new RemoveAttributeTransformer(NAME, FILTER_SPEC), ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH, new RemoveAttributeTransformer(NAME, FILTER_SPEC), ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, FileHandlerResourceDefinition.FILE_HANDLER_PATH, new RemoveAttributeTransformer(NAME, FILTER_SPEC), ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH, new RemoveAttributeTransformer(NAME, FILTER_SPEC), ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH, new RemoveAttributeTransformer(NAME, FILTER_SPEC),  ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH, ResourceTransformer.DEFAULT, ADD);
     }
 
-    private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg, final PathElement pathElement, final String... operationNames) {
-        final TransformersSubRegistration reg = registration.registerSubResource(pathElement);
+    private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg, final PathElement pathElement, final ResourceTransformer transformer, final String... operationNames) {
+        final TransformersSubRegistration reg = registration.registerSubResource(pathElement, transformer != null ? transformer : ResourceTransformer.DEFAULT);
         for (String operationName : operationNames) {
             reg.registerOperationTransformer(operationName, LoggingOperationTransformer.INSTANCE);
         }
@@ -329,6 +335,32 @@ public class LoggingExtension implements Extension {
                 }
             }
             return result;
+        }
+    }
+
+    private static class RemoveAttributeTransformer implements ResourceTransformer {
+        AttributeDefinition[] attributes;
+        public RemoveAttributeTransformer(AttributeDefinition...attributes) {
+            this.attributes = attributes;
+        }
+        @Override
+        public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                throws OperationFailedException {
+            doTransform(context, address, resource);
+            final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+            childContext.processChildren(resource);
+        }
+
+        void doTransform(ResourceTransformationContext context, PathAddress address, Resource resource) {
+            ModelNode model = resource.getModel();
+            for (AttributeDefinition attribute : attributes) {
+                if (model.has(attribute.getName())) {
+                    model.remove(attribute.getName());
+                }
+            }
+            if (model.hasDefined(CommonAttributes.LEVEL.getName()) && model.get(CommonAttributes.LEVEL.getName()).asString().equals("ALL")) {
+                model.remove(CommonAttributes.LEVEL.getName());
+            }
         }
     }
 }
