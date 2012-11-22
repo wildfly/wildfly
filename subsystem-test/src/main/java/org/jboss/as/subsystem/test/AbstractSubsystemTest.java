@@ -15,6 +15,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -252,8 +253,22 @@ public abstract class AbstractSubsystemTest {
      * @return the whole model of the legacy controller
      */
     protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
-        return delegate.checkSubsystemModelTransformation(kernelServices, modelVersion);
+        return checkSubsystemModelTransformation(kernelServices, modelVersion, null);
     }
+
+    /**
+     * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
+     * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
+     *
+     * @param kernelServices the main kernel services
+     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
+     * @return the whole model of the legacy controller
+     */
+    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
+        return delegate.checkSubsystemModelTransformation(kernelServices, modelVersion, legacyModelFixer);
+    }
+
 
     /**
      * Compares two models to make sure that they are the same
