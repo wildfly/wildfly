@@ -78,12 +78,21 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
 
     @Override
     public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-        if (!value.isDefined()) {
-            if (!allowExpression) {
-                throw MESSAGES.nullNotAllowed(parameterName);
-            }
-        } else {
-            delegate.validateResolvedParameter(parameterName, value);
+        switch (value.getType()) {
+            case EXPRESSION:
+                if (!allowExpression) {
+                    throw MESSAGES.expressionNotAllowed(parameterName);
+                }
+                break;
+            case UNDEFINED:
+                if (allowNull != null) {
+                    if (!allowNull) {
+                        throw MESSAGES.nullNotAllowed(parameterName);
+                    }
+                    break;
+                } // else fall through and let the delegate validate
+            default:
+                delegate.validateResolvedParameter(parameterName, value);
         }
     }
 
