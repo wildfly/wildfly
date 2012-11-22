@@ -82,6 +82,7 @@ import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
+import org.jboss.as.host.controller.resources.StoppedServerResource;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -340,5 +341,6 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
 
         //server configurations
         hostRegistration.registerSubModel(new ServerConfigResourceDefinition(serverInventory, pathManager));
+        hostRegistration.registerSubModel(new StoppedServerResource(serverInventory));
     }
 }
