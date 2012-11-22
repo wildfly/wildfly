@@ -234,9 +234,7 @@ public class EJBClientDescriptorTestCase {
                 remoteEcho.twoSecondEcho(JBOSS_EJB_CLIENT_1_2_MODULE_NAME, msg);
                 Assert.fail("Expected to receive a timeout for the invocation");
             } catch (Exception e) {
-                // this will be thrown a UndeclaredThrowableException for reasons explained in the javadoc
-                // of that exception http://docs.oracle.com/javase/6/docs/api/java/lang/reflect/UndeclaredThrowableException.html
-                if (e instanceof EJBException && e.getCause() instanceof UndeclaredThrowableException && e.getCause().getCause() instanceof TimeoutException) {
+                if (e instanceof EJBException && e.getCause() instanceof TimeoutException) {
                     logger.info("Got the expected timeout exception", e.getCause());
                     return;
                 }
