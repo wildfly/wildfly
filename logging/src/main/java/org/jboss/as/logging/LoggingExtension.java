@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPRECATED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -112,14 +113,14 @@ public class LoggingExtension implements Extension {
             protected ModelNode transformModel(final TransformationContext context, final ModelNode model) {
                 // Transform the filter expression string
                 if (model.hasDefined(CommonAttributes.FILTER_SPEC.getName())) {
-                    final String filterExpression = model.get(CommonAttributes.FILTER.getName()).asString();
+                    final String filterExpression = model.get(CommonAttributes.FILTER_SPEC.getName()).asString();
                     model.get(CommonAttributes.FILTER.getName()).set(Filters.filterSpecToFilter(filterExpression));
                 }
+                model.remove(CommonAttributes.FILTER_SPEC.getName());
                 return model;
             }
         });
-        reg.registerSubResource(LOGGING_PROFILE_PATH, true);
-        registerTransformersSubModels(reg);
+        registerTransformersSubModels(reg, reg.registerSubResource(LOGGING_PROFILE_PATH, true));
 
         subsystem.registerXMLElementWriter(LoggingSubsystemParser.INSTANCE);
     }
@@ -142,20 +143,25 @@ public class LoggingExtension implements Extension {
         registration.registerSubModel(new CustomHandlerResourceDefinition(includeLegacyAttributes));
     }
 
-    private void registerTransformersSubModels(final TransformersSubRegistration registration) {
-        registerTransformersSubModels(registration, RootLoggerResourceDefinition.ROOT_LOGGER_PATH);
-        registerTransformersSubModels(registration, LoggerResourceDefinition.LOGGER_PATH);
-        registerTransformersSubModels(registration, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH);
-        registerTransformersSubModels(registration, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH);
-        registerTransformersSubModels(registration, FileHandlerResourceDefinition.FILE_HANDLER_PATH);
-        registerTransformersSubModels(registration, PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH);
-        registerTransformersSubModels(registration, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH);
-        registerTransformersSubModels(registration, CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH);
+    private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg) {
+        registerTransformersSubModels(registration, loggingProfileReg, RootLoggerResourceDefinition.ROOT_LOGGER_PATH, ADD,
+                RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME);
+        registerTransformersSubModels(registration, loggingProfileReg, LoggerResourceDefinition.LOGGER_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, FileHandlerResourceDefinition.FILE_HANDLER_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH, ADD);
+        registerTransformersSubModels(registration, loggingProfileReg, CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH, ADD);
     }
 
-    private void registerTransformersSubModels(final TransformersSubRegistration registration, final PathElement pathElement) {
+    private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg, final PathElement pathElement, final String... operationNames) {
         final TransformersSubRegistration reg = registration.registerSubResource(pathElement);
-        reg.registerOperationTransformer(ADD, LoggingOperationTransformer.INSTANCE);
+        for (String operationName : operationNames) {
+            reg.registerOperationTransformer(operationName, LoggingOperationTransformer.INSTANCE);
+        }
+        // Ignore logging profiles
+        loggingProfileReg.registerSubResource(pathElement, true);
     }
 
     private static class LoggingOperationTransformer extends AbstractOperationTransformer {
@@ -169,10 +175,14 @@ public class LoggingExtension implements Extension {
             } else {
                 operation.get(CommonAttributes.NAME.getName()).set(name);
             }
-            if (operation.hasDefined(CommonAttributes.FILTER.getName())) {
-                final String filterExpression = operation.get(CommonAttributes.FILTER.getName()).asString();
+            if (operation.get(OP).asString().equals(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME)) {
+                operation.remove(CommonAttributes.NAME.getName());
+            }
+            if (operation.hasDefined(CommonAttributes.FILTER_SPEC.getName())) {
+                final String filterExpression = operation.get(CommonAttributes.FILTER_SPEC.getName()).asString();
                 operation.get(CommonAttributes.FILTER.getName()).set(Filters.filterSpecToFilter(filterExpression));
             }
+            operation.remove(CommonAttributes.FILTER_SPEC.getName());
             return operation;
         }
     }

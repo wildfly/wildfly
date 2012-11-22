@@ -24,11 +24,17 @@ package org.jboss.as.logging;
 import java.io.IOException;
 import java.util.Comparator;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -64,6 +70,26 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
     }
+
+    @Test
+    // @Ignore
+    public void testTransformers_1_1() throws Exception {
+        final String subsystemXml = getSubsystemXml();
+        final ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance())
+                .setSubsystemXml(subsystemXml);
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final")
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
+                .addParentFirstClassPattern("org.jboss.as.controller.*");
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+    }
+
 
     static class RemoveOperationComparator implements Comparator<PathAddress> {
         static final RemoveOperationComparator INSTANCE = new RemoveOperationComparator();
