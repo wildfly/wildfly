@@ -40,12 +40,12 @@
                     <groupId>org.jboss.byteman</groupId>
                     <artifactId>byteman</artifactId>
                     <scope>test</scope>
-		        </dependency>
+                </dependency>
                 <dependency>
                     <groupId>org.jboss.byteman</groupId>
                     <artifactId>byteman-submit</artifactId>
                     <scope>test</scope>
-		        </dependency>
+                </dependency>
             </dependencies>
 
             <build>
