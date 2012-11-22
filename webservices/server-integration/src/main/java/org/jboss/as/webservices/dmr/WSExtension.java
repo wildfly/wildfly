@@ -32,6 +32,7 @@ import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceBuilder;
@@ -39,6 +40,8 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 
 /**
  * The webservices extension.
@@ -126,6 +129,8 @@ public final class WSExtension implements Extension {
                     .pushChild(ENDPOINT_PATH)
                     .addMetrics(WSEndpointMetrics.INSTANCE, WSEndpointMetrics.ATTRIBUTES).build());
         }
+
+        registerTransformers1_1_0(subsystem);
     }
 
 
@@ -136,4 +141,9 @@ public final class WSExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_2.getUriString(), WSSubsystemReader.getInstance());
     }
 
+    private void registerTransformers1_1_0(SubsystemRegistration registration) {
+        ModelVersion version = ModelVersion.create(1, 1, 0);
+        final TransformersSubRegistration transformers = registration.registerModelTransformers(version, ResourceTransformer.DEFAULT);
+        final TransformersSubRegistration clientConfig = transformers.registerSubResource(PathElement.pathElement(CLIENT_CONFIG), true);
+    }
 }

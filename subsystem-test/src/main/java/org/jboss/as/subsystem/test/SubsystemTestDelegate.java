@@ -84,6 +84,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -412,13 +413,18 @@ final class SubsystemTestDelegate {
      *
      * @param kernelServices the main kernel services
      * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
      * @return the whole model of the legacy controller
      */
-    ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+    ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
         ModelNode legacyModel = legacy.readWholeModel();
         ModelNode legacySubsystem = legacyModel.require(SUBSYSTEM);
         legacySubsystem = legacySubsystem.require(mainSubsystemName);
+
+        if (legacyModelFixer != null) {
+            legacySubsystem = legacyModelFixer.fixModel(legacySubsystem);
+        }
 
         //1) Check that the transformed model is the same as the whole model read from the legacy controller.
         //The transformed model is done via the resource transformers
