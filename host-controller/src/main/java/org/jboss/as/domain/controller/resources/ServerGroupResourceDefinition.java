@@ -58,6 +58,8 @@ import org.jboss.dmr.ModelType;
  */
 public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(SERVER_GROUP);
+
     public static final SimpleAttributeDefinition PROFILE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PROFILE, ModelType.STRING)
             .setValidator(new StringLengthValidator(1))
             .build();
@@ -83,7 +85,7 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
     private final HostFileRepository fileRepository;
 
     public ServerGroupResourceDefinition(final ContentRepository contentRepo, final HostFileRepository fileRepository) {
-        super(PathElement.pathElement(SERVER_GROUP), DomainResolver.getResolver(SERVER_GROUP, false), ServerGroupAddHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE);
+        super(PATH, DomainResolver.getResolver(SERVER_GROUP, false), ServerGroupAddHandler.INSTANCE, ServerGroupRemoveHandler.INSTANCE);
         this.contentRepo = contentRepo;
         this.fileRepository = fileRepository;
     }
