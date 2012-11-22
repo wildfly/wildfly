@@ -86,9 +86,12 @@ class ManagedServerProxy implements TransactionalProtocolClient {
                 server.requireReload();
             }
         } else {
-            // Handle reload state
-            if("reload".equals(op.get(OP).asString()) && op.get(OP_ADDR).asInt() == 0) {
-                server.reloading();
+            // Handle operations targeting the server root
+            if(op.get(OP_ADDR).asInt() == 0) {
+                // Handle reload state
+                if("reload".equals(op.get(OP).asString())) {
+                    server.reloading();
+                }
             }
         }
         return remoteClient.execute(listener, operation);

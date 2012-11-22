@@ -21,7 +21,13 @@
 */
 package org.jboss.as.server.controller.resources;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
@@ -66,6 +72,7 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
@@ -111,6 +118,7 @@ import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceResolveHandler;
 import org.jboss.as.server.services.security.AbstractVaultReader;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 /**
  *
@@ -259,15 +267,21 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         //Hack to be able to access the registry for the jmx facade
         resourceRegistration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
 
+        // Reload op available in standalone and domain
+        final ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
+        if(isDomain) {
+            // Just with a different definition
+            resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DOMAIN_DEFINITION, reloadHandler, false);
+            // Trick the resource-description for domain servers to be included in the server-resource
+            resourceRegistration.registerOperationHandler(getOperationDefinition("start"), NOOP);
+            resourceRegistration.registerOperationHandler(getOperationDefinition("stop"), NOOP);
+            resourceRegistration.registerOperationHandler(getOperationDefinition("restart"), NOOP);
+        } else {
+            resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DEFINITION, reloadHandler, false);
+        }
+
         // Runtime operations
         if (serverEnvironment != null) {
-            // Reload op
-            ServerProcessReloadHandler reloadHandler = new ServerProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState);
-            resourceRegistration.registerOperationHandler(ServerProcessReloadHandler.DEFINITION, reloadHandler, false);
-            if (serverEnvironment.getLaunchType() != ServerEnvironment.LaunchType.DOMAIN) {
-
-            }
-
             // The System.exit() based shutdown command is only valid for a server process directly launched from the command line
             if (serverEnvironment.getLaunchType() == ServerEnvironment.LaunchType.STANDALONE) {
                 ServerShutdownHandler serverShutdownHandler = new ServerShutdownHandler(processState);
@@ -379,5 +393,22 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(DeployerChainAddHandler.DEFINITION, DeployerChainAddHandler.INSTANCE, false);
     }
 
+    private static final OperationStepHandler NOOP = new OperationStepHandler() {
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            context.stepCompleted();
+        }
+    };
+
+    private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
+        .build();
+
+    static final OperationDefinition getOperationDefinition(String name) {
+        return new SimpleOperationDefinitionBuilder(name, ServerDescriptions.getResourceDescriptionResolver(RUNNING_SERVER))
+            .setParameters(BLOCKING)
+            .setReplyType(ModelType.STRING)
+            .withFlags(OperationEntry.Flag.HOST_CONTROLLER_ONLY, OperationEntry.Flag.RUNTIME_ONLY)
+            .build();
+    }
 
 }

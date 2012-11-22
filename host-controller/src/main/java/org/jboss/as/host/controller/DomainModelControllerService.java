@@ -99,6 +99,7 @@ import org.jboss.as.host.controller.mgmt.ServerToHostProtocolHandler;
 import org.jboss.as.host.controller.mgmt.SlaveHostPinger;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.ProcessControllerClient;
@@ -317,8 +318,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
             throw MESSAGES.serverNameAlreadyRegistered(pe.getValue());
         }
         ROOT_LOGGER.registeringServer(pe.getValue());
-        ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerInfo.getLocalHostName())));
+        // Register the proxy
+        final ManagementResourceRegistration hostRegistration = modelNodeRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerInfo.getLocalHostName())));
         hostRegistration.registerProxyController(pe, serverControllerClient);
+        // Register local operation overrides
+        final ManagementResourceRegistration serverRegistration = hostRegistration.getSubModel(PathAddress.EMPTY_ADDRESS.append(pe));
+        ServerConfigResourceDefinition.registerServerLifecycleOperations(serverRegistration, serverInventory);
         serverProxies.put(pe.getValue(), serverControllerClient);
     }
 

@@ -151,7 +151,7 @@ public class ServerManagementTestCase {
         validateResponse(result, false);
 
         Assert.assertTrue(exists(client, newServerConfigAddress));
-        Assert.assertFalse(exists(client, newRunningServerAddress));
+        Assert.assertTrue(exists(client, newRunningServerAddress));
 
         startServer(client, "slave", "new-server");
         Assert.assertTrue(checkState(client, newServerConfigAddress, "STARTED"));
@@ -168,7 +168,7 @@ public class ServerManagementTestCase {
         Assert.assertTrue(checkState(client, newServerConfigAddress, "DISABLED"));
 
         Assert.assertTrue(exists(client, newServerConfigAddress));
-        Assert.assertFalse(exists(client, newRunningServerAddress));
+        Assert.assertTrue(exists(client, newRunningServerAddress));
 
         final ModelNode removeServer = new ModelNode();
         removeServer.get(OP).set(REMOVE);

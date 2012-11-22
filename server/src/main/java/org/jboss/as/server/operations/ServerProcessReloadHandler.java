@@ -26,12 +26,14 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.ProcessReloadHandler;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -52,6 +54,10 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
                                                                 .setParameters(ATTRIBUTES)
                                                                 .build();
 
+    public static final OperationDefinition DOMAIN_DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver("server"))
+                                                                .withFlags(OperationEntry.Flag.HOST_CONTROLLER_ONLY, OperationEntry.Flag.RUNTIME_ONLY)
+                                                                .build();
+
     public ServerProcessReloadHandler(ServiceName rootService, RunningModeControl runningModeControl,
             ControlledProcessState processState) {
         super(rootService, runningModeControl, processState);
@@ -59,8 +65,9 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
 
     @Override
     protected ProcessReloadHandler.ReloadContext<RunningModeControl> initializeReloadContext(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final boolean adminOnly = ADMIN_ONLY.resolveModelAttribute(context, operation).asBoolean(false);
-        final boolean useCurrentConfig = USE_CURRENT_SERVER_CONFIG.resolveModelAttribute(context, operation).asBoolean(true);
+        final boolean unmanaged = context.getProcessType() != ProcessType.DOMAIN_SERVER; // make sure that the params are ignored for managed servers
+        final boolean adminOnly = unmanaged && ADMIN_ONLY.resolveModelAttribute(context, operation).asBoolean(false);
+        final boolean useCurrentConfig = unmanaged && USE_CURRENT_SERVER_CONFIG.resolveModelAttribute(context, operation).asBoolean(true);
         return new ReloadContext<RunningModeControl>() {
 
             @Override
