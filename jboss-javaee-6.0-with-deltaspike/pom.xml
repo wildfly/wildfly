@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.bom</groupId>
+        <version>1.0.4-SNAPSHOT</version>
+        <artifactId>jboss-bom-parent</artifactId>
+    </parent>
+
+    <artifactId>jboss-javaee-6.0-with-deltaspike</artifactId>
+    <packaging>pom</packaging>
+
+    <name>JBoss Java EE 6 Specification APIs with Deltaspike</name>
+    <description>Dependency Management for Java EE 6 Specification APIs with Deltaspike</description>
+
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <properties>
+        <!-- Version properties are inherited from parent -->
+    </properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+            <!-- JBoss distributes a complete set of Java EE 6 APIs including 
+                a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
+                a collection) of artifacts. We use this here so that we always get the correct 
+                versions of artifacts. Here we use the jboss-javaee-6.0 stack (you can read 
+                this as the JBoss stack of the Java EE 6 APIs). You can actually use this 
+                stack with any version of JBoss AS that implements Java EE 6, not just JBoss 
+                AS 7! -->
+            <dependency>
+                <groupId>org.jboss.spec</groupId>
+                <artifactId>jboss-javaee-6.0</artifactId>
+                <version>${version.org.jboss.spec.jboss.javaee.6.0}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.deltaspike.core</groupId>
+                <artifactId>deltaspike-core-api</artifactId>
+                <version>${version.org.apache.deltaspike}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.deltaspike.core</groupId>
+                <artifactId>deltaspike-core-impl</artifactId>
+                <version>${version.org.apache.deltaspike}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

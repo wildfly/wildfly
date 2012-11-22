@@ -48,7 +48,7 @@
         
         <!-- Versions of JBoss projects -->
         <version.org.infinispan>5.1.2.FINAL</version.org.infinispan>
-        <version.org.jboss.arquillian>1.0.4-SNAPSHOT</version.org.jboss.arquillian>
+        <version.org.jboss.arquillian>1.0.3.Final</version.org.jboss.arquillian>
         <version.org.jboss.arquillian.extension.drone>1.1.0.Final</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>1.0.0.Final</version.org.jboss.arquillian.graphene>
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
