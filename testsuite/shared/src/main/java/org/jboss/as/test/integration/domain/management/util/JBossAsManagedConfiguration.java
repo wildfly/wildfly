@@ -53,10 +53,9 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String hostCommandLineProperties;
 
-    public JBossAsManagedConfiguration() {
-        if (jbossHome == null) {
-            jbossHome = System.getProperty("jboss.home");
-        }
+    public JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters params) {
+        this.jbossHome = params.getJBossHome();
+        this.modulePath = params.getModuleBaseDir();
     }
     /*
      * (non-Javadoc)

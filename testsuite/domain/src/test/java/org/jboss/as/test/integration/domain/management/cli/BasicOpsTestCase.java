@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import static org.junit.Assert.assertFalse;
