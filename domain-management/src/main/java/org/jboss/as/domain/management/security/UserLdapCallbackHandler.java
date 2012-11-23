@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
@@ -219,6 +220,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             }
 
         } catch (Exception e) {
+            ROOT_LOGGER.trace("Unable to verify identity.", e);
             throw MESSAGES.cannotPerformVerification(e);
         } finally {
             safeClose(searchEnumeration);

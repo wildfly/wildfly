@@ -215,18 +215,27 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <!-- TODO - Later will be optional if we support GSSAPI to connect to LDAP -->
-        <xs:attribute name="search-dn" type="xs:string" use="required">
+        <xs:attribute name="search-dn" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     The distinguished name to use when connecting to LDAP to perform searches.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="search-credential" type="xs:string" use="required">
+        <xs:attribute name="search-credential" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     The credential to use when connecting to perform a search.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="security-realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    A reference to a security realm to obtain an initialised SSLContext to use when establishing a 
+                    connection to the LDAP server.
+                    
+                    The realm referenced here MUST NOT be a realm that is also configured to use this connection.                
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -420,7 +429,7 @@
             </xs:documentation>
         </xs:annotation>
 	    <xs:complexContent>
-		    <xs:extension base="keyStoreType">
+            <xs:extension base="keyStoreType">
                 <xs:attribute name="alias" type="xs:string" use="optional">
                     <xs:annotation>
                         <xs:documentation>
