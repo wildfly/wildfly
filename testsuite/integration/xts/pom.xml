@@ -109,12 +109,6 @@
                                     <includes>
                                         <include>org/jboss/as/test/xts/**/*TestCase.java</include>
                                     </includes>
-                                    <systemPropertyVariables combine.children="append">
-                                        <server.jvm.args>-Xms64m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.byteman.verbose
-                                            -Djboss.modules.system.pkgs=org.jboss.byteman
-                                            -Dorg.jboss.byteman.transform.all
-                                            -javaagent:${project.build.directory}/lib/byteman.jar=listener:true</server.jvm.args>
-                                    </systemPropertyVariables>
                                 </configuration>
                             </execution>
 
