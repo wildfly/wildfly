@@ -104,7 +104,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformation_1_1_0() throws Exception {
-        String subsystemXml = readResource("subsystem-1.1.0.xml");
+        String subsystemXml = readResource("subsystem-1.3.0.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);

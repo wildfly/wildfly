@@ -1,4 +1,4 @@
-        <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="true">
+        <subsystem xmlns="urn:jboss:domain:web:1.3" default-virtual-server="default-host" native="true">
             <configuration>
                 <static-resources max-depth="5"/>
                 <jsp-configuration development="true" />
@@ -26,9 +26,9 @@
                <access-log resolve-hosts="true">
                  <directory relative-to="jboss.server.base.dir" path="toto" />
                </access-log>
-               <rewrite pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
+               <rewrite name="myrewrite" pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
                <rewrite pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
-                  <condition test="%{HTTPS}" pattern="off" flags="NC"/>
+                  <condition name="https" test="%{HTTPS}" pattern="off" flags="NC"/>
                   <condition test="%{USER}" pattern="toto" flags="NC"/>
                </rewrite>
                <sso domain="mydomain" reauthenticate="true" />

@@ -251,6 +251,15 @@
          <xs:element name="condition" type="rewrite-conditionType" />
       </xs:sequence>
 
+      <xs:attribute name="name" use="optional">
+         <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                    Name of this rule
+                ]]>
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="pattern" use="required">
          <xs:annotation>
             <xs:documentation>
@@ -278,6 +287,15 @@
    </xs:complexType>
 
    <xs:complexType name="rewrite-conditionType">
+       <xs:attribute name="name" use="optional">
+        <xs:annotation>
+           <xs:documentation>
+               <![CDATA[
+                   Name of this rule
+               ]]>
+           </xs:documentation>
+        </xs:annotation>
+     </xs:attribute>
       <xs:attribute name="test" use="required">
          <xs:annotation>
             <xs:documentation>
