@@ -90,7 +90,10 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
+            .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
+            .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
+            .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
@@ -157,7 +160,10 @@ public class MessagingSubsystem13TestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), version_1_1_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
+            .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
+            .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
+            .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);

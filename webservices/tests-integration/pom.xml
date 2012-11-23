@@ -121,11 +121,19 @@
         </dependency>
         <dependency>
           <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-jms</artifactId>
+          <artifactId>hornetq-jms-client</artifactId>
         </dependency>
         <dependency>
           <groupId>org.hornetq</groupId>
-          <artifactId>hornetq-core</artifactId>
+          <artifactId>hornetq-jms-server</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-core-client</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hornetq</groupId>
+          <artifactId>hornetq-server</artifactId>
         </dependency>
         <dependency>
           <groupId>org.jboss.xnio</groupId>
