@@ -37,7 +37,7 @@ public class ExceptionRetryBean {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static final int TIMER_TIMEOUT_TIME_MS = 100;
-    private static final int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_CALL_WAITING_S = 10;
 
     private static volatile int count = 0;
 
