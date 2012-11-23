@@ -24,7 +24,6 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,8 +33,6 @@ import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
 import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.as.domain.management.plugin.PlugInProvider;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;

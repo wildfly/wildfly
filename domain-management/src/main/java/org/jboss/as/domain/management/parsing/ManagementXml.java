@@ -173,14 +173,24 @@ public class ManagementXml {
         }
     }
 
-    private void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
-            throws XMLStreamException {
+    private void parseConnections(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case LDAP: {
-                    parseLdapConnection(reader, address, list);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                        case DOMAIN_1_3:
+                            parseLdapConnection_1_0(reader, address, list);
+                            break;
+                        default:
+                            parseLdapConnection_1_4(reader, address, list);
+                            break;
+                    }
                     break;
                 }
                 default: {
@@ -190,7 +200,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseLdapConnection(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+    private void parseLdapConnection_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
             throws XMLStreamException {
 
         final ModelNode add = new ModelNode();
@@ -222,6 +232,62 @@ public class ManagementXml {
                     }
                     case SEARCH_CREDENTIAL: {
                         LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case INITIAL_CONTEXT_FACTORY: {
+                        LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        requireNoContent(reader);
+    }
+
+    private void parseLdapConnection_1_4(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        final ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+
+        list.add(add);
+
+        Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.URL);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case NAME: {
+                        add.get(OP_ADDR).set(address).add(LDAP_CONNECTION, value);
+                        break;
+                    }
+                    case URL: {
+                        LdapConnectionResourceDefinition.URL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SEARCH_DN: {
+                        LdapConnectionResourceDefinition.SEARCH_DN.parseAndSetParameter(value,  add, reader);
+                        break;
+                    }
+                    case SEARCH_CREDENTIAL: {
+                        LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        LdapConnectionResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, add, reader);
                         break;
                     }
                     case INITIAL_CONTEXT_FACTORY: {
@@ -542,7 +608,7 @@ public class ManagementXml {
                         break;
                     case PASSWORD: {
                         // TODO - Support for this attribute can later be removed, would suggest removing at the
-                        //        start of AS 7.2.x development.
+                        //        start of AS 8 development.
                         ROOT_LOGGER.passwordAttributeDeprecated();
                         required.remove(Attribute.KEYSTORE_PASSWORD);
                         KeystoreAttributes.KEYSTORE_PASSWORD.parseAndSetParameter(value, addOperation, reader);
@@ -1563,6 +1629,7 @@ public class ManagementXml {
             LdapConnectionResourceDefinition.URL.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SEARCH_DN.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.marshallAsAttribute(connection, writer);
+            LdapConnectionResourceDefinition.SECURITY_REALM.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.marshallAsAttribute(connection, writer);
         }
         writer.writeEndElement();

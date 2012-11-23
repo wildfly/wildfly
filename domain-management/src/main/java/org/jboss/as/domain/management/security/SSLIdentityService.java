@@ -36,6 +36,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -47,9 +48,9 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SSLIdentityService implements Service<SSLIdentityService> {
+class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
 
-    public static final String SERVICE_SUFFIX = "ssl";
+    static final String SERVICE_SUFFIX = "ssl";
 
     private final String protocol;
     private final char[] keystorePassword;
@@ -57,7 +58,8 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
     private final InjectedValue<KeyStore> keystore = new InjectedValue<KeyStore>();
     private final InjectedValue<KeyStore> truststore = new InjectedValue<KeyStore>();
 
-    private volatile SSLContext sslContext;
+    private volatile SSLContext fullContext;
+    private volatile SSLContext trustOnlyContext;
 
     public SSLIdentityService(String protocol, char[] keystorePassword, char[] keyPassword) {
         this.protocol = protocol;
@@ -86,7 +88,14 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
             SSLContext sslContext = SSLContext.getInstance(protocol);
             sslContext.init(keyManagers, trustManagers, null);
 
-            this.sslContext = sslContext;
+            this.fullContext = sslContext;
+
+            if (keyManagers != null) {
+                // No point re-creating if there was no KeyManager.
+                sslContext = SSLContext.getInstance(protocol);
+                sslContext.init(null, trustManagers, null);
+            }
+            trustOnlyContext = sslContext;
        } catch (NoSuchAlgorithmException nsae) {
             throw MESSAGES.unableToStart(nsae);
         } catch (KeyManagementException kme) {
@@ -113,8 +122,12 @@ public class SSLIdentityService implements Service<SSLIdentityService> {
         return truststore;
     }
 
-    SSLContext getSSLContext() {
-        return sslContext;
+    public SSLContext getFullContext() {
+        return fullContext;
+    }
+
+    public SSLContext getTrustOnlyContext() {
+        return trustOnlyContext;
     }
 
     boolean hasTrustStore() {

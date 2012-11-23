@@ -45,6 +45,7 @@ import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -65,7 +66,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
 
     private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
-    private final InjectedValue<SSLIdentityService> sslIdentity = new InjectedValue<SSLIdentityService>();
+    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
     private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<CallbackHandlerService>();
 
@@ -215,7 +216,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
         return subjectSupplemental;
     }
 
-    public InjectedValue<SSLIdentityService> getSSLIdentityInjector() {
+    public InjectedValue<SSLIdentity> getSSLIdentityInjector() {
         return sslIdentity;
     }
 
@@ -228,17 +229,12 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     }
 
     public SSLContext getSSLContext() {
-        SSLIdentityService service = sslIdentity.getOptionalValue();
+        SSLIdentity service = sslIdentity.getOptionalValue();
         if (service != null) {
-            return service.getSSLContext();
+            return service.getFullContext();
         }
 
         return null;
-    }
-
-    public boolean hasTrustStore() {
-        SSLIdentityService service;
-        return ((service = sslIdentity.getOptionalValue()) != null && service.hasTrustStore());
     }
 
     public CallbackHandlerFactory getSecretCallbackHandlerFactory() {

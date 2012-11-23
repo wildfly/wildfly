@@ -66,7 +66,6 @@ public interface SecurityRealm {
      * Used to obtain the SSLContext as configured for this security realm.
      *
      * @return the SSLContext server identity for this realm.
-     * @throws IllegalStateException - If no SSL server-identity has been defined.
      */
     SSLContext getSSLContext();
 
