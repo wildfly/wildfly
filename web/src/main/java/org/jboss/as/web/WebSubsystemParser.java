@@ -74,6 +74,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -93,6 +94,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         XMLElementWriter<SubsystemMarshallingContext> {
 
     private static final WebSubsystemParser INSTANCE = new WebSubsystemParser();
+    private static final String RULE_PREFIX = "rule-";
+    private static final String CONDITION_PREFIX = "condition-";
 
     static WebSubsystemParser getInstance() {
         return INSTANCE;
@@ -180,16 +183,19 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
                 if (config.hasDefined(REWRITE)) {
                     for (final ModelNode rewritenode : config.get(REWRITE).asList()) {
-                        ModelNode rewrite = rewritenode.asProperty().getValue();
+                        Property prop = rewritenode.asProperty();
+                        ModelNode rewrite = prop.getValue();
                         writer.writeStartElement(REWRITE);
+                        writer.writeAttribute(NAME,prop.getName());
                         WebReWriteDefinition.PATTERN.marshallAsAttribute(rewrite, false, writer);
                         WebReWriteDefinition.SUBSTITUTION.marshallAsAttribute(rewrite, false, writer);
                         WebReWriteDefinition.FLAGS.marshallAsAttribute(rewrite, false, writer);
-
                         if (rewrite.hasDefined(CONDITION)) {
                             for (final ModelNode conditionnode : rewrite.get(CONDITION).asList()) {
-                                ModelNode condition = conditionnode.asProperty().getValue();
+                                Property conditionProp = conditionnode.asProperty();
+                                ModelNode condition = conditionProp.getValue();
                                 writer.writeStartElement(CONDITION);
+                                writer.writeAttribute(NAME, conditionProp.getName());
                                 WebReWriteConditionDefinition.TEST.marshallAsAttribute(condition, false, writer);
                                 WebReWriteConditionDefinition.PATTERN.marshallAsAttribute(condition, false, writer);
                                 WebReWriteConditionDefinition.FLAGS.marshallAsAttribute(condition, false, writer);
@@ -369,7 +375,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             switch (namespace) {
                 case WEB_1_0:
                 case WEB_1_1:
-                case WEB_1_2: {
+                case WEB_1_2:
+                case WEB_1_3: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -391,7 +398,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     }
                     break;
                 }
-                case WEB_1_3: {
+                case WEB_1_4: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -725,7 +732,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 }
                 case WEB_1_1:
-                case WEB_1_2: {
+                case WEB_1_2:
+                case WEB_1_3: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -745,7 +753,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     }
                     break;
                 }
-                case WEB_1_3: {
+                case WEB_1_4: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -801,14 +809,11 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         list.add(operation);
     }
 
-    static void parseHostRewrite(XMLExtendedStreamReader reader, final PathAddress parent, List<ModelNode> list,
-            int rewriteCount) throws XMLStreamException {
-        final PathAddress address = PathAddress.pathAddress(parent, PathElement.pathElement(REWRITE, "rule-" + rewriteCount));
 
-        final ModelNode rewrite = new ModelNode();
-        rewrite.get(OP).set(ADD);
-        rewrite.get(OP_ADDR).set(address.toModelNode());
+    static void parseHostRewrite(XMLExtendedStreamReader reader, final PathAddress parent, List<ModelNode> list, int rewriteCount) throws XMLStreamException {
+        final ModelNode rewrite = Util.createAddOperation();
         final int count = reader.getAttributeCount();
+        String name = RULE_PREFIX + rewriteCount;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -823,11 +828,15 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case FLAGS:
                     rewrite.get(FLAGS).set(value);
                     break;
+                case NAME:
+                    name = value;
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
         }
-
+        final PathAddress address = PathAddress.pathAddress(parent, PathElement.pathElement(REWRITE,name));
+         rewrite.get(OP_ADDR).set(address.toModelNode());
         list.add(rewrite);
         int conditionCount = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -835,22 +844,22 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_0:
                 case WEB_1_1:
                 case WEB_1_2:
-                case WEB_1_3: {
+                case WEB_1_3:
+                case WEB_1_4: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONDITION:
-
-                            PathAddress condAddress = PathAddress.pathAddress(address);
-                            final ModelNode condition = new ModelNode();
-                            condition.get(OP).set(ADD);
-                            condAddress = condAddress.append(PathElement.pathElement(CONDITION, "condition-" + conditionCount));
-                            condition.get(OP_ADDR).set(condAddress.toModelNode());
+                            final ModelNode condition = Util.createAddOperation();
+                            String condName = CONDITION_PREFIX + conditionCount;
                             final int count2 = reader.getAttributeCount();
                             for (int i = 0; i < count2; i++) {
                                 requireNoNamespaceAttribute(reader, i);
                                 final String value = reader.getAttributeValue(i);
                                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                                 switch (attribute) {
+                                    case NAME:
+                                        condName = value;
+                                        break;
                                     case TEST:
                                         condition.get(TEST).set(value);
                                         break;
@@ -864,6 +873,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                                         throw unexpectedAttribute(reader, i);
                                 }
                             }
+                            PathAddress condAddress = address.append(PathElement.pathElement(CONDITION, condName));
+                            condition.get(OP_ADDR).set(condAddress.toModelNode());
                             requireNoContent(reader);
                             list.add(condition);
                             conditionCount++;
@@ -918,7 +929,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_0:
                 case WEB_1_1:
                 case WEB_1_2:
-                case WEB_1_3: {
+                case WEB_1_3:
+                case WEB_1_4: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DIRECTORY:
@@ -1006,7 +1018,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_0:
                 case WEB_1_1:
                 case WEB_1_2:
-                case WEB_1_3: {
+                case WEB_1_3:
+                case WEB_1_4: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SSL:
@@ -1030,9 +1043,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     static void parseSsl(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> list) throws XMLStreamException {
         PathAddress address = PathAddress.pathAddress(parent, WebExtension.SSL_PATH);
-        final ModelNode ssl = new ModelNode();
-        ssl.get(OP).set(ADD);
-        ssl.get(OP_ADDR).set(address.toModelNode());
+        final ModelNode ssl = Util.createAddOperation(address);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);

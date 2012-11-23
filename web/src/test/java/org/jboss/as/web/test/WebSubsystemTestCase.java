@@ -92,7 +92,9 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAliases() throws Exception {
-        KernelServices services = super.installInController(readResource("subsystem.xml"));
+        KernelServices services = createKernelServicesBuilder(null)
+                .setSubsystemXmlResource("subsystem.xml")
+                .build();
         ModelNode noAliasModel = services.readWholeModel();
         ModelNode aliasModel = services.readWholeModel(true);
 

@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2011, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ /*
+  ~ * JBoss, Home of Professional Open Source.
+  ~ * Copyright 2012, Red Hat, Inc., and individual contributors
+  ~ * as indicated by the @author tags. See the copyright.txt file in the
+  ~ * distribution for a full listing of individual contributors.
+  ~ *
+  ~ * This is free software; you can redistribute it and/or modify it
+  ~ * under the terms of the GNU Lesser General Public License as
+  ~ * published by the Free Software Foundation; either version 2.1 of
+  ~ * the License, or (at your option) any later version.
+  ~ *
+  ~ * This software is distributed in the hope that it will be useful,
+  ~ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ * Lesser General Public License for more details.
+  ~ *
+  ~ * You should have received a copy of the GNU Lesser General Public
+  ~ * License along with this software; if not, write to the Free
+  ~ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ */
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:web:1.2"
-           xmlns="urn:jboss:domain:web:1.2"
+           targetNamespace="urn:jboss:domain:web:1.3"
+           xmlns="urn:jboss:domain:web:1.3"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.2">
+           version="1.3">
 
    <!-- The web subsystem root element -->
    <xs:element name="subsystem" type="web-containerType" />
@@ -44,6 +46,7 @@
          <xs:element minOccurs="0" maxOccurs="1" name="configuration" type="webConfigType" />
          <xs:element maxOccurs="unbounded" ref="connector" />
          <xs:element maxOccurs="unbounded" ref="virtual-server" />
+         <xs:element maxOccurs="unbounded" ref="valve" />
       </xs:sequence>
       <xs:attribute name="default-virtual-server"/>
       <xs:attribute name="instance-id"/>
@@ -106,32 +109,6 @@
       <xs:attribute name="display-source-fragment" default="true" type="xs:boolean" />
    </xs:complexType>
 
-<!--
-  <xs:complexType name="cgi-servletType">
-    <xs:attribute name="debug" default="0"/>
-    <xs:attribute name="cgi-path-prefix"/>
-    <xs:attribute name="pass-shell-environment" default="false" type="xs:boolean"/>
-    <xs:attribute name="cgi-executable" default="perl"/>
-    <xs:attribute name="parameter-encoding"/>
-  </xs:complexType>
-
-  <xs:complexType name="ssi-servletType">
-    <xs:attribute name="debug" default="0"/>
-    <xs:attribute name="webapp-relative" default="false" type="xs:boolean"/>
-    <xs:attribute name="expires"/>
-    <xs:attribute name="buffered" default="false" type="xs:boolean"/>
-    <xs:attribute name="input-encoding"/>
-    <xs:attribute name="output-encoding" default="UTF-8"/>
-  </xs:complexType>
-
-  <xs:complexType name="ssi-filterType">
-    <xs:attribute name="debug" default="0"/>
-    <xs:attribute name="webapp-relative" default="false" type="xs:boolean"/>
-    <xs:attribute name="expires"/>
-    <xs:attribute name="content-type-regex"/>
-  </xs:complexType>
- -->
-
    <xs:element name="connector">
       <xs:complexType>
          <xs:sequence>
@@ -177,6 +154,7 @@
             <xs:element name="access-log" minOccurs="0" type="http-access-logType" />
             <xs:element name="rewrite" minOccurs="0" type="http-rewriteType" />
             <xs:element name="sso" minOccurs="0" maxOccurs="1" type="ssoType" />
+            <xs:element maxOccurs="unbounded" ref="valve" />
          </xs:sequence>
          <xs:attributeGroup ref="virtual-server-attlist" />
       </xs:complexType>
@@ -250,7 +228,15 @@
       <xs:sequence>
          <xs:element name="condition" type="rewrite-conditionType" />
       </xs:sequence>
-
+      <xs:attribute name="name" use="optional">
+         <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                    Name of this rule
+                ]]>
+            </xs:documentation>
+         </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="pattern" use="required">
          <xs:annotation>
             <xs:documentation>
@@ -278,6 +264,15 @@
    </xs:complexType>
 
    <xs:complexType name="rewrite-conditionType">
+       <xs:attribute name="name" use="optional">
+        <xs:annotation>
+           <xs:documentation>
+               <![CDATA[
+                   Name of this rule
+               ]]>
+           </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
       <xs:attribute name="test" use="required">
          <xs:annotation>
             <xs:documentation>
@@ -423,5 +418,21 @@
         <xs:enumeration value="PKCS12"/>
     </xs:restriction>
   </xs:simpleType>
+
+   <xs:element name="valve">
+      <xs:complexType>
+         <xs:sequence>
+            <xs:element name="param" minOccurs="0" maxOccurs="unbounded" type="paramType" />
+         </xs:sequence>
+         <xs:attribute name="class-name" type="xs:string" use="required" />
+         <xs:attribute name="module" type="xs:string" use="required" />
+         <xs:attribute name="enabled" default="true" type="xs:boolean" />
+      </xs:complexType>
+   </xs:element>
+
+   <xs:complexType name="paramType">
+       <xs:attribute name="param-name" use="required"/>
+       <xs:attribute name="param-value" use="optional"/>
+   </xs:complexType>
 
 </xs:schema>
