@@ -58,6 +58,18 @@
                 <version>${version.org.apache.deltaspike}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-jpa-module-api</artifactId>
+                <version>${version.org.apache.deltaspike}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-jpa-module-impl</artifactId>
+                <version>${version.org.apache.deltaspike}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
