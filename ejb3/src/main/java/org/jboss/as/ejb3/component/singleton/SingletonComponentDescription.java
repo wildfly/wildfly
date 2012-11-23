@@ -27,17 +27,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagementType;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
+import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
+import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -49,7 +52,7 @@ import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
-import org.jboss.as.ejb3.tx.SingletonLifecycleCMTTxInterceptor;
+import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -110,13 +113,11 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
 
-                    configuration.addPostConstructInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
-                    configuration.addPreDestroyInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
+                    final EEApplicationClasses applicationClasses = context.getDeploymentUnit().getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
+                    InterceptorClassDescription interceptorConfig = ComponentDescription.mergeInterceptorConfig(configuration.getComponentClass(), applicationClasses.getClassByName(description.getComponentClassName()), description, MetadataCompleteMarker.isMetadataComplete(context.getDeploymentUnit()));
 
-                    if(description.isPassivationApplicable()) {
-                        configuration.addPrePassivateInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPassivation.TRANSACTION_INTERCEPTOR);
-                        configuration.addPostActivateInterceptor(new SingletonLifecycleCMTTxInterceptor.Factory(TransactionAttributeType.REQUIRES_NEW), InterceptorOrder.ComponentPassivation.TRANSACTION_INTERCEPTOR);
-                    }
+                    configuration.addPostConstructInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPostConstruct() ,true), InterceptorOrder.ComponentPostConstruct.TRANSACTION_INTERCEPTOR);
+                    configuration.addPreDestroyInterceptor(new LifecycleCMTTxInterceptor.Factory(interceptorConfig.getPreDestroy() ,true), InterceptorOrder.ComponentPreDestroy.TRANSACTION_INTERCEPTOR);
 
                     configuration.addTimeoutViewInterceptor(TimerCMTTxInterceptor.FACTORY, InterceptorOrder.View.CMT_TRANSACTION_INTERCEPTOR);
 

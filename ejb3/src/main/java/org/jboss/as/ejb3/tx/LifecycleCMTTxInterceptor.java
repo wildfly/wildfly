@@ -27,38 +27,47 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactoryContext;
+import org.jboss.invocation.proxy.MethodIdentifier;
 
 /**
+ * Transaction interceptor for Singleton and Stateless beans,
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class SingletonLifecycleCMTTxInterceptor extends CMTTxInterceptor implements Interceptor {
-    private final TransactionAttributeType txAttr;
+public class LifecycleCMTTxInterceptor extends CMTTxInterceptor implements Interceptor {
 
-    public SingletonLifecycleCMTTxInterceptor( final TransactionAttributeType txAttr) {
-        this.txAttr = txAttr;
+    private final TransactionAttributeType transactionAttributeType;
+    private final int transactionTimeout;
+
+    public LifecycleCMTTxInterceptor(final TransactionAttributeType transactionAttributeType, final int transactionTimeout) {
+        this.transactionAttributeType = transactionAttributeType;
+        this.transactionTimeout = transactionTimeout;
     }
+
 
     @Override
     public Object processInvocation(InterceptorContext invocation) throws Exception {
         final EJBComponent component = (EJBComponent) invocation.getPrivateData(Component.class);
-        switch (txAttr) {
+
+        switch (transactionAttributeType) {
             case MANDATORY:
                 return mandatory(invocation, component);
             case NEVER:
                 return never(invocation, component);
             case NOT_SUPPORTED:
                 return notSupported(invocation, component);
-            //singleton beans lifecyle methods must treat REQUIRED as REQUIRES_NEW
             case REQUIRED:
+                return required(invocation, component, transactionTimeout);
             case REQUIRES_NEW:
-                return requiresNew(invocation, component, -1);
+                return requiresNew(invocation, component, transactionTimeout);
             case SUPPORTS:
                 return supports(invocation, component);
             default:
-                throw EjbLogger.EJB3_LOGGER.unknownTxAttributeOnInvocation(txAttr, invocation);
+                throw EjbLogger.EJB3_LOGGER.unknownTxAttributeOnInvocation(transactionAttributeType, invocation);
         }
     }
 
@@ -67,15 +76,33 @@ public class SingletonLifecycleCMTTxInterceptor extends CMTTxInterceptor impleme
      */
     public static class Factory extends ComponentInterceptorFactory {
 
-        private final TransactionAttributeType txAttr;
+        private final MethodIdentifier methodIdentifier;
+        private final boolean treatRequiredAsRequiresNew;
 
-        public Factory(final TransactionAttributeType txAttr) {
-            this.txAttr = txAttr;
+        public Factory(final MethodIdentifier methodIdentifier, final boolean treatRequiredAsRequiresNew) {
+            this.methodIdentifier = methodIdentifier;
+            this.treatRequiredAsRequiresNew = treatRequiredAsRequiresNew;
         }
 
         @Override
         protected Interceptor create(Component component, InterceptorFactoryContext context) {
-            final SingletonLifecycleCMTTxInterceptor interceptor = new SingletonLifecycleCMTTxInterceptor(txAttr);
+            final EJBComponent ejb = (EJBComponent) component;
+            TransactionAttributeType txAttr;
+            if (methodIdentifier == null) {
+                txAttr = TransactionAttributeType.REQUIRED;
+            } else {
+                txAttr = ejb.getTransactionAttributeType(MethodIntf.BEAN, methodIdentifier);
+            }
+            final int txTimeout;
+            if(methodIdentifier == null) {
+                txTimeout = -1;
+            } else {
+                txTimeout = ejb.getTransactionTimeout(MethodIntf.BEAN, methodIdentifier);
+            }
+            if (treatRequiredAsRequiresNew && txAttr == TransactionAttributeType.REQUIRED) {
+                txAttr = TransactionAttributeType.REQUIRES_NEW;
+            }
+            final LifecycleCMTTxInterceptor interceptor = new LifecycleCMTTxInterceptor(txAttr, txTimeout);
             return interceptor;
         }
     }
