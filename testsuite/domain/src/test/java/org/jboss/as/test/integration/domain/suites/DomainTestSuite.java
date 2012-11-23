@@ -22,7 +22,8 @@
 
 package org.jboss.as.test.integration.domain.suites;
 
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -56,7 +57,7 @@ public class DomainTestSuite {
     private static volatile DomainTestSupport support;
 
     static {
-        CONFIGURATION = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml");
+        CONFIGURATION = DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
     }
 
     public static synchronized DomainTestSupport createSupport(final String testName) {
@@ -74,7 +75,7 @@ public class DomainTestSuite {
 
     private synchronized static void start(final String name) {
         try {
-            final DomainTestSupport testSupport = new DomainTestSupport(name, CONFIGURATION);
+            final DomainTestSupport testSupport = DomainTestSupport.create(name, CONFIGURATION);
             // Start!
             testSupport.start();
             support = testSupport;

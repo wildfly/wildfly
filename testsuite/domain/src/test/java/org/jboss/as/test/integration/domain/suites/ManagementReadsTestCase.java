@@ -40,14 +40,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;

@@ -66,8 +66,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateFailedResponse;
-import static org.jboss.as.test.integration.domain.DomainTestSupport.validateResponse;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateFailedResponse;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -82,8 +82,8 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.SnapshotDeleteHandler;
 import org.jboss.as.controller.operations.common.SnapshotListHandler;
 import org.jboss.as.controller.operations.common.SnapshotTakeHandler;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;

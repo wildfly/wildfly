@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.Test;
 
@@ -70,7 +71,7 @@ public abstract class BuildConfigurationTestBase {
 
     static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
         final File output = new File("target" + File.separator + "domains" + File.separator + testConfiguration);
-        final JBossAsManagedConfiguration configuration = new JBossAsManagedConfiguration();
+        final JBossAsManagedConfiguration configuration = new JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters.STANDARD);
 
         configuration.setHostControllerManagementAddress(masterAddress);
         configuration.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);

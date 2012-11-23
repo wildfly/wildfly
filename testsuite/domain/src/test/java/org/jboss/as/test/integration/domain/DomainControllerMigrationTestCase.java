@@ -41,6 +41,7 @@ import org.jboss.as.test.integration.domain.management.util.DomainControllerClie
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.integration.management.util.WebUtil;
@@ -113,7 +114,7 @@ public class DomainControllerMigrationTestCase {
         hostConfigDir.mkdirs();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        final JBossAsManagedConfiguration hostConfig = new JBossAsManagedConfiguration();
+        final JBossAsManagedConfiguration hostConfig = new JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters.STANDARD);
         hostConfig.setHostControllerManagementAddress(host == 1 ? masterAddress : slaveAddress);
         hostConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress + " -Djboss.test.host.slave.address=" + slaveAddress);
         URL url = tccl.getResource("domain-configs/domain-standard.xml");

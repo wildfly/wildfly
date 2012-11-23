@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.domain.extension;
 
 import org.jboss.as.controller.Extension;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.StreamExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;

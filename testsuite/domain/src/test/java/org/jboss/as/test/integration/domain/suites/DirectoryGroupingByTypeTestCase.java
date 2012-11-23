@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

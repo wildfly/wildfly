@@ -33,7 +33,7 @@ import java.net.UnknownHostException;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.domain.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.as.test.integration.management.util.ModelUtil;

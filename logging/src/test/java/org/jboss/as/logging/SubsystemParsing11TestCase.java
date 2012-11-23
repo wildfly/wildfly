@@ -25,6 +25,7 @@ package org.jboss.as.logging;
 import java.io.IOException;
 
 import junit.framework.Assert;
+
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;

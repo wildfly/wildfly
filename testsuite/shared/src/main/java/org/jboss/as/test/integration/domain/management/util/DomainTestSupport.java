@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain;
+package org.jboss.as.test.integration.domain.management.util;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -40,9 +40,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.jboss.as.test.integration.domain.management.util.DomainControllerClientConfig;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
@@ -63,13 +60,13 @@ public class DomainTestSupport {
     public static final long domainBootTimeout = Long.valueOf(System.getProperty("jboss.test.domain.boot.timeout", "60000"));
     public static final long domainShutdownTimeout = Long.valueOf(System.getProperty("jboss.test.domain.shutdown.timeout", "20000"));
 
-    public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName) throws URISyntaxException {
+    public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params) throws URISyntaxException {
         final String hostName = "master";
         File domains = getBaseDir(testName);
         File extraModules = getAddedModulesDir(testName);
         File overrideModules = getHostOverrideModulesDir(testName, hostName);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        final JBossAsManagedConfiguration masterConfig = new JBossAsManagedConfiguration();
+        final JBossAsManagedConfiguration masterConfig = new JBossAsManagedConfiguration(params);
         configureModulePath(masterConfig, overrideModules, extraModules);
         masterConfig.setHostControllerManagementAddress(masterAddress);
         masterConfig.setHostCommandLineProperties("-Djboss.test.host.master.address=" + masterAddress);
@@ -89,13 +86,13 @@ public class DomainTestSupport {
         return masterConfig;
     }
 
-    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName) throws URISyntaxException {
+    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params) throws URISyntaxException {
         final String hostName = "slave";
         File domains = getBaseDir(testName);
         File extraModules = getAddedModulesDir(testName);
         File overrideModules = getHostOverrideModulesDir(testName, hostName);
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        final JBossAsManagedConfiguration slaveConfig = new JBossAsManagedConfiguration();
+        final JBossAsManagedConfiguration slaveConfig = new JBossAsManagedConfiguration(params);
         configureModulePath(slaveConfig, overrideModules, extraModules);
         slaveConfig.setHostName(hostName);
         slaveConfig.setHostControllerManagementAddress(slaveAddress);
@@ -260,24 +257,28 @@ public class DomainTestSupport {
     private final String testClass;
 
 
-    public DomainTestSupport(final String testClass, final Configuration configuration) throws Exception {
-        this(testClass, configuration.getDomainConfig(), configuration.getMasterConfig(), configuration.getSlaveConfigs());
-    }
-
-    public DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig) throws Exception {
+    protected DomainTestSupport(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) throws Exception {
         this.testClass = testClass;
         this.sharedClientConfig = DomainControllerClientConfig.create();
 
-        masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testClass);
+        masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testClass, masterParams);
         domainMasterLifecycleUtil = new DomainLifecycleUtil(masterConfiguration, sharedClientConfig);
 
         if (slaveConfig != null) {
-            slaveConfiguration = getSlaveConfiguration(slaveConfig, testClass);
+            slaveConfiguration = getSlaveConfiguration(slaveConfig, testClass, slaveParams);
             domainSlaveLifecycleUtil = new DomainLifecycleUtil(slaveConfiguration, sharedClientConfig);
         } else {
             slaveConfiguration = null;
             domainSlaveLifecycleUtil = null;
         }
+    }
+
+    public static DomainTestSupport create(final String testClass, final Configuration configuration) throws Exception {
+        return new DomainTestSupport(testClass, configuration.getDomainConfig(), configuration.getMasterConfig(), configuration.getSlaveConfigs(), configuration.getMasterConfigurationParameters(), configuration.getSlaveConfigurationParameters());
+    }
+
+    public static DomainTestSupport create(final String testClass, final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) throws Exception {
+        return new DomainTestSupport(testClass, domainConfig, masterConfig, slaveConfig, masterParams, slaveParams);
     }
 
     public JBossAsManagedConfiguration getDomainMasterConfiguration() {
@@ -342,11 +343,15 @@ public class DomainTestSupport {
         private String domainConfig;
         private String masterConfig;
         private String slaveConfig;
+        private JBossAsManagedConfigurationParameters masterParams;
+        private JBossAsManagedConfigurationParameters slaveParams;
 
-        protected Configuration(final String domainConfig, final String masterConfig, final String slaveConfig) {
+        protected Configuration(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) {
             this.domainConfig = domainConfig;
             this.masterConfig = masterConfig;
             this.slaveConfig = slaveConfig;
+            this.masterParams = masterParams;
+            this.slaveParams = slaveParams;
         }
 
         public String getDomainConfig() {
@@ -361,8 +366,17 @@ public class DomainTestSupport {
             return slaveConfig;
         }
 
-        public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig) {
-            return new Configuration(domainConfig, masterConfig, slaveConfig);
+        public JBossAsManagedConfigurationParameters getMasterConfigurationParameters() {
+            return slaveParams;
+        }
+
+
+        public JBossAsManagedConfigurationParameters getSlaveConfigurationParameters() {
+            return slaveParams;
+        }
+
+        public static Configuration create(final String domainConfig, final String masterConfig, final String slaveConfig, JBossAsManagedConfigurationParameters masterParams, JBossAsManagedConfigurationParameters slaveParams) {
+            return new Configuration(domainConfig, masterConfig, slaveConfig, masterParams, slaveParams);
         }
 
     }
