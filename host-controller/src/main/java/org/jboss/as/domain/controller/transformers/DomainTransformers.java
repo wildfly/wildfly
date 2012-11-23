@@ -52,6 +52,9 @@ public class DomainTransformers {
     private static final String JSF_SUBSYSTEM = "jsf";
     private static final PathElement JSF_EXTENSION = PathElement.pathElement(ModelDescriptionConstants.EXTENSION, "org.jboss.as.jsf");
 
+    //AS 7.1.2.Final
+    private static final ModelVersion VERSION_1_2 = ModelVersion.create(1, 2, 0);
+    //AS 7.1.3.Final
     private static final ModelVersion VERSION_1_3 = ModelVersion.create(1, 3, 0);
 
     /**
@@ -61,19 +64,24 @@ public class DomainTransformers {
      */
     public static void initializeDomainRegistry(final TransformerRegistry registry) {
 
+        initializeDomainRegistry(registry, VERSION_1_2);
+        initializeDomainRegistry(registry, VERSION_1_3);
+    }
 
-        TransformersSubRegistration domain1_3 = registry.getDomainRegistration(VERSION_1_3);
-        // Discard all operations to the newly introduced jsf extension
-        domain1_3.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
+    private static void initializeDomainRegistry(final TransformerRegistry registry, ModelVersion modelVersion) {
+        TransformersSubRegistration domain = registry.getDomainRegistration(modelVersion);
+        if (modelVersion == VERSION_1_2 || modelVersion == VERSION_1_3) {
+            // Discard all operations to the newly introduced jsf extension
+            domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
 
-        //Transform the system properties
-        SystemPropertyTransformers.registerTransformers(domain1_3);
-        TransformersSubRegistration serverGroup = domain1_3.registerSubResource(ServerGroupResourceDefinition.PATH);
-        SystemPropertyTransformers.registerTransformers(serverGroup);
+            //Transform the system properties
+            SystemPropertyTransformers.registerTransformers(domain);
+            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
+            SystemPropertyTransformers.registerTransformers(serverGroup);
 
-
-        // Ignore the jsf subsystem as well
-        registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
+            // Ignore the jsf subsystem as well
+            registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
+        }
     }
 
     private static final ResourceTransformer IGNORED_EXTENSIONS = new IgnoreExtensionResourceTransformer();
