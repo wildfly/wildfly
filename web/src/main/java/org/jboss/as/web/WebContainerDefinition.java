@@ -23,7 +23,6 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -46,7 +45,7 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
     public static final WebContainerDefinition INSTANCE = new WebContainerDefinition();
 
     protected static final SimpleListAttributeDefinition WELCOME_FILES =
-            SimpleListAttributeDefinition.Builder.of(Constants.WELCOME_FILE,
+            new SimpleListAttributeDefinition.Builder(Constants.WELCOME_FILE,
                     new SimpleAttributeDefinitionBuilder(Constants.WELCOME_FILE, ModelType.STRING, true)
                             .setXmlName(Constants.WELCOME_FILE)
                             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
@@ -54,7 +53,7 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
                             .build())
                     .setAllowNull(true)
                     .build();
-    protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition(Constants.MIME_MAPPING, Constants.MIME_MAPPING, true);
+    protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true).build();
 
     private static final SimpleAttributeDefinition MIME_NAME = new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)

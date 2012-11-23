@@ -48,7 +48,7 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleListAttributeDefinition ALIAS =
-            SimpleListAttributeDefinition.Builder.of(Constants.ALIAS,
+            new SimpleListAttributeDefinition.Builder(Constants.ALIAS,
                     new SimpleAttributeDefinitionBuilder(Constants.ALIAS, ModelType.STRING, false)
                             .setXmlName(Constants.ALIAS)
                             .setAllowNull(false)

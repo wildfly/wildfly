@@ -2,7 +2,7 @@
    This file should be kept in sync with subsystem-1.1.0.xml
   -->
 
-        <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="true">
+        <subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="true">
             <configuration>
                 <static-resources max-depth="5"/>
                 <jsp-configuration development="true" />
@@ -30,10 +30,10 @@
                <access-log resolve-hosts="true">
                  <directory relative-to="jboss.server.base.dir" path="toto" />
                </access-log>
-               <rewrite pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
-               <rewrite pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
-                  <condition test="%{HTTPS}" pattern="off" flags="NC"/>
-                  <condition test="%{USER}" pattern="toto" flags="NC"/>
+               <rewrite name="myrewrite" pattern="^/helloworld(.*)" substitution="/helloworld/test.jsp" flags="L" />
+               <rewrite name="with-conditions" pattern="^/hellomonde(.*)" substitution="/hellomonde/test.jsp" flags="L">
+                  <condition name="https" test="%{HTTPS}" pattern="off" flags="NC"/>
+                  <condition name="user" test="%{USER}" pattern="toto" flags="NC"/>
                </rewrite>
                <sso domain="mydomain" reauthenticate="true" />
             </virtual-server>

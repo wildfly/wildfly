@@ -160,7 +160,7 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleListAttributeDefinition VIRTUAL_SERVER =
-                SimpleListAttributeDefinition.Builder.of(Constants.VIRTUAL_SERVER,
+                new SimpleListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER,
                         new SimpleAttributeDefinitionBuilder(Constants.VIRTUAL_SERVER, ModelType.STRING, false)
                                 .setXmlName(Constants.VIRTUAL_SERVER)
                                 .setAllowNull(false)
