@@ -31,7 +31,6 @@ import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
@@ -47,7 +46,6 @@ import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -55,11 +53,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -89,7 +82,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
     @Override
     public AsyncFuture<ModelNode> execute(TransactionalOperationListener<Operation> listener, ModelNode operation, OperationMessageHandler messageHandler, OperationAttachments attachments) throws IOException {
-        final Operation wrapper = new TransactionalOperationImpl(operation, messageHandler, attachments);
+        final Operation wrapper = TransactionalProtocolHandlers.wrap(operation, messageHandler, attachments);
         return execute(listener, wrapper);
     }
 
