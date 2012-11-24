@@ -25,12 +25,10 @@ package org.jboss.as.host.controller;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -41,6 +39,8 @@ import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
@@ -108,14 +108,16 @@ class ManagedServer {
     private final String serverName;
     private final String serverProcessName;
     private final String hostControllerName;
-    private final PathElement serverPath;
 
     private final InetSocketAddress managementSocket;
     private final ProcessControllerClient processControllerClient;
     private final ManagedServer.ManagedServerBootConfiguration bootConfiguration;
-    private final TransformationTarget transformationTarget;
 
-    private volatile TransformingProxyController proxyController;
+    private final ManagedServerProxy protocolClient;
+    private final TransformationTarget transformationTarget;
+    private final TransformingProxyController proxyController;
+
+    private volatile boolean requiresReload;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
@@ -138,18 +140,40 @@ class ManagedServer {
         this.transformationTarget = transformationTarget;
 
         this.authKey = authKey;
-        serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
+
+        // Setup the proxy controller
+        final PathElement serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
+        final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(HOST, hostControllerName), serverPath);
+        this.protocolClient = new ManagedServerProxy(this, address);
+        this.proxyController = TransformingProxyController.Factory.create(protocolClient,
+                                Transformers.Factory.create(transformationTarget),
+                                address, ProxyOperationAddressTranslator.SERVER);
     }
 
+    /**
+     * Get the process auth key.
+     *
+     * @return the auth key
+     */
     byte[] getAuthKey() {
         return authKey;
     }
 
+    /**
+     * Get the server name.
+     *
+     * @return the server name
+     */
     public String getServerName() {
         return serverName;
     }
 
-    public ProxyController getProxyController() {
+    /**
+     * Get the transforming proxy controller instance.
+     *
+     * @return the proxy controller
+     */
+    public TransformingProxyController getProxyController() {
         return proxyController;
     }
 
@@ -177,6 +201,14 @@ class ManagedServer {
                 }
             }
         }
+    }
+
+    protected boolean isRequiresReload() {
+        return requiresReload;
+    }
+
+    protected void requireReload() {
+        requiresReload = true;
     }
 
     /**
@@ -287,25 +319,27 @@ class ManagedServer {
         finishTransition(InternalState.PROCESS_STARTING, InternalState.PROCESS_STARTED);
     }
 
-    protected synchronized ProxyController channelRegistered(final ManagementChannelHandler channelAssociation) {
+    protected synchronized TransactionalProtocolClient channelRegistered(final ManagementChannelHandler channelAssociation) {
         final InternalState current = this.internalState;
-        final TransformingProxyController proxy = TransformingProxyController.Factory.create(channelAssociation,
-                                Transformers.Factory.create(transformationTarget),
-                                PathAddress.pathAddress(PathElement.pathElement(HOST, hostControllerName), serverPath),
-                                ProxyOperationAddressTranslator.SERVER);
-        // TODO better handling for server :reload operation
+        // Create the remote controller client
+        final TransactionalProtocolClient remoteClient = TransactionalProtocolHandlers.createClient(channelAssociation);
+
+        // TODO better handling for server :reload operation (reset reloadRequired)
         if(current == InternalState.SERVER_STARTED && proxyController == null) {
-            this.proxyController = proxy;
+            // Update the current remote connection
+            protocolClient.connected(remoteClient);
+            this.requiresReload = false;
         } else {
             internalSetState(new TransitionTask() {
                 @Override
                 public void execute(final ManagedServer server) throws Exception {
-                    server.proxyController = proxy;
+                    // Update the current remote connection
+                    protocolClient.connected(remoteClient);
                 }
             // TODO we just check that we are in the correct state, perhaps introduce a new state
             }, InternalState.SERVER_STARTING, InternalState.SERVER_STARTING);
         }
-        return proxyController;
+        return remoteClient;
     }
 
     protected synchronized void serverStarted(final TransitionTask task) {
@@ -321,11 +355,12 @@ class ManagedServer {
      *
      * @param old the proxy controller to unregister
      * @param shuttingDown whether the server inventory is shutting down
+     * @return whether the registration can be removed from the domain-controller
      */
-    protected synchronized void callbackUnregistered(final ProxyController old, final boolean shuttingDown) {
-        if(proxyController == old) {
-            this.proxyController = null;
-        }
+    protected synchronized boolean callbackUnregistered(final TransactionalProtocolClient old, final boolean shuttingDown) {
+        // Disconnect the remote connection
+        protocolClient.disconnected(old);
+
         // If the connection dropped without us stopping the process ask for reconnection
         if(! shuttingDown && requiredState == InternalState.SERVER_STARTED) {
             final InternalState state = internalState;
@@ -333,7 +368,7 @@ class ManagedServer {
                     || state == InternalState.PROCESS_STOPPING
                     || state == InternalState.STOPPED) {
                 // In case it stopped we don't reconnect
-                return;
+                return true;
             }
             try {
                 HostControllerLogger.ROOT_LOGGER.tracef("trying to reconnect to %s current-state (%s) required-state (%s)", serverName, state, requiredState);
@@ -341,6 +376,9 @@ class ManagedServer {
             } catch (Exception e) {
                 HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to send reconnect task");
             }
+            return false;
+        } else {
+            return true;
         }
     }
 

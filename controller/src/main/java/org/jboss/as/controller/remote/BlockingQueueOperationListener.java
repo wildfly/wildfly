@@ -163,78 +163,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
 
         @Override
         public AsyncFuture<ModelNode> getFinalResult() {
-            return new AsyncFuture<ModelNode>() {
-
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-
-                @Override
-                public ModelNode get() {
-                    return finalResult;
-                }
-
-                @Override
-                public ModelNode get(long timeout, TimeUnit unit) {
-                    return finalResult;
-                }
-
-                @Override
-                public Status await() throws InterruptedException {
-                    return Status.COMPLETE;
-                }
-
-                @Override
-                public Status await(long timeout, TimeUnit unit) throws InterruptedException {
-                    return Status.COMPLETE;
-                }
-
-                @Override
-                public ModelNode getUninterruptibly() throws CancellationException, ExecutionException {
-                    return finalResult;
-                }
-
-                @Override
-                public ModelNode getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
-                    return finalResult;
-                }
-
-                @Override
-                public Status awaitUninterruptibly() {
-                    return Status.COMPLETE;
-                }
-
-                @Override
-                public Status awaitUninterruptibly(long timeout, TimeUnit unit) {
-                    return Status.COMPLETE;
-                }
-
-                @Override
-                public Status getStatus() {
-                    return Status.COMPLETE;
-                }
-
-                @Override
-                public <A> void addListener(Listener<? super ModelNode, A> aListener, A attachment) {
-                    aListener.handleComplete(this, attachment);
-                }
-
-                @Override
-                public void asyncCancel(boolean interruptionDesired) {
-                    //
-                }
-            };
+            return new CompletedResult(finalResult);
         }
 
         @Override
@@ -248,4 +177,84 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
         }
 
     }
+
+    static class CompletedResult<T> implements AsyncFuture<T> {
+        private final T result;
+        CompletedResult(T result) {
+            this.result = result;
+        }
+
+        @Override
+        public Status await() throws InterruptedException {
+            return Status.COMPLETE;
+        }
+
+        @Override
+        public Status await(long timeout, TimeUnit unit) throws InterruptedException {
+            return Status.COMPLETE;
+        }
+
+        @Override
+        public T getUninterruptibly() throws CancellationException, ExecutionException {
+            return result;
+        }
+
+        @Override
+        public T getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
+            return result;
+        }
+
+        @Override
+        public Status awaitUninterruptibly() {
+            return Status.COMPLETE;
+        }
+
+        @Override
+        public Status awaitUninterruptibly(long timeout, TimeUnit unit) {
+            return Status.COMPLETE;
+        }
+
+        @Override
+        public Status getStatus() {
+            return Status.COMPLETE;
+        }
+
+        @Override
+        public <A> void addListener(Listener<? super T, A> listener, A attachment) {
+            if(listener != null) {
+                listener.handleComplete(this, attachment);
+            }
+        }
+
+        @Override
+        public boolean cancel(boolean interruptionDesired) {
+            return false;
+        }
+
+        @Override
+        public void asyncCancel(boolean interruptionDesired) {
+            //
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+
+        @Override
+        public T get() throws InterruptedException, ExecutionException {
+            return result;
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return result;
+        }
+    }
+
 }
