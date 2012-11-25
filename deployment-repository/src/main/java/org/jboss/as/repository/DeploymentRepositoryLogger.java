@@ -23,6 +23,7 @@
 package org.jboss.as.repository;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.LogMessage;
@@ -56,4 +57,8 @@ interface DeploymentRepositoryLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 14901, value = "Content removed from location %s")
     void contentRemoved(String path);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14902, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String path);
 }

@@ -35,23 +35,28 @@ import org.jboss.dmr.ModelNode;
  */
 public class FilePersistenceResource extends AbstractFilePersistenceResource {
 
-    private final File tempFileName;
     protected final File fileName;
 
     FilePersistenceResource(final ModelNode model, final File fileName, final AbstractConfigurationPersister persister) throws ConfigurationPersistenceException {
         super(model, persister);
         this.fileName = fileName;
-        tempFileName = FilePersistenceUtils.createTempFile(fileName);
+
     }
 
 
     @Override
     protected void doCommit(ExposedByteArrayOutputStream marshalled) {
+        final File tempFileName = FilePersistenceUtils.createTempFile(fileName);
         try {
             FilePersistenceUtils.writeToTempFile(marshalled, tempFileName);
             FilePersistenceUtils.moveTempFileToMain(tempFileName, fileName);
         } catch (Exception e) {
             MGMT_OP_LOGGER.failedToStoreConfiguration(e, fileName.getName());
+        } finally {
+            if (tempFileName.exists() && !tempFileName.delete()) {
+                MGMT_OP_LOGGER.cannotDeleteTempFile(tempFileName.getName());
+                tempFileName.deleteOnExit();
+            }
         }
     }
 }
