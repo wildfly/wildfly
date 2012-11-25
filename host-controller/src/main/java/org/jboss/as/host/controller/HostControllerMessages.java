@@ -62,12 +62,13 @@ public interface HostControllerMessages {
     /**
      * A message indicating an argument was expected for the option.
      *
-     * @param option the option that expects the argument.
      *
+     * @param option the option that expects the argument.
+     * @param usageNote the output of method {@link #usageNote(String)}
      * @return the message.
      */
-    @Message(id = 10940, value = "Argument expected for option %s")
-    String argumentExpected(String option);
+    @Message(id = 10940, value = "Argument expected for option %s. %s")
+    String argumentExpected(String option, String usageNote);
 
     /**
      * Creates an exception indicating an attempt was made to set the {@code attributeToSet} when the {@code
@@ -272,12 +273,14 @@ public interface HostControllerMessages {
     /**
      * A message indicating the option is invalid.
      *
+     *
      * @param option the invalid option.
+     * @param usageNote the output of method {@link #usageNote(String)}
      *
      * @return the message.
      */
-    @Message(id = 10961, value = "Invalid option '%s'")
-    String invalidOption(String option);
+    @Message(id = 10961, value = "Invalid option '%s'. %s")
+    String invalidOption(String option, String usageNote);
 
     /**
      * Creates an exception indicating an invalid root id.
@@ -292,14 +295,15 @@ public interface HostControllerMessages {
     /**
      * A message indicating the value is invalid.
      *
+     *
      * @param name  the name of the option.
      * @param type  the type for the value.
      * @param value the value.
-     *
+     * @param usageNote the output of method {@link #usageNote(String)}
      * @return the message.
      */
-    @Message(id = 10963, value = "Value for %s is not an %s -- %s")
-    String invalidValue(String name, String type, Object value);
+    @Message(id = 10963, value = "Value for %s is not an %s -- %s. %s")
+    String invalidValue(String name, String type, Object value, String usageNote);
 
     /**
      * Creates an exception indicating invocations of the operation, represented by the {@code name} parameter, after
@@ -324,12 +328,13 @@ public interface HostControllerMessages {
     /**
      * A message indicating the provided for the option is malformed.
      *
-     * @param option the option.
      *
+     * @param option the option.
+     * @param usageNote the output of method {@link #usageNote(String)}
      * @return the message.
      */
-    @Message(id = 10965, value = "Malformed URL provided for option %s")
-    String malformedUrl(String option);
+    @Message(id = 10965, value = "Malformed URL provided for option %s. %s")
+    String malformedUrl(String option, String usageNote);
 
     /**
      * Creates an exception indicating the need to call the method, represented by the {@code methodName} parameter,
@@ -464,12 +469,13 @@ public interface HostControllerMessages {
     /**
      * A message indicating the inability to load properties from the URL.
      *
-     * @param url the URL.
      *
+     * @param url the URL.
+     * @param usageNote the output of method {@link #usageNote(String)}
      * @return the message.
      */
-    @Message(id = 10979, value = "Unable to load properties from URL %s")
-    String unableToLoadProperties(URL url);
+    @Message(id = 10979, value = "Unable to load properties from URL %s. %s")
+    String unableToLoadProperties(URL url, String usageNote);
 
     /**
      * Creates an exception indicating the socket binding group for the server is undefined.
@@ -515,13 +521,14 @@ public interface HostControllerMessages {
     /**
      * A message indicating the value is not a known host.
      *
+     *
      * @param name  the name of the option.
      * @param value the value.
-     *
+     * @param usageNote  the output of method {@link #usageNote(String)}
      * @return the message.
      */
-    @Message(id = 10984, value = "Value for %s is not a known host -- %s")
-    String unknownHostValue(String name, Object value);
+    @Message(id = 10984, value = "Value for %s is not a known host -- %s. %s")
+    String unknownHostValue(String name, Object value, String usageNote);
 
     /**
      * Creates an exception indicating the type is unrecognized.
@@ -641,4 +648,24 @@ public interface HostControllerMessages {
 
     @Message(id = 16513, value="Failed to add extensions used by the domain. Failure description: %s")
     IllegalStateException failedToAddExtensions(ModelNode failureDescription);
+
+    /**
+     * Messaging indicating a command line argument that was supposed to be parseable into a key
+     * and value included no value
+     * @param argument the argument provided by the user
+     * @param usageNote the output of method {@link #usageNote(String)}
+     * @return the message
+     */
+    @Message(id = 16514, value="Argument %s has no value. %s")
+    String argumentHasNoValue(String argument, String usageNote);
+
+    /**
+     * Creates a simple instruction for how to get usage help. Intended to be appended
+     * to command line argument parsing error messages.
+     *
+     * @param command the command (e.g. 'domain' or 'domain.sh') used to launch the process
+     * @return the usage note
+     */
+    @Message(id = Message.NONE, value="Use %s --help for information on valid command line arguments and their syntax.")
+    String usageNote(String command);
 }
