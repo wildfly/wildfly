@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-import static org.jboss.as.process.Main.usage;
 
 import java.io.File;
 import java.io.IOException;
@@ -177,15 +176,7 @@ public final class Main {
             final String arg = args[i];
 
             try {
-                if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
-                        || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                    productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(HostControllerEnvironment.HOME_DIR));
-                    System.out.println(productConfig.getPrettyVersionString());
-                    return null;
-                } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
-                    usage();
-                    return null;
-                } else if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
+                if (CommandLineConstants.PROPERTIES.equals(arg) || CommandLineConstants.OLD_PROPERTIES.equals(arg)
                         || CommandLineConstants.SHORT_PROPERTIES.equals(arg)) {
                     // Set system properties from url/file
                     if (!processProperties(arg, args[++i], hostSystemProperties)) {
@@ -212,7 +203,6 @@ public final class Main {
                         pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
                         System.err.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port));
-                        usage();
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
@@ -231,7 +221,6 @@ public final class Main {
                         pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
                         System.err.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr));
-                        usage();
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
@@ -308,7 +297,6 @@ public final class Main {
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
                         System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -321,7 +309,6 @@ public final class Main {
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
                         System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -354,7 +341,6 @@ public final class Main {
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
                         System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -377,7 +363,6 @@ public final class Main {
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
                         System.err.println(MESSAGES.argumentExpected(arg));
-                        usage();
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -388,12 +373,10 @@ public final class Main {
                     modulePath = args[++i];
                 } else {
                     System.err.println(MESSAGES.invalidOption(arg));
-                    usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.println(MESSAGES.argumentExpected(arg));
-                usage();
                 return null;
             }
         }
@@ -404,14 +387,12 @@ public final class Main {
     }
 
     private static String parseValue(final String arg, final String key) {
-        String value = null;
         int splitPos = key.length();
         if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
-            usage();
+            return null;
         } else {
-            value = arg.substring(splitPos + 1);
+            return arg.substring(splitPos + 1);
         }
-        return value;
     }
 
     private static boolean processProperties(final String arg, final String urlSpec, Map<String, String> hostSystemProperties) {
@@ -428,11 +409,9 @@ public final class Main {
              return true;
          } catch (MalformedURLException e) {
              System.err.println(MESSAGES.malformedUrl(arg));
-             usage();
              return false;
          } catch (IOException e) {
              System.err.println(MESSAGES.unableToLoadProperties(url));
-             usage();
              return false;
          }
     }
@@ -442,7 +421,6 @@ public final class Main {
              return Integer.valueOf(value);
          } catch (NumberFormatException e) {
              System.err.println(MESSAGES.invalidValue(key, "Integer", value));
-             usage();
              return null;
          }
     }
@@ -452,7 +430,6 @@ public final class Main {
             return InetAddress.getByName(value);
         } catch (UnknownHostException e) {
             System.err.println(MESSAGES.unknownHostValue(key, value));
-            usage();
             return null;
         }
     }
@@ -596,8 +573,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(value);
             } catch (UnknownHostException e) {
                 parseFailed = true;
-                System.out.println(MESSAGES.invalidValue(key, "InetAddress", value));
-                usage();
+                System.err.println(MESSAGES.invalidValue(key, "InetAddress", value));
             }
         }
     }
