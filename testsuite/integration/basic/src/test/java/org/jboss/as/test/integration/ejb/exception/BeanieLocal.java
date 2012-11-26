@@ -27,4 +27,5 @@ package org.jboss.as.test.integration.ejb.exception;
 public interface BeanieLocal {
     void callThrowException();
     void throwException() throws Exception;
+    void throwXmlAppException();
 }
