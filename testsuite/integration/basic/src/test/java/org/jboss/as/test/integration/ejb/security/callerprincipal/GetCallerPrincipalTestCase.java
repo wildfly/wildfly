@@ -31,6 +31,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
@@ -49,6 +50,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.util.Base64;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.ejb.EJBHome;
@@ -83,6 +85,7 @@ import javax.naming.NamingException;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({EjbSecurityDomainSetup.class, GetCallerPrincipalTestCase.JmsQueueSetup.class})
+@Category(CommonCriteria.class)
 public class GetCallerPrincipalTestCase {
 
     private static final String QUEUE_NAME = "queue/callerPrincipal";
@@ -133,6 +136,7 @@ public class GetCallerPrincipalTestCase {
                 .addClass(TestResultsSingleton.class)
                 .addClass(ITestResultsSingleton.class)
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-single", "MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
@@ -145,6 +149,7 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")                ;
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
@@ -157,6 +162,7 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
@@ -168,6 +174,7 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")                ;
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
@@ -180,6 +187,7 @@ public class GetCallerPrincipalTestCase {
                 .addClass(EntityBean.class)
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-bean", "MANIFEST.MF")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
@@ -198,6 +206,7 @@ public class GetCallerPrincipalTestCase {
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(GetCallerPrincipalTestCase.class.getPackage(), "roles.properties", "roles.properties")
                 .addAsManifestResource(GetCallerPrincipalTestCase.class.getPackage(), "MANIFEST.MF-test", "MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }

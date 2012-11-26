@@ -44,6 +44,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractDataSourceServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -58,6 +59,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -73,6 +75,7 @@ import org.junit.runner.RunWith;
         DatabaseLoginModuleTestCase.SecurityDomainsSetup.class //
 })
 @RunAsClient
+@Category(CommonCriteria.class)
 public class DatabaseLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(DatabaseLoginModuleTestCase.class);

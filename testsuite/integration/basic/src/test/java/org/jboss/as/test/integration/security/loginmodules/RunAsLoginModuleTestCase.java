@@ -59,7 +59,9 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.LOGIN_MODULES;
 import static org.jboss.as.security.Constants.FLAG;
+import org.jboss.as.test.categories.CommonCriteria;
 import static org.junit.Assert.assertTrue;
+import org.junit.experimental.categories.Category;
 
 /**
  * This is a test case for RunAsLoginModule
@@ -69,6 +71,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(RunAsLoginModuleTestCase.SecurityDomainSetup.class)
+@Category(CommonCriteria.class)
 public class RunAsLoginModuleTestCase {
 
    public static class SecurityDomainSetup extends AbstractSecurityDomainSetup {

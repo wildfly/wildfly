@@ -42,6 +42,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
 import org.jboss.shrinkwrap.api.Archive;
@@ -50,6 +51,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -60,6 +62,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({RunAsMDBUnitTestCase.JmsQueueSetup.class})
+@Category(CommonCriteria.class)
 public class RunAsMDBUnitTestCase {
     private static final Logger log = Logger.getLogger(RunAsMDBUnitTestCase.class.getName());
     private static final String queueName = "queue/mdbtest";
@@ -96,6 +99,7 @@ public class RunAsMDBUnitTestCase {
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "users.properties", "users.properties")
                 .addAsResource(RunAsMDBUnitTestCase.class.getPackage(), "roles.properties", "roles.properties");
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr \n"), "MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }
