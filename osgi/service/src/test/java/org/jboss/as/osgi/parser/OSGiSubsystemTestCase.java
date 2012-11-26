@@ -21,18 +21,23 @@
  */
 package org.jboss.as.osgi.parser;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
+import java.io.IOException;
+import java.util.List;
+
 import junit.framework.Assert;
+
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Test the subsystem parser
@@ -192,7 +197,9 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testReadWriteNamespace10() throws Exception {
-        KernelServices services = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_0);
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(SUBSYSTEM_XML_1_0)
+                .build();
         ModelNode model = services.readWholeModel();
 
         String marshalled = outputModel(model);
@@ -201,7 +208,9 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testReadWriteNamespace11() throws Exception {
-        KernelServices services = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_1);
+        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(SUBSYSTEM_XML_1_1)
+                .build();
         ModelNode model = services.readWholeModel();
 
         String marshalled = outputModel(model);
@@ -210,7 +219,9 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testDescribeHandler() throws Exception {
-        KernelServices servicesA = installInController(AdditionalInitialization.MANAGEMENT, SUBSYSTEM_XML_1_2);
+        KernelServices servicesA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(SUBSYSTEM_XML_1_2)
+                .build();
         ModelNode modelA = servicesA.readWholeModel();
         ModelNode describeOp = new ModelNode();
         describeOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.DESCRIBE);
@@ -218,10 +229,44 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
                 PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, OSGiExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
-        KernelServices servicesB = installInController(AdditionalInitialization.MANAGEMENT, operations);
+        KernelServices servicesB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setBootOperations(operations)
+                .build();
         ModelNode modelB = servicesB.readWholeModel();
 
         compare(modelA, modelB);
+    }
+
+    @Test
+    public void testTransformers1_0_0() throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(SUBSYSTEM_XML_1_2);
+
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, modelVersion)
+        .addMavenResourceURL("org.jboss.as:jboss-as-osgi-service:7.1.2.Final");
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+
+        ModelNode current = mainServices.readWholeModel();
+        ModelNode legacy = mainServices.getLegacyServices(modelVersion).readWholeModel();
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+        //Check that start level was removed
+        ModelNode currentModule1 = current.get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName, ModelConstants.CAPABILITY, "org.acme.module1");
+        Assert.assertTrue(currentModule1.isDefined());
+        Assert.assertTrue(currentModule1.has(ModelConstants.STARTLEVEL));
+        Assert.assertFalse(currentModule1.hasDefined(ModelConstants.STARTLEVEL));
+
+        ModelNode legacyModule1 = legacy.get(ModelDescriptionConstants.SUBSYSTEM, mainSubsystemName, ModelConstants.CAPABILITY, "org.acme.module1");
+        Assert.assertTrue(legacyModule1.isDefined());
+        Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
+
+        ModelNode transformedModule1 = mainServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName, ModelConstants.CAPABILITY, "org.acme.module1");
+        Assert.assertTrue(transformedModule1.isDefined());
+        Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
     }
 
     private void assertOSGiSubsystemAddress(ModelNode address) {

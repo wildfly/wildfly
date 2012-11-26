@@ -23,8 +23,21 @@ package org.jboss.as.osgi.parser;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationResultTransformer;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Domain extension used to initialize the OSGi subsystem.
@@ -38,7 +51,7 @@ public class OSGiExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "osgi";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     @Override
@@ -58,5 +71,40 @@ public class OSGiExtension implements Extension {
         subsystem.registerSubsystemModel(new OSGiRootResource(registerRuntimeOnly));
 
         subsystem.registerXMLElementWriter(OSGiSubsystemWriter.INSTANCE);
+
+        registerTransformers1_0_0(subsystem);
+    }
+
+    private void registerTransformers1_0_0(SubsystemRegistration subsystem) {
+        //There is no difference in the model between 1.1.0 and 1.0.0 but 1.0.0 does not like "start-level"=>undefined, so we remove this here.
+        ModelVersion version = ModelVersion.create(1, 0, 0);
+        TransformersSubRegistration subsystemTransformer = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
+        TransformersSubRegistration capability = subsystemTransformer.registerSubResource(PathElement.pathElement(ModelConstants.CAPABILITY), new ResourceTransformer() {
+            @Override
+            public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
+                    throws OperationFailedException {
+                ModelNode model = resource.getModel();
+                removeUndefinedStartLevel(model);
+                ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
+                childContext.processChildren(resource);
+
+            }
+        });
+        capability.registerOperationTransformer(ModelDescriptionConstants.ADD, new OperationTransformer() {
+
+            @Override
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                    throws OperationFailedException {
+                ModelNode op = operation.clone();
+                removeUndefinedStartLevel(op);
+                return new TransformedOperation(op, OperationResultTransformer.ORIGINAL_RESULT);
+            }
+        });
+    }
+
+    private void removeUndefinedStartLevel(ModelNode model) {
+        if (model.has(ModelConstants.STARTLEVEL) && !model.hasDefined(ModelConstants.STARTLEVEL)) {
+            model.remove(ModelConstants.STARTLEVEL);
+        }
     }
 }
