@@ -114,13 +114,7 @@ public final class Main {
                     if ("--".equals(arg)) {
                         for (i++; i < args.length; i++) {
                             arg = args[i];
-                            if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg)
-                                    || CommandLineConstants.OLD_HELP.equals(arg)) {
-                                usage();
-                                return null;
-                            } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
-                                    || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
-                                System.out.println(new ProductConfig(Module.getBootModuleLoader(), jbossHome).getPrettyVersionString());
+                            if (handleHelpOrVersion(arg, jbossHome)) {
                                 return null;
                             } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                                 if (pcSocketConfig.isParseFailed()) {
@@ -143,6 +137,10 @@ public final class Main {
                             }
                         }
                         break OUT;
+                    } else if (handleHelpOrVersion(arg, jbossHome)) {
+                        // This would normally come in via the nested if ("--".equals(arg)) case above, but in case someone tweaks the
+                        // script to set it directly, we've handled it
+                        return null;
                     } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                         // This would normally come in via the nested if ("--".equals(arg)) case above, but in case someone tweaks the
                         // script to set it directly, we've handled it
@@ -155,6 +153,10 @@ public final class Main {
                     }
                 }
                 break OUT;
+            } else if (handleHelpOrVersion(arg, jbossHome)) {
+                // This would normally come in via the if ("--".equals(arg)) cases above, but in case someone tweaks the
+                // script to set it directly, we've handled it)
+                return null;
             } else if (pcSocketConfig.processPCSocketConfigArgument(arg, args, i)) {
                 // This would normally come in via the if ("--".equals(arg)) cases above, but in case someone tweaks the
                 // script to set it directly, we've handled it
@@ -271,6 +273,19 @@ public final class Main {
         }
 
         javaOptions.add(option);
+    }
+
+    private static boolean handleHelpOrVersion(String arg, String jbossHome) {
+        if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg)
+            || CommandLineConstants.OLD_HELP.equals(arg)) {
+            usage();
+            return true;
+        } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
+                || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
+            System.out.println(new ProductConfig(Module.getBootModuleLoader(), jbossHome).getPrettyVersionString());
+            return true;
+        }
+        return false;
     }
 
     private static class PCSocketConfig {
