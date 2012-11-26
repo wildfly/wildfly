@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2011, Red Hat, Inc., and individual contributors
@@ -20,18 +22,21 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:jsf:1.0"
-            xmlns="urn:jboss:domain:jsf:1.0"
-            elementFormDefault="qualified"
-            attributeFormDefault="unqualified"
-            version="1.0">
+<module xmlns="urn:jboss:module:1.1" name="com.sun.jsf-impl">
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
 
-    <!-- The naming subsystem root element -->
-    <xs:element name="subsystem" type="subsystem"/>
+    <dependencies>
+        <module name="javax.faces.api"/>
+        <module name="javaee.api"/>
+        <module name="javax.servlet.jstl.api"/>
+        <module name="org.apache.xerces" services="import"/>
+        <module name="org.apache.xalan" services="import"/>
+    </dependencies>
 
-    <xs:complexType name="subsystem">
-        <xs:attribute name="default-jsf-impl-slot" type="xs:string" use="optional"/>
-    </xs:complexType>
-
-</xs:schema>
+    <resources>
+        <resource-root path="jsf-impl-2.1.13-jbossorg-1.jar"/>
+        <!-- Insert resources here -->
+    </resources>
+</module>

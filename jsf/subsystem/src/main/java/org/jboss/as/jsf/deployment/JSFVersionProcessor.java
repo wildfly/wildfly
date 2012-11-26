@@ -21,11 +21,13 @@
  */
 package org.jboss.as.jsf.deployment;
 
+import org.jboss.as.jsf.subsystem.JSFResourceDefinition;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.deployment.WarMetaData;
+import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Locale;
 
 /**
+ * Determines the JSF version that will be used by a deployment.
+ *
  * @author Stuart Douglas
  * @author Stan Silvert
  */
@@ -41,6 +45,18 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
 
     public static final String JSF_CONFIG_NAME_PARAM = "org.jboss.jbossfaces.JSF_CONFIG_NAME";
     public static final String WAR_BUNDLES_JSF_IMPL_PARAM = "org.jboss.jbossfaces.WAR_BUNDLES_JSF_IMPL";
+
+    /**
+     * Create the JSFVersionProcessor and set the default JSF implementation slot.
+     *
+     * @param model The model for the JSF subsystem.
+     */
+    public JSFVersionProcessor(ModelNode model) {
+        ModelNode defaultJSFSlot = model.get(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME);
+        if (defaultJSFSlot.isDefined()) {
+            JSFModuleIdFactory.getInstance().setDefaultSlot(defaultJSFSlot.asString());
+        }
+    }
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

@@ -23,31 +23,26 @@
 package org.jboss.as.jsf.injection;
 
 import com.sun.faces.spi.AnnotationProvider;
+import java.lang.annotation.Annotation;
 
 import javax.servlet.ServletContext;
-import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 
 /**
  * {@link }AnnotationProvider} implementation which provides the JSF annotations which we parsed from from a
  * Jandex index.
  *
  * @author John Bailey
+ * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class JandexAnnotationProvider extends AnnotationProvider {
     private final Map<Class<? extends Annotation>, Set<Class<?>>> annotations;
 
-    /**
-     * @see JSFAnnotationProcessor#FACES_ANNOTATIONS_SC_ATTR
-     */
-    public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
-
     @SuppressWarnings("unchecked")
     public JandexAnnotationProvider(final ServletContext servletContext) {
         super(servletContext);
-        annotations = (Map<Class<? extends Annotation>, Set<Class<?>>>) servletContext.getAttribute(FACES_ANNOTATIONS_SC_ATTR);
+        annotations = AnnotationMap.get(servletContext);
     }
 
     // Note: The Mojarra 2.0 SPI specifies that this method takes Set<URL> as its argument.  The Mojarra 2.1 SPI

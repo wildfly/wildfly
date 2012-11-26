@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
@@ -47,14 +48,16 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final JSFSubsystemAdd INSTANCE = new JSFSubsystemAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.setEmptyObject();
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT.validateAndSet(operation, model);
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+    @Override
+    protected void performBoottime(OperationContext context, ModelNode operation, final ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_VERSION, new JSFVersionProcessor());
+                processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_VERSION, new JSFVersionProcessor(model));
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_SHARED_TLDS, new JSFSharedTldsProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JSFManagedBeanProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JSF, new JSFDependencyProcessor());
