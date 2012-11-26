@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.ejb.security;
 
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -31,6 +32,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.Context;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertEquals;
  * User: jpai
  */
 @RunWith(Arquillian.class)
+@Category(CommonCriteria.class)
 public class EJBSecurityTestCase {
     private static Context ctx;
 
@@ -62,6 +65,7 @@ public class EJBSecurityTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ejb-security-test.jar");
         jar.addPackage(AnnotatedSLSB.class.getPackage());
         jar.addAsManifestResource("ejb/security/ejb-jar.xml", "ejb-jar.xml");
+        jar.addPackage(CommonCriteria.class.getPackage());
         return jar;
     }
 

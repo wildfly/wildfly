@@ -30,6 +30,7 @@ import javax.security.auth.login.LoginContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.dd.override.PartialDDBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -40,6 +41,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -49,6 +51,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({EjbSecurityDomainSetup.class})
+@Category(CommonCriteria.class)
 public class SecurityDDOverrideTestCase {
 
     private static final Logger logger = Logger.getLogger(SecurityDDOverrideTestCase.class);
@@ -63,6 +66,7 @@ public class SecurityDDOverrideTestCase {
         jar.addAsResource("ejb3/security/roles.properties", "roles.properties");
         jar.addAsManifestResource("ejb3/security/ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         logger.info(jar.toString(true));
         return jar;
     }

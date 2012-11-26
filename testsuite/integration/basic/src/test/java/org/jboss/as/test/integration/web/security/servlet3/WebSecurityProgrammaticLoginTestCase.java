@@ -36,11 +36,13 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -62,6 +64,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(WebSecurityProgrammaticLoginTestCase.SecurityDomainSetup.class)
+@Category( CommonCriteria.class)
 public class WebSecurityProgrammaticLoginTestCase {
 
     @ArquillianResource
@@ -78,7 +81,8 @@ public class WebSecurityProgrammaticLoginTestCase {
         war.addClass(LoginServlet.class);
         war.addClass(SecuredServlet.class);
         war.addClass(AbstractSecurityDomainSetup.class);
-
+        war.addPackage(CommonCriteria.class.getPackage());
+        
         return war;
     }
 

@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.ejb.security;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authorization.MDBRole;
 import org.jboss.as.test.integration.ejb.security.authorization.Simple;
 import org.jboss.as.test.integration.ejb.security.authorization.SimpleSLSB;
@@ -36,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.jms.Destination;
@@ -57,23 +59,23 @@ import static org.junit.Assert.assertNotNull;
 
 
 /**
- * This testcase deploys a message driven bean and a stateless bean which is injected into MDB
+ * Deploys a message driven bean and a stateless bean which is injected into MDB
  * Then the cooperation of @RunAs annotation on MDB and @RolesAllowed annotation on SLSB is tested.
  * <p/>
  * https://issues.jboss.org/browse/JBQA-5628
  *
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
-
 @RunWith(Arquillian.class)
 @ServerSetup({CreateQueueSetupTask.class, EjbSecurityDomainSetup.class})
+@Category(CommonCriteria.class)
 public class MDBRoleTestCase {
 
    Logger logger = Logger.getLogger(MDBRoleTestCase.class);
 
    @Deployment
    public static Archive<?> deployment() {
-      final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "ejb3mdb.jar")
+      final JavaArchive deployment = ShrinkWrap.create(JavaArchive.class, "ejb3mdb.jar")
          .addClass(MDBRole.class)
 
          .addClass(CreateQueueSetupTask.class)
@@ -84,6 +86,7 @@ public class MDBRoleTestCase {
 
          .addClass(TimeoutUtil.class);
 
+      deployment.addPackage(CommonCriteria.class.getPackage());
       return deployment;
    }
 
