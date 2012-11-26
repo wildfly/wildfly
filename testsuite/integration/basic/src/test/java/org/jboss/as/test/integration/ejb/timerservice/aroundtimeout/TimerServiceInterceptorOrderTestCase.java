@@ -57,7 +57,7 @@ public class TimerServiceInterceptorOrderTestCase {
         BeanChild bean = (BeanChild) ctx.lookup("java:module/" + BeanChild.class.getSimpleName());
         bean.createTimer();
         Assert.assertTrue(BeanParent.awaitTimerCall());
-        InterceptorOrder.assertEquals(InterceptorParent.class, InterceptorChild.class, MethodInterceptorParent.class, MethodInterceptorChild.class, BeanParent.class, BeanChild.class, CDIInterceptor.class);
+        InterceptorOrder.assertEquals(InterceptorParent.class, InterceptorChild.class, MethodInterceptorParent.class, MethodInterceptorChild.class, CDIInterceptor.class, BeanParent.class, BeanChild.class);
 
     }
 

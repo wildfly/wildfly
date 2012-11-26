@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.integration.weld.interceptor.ordering;
+package org.jboss.as.test.integration.weld.ejb.interceptor.ordering;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Inherited;
