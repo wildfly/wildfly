@@ -67,6 +67,10 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
         return deploymentUnitServiceName.append(JNDI_DEPENDENCY_SERVICE);
     }
 
+    public static ServiceName serviceName(final DeploymentUnit deploymentUnit) {
+        return serviceName(deploymentUnit.getServiceName());
+    }
+
     @Override
     public void undeploy(final DeploymentUnit context) {
     }
