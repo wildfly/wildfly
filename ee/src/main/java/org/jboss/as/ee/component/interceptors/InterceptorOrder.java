@@ -60,7 +60,8 @@ public class InterceptorOrder {
          */
         public static final int USER_INTERCEPTORS = 0xA00;
         public static final int CDI_INTERCEPTORS = 0xB00;
-        public static final int TERMINAL_INTERCEPTOR = 0xC00;
+        public static final int USER_COMPONENT_INTERCEPTORS = 0xC00; //interceptors defined on the component class, these have to run after CDI interceptors
+        public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private Component() {
         }

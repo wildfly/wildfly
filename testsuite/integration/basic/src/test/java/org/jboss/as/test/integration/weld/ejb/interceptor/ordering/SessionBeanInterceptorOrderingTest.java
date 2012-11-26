@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.test.integration.weld.interceptor.ordering;
+package org.jboss.as.test.integration.weld.ejb.interceptor.ordering;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,7 +30,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,7 +46,6 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(Arquillian.class)
-@Ignore("AS7-6015")
 public class SessionBeanInterceptorOrderingTest {
 
     @Inject

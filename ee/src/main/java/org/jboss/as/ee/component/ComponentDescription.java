@@ -825,6 +825,8 @@ public class ComponentDescription implements ResourceInjectionTarget {
 
                     final List<InterceptorFactory> userAroundInvokes = new ArrayList<InterceptorFactory>();
                     final List<InterceptorFactory> userAroundTimeouts = new ArrayList<InterceptorFactory>();
+                    final List<InterceptorFactory> userComponentAroundInvokes = new ArrayList<InterceptorFactory>();
+                    final List<InterceptorFactory> userComponentAroundTimeouts = new ArrayList<InterceptorFactory>();
                     // first add the default interceptors (if not excluded) to the deque
                     if (!description.isExcludeDefaultInterceptors() && !description.isExcludeDefaultInterceptors(identifier)) {
                         for (InterceptorDescription interceptorDescription : description.getDefaultInterceptors()) {
@@ -878,11 +880,12 @@ public class ComponentDescription implements ResourceInjectionTarget {
                     }
 
                     // finally add the component level around invoke to the deque so that it's triggered last
-                    userAroundInvokes.addAll(componentUserAroundInvoke);
+                    userComponentAroundInvokes.addAll(componentUserAroundInvoke);
                     if (componentUserAroundTimeout != null) {
-                        userAroundTimeouts.addAll(componentUserAroundTimeout);
+                        userComponentAroundTimeouts.addAll(componentUserAroundTimeout);
                     }
                     configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.USER_INTERCEPTORS);
+                    configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userComponentAroundInvokes), weaved(userComponentAroundTimeouts)), InterceptorOrder.Component.USER_COMPONENT_INTERCEPTORS);
                 }
             }
 
