@@ -87,9 +87,7 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final")
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:7.1.2.Final")
-                .addParentFirstClassPattern("org.jboss.as.controller.*");
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:7.1.2.Final");
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
