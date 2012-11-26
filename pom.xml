@@ -500,6 +500,7 @@
                                         <versionRange>[2.1,)</versionRange>
                                         <goals>
                                             <goal>copy</goal>
+                                            <goal>properties</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
