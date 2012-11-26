@@ -36,7 +36,11 @@
     <packaging>pom</packaging>
 
     <name>JBoss Application Server: Clustering Subsystem</name>
-    
+
+    <properties>
+        <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
+    </properties>
+
     <modules>
         <module>api</module>
         <module>common</module>
@@ -82,39 +86,25 @@
             <artifactId>byteman-bmunit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.sun</groupId>
+            <artifactId>tools</artifactId>
+            <scope>system</scope>
+            <version>1.6</version>
+            <systemPath>${com.sun.tools.path}</systemPath>
+        </dependency>
     </dependencies>
-    
+
     <profiles>
-        <profile>
-            <id>linux-windows</id>
-            <activation>
-                <file><exists>${java.home}/../lib/tools.jar</exists></file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>system</groupId>
-                    <artifactId>jdk-tools</artifactId>
-                    <version>jdk</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
         <profile>
             <!-- I'm not 100% sure this is the tools.jar replacement on OS X but at least the tests seem to work -->
             <id>os-x</id>
             <activation>
                 <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
             </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>system</groupId>
-                    <artifactId>jdk-tools</artifactId>
-                    <version>jdk</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/bundle/Classes/classes.jar</systemPath>
-                </dependency>
-            </dependencies>
+            <properties>
+                <com.sun.tools.path>${java.home}/bundle/Classes/classes.jar</com.sun.tools.path>
+            </properties>
         </profile>
     </profiles>
 </project>
