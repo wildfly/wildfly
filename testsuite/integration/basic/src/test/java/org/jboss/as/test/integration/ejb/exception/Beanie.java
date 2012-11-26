@@ -48,4 +48,9 @@ public class Beanie implements BeanieLocal {
     public void throwException() throws Exception {
         throw new Exception("This is an app exception");
     }
+
+    @Override
+    public void throwXmlAppException() {
+        throw new XmlAppException();
+    }
 }
