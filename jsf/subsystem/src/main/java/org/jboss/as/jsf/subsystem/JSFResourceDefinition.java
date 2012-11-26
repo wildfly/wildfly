@@ -27,6 +27,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -36,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Defines attributes for the JSF Subsystem
+ * Defines attributes and operations for the JSF Subsystem
  *
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
@@ -44,7 +45,7 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
 
     public static final String DEFAULT_SLOT_ATTR_NAME = "default-jsf-impl-slot";
     public static final String DEFAULT_SLOT = "main";
-    public static final String JSF_IMPLS_ATTR_NAME = "active-jsf-impls";
+//    public static final String JSF_IMPLS_ATTR_NAME = "active-jsf-impls";
 
     protected static final SimpleAttributeDefinition DEFAULT_JSF_IMPL_SLOT =
             new SimpleAttributeDefinitionBuilder(DEFAULT_SLOT_ATTR_NAME, ModelType.STRING, true)
@@ -54,18 +55,19 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(DEFAULT_SLOT))
             .build();
 
-    protected static final SimpleAttributeDefinition ACTIVE_JSF_IMPLS =
-            new SimpleAttributeDefinitionBuilder(JSF_IMPLS_ATTR_NAME, ModelType.STRING, true)
-            .setStorageRuntime()
-            .build();
-
-    protected static final OperationStepHandler activeJSFImplsHandler = new AbstractRuntimeOnlyHandler() {
-        @Override
-        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
-            context.getResult().set(JSFModuleIdFactory.getInstance().getActiveJSFVersions().toString());
-            context.stepCompleted();
-        }
-    };
+      // BES 11/25/2012 Just use the list-active-jsf-impls operation
+//    protected static final SimpleAttributeDefinition ACTIVE_JSF_IMPLS =
+//            new SimpleAttributeDefinitionBuilder(JSF_IMPLS_ATTR_NAME, ModelType.STRING, true)
+//            .setStorageRuntime()
+//            .build();
+//
+//    protected static final OperationStepHandler activeJSFImplsHandler = new AbstractRuntimeOnlyHandler() {
+//        @Override
+//        protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+//            context.getResult().set(JSFModuleIdFactory.getInstance().getActiveJSFVersions().toString());
+//            context.stepCompleted();
+//        }
+//    };
 
     public JSFResourceDefinition() {
         super(JSFExtension.PATH_SUBSYSTEM,
@@ -75,9 +77,16 @@ public class JSFResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
+        resourceRegistration.registerOperationHandler(JSFImplListHandler.DEFINITION, new JSFImplListHandler());
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_JSF_IMPL_SLOT, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_JSF_IMPL_SLOT));
-        resourceRegistration.registerReadOnlyAttribute(ACTIVE_JSF_IMPLS, activeJSFImplsHandler);
+//        resourceRegistration.registerReadOnlyAttribute(ACTIVE_JSF_IMPLS, activeJSFImplsHandler);
     }
 }

@@ -37,7 +37,7 @@ public class JSFImplListHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "list-active-jsf-impls";
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, JSFExtension.getResourceDescriptionResolver())
-            .withFlag(OperationEntry.Flag.READ_ONLY)
+            .withFlags(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY)
             .build();
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

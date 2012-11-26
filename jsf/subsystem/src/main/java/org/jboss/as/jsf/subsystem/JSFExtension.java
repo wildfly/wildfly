@@ -29,11 +29,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.jsf.JSFLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -85,9 +83,7 @@ public class JSFExtension implements Extension {
         JSFLogger.ROOT_LOGGER.debug("Activating JSF(Mojarra) Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(JSF_SUBSYSTEM_RESOURCE);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        registration.registerOperationHandler(JSFImplListHandler.DEFINITION, new JSFImplListHandler());
+        subsystem.registerSubsystemModel(JSF_SUBSYSTEM_RESOURCE);
         subsystem.registerXMLElementWriter(PARSER);
     }
 
@@ -115,10 +111,7 @@ public class JSFExtension implements Extension {
         @Override
         public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
             context.startSubsystemElement(JSFExtension.NAMESPACE, false);
-            ModelNode defaultSlot = context.getModelNode().get(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME);
-            if (defaultSlot.isDefined()) {
-                writer.writeAttribute(JSFResourceDefinition.DEFAULT_SLOT_ATTR_NAME, defaultSlot.asString());
-            }
+            JSFResourceDefinition.DEFAULT_JSF_IMPL_SLOT.marshallAsAttribute(context.getModelNode(), writer);
             writer.writeEndElement();
         }
 
