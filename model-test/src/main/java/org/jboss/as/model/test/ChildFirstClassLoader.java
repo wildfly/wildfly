@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,19 +44,26 @@ import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
 import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.resolution.DependencyRequest;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.transfer.AbstractTransferListener;
 import org.sonatype.aether.transfer.TransferEvent;
 import org.sonatype.aether.transfer.TransferResource;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 import org.sonatype.aether.util.version.GenericVersionScheme;
 import org.sonatype.aether.version.InvalidVersionSpecificationException;
 import org.sonatype.aether.version.VersionScheme;
@@ -202,6 +210,60 @@ public class ChildFirstClassLoader extends URLClassLoader {
         return file.toURI().toURL();
     }
 
+    static List<URL> createMavenGavRecursiveURLs(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
+        Artifact artifact = new DefaultArtifact(artifactGav);
+        if (artifact.getVersion() == null) {
+            throw new IllegalArgumentException("Null version");
+        }
+
+        VersionScheme versionScheme = new GenericVersionScheme();
+        try {
+            versionScheme.parseVersion(artifact.getVersion());
+        } catch (InvalidVersionSpecificationException e) {
+            throw new IllegalArgumentException(e);
+        }
+
+        try {
+            versionScheme.parseVersionRange(artifact.getVersion());
+            throw new IllegalArgumentException(artifact.getVersion() + " is a version range. A specific version is needed");
+        } catch (InvalidVersionSpecificationException expected) {
+
+        }
+
+        RepositorySystemSession session = newRepositorySystemSession();
+        RemoteRepository central = newCentralRepository();
+        //TODO add more remote repositories - especially the JBoss one
+
+        ArtifactRequest artifactRequest = new ArtifactRequest();
+        artifactRequest.setArtifact(artifact);
+        artifactRequest.addRepository(central);
+
+        ArtifactResult artifactResult;
+        try {
+            artifactResult = REPOSITORY_SYSTEM.resolveArtifact(session, artifactRequest);
+        } catch(ArtifactResolutionException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<URL> urls = new ArrayList<URL>();
+        urls.add(artifactToUrl(artifactResult.getArtifact()));
+
+        CollectRequest collectRequest = new CollectRequest();
+        collectRequest.setRoot(new Dependency(artifact, "compile" ));
+        collectRequest.addRepository( central );
+        DependencyNode node = REPOSITORY_SYSTEM.collectDependencies( session, collectRequest ).getRoot();
+        DependencyRequest dependencyRequest = new DependencyRequest( node, null );
+
+        REPOSITORY_SYSTEM.resolveDependencies( session, dependencyRequest  );
+
+        PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+        node.accept( nlg );
+        for (Artifact cur : nlg.getArtifacts(false)) {
+            urls.add(artifactToUrl(cur));
+            System.out.println("--> " + artifactToUrl(cur));
+        }
+        return null;
+    }
 
     private static RemoteRepository newCentralRepository() {
         return new RemoteRepository("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/");
@@ -232,6 +294,11 @@ public class ChildFirstClassLoader extends URLClassLoader {
         int start = classPath.lastIndexOf(File.pathSeparatorChar, end) + 1;
         String localRepositoryRoot = classPath.substring(start, end);
         return localRepositoryRoot;
+    }
+
+
+    private static URL artifactToUrl(Artifact artifact) throws MalformedURLException {
+        return artifact.getFile().toURI().toURL();
     }
 
     public static RepositorySystem newRepositorySystem() {
@@ -459,6 +526,10 @@ public class ChildFirstClassLoader extends URLClassLoader {
             return (bytes + 1023) / 1024;
         }
 
+    }
+
+    public static void main(String[] args) throws Exception {
+        ChildFirstClassLoader.createMavenGavRecursiveURLs("org.jboss.as:jboss-as-host-controller:7.1.2.Final");
     }
 }
 

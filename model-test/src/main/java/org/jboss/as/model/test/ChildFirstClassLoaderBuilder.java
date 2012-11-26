@@ -27,14 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.ModelVersion;
+import org.sonatype.aether.collection.DependencyCollectionException;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ChildFirstClassLoaderBuilder {
-    private ModelVersion modelVersion;
     private List<URL> classloaderURLs = new ArrayList<URL>();
     private List<Pattern> parentFirst = new ArrayList<Pattern>();
     private List<Pattern> childFirst = new ArrayList<Pattern>();
@@ -51,6 +51,11 @@ public class ChildFirstClassLoaderBuilder {
 
     public ChildFirstClassLoaderBuilder addMavenResourceURL(String artifactGav) throws MalformedURLException {
         classloaderURLs.add(ChildFirstClassLoader.createMavenGavURL(artifactGav));
+        return this;
+    }
+
+    public ChildFirstClassLoaderBuilder addRecursiveMavenResourceURL(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
+        classloaderURLs.addAll(ChildFirstClassLoader.createMavenGavRecursiveURLs(artifactGav));
         return this;
     }
 

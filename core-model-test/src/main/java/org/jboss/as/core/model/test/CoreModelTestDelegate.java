@@ -28,8 +28,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -37,12 +40,13 @@ import javax.xml.stream.XMLStreamReader;
 
 import junit.framework.Assert;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
-import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
@@ -50,6 +54,8 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.OperationValidation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
+import org.sonatype.aether.collection.DependencyCollectionException;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 
 
 
@@ -88,7 +94,7 @@ public class CoreModelTestDelegate {
         return new KernelServicesBuilderImpl(type);
     }
 
-    private void validateDescriptionProviders(TestModelType type, ModelTestKernelServices kernelServices) {
+    private void validateDescriptionProviders(TestModelType type, KernelServices kernelServices) {
         ModelNode op = new ModelNode();
         op.get(OP).set("read-resource-description");
         op.get(OP_ADDR).setEmptyList();
@@ -126,6 +132,7 @@ public class CoreModelTestDelegate {
             Assert.fail("Failed due to validation errors in the model. Please fix :-) " + builder.toString());
         }
     }
+
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
 
         private final TestModelType type;
@@ -138,6 +145,7 @@ public class CoreModelTestDelegate {
         private OperationValidation validateOperations = OperationValidation.LOG_VALIDATION_ERRORS;
         private boolean validateDescription;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
+        private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
 
 
         public KernelServicesBuilderImpl(TestModelType type) {
@@ -184,10 +192,11 @@ public class CoreModelTestDelegate {
             return this;
         }
 
+
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServices kernelServices = KernelServices.create(processType, runningMode, validateOperations, bootOperations, testParser, null, type, modelInitializer);
+            KernelServices kernelServices = KernelServicesImpl.create(processType, runningMode, validateOperations, bootOperations, testParser, null, type, modelInitializer);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
@@ -196,6 +205,24 @@ public class CoreModelTestDelegate {
 
 
             ModelTestUtils.validateModelDescriptions(PathAddress.EMPTY_ADDRESS, kernelServices.getRootRegistration());
+
+
+            for (Map.Entry<ModelVersion, LegacyKernelServicesInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
+                LegacyKernelServicesInitializerImpl legacyInitializer = entry.getValue();
+
+                List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
+                for (ModelNode op : bootOperations) {
+
+//                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
+//                    if (transformed != null) {
+//                        transformedBootOperations.add(transformed);
+//                    }
+                }
+
+                KernelServices legacyServices = legacyInitializer.install(transformedBootOperations);
+                //kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
+            }
+
 
             return kernelServices;
         }
@@ -206,5 +233,28 @@ public class CoreModelTestDelegate {
             xmlMapper.parseDocument(operationList, reader);
             return operationList;
         }
+
+        @Override
+        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion) {
+            return new LegacyKernelServicesInitializerImpl();
+        }
+    }
+
+    private class LegacyKernelServicesInitializerImpl implements LegacyKernelServicesInitializer {
+        ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+
+        @Override
+        public LegacyKernelServicesInitializer addRecursiveMavenResourceUrl(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
+            classLoaderBuilder.addRecursiveMavenResourceURL(artifactGav);
+            return this;
+        }
+
+        private KernelServices install(List<ModelNode> bootOperations) throws Exception {
+            ClassLoader legacyCl = classLoaderBuilder.build();
+
+            //Install the kernel services
+            return null;
+        }
+
     }
 }
