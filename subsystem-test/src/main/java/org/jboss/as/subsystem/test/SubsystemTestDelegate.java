@@ -86,7 +86,6 @@ import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
-import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestParser;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -385,8 +384,8 @@ final class SubsystemTestDelegate {
      * @deprecated this might no longer be needed following refactoring of TransformerRegistry
      */
     @Deprecated
-    void generateLegacySubsystemResourceRegistrationDmr(ModelTestKernelServices kernelServices, ModelVersion modelVersion) throws IOException {
-        ModelTestKernelServices legacy = kernelServices.getLegacyServices(modelVersion);
+    void generateLegacySubsystemResourceRegistrationDmr(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+        KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
 
         //Generate the org.jboss.as.controller.transform.subsystem-version.dmr file - just use the format used by TransformerRegistry for now
         PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
@@ -520,7 +519,7 @@ final class SubsystemTestDelegate {
         return clone;
     }
 
-    private void validateDescriptionProviders(AdditionalInitialization additionalInit, ModelTestKernelServices kernelServices) {
+    private void validateDescriptionProviders(AdditionalInitialization additionalInit, KernelServices kernelServices) {
         ValidationConfiguration arbitraryDescriptors = additionalInit.getModelValidationConfiguration();
         ModelNode address = new ModelNode();
         address.setEmptyList();
@@ -609,7 +608,7 @@ final class SubsystemTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServices kernelServices = KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, mainExtension, null);
+            KernelServicesImpl kernelServices = KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, mainExtension, null);
             SubsystemTestDelegate.this.kernelServices.add(kernelServices);
 
             validateDescriptionProviders(additionalInit, kernelServices);
@@ -628,7 +627,7 @@ final class SubsystemTestDelegate {
                     }
                 }
 
-                KernelServices legacyServices = legacyInitializer.install(transformedBootOperations);
+                KernelServicesImpl legacyServices = legacyInitializer.install(transformedBootOperations);
                 kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
             }
 
@@ -690,7 +689,7 @@ final class SubsystemTestDelegate {
             return this;
         }
 
-        private KernelServices install(List<ModelNode> bootOperations) throws Exception {
+        private KernelServicesImpl install(List<ModelNode> bootOperations) throws Exception {
             ClassLoader legacyCl = classLoaderBuilder.build();
 
             Class<?> clazz = legacyCl.loadClass(extensionClassName != null ? extensionClassName : mainExtension.getClass().getName());
@@ -706,7 +705,7 @@ final class SubsystemTestDelegate {
             extension.initializeParsers(extensionParsingRegistry.getExtensionParsingContext("Test", xmlMapper));
 
             //TODO extra parsers from additionalInit
-            return KernelServices.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion);
+            return KernelServicesImpl.create(mainSubsystemName, additionalInit, cloneExtensionRegistry(additionalInit), bootOperations, testParser, extension, modelVersion);
         }
     }
 

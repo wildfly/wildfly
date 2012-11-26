@@ -227,7 +227,7 @@ public abstract class AbstractSubsystemTest {
      *
      * @param kernelServices the kernel services used to access the controller
      */
-    protected Resource grabRootResource(ModelTestKernelServices kernelServices) {
+    protected Resource grabRootResource(ModelTestKernelServices<?> kernelServices) {
         return ModelTestModelControllerService.grabRootResource(kernelServices);
     }
 
@@ -239,7 +239,7 @@ public abstract class AbstractSubsystemTest {
      * @deprecated this might no longer be needed following refactoring of TransformerRegistry
      */
     @Deprecated
-    protected void generateLegacySubsystemResourceRegistrationDmr(ModelTestKernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+    protected void generateLegacySubsystemResourceRegistrationDmr(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
         delegate.generateLegacySubsystemResourceRegistrationDmr(kernelServices, modelVersion);
 
     }

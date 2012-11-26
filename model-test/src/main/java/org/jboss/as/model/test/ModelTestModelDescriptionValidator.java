@@ -552,7 +552,7 @@ public class ModelTestModelDescriptionValidator {
                 }
                 for (ModelNode entry : list) {
                     try {
-                        String s = entry.asString();
+                        entry.asString();
                     } catch (Exception e) {
                         return "'" + descriptor + "' is not a string";
                     }

@@ -192,7 +192,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
      *
      * @param kernelServices the kernel services used to access the controller
      */
-    public static Resource grabRootResource(ModelTestKernelServices kernelServices) {
+    public static Resource grabRootResource(ModelTestKernelServices<?> kernelServices) {
         ModelNode op = new ModelNode();
         op.get(OP).set(RootResourceGrabber.NAME);
         op.get(OP_ADDR).setEmptyList();

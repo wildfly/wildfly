@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
+* Copyright 2012, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -21,12 +21,16 @@
 */
 package org.jboss.as.core.model.test;
 
-import org.jboss.as.model.test.ModelTestKernelServices;
+import java.net.MalformedURLException;
+
+import org.sonatype.aether.collection.DependencyCollectionException;
+import org.sonatype.aether.resolution.DependencyResolutionException;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface KernelServices extends ModelTestKernelServices<KernelServices> {
+public interface LegacyKernelServicesInitializer {
 
+    LegacyKernelServicesInitializer addRecursiveMavenResourceUrl(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException;
 }

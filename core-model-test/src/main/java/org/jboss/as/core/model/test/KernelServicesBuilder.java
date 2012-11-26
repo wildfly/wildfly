@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 import junit.framework.AssertionFailedError;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -102,11 +103,22 @@ public interface KernelServicesBuilder {
      */
     KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer);
 
-    //TODO legacy services
+    /**
+     * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
+     * When {@link #build()} is called any legacy controllers will be created as well.
+     *
+     * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
+     * @param modelVersion The model version of the legacy subsystem
+     * @return the legacy kernel services initializer
+     * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link RunningMode#ADMIN_ONLY}
+     * @throws IllegalStateException if {@link #build()} has already been called
+     * @throws AssertionFailedError if the extension class name was not found in the {@code resources}
+     */
+     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion);
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.
-     * If {@link #createLegacyKernelServicesBuilder(AdditionalInitialization, ModelVersion)} was called kernel services will be created for the legacy subsystem
+     * If {@link #createLegacyKernelServicesBuilder(ModelVersion)} was called kernel services will be created for the legacy subsystem
      * controllers as well, accessible from {@link KernelServices#getLegacyServices(ModelVersion)} on the created {@link KernelServices}
      *
      * @return the kernel services wrapping the controller
