@@ -68,6 +68,24 @@ public class AppExceptionTestCase {
         }
     }
 
+    /**
+     *AS7-5926
+     */
+    @Test
+    public void testAppExceptionNever() {
+        try {
+            bean.callThrowExceptionNever();
+        } catch (EJBException e) {
+            // EJB 3.1 FR 14.3.1: a system exception is rethrown as an EJBException
+            final Exception cause1 = e.getCausedByException();
+            assertNotNull(cause1);
+            assertEquals(RuntimeException.class, cause1.getClass());
+            final Throwable cause2 = cause1.getCause();
+            assertNotNull(cause2);
+            assertEquals(Exception.class, cause2.getClass());
+            assertEquals("This is an app exception", cause2.getMessage());
+        }
+    }
 
     @Test
     public void testXmlAppException() {
