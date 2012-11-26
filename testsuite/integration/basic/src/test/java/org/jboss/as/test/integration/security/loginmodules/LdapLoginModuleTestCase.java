@@ -58,6 +58,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
@@ -72,6 +73,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -83,6 +85,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ LdapLoginModuleTestCase.SystemPropertiesSetup.class, LdapLoginModuleTestCase.LDAPServerSetupTask.class,
         LdapLoginModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Category(CommonCriteria.class)
 public class LdapLoginModuleTestCase {
 
     private static Logger LOGGER = Logger.getLogger(LdapLoginModuleTestCase.class);

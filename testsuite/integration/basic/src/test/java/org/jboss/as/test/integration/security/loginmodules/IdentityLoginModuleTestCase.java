@@ -45,6 +45,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
@@ -53,6 +54,7 @@ import org.jboss.security.auth.spi.IdentityLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -63,6 +65,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup({ IdentityLoginModuleTestCase.SecurityDomain1Setup.class, IdentityLoginModuleTestCase.SecurityDomain2Setup.class })
+@Category(CommonCriteria.class)
 public class IdentityLoginModuleTestCase {
 
     private static Logger log = Logger.getLogger(IdentityLoginModuleTestCase.class);

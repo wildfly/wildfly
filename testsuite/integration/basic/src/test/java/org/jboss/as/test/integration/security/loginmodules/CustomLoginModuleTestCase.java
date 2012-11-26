@@ -68,7 +68,9 @@ import static org.jboss.as.security.Constants.AUTHENTICATION;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import org.jboss.as.test.categories.CommonCriteria;
 import static org.junit.Assert.assertEquals;
+import org.junit.experimental.categories.Category;
 
 /**
  * Unit test for custom login modules in authentication.
@@ -78,6 +80,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(CustomLoginModuleTestCase.CustomLoginModuleSecurityDomainSetup.class)
+@Category(CommonCriteria.class)
 public class CustomLoginModuleTestCase {
 
 
