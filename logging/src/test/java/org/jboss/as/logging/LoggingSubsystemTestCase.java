@@ -23,14 +23,19 @@ package org.jboss.as.logging;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,6 +44,9 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
+
+    // Color pattern
+    private static final Pattern COLOR_PATTERN = Pattern.compile("(%K\\{[a-zA-Z]*?})");
 
     @BeforeClass
     public static void setUp() {
@@ -87,7 +95,82 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        final ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, modelVersion);
+
+        final PathAddress consoleAddress = PathAddress.pathAddress(
+                LoggingTestEnvironment.SUBSYSTEM_PATH,
+                PathElement.pathElement(CommonAttributes.CONSOLE_HANDLER, "CONSOLE")
+        );
+        // Get all the console handler
+        final ModelNode consoleHandler = legacyModel.get(consoleAddress.getElement(0).getKey(), consoleAddress.getElement(0).getValue(),
+                consoleAddress.getElement(1).getKey(), consoleAddress.getElement(1).getValue());
+        String formatPattern = consoleHandler.get(CommonAttributes.FORMATTER.getName()).asString();
+        Assert.assertFalse("Pattern (" + formatPattern + ") contains a color attribute not supported in legacy models.", COLOR_PATTERN.matcher(formatPattern).find());
+
+        // Write a pattern with a %K{level} to ensure it gets removed
+        ModelNode op = Operations.createWriteAttributeOperation(consoleAddress.toModelNode(), CommonAttributes.FORMATTER, "%K{level}" + formatPattern);
+        executeTransformOperation(mainServices, modelVersion, op);
+        validateLegacyFormatter(mainServices, modelVersion, consoleAddress.toModelNode());
+
+        // Test update properties
+        op = Operations.createOperation(AbstractHandlerDefinition.UPDATE_OPERATION_NAME, consoleAddress.toModelNode());
+        op.get(CommonAttributes.FORMATTER.getName()).set("%K{level}" + formatPattern);
+        executeTransformOperation(mainServices, modelVersion, op);
+        validateLegacyFormatter(mainServices, modelVersion, consoleAddress.toModelNode());
+
+        // Write out a filter-spec
+        final String filterExpression = "not(match(\"ARJUNA\\\\d\"))";
+        op = Operations.createWriteAttributeOperation(consoleAddress.toModelNode(), CommonAttributes.FILTER_SPEC, filterExpression);
+        executeTransformOperation(mainServices, modelVersion, op);
+        validateLegacyFilter(mainServices, modelVersion, consoleAddress.toModelNode(), filterExpression);
+
+        // update-propertes on a filter spec
+        op = Operations.createOperation(AbstractHandlerDefinition.UPDATE_OPERATION_NAME, consoleAddress.toModelNode());
+        op.get(CommonAttributes.FILTER_SPEC.getName()).set(filterExpression);
+        executeTransformOperation(mainServices, modelVersion, op);
+        validateLegacyFilter(mainServices, modelVersion, consoleAddress.toModelNode(), filterExpression);
+
+        final PathAddress loggerAddress = PathAddress.pathAddress(
+                LoggingTestEnvironment.SUBSYSTEM_PATH,
+                PathElement.pathElement(CommonAttributes.LOGGER, "org.jboss.as.logging")
+                );
+        // Verify the logger exists, add if it doesn't
+        op = Operations.createReadResourceOperation(loggerAddress.toModelNode());
+        if (!Operations.successful(mainServices.executeOperation(op))) {
+            op = Operations.createAddOperation(loggerAddress.toModelNode());
+            executeTransformOperation(mainServices, modelVersion, op);
+        }
+
+        // write a filter-spec
+        op = Operations.createWriteAttributeOperation(loggerAddress.toModelNode(), CommonAttributes.FILTER_SPEC, filterExpression);
+        executeTransformOperation(mainServices, modelVersion, op);
+        validateLegacyFilter(mainServices, modelVersion, loggerAddress.toModelNode(), filterExpression);
+    }
+
+    private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
+        TransformedOperation transformedOp = kernelServices.transformOperation(modelVersion, op);
+        ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
+        Assert.assertTrue(result.asString(), Operations.successful(result));
+        return result;
+    }
+
+    private static void validateLegacyFormatter(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode address) throws OperationFailedException {
+        final ModelNode op = Operations.createReadAttributeOperation(address, CommonAttributes.FORMATTER);
+        final ModelNode result = executeTransformOperation(kernelServices, modelVersion, op);
+        Assert.assertTrue(result.asString(), Operations.successful(result));
+        final String formatPattern = Operations.readResultAsString(result);
+        Assert.assertFalse("Pattern (" + formatPattern + ") contains a color attribute not supported in legacy models.", COLOR_PATTERN.matcher(formatPattern).find());
+    }
+
+    private static void validateLegacyFilter(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode address, final String filterExpression) throws OperationFailedException {
+        ModelNode op = Operations.createReadResourceOperation(address);
+        ModelNode result = executeTransformOperation(kernelServices, modelVersion, op);
+        // No filter-spec should be there
+        Assert.assertFalse("filter-spec found at: " + address.asString(), result.has(CommonAttributes.FILTER_SPEC.getName()));
+
+        op = Operations.createReadAttributeOperation(address, CommonAttributes.FILTER);
+        result = executeTransformOperation(kernelServices, modelVersion, op);
+        Assert.assertEquals("Transformed spec does not match filter expression.", Filters.filterToFilterSpec(Operations.readResult(result)), filterExpression);
     }
 
 
@@ -116,7 +199,7 @@ public class LoggingSubsystemTestCase extends AbstractSubsystemBaseTest {
                         result = compare(key1, key2);
                     }
                 } else {
-                  result = compare(key1, key2);
+                    result = compare(key1, key2);
                 }
             }
             return result;

@@ -34,7 +34,7 @@
         <level name="INFO"/>
         <filter-spec value="levelRange(TRACE,WARN)" />
         <formatter>
-            <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+            <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
         </formatter>
     </console-handler>
 
