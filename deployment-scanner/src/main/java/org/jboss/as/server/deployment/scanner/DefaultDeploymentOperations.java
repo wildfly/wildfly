@@ -25,21 +25,17 @@ package org.jboss.as.server.deployment.scanner;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -59,12 +55,7 @@ final class DefaultDeploymentOperations implements DeploymentOperations {
 
     @Override
     public Future<ModelNode> deploy(final ModelNode operation, final ScheduledExecutorService scheduledExecutor) {
-        return scheduledExecutor.submit(new Callable<ModelNode>() {
-            @Override
-            public ModelNode call() throws Exception {
-                return controllerClient.execute(operation);
-            }
-        });
+        return controllerClient.executeAsync(operation, OperationMessageHandler.DISCARD);
     }
 
     @Override

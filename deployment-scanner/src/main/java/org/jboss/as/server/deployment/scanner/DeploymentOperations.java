@@ -31,6 +31,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Abstraction of the operations {@link FileSystemDeploymentService} needs to perform on the target
+ * server.
  *
  * @author Stuart Douglas
  */

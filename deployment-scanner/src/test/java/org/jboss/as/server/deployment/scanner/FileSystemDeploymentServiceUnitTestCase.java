@@ -14,7 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -31,6 +34,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
+import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -1232,7 +1236,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
         TesteeSet ts = createTestee(new DiscardTaskExecutor() {
             @Override
-            public <T> Future<T> submit(Callable<T> tCallable) {
+            public <T> AsyncFuture<T> submit(Callable<T> tCallable) {
                 return new TimeOutFuture<T>(5, tCallable);
             }
         });
@@ -1492,8 +1496,8 @@ public class FileSystemDeploymentServiceUnitTestCase {
         return createTestee(new MockServerController(existingContent));
     }
 
-    private TesteeSet createTestee(final ScheduledExecutorService executorService, final String... existingContent) throws OperationFailedException {
-        return createTestee(new MockServerController(existingContent), executorService);
+    private TesteeSet createTestee(final DiscardTaskExecutor executorService, final String... existingContent) throws OperationFailedException {
+        return createTestee(new MockServerController(executorService, existingContent), executorService);
     }
 
     private TesteeSet createTestee(final MockServerController sc) throws OperationFailedException {
@@ -1573,6 +1577,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
 
     private static class MockServerController implements ModelControllerClient, DeploymentOperations.Factory {
 
+        private final DiscardTaskExecutor executorService;
         private final List<ModelNode> requests = new ArrayList<ModelNode>(1);
         private final List<Response> responses = new ArrayList<Response>(1);
         private final Map<String, byte[]> added = new HashMap<String, byte[]>();
@@ -1600,8 +1605,13 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public AsyncFuture<ModelNode> executeAsync(ModelNode operation, OperationMessageHandler messageHandler) {
-            throw new UnsupportedOperationException();
+        public AsyncFuture<ModelNode> executeAsync(final ModelNode operation, OperationMessageHandler messageHandler) {
+            return executorService.submit(new Callable<ModelNode>() {
+                @Override
+                public ModelNode call() throws Exception {
+                    return execute(operation);
+                }
+            });
         }
 
         @Override
@@ -1629,10 +1639,15 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         MockServerController(String... existingDeployments) {
+            this(executor, existingDeployments);
+        }
+
+        MockServerController(DiscardTaskExecutor executorService, String... existingDeployments) {
             for (String dep : existingDeployments) {
                 added.put(dep, randomHash());
                 deployed.put(dep, added.get(dep));
             }
+            this.executorService = executorService;
         }
 
         public void addCompositeSuccessResponse(int count) {
@@ -1763,7 +1778,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
 
         @Override
-        public <T> Future<T> submit(Callable<T> tCallable) {
+        public <T> AsyncFuture<T> submit(Callable<T> tCallable) {
             return new CallOnGetFuture<T>(tCallable);
         }
 
@@ -1772,7 +1787,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         }
     }
 
-    private static class CallOnGetFuture<T> implements Future<T> {
+    private static class CallOnGetFuture<T> implements AsyncFuture<T> {
         final Callable<T> callable;
 
         private CallOnGetFuture(Callable<T> callable) {
@@ -1807,40 +1822,59 @@ public class FileSystemDeploymentServiceUnitTestCase {
         public T get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
             return get();
         }
+
+        @Override
+        public Status await() throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status await(long timeout, TimeUnit unit) throws InterruptedException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T getUninterruptibly() throws CancellationException, ExecutionException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T getUninterruptibly(long timeout, TimeUnit unit) throws CancellationException, ExecutionException, TimeoutException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status awaitUninterruptibly() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status awaitUninterruptibly(long timeout, TimeUnit unit) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Status getStatus() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <A> void addListener(Listener<? super T, A> listener, A attachment) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void asyncCancel(boolean interruptionDesired) {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    private static class TimeOutFuture<T> implements Future<T> {
+    private static class TimeOutFuture<T> extends CallOnGetFuture<T> {
         final long expectedTimeout;
-        final Callable<T> callable;
 
         private TimeOutFuture(long expectedTimeout, Callable<T> callable) {
+            super(callable);
             this.expectedTimeout = expectedTimeout;
-            this.callable = callable;
-        }
-
-        @Override
-        public boolean cancel(boolean b) {
-            return false;
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return false;
-        }
-
-        @Override
-        public boolean isDone() {
-            return false;
-        }
-
-        @Override
-        public T get() throws InterruptedException, ExecutionException {
-            try {
-                return callable.call();
-            } catch (Exception e) {
-                // Ignore
-                return null;
-            }
         }
 
         @Override
