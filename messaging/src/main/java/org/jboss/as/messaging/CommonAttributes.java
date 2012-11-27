@@ -31,7 +31,6 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECOND
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
-import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -49,7 +48,6 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -203,17 +201,21 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
+            .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
             .setDefaultValue(null)
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
+            .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
@@ -279,17 +281,21 @@ public interface CommonAttributes {
             .setAttributeMarshaller(NOOP_MARSHALLER)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
+            .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
+    @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_PORT = create("local-bind-port", INT)
             .setDefaultValue(new ModelNode().set(-1))
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
+            .setDeprecated(VERSION_1_2_0)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
@@ -502,7 +508,7 @@ public interface CommonAttributes {
             new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_SHARED_STORE), ModelType.BOOLEAN, true,
             AttributeAccess.Flag.RESTART_ALL_SERVICES);
 
-    SimpleAttributeDefinition SOCKET_BINDING_ALTERNATIVE = create("socket-binding", ModelType.STRING)
+    SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(false)
             .setAlternatives(GROUP_ADDRESS.getName(),
@@ -630,7 +636,6 @@ public interface CommonAttributes {
     String SECURITY_ROLE = "security-role";
     String SECURITY_SETTING = "security-setting";
     String SECURITY_SETTINGS = "security-settings";
-    String SOCKET_BINDING = "socket-binding";
     String HORNETQ_SERVER = "hornetq-server";
     String STARTED = "started";
     String STATIC_CONNECTORS = "static-connectors";

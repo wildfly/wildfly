@@ -36,7 +36,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
  */
 public class GenericTransportDefinition extends AbstractTransportDefinition {
 
-    public static final SimpleAttributeDefinition SOCKET_BINDING = create(CommonAttributes.SOCKET_BINDING, STRING)
+    public static final SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", STRING)
             .setAllowNull(true)
             .setRestartAllServices()
             .build();
