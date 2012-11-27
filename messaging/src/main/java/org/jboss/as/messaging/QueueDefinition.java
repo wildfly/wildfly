@@ -58,11 +58,19 @@ public class QueueDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
 
+    public static final SimpleAttributeDefinition EXPIRY_ADDRESS = create(CommonAttributes.EXPIRY_ADDRESS)
+            .setStorageRuntime()
+            .build();
+
+    public static final SimpleAttributeDefinition DEAD_LETTER_ADDRESS = create(CommonAttributes.DEAD_LETTER_ADDRESS)
+            .setStorageRuntime()
+            .build();
+
     static final AttributeDefinition ID= create("id", LONG)
             .setStorageRuntime()
             .build();
 
-    static final AttributeDefinition[] READONLY_ATTRIBUTES = { CommonAttributes.PAUSED, CommonAttributes.TEMPORARY, ID };
+    static final AttributeDefinition[] READONLY_ATTRIBUTES = { CommonAttributes.PAUSED, CommonAttributes.TEMPORARY, ID, DEAD_LETTER_ADDRESS, EXPIRY_ADDRESS };
 
     static final AttributeDefinition[] METRICS = { CommonAttributes.MESSAGE_COUNT, CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
             CommonAttributes.SCHEDULED_COUNT, CommonAttributes.CONSUMER_COUNT
