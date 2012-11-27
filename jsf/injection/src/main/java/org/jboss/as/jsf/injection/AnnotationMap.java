@@ -50,7 +50,7 @@ import javax.servlet.ServletContext;
  */
 public class AnnotationMap {
     /**
-     * @see JSFAnnotationProcessor#FACES_ANNOTATIONS_SC_ATTR
+     * @see org.jboss.as.jsf.deployment.JSFAnnotationProcessor#FACES_ANNOTATIONS_SC_ATTR
      */
     public static final String FACES_ANNOTATIONS_SC_ATTR =  "org.jboss.as.jsf.FACES_ANNOTATIONS";
     private static final String ANNOTATION_MAP_CONVERTED = "org.jboss.as.jsf.ANNOTATION_MAP_CONVERTED";
@@ -100,14 +100,19 @@ public class AnnotationMap {
     }
 
     private static Map<Class<? extends Annotation>, Set<Class<?>>> convert(Map<Class<? extends Annotation>, Set<Class<?>>> annotations) {
-        for (Class<? extends Annotation> anno : annotations.keySet()) {
-            for (Class<?> clazz : annotations.get(anno)) {
+        final Map<Class<? extends Annotation>, Set<Class<?>>> convertedAnnotatedClasses = new HashMap<Class<? extends Annotation>, Set<Class<?>>>();
+        for (Map.Entry<Class<? extends Annotation>, Set<Class<?>>> entry : annotations.entrySet()) {
+            final Class<? extends Annotation> annotation = entry.getKey();
+            final Set<Class<?>> annotated = entry.getValue();
+            final Class<? extends Annotation> knownAnnotation = stringToAnnoMap.get(annotation.getName());
+            if (knownAnnotation != null) {
+                convertedAnnotatedClasses.put(knownAnnotation, annotated); // put back in the map with the proper version of the class
+            } else {
+                // just copy over the original annotation to annotated classes mapping
+                convertedAnnotatedClasses.put(annotation, annotated);
             }
-            Set<Class<?>> annotated = annotations.remove(anno);
-            Class<? extends Annotation> annoClass = stringToAnnoMap.get(anno.getName());
-            annotations.put(annoClass, annotated); // put back in the map with the proper version of the class
         }
 
-        return annotations;
+        return convertedAnnotatedClasses;
     }
 }
