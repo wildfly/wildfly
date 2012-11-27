@@ -120,32 +120,9 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
 
     private void writeRaElement(XMLExtendedStreamWriter streamWriter, ModelNode ra) throws XMLStreamException {
         streamWriter.writeStartElement(ResourceAdapters.Tag.RESOURCE_ADAPTER.getLocalName());
-        if (ra.hasDefined(ARCHIVE.getName())) {
-            streamWriter.writeStartElement(ARCHIVE.getXmlName());
-            String archive = ra.get(ARCHIVE.getName()).asString();
-            if (archive.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-                streamWriter.writeCharacters(archive.substring(0, archive.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
-            } else {
-                streamWriter.writeCharacters(archive);
-            }
 
-            streamWriter.writeEndElement();
-        }
-
-        if (ra.hasDefined(MODULE.getName())) {
-            streamWriter.writeStartElement(MODULE.getXmlName());
-            String module = ra.get(MODULE.getName()).asString();
-            int separatorIndex = module.indexOf(":");
-            if (separatorIndex != -1) {
-                streamWriter.writeAttribute("id", module.substring(0, separatorIndex));
-                streamWriter.writeAttribute("slot", module.substring(separatorIndex + 1));
-            } else {
-                streamWriter.writeAttribute("id", module);
-
-            }
-
-            streamWriter.writeEndElement();
-        }
+        ARCHIVE.marshallAsElement(ra, streamWriter);
+        MODULE.marshallAsElement(ra, streamWriter);
 
         BOOTSTRAP_CONTEXT.marshallAsElement(ra, streamWriter);
 
