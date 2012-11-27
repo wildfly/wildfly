@@ -51,7 +51,6 @@ import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.model.test.OperationValidation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
 import org.sonatype.aether.collection.DependencyCollectionException;
@@ -141,9 +140,8 @@ public class CoreModelTestDelegate {
         private ProcessType processType;
         private RunningMode runningMode;
         private ModelInitializer modelInitializer;
-        //TODO set this to EXIT_ON_VALIDATION_ERROR once model is fixed
-        private OperationValidation validateOperations = OperationValidation.LOG_VALIDATION_ERRORS;
         private boolean validateDescription;
+        private boolean validateOperations = true;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
         private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
 
@@ -155,11 +153,6 @@ public class CoreModelTestDelegate {
             testParser = TestParser.create(xmlMapper, type);
         }
 
-        public KernelServicesBuilder setDontValidateOperations() {
-            bootOperationBuilder.validateNotAlreadyBuilt();
-            validateOperations = OperationValidation.NONE;
-            return this;
-        }
 
         public KernelServicesBuilder validateDescription() {
             this.validateDescription = true;
@@ -237,6 +230,13 @@ public class CoreModelTestDelegate {
         @Override
         public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion) {
             return new LegacyKernelServicesInitializerImpl();
+        }
+
+
+        @Override
+        public KernelServicesBuilder setDontValidateOperations() {
+            validateOperations = true;
+            return this;
         }
     }
 
