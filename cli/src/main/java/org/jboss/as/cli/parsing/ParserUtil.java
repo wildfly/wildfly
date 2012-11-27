@@ -47,11 +47,15 @@ import org.jboss.as.cli.parsing.operation.PropertyListState;
 public class ParserUtil {
 
     public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
+        parse(commandLine, handler, true);
+    }
+
+    public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler, boolean strict) throws CommandFormatException {
         if(commandLine == null) {
             return;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE);
+        StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict);
     }
 
     public static void parseOperationRequest(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
@@ -169,10 +173,12 @@ public class ParserUtil {
                             handler.propertyNameValueSeparator(nameValueSeparator);
                         }
                     }
-//                    if (ctx.getCharacter() == ',') {
-//                        handler.propertySeparator(ctx.getLocation());
-//                    } TODO this is not really an equivalent
-                    if(!ctx.isEndOfContent() || format != null && format.isPropertySeparator(ctx.getCharacter())) {
+                    if(!ctx.isEndOfContent() || format != null &&
+                            // if the char is recognized as the separator but there was an error,
+                            // at least atm, this means the character belongs to an unfinished/incomplete
+                            // property value (e.g. a closing } or ], or " is missing) and it's not
+                            // really a property separator.
+                            format.isPropertySeparator(ctx.getCharacter()) && ctx.getError() == null) {
                         handler.propertySeparator(ctx.getLocation());
                     }
 

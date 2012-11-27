@@ -33,6 +33,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.handlers.SimpleTabCompleter;
+import org.jboss.as.cli.impl.ValueTypeCompleter;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
@@ -252,6 +253,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
                                     }
                                 } catch(IllegalArgumentException e) {
                                     // TODO this means value-type describes a custom structure
+                                    propCompleter = new ValueTypeCompleter(prop.getValue());
                                 }
                             } else if(prop.getValue().has(Util.ALLOWED)) {
                                 propCompleter = getAllowedCompleter(prop);
