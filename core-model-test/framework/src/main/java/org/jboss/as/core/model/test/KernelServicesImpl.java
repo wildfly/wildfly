@@ -61,7 +61,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         super(container, controller, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
     }
 
-    static KernelServicesImpl create(ProcessType processType, RunningMode runningMode, boolean validateOperations,
+    public static KernelServicesImpl create(ProcessType processType, RunningMode runningMode, boolean validateOperations,
             List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer) throws Exception {
 
         //TODO initialize the path manager service like we do for subsystems?
@@ -115,5 +115,9 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
 
     public ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op) {
         throw new IllegalStateException("NYI");
+    }
+
+    protected void addLegacyKernelService(ModelVersion modelVersion, KernelServices legacyServices) {
+        super.addLegacyKernelService(modelVersion, legacyServices);
     }
 }

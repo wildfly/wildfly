@@ -21,21 +21,45 @@
 */
 package org.jboss.as.core.model.test;
 
-import java.net.MalformedURLException;
+import java.io.Serializable;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.resolution.DependencyResolutionException;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface LegacyKernelServicesInitializer {
+public class LegacyModelInitializerEntry implements Serializable {
 
-    LegacyKernelServicesInitializer addRecursiveMavenResourceUrl(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException;
+    private static final long serialVersionUID = 1L;
 
-    LegacyKernelServicesInitializer initializerCreateModelResource(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model);
+    private final PathAddress parentAddress;
+    private final PathElement relativeResourceAddress;
+    private final ModelNode model;
+
+    public LegacyModelInitializerEntry(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model) {
+        if (relativeResourceAddress == null) {
+            throw new IllegalArgumentException("Null relativeResourceAddress");
+        }
+        this.parentAddress = parentAddress;
+        this.relativeResourceAddress = relativeResourceAddress;
+        this.model = model;
+    }
+
+    public PathAddress getParentAddress() {
+        return parentAddress;
+    }
+
+    public PathElement getRelativeResourceAddress() {
+        return relativeResourceAddress;
+    }
+
+    public ModelNode getModel() {
+        return model;
+    }
+
+
+
 }
