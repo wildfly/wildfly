@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.common.Util;
@@ -54,6 +55,13 @@ public class DistributedCacheAdd extends SharedStateCacheAdd {
     @Override
     void populate(ModelNode fromModel, ModelNode toModel) throws OperationFailedException {
         super.populate(fromModel, toModel);
+
+        @SuppressWarnings("deprecation")
+        final String deprecatedKey = ModelKeys.VIRTUAL_NODES;
+        if (fromModel.hasDefined(deprecatedKey)
+                && fromModel.get(deprecatedKey).asInt() != 1) {
+            throw InfinispanMessages.MESSAGES.attributeDeprecated(deprecatedKey);
+        }
 
         DistributedCacheResource.OWNERS.validateAndSet(fromModel, toModel);
         DistributedCacheResource.SEGMENTS.validateAndSet(fromModel, toModel);
