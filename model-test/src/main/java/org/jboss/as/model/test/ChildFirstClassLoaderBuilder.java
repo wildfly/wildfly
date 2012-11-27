@@ -21,6 +21,7 @@
 */
 package org.jboss.as.model.test;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ChildFirstClassLoaderBuilder {
+    //TODO Make this come from somewhere so we don't have to change it every time the branch version is changed
+    private static String version = "7.2.0.Alpha1-SNAPSHOT";
+
     private List<URL> classloaderURLs = new ArrayList<URL>();
     private List<Pattern> parentFirst = new ArrayList<Pattern>();
     private List<Pattern> childFirst = new ArrayList<Pattern>();
@@ -45,17 +49,34 @@ public class ChildFirstClassLoaderBuilder {
     }
 
     public ChildFirstClassLoaderBuilder addSimpleResourceURL(String resource) throws MalformedURLException {
-        classloaderURLs.add(ChildFirstClassLoader.createSimpleResourceURL(resource));
+        URL url = ChildFirstClassLoader.class.getResource(resource);
+        if (url == null) {
+            ClassLoader cl = ChildFirstClassLoader.class.getClassLoader();
+            if (cl == null) {
+                cl = ClassLoader.getSystemClassLoader();
+            }
+            url = cl.getResource(resource);
+            if (url == null) {
+                File file = new File(resource);
+                if (file.exists()) {
+                    url = file.toURI().toURL();
+                }
+            }
+        }
+        if (url == null) {
+            throw new IllegalArgumentException("Could not find resource " + resource);
+        }
+        classloaderURLs.add(url);
         return this;
     }
 
     public ChildFirstClassLoaderBuilder addMavenResourceURL(String artifactGav) throws MalformedURLException {
-        classloaderURLs.add(ChildFirstClassLoader.createMavenGavURL(artifactGav));
+        classloaderURLs.add(MavenUtil.createMavenGavURL(artifactGav));
         return this;
     }
 
     public ChildFirstClassLoaderBuilder addRecursiveMavenResourceURL(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
-        classloaderURLs.addAll(ChildFirstClassLoader.createMavenGavRecursiveURLs(artifactGav));
+        classloaderURLs.addAll(MavenUtil.createMavenGavRecursiveURLs(artifactGav));
         return this;
     }
 

@@ -58,7 +58,7 @@ public class TestParser implements ModelTestParser {
         this.writer = writer;
     }
 
-    static TestParser create(XMLMapper xmlMapper, TestModelType type) {
+    public static TestParser create(XMLMapper xmlMapper, TestModelType type) {
         TestParser testParser;
         String root;
         if (type == TestModelType.STANDALONE) {

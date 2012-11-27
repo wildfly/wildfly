@@ -42,9 +42,11 @@ import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.core.model.bridge.local.ScopedKernelServicesBootstrap;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
@@ -189,7 +191,7 @@ public class CoreModelTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServices kernelServices = KernelServicesImpl.create(processType, runningMode, validateOperations, bootOperations, testParser, null, type, modelInitializer);
+            KernelServicesImpl kernelServices = KernelServicesImpl.create(processType, runningMode, validateOperations, bootOperations, testParser, null, type, modelInitializer);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
@@ -206,14 +208,16 @@ public class CoreModelTestDelegate {
                 List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
                 for (ModelNode op : bootOperations) {
 
-//                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
-//                    if (transformed != null) {
-//                        transformedBootOperations.add(transformed);
-//                    }
+                    //ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
+                    ModelNode transformed = op; //TODO
+                    if (transformed != null) {
+                        transformedBootOperations.add(transformed);
+                    }
                 }
 
                 KernelServices legacyServices = legacyInitializer.install(transformedBootOperations);
-                //kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
+                kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
+
             }
 
 
@@ -229,7 +233,12 @@ public class CoreModelTestDelegate {
 
         @Override
         public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion) {
-            return new LegacyKernelServicesInitializerImpl();
+            if (type != TestModelType.DOMAIN) {
+                throw new IllegalStateException("Can only create legacy kernel services for DOMAIN.");
+            }
+            LegacyKernelServicesInitializerImpl legacyKernelServicesInitializerImpl = new LegacyKernelServicesInitializerImpl(modelVersion);
+            legacyControllerInitializers.put(modelVersion, legacyKernelServicesInitializerImpl);
+            return legacyKernelServicesInitializerImpl;
         }
 
 
@@ -241,7 +250,13 @@ public class CoreModelTestDelegate {
     }
 
     private class LegacyKernelServicesInitializerImpl implements LegacyKernelServicesInitializer {
-        ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private final ModelVersion modelVersion;
+        private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
+
+        public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion) {
+            this.modelVersion = modelVersion;
+        }
 
         @Override
         public LegacyKernelServicesInitializer addRecursiveMavenResourceUrl(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
@@ -250,11 +265,22 @@ public class CoreModelTestDelegate {
         }
 
         private KernelServices install(List<ModelNode> bootOperations) throws Exception {
+            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:7.2.0.Alpha1-SNAPSHOT");
+            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:7.2.0.Alpha1-SNAPSHOT");
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
             ClassLoader legacyCl = classLoaderBuilder.build();
 
-            //Install the kernel services
-            return null;
+
+
+            ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
+            return scopedBootstrap.createKernelServices(bootOperations, true, modelVersion, modelInitializerEntries);
         }
 
+        @Override
+        public LegacyKernelServicesInitializer initializerCreateModelResource(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model) {
+            modelInitializerEntries.add(new LegacyModelInitializerEntry(parentAddress, relativeResourceAddress, model));
+            return this;
+        }
     }
+
 }
