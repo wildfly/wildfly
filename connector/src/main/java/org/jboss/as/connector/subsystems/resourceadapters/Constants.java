@@ -21,6 +21,7 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
@@ -150,6 +151,22 @@ public class Constants {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        String archive = resourceModel.get(attribute.getName()).asString();
+                        if (archive.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                            writer.writeCharacters(archive.substring(0, archive.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
+                        } else {
+                            writer.writeCharacters(archive);
+                        }
+
+                        writer.writeEndElement();
+                    }
+                }
+            })
             .setAlternatives(MODULE_NAME).build();
 
     static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(MODULE_NAME, ModelType.STRING)
@@ -160,7 +177,22 @@ public class Constants {
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
                 public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    //TODO
+                    if (resourceModel.hasDefined(attribute.getName())) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        String module = resourceModel.get(attribute.getName()).asString();
+                        int separatorIndex = module.indexOf(":");
+                        if (separatorIndex != -1) {
+                            writer.writeAttribute("id", module.substring(0, separatorIndex));
+                            writer.writeAttribute("slot", module.substring(separatorIndex + 1));
+                        } else {
+                            writer.writeAttribute("id", module);
+                            if(marshallDefault) {
+                                writer.writeAttribute("slot", "main");
+                            }
+                        }
+
+                        writer.writeEndElement();
+                    }
                 }
             })
             .setAlternatives(ARCHIVE_NAME).build();

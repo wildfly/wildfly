@@ -22,12 +22,6 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.List;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -37,6 +31,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+
+import java.util.List;
+
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Operation handler responsible for adding a Ra.
@@ -61,9 +61,9 @@ public class RaAdd extends AbstractAddStepHandler {
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
         String archiveOrModuleName;
         if (model.get(ARCHIVE.getName()).isDefined()) {
-            archiveOrModuleName = model.get(ARCHIVE.getName()).asString();
+            archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, model).asString();
         } else {
-            archiveOrModuleName = model.get(MODULE.getName()).asString();
+            archiveOrModuleName = MODULE.resolveModelAttribute(context, model).asString();
         }
 
         if (name.startsWith(archiveOrModuleName) && (name.substring(archiveOrModuleName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveOrModuleName))) {
