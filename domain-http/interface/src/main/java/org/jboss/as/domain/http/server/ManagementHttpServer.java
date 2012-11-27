@@ -42,6 +42,7 @@ import org.jboss.as.domain.http.server.security.AnonymousAuthenticator;
 import org.jboss.as.domain.http.server.security.BasicAuthenticator;
 import org.jboss.as.domain.http.server.security.ClientCertAuthenticator;
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
+import org.jboss.as.domain.http.server.security.FourZeroThreeAuthenticator;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
@@ -139,6 +140,17 @@ public class ManagementHttpServer {
                 }
             } else {
                 certAuthMode = CertAuth.NONE;
+            }
+
+            // By this point if an authenticator could have been defined it would have been.
+            if (auth == null) {
+                if (authenticationMechanisms.size() > 0) {
+                    // An authentication mechanism not supported for HTTP has been requested, disable access.
+                    auth = new FourZeroThreeAuthenticator();
+                } else {
+                    // The existence of the realm could have enabled SSL without mandating authentication.
+                    auth = new AnonymousAuthenticator();
+                }
             }
         } else {
             auth = new AnonymousAuthenticator();
