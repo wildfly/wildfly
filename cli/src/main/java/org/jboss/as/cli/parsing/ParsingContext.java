@@ -101,4 +101,34 @@ public interface ParsingContext {
      * @throws IndexOutOfBoundsException  if the new location exceeds the input string length
      */
     void advanceLocation(int offset) throws IndexOutOfBoundsException;
+
+    /**
+     * Indicates whether handlers should complain by throwing exceptions
+     * in case of issues or be forgiving where possible and there is
+     * a reason to be.
+     *
+     * @return  true if the parser is in the strict parsing mode,
+     * otherwise - false.
+     */
+    boolean isStrict();
+
+    /**
+     * Returns the exception if there was one during parsing or null
+     * if the line was parsed successfully.
+     *
+     * @return  the exception if there was one during parsing, otherwise null.
+     */
+    CommandFormatException getError();
+
+    /**
+     * Sets the error indicating that there was a problem
+     * during parsing.
+     * If the handler chose not to throw the exception and terminate
+     * the parsing process immediately, then handling subsequent callbacks
+     * may result subsequent errors. This method should set the error
+     * only once (the first call) and ignore the subsequent ones.
+     *
+     * @param e  the error
+     */
+    void setError(CommandFormatException e);
 }

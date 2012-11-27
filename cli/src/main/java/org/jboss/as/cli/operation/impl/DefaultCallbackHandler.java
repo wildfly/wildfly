@@ -108,7 +108,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
             address = new DefaultOperationRequestAddress(initialAddress);
         }
         this.originalLine = argsStr;
-        ParserUtil.parse(argsStr, this);
+        ParserUtil.parse(argsStr, this, validation);
     }
 
     public void parse(OperationRequestAddress initialAddress, String argsStr, boolean validation) throws CommandFormatException {

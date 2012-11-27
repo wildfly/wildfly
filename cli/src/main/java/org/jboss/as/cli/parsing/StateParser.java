@@ -43,6 +43,10 @@ public class StateParser {
     }
 
     public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState) throws CommandFormatException {
+        parse(str, callbackHandler, initialState, true);
+    }
+
+    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState, boolean strict) throws CommandFormatException {
 
         if (str == null || str.isEmpty()) {
             return;
@@ -52,6 +56,7 @@ public class StateParser {
         ctx.initialState = initialState;
         ctx.callbackHandler = callbackHandler;
         ctx.input = str;
+        ctx.strict = strict;
 
         ctx.ch = str.charAt(0);
         ctx.location = 0;
@@ -64,7 +69,6 @@ public class StateParser {
             ++ctx.location;
         }
 
-        ctx.endOfContent = true;
         ParsingState state = ctx.getState();
         while(state != ctx.initialState) {
             state.getEndContentHandler().handle(ctx);
@@ -84,7 +88,13 @@ public class StateParser {
         char ch;
         ParsingStateCallbackHandler callbackHandler;
         ParsingState initialState;
-        boolean endOfContent;
+        boolean strict;
+        CommandFormatException error;
+
+        @Override
+        public boolean isStrict() {
+            return strict;
+        }
 
         @Override
         public ParsingState getState() {
@@ -137,7 +147,7 @@ public class StateParser {
 
         @Override
         public boolean isEndOfContent() {
-            return endOfContent;
+            return location >= input.length();
         }
 
         @Override
@@ -147,11 +157,29 @@ public class StateParser {
 
         @Override
         public void advanceLocation(int offset) throws IndexOutOfBoundsException {
-            if(location + offset >= input.length()) {
+//            if(location + offset >= input.length()) {
+//                throw new IndexOutOfBoundsException("Location=" + location + ", offset=" + offset + ", length=" + input.length());
+//            }
+            if(isEndOfContent()) {
                 throw new IndexOutOfBoundsException("Location=" + location + ", offset=" + offset + ", length=" + input.length());
             }
+
             location += offset;
-            ch = input.charAt(location);
+            if(location < input.length()) {
+                ch = input.charAt(location);
+            }
+        }
+
+        @Override
+        public CommandFormatException getError() {
+            return error;
+        }
+
+        @Override
+        public void setError(CommandFormatException e) {
+            if(error == null) {
+                error = e;
+            }
         }
     }
 }
