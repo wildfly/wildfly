@@ -33,6 +33,8 @@ import static org.jboss.as.messaging.CommonAttributes.SCHEDULED_COUNT;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.QueueDefinition.ADDRESS;
+import static org.jboss.as.messaging.QueueDefinition.DEAD_LETTER_ADDRESS;
+import static org.jboss.as.messaging.QueueDefinition.EXPIRY_ADDRESS;
 import static org.jboss.as.messaging.QueueDefinition.ID;
 import static org.jboss.as.messaging.QueueDefinition.forwardToRuntimeQueue;
 
@@ -115,6 +117,10 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
             }
         } else if (TEMPORARY.getName().equals(attributeName)) {
             context.getResult().set(control.isTemporary());
+        } else if (EXPIRY_ADDRESS.getName().equals(attributeName)) {
+            context.getResult().set(control.getExpiryAddress());
+        } else if (DEAD_LETTER_ADDRESS.getName().equals(attributeName)) {
+            context.getResult().set(control.getDeadLetterAddress());
         } else if (readStorageAttributes && getStorageAttributeNames().contains(attributeName)) {
             if (ADDRESS.getName().equals(attributeName)) {
                 context.getResult().set(control.getAddress());
