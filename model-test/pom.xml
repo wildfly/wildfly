@@ -32,7 +32,6 @@
         <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-model-test</artifactId>
 
     <name>JBoss Application Server: Common Code for Subsystem and Non-subsystem Test Harness</name>

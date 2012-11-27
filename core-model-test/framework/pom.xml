@@ -28,35 +28,18 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-core-model-test</artifactId>
         <version>7.2.0.Alpha1-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-core-model-test</artifactId>
-    <packaging>pom</packaging>
-    <name>JBoss Application Server: Core Model Test Parent</name>
-
-    <modules>
-        <module>framework</module>
-        <module>tests</module>
-    </modules>
-
+    <artifactId>jboss-as-core-model-test-framework</artifactId>
+    <name>JBoss Application Server: Core Model Test Framework</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-host-controller</artifactId>
-        </dependency>
-        <dependency>
-           <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-model-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
-
 </project>

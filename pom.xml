@@ -929,6 +929,12 @@
                 <version>${project.version}</version>
 	         </dependency>
 
+	         <dependency>
+	             <groupId>org.jboss.as</groupId>
+	             <artifactId>jboss-as-core-model-test-framework</artifactId>
+                <version>${project.version}</version>
+	         </dependency>
+
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ee</artifactId>
