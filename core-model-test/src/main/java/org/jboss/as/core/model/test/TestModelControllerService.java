@@ -63,7 +63,6 @@ import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
-import org.jboss.as.model.test.OperationValidation;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
@@ -96,7 +95,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ControlledProcessState processState;
     private volatile Initializer initializer;
 
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
+    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
             TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
         super(processType, runningModeControl, null, persister, validateOps, rootResourceDefinition, processState);
         this.type = type;
@@ -127,7 +126,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     @Deprecated
     //TODO remove this once host and domain are ported to resource definition
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps,
+    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
             TestModelType type, ModelInitializer modelInitializer, DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
         super(processType, runningModeControl, null, persister, validateOps, rootDescriptionProvider, processState);
         if (type == TestModelType.STANDALONE || type == TestModelType.HOST) {
@@ -141,7 +140,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         this.rootResourceDefinition = null;
     }
 
-    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, OperationValidation validateOps, TestModelType type, ModelInitializer modelInitializer) {
+    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps, TestModelType type, ModelInitializer modelInitializer) {
         return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true));
     }
 

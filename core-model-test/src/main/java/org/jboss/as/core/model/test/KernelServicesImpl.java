@@ -38,7 +38,6 @@ import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestParser;
-import org.jboss.as.model.test.OperationValidation;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.Services;
@@ -62,7 +61,7 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         super(container, controller, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
     }
 
-    static KernelServicesImpl create(ProcessType processType, RunningMode runningMode, OperationValidation validateOperations,
+    static KernelServicesImpl create(ProcessType processType, RunningMode runningMode, boolean validateOperations,
             List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer) throws Exception {
 
         //TODO initialize the path manager service like we do for subsystems?

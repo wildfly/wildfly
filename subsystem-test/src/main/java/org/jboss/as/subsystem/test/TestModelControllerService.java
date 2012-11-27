@@ -37,7 +37,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
-import org.jboss.as.model.test.OperationValidation;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.DeployerChainAddHandler;
@@ -62,7 +61,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
     protected TestModelControllerService(final Extension mainExtension, final ControllerInitializer controllerInitializer,
                                          final AdditionalInitialization additionalInit, RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
                                          final StringConfigurationPersister persister, boolean validateOps) {
-        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps ? OperationValidation.EXIT_ON_VALIDATION_ERROR : OperationValidation.NONE, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
+        super(additionalInit.getProcessType(), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOps, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
         this.mainExtension = mainExtension;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;

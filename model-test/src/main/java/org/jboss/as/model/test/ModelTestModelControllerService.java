@@ -74,13 +74,13 @@ public abstract class ModelTestModelControllerService extends AbstractController
     private final CountDownLatch latch = new CountDownLatch(1);
     private final StringConfigurationPersister persister;
     protected final TransformerRegistry transformerRegistry;
-    private final OperationValidation validateOps;
+    private final boolean validateOps;
     private volatile ManagementResourceRegistration rootRegistration;
     private volatile Exception error;
     private volatile boolean bootSuccess;
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-                           final StringConfigurationPersister persister, OperationValidation validateOps, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
+                           final StringConfigurationPersister persister, boolean validateOps, final DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootDescriptionProvider, null, ExpressionResolver.DEFAULT);
         this.persister = persister;
@@ -89,7 +89,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
-            final StringConfigurationPersister persister, final OperationValidation validateOps, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+            final StringConfigurationPersister persister, final boolean validateOps, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
                 ExpressionResolver.DEFAULT);
@@ -132,10 +132,8 @@ public abstract class ModelTestModelControllerService extends AbstractController
     protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure) throws ConfigurationPersistenceException {
         try {
             preBoot(bootOperations, rollbackOnRuntimeFailure);
-            if (validateOps == OperationValidation.EXIT_ON_VALIDATION_ERROR) {
+            if (validateOps) {
                 new OperationValidator(rootRegistration).validateOperations(bootOperations);
-            } else if (validateOps == OperationValidation.LOG_VALIDATION_ERRORS){
-                new OperationValidator(rootRegistration, true, true, false).validateOperations(bootOperations);
             }
             bootSuccess = super.boot(persister.getBootOperations(), rollbackOnRuntimeFailure);
             return bootSuccess;
