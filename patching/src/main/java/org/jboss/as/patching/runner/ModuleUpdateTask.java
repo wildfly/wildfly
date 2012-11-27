@@ -46,11 +46,8 @@ class ModuleUpdateTask extends AbstractModuleTask {
         // Copy the new module resources to the patching directory
         final File targetDir = context.getModulePatchDirectory(contentItem);
         final File sourceDir = loader.getFile(contentItem);
-        final File[] moduleResources = sourceDir.listFiles();
-        for(final File file : moduleResources) {
-            final File target = new File(targetDir, file.getName());
-            IoUtils.copy(file, target);
-        }
+        // Recursively copy module contents (incl. native libs)
+        IoUtils.copyFile(sourceDir, targetDir);
         return contentItem.getContentHash();
     }
 
