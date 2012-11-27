@@ -22,6 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.io.InputStream;
@@ -33,16 +34,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.InitialContext;
+
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.UDPBroadcastGroupConfiguration;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivatorService;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.messaging.MessagingLogger;
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
@@ -96,10 +108,12 @@ import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 
@@ -161,17 +175,17 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private String name;
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
     private InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
-    private String jndiName;
+    private List<String> jndiNames;
     private String txSupport;
     private int minPoolSize;
     private int maxPoolSize;
 
-   public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, List<PooledConnectionFactoryConfigProperties> adapterParams, String jndiName, String txSupport, int minPoolSize, int maxPoolSize) {
+   public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, List<PooledConnectionFactoryConfigProperties> adapterParams, List<String> jndiNames, String txSupport, int minPoolSize, int maxPoolSize) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupName = discoveryGroupName;
         this.adapterParams = adapterParams;
-        this.jndiName = jndiName;
+        this.jndiNames = jndiNames;
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
         this.maxPoolSize = maxPoolSize;
@@ -267,13 +281,20 @@ public class PooledConnectionFactoryService implements Service<Void> {
             ResourceAdapter1516 ra = createResourceAdapter15(properties, outbound, inbound);
             Connector15 cmd = createConnector15(ra);
 
+            // create the definition with the 1st jndi names and create jndi aliases for the rest
+            String jndiName = jndiNames.get(0);
+            List<String> jndiAliases = new ArrayList<String>();
+            if (jndiNames.size() > 1) {
+                jndiAliases = jndiNames.subList(1, jndiNames.size());
+            }
+
             CommonConnDef common = createConnDef(jndiName, minPoolSize, maxPoolSize);
             IronJacamar ijmd = createIron(common, txSupport);
 
             ResourceAdapterActivatorService activator = new ResourceAdapterActivatorService(cmd, ijmd,
                     PooledConnectionFactoryService.class.getClassLoader(), name);
 
-            serviceTarget
+            ServiceController<ResourceAdapterDeployment> controller = serviceTarget
                     .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())
@@ -294,6 +315,8 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
+            createJNDIAliases(jndiName, jndiAliases, controller);
+
             // Mock the deployment service to allow it to start
             serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(name), Service.NULL).install();
         } finally {
@@ -303,6 +326,24 @@ public class PooledConnectionFactoryService implements Service<Void> {
                 isIj.close();
         }
     }
+
+    private List<ServiceName> createJNDIAliases(final String name, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller) {
+            List<ServiceName> serviceNames = new ArrayList<ServiceName>();
+            for (final String alias : aliases) {
+                final ContextNames.BindInfo aliasBindInfo = ContextNames.bindInfoFor(alias);
+                final BinderService aliasBinderService = new BinderService(alias);
+                aliasBinderService.getManagedObjectInjector().inject(new AliasManagedReferenceFactory(name));
+
+                controller.getServiceContainer()
+                    .addService(aliasBindInfo.getBinderServiceName(), aliasBinderService)
+                    .addDependency(aliasBindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
+                    .addDependency(ContextNames.bindInfoFor(name).getBinderServiceName())
+                    .install();
+                ROOT_LOGGER.boundJndiName(alias);
+            }
+            return serviceNames;
+    }
+
 
     private static IronJacamarImpl createIron(CommonConnDef common, String txSupport) {
         TransactionSupportEnum transactionSupport;
@@ -385,5 +426,38 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     public Injector<HornetQServer> getHornetQService() {
         return hornetQService;
+    }
+
+    private final class AliasManagedReferenceFactory implements ContextListAndJndiViewManagedReferenceFactory {
+
+        private final String name;
+
+        /**
+         * @param name original JNDI name
+         */
+        private AliasManagedReferenceFactory(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public ManagedReference getReference() {
+            try {
+                final Object value = new InitialContext().lookup(name);
+                return new ValueManagedReference(new ImmediateValue<Object>(value));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public String getInstanceClassName() {
+            final Object value = getReference().getInstance();
+            return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+        }
+
+        @Override
+        public String getJndiViewInstanceValue() {
+            return String.valueOf(getReference().getInstance());
+        }
     }
 }

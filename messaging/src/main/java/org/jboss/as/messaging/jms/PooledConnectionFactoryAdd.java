@@ -86,8 +86,10 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
         }
 
         // We validated that jndiName part of the model in populateModel
-        // TODO we only use a single jndi name here but the xsd indicates support for many
-        final String jndiName = resolvedModel.get(Common.ENTRIES.getName()).asList().get(0).asString();
+        final List<String> jndiNames = new ArrayList<String>();
+        for (ModelNode node : resolvedModel.get(Common.ENTRIES.getName()).asList()) {
+            jndiNames.add(node.asString());
+        }
 
         final int minPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MIN_POOL_SIZE.getName()).asInt();
         final int maxPoolSize = resolvedModel.get(ConnectionFactoryAttributes.Pooled.MAX_POOL_SIZE.getName()).asInt();
@@ -116,7 +118,8 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
 
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(address);
         ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
-        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiName, txSupport, minPoolSize, maxPoolSize);
+        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
+
         ServiceBuilder serviceBuilder = serviceTarget
                 .addService(hornetQResourceAdapterService, resourceAdapterService)
                 .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
