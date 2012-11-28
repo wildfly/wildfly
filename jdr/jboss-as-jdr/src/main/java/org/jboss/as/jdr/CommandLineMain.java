@@ -30,6 +30,7 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
 import org.jboss.as.controller.OperationFailedException;
 
 /**
@@ -58,7 +59,7 @@ public class CommandLineMain {
      * @param args ignored
      */
     public static void main(String[] args) {
-        String port = "9990";
+        String port = "9999";
         String host = "localhost";
 
         try {

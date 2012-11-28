@@ -41,6 +41,14 @@
             <artifactId>commons-cli</artifactId>
         </dependency>
         <dependency>
+            <groupId>xalan</groupId>
+            <artifactId>xalan</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
@@ -68,16 +76,16 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-cli</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-threads</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.python</groupId>
-            <artifactId>jython-standalone</artifactId>
         </dependency>
     </dependencies>
     <build>

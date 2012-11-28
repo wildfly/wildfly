@@ -31,15 +31,19 @@
 
     <resources>
         <!-- Insert resources here -->
+        <resource-root path="resources"/>
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
         <module name="org.apache.commons.cli"/>
+        <module name="org.apache.commons.io"/>
+        <module name="org.apache.xalan"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.network"/>
         <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.cli"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.as.threads"/>
         <module name="org.jboss.threads"/>
@@ -47,6 +51,5 @@
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.python.jython.standalone"/>
     </dependencies>
 </module>

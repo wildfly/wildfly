@@ -21,9 +21,6 @@
  */
 package org.jboss.as.jdr;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
@@ -31,6 +28,8 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.*;
 
 /**
  * JBoss Diagnostic Reporter (JDR) logger.
@@ -42,7 +41,7 @@ import org.jboss.logging.annotations.MessageLogger;
  * @author Mike M. Clark
  */
 @MessageLogger(projectCode = "JBAS")
-interface JdrLogger extends BasicLogger {
+public interface JdrLogger extends BasicLogger {
     /**
      * A logger with the category of the default jdr package.
      */
@@ -89,4 +88,25 @@ interface JdrLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 13105, value = "Plugin contrib location is not a directory.  Ignoring.")
     void contribNotADirectory();
+
+    /**
+     * JDR could not create a zipfile to store the report.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id=13306, value="Could not create zipfile.")
+    void couldNotCreateZipfile(@Cause Throwable cause);
+
+    /**
+     * One of the configuration steps in JDR threw an exception.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id=13307, value="Could not configure JDR.")
+    void couldNotConfigureJDR(@Cause Throwable cause);
+
+    /**
+     * No Commands to run, probably no valid plugin loaded
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 13308, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
+    void noCommandsToRun();
 }
