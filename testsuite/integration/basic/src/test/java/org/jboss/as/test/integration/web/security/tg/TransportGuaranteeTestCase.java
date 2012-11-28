@@ -41,6 +41,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.management.Connector;
 import org.jboss.as.test.integration.management.ServerManager;
@@ -52,6 +53,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 
@@ -64,6 +66,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @ServerSetup(WebTestsSecurityDomainSetup.class)
+@Category(CommonCriteria.class)
 public class TransportGuaranteeTestCase  {
 
 

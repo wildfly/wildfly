@@ -32,6 +32,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -44,6 +45,7 @@ import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.util.Base64;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
@@ -66,6 +68,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.DisableDefaultSecurityDomainSetupTask.class})
+@Category(CommonCriteria.class)
 public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
 
     private static final Logger log = Logger.getLogger(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class);
@@ -132,6 +135,7 @@ public class GetCallerPrincipalWithNoDefaultSecurityDomainTestCase {
                 .addClasses(DisableDefaultSecurityDomainSetupTask.class, AbstractMgmtTestBase.class)
                 .addPackage(AbstractMgmtTestBase.class.getPackage()).addClasses(MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class)
                 .addAsManifestResource(GetCallerPrincipalWithNoDefaultSecurityDomainTestCase.class.getPackage(), "MANIFEST.MF-no-default-security-domain", "MANIFEST.MF");
+        jar.addPackage(CommonCriteria.class.getPackage());
         log.info(jar.toString(true));
         return jar;
     }

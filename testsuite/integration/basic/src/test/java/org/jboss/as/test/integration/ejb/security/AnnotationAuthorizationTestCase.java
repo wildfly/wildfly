@@ -30,6 +30,7 @@ import javax.security.auth.login.LoginContext;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.authorization.DenyAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.PermitAllOverrideBean;
 import org.jboss.as.test.integration.ejb.security.authorization.RolesAllowedOverrideBean;
@@ -40,6 +41,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
@@ -55,6 +57,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith(Arquillian.class)
 @ServerSetup({EjbSecurityDomainSetup.class})
+@Category(CommonCriteria.class)
 public class AnnotationAuthorizationTestCase {
 
     private static final Logger log = Logger.getLogger(AnnotationAuthorizationTestCase.class.getName());
@@ -70,6 +73,7 @@ public class AnnotationAuthorizationTestCase {
                 .addAsResource("ejb3/security/roles.properties", "roles.properties")
                 .addAsWebInfResource("ejb3/security/jboss-web.xml", "jboss-web.xml")
                 .addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+        war.addPackage(CommonCriteria.class.getPackage());
         log.info(war.toString(true));
         return war;
     }

@@ -36,6 +36,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -53,11 +54,13 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @ServerSetup({ BasicJASPITestCase.SecurityDomainsSetup.class })
 @RunAsClient
+@Category(CommonCriteria.class)
 public class BasicJASPITestCase {
 
     private static Logger LOGGER = Logger.getLogger(BasicJASPITestCase.class);
