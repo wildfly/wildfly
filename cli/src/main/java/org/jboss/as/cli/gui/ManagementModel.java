@@ -19,15 +19,28 @@
 package org.jboss.as.cli.gui;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -41,14 +54,43 @@ import org.jboss.as.cli.gui.ManagementModelNode.UserObject;
  * @author Stan Silvert ssilvert@redhat.com (C) 2012 Red Hat Inc.
  */
 public class ManagementModel extends JPanel {
+    private static final String GENERAL_HELP_TEXT = "Right-click a node to choose an operation.  Close/Open a folder to refresh.  Hover for help.";
+    private static final String FILTER_TOOLTIP_HELP = "Display the root nodes containing the given text.";
 
     private CliGuiContext cliGuiCtx;
 
     public ManagementModel(CliGuiContext cliGuiCtx) {
         this.cliGuiCtx = cliGuiCtx;
         setLayout(new BorderLayout(10,10));
-        add(new JLabel("Right-click a node to choose an operation.  Close/Open a folder to refresh.  Hover for help."), BorderLayout.NORTH);
-        add(makeTree(), BorderLayout.CENTER);
+        JTree tree = makeTree();
+        add(new JLabel(GENERAL_HELP_TEXT), BorderLayout.NORTH);
+        add(new JScrollPane(tree), BorderLayout.CENTER);
+        add(makeFilterPanel(tree), BorderLayout.SOUTH);
+    }
+
+    private JPanel makeFilterPanel(JTree tree) {
+        Box filterBox = Box.createHorizontalBox();
+        JLabel filterLabel = new JLabel("Filter:");
+        filterLabel.setToolTipText(FILTER_TOOLTIP_HELP);
+        filterBox.add(filterLabel);
+        filterBox.add(Box.createHorizontalStrut(5));
+        JTextField filterInput = new JTextField(30);
+
+        filterBox.add(filterInput);
+        JButton clearButton = new JButton("Clear");
+        clearButton.setToolTipText("Clear the filter");
+        clearButton.addActionListener(new ClearFilterListener(filterInput));
+        clearButton.setEnabled(false);
+
+        filterInput.getDocument().addDocumentListener(new FilterDocumentListener(tree, clearButton));
+
+        filterBox.add(clearButton);
+
+        // Make filterBox half of width of panel
+        JPanel filterPanel = new JPanel(new GridLayout(1,2));
+        filterPanel.add(filterBox);
+        filterPanel.add(Box.createGlue());
+        return filterPanel;
     }
 
     private JTree makeTree() {
@@ -60,6 +102,67 @@ public class ManagementModel extends JPanel {
         tree.addTreeSelectionListener(new ManagementTreeSelectionListener());
         tree.addMouseListener(new ManagementTreeMouseListener(tree));
         return tree;
+    }
+
+    private class ClearFilterListener implements ActionListener {
+        private JTextField filterInput;
+
+        ClearFilterListener(JTextField filterInput) {
+            this.filterInput = filterInput;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            filterInput.setText("");
+        }
+    }
+
+    private class FilterDocumentListener implements DocumentListener {
+        private JTree tree;
+        private JButton clearButton;
+
+        FilterDocumentListener(JTree tree, JButton clearButton) {
+            this.tree = tree;
+            this.clearButton = clearButton;
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            String fieldText = null;
+            try {
+                fieldText = e.getDocument().getText(0, e.getDocument().getLength());
+            } catch (BadLocationException ble) {
+                ble.printStackTrace(); // should never happen
+                return;
+            }
+
+            clearButton.setEnabled(fieldText.length() > 0);
+
+            DefaultTreeModel model = (DefaultTreeModel)tree.getModel();
+            ManagementModelNode root = (ManagementModelNode)model.getRoot();
+            root.explore(); // refresh all children
+
+            Enumeration nodes = root.children();
+            List<ManagementModelNode> removeList = new ArrayList<ManagementModelNode>();
+            while (nodes.hasMoreElements()) {
+                ManagementModelNode node = (ManagementModelNode)nodes.nextElement();
+                if (!node.getUserObject().toString().contains(fieldText)) {
+                    removeList.add(node);
+                }
+            }
+
+            for (ManagementModelNode node : removeList) {
+                root.remove(node);
+            }
+
+            model.nodeStructureChanged(root);
+        }
     }
 
     /**
