@@ -28,28 +28,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-
-
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author baranowb
  */
 public class CLIOpResult {
 
     private boolean isOutcomeSuccess;
-    private Object result;
-    private Object serverGroups;
+    private Map<String, Object> responseMap;
 
     public CLIOpResult() {}
 
     public CLIOpResult(ModelNode node) {
-        final Map<String, Object> map = toMap(node);
-        isOutcomeSuccess = "success".equals(map.get("outcome"));
-        result = map.get("result");
-        serverGroups = map.get("server-groups");
+        this.responseMap = toMap(node);
+        this.isOutcomeSuccess = ModelDescriptionConstants.SUCCESS.equals(this.responseMap.get(ModelDescriptionConstants.OUTCOME));
     }
 
     protected Map<String, Object> toMap(ModelNode node) {
@@ -88,12 +85,8 @@ public class CLIOpResult {
         return isOutcomeSuccess;
     }
 
-    public void setIsOutcomeSuccess(boolean isOutcomeSuccess) {
-        this.isOutcomeSuccess = isOutcomeSuccess;
-    }
-
     public Object getResult() {
-        return result;
+        return getFromResponse(ModelDescriptionConstants.RESULT);
     }
 
     /**
@@ -101,6 +94,7 @@ public class CLIOpResult {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getResultAsMap() {
+        final Object result = getResult();
         return (Map<String, Object>) (result instanceof Map ? result : null);
     }
 
@@ -121,15 +115,16 @@ public class CLIOpResult {
         return (Map<String, Object>) (value instanceof Map ? value : null);
     }
 
-    public void setResult(Object result) {
-        this.result = result;
-    }
-
     public Object getServerGroups() {
-        return serverGroups;
+        return getFromResponse(ModelDescriptionConstants.SERVER_GROUPS);
     }
 
-    public void setServerGroups(Object serverGroups) {
-        this.serverGroups = serverGroups;
+    /**
+     * Return top entry from response, ie -"response-headers", "outcome", ... etc
+     * @param key
+     * @return
+     */
+    public Object getFromResponse(String key){
+        return this.responseMap.get(key);
     }
 }
