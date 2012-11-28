@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.ServerSecurityManager;
@@ -59,6 +58,9 @@ import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityContextUtil;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectInfo;
+import org.jboss.security.audit.AuditEvent;
+import org.jboss.security.audit.AuditLevel;
+import org.jboss.security.audit.AuditManager;
 import org.jboss.security.authorization.resources.EJBResource;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Identity;
@@ -245,7 +247,8 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         resource.setPolicyContextID(contextID);
         resource.setCallerRunAsIdentity(securityContext.getIncomingRunAs());
         resource.setCallerSubject(securityContext.getUtil().getSubject());
-        resource.setPrincipal(securityContext.getUtil().getUserPrincipal());
+        Principal userPrincipal = securityContext.getUtil().getUserPrincipal();
+        resource.setPrincipal(userPrincipal);
 
         try {
             AbstractEJBAuthorizationHelper helper = SecurityHelperFactory.getEJBAuthorizationHelper(securityContext);
@@ -373,13 +376,16 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             subject = new Subject();
         }
         Principal principal = util.getUserPrincipal();
+        Principal auditPrincipal = principal;
         Object credential = util.getCredential();
+        Identity unauthenticatedIdentity = null;
 
         boolean authenticated = false;
         if (principal == null) {
-            Identity unauthenticatedIdentity = getUnauthenticatedIdentity();
+            unauthenticatedIdentity = getUnauthenticatedIdentity();
             subjectInfo.addIdentity(unauthenticatedIdentity);
-            subject.getPrincipals().add(unauthenticatedIdentity.asPrincipal());
+            auditPrincipal = unauthenticatedIdentity.asPrincipal();
+            subject.getPrincipals().add(auditPrincipal);
             authenticated = true;
         }
 
@@ -389,6 +395,11 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
         if (authenticated == true) {
             subjectInfo.setAuthenticatedSubject(subject);
+        }
+
+        AuditManager auditManager = context.getAuditManager();
+        if (auditManager != null) {
+            audit(authenticated ? AuditLevel.SUCCESS : AuditLevel.FAILURE, auditManager, auditPrincipal);
         }
 
         return authenticated;
@@ -432,4 +443,22 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
         return aliases;
     }
+
+    /**
+     * Sends information to the {@code AuditManager}.
+     * @param level
+     * @param auditManager
+     * @param userPrincipal
+     * @param entries
+     */
+    private void audit(String level, AuditManager auditManager, Principal userPrincipal) {
+        AuditEvent auditEvent = new AuditEvent(AuditLevel.SUCCESS);
+        Map<String, Object> ctxMap = new HashMap<String, Object>();
+        ctxMap.put("principal", userPrincipal != null ? userPrincipal : "null");
+        ctxMap.put("Source", getClass().getCanonicalName());
+        ctxMap.put("Action", "authentication");
+        auditEvent.setContextMap(ctxMap);
+        auditManager.audit(auditEvent);
+    }
+
 }
