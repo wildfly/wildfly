@@ -203,7 +203,7 @@ public class GuiMain {
 
     private static JTabbedPane makeTabbedPane(CliGuiContext cliGuiCtx, JPanel output) {
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Command Builder", new JScrollPane(new ManagementModel(cliGuiCtx)));
+        tabs.addTab("Command Builder", new ManagementModel(cliGuiCtx));
         tabs.addTab("Output", output);
         return tabs;
     }
