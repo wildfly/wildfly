@@ -68,8 +68,8 @@ public final class Services {
      */
     public static final ServiceName JBOSS_MODULE_INDEX_SERVICE = JBOSS_AS.append("module-index-service");
 
-    public static void addServerExecutorDependency(ServiceBuilder<?> builder, Injector<ExecutorService> injector, boolean optional) {
+    public static <T> ServiceBuilder<T> addServerExecutorDependency(ServiceBuilder<T> builder, Injector<ExecutorService> injector, boolean optional) {
         ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
-        builder.addDependency(type, JBOSS_SERVER_EXECUTOR, ExecutorService.class, injector);
+        return builder.addDependency(type, JBOSS_SERVER_EXECUTOR, ExecutorService.class, injector);
     }
 }
