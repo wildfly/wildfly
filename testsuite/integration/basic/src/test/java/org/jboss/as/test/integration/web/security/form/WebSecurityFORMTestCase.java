@@ -59,7 +59,7 @@ public class WebSecurityFORMTestCase extends AbstractWebSecurityFORMTestCase {
 
         war.addAsResource(WebSecurityFORMTestCase.class.getPackage(), "users.properties", "users.properties");
         war.addAsResource(WebSecurityFORMTestCase.class.getPackage(), "roles.properties", "roles.properties");
-        WebSecurityPasswordBasedBase.printWar(war);
+        //WebSecurityPasswordBasedBase.printWar(war);
         return war;
     }
 }

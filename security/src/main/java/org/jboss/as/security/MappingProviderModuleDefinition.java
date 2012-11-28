@@ -25,34 +25,14 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
+public class MappingProviderModuleDefinition extends MappingModuleDefinition {
+    private static final AttributeDefinition[] ATTRIBUTES = {CODE, MODULE_OPTIONS};
 
-    static final SimpleAttributeDefinition LOGIN_MODULE_STACK_REF = new SimpleAttributeDefinitionBuilder(Constants.LOGIN_MODULE_STACK_REF, ModelType.STRING)
-            .setAllowNull(true)
-            .setValidator(new StringLengthValidator(1, true))
-            .build();
-
-    private static final SimpleAttributeDefinition FLAG = new SimpleAttributeDefinitionBuilder(Constants.FLAG, ModelType.STRING)
-            .setAllowNull(true)
-            .setValidator(new EnumValidator<ModuleFlag>(ModuleFlag.class, true, false))
-            .build();
-
-
-
-    private static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, LOGIN_MODULE_STACK_REF, MODULE_OPTIONS};
-
-    JASPIMappingModuleDefinition(String key) {
+    MappingProviderModuleDefinition(String key) {
         super(key);
     }
 

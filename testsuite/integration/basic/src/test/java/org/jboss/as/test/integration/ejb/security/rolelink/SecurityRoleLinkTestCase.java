@@ -100,7 +100,9 @@ public class SecurityRoleLinkTestCase {
             final String invalidRole = "UselessRole";
             final boolean callerInUselessRole = callerRoleCheckerBean.isCallerInRole(invalidRole);
             Assert.assertFalse("Caller wasn't expected to be in " + invalidRole + " but was", callerInUselessRole);
-
+        }catch (Exception e){
+            Assert.fail(e.toString());
+            throw e;
         } finally {
             loginContext.logout();
         }

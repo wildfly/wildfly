@@ -28,17 +28,17 @@
                    <module-option name="d" value="r"/>
                  </provider-module>
             </audit> 
-			<jsse truststore-url="../standalone/configuration/keystores/tomcat.keystore"
+			<jsse truststore-url="keystore.jks"
                   truststore-password="rmi+ssl"
-                  keystore-url="../standalone/configuration/keystores/clientcert.jks"
+                  keystore-url="clientcert.jks"
                   keystore-password="changeit"/> 
 		</security-domain>
         <security-domain name="jaspi-test" cache-type="default">
             <authentication-jaspi>
                 <login-module-stack name="lm-stack">
                     <login-module code="UsersRoles" flag="required">
-                        <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
-                        <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                        <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
+                        <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
                     </login-module>
                 </login-module-stack>
                 <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"

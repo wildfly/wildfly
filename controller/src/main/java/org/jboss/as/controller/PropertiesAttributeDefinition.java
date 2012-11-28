@@ -87,7 +87,7 @@ public final class PropertiesAttributeDefinition extends MapAttributeDefinition 
 
     public Map<String, String> unwrap(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if (!model.hasDefined(getName())) {
-            return null;
+            return new HashMap<String, String>();
         }
         ModelNode modelProps = model.get(getName());
         Map<String, String> props = new HashMap<String, String>();

@@ -22,10 +22,10 @@
 
 package org.jboss.as.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.parsing.ParseUtils.invalidAttributeValue;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -38,6 +38,7 @@ import static org.jboss.as.security.Constants.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -147,45 +148,45 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
 
     @Override
     public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
+            context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
-        ModelNode node = context.getModelNode();
+            ModelNode node = context.getModelNode();
 
-        if (node.hasDefined(DEEP_COPY_SUBJECT_MODE) && node.get(DEEP_COPY_SUBJECT_MODE).asBoolean()) {
-            writer.writeEmptyElement(Element.SECURITY_MANAGEMENT.getLocalName());
-            writeAttribute(writer, Attribute.DEEP_COPY_SUBJECT_MODE, node.get(DEEP_COPY_SUBJECT_MODE));
-        }
+            if (node.hasDefined(DEEP_COPY_SUBJECT_MODE) && node.get(DEEP_COPY_SUBJECT_MODE).asBoolean()) {
+                writer.writeEmptyElement(Element.SECURITY_MANAGEMENT.getLocalName());
+                writeAttribute(writer, Attribute.DEEP_COPY_SUBJECT_MODE, node.get(DEEP_COPY_SUBJECT_MODE));
+            }
 
-        if (node.hasDefined(SECURITY_DOMAIN) && node.get(SECURITY_DOMAIN).asInt() > 0) {
-            writer.writeStartElement(Element.SECURITY_DOMAINS.getLocalName());
-            for (Property policy : node.get(SECURITY_DOMAIN).asPropertyList()) {
-                writer.writeStartElement(Element.SECURITY_DOMAIN.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), policy.getName());
-                ModelNode policyDetails = policy.getValue();
-                SecurityDomainResourceDefinition.CACHE_TYPE.marshallAsAttribute(policyDetails, writer);
-                writeSecurityDomainContent(writer, policyDetails);
+            if (node.hasDefined(SECURITY_DOMAIN) && node.get(SECURITY_DOMAIN).asInt() > 0) {
+                writer.writeStartElement(Element.SECURITY_DOMAINS.getLocalName());
+                for (Property policy : node.get(SECURITY_DOMAIN).asPropertyList()) {
+                    writer.writeStartElement(Element.SECURITY_DOMAIN.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), policy.getName());
+                    ModelNode policyDetails = policy.getValue();
+                    SecurityDomainResourceDefinition.CACHE_TYPE.marshallAsAttribute(policyDetails, writer);
+                    writeSecurityDomainContent(writer, policyDetails);
+                    writer.writeEndElement();
+                }
                 writer.writeEndElement();
             }
-            writer.writeEndElement();
-        }
 
-        if (node.hasDefined(Constants.VAULT)) {
-            ModelNode vault = node.get(Constants.VAULT, Constants.CLASSIC);
-            writer.writeStartElement(Element.VAULT.getLocalName());
-            VaultResourceDefinition.CODE.marshallAsAttribute(vault, writer);
+            if (node.hasDefined(Constants.VAULT)) {
+                ModelNode vault = node.get(Constants.VAULT, Constants.CLASSIC);
+                writer.writeStartElement(Element.VAULT.getLocalName());
+                VaultResourceDefinition.CODE.marshallAsAttribute(vault, writer);
 
-            if (vault.hasDefined(Constants.VAULT_OPTIONS)) {
-                ModelNode properties = vault.get(Constants.VAULT_OPTIONS);
-                for (Property prop : properties.asPropertyList()) {
-                    writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                    writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+                if (vault.hasDefined(Constants.VAULT_OPTIONS)) {
+                    ModelNode properties = vault.get(Constants.VAULT_OPTIONS);
+                    for (Property prop : properties.asPropertyList()) {
+                        writer.writeEmptyElement(Element.VAULT_OPTION.getLocalName());
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                        writer.writeAttribute(Attribute.VALUE.getLocalName(), prop.getValue().asString());
+                    }
                 }
+                writer.writeEndElement();
             }
-            writer.writeEndElement();
-        }
 
-        writer.writeEndElement();
+            writer.writeEndElement();
     }
 
     private void writeSecurityDomainContent(XMLExtendedStreamWriter writer, ModelNode policyDetails) throws XMLStreamException {
@@ -240,7 +241,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.AUTHENTICATION.getLocalName());
             //ClassicAuthenticationResourceDefinition.LOGIN_MODULES.marshallAsElement(modelNode, writer);
-            writeLoginModule(writer, modelNode);
+            writeLoginModule(writer, modelNode, Constants.LOGIN_MODULE);
             writer.writeEndElement();
         }
     }
@@ -249,7 +250,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
             //AuthorizationResourceDefinition.POLICY_MODULES.marshallAsElement(modelNode, writer);
-            writeLoginModule(writer, modelNode);
+            writeLoginModule(writer, modelNode, Constants.POLICY_MODULE,Element.POLICY_MODULE.getLocalName());
             writer.writeEndElement();
         }
     }
@@ -258,7 +259,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.ACL.getLocalName());
             //ACLResourceDefinition.ACL_MODULES.marshallAsElement(modelNode, writer);
-            writeLoginModule(writer, modelNode);
+            writeLoginModule(writer, modelNode, Constants.ACL_MODULE);
             writer.writeEndElement();
         }
     }
@@ -266,8 +267,9 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void writeAudit(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.AUDIT.getLocalName());
-           // AuditResourceDefinition.PROVIDER_MODULES.marshallAsElement(modelNode, writer);
+            // AuditResourceDefinition.PROVIDER_MODULES.marshallAsElement(modelNode, writer);
             //TODO
+            writeLoginModule(writer, modelNode, Constants.PROVIDER_MODULE,Element.PROVIDER_MODULE.getLocalName());
             writer.writeEndElement();
         }
     }
@@ -276,7 +278,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.IDENTITY_TRUST.getLocalName());
             //IdentityTrustResourceDefinition.TRUST_MODULES.marshallAsElement(modelNode, writer);
-            writeLoginModule(writer, modelNode);
+            writeLoginModule(writer, modelNode, Constants.TRUST_MODULE);
             writer.writeEndElement();
         }
     }
@@ -284,17 +286,19 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void writeMapping(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.MAPPING.getLocalName());
-
+            writeLoginModule(writer,modelNode,Constants.MAPPING_MODULE,Constants.MAPPING_MODULE);
             //MappingResourceDefinition.MAPPING_MODULES.marshallAsElement(modelNode, writer);
             writer.writeEndElement();
         }
     }
+
 
     private void writeAuthenticationJaspi(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.AUTHENTICATION_JASPI.getLocalName());
             ModelNode moduleStack = modelNode.get(LOGIN_MODULE_STACK);
             writeLoginModuleStack(writer, moduleStack);
+            writeLoginModule(writer, modelNode, Constants.AUTH_MODULE,Element.AUTH_MODULE.getLocalName());
             //todo jsapi
             //JASPIAuthenticationResourceDefinition.AUTH_MODULES.marshallAsElement(modelNode, writer);
             writer.writeEndElement();
@@ -307,15 +311,44 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             for (Property stack : stacks) {
                 writer.writeStartElement(Element.LOGIN_MODULE_STACK.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), stack.getName());
-                writeLoginModule(writer, modelNode);
+                writeLoginModule(writer, stack.getValue(), Constants.LOGIN_MODULE);
                 //LoginModuleStackResourceDefinition.LOGIN_MODULES.marshallAsElement(stack.getValue(), writer);
                 writer.writeEndElement();
             }
         }
     }
+    private void writeLoginModule(XMLExtendedStreamWriter writer, ModelNode modelNode, String key) throws XMLStreamException {
+        writeLoginModule(writer, modelNode, key,Element.LOGIN_MODULE.getLocalName());
+    }
 
-    private void writeLoginModule(XMLExtendedStreamWriter writer, ModelNode modelNode) {
-        //todo
+    private void writeLoginModule(XMLExtendedStreamWriter writer, ModelNode modelNode, String key,final String elementName) throws XMLStreamException {
+
+        final ModelNode modules = modelNode.get(key);
+        for (Property moduleProp : modules.asPropertyList()) {
+            ModelNode module = moduleProp.getValue();
+            writer.writeStartElement(elementName);
+            LoginModulesDefinition.CODE.marshallAsAttribute(module, writer);
+            LoginModulesDefinition.FLAG.marshallAsAttribute(module, writer);
+            MappingModuleDefinition.TYPE.marshallAsAttribute(module, writer);
+            JASPIMappingModuleDefinition.LOGIN_MODULE_STACK_REF.marshallAsAttribute(module, writer);
+
+
+            /*writer.writeAttribute(Attribute.CODE.getLocalName(), module.get(CODE).asString());
+            writer.writeAttribute(Attribute.FLAG.getLocalName(), module.get(Constants.FLAG).asString().toLowerCase(Locale.ENGLISH));*/
+
+            LoginModulesDefinition.MODULE.marshallAsAttribute(module,false,writer);
+            /*if (module.hasDefined(Constants.MODULE)) {
+                writer.writeAttribute(Attribute.MODULE.getLocalName(), module.get(Constants.MODULE).asString());
+            }*/
+            if (module.hasDefined(Constants.MODULE_OPTIONS)) {
+                for (ModelNode option : module.get(Constants.MODULE_OPTIONS).asList()) {
+                    writer.writeEmptyElement(Element.MODULE_OPTION.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), option.asProperty().getName());
+                    writer.writeAttribute(Attribute.VALUE.getLocalName(), option.asProperty().getValue().asString());
+                }
+            }
+            writer.writeEndElement();
+        }
     }
 
 
@@ -400,9 +433,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     }
 
     private void parseSecurityDomain(List<ModelNode> list, XMLExtendedStreamReader reader, PathAddress parentAddress) throws XMLStreamException {
-        ModelNode op = new ModelNode();
+        ModelNode op = Util.createAddOperation();
         list.add(op);
-        op.get(OP).set(ADD);
 
         PathElement secDomainPath = null;
         EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
@@ -491,17 +523,17 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         PathAddress address = parentAddress.append(AUTHENTICATION, CLASSIC);
         ModelNode op = Util.createAddOperation(address);
         list.add(op);
-        parseLoginModules(reader, address);
+        parseLoginModules(reader, address, list);
     }
 
-    private void parseLoginModules(XMLExtendedStreamReader reader, PathAddress parentAddress) throws XMLStreamException {
+    private void parseLoginModules(XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case LOGIN_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                     EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
-                    parseCommonModule(reader, parentAddress, LOGIN_MODULE, required, notAllowed);
+                    parseCommonModule(reader, parentAddress, LOGIN_MODULE, required, notAllowed, list);
 
                     break;
                 }
@@ -534,7 +566,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 case POLICY_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                     EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
-                    parseCommonModule(reader, address, POLICY_MODULE, required, notAllowed);
+                    parseCommonModule(reader, address, POLICY_MODULE, required, notAllowed, list);
                     break;
                 }
                 default: {
@@ -555,7 +587,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 case ACL_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                     EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
-                    parseCommonModule(reader, address, ACL_MODULE, required, notAllowed);
+                    parseCommonModule(reader, address, ACL_MODULE, required, notAllowed, list);
                     break;
                 }
                 default: {
@@ -576,7 +608,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 case PROVIDER_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
                     EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG, Attribute.LOGIN_MODULE_STACK_REF);
-                    parseCommonModule(reader, address, PROVIDER_MODULE, required, notAllowed);
+                    parseCommonModule(reader, address, PROVIDER_MODULE, required, notAllowed, list);
                     break;
                 }
                 default: {
@@ -598,7 +630,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 case TRUST_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE, Attribute.FLAG);
                     EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.TYPE, Attribute.LOGIN_MODULE_STACK_REF);
-                    parseCommonModule(reader, address, TRUST_MODULE, required, notAllowed);
+                    parseCommonModule(reader, address, TRUST_MODULE, required, notAllowed, list);
                     break;
                 }
                 default: {
@@ -619,7 +651,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 case MAPPING_MODULE: {
                     EnumSet<Attribute> required = EnumSet.of(Attribute.CODE);
                     EnumSet<Attribute> notAllowed = EnumSet.of(Attribute.FLAG, Attribute.LOGIN_MODULE_STACK_REF);
-                    parseCommonModule(reader, address, MAPPING_MODULE, required, notAllowed);
+                    parseCommonModule(reader, address, MAPPING_MODULE, required, notAllowed, list);
                     break;
                 }
                 default: {
@@ -630,7 +662,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     }
 
     private void parseCommonModule(XMLExtendedStreamReader reader, final PathAddress parentAddress, final String keyName, EnumSet<Attribute> required,
-                                   EnumSet<Attribute> notAllowed) throws XMLStreamException {
+                                   EnumSet<Attribute> notAllowed, List<ModelNode> list) throws XMLStreamException {
         ModelNode node = Util.createAddOperation(parentAddress);
         String code = null;
         final int count = reader.getAttributeCount();
@@ -651,18 +683,15 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     break;
                 }
                 case TYPE: {
-                    ModelNode type = MappingModulesAttributeDefinition.parseField(TYPE, value, reader);
-                    node.get(TYPE).set(type);
+                    MappingModuleDefinition.TYPE.parseAndSetParameter(value,node, reader);
                     break;
                 }
                 case MODULE: {
-                    ModelNode module = MappingModulesAttributeDefinition.parseField(MODULE, value, reader);
-                    node.get(MODULE).set(module);
+                    LoginModulesDefinition.MODULE.parseAndSetParameter(value,node, reader);
                     break;
                 }
                 case LOGIN_MODULE_STACK_REF: {
-                    ModelNode ref = JASPIAuthenticationModulesAttributeDefinition.parseField(LOGIN_MODULE_STACK_REF, value, reader);
-                    node.get(LOGIN_MODULE_STACK_REF).set(ref);
+                    JASPIMappingModuleDefinition.LOGIN_MODULE_STACK_REF.parseAndSetParameter(value, node, reader);
                     break;
                 }
                 default:
@@ -674,8 +703,8 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         if (required.size() > 0) {
             throw missingRequired(reader, required);
         }
-
         parseProperties(Element.MODULE_OPTION.getLocalName(), reader, node.get(MODULE_OPTIONS));
+        list.add(node);
     }
 
     private void parseAuthenticationJaspi(List<ModelNode> list, PathAddress parentAddress, XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -714,7 +743,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         else {
             notAllowed = EnumSet.of(Attribute.TYPE, Attribute.FLAG);
         }
-        parseCommonModule(reader, parentAddress, AUTH_MODULE, required, notAllowed);
+        parseCommonModule(reader, parentAddress, AUTH_MODULE, required, notAllowed, list);
     }
 
     private void parseLoginModuleStack(List<ModelNode> list, PathAddress parentAddress, XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -744,7 +773,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         PathAddress address = parentAddress.append(LOGIN_MODULE_STACK, name);
         ModelNode op = Util.createAddOperation(address);
         list.add(op);
-        parseLoginModules(reader, address);
+        parseLoginModules(reader, address, list);
     }
 
     private void parseProperties(String childElementName, XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException {

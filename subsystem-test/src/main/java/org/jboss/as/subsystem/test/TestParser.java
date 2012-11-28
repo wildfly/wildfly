@@ -25,6 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ final class TestParser implements  ModelTestParser {
                 }
             }
         }catch (Throwable t){
-            Assert.fail("could not marshal subsystem xml "+t);
+            Assert.fail("could not marshal subsystem xml: "+t.getMessage()+":\n"+ Arrays.toString(t.getStackTrace()).replaceAll(", ","\n"));
         } finally {
             writer.setDefaultNamespace(defaultNamespace);
         }
