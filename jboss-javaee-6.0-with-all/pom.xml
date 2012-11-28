@@ -13,8 +13,8 @@
     <artifactId>jboss-javaee-6.0-with-all</artifactId>
     <packaging>pom</packaging>
 
-    <name>JBoss Java EE 6 Specification APIs with Deltaspike</name>
-    <description>Dependency Management for Java EE 6 Specification APIs with Deltaspike</description>
+    <name>JBoss Java EE 6 Specification APIs with All</name>
+    <description>Dependency Management for Java EE 6 Specification APIs with All JBoss BOMs</description>
 
     <licenses>
         <license>
