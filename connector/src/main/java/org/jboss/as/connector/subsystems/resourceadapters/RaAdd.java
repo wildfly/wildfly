@@ -61,9 +61,9 @@ public class RaAdd extends AbstractAddStepHandler {
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
         String archiveOrModuleName;
         if (model.get(ARCHIVE.getName()).isDefined()) {
-            archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, model).asString();
+            archiveOrModuleName = model.get(ARCHIVE.getName()).asString();
         } else {
-            archiveOrModuleName = MODULE.resolveModelAttribute(context, model).asString();
+            archiveOrModuleName = model.get(MODULE.getName()).asString();
         }
 
         if (name.startsWith(archiveOrModuleName) && (name.substring(archiveOrModuleName.length()).contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR) || name.equals(archiveOrModuleName))) {
@@ -74,12 +74,19 @@ public class RaAdd extends AbstractAddStepHandler {
                 archiveOrModuleName = archiveOrModuleName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
             }
         }
+
+        if (model.get(ARCHIVE.getName()).isDefined()) {
+            model.get(ARCHIVE.getName()).set(archiveOrModuleName);
+        } else {
+            model.get(MODULE.getName()).set(archiveOrModuleName);
+        }
+
         ModifiableResourceAdapter resourceAdapter = RaOperationUtil.buildResourceAdaptersObject(context, operation, archiveOrModuleName);
 
         if (model.get(ARCHIVE.getName()).isDefined()) {
             RaOperationUtil.installRaServices(context, verificationHandler, name, resourceAdapter);
         } else {
-            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, name, resourceAdapter, archiveOrModuleName);
+            RaOperationUtil.installRaServicesAndDeployFromModule(context, verificationHandler, archiveOrModuleName, resourceAdapter, archiveOrModuleName);
         }
 
 
