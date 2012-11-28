@@ -7,6 +7,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,6 +27,8 @@ import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ModelTestKernelServicesImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -53,9 +56,9 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
     private static final AtomicInteger counter = new AtomicInteger();
 
 
-    private KernelServicesImpl(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
+    private KernelServicesImpl(ServiceContainer container, ModelTestModelControllerService controllerService, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
             OperationValidator operationValidator, String mainSubsystemName, ExtensionRegistry extensionRegistry, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError) {
-        super(container, controller, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
+        super(container, controllerService, persister, rootRegistration, operationValidator, legacyModelVersion, successfulBoot, bootError);
 
         this.mainSubsystemName = mainSubsystemName;
         this.extensionRegistry = extensionRegistry;
@@ -95,10 +98,9 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
 
         //sharedState = svc.state;
         svc.waitForSetup();
-        ModelController controller = svc.getValue();
         //processState.setRunning();
 
-        KernelServicesImpl kernelServices = new KernelServicesImpl(container, controller, persister, svc.getRootRegistration(),
+        KernelServicesImpl kernelServices = new KernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
                 new OperationValidator(svc.getRootRegistration()), mainSubsystemName, controllerExtensionRegistry, legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError());
 
         return kernelServices;
@@ -121,11 +123,12 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         if (opAddr.size() > 0 && opAddr.getElement(0).equals(pathElement)) {
             TransformerRegistry transformerRegistry = extensionRegistry.getTransformerRegistry();
 
-            PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-            OperationTransformerRegistry registry = transformerRegistry.resolveServer(modelVersion, createSubsystemVersionRegistry(modelVersion));
+            final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            final OperationTransformerRegistry registry = transformerRegistry.resolveServer(modelVersion, createSubsystemVersionRegistry(modelVersion));
+            final TransformationTarget transformationTarget = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
+                    Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
 
-            //TODO Initialise this
-            TransformationContext transformationContext = null;
+            TransformationContext transformationContext = createTransformationContext(transformationTarget);
 
             OperationTransformer operationTransformer = registry.resolveOperationTransformer(address, operation.get(OP).asString()).getTransformer();
             if (operationTransformer != null) {
@@ -201,4 +204,17 @@ public class KernelServicesImpl extends ModelTestKernelServicesImpl<KernelServic
         subsystems.get(mainSubsystemName).set(modelVersion.toString());
         return subsystems;
     }
+
+    private static  TransformationTarget.IgnoredTransformationRegistry MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY = new  TransformationTarget.IgnoredTransformationRegistry() {
+
+        @Override
+        public boolean isResourceTransformationIgnored(PathAddress address) {
+            return false;
+        }
+
+        @Override
+        public boolean isOperationTransformationIgnored(PathAddress address) {
+            return false;
+        }
+    };
 }

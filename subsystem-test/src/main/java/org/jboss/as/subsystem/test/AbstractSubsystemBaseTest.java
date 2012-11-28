@@ -153,7 +153,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         compare(modelA, modelC);
 
-        assertRemoveSubsystemResources(servicesA, getIgnoredChildResourcesForRemovalTest());
+        assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());
     }
 
     protected void validateModel(ModelNode model) {

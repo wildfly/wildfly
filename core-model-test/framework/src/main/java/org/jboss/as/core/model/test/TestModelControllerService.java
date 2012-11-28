@@ -40,7 +40,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -93,10 +92,11 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ModelInitializer modelInitializer;
     private final DelegatingResourceDefinition rootResourceDefinition;
     private final ControlledProcessState processState;
+    private final ExtensionRegistry extensionRegistry;
     private volatile Initializer initializer;
 
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
-            TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
+            TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
         super(processType, runningModeControl, null, persister, validateOps, rootResourceDefinition, processState);
         this.type = type;
         this.runningModeControl = runningModeControl;
@@ -104,6 +104,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         this.modelInitializer = modelInitializer;
         this.rootResourceDefinition = rootResourceDefinition;
         this.processState = processState;
+        this.extensionRegistry = extensionRegistry;
 
         if (type == TestModelType.STANDALONE) {
             initializer = new ServerInitializer();
@@ -124,24 +125,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
     }
 
-    @Deprecated
-    //TODO remove this once host and domain are ported to resource definition
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
-            TestModelType type, ModelInitializer modelInitializer, DescriptionProvider rootDescriptionProvider, ControlledProcessState processState) {
-        super(processType, runningModeControl, null, persister, validateOps, rootDescriptionProvider, processState);
-        if (type == TestModelType.STANDALONE || type == TestModelType.HOST) {
-            throw new IllegalStateException("Should not be called for standalone or host");
-        }
-        this.type = type;
-        this.runningModeControl = runningModeControl;
-        this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
-        this.modelInitializer = modelInitializer;
-        this.processState = processState;
-        this.rootResourceDefinition = null;
-    }
-
-    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps, TestModelType type, ModelInitializer modelInitializer) {
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true));
+    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, boolean validateOps,
+            TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
+        return new TestModelControllerService(processType, runningModeControl, persister, validateOps, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry);
     }
 
     InjectedValue<ContentRepository> getContentRepositoryInjector(){
@@ -386,7 +372,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private class ServerInitializer implements Initializer {
         final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
         final ServerEnvironment environment = createStandaloneServerEnvironment();
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, runningModeControl);
         final boolean parallelBoot = false;
         final AbstractVaultReader vaultReader = null;
 
@@ -415,7 +400,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     private class HostInitializer implements Initializer {
         final String hostName = "master";
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
         final HostControllerEnvironment env = createHostControllerEnvironment();
         final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
         final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
@@ -489,7 +473,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
             final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
             final HostFileRepository hostFIleRepository = createHostFileRepository();
-            final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
 
             DomainRootDefinition domainDefinition = new DomainRootDefinition(env, persister, injectedContentRepository.getValue(),
                     hostFIleRepository, true, info, extensionRegistry, null, pathManagerService);

@@ -923,18 +923,30 @@
                 <version>${project.version}</version>
             </dependency>
 
-	         <dependency>
-	             <groupId>org.jboss.as</groupId>
-	             <artifactId>jboss-as-core-model-test</artifactId>
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-core-model-test</artifactId>
                 <version>${project.version}</version>
-	         </dependency>
+            </dependency>
 
-	         <dependency>
-	             <groupId>org.jboss.as</groupId>
-	             <artifactId>jboss-as-core-model-test-framework</artifactId>
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-core-model-test-framework</artifactId>
                 <version>${project.version}</version>
-	         </dependency>
+            </dependency>
 
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-core-model-test-controller-optional</artifactId>
+                <version>${project.version}</version>
+             </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-core-model-test-controller-7.1.2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+						
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-ee</artifactId>

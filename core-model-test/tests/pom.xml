@@ -40,6 +40,12 @@
            <artifactId>jboss-as-core-model-test-framework</artifactId>
         </dependency>
         <dependency>
+           <groupId>org.jboss.as</groupId>
+	        <artifactId>jboss-as-core-model-test-controller-optional</artifactId>
+           <scope>provided</scope>
+           <optional>true</optional>   
+        </dependency>
+        <dependency>
            <groupId>junit</groupId>
            <artifactId>junit</artifactId>
            <scope>test</scope>

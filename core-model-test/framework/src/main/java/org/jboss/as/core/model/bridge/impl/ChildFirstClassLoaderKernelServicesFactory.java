@@ -27,13 +27,17 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
-import org.jboss.as.core.model.test.KernelServicesImpl;
+import org.jboss.as.core.model.test.AbstractKernelServicesImpl;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.TestParser;
+import org.jboss.as.host.controller.HostRunningModeControl;
+import org.jboss.as.host.controller.RestartMode;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -43,7 +47,8 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class ChildFirstClassLoaderKernelServicesFactory {
 
-    public static KernelServices create(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
+    public static KernelServices create(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion,
+            List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
 
         TestModelType type = TestModelType.DOMAIN;
         XMLMapper xmlMapper = XMLMapper.Factory.create();
@@ -53,8 +58,9 @@ public class ChildFirstClassLoaderKernelServicesFactory {
             modelInitializer = new LegacyModelInitializer(modelInitializerEntries);
         }
 
-
-        return KernelServicesImpl.create(ProcessType.HOST_CONTROLLER, RunningMode.ADMIN_ONLY, validateOperations, bootOperations, testParser, legacyModelVersion, type, modelInitializer);
+        RunningModeControl runningModeControl = new HostRunningModeControl(RunningMode.ADMIN_ONLY, RestartMode.HC_ONLY);
+        ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
+        return AbstractKernelServicesImpl.create(ProcessType.HOST_CONTROLLER, runningModeControl, validateOperations, bootOperations, testParser, legacyModelVersion, type, modelInitializer, extensionRegistry);
     }
 
     private static class LegacyModelInitializer implements ModelInitializer {

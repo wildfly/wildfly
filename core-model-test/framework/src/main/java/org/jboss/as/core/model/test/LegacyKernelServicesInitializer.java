@@ -35,7 +35,36 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
  */
 public interface LegacyKernelServicesInitializer {
 
-    LegacyKernelServicesInitializer addRecursiveMavenResourceUrl(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException;
+    String VERSION = "7.2.0.Alpha1-SNAPSHOT";
 
     LegacyKernelServicesInitializer initializerCreateModelResource(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model);
+
+    LegacyKernelServicesInitializer setTestControllerVersion(TestControllerVersion version) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException;
+
+    /**
+     * The default is to validate the operations sent in to the model controller. Turn it off call this method
+     *
+     * @return this builder
+     */
+    LegacyKernelServicesInitializer setDontValidateOperations();
+
+    public enum TestControllerVersion {
+        MASTER ("org.jboss.as:jboss-as-host-controller:" + VERSION, null),
+        V7_1_2_FINAL ("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2");
+
+        String mavenGav;
+        String testControllerVersion;
+        private TestControllerVersion(String mavenGav, String testControllerVersion) {
+            this.mavenGav = mavenGav;
+            this.testControllerVersion = testControllerVersion;
+        }
+
+        String getLegacyControllerMavenGav() {
+            return mavenGav;
+        }
+
+        String getTestControllerVersion() {
+            return testControllerVersion;
+        }
+    }
 }

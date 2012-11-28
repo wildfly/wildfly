@@ -48,13 +48,20 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 
@@ -65,6 +72,7 @@ import org.jboss.msc.service.ServiceContainer;
 public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServices<T>> implements ModelTestKernelServices<T> {
 
     private volatile ServiceContainer container;
+    private final ModelTestModelControllerService controllerService;
     private final ModelController controller;
     private final StringConfigurationPersister persister;
     private final OperationValidator operationValidator;
@@ -73,10 +81,11 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
     private final boolean successfulBoot;
     private final Throwable bootError;
 
-    protected ModelTestKernelServicesImpl(ServiceContainer container, ModelController controller, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
+    protected ModelTestKernelServicesImpl(ServiceContainer container, ModelTestModelControllerService controllerService, StringConfigurationPersister persister, ManagementResourceRegistration rootRegistration,
             OperationValidator operationValidator, ModelVersion legacyModelVersion, boolean successfulBoot, Throwable bootError) {
         this.container = container;
-        this.controller = controller;
+        this.controllerService = controllerService;
+        this.controller = controllerService.getValue();
         this.persister = persister;
         this.operationValidator = operationValidator;
         this.rootRegistration = rootRegistration;
@@ -308,4 +317,63 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
     protected void addLegacyKernelService(ModelVersion modelVersion, T legacyServices) {
         this.legacyServices.put(modelVersion, legacyServices);
     }
+
+    protected  ModelNode internalExecute(ModelNode operation, OperationStepHandler handler) {
+        return controllerService.internalExecute(operation, OperationMessageHandler.DISCARD, OperationTransactionControl.COMMIT, null, handler);
+    }
+
+    protected TransformationContext createTransformationContext(TransformationTarget target) {
+        return new TestTransformationContext(target, ModelTestModelControllerService.grabRootResource(this));
+    }
+
+    private class TestTransformationContext implements TransformationContext {
+
+        private final TransformationTarget target;
+        private final Resource rootResource;
+
+        TestTransformationContext(TransformationTarget target, Resource rootResource){
+            this.target = target;
+            this.rootResource = rootResource;
+        }
+
+        @Override
+        public TransformationTarget getTarget() {
+            return target;
+        }
+
+        @Override
+        public ProcessType getProcessType() {
+            return controllerService.getProcessType();
+        }
+
+        @Override
+        public RunningMode getRunningMode() {
+            return controllerService.getRunningMode();
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistration(final PathAddress address) {
+            return controllerService.getRootRegistration().getSubModel(address);
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getResourceRegistrationFromRoot(PathAddress address) {
+            return controllerService.getRootRegistration().getSubModel(address);
+        }
+
+        @Override
+        public Resource readResource(final PathAddress address) {
+            return Resource.Tools.navigate(rootResource, address);
+        }
+
+        @Override
+        public Resource readResourceFromRoot(final PathAddress address) {
+            return Resource.Tools.navigate(rootResource, address);
+        }
+
+        @Override
+        public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
+            return node.resolve();
+        }
+    };
 }
