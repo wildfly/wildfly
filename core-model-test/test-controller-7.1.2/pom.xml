@@ -27,38 +27,38 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
-        <version>7.2.0.Alpha1-SNAPSHOT</version>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-parent</artifactId>
+      <version>9</version>
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-core-model-test</artifactId>
-    <packaging>pom</packaging>
-    <name>JBoss Application Server: Core Model Test Parent</name>
+    <artifactId>jboss-as-core-model-test-controller-7.1.2</artifactId>
+    <name>JBoss Application Server: Core Model Test Controller 7.1.2</name>
+    <version>7.2.0.Alpha1-SNAPSHOT</version>
 
-    <modules>
-        <module>framework</module>
-       	<module>test-controller-7.1.2</module>
-       	<module>test-controller-optional</module>
-        <module>tests</module>
-    </modules>
-
+    <properties>
+        <property.old.as.version>7.1.2.Final</property.old.as.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-host-controller</artifactId>
+            <version>${property.old.as.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
            <groupId>org.jboss.as</groupId>
-           <artifactId>jboss-as-model-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-            <scope>test</scope>
+           <artifactId>jboss-as-core-model-test-framework</artifactId>
+           <version>${project.version}</version>
+	        <scope>provided</scope>
+           <exclusions>
+               <exclusion>
+                   <groupId>org.jboss.as</groupId>
+                   <artifactId>jboss-as-host-controller</artifactId>
+               </exclusion>
+           </exclusions>
         </dependency>
     </dependencies>
-
 </project>

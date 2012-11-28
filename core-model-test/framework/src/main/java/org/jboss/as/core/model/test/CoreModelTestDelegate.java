@@ -45,8 +45,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.core.model.bridge.local.ScopedKernelServicesBootstrap;
+import org.jboss.as.host.controller.HostRunningModeControl;
+import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
@@ -191,7 +195,9 @@ public class CoreModelTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            KernelServicesImpl kernelServices = KernelServicesImpl.create(processType, runningMode, validateOperations, bootOperations, testParser, null, type, modelInitializer);
+            RunningModeControl runningModeControl = type == TestModelType.HOST ? new HostRunningModeControl(runningMode, RestartMode.HC_ONLY) : new RunningModeControl(runningMode);
+            ExtensionRegistry registry = new ExtensionRegistry(processType, runningModeControl);
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, registry);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
@@ -208,8 +214,7 @@ public class CoreModelTestDelegate {
                 List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
                 for (ModelNode op : bootOperations) {
 
-                    //ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
-                    ModelNode transformed = op; //TODO
+                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
                     if (transformed != null) {
                         transformedBootOperations.add(transformed);
                     }
@@ -253,15 +258,10 @@ public class CoreModelTestDelegate {
         private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private final ModelVersion modelVersion;
         private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
+        private boolean validateOperations = true;
 
         public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion) {
             this.modelVersion = modelVersion;
-        }
-
-        @Override
-        public LegacyKernelServicesInitializer addRecursiveMavenResourceUrl(String artifactGav) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
-            classLoaderBuilder.addRecursiveMavenResourceURL(artifactGav);
-            return this;
         }
 
         private KernelServices install(List<ModelNode> bootOperations) throws Exception {
@@ -273,12 +273,27 @@ public class CoreModelTestDelegate {
 
 
             ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
-            return scopedBootstrap.createKernelServices(bootOperations, true, modelVersion, modelInitializerEntries);
+            return scopedBootstrap.createKernelServices(bootOperations, validateOperations, modelVersion, modelInitializerEntries);
         }
 
         @Override
         public LegacyKernelServicesInitializer initializerCreateModelResource(PathAddress parentAddress, PathElement relativeResourceAddress, ModelNode model) {
             modelInitializerEntries.add(new LegacyModelInitializerEntry(parentAddress, relativeResourceAddress, model));
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer setTestControllerVersion(TestControllerVersion version) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
+            classLoaderBuilder.addRecursiveMavenResourceURL(version.getLegacyControllerMavenGav());
+            if (version.getTestControllerVersion() != null) {
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + version.getTestControllerVersion() + ":" + VERSION);
+            }
+            return this;
+        }
+
+        @Override
+        public LegacyKernelServicesInitializer setDontValidateOperations() {
+            validateOperations = false;
             return this;
         }
     }

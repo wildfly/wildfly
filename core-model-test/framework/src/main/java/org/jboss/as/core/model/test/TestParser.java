@@ -78,8 +78,15 @@ public class TestParser implements ModelTestParser {
         }
 
 
-        for (Namespace ns : Namespace.ALL_NAMESPACES) {
-            xmlMapper.registerRootElement(new QName(ns.getUriString(), root), testParser);
+        try {
+            for (Namespace ns : Namespace.ALL_NAMESPACES) {
+                xmlMapper.registerRootElement(new QName(ns.getUriString(), root), testParser);
+            }
+        } catch (NoSuchFieldError e) {
+            //7.1.2 does not have the ALL_NAMESPACES field
+            xmlMapper.registerRootElement(new QName(Namespace.DOMAIN_1_0.getUriString(), root), testParser);
+            xmlMapper.registerRootElement(new QName(Namespace.DOMAIN_1_1.getUriString(), root), testParser);
+            xmlMapper.registerRootElement(new QName(Namespace.DOMAIN_1_2.getUriString(), root), testParser);
         }
         return testParser;
     }

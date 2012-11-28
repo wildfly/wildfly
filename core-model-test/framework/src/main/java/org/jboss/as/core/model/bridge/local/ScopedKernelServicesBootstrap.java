@@ -55,6 +55,7 @@ public class ScopedKernelServicesBootstrap {
     private Object createChildClassLoaderKernelServices(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries){
         try {
             Class<?> clazz = legacyChildFirstClassLoader.loadClass(ChildFirstClassLoaderKernelServicesFactory.class.getName());
+
             Method m = clazz.getMethod("create", List.class, Boolean.TYPE, legacyChildFirstClassLoader.loadClass(ModelVersion.class.getName()), List.class);
 
             List<Object> convertedBootOps = new ArrayList<Object>();

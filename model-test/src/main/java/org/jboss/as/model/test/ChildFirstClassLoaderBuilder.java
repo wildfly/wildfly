@@ -36,8 +36,6 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ChildFirstClassLoaderBuilder {
-    //TODO Make this come from somewhere so we don't have to change it every time the branch version is changed
-    private static String version = "7.2.0.Alpha1-SNAPSHOT";
 
     private List<URL> classloaderURLs = new ArrayList<URL>();
     private List<Pattern> parentFirst = new ArrayList<Pattern>();
