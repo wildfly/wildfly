@@ -11,7 +11,8 @@ SYNOPSIS
 	where <action> can be
 
     apply           - apply a patch
-	rollback        - rollback a patch that has been applied
+    info            - information about the installed patches
+    rollback        - rollback a patch that has been applied
 
 	and <action_arguments> depends on the <action>
 
@@ -45,20 +46,27 @@ ACTION: rollback
 
     --patch-id=<id>      - the ID of the patch to rollback
 
-    --keep-configuration - The argument does not expect any value and is 
+    --keep-configuration - The argument does not expect any value and is
                            optional.
                            It signifies that the rollback operation will not
                            touch the installation configurations and will not
                            restore the snapshots that were taken when the patch
                            was applied.
 
-    --rollback-to        - The argument does not expect any value and is 
+    --rollback-to        - The argument does not expect any value and is
                            optional.
                            If the patch to rollback is a one-off patch, it
                            signifies that the rollback operation will also
                            rollback all the other one-off patches that have
                            been applied on top of the patch to rollback.
-    
+
+ACTION: info
+
+    Information about the installed patches
+
+    patch info
+      [--host=<host>]
+
 DESCRIPTION
 
     Apply a patch to the server or rollback a patch that has been applied.
@@ -72,23 +80,23 @@ ARGUMENTS:
 
  --host=<host>       - may appear only in the domain mode and is not allowed
                        in the standalone mode or if the cli is disconnected.
-                       The argument expects the name of the host of the 
+                       The argument expects the name of the host of the
                        installation to patch.
 
  --override          - The value is a comma-separated list of the miscellaneous
                        items in the patch that can be overridden on the server
                        wether the item reports a confict or not.
-                       
+
  --preserve          - The value is a comma-separated list of the miscellaneous
                        items that must be preserved and not modified by
                        applying or rolling back a patch.
 
- --override-all      - The argument does not expect any value and is 
+ --override-all      - The argument does not expect any value and is
                        optional.
                        It signifies to bypass any content verification on the
                        miscellaneous items changed by the patch.
 
- --override-modules - The argument does not expect any value and is 
+ --override-modules - The argument does not expect any value and is
                        optional.
                        It signifies to bypass any content verification on the
                        modules and OSGi bundles changed by the patch.

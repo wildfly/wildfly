@@ -38,7 +38,13 @@ import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
 /**
- * 16840 - 16899
+ * This module is using message IDs in the range 16800-16899.
+ * <p/>
+ * This file is using the subset 16840-16899 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  *
  * @author Emanuel Muckenhuber
  */
@@ -89,12 +95,6 @@ public interface PatchMessages {
     @Message(id = 16842, value = "Failed to create directory (%s)")
     IOException cannotCreateDirectory(String path);
 
-    @Message(id = 16843, value = "Cannot complete operation. Patch '%s' is currently active")
-    OperationFailedException patchActive(String patchId);
-
-    @Message(id = 16845, value = "Failed to show history of patches")
-    OperationFailedException failedToShowHistory(@Cause Throwable cause);
-
     /**
      * A message indicating the argument, represented by the {@code arg} parameter, expected an additional argument.
      *
@@ -102,31 +102,31 @@ public interface PatchMessages {
      *
      * @return the message.
      */
-    @Message(id = 16846, value = "Argument expected for option %s")
+    @Message(id = 16843, value = "Argument expected for option %s")
     String argumentExpected(String arg);
 
-    @Message(id = 16847, value = "Missing required argument(s): %s")
+    @Message(id = 16844, value = "Missing required argument(s): %s")
     String missingRequiredArgs(Set<String> missing);
 
-    @Message(id = 16848, value = "File at path specified by argument %s does not exist")
+    @Message(id = 16845, value = "File at path specified by argument %s does not exist")
     String fileDoesNotExist(String arg);
 
-    @Message(id = 16849, value = "File at path specified by argument %s is not a directory")
+    @Message(id = 16846, value = "File at path specified by argument %s is not a directory")
     String fileIsNotADirectory(String arg);
 
-    @Message(id = 16850, value = "File at path specified by argument %s is a directory")
+    @Message(id = 16847, value = "File at path specified by argument %s is a directory")
     String fileIsADirectory(String arg);
 
-    @Message(id = 16851, value = "Unable to apply or rollback a patch when the server is in a reload-required state.")
+    @Message(id = 16848, value = "Unable to apply or rollback a patch when the server is in a reload-required state.")
     OperationFailedException serverRequiresReload();
 
-    @Message(id = 16852, value = "Cannot rollback patch (%s)")
+    @Message(id = 16849, value = "Cannot rollback patch (%s)")
     PatchingException cannotRollbackPatch(String id);
 
-    @Message(id = 16853, value = "Patch '%s' already applied")
+    @Message(id = 16850, value = "Patch '%s' already applied")
     PatchingException alreadyApplied(String patchId);
 
-    @Message(id = 16854, value = "Illegal value %s for attribute affects-type")
+    @Message(id = 16851, value = "Illegal value %s for attribute affects-type")
     XMLStreamException illegalAffectsType(String value, @Param Location location);
 
 }

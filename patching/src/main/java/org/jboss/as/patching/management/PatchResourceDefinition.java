@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.management;
 
 import java.io.File;
 
@@ -36,6 +36,8 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.PatchInfo;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,10 +57,10 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition VERSION = SimpleAttributeDefinitionBuilder.create("version", ModelType.STRING)
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition CUMULATIVE = SimpleAttributeDefinitionBuilder.create("cumulative", ModelType.STRING)
+    static final AttributeDefinition CUMULATIVE = SimpleAttributeDefinitionBuilder.create(Constants.CUMULATIVE, ModelType.STRING)
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of("patches", ModelType.STRING)
+    static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of(Constants.PATCHES, ModelType.STRING)
             .setStorageRuntime()
             .build();
     static final AttributeDefinition MODULE_PATH = PrimitiveListAttributeDefinition.Builder.of("module-path", ModelType.STRING)

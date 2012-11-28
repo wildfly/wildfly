@@ -68,6 +68,13 @@ public abstract class ContentItem {
         return contentType;
     }
 
+    /**
+     * Get a relative path or module description.
+     *
+     * @return the path description
+     */
+    public abstract String getRelativePath();
+
     @Override
     public int hashCode() {
         final int prime = 31;

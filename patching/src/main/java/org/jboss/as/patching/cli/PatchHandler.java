@@ -56,6 +56,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     static final String PATCH = "patch";
     static final String APPLY = "apply";
     static final String ROLLBACK = "rollback";
+    static final String INFO = "info";
 
     private final ArgumentWithValue host;
 
@@ -75,7 +76,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
 
-        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK}), 0, "--action");
+        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK, INFO}), 0, "--action");
 
         host = new ArgumentWithValue(this, new DefaultCompleter(CandidatesProviders.HOSTS), "--host") {
             @Override
@@ -207,10 +208,10 @@ public class PatchHandler extends CommandHandlerWithHelp {
     }
 
     private PatchOperationBuilder createPatchOperationBuilder(ParsedCommandLine args) throws CommandFormatException {
-        boolean applyPatch = APPLY.equals(action.getValue(args, true));
+        final String action = this.action.getValue(args, true);
 
         PatchOperationBuilder builder;
-        if (applyPatch) {
+        if (APPLY.equals(action)) {
             final String path = this.path.getValue(args, true);
 
             final File f = new File(path);
@@ -222,11 +223,14 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 throw new CommandFormatException(f.getAbsolutePath() + " is a directory.");
             }
             builder = PatchOperationBuilder.Factory.patch(f);
-        } else {
+        } else if (ROLLBACK.equals(action)) {
             final String id = patchId.getValue(args, true);
             final boolean rollbackTo = this.rollbackTo.isPresent(args);
             final boolean keepConfiguration = this.keepConfiguration.isPresent(args);
             builder = PatchOperationBuilder.Factory.rollback(id, rollbackTo, !keepConfiguration);
+        } else {
+            builder = PatchOperationBuilder.Factory.info();
+            return builder;
         }
         if (overrideModules.isPresent(args)) {
             builder.ignoreModuleChanges();

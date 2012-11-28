@@ -20,15 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.management;
 
 import static java.util.Arrays.asList;
-import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.jboss.as.patching.management.PatchManagementLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.boot.DirectoryStructure;
+import org.jboss.as.patching.LocalPatchInfo;
+import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

@@ -20,17 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.management;
 
-import static org.jboss.as.patching.PatchResourceDefinition.PATCH_ID;
-import static org.jboss.as.patching.PatchResourceDefinition.RESTORE_CONFIGURATION;
-import static org.jboss.as.patching.PatchResourceDefinition.ROLLBACK_TO;
 import static org.jboss.as.patching.PatchMessages.MESSAGES;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.runner.ContentVerificationPolicy;
@@ -48,9 +47,9 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String patchId = PATCH_ID.resolveModelAttribute(context, operation).asString();
-        final boolean rollbackTo = ROLLBACK_TO.resolveModelAttribute(context, operation).asBoolean();
-        final boolean restoreConfiguration = RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
+        final String patchId = PatchResourceDefinition.PATCH_ID.resolveModelAttribute(context, operation).asString();
+        final boolean rollbackTo = PatchResourceDefinition.ROLLBACK_TO.resolveModelAttribute(context, operation).asBoolean();
+        final boolean restoreConfiguration = PatchResourceDefinition.RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 
         // FIXME can we check whether the process is reload-required directly from the operation context?
         context.acquireControllerLock();
@@ -87,13 +86,13 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
                     final ContentType type = item.getContentType();
                     switch (type) {
                         case BUNDLE:
-                            failureDescription.get(Constants.BUNDLES).add(item.toString());
+                            failureDescription.get(Constants.BUNDLES).add(item.getRelativePath());
                             break;
                         case MODULE:
-                            failureDescription.get(Constants.MODULES).add(item.toString());
+                            failureDescription.get(Constants.MODULES).add(item.getRelativePath());
                             break;
                         case MISC:
-                            failureDescription.get(Constants.MISC).add(item.toString());
+                            failureDescription.get(Constants.MISC).add(item.getRelativePath());
                             break;
                     }
                 }
