@@ -102,6 +102,7 @@
     </properties>
 
     <modules>
+        <module>jboss-javaee-6.0-with-all</module>
         <module>jboss-javaee-6.0-with-deltaspike</module>
         <module>jboss-javaee-6.0-with-errai</module>
         <module>jboss-javaee-6.0-with-hibernate</module>
