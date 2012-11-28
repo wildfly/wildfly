@@ -49,6 +49,10 @@ public class JdrReport {
         startTime = time;
     }
 
+    public void setStartTime() {
+        setStartTime(new Date());
+    }
+
     /**
      * Indicates the time the JDR report collection was complete.
      */
@@ -58,6 +62,10 @@ public class JdrReport {
 
     public void setEndTime(Date time) {
         endTime = time;
+    }
+
+    public void setEndTime() {
+        setEndTime(new Date());
     }
 
     /**
