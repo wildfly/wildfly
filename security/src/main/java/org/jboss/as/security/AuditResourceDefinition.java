@@ -51,7 +51,7 @@ public class AuditResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(new MappingModuleDefinition(Constants.PROVIDER));
+        resourceRegistration.registerSubModel(new MappingProviderModuleDefinition(Constants.PROVIDER_MODULE));
     }
 
     static class AuditResourceDefinitionAdd extends SecurityDomainReloadAddHandler {

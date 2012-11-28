@@ -56,13 +56,14 @@ public class LoginModulesDefinition extends SimpleResourceDefinition {
             .setMinSize(1)
             .build();
     static final PropertiesAttributeDefinition MODULE_OPTIONS = new PropertiesAttributeDefinition.Builder(Constants.MODULE_OPTIONS, true)
+            .setAllowExpression(true)
             .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, MODULE, MODULE_OPTIONS};
 
     LoginModulesDefinition(final String key) {
         super(PathElement.pathElement(key),
-                SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK,Constants.LOGIN_MODULES),
+                SecurityExtension.getResourceDescriptionResolver(Constants.LOGIN_MODULE_STACK,Constants.LOGIN_MODULE),
                 new LoginModuleAdd(),
                 new SecurityDomainReloadRemoveHandler()
         );

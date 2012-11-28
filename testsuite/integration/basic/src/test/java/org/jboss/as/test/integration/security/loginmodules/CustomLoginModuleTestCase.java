@@ -22,9 +22,21 @@
 
 package org.jboss.as.test.integration.security.loginmodules;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.security.Constants.CODE;
+import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -46,7 +58,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.loginmodules.common.CustomTestLoginModule;
 import org.jboss.as.test.integration.web.security.SecuredServlet;
@@ -56,21 +71,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.security.Constants.AUTHENTICATION;
-import static org.jboss.as.security.Constants.CODE;
-import static org.jboss.as.security.Constants.FLAG;
-import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import org.jboss.as.test.categories.CommonCriteria;
-import static org.junit.Assert.assertEquals;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 /**
  * Unit test for custom login modules in authentication.
@@ -87,8 +89,8 @@ public class CustomLoginModuleTestCase {
     @ArquillianResource(SecuredServlet.class)
     URL deploymentURL;
 
-    private String getURL(){
-       return deploymentURL.toString() + "secured/";
+    private String getURL() {
+        return deploymentURL.toString() + "secured/";
     }
 
     static class CustomLoginModuleSecurityDomainSetup extends AbstractSecurityDomainSetup {
@@ -100,36 +102,31 @@ public class CustomLoginModuleTestCase {
 
         @Override
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-            final List<ModelNode> updates = new ArrayList<ModelNode>();
             ModelNode op = new ModelNode();
 
             op.get(OP).set(COMPOSITE);
             op.get(OP_ADDR).setEmptyList();
-            ModelNode add1 = op.get(STEPS).add();
+            PathAddress address = PathAddress.pathAddress()
+                    .append(SUBSYSTEM, "security")
+                    .append(SECURITY_DOMAIN, getSecurityDomainName());
+            op.get(STEPS).add(Util.createAddOperation(address));
 
-            add1.get(OP).set(ADD);
-            add1.get(OP_ADDR).add(SUBSYSTEM, "security");
-            add1.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
 
-            ModelNode add2 =  op.get(STEPS).add();
-            add2.get(OP).set(ADD);
-            add2.get(OP_ADDR).add(SUBSYSTEM, "security");
-            add2.get(OP_ADDR).add(SECURITY_DOMAIN, getSecurityDomainName());
-            add2.get(OP_ADDR).add(AUTHENTICATION, Constants.CLASSIC);
+            address = address.append(Constants.AUTHENTICATION, Constants.CLASSIC);
+            op.get(STEPS).add(Util.createAddOperation(address));
 
-            ModelNode loginModule = add2.get(Constants.LOGIN_MODULES).add();
+            ModelNode loginModule = Util.createAddOperation(address.append(LOGIN_MODULE, CustomTestLoginModule.class.getName()));
             loginModule.get(CODE).set(CustomTestLoginModule.class.getName());
             loginModule.get(FLAG).set("required");
-
-            updates.add(op);
-            applyUpdates(managementClient.getControllerClient(), updates);
+            op.get(STEPS).add(loginModule);
+            applyUpdates(managementClient.getControllerClient(), Arrays.asList(op));
         }
     }
 
     /**
      * Base method to create a {@link WebArchive}
      *
-     * @param name Name of the war file
+     * @param name         Name of the war file
      * @param servletClass a class that is the servlet
      * @return
      */
@@ -137,9 +134,9 @@ public class CustomLoginModuleTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, name);
         war.addClass(servletClass);
 
-        war.addAsWebResource(CustomLoginModuleTestCase.class.getPackage() ,"login.jsp", "login.jsp");
-        war.addAsWebResource( CustomLoginModuleTestCase.class.getPackage(),"error.jsp", "error.jsp");
-        war.addAsWebInfResource(CustomLoginModuleTestCase.class.getPackage() ,"jboss-web.xml", "jboss-web.xml");
+        war.addAsWebResource(CustomLoginModuleTestCase.class.getPackage(), "login.jsp", "login.jsp");
+        war.addAsWebResource(CustomLoginModuleTestCase.class.getPackage(), "error.jsp", "error.jsp");
+        war.addAsWebInfResource(CustomLoginModuleTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.setWebXML(CustomLoginModuleTestCase.class.getPackage(), "web.xml");
         war.addClass(CustomTestLoginModule.class);
         return war;
@@ -171,8 +168,7 @@ public class CustomLoginModuleTestCase {
             HttpResponse response = httpclient.execute(httpget);
 
             HttpEntity entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             // We should get the Login Page
             StatusLine statusLine = response.getStatusLine();
@@ -200,8 +196,7 @@ public class CustomLoginModuleTestCase {
 
             response = httpclient.execute(httpost);
             entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             statusLine = response.getStatusLine();
 
@@ -214,8 +209,7 @@ public class CustomLoginModuleTestCase {
             response = httpclient.execute(httpGet);
 
             entity = response.getEntity();
-            if (entity != null)
-                EntityUtils.consume(entity);
+            if (entity != null) { EntityUtils.consume(entity); }
 
             System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();

@@ -23,6 +23,7 @@
 package org.jboss.as.security.test;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.as.security.Constants;
 import org.jboss.as.security.SecurityExtension;
@@ -90,9 +91,9 @@ public class JSSEExpressionsUnitTestCase extends AbstractSubsystemBaseTest {
         // check if the module-option values have been created as expression nodes.
         ModelNode auth = model.get("subsystem", "security", "security-domain", "other", "authentication", "classic");
         Assert.assertEquals(ModelType.OBJECT, auth.getType());
-        ModelNode loginModules = auth.get(Constants.LOGIN_MODULES);
-        Assert.assertEquals(ModelType.LIST, loginModules.getType());
-        ModelNode loginModule = loginModules.asList().get(0);
+        List<Property> loginModules = auth.get(Constants.LOGIN_MODULE).asPropertyList();
+        //Assert.assertEquals(ModelType.LIST, loginModules.getType());
+        ModelNode loginModule = loginModules.get(0).getValue();
         Assert.assertEquals(ModelType.OBJECT, auth.getType());
         for (Property prop : loginModule.get(Constants.MODULE_OPTIONS).asPropertyList())
             Assert.assertEquals(ModelType.EXPRESSION, prop.getValue().getType());

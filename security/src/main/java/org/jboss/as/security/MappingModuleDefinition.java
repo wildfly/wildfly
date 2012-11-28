@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,26 +56,32 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     private static final AttributeDefinition[] ATTRIBUTES = {CODE, TYPE, MODULE_OPTIONS};
 
 
-
     MappingModuleDefinition(String key) {
-        super(PathElement.pathElement(key), SecurityExtension.getResourceDescriptionResolver( Constants.MAPPING_MODULE),
-                new AbstractAddStepHandler() {
-                    @Override
-                    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-                        for (AttributeDefinition attr : ATTRIBUTES) {
-                            attr.validateAndSet(operation, model);
-                        }
-                    }
-                }
-                , new SecurityDomainReloadRemoveHandler()
+        super(PathElement.pathElement(key), SecurityExtension.getResourceDescriptionResolver(Constants.MAPPING_MODULE),
+                null,
+                new SecurityDomainReloadRemoveHandler()
         );
+    }
+
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        super.registerAddOperation(resourceRegistration, new AbstractAddStepHandler() {
+            @Override
+            protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+                for (AttributeDefinition attr : getAttributes()) {
+                    attr.validateAndSet(operation, model);
+                }
+            }
+        }, OperationEntry.Flag.RESTART_NONE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
         SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(ATTRIBUTES);
-        for (AttributeDefinition attr : ATTRIBUTES) {
+        for (AttributeDefinition attr : getAttributes()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
@@ -82,4 +89,6 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     public AttributeDefinition[] getAttributes() {
         return ATTRIBUTES;
     }
+
+
 }

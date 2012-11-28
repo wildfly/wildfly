@@ -75,13 +75,12 @@ public class SecurityDomainTestCase extends ContainerResourceMgmtTestBase {
         ModelNode addOp = createOpNode("subsystem=security/security-domain=test", "add");
 
         // setup lospecify login module options
-        ModelNode addLoginModuleOp = createOpNode("subsystem=security/security-domain=test/authentication=classic", "add");
-        ModelNode loginModule = new ModelNode();
-        loginModule.get("code").set("Simple");
-        loginModule.get("flag").set("required");
-        addLoginModuleOp.get("login-modules").add(loginModule);
+        ModelNode addAuthClassic = createOpNode("subsystem=security/security-domain=test/authentication=classic", "add");
+        ModelNode addLoginModuleOp = createOpNode("subsystem=security/security-domain=test/authentication=classic/login-module="+"Simple", "add");
+        addLoginModuleOp.get("code").set("Simple");
+        addLoginModuleOp.get("flag").set("required");
 
-        executeOperation(ModelUtil.createCompositeNode(new ModelNode[]{addOp, addLoginModuleOp}));
+        executeOperation(ModelUtil.createCompositeNode(new ModelNode[]{addOp, addAuthClassic, addLoginModuleOp}));
 
         // deploy secured servlet
         deployer.deploy("secured-servlet");
