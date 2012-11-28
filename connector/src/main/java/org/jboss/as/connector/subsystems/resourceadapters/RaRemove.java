@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTERS_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -50,12 +51,16 @@ public class RaRemove implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final ModelNode opAddr = operation.require(OP_ADDR);
-        final String raName = PathAddress.pathAddress(opAddr).getLastElement().getValue();
+        final String name = PathAddress.pathAddress(opAddr).getLastElement().getValue();
 
         // Compensating is add
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
-        final String archive = model.get(ARCHIVE.getName()).asString();
-
+        final String archiveOrModuleName;
+        if (model.get(ARCHIVE.getName()).isDefined()) {
+            archiveOrModuleName = ARCHIVE.resolveModelAttribute(context, model).asString();
+        } else {
+            archiveOrModuleName = MODULE.resolveModelAttribute(context, model).asString();
+        }
         final ModelNode compensating = Util.getEmptyOperation(ADD, opAddr);
 
         if (model.hasDefined(RESOURCEADAPTERS_NAME)) {
@@ -71,8 +76,8 @@ public class RaRemove implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                final boolean wasActive = RaOperationUtil.deactivateIfActive(context, raName);
-                ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, raName);
+                final boolean wasActive = RaOperationUtil.deactivateIfActive(context, archiveOrModuleName);
+                ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, archiveOrModuleName);
                 ServiceController<?> serviceController =  context.getServiceRegistry(false).getService(raServiceName);
                 final ModifiableResourceAdapter resourceAdapter;
                 if (serviceController != null) {
@@ -87,15 +92,23 @@ public class RaRemove implements OperationStepHandler {
                     }
 
                 }
+
+                if (model.get(MODULE.getName()).isDefined()) {
+                    //ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(model.get(MODULE.getName()).asString());
+                    //context.removeService(deploymentServiceName);
+                    ServiceName deployerServiceName = ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(model.get(MODULE.getName()).asString());
+                    context.removeService(deployerServiceName);
+                }
+
                 context.removeService(raServiceName);
                 context.completeStep(new OperationContext.RollbackHandler() {
                     @Override
                     public void handleRollback(OperationContext context, ModelNode operation) {
                         if (resourceAdapter != null) {
-                            RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), raName, resourceAdapter);
+                            RaOperationUtil.installRaServices(context, new ServiceVerificationHandler(), archiveOrModuleName, resourceAdapter);
                             try {
                                 if (wasActive)
-                                    RaOperationUtil.activate(context, raName, archive);
+                                    RaOperationUtil.activate(context, archiveOrModuleName, archiveOrModuleName);
                             } catch (OperationFailedException e) {
 
                             }

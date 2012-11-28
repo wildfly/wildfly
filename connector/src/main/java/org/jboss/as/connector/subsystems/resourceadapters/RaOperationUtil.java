@@ -280,7 +280,6 @@ public class RaOperationUtil {
         ConnectorServices.unregisterResourceIdentifier(raName, identifier);
 
         ServiceName deploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
-        AbstractResourceAdapterDeploymentService service = ((AbstractResourceAdapterDeploymentService) context.getServiceRegistry(false).getService(deploymentServiceName));
 
         return wasActive;
 
@@ -381,7 +380,6 @@ public class RaOperationUtil {
 
                 ServiceBuilder builder = ParsedRaDeploymentProcessor.process(connectorXmlDescriptor, ironJacamarXmlDescriptor, module.getClassLoader(), serviceTarget, annotationIndexes, RAR_MODULE.append(deploymentName));
                 builder.addDependency(raServiceName).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
                 String rarName = resourceAdapter.getArchive();
                 Integer identifier = null;
                 if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {

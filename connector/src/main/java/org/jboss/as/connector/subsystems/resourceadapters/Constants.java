@@ -149,7 +149,7 @@ public class Constants {
     static final SimpleAttributeDefinition ARCHIVE = SimpleAttributeDefinitionBuilder.create(ARCHIVE_NAME, ModelType.STRING)
             .setXmlName(ResourceAdapter.Tag.ARCHIVE.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
@@ -172,7 +172,7 @@ public class Constants {
     static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(MODULE_NAME, ModelType.STRING)
             .setXmlName(AS7ResourceAdapterTags.MODULE.getLocalName())
             .setAllowNull(true)
-            .setAllowExpression(true)
+            .setAllowExpression(false)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
@@ -182,13 +182,18 @@ public class Constants {
                         String module = resourceModel.get(attribute.getName()).asString();
                         int separatorIndex = module.indexOf(":");
                         if (separatorIndex != -1) {
-                            writer.writeAttribute("id", module.substring(0, separatorIndex));
                             writer.writeAttribute("slot", module.substring(separatorIndex + 1));
+                            module =  module.substring(0, separatorIndex);
+
                         } else {
-                            writer.writeAttribute("id", module);
                             if(marshallDefault) {
                                 writer.writeAttribute("slot", "main");
                             }
+                        }
+                        if (module.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+                            writer.writeAttribute("id", module.substring(0, module.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
+                        } else {
+                            writer.writeAttribute("id", module);
                         }
 
                         writer.writeEndElement();
