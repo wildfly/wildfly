@@ -50,6 +50,20 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
         }
 
         /**
+         * Get the current patch info.
+         *
+         * @return the patch info
+         */
+        public static PatchOperationBuilder info() {
+            return new AbstractOperationBuilder() {
+                @Override
+                public ModelNode execute(PatchOperationTarget target) throws IOException {
+                    return target.info();
+                }
+            };
+        }
+
+        /**
          * Create the rollback builder.
          *
          * @param patchId the patch-id to rollback
@@ -67,7 +81,7 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
         }
 
         /**
-         * Patch a standalone instance.
+         * Create a patch builder.
          *
          * @param file the patch file
          * @return the operation builder

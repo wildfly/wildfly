@@ -20,24 +20,27 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.management;
 
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.LogMessage;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.patching.runner.PatchingException;
+import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.Param;
 
 /**
- * This module is using message IDs in the range 16800-16899.
+ * This module is using message IDs in the range 16900-16999.
  * <p/>
- * This file is using the subset 16800-16839 for logger messages.
+ * This file is using the subset 16940-16999 for non-logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
@@ -45,9 +48,15 @@ import org.jboss.logging.annotations.MessageLogger;
  *
  * @author Emanuel Muckenhuber
  */
-@MessageLogger(projectCode = "JBAS")
-public interface PatchLogger extends BasicLogger {
+@MessageBundle(projectCode = "JBAS")
+public interface PatchManagementMessages {
 
-    PatchLogger ROOT_LOGGER = Logger.getMessageLogger(PatchLogger.class, PatchLogger.class.getPackage().getName());
+    PatchManagementMessages MESSAGES = Messages.getBundle(PatchManagementMessages.class);
+
+    @Message(id = 16940, value = "Cannot complete operation. Patch '%s' is currently active")
+    OperationFailedException patchActive(String patchId);
+
+    @Message(id = 16941, value = "Failed to show history of patches")
+    OperationFailedException failedToShowHistory(@Cause Throwable cause);
 
 }

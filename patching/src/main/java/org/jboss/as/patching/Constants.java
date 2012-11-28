@@ -40,6 +40,9 @@ public class Constants {
     public static final String OVERRIDE = "override";
     public static final String PRESERVE = "preserve";
 
-    public static final String TIMESTAMP = "timestamp";
     public static final String APPLIED_AT = "applied-at";
+    public static final String CUMULATIVE = "cumulative";
+    public static final String PATCHES = "patches";
+    public static final String TIMESTAMP = "timestamp";
+
 }

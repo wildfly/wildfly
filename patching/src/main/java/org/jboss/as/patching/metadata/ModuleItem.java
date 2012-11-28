@@ -50,6 +50,11 @@ public class ModuleItem extends ContentItem {
     }
 
     @Override
+    public String getRelativePath() {
+        return getName() + ":" + slot;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder builder = new StringBuilder();
         builder.append(ModuleItem.class.getSimpleName()).append("{");

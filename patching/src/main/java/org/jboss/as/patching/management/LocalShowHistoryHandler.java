@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.management;
 
 import static org.jboss.as.patching.PatchInfo.BASE;
 import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
@@ -33,6 +33,9 @@ import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.dmr.ModelNode;
@@ -69,7 +72,7 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
             context.stepCompleted();
         } catch (Throwable t) {
             t.printStackTrace();
-            throw PatchMessages.MESSAGES.failedToShowHistory(t);
+            throw PatchManagementMessages.MESSAGES.failedToShowHistory(t);
         }
     }
 

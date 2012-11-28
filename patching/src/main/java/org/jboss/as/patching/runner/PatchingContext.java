@@ -188,9 +188,9 @@ class PatchingContext {
     }
 
     /**
-     * Create a task based on a merged definiton.
+     * Create a task based on a merged definition.
      *
-     * @param definition the patching task definiton
+     * @param definition the patching task definition
      * @return the patching task
      */
     PatchingTask createTask(final PatchingTasks.ContentTaskDefinition definition) {

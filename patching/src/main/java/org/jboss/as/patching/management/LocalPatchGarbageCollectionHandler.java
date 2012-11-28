@@ -20,12 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.management;
 
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.dmr.ModelNode;
 
 import java.io.File;
@@ -47,10 +49,10 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
         final PatchInfo info = service.getPatchInfo();
         if(info.getCumulativeID().equals(patchId)) {
-            throw PatchMessages.MESSAGES.patchActive(patchId);
+            throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }
         if(info.getPatchIDs().contains(patchId)) {
-            throw PatchMessages.MESSAGES.patchActive(patchId);
+            throw PatchManagementMessages.MESSAGES.patchActive(patchId);
         }
         final DirectoryStructure structure = service.getStructure();
 

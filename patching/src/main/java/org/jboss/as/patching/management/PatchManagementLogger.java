@@ -20,16 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
-
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
+package org.jboss.as.patching.management;
 
 import java.io.File;
 import java.util.List;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -46,8 +45,16 @@ import org.jboss.logging.annotations.MessageLogger;
  * @author Emanuel Muckenhuber
  */
 @MessageLogger(projectCode = "JBAS")
-public interface PatchLogger extends BasicLogger {
+public interface PatchManagementLogger extends BasicLogger {
 
-    PatchLogger ROOT_LOGGER = Logger.getMessageLogger(PatchLogger.class, PatchLogger.class.getPackage().getName());
+    PatchManagementLogger ROOT_LOGGER = Logger.getMessageLogger(PatchManagementLogger.class, PatchManagementLogger.class.getPackage().getName());
+
+    @LogMessage(level = WARN)
+    @Message(id = 16800, value = "detected modification to module '%s' (%s)")
+    void moduleContentChanged(String moduleIdentifier, String hash);
+
+    @LogMessage(level = INFO)
+    @Message(id = 16801, value = "using module path: %s")
+    void usingModulePath(List<File> modulePath);
 
 }
