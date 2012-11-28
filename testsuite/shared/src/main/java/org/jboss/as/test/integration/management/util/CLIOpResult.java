@@ -21,29 +21,80 @@
  */
 package org.jboss.as.test.integration.management.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
 
+import org.jboss.as.cli.Util;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  *
  * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author baranowb
  */
 public class CLIOpResult {
 
     private boolean isOutcomeSuccess;
-    private Object result;
-    private Object serverGroups;
+    private Map<String, Object> responseMap;
+
+    public CLIOpResult() {}
+
+    public CLIOpResult(ModelNode node) {
+        this.responseMap = toMap(node);
+        this.isOutcomeSuccess = ModelDescriptionConstants.SUCCESS.equals(this.responseMap.get(ModelDescriptionConstants.OUTCOME));
+    }
+
+    public CLIOpResult(Map<String, Object> responseMap) {
+        this.responseMap = responseMap;
+        this.isOutcomeSuccess = ModelDescriptionConstants.SUCCESS.equals(this.responseMap.get(ModelDescriptionConstants.OUTCOME));
+    }
+
+    protected Map<String, Object> toMap(ModelNode node) {
+        final Set<String> keys = node.keys();
+        Map<String,Object> map = new HashMap<String,Object>(keys.size());
+        for(String key : keys) {
+            map.put(key, toObject(node.get(key)));
+        }
+        return map;
+    }
+
+    protected List<Object> toList(ModelNode node) {
+        final List<ModelNode> nodeList = node.asList();
+        final List<Object> list = new ArrayList<Object>(nodeList.size());
+        for(ModelNode item : nodeList) {
+            list.add(toObject(item));
+        }
+        return list;
+    }
+
+    protected Object toObject(ModelNode node) {
+        final ModelType type = node.getType();
+        if(type.equals(ModelType.LIST)) {
+            return toList(node);
+        } else if(type.equals(ModelType.OBJECT)) {
+            return toMap(node);
+        } else if(type.equals(ModelType.PROPERTY)) {
+            final Property prop = node.asProperty();
+            return Collections.singletonMap(prop.getName(), toObject(prop.getValue()));
+        } else {
+            return node.asString();
+        }
+    }
 
     public boolean isIsOutcomeSuccess() {
         return isOutcomeSuccess;
     }
 
-    public void setIsOutcomeSuccess(boolean isOutcomeSuccess) {
-        this.isOutcomeSuccess = isOutcomeSuccess;
-    }
 
     public Object getResult() {
-        return result;
+        return getFromResponse(ModelDescriptionConstants.RESULT);
     }
 
     /**
@@ -51,6 +102,7 @@ public class CLIOpResult {
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getResultAsMap() {
+        final Object result = getResult();
         return (Map<String, Object>) (result instanceof Map ? result : null);
     }
 
@@ -71,15 +123,16 @@ public class CLIOpResult {
         return (Map<String, Object>) (value instanceof Map ? value : null);
     }
 
-    public void setResult(Object result) {
-        this.result = result;
-    }
-
     public Object getServerGroups() {
-        return serverGroups;
+        return getFromResponse(ModelDescriptionConstants.SERVER_GROUPS);
     }
 
-    public void setServerGroups(Object serverGroups) {
-        this.serverGroups = serverGroups;
+    /**
+     * Return top entry from response, ie -"response-headers", "outcome", ... etc
+     * @param key
+     * @return
+     */
+    public Object getFromResponse(String key){
+        return this.responseMap.get(key);
     }
 }

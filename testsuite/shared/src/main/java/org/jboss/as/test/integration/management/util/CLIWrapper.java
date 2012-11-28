@@ -39,6 +39,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.http.Authentication;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 
@@ -298,10 +299,8 @@ public class CLIWrapper implements Runnable {
             throw new CLIException("Parse error. '{' expected, received: '" + token + "'.");
         }
         Map<String, Object> compound = parseCompound(st);
-        CLIOpResult res = new CLIOpResult();
-        res.setIsOutcomeSuccess("success".equals(compound.get("outcome")));
-        res.setResult(compound.get("result"));
-        res.setServerGroups(compound.get("server-groups"));
+        CLIOpResult res = new CLIOpResult(compound);
+        
         return res;
     }
 
