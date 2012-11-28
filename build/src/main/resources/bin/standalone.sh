@@ -210,7 +210,7 @@ while true; do
    if [ "x$LAUNCH_JBOSS_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/boot.log\" \
+         \"-Dorg.jboss.server.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
@@ -223,7 +223,7 @@ while true; do
    else
       # Execute the JVM in the background
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
-         \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/boot.log\" \
+         \"-Dorg.jboss.server.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
