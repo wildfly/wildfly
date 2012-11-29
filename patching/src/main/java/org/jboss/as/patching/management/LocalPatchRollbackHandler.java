@@ -54,8 +54,8 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         // FIXME can we check whether the process is reload-required directly from the operation context?
         context.acquireControllerLock();
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
-        if (service.requiresReload()) {
-            throw MESSAGES.serverRequiresReload();
+        if (service.requiresRestart()) {
+            throw MESSAGES.serverRequiresRestart();
         }
 
         final PatchInfo info = service.getPatchInfo();
@@ -65,15 +65,17 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         try {
             // Rollback
             final PatchingResult result = runner.rollback(patchId, policy, rollbackTo, restoreConfiguration);
+            service.restartRequired();
+            context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
-                        service.reloadRequired();
-                        context.restartRequired();
                         result.commit();
                     } else {
+                        service.clearRestartRequired();
+                        context.revertRestartRequired();
                         result.rollback();
                     }
                 }

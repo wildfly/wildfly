@@ -52,11 +52,13 @@ public class PatchInfoService implements Service<PatchInfoService> {
     private volatile PatchInfo patchInfo;
 
     /**
-     * this field is set to true when a patch is applied/rolled back at runtime.
+     * This field is set to true when a patch is applied/rolled back at runtime.
      * It prevents another patch to be applied and overrides the modifications brought by the previous one
-     * unless the process is reloaded first
+     * unless the process is restarted first
+     *
+     * This field has to be {@code static} in order to survive server reloads.
      */
-    private final AtomicBoolean reloadRequired = new AtomicBoolean(false);
+    private static final AtomicBoolean restartRequired = new AtomicBoolean(false);
 
     protected PatchInfoService() {
         //
@@ -100,12 +102,26 @@ public class PatchInfoService implements Service<PatchInfoService> {
         return patchInfo;
     }
 
-    public void reloadRequired() {
-        reloadRequired.set(true);
+    public boolean requiresRestart() {
+        return restartRequired.get();
     }
 
-    public boolean requiresReload() {
-        return reloadRequired.get();
+    /**
+     * Require a restart. This will set the patching service to read-only
+     * and the server has to be restarted in order to execute the next
+     * patch operation.
+     *
+     * In case the patch operation does not succeed it needs to clear the
+     * reload required state using {@link #clearRestartRequired()}.
+     *
+     * @return this will return {@code true}
+     */
+    protected boolean restartRequired() {
+        return restartRequired.compareAndSet(false, true);
+    }
+
+    protected void clearRestartRequired() {
+        restartRequired.set(false);
     }
 
 }

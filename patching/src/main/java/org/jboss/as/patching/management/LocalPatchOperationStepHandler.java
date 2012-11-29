@@ -55,8 +55,8 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final PatchInfoService service = (PatchInfoService) context.getServiceRegistry(false).getRequiredService(PatchInfoService.NAME).getValue();
 
         // FIXME can we check whether the process is reload-required directly from the operation context?
-        if (service.requiresReload()) {
-            throw MESSAGES.serverRequiresReload();
+        if (service.requiresRestart()) {
+            throw MESSAGES.serverRequiresRestart();
         }
 
         final PatchInfo info = service.getPatchInfo();
@@ -68,15 +68,17 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
         final InputStream is = context.getAttachmentStream(index);
         try {
             final PatchingResult result = runner.applyPatch(is, policy);
+            service.restartRequired();
+            context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
 
                 @Override
                 public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
                     if(resultAction == OperationContext.ResultAction.KEEP) {
-                        service.reloadRequired();
-                        context.restartRequired();
                         result.commit();
                     } else {
+                        service.clearRestartRequired();
+                        context.revertRestartRequired();
                         result.rollback();
                     }
                 }

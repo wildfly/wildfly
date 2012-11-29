@@ -117,8 +117,8 @@ public interface PatchMessages {
     @Message(id = 16847, value = "File at path specified by argument %s is a directory")
     String fileIsADirectory(String arg);
 
-    @Message(id = 16848, value = "Unable to apply or rollback a patch when the server is in a reload-required state.")
-    OperationFailedException serverRequiresReload();
+    @Message(id = 16848, value = "Unable to apply or rollback a patch when the server is in a restart-required state.")
+    OperationFailedException serverRequiresRestart();
 
     @Message(id = 16849, value = "Cannot rollback patch (%s)")
     PatchingException cannotRollbackPatch(String id);
