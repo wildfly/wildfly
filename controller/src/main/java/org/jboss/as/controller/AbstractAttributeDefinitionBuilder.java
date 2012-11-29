@@ -32,7 +32,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Provides a builder API for creating a
+ * Provides a builder API for creating an {@link org.jboss.as.controller.AttributeDefinition}.
  *
  * @author Tomaz Cerar
  */
