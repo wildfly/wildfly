@@ -25,7 +25,6 @@ import org.jboss.as.jdr.commands.JdrEnvironment;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -42,14 +41,16 @@ public class JdrZipFile {
     String jbossHome;
     JdrEnvironment env;
     String name;
+    String baseName;
 
     public JdrZipFile(JdrEnvironment env) throws Exception {
         this.env = env;
         this.jbossHome = this.env.getJbossHome();
         SimpleDateFormat fmt = new SimpleDateFormat("yy-MM-dd_hh-mm-ss");
+        baseName = "jdr_" + fmt.format(new Date());
         this.name = this.env.getOutputDirectory() +
                     java.io.File.separator +
-                    "jdr_" + fmt.format(new Date());
+                    baseName + ".zip";
 
         if (this.env.getHostControllerName() != null) {
             this.name += "." + this.env.getHostControllerName();
@@ -58,8 +59,6 @@ public class JdrZipFile {
         if (this.env.getServerName() != null) {
             this.name += "_" + this.env.getServerName();
         }
-
-        this.name += ".zip";
 
         zos = new ZipOutputStream(new FileOutputStream(this.name));
     }
@@ -72,7 +71,8 @@ public class JdrZipFile {
         byte [] buffer = new byte[1024];
 
         try {
-            ZipEntry ze = new ZipEntry(path);
+            String entryName = this.baseName + "/" + path;
+            ZipEntry ze = new ZipEntry(entryName);
             zos.putNextEntry(ze);
             int bytesRead = is.read(buffer);
             while( bytesRead > -1 ) {
