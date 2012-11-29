@@ -48,17 +48,18 @@ public class JdrZipFile {
         this.jbossHome = this.env.getJbossHome();
         SimpleDateFormat fmt = new SimpleDateFormat("yy-MM-dd_hh-mm-ss");
         baseName = "jdr_" + fmt.format(new Date());
-        this.name = this.env.getOutputDirectory() +
-                    java.io.File.separator +
-                    baseName + ".zip";
 
         if (this.env.getHostControllerName() != null) {
-            this.name += "." + this.env.getHostControllerName();
+            this.baseName += "." + this.env.getHostControllerName();
         }
 
         if (this.env.getServerName() != null) {
-            this.name += "_" + this.env.getServerName();
+            this.baseName += "_" + this.env.getServerName();
         }
+
+        this.name = this.env.getOutputDirectory() +
+                java.io.File.separator +
+                baseName + ".zip";
 
         zos = new ZipOutputStream(new FileOutputStream(this.name));
     }
