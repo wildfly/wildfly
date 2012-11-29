@@ -2131,4 +2131,7 @@ public interface EjbMessages {
     @Message(id = 14231, value = "EJB client context selector failed due to unavailability of %s service")
     IllegalStateException ejbClientContextSelectorUnableToFunctionDueToMissingService(ServiceName serviceName);
 
+    @Message(id = 14232, value = "@PostConstruct method of EJB singleton %s of type %s has been recursively invoked")
+    IllegalStateException reentrantSingletonCreation(String componentName, String componentClassName);
+
 }

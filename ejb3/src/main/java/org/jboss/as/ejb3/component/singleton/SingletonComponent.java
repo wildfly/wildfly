@@ -48,6 +48,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * {@link Component} representing a {@link javax.ejb.Singleton} EJB.
@@ -111,8 +112,15 @@ public class SingletonComponent extends SessionBeanComponent implements Lockable
         return new SingletonComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
     }
 
+    /**
+     * @return the {@link SingletonComponentInstance}, lazily creating it if necessary.
+     */
     public SingletonComponentInstance getComponentInstance() {
         if (this.singletonComponentInstance == null) {
+            // Protects from re-entry which can happen if {@link PostConstruct} annotated methods pass a
+            // view (from {@link SessionContext#getBusinessObject(Class)}) of itself to other EJBs
+            if (Thread.holdsLock(creationLock))
+                throw MESSAGES.reentrantSingletonCreation(getComponentName(), getComponentClass().getName());
             synchronized (creationLock) {
                 if (this.singletonComponentInstance == null) {
                     this.singletonComponentInstance = (SingletonComponentInstance) this.createInstance();
