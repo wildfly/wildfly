@@ -34,6 +34,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -48,11 +49,10 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = create("grouping-handler-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
-            .setDefaultValue(null)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    // FIXME GroupiongHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed
+    // FIXME GroupingHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed
     // [HORNETQ-885]
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", INT)
             .setDefaultValue(new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT))
@@ -62,10 +62,8 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
-            .setDefaultValue(null)
-            .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(GroupingHandlerTypeValidator.INSTANCE)
+            .setValidator(new EnumValidator<GroupingHandlerConfiguration.TYPE>(GroupingHandlerConfiguration.TYPE.class, false, true))
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 

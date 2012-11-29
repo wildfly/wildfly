@@ -22,13 +22,15 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS;
+import static org.jboss.as.messaging.GroupingHandlerDefinition.TIMEOUT;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.List;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -38,7 +40,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -46,9 +47,10 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * Handler for adding a broadcast group.
+ * Handler for adding a grouping handler.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
  */
 public class GroupingHandlerAdd extends AbstractAddStepHandler {
 
@@ -68,45 +70,42 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
-        PathAddress ourAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-
-        final Resource subsystemRootResource = context.readResourceFromRoot(ourAddress.subAddress(0, ourAddress.size() - 1));
-        if (subsystemRootResource.hasChildren(CommonAttributes.GROUPING_HANDLER)) { //todo this probably is not needed anymore, should be verifed
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER)));
-        }
-
-        if (context.isNormalServer()) {
-
-            context.addStep(new OperationStepHandler() {
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    ServiceRegistry registry = context.getServiceRegistry(false);
-                    final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-                    ServiceController<?> hqService = registry.getService(hqServiceName);
-                    if (hqService != null) {
+        ServiceRegistry registry = context.getServiceRegistry(true);
+        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
+        ServiceController<?> hqService = registry.getService(hqServiceName);
+        if (hqService != null) {
+            final HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
+            if (hqServer.getGroupingHandler() != null) {
+                throw new OperationFailedException(new ModelNode().set(MESSAGES.childResourceAlreadyExists(CommonAttributes.GROUPING_HANDLER)));
+            }
+            // the groupingHandler is added as a child of the hornetq-server resource. Requires a reload to restart the hornetq server with the grouping-handler
+            if (context.isNormalServer()) {
+                context.addStep(new OperationStepHandler() {
+                    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                         context.reloadRequired();
+                        context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                     }
-                    // else MessagingSubsystemAdd will add a handler that calls addBroadcastGroupConfigs
-
-                    context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
-
-                }
-            }, OperationContext.Stage.RUNTIME);
+                }, OperationContext.Stage.RUNTIME);
+            }
+            context.stepCompleted();
         }
-        context.stepCompleted();
+        // else the initial subsystem install is not complete and the grouping handler will be added in HornetQServerAdd
     }
 
     static void addGroupingHandlerConfig(final OperationContext context, final Configuration configuration, final ModelNode model) throws OperationFailedException {
         if (model.hasDefined(CommonAttributes.GROUPING_HANDLER)) {
-            Property prop = model.get(CommonAttributes.GROUPING_HANDLER).asProperty();
-            configuration.setGroupingHandlerConfiguration(createGroupingHandlerConfiguration(context, prop.getName(), prop.getValue()));
+            final Property prop = model.get(CommonAttributes.GROUPING_HANDLER).asProperty();
+            final String name = prop.getName();
+            final ModelNode node = prop.getValue();
+
+            final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(GroupingHandlerDefinition.TYPE.resolveModelAttribute(context, node).asString());
+            final String address = GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, node).asString();
+            final int timeout = TIMEOUT.resolveModelAttribute(context, node).asInt();
+            final GroupingHandlerConfiguration conf = new GroupingHandlerConfiguration(SimpleString.toSimpleString(name),
+                    type,
+                    SimpleString.toSimpleString(address),
+                    timeout);
+            configuration.setGroupingHandlerConfiguration(conf);
         }
-    }
-
-    static GroupingHandlerConfiguration createGroupingHandlerConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
-
-        final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(GroupingHandlerDefinition.TYPE.resolveModelAttribute(context, model).asString());
-        final String address = GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, model).asString();
-        final int timeout = GroupingHandlerDefinition.TIMEOUT.resolveModelAttribute(context, model).asInt();
-        return new GroupingHandlerConfiguration(SimpleString.toSimpleString(name), type, SimpleString.toSimpleString(address), timeout);
     }
 }
