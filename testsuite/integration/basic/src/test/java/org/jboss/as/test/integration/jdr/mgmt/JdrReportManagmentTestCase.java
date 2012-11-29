@@ -75,44 +75,9 @@ public class JdrReportManagmentTestCase {
 		Assert.assertTrue("JDR report missing, not located at " + location, reportFile.exists());
 		validateJdrReportContents(reportFile);
 
-		// Validate md5 file
-		String md5FileName = location + ".md5";
-		File md5File = new File(md5FileName);
-		Assert.assertTrue("JDR md5 file missing, not located at " + md5FileName, md5File.exists());
-		validateJdrMd5(reportFile, md5File);
-
-		// Clean up report files
+		// Clean up report file
 		reportFile.delete();
-		md5File.delete();
 	}
-
-    private void validateJdrMd5(File reportFile, File md5File) throws Exception {
-        String md5FromMd5File = readMd5File(md5File);
-        Assert.assertNotNull("MD5 file contents null", md5FromMd5File);
-        Assert.assertEquals("MD5 file contents wrong size", md5FromMd5File.length(), 32);
-
-        String md5OfReportArchive = getMd5(reportFile);
-        Assert.assertEquals("JDR Report has incorrect checksum", md5FromMd5File, md5OfReportArchive);
-	}
-
-    private String getMd5(File file) throws Exception {
-        FileInputStream in = new FileInputStream(file);
-        String md5 = DigestUtils.md5Hex(in);
-        return md5;
-    }
-
-    private String readMd5File(File file) throws Exception {
-        String md5 = null;
-        FileReader fileReader = new FileReader(file);
-        BufferedReader bufferedReader = new BufferedReader(fileReader);
-        try {
-            md5 = bufferedReader.readLine();
-        } finally {
-            bufferedReader.close();
-        }
-
-        return md5;
-    }
 
 	private void validateJdrReportContents(File reportFile) {
 	    String reportName = reportFile.getName().replace(".zip","");

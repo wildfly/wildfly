@@ -21,22 +21,41 @@
  */
 package org.jboss.as.jdr;
 
+import org.jboss.as.jdr.commands.JdrEnvironment;
+import org.jboss.as.jdr.util.JdrZipFile;
 import org.jboss.as.jdr.util.PatternSanitizer;
 import org.jboss.as.jdr.util.XMLSanitizer;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.jboss.as.jdr.vfs.Filters;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+
+import static org.junit.Assert.*;
+
 public class JdrTestCase {
+
+    @Test
+    public void testJdrZipName() throws Exception {
+        JdrEnvironment env = new JdrEnvironment();
+        env.setJbossHome("/foo/bar/baz");
+        env.setHostControllerName("host");
+        JdrZipFile zf = new JdrZipFile(env);
+        String name = zf.name();
+
+        try {
+            assertTrue(name.endsWith(".zip"));
+            assertTrue(name.contains("host"));
+        }
+        finally {
+            File f = new File(zf.name());
+            f.delete();
+        }
+    }
 
     @Test
     public void testBlackListFilter() {
