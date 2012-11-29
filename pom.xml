@@ -217,7 +217,7 @@
         <version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>2.0.1.Final</version.org.jboss.spec.javax.xml.ws.jboss-jaxws-api_2.2_spec>
         <version.org.jboss.staxmapper>1.1.0.Final</version.org.jboss.staxmapper>
         <version.org.jboss.stdio>1.0.1.GA</version.org.jboss.stdio>
-        <version.org.jboss.threads>2.0.0.GA</version.org.jboss.threads>
+        <version.org.jboss.threads>2.1.0.Final</version.org.jboss.threads>
         <version.org.jboss.web>7.0.16.Final</version.org.jboss.web>
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>1.1.8.Final</version.org.jboss.weld.weld>
