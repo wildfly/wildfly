@@ -20,57 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.osgi.deployment;
+package org.jboss.as.osgi.web;
 
-import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
+
+
+import java.util.jar.Manifest;
 
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.osgi.service.BundleLifecycleIntegration;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.spi.BundleInfo;
-import org.jboss.osgi.vfs.AbstractVFS;
-import org.jboss.vfs.VirtualFile;
-import org.osgi.framework.BundleException;
+import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
 /**
- * Processes deployments that contain a valid OSGi manifest.
+ * Provide OSGi meatadata for webbundle:// deployments
  *
  * @author Thomas.Diesler@jboss.com
- * @since 20-Sep-2010
+ * @since 30-Nov-2012
  */
-public class OSGiBundleInfoParseProcessor implements DeploymentUnitProcessor {
+public class WebBundleStructureProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
-        String runtimeName = depUnit.getName();
-
-        // Check if we already have a bundle {@link Deployment}
-        if (BundleLifecycleIntegration.getDeployment(runtimeName) != null)
+        if (depUnit.hasAttachment(OSGiConstants.OSGI_METADATA_KEY))
             return;
 
-        // Get the manifest from the deployment's virtual file
-        OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
-        if (metadata != null) {
-            try {
-                // Construct and attach the {@link BundleInfo} from {@link OSGiMetaData}
-                VirtualFile virtualFile = depUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
-                BundleInfo info = BundleInfo.createBundleInfo(AbstractVFS.adapt(virtualFile), runtimeName, metadata);
-                depUnit.putAttachment(OSGiConstants.BUNDLE_INFO_KEY, info);
-            } catch (BundleException ex) {
-                throw MESSAGES.cannotCreateBundleDeployment(ex, depUnit);
-            }
+        String runtimeName = depUnit.getName();
+        Manifest manifest = WebBundleURIParser.parse(runtimeName);
+        if (manifest != null) {
+            OSGiMetaData metadata = OSGiMetaDataBuilder.load(manifest);
+            depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
+            depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
         }
     }
 
     @Override
     public void undeploy(final DeploymentUnit depUnit) {
-        depUnit.removeAttachment(OSGiConstants.BUNDLE_INFO_KEY);
     }
 }
