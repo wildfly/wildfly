@@ -122,6 +122,10 @@ public class ManagedJBossThreadPoolExecutorService extends ManagedExecutorServic
         return executor.getActiveCount();
     }
 
+    public int getQueueSize() {
+        return executor.getQueueSize();
+    }
+
     <A> void addShutdownListener(final EventListener<A> shutdownListener, final A attachment) {
         executor.addShutdownListener(shutdownListener, attachment);
     }

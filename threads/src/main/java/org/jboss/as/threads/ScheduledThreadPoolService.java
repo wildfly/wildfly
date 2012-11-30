@@ -105,6 +105,11 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
         return executor.getTaskCount();
     }
 
+    public int getQueueSize() {
+        final ManagedScheduledExecutorService executor = getValue();
+        return executor.getQueueSize();
+    }
+
     private class ExecutorImpl extends ScheduledThreadPoolExecutor {
 
         ExecutorImpl(final int corePoolSize, final ThreadFactory threadFactory) {

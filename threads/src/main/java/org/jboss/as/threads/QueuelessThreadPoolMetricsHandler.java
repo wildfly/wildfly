@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceName;
 public class QueuelessThreadPoolMetricsHandler extends ThreadPoolMetricsHandler {
 
     public static final List<AttributeDefinition> METRICS = Arrays.asList(PoolAttributeDefinitions.CURRENT_THREAD_COUNT, PoolAttributeDefinitions.LARGEST_THREAD_COUNT,
-            PoolAttributeDefinitions.REJECTED_COUNT);
+            PoolAttributeDefinitions.REJECTED_COUNT,PoolAttributeDefinitions.QUEUE_SIZE);
 
     public QueuelessThreadPoolMetricsHandler(final ServiceName serviceNameBase) {
         super(METRICS, serviceNameBase);
@@ -54,6 +54,8 @@ public class QueuelessThreadPoolMetricsHandler extends ThreadPoolMetricsHandler 
         } else if (attributeName.equals(CommonAttributes.LARGEST_THREAD_COUNT)) {
             context.getResult().set(pool.getLargestThreadCount());
         } else if (attributeName.equals(CommonAttributes.REJECTED_COUNT)) {
+            context.getResult().set(pool.getRejectedCount());
+        }else if (attributeName.equals(CommonAttributes.QUEUE_SIZE)) {
             context.getResult().set(pool.getRejectedCount());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error

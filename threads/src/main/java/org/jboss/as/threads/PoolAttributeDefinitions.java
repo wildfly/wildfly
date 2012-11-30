@@ -83,4 +83,5 @@ public interface PoolAttributeDefinitions {
     AttributeDefinition ACTIVE_COUNT = new SimpleAttributeDefinition(CommonAttributes.ACTIVE_COUNT, ModelType.INT, false);
     AttributeDefinition COMPLETED_TASK_COUNT = new SimpleAttributeDefinition(CommonAttributes.COMPLETED_TASK_COUNT, ModelType.INT, false);
     AttributeDefinition TASK_COUNT = new SimpleAttributeDefinition(CommonAttributes.TASK_COUNT, ModelType.INT, false);
+    AttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinition(CommonAttributes.QUEUE_SIZE, ModelType.INT, false);
 }

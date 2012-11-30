@@ -92,4 +92,8 @@ public class ManagedScheduledExecutorService extends ManagedExecutorService impl
     public long getTaskCount() {
         return executor.getTaskCount();
     }
+
+    public int getQueueSize() {
+        return executor.getQueue().size();
+    }
 }
