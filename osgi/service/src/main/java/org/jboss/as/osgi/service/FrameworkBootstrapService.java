@@ -137,6 +137,11 @@ public class FrameworkBootstrapService implements Service<Void> {
             builder.registerIntegrationService(FrameworkPhase.INIT, new BootstrapBundlesIntegration());
             builder.registerIntegrationService(FrameworkPhase.INIT, new PersistentBundlesIntegration(deploymentTracker));
 
+            // Add integration services from the extensions
+            for(SubsystemExtension extension : extensions) {
+                extension.registerIntegrationServices(builder, subsystemState);
+            }
+
             // Install the services to create the framework
             builder.installServices(FrameworkPhase.CREATE, serviceTarget, verificationHandler);
 

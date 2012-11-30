@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.osgi.AbstractSubsystemExtension;
 import org.jboss.as.osgi.parser.OSGiExtension;
+import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -38,6 +39,8 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.osgi.framework.spi.FrameworkBuilder;
+import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 
 /**
@@ -49,8 +52,9 @@ import org.jboss.osgi.framework.spi.IntegrationServices;
  */
 public class WebExtension extends AbstractSubsystemExtension {
 
-    static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
-    static final String WEB_CONTEXT_PATH = "Web-ContextPath";
+    public static final String OSGI_BUNDLECONTEXT = "osgi-bundlecontext";
+    public static final String WEB_CONTEXT_PATH = "Web-ContextPath";
+    public static final String WEBBUNDLE_PREFIX = "webbundle://";
 
     @Override
     public void performBoottime(final OperationContext context, final ModelNode operation, final ModelNode model,
@@ -68,10 +72,16 @@ public class WebExtension extends AbstractSubsystemExtension {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_OSGI_WEBBUNDLE, new WebBundleStructureProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REMOUNT_EXPLODED, new RemountDeploymentRootProcessor());
                 processorTarget.addDeploymentProcessor(OSGiExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAB_DEPLOYMENT, new WebContextActivationProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
+    }
+
+    @Override
+    public void registerIntegrationServices(FrameworkBuilder builder, SubsystemState subsystemState) {
+        builder.registerIntegrationService(FrameworkPhase.CREATE, new DeploymentProviderIntegration());
     }
 
     @Override

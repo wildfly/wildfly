@@ -42,22 +42,44 @@ import org.jboss.as.server.deployment.ManifestHelper;
  */
 public class WarDeploymentInitializingProcessor implements DeploymentUnitProcessor {
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         String deploymentName = deploymentUnit.getName().toLowerCase(Locale.ENGLISH);
-        Manifest manifest = deploymentUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (deploymentName.endsWith(".war") || deploymentName.endsWith(".wab")) {
             DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+            return;
         }
-        // JAR deployments may contain OSGi metadata with a "Web-ContextPath" header
-        // This qualifies them as OSGi Web Application Bundle (WAB)
-        else if (manifest != null && deploymentName.endsWith(".jar")) {
-            if (ManifestHelper.hasMainAttributeValue(manifest, "Web-ContextPath")) {
-                DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
-            }
+
+        if (isWebApplicationBundle(deploymentUnit)) {
+            DeploymentTypeMarker.setType(DeploymentType.WAR, deploymentUnit);
+            return;
         }
     }
 
+    public static boolean isWebApplicationBundle(DeploymentUnit depUnit) {
+
+        // JAR deployments may contain OSGi metadata with a "Web-ContextPath" header
+        // This qualifies them as OSGi Web Application Bundle (WAB)
+        String deploymentName = depUnit.getName().toLowerCase(Locale.ENGLISH);
+        Manifest manifest = depUnit.getAttachment(Attachments.OSGI_MANIFEST);
+        if (manifest != null && deploymentName.endsWith(".jar")) {
+            if (ManifestHelper.hasMainAttributeValue(manifest, "Web-ContextPath")) {
+                return true;
+            }
+        }
+
+        // The webbundle scheme can also be used for plain war deployemnts that are then
+        // transformed into an OSGi Web Application Bundle (WAB)
+        if (deploymentName.startsWith("webbundle://")) {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 }
