@@ -26,9 +26,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -126,6 +128,26 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         op = Operations.createWriteAttributeOperation(loggerAddress.toModelNode(), CommonAttributes.FILTER_SPEC, filterExpression);
         executeTransformOperation(mainServices, modelVersion, op);
         validateLegacyFilter(mainServices, modelVersion, loggerAddress.toModelNode(), filterExpression);
+
+        // create a new handler
+        final PathAddress handlerAddress = createFileHandlerAddress("fh");
+        op = Operations.createAddOperation(handlerAddress.toModelNode());
+        op.get(CommonAttributes.FILE.getName(), PathResourceDefinition.RELATIVE_TO.getName()).set("jboss.server.log.dir");
+        op.get(CommonAttributes.FILE.getName(), PathResourceDefinition.PATH.getName()).set("fh.log");
+        op.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
+        executeTransformOperation(mainServices, modelVersion, op);
+
+        // add/remove the handler to the root logger
+        final PathAddress rootLoggerAddress = createRootLoggerAddress();
+        final String handlerName = handlerAddress.getLastElement().getValue();
+        addRemoveHandler(mainServices, modelVersion, rootLoggerAddress.toModelNode(), CommonAttributes.HANDLERS, handlerName);
+
+        // add/remove the handler to a logger
+        addRemoveHandler(mainServices, modelVersion, loggerAddress.toModelNode(), CommonAttributes.HANDLERS, handlerName);
+
+        // add/remove from an async-handler
+        final PathAddress asyncHandlerAddress = createAsyncHandlerAddress("async");
+        addRemoveHandler(mainServices, modelVersion, asyncHandlerAddress.toModelNode(), CommonAttributes.SUBHANDLERS, handlerName);
     }
 
     private static ModelNode executeTransformOperation(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode op) throws OperationFailedException {
@@ -133,6 +155,28 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         ModelNode result = kernelServices.executeOperation(modelVersion, transformedOp);
         Assert.assertTrue(result.asString(), Operations.successful(result));
         return result;
+    }
+
+    private static void addRemoveHandler(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode address,
+                                         final AttributeDefinition handlerAttribute, final String handlerName) throws OperationFailedException {
+        // Add the handler
+        ModelNode op = Operations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, address);
+        op.get(CommonAttributes.HANDLER_NAME.getName()).set(handlerName);
+        executeTransformOperation(kernelServices, modelVersion, op);
+
+        // Verify the handler was added
+        final ModelNode readOp = Operations.createReadAttributeOperation(address, handlerAttribute);
+        ModelNode result = executeTransformOperation(kernelServices, modelVersion, readOp);
+        Assert.assertTrue("Handler (" + handlerName + ") not found on the resource: " + address , Operations.readResultAsList(result).contains(handlerName));
+
+        // Remove the handler
+        op = Operations.createOperation(CommonAttributes.REMOVE_HANDLER_OPERATION_NAME, address);
+        op.get(CommonAttributes.HANDLER_NAME.getName()).set(handlerName);
+        executeTransformOperation(kernelServices, modelVersion, op);
+
+        // Verify the handler was removed
+        result = executeTransformOperation(kernelServices, modelVersion, readOp);
+        Assert.assertFalse("Handler (" + handlerName + ") was not removed on the resource: " + address , Operations.readResultAsList(result).contains(handlerName));
     }
 
     private static void validateLegacyFormatter(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode address) throws OperationFailedException {

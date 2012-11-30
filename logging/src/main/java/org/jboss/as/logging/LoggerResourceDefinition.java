@@ -31,9 +31,11 @@ import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.Logging.join;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -43,10 +45,13 @@ import org.jboss.as.logging.LoggingOperations.ReadFilterOperationStepHandler;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class LoggerResourceDefinition extends SimpleResourceDefinition {
+
     public static final String CHANGE_LEVEL_OPERATION_NAME = "change-log-level";
-    public static final String ADD_HANDLER_OPERATION_NAME = "assign-handler";
-    public static final String REMOVE_HANDLER_OPERATION_NAME = "unassign-handler";
+    public static final String LEGACY_ADD_HANDLER_OPERATION_NAME = "assign-handler";
+    public static final String LEGACY_REMOVE_HANDLER_OPERATION_NAME = "unassign-handler";
     static final PathElement LOGGER_PATH = PathElement.pathElement(CommonAttributes.LOGGER);
+
+    static final ResourceDescriptionResolver LOGGER_RESOLVER = LoggingExtension.getResourceDescriptionResolver(CommonAttributes.LOGGER);
 
     static final AttributeDefinition[] ATTRIBUTES = {
             CATEGORY,
@@ -67,9 +72,35 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
             FILTER,
     };
 
+    static final OperationDefinition CHANGE_LEVEL_OPERATION = new SimpleOperationDefinitionBuilder(CHANGE_LEVEL_OPERATION_NAME, LOGGER_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .setParameters(CommonAttributes.LEVEL)
+            .build();
+
+    static final OperationDefinition LEGACY_ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(LEGACY_ADD_HANDLER_OPERATION_NAME, LOGGER_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .build();
+
+    static final OperationDefinition LEGACY_REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(LEGACY_REMOVE_HANDLER_OPERATION_NAME, LOGGER_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .build();
+
+    static final OperationDefinition ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_HANDLER_OPERATION_NAME, LOGGER_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .build();
+
+    static final OperationDefinition REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_HANDLER_OPERATION_NAME, LOGGER_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .build();
+
     /**
      * A step handler to add a logger.
+     *
+     * @deprecated fix rollback handlers
      */
+    @Deprecated
     static LoggerOperations.LoggerAddOperationStepHandler ADD_LOGGER = new LoggerOperations.LoggerAddOperationStepHandler(LEGACY_ATTRIBUTES);
 
     private final AttributeDefinition[] writableAttributes;
@@ -100,11 +131,11 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
-        final ResourceDescriptionResolver resolver = getResourceDescriptionResolver();
 
-        registration.registerOperationHandler(new SimpleOperationDefinition(CHANGE_LEVEL_OPERATION_NAME, resolver, CommonAttributes.LEVEL), LoggerOperations.CHANGE_LEVEL);
-        registration.registerOperationHandler(new SimpleOperationDefinition(ADD_HANDLER_OPERATION_NAME, resolver, CommonAttributes.HANDLER_NAME), LoggerOperations.ADD_HANDLER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(REMOVE_HANDLER_OPERATION_NAME, resolver, CommonAttributes.HANDLER_NAME), LoggerOperations.REMOVE_HANDLER);
-
+        registration.registerOperationHandler(CHANGE_LEVEL_OPERATION, LoggerOperations.CHANGE_LEVEL);
+        registration.registerOperationHandler(ADD_HANDLER_OPERATION, LoggerOperations.ADD_HANDLER);
+        registration.registerOperationHandler(REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
+        registration.registerOperationHandler(LEGACY_ADD_HANDLER_OPERATION, LoggerOperations.ADD_HANDLER);
+        registration.registerOperationHandler(LEGACY_REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
     }
 }

@@ -36,9 +36,11 @@ import static org.jboss.as.logging.HandlerOperations.LogHandlerWriteAttributeHan
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -53,6 +55,8 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     public static final String UPDATE_OPERATION_NAME = "update-properties";
     public static final String CHANGE_LEVEL_OPERATION_NAME = "change-log-level";
 
+    static final ResourceDescriptionResolver HANDLER_RESOLVER = LoggingExtension.getResourceDescriptionResolver(CommonAttributes.HANDLER.getName());
+
     static final AttributeDefinition[] DEFAULT_ATTRIBUTES = {
             LEVEL,
             ENCODING,
@@ -63,6 +67,15 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] LEGACY_ATTRIBUTES = {
             FILTER,
     };
+
+    static final SimpleOperationDefinition ENABLE_HANDLER = new SimpleOperationDefinitionBuilder(ENABLE, HANDLER_RESOLVER).build();
+
+    static final SimpleOperationDefinition DISABLE_HANDLER = new SimpleOperationDefinitionBuilder(DISABLE, HANDLER_RESOLVER).build();
+
+    static final SimpleOperationDefinition CHANGE_LEVEL = new SimpleOperationDefinitionBuilder(CHANGE_LEVEL_OPERATION_NAME, HANDLER_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .setParameters(CommonAttributes.LEVEL)
+            .build();
 
     private final LogHandlerWriteAttributeHandler writeHandler;
     private final AttributeDefinition[] writableAttributes;
@@ -88,7 +101,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                                         final AttributeDefinition[] writableAttributes,
                                         final ConfigurationProperty<?>... constructionProperties) {
         super(path,
-                LoggingExtension.getResourceDescriptionResolver("handler"),
+                HANDLER_RESOLVER,
                 new HandlerAddOperationStepHandler(type, addAttributes, constructionProperties),
                 HandlerOperations.REMOVE_HANDLER);
         this.writableAttributes = writableAttributes;
@@ -116,10 +129,14 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(final ManagementResourceRegistration registration) {
         super.registerOperations(registration);
-        final ResourceDescriptionResolver resolver = getResourceDescriptionResolver();
-        registration.registerOperationHandler(new SimpleOperationDefinition(ENABLE, resolver), HandlerOperations.ENABLE_HANDLER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(DISABLE, resolver), HandlerOperations.DISABLE_HANDLER);
-        registration.registerOperationHandler(new SimpleOperationDefinition(CHANGE_LEVEL_OPERATION_NAME, resolver, CommonAttributes.LEVEL), HandlerOperations.CHANGE_LEVEL);
-        registration.registerOperationHandler(new SimpleOperationDefinition(UPDATE_OPERATION_NAME, resolver, writableAttributes), new HandlerUpdateOperationStepHandler(writableAttributes));
+
+        registration.registerOperationHandler(ENABLE_HANDLER, HandlerOperations.ENABLE_HANDLER);
+        registration.registerOperationHandler(DISABLE_HANDLER, HandlerOperations.DISABLE_HANDLER);
+        registration.registerOperationHandler(CHANGE_LEVEL, HandlerOperations.CHANGE_LEVEL);
+        final SimpleOperationDefinition updateProperties = new SimpleOperationDefinitionBuilder(UPDATE_OPERATION_NAME, HANDLER_RESOLVER)
+                .setDeprecated(ModelVersion.create(1, 2, 0))
+                .setParameters(writableAttributes)
+                .build();
+        registration.registerOperationHandler(updateProperties, new HandlerUpdateOperationStepHandler(writableAttributes));
     }
 }

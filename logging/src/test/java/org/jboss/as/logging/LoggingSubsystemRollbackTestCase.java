@@ -158,7 +158,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // Add the handler to a logger
         final PathAddress loggerAddress = createLoggerAddress("org.jboss.as.logging");
-        op = Operations.createOperation(LoggerResourceDefinition.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
+        op = Operations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
         op.get(CommonAttributes.HANDLER_NAME.getName()).set(consoleHandler.getLastElement().getValue());
         result = kernelServices.executeOperation(op);
         Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
@@ -224,7 +224,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
 
         // Add the handler to a logger
         final PathAddress loggerAddress = createLoggerAddress("org.jboss.as.logging");
-        op = Operations.createOperation(LoggerResourceDefinition.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
+        op = Operations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, loggerAddress.toModelNode());
         op.get(CommonAttributes.HANDLER_NAME.getName()).set(consoleHandler.getLastElement().getValue());
         result = kernelServices.executeOperation(op);
         Assert.assertTrue(Operations.getFailureDescription(result), Operations.successful(result));
