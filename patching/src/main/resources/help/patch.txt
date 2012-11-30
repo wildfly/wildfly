@@ -35,6 +35,9 @@ ACTION: rollback
 
     Rollback a patch that has been applied
 
+    NOTE: by default this operation will restore all *.xml files in the configuration directories
+          to the state when the patch was applied.
+
     patch rollback --patch-id=<id>
       [--keep-configuration]
       [--rollback-to]
@@ -47,14 +50,14 @@ ACTION: rollback
     --patch-id=<id>      - the ID of the patch to rollback
 
     --keep-configuration - The argument does not expect any value and is
-                           optional.
+                           optional. The default is 'true'.
                            It signifies that the rollback operation will not
                            touch the installation configurations and will not
                            restore the snapshots that were taken when the patch
                            was applied.
 
     --rollback-to        - The argument does not expect any value and is
-                           optional.
+                           optional. The default is 'false'.
                            If the patch to rollback is a one-off patch, it
                            signifies that the rollback operation will also
                            rollback all the other one-off patches that have
@@ -76,6 +79,12 @@ DESCRIPTION
     If it is not connected, it will patch the command-line interface's own
     installation.
 
+    Applying and rolling back a patch will run consistency checks for all modified items.
+    In case file conflicts are detected the operation will fail and the conflicting items
+    will be part of the 'failure-description' grouped by type (bundles, modules, misc).
+    In order to resolve the conflicts the operation has to be invoked again with additional
+    arguments describing how the patch tool should deal with those conflicts.
+
 ARGUMENTS:
 
  --host=<host>       - may appear only in the domain mode and is not allowed
@@ -85,18 +94,18 @@ ARGUMENTS:
 
  --override          - The value is a comma-separated list of the miscellaneous
                        items in the patch that can be overridden on the server
-                       wether the item reports a confict or not.
+                       whether the item reports a conflict or not.
 
  --preserve          - The value is a comma-separated list of the miscellaneous
                        items that must be preserved and not modified by
                        applying or rolling back a patch.
 
  --override-all      - The argument does not expect any value and is
-                       optional.
+                       optional. The default is 'false'.
                        It signifies to bypass any content verification on the
                        miscellaneous items changed by the patch.
 
- --override-modules - The argument does not expect any value and is
-                       optional.
+ --override-modules -  The argument does not expect any value and is
+                       optional. The default is 'false'.
                        It signifies to bypass any content verification on the
-                       modules and OSGi bundles changed by the patch.
+                       modules and OSGi bundles affected by the patch.
