@@ -25,8 +25,10 @@ package org.jboss.as.logging;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -36,6 +38,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 abstract class AbstractFileHandlerDefinition extends AbstractHandlerDefinition {
 
     public static final String CHANGE_FILE_OPERATION_NAME = "change-file";
+
+    static final SimpleOperationDefinition CHANGE_FILE = new SimpleOperationDefinitionBuilder(CHANGE_FILE_OPERATION_NAME, HANDLER_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
+            .setParameters(CommonAttributes.FILE)
+            .build();
+
     private final ResolvePathHandler resolvePathHandler;
 
     protected AbstractFileHandlerDefinition(final PathElement path, final Class<? extends Handler> type,
@@ -48,8 +56,7 @@ abstract class AbstractFileHandlerDefinition extends AbstractHandlerDefinition {
     @Override
     public void registerOperations(final ManagementResourceRegistration registration) {
         super.registerOperations(registration);
-        registration.registerOperationHandler(new SimpleOperationDefinition(CHANGE_FILE_OPERATION_NAME, getResourceDescriptionResolver(), CommonAttributes.FILE),
-                HandlerOperations.CHANGE_FILE);
+        registration.registerOperationHandler(CHANGE_FILE, HandlerOperations.CHANGE_FILE);
         if (resolvePathHandler != null)
             registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
     }

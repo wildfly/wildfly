@@ -356,7 +356,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
 
         final ModelNode node = new ModelNode();
-        node.get(OP).set(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME);
+        node.get(OP).set(ADD);
         node.get(OP_ADDR).set(address.toModelNode()).add(ROOT_LOGGER, ROOT_LOGGER_ATTRIBUTE_NAME);
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());

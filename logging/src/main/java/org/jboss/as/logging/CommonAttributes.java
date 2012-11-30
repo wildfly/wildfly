@@ -342,4 +342,8 @@ public interface CommonAttributes {
             .setDeprecated(ModelVersion.create(1, 2, 0))
             .setAllowNull(true)
             .build();
+
+    String ADD_HANDLER_OPERATION_NAME = "add-handler";
+
+    String REMOVE_HANDLER_OPERATION_NAME = "remove-handler";
 }

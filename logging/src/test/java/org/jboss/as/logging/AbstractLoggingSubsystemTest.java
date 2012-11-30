@@ -125,6 +125,14 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
         return createAddress(profileName, CommonAttributes.LOGGER, name);
     }
 
+    static PathAddress createAsyncHandlerAddress(final String name) {
+        return createAddress(CommonAttributes.ASYNC_HANDLER, name);
+    }
+
+    static PathAddress createAsyncHandlerAddress(final String profileName, final String name) {
+        return createAddress(profileName, CommonAttributes.ASYNC_HANDLER, name);
+    }
+
     static PathAddress createConsoleHandlerAddress(final String name) {
         return createAddress(CommonAttributes.CONSOLE_HANDLER, name);
     }

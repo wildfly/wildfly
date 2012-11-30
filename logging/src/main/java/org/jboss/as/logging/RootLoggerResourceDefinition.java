@@ -29,6 +29,7 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.Logging.join;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -63,34 +64,44 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
     };
 
     static final SimpleOperationDefinition ROOT_LOGGER_REMOVE_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_REMOVE_OPERATION_NAME, ROOT_RESOLVER)
-            .setAttributeResolver(LoggingExtension.HANDLER_ATTRIBUTE_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
             .build();
     static final OperationDefinition ADD_ROOT_LOGGER_DEFINITION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_ADD_OPERATION_NAME, ROOT_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
             .setParameters(ATTRIBUTES)
-            .setAttributeResolver(LoggingExtension.HANDLER_ATTRIBUTE_RESOLVER)
             .build();
     static final OperationDefinition CHANGE_LEVEL_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_CHANGE_LEVEL_OPERATION_NAME, ROOT_RESOLVER)
-            .setAttributeResolver(LoggingExtension.HANDLER_ATTRIBUTE_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
             .setParameters(CommonAttributes.LEVEL)
             .build();
 
-    static final OperationDefinition ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+    static final OperationDefinition LEGACY_ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
             .setParameters(CommonAttributes.HANDLER_NAME)
             .build();
 
-    static final OperationDefinition REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+    static final OperationDefinition LEGACY_REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+            .setDeprecated(ModelVersion.create(1, 2, 0))
             .setParameters(CommonAttributes.HANDLER_NAME)
             .build();
+
+    static final OperationDefinition ADD_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .build();
+
+    static final OperationDefinition REMOVE_HANDLER_OPERATION = new SimpleOperationDefinitionBuilder(CommonAttributes.REMOVE_HANDLER_OPERATION_NAME, ROOT_RESOLVER)
+            .setParameters(CommonAttributes.HANDLER_NAME)
+            .build();
+
     /**
      * A step handler to add a logger.
+     * @deprecated the rollback handlers need to be fixed
      */
+    @Deprecated
     static final LoggerOperations.LoggerAddOperationStepHandler ADD_ROOT_LOGGER = new LoggerOperations.LoggerAddOperationStepHandler(ATTRIBUTES);
-    /**
-     * Write attribute handlers.
-     */
-    static final LoggerOperations.LoggerWriteAttributeHandler ROOT_LOGGER_WRITE_HANDLER = new LoggerOperations.LoggerWriteAttributeHandler(ATTRIBUTES);
 
     private final AttributeDefinition[] attributes;
+    private final OperationStepHandler addHandler;
     private final OperationStepHandler writeHandler;
 
     public RootLoggerResourceDefinition(final boolean includeLegacy) {
@@ -99,6 +110,7 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
                 (includeLegacy ? new LoggerOperations.LoggerAddOperationStepHandler(join(ATTRIBUTES, LEGACY_ATTRIBUTES)) : new LoggerOperations.LoggerAddOperationStepHandler(ATTRIBUTES)),
                 LoggerOperations.REMOVE_LOGGER);
         attributes = (includeLegacy ? join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES);
+        addHandler = new LoggerOperations.LoggerAddOperationStepHandler(attributes);
         writeHandler = new LoggerOperations.LoggerWriteAttributeHandler(attributes);
     }
 
@@ -117,10 +129,12 @@ public class RootLoggerResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration registration) {
         super.registerOperations(registration);
 
-        registration.registerOperationHandler(ADD_ROOT_LOGGER_DEFINITION, RootLoggerResourceDefinition.ADD_ROOT_LOGGER);
+        registration.registerOperationHandler(ADD_ROOT_LOGGER_DEFINITION, addHandler);
         registration.registerOperationHandler(ROOT_LOGGER_REMOVE_OPERATION, LoggerOperations.REMOVE_LOGGER);
         registration.registerOperationHandler(CHANGE_LEVEL_OPERATION, LoggerOperations.CHANGE_LEVEL);
         registration.registerOperationHandler(ADD_HANDLER_OPERATION, LoggerOperations.ADD_HANDLER);
         registration.registerOperationHandler(REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
+        registration.registerOperationHandler(LEGACY_ADD_HANDLER_OPERATION, LoggerOperations.ADD_HANDLER);
+        registration.registerOperationHandler(LEGACY_REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
     }
 }

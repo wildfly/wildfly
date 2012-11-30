@@ -38,7 +38,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -66,9 +65,6 @@ public class LoggingExtension implements Extension {
     static final String SUBSYSTEM_NAME = "logging";
 
     static final PathElement LOGGING_PROFILE_PATH = PathElement.pathElement(CommonAttributes.LOGGING_PROFILE);
-
-
-    static final ResourceDescriptionResolver HANDLER_ATTRIBUTE_RESOLVER = getResourceDescriptionResolver(CommonAttributes.HANDLER.getName());
 
     static final ContextClassLoaderLogContextSelector CONTEXT_SELECTOR = new ContextClassLoaderLogContextSelector();
 
@@ -144,11 +140,14 @@ public class LoggingExtension implements Extension {
 
     private void registerTransformersSubModels(final TransformersSubRegistration registration, final TransformersSubRegistration loggingProfileReg) {
         registerTransformersSubModels(registration, loggingProfileReg, RootLoggerResourceDefinition.ROOT_LOGGER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
-                ModelDescriptionConstants.ADD, RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+                ModelDescriptionConstants.ADD, RootLoggerResourceDefinition.ROOT_LOGGER_ADD_OPERATION_NAME, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION,
+                CommonAttributes.ADD_HANDLER_OPERATION_NAME, CommonAttributes.REMOVE_HANDLER_OPERATION_NAME);
         registerTransformersSubModels(registration, loggingProfileReg, LoggerResourceDefinition.LOGGER_PATH, new LoggingResourceTransformer(CommonAttributes.CATEGORY, CommonAttributes.FILTER_SPEC),
-                ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+                ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION,
+                CommonAttributes.ADD_HANDLER_OPERATION_NAME, CommonAttributes.REMOVE_HANDLER_OPERATION_NAME);
         registerTransformersSubModels(registration, loggingProfileReg, AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
-                ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
+                ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME,
+                CommonAttributes.ADD_HANDLER_OPERATION_NAME, CommonAttributes.REMOVE_HANDLER_OPERATION_NAME);
         registerTransformersSubModels(registration, loggingProfileReg, ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
                 ModelDescriptionConstants.ADD, ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION, AbstractHandlerDefinition.UPDATE_OPERATION_NAME);
         registerTransformersSubModels(registration, loggingProfileReg, FileHandlerResourceDefinition.FILE_HANDLER_PATH, new LoggingResourceTransformer(CommonAttributes.NAME, CommonAttributes.FILTER_SPEC),
@@ -179,11 +178,31 @@ public class LoggingExtension implements Extension {
 
         @Override
         protected ModelNode transform(final TransformationContext context, final PathAddress address, final ModelNode operation) {
+            final String key = address.getLastElement().getKey();
             final String name = address.getLastElement().getValue();
             final String operationName = operation.get(ModelDescriptionConstants.OP).asString();
 
-            // write-attribute needs to fix the formatter and the filter-spec
-            if (operationName.equals(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
+            // add-handler and remove-handler need to be rewritten
+            if (operationName.equals(CommonAttributes.ADD_HANDLER_OPERATION_NAME)) {
+                // Determine the resource
+                if (key.equals(CommonAttributes.ROOT_LOGGER)) {
+                    operation.get(ModelDescriptionConstants.OP).set(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME);
+                } else if (key.equals(CommonAttributes.LOGGER)) {
+                    operation.get(ModelDescriptionConstants.OP).set(LoggerResourceDefinition.LEGACY_ADD_HANDLER_OPERATION_NAME);
+                } else if (key.equals(CommonAttributes.ASYNC_HANDLER)) {
+                    operation.get(ModelDescriptionConstants.OP).set(AsyncHandlerResourceDefinition.ADD_SUBHANDLER_OPERATION_NAME);
+                }
+            } else if (operationName.equals(CommonAttributes.REMOVE_HANDLER_OPERATION_NAME)) {
+                // Determine the resource
+                if (key.equals(CommonAttributes.ROOT_LOGGER)) {
+                    operation.get(ModelDescriptionConstants.OP).set(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME);
+                } else if (key.equals(CommonAttributes.LOGGER)) {
+                    operation.get(ModelDescriptionConstants.OP).set(LoggerResourceDefinition.LEGACY_REMOVE_HANDLER_OPERATION_NAME);
+                } else if (key.equals(CommonAttributes.ASYNC_HANDLER)) {
+                    operation.get(ModelDescriptionConstants.OP).set(AsyncHandlerResourceDefinition.REMOVE_SUBHANDLER_OPERATION_NAME);
+                }
+            } else if (operationName.equals(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)) {
+                // write-attribute needs to fix the formatter and the filter-spec
                 // Get the attribute being written to
                 final String attributeName = operation.get(ModelDescriptionConstants.NAME).asString();
                 // Check for the color in the pattern format
@@ -197,8 +216,6 @@ public class LoggingExtension implements Extension {
                     operation.get(ModelDescriptionConstants.VALUE).set(Filters.filterSpecToFilter(filterExpression));
                 }
             } else if (operationName.equals(ModelDescriptionConstants.ADD)) {
-                // Get the resource key
-                final String key = address.getLastElement().getKey();
                 // Category or name is required for add operations
                 if (CommonAttributes.LOGGER.equals(key)) {
                     operation.get(CommonAttributes.CATEGORY.getName()).set(name);
@@ -235,6 +252,7 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.AUTOFLUSH.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.CLASS.getName(), "logging.custom-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.ENCODING.getName(), "logging.common");
+            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILE.getName(), "logging.handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER_SPEC.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FORMATTER.getName(), "logging.common");
