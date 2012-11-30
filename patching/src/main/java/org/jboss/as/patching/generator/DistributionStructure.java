@@ -252,7 +252,14 @@ public interface DistributionStructure {
             registerStandardModuleSearchPath("", MODULES.getPath());
             registerStandardBundleSearchPath("", BUNDLES.getPath());
             registerIgnoredPath("standalone/configuration");
+            registerIgnoredPath("standalone/data");
+            registerIgnoredPath("standalone/log");
+            registerIgnoredPath("standalone/tmp");
             registerIgnoredPath("domain/configuration");
+            registerIgnoredPath("domain/data");
+            registerIgnoredPath("domain/log");
+            registerIgnoredPath("domain/servers");
+            registerIgnoredPath("domain/tmp");
         }
 
         @Override
