@@ -106,6 +106,10 @@ public class ManagedQueueExecutorService extends ManagedExecutorService implemen
         return executor.getRejectedCount();
     }
 
+    public int getQueueSize() {
+        return executor.getQueueSize();
+    }
+
     <A> void addShutdownListener(final EventListener<A> shutdownListener, final A attachment) {
         executor.addShutdownListener(shutdownListener, attachment);
     }

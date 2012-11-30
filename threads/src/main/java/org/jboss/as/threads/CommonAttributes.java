@@ -47,6 +47,7 @@ public interface CommonAttributes {
     String PROPERTY = "property";
     String QUEUELESS_THREAD_POOL = "queueless-thread-pool";
     String QUEUE_LENGTH = "queue-length";
+    String QUEUE_SIZE = "queue-size";
     String REJECTED_COUNT = "rejected-count";
     String SCHEDULED_THREAD_POOL = "scheduled-thread-pool";
     String TASK_COUNT = "task-count";

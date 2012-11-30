@@ -89,6 +89,10 @@ public class ManagedQueuelessExecutorService extends ManagedExecutorService impl
         return executor.getLargestThreadCount();
     }
 
+    public int getQueueSize(){
+        return this.executor.getQueueSize();
+    }
+
     <A> void addShutdownListener(final EventListener<A> shutdownListener, final A attachment) {
         executor.addShutdownListener(shutdownListener, attachment);
     }
