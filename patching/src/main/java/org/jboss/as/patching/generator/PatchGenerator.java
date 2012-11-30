@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -81,11 +82,11 @@ public class PatchGenerator {
     }
 
     private final File patchConfigFile;
-    private final File oldRoot;
-    private final File newRoot;
+    private File oldRoot;
+    private File newRoot;
     private DistributionStructure oldStructure;
     private DistributionStructure newStructure;
-    private final File patchFile;
+    private File patchFile;
     private final Map<DistributionContentItem, ContentModification> bundleAdds = new TreeMap<DistributionContentItem, ContentModification>();
     private final Map<DistributionContentItem, ContentModification> bundleUpdates = new TreeMap<DistributionContentItem, ContentModification>();
     private final Map<DistributionContentItem, ContentModification> bundleRemoves = new TreeMap<DistributionContentItem, ContentModification>();
@@ -109,10 +110,35 @@ public class PatchGenerator {
         try {
             PatchConfig patchConfig = parsePatchConfig();
 
-            createTempStructure(patchConfig);
-
             this.oldStructure = patchConfig.getOriginalDistributionStructure();
             this.newStructure = patchConfig.getUpdatedDistributionStructure();
+
+            Set<String> required = new TreeSet<String>();
+            if (newRoot == null) {
+                newRoot = findDefaultNewRoot();
+                if (newRoot == null) {
+                    required.add("--updated-dist");
+                }
+            }
+            if (oldRoot == null) {
+                oldRoot = findDefaultOldRoot(patchConfig);
+                if (oldRoot == null) {
+                    required.add("--applies-to-dist");
+                }
+            }
+            if (patchFile == null) {
+                if (newRoot != null) {
+                    patchFile = new File(newRoot, patchConfig.getPatchId() + ".par");
+                } else {
+                    required.add("--output-file");
+                }
+            }
+            if (!required.isEmpty()) {
+                System.err.printf(PatchMessages.MESSAGES.missingRequiredArgs(required));
+                usage();
+            }
+
+            createTempStructure(patchConfig);
 
             if (patchConfig.isGenerateByDiff()) {
                 analyzeDifferences(patchConfig);
@@ -145,6 +171,86 @@ public class PatchGenerator {
         } finally {
             IoUtils.safeClose(fis);
         }
+    }
+
+    private File findDefaultNewRoot() {
+        File root = new File(System.getProperty("user.dir"));
+        if (root.getName().equals("bin")) {
+            root = root.getParentFile();
+        }
+        // See if this root has a MODULE_ROOT child and an IGNORED child; if so it looks like an AS
+        boolean[] modIgnored = new boolean[2];
+        DistributionContentItem newDistRoot = DistributionContentItem.createDistributionRoot();
+        File[] children = root.listFiles();
+        if (children != null) {
+            for (File child : children) {
+                if (processModIgnored(child, newDistRoot, newStructure, modIgnored)) {
+                    break;
+                }
+            }
+        }
+
+        return (modIgnored[0] && modIgnored[1]) ? root : null;
+    }
+
+    private static boolean processModIgnored(File file, DistributionContentItem parent, DistributionStructure structure, boolean[] modIgnored) {
+
+        // Only bother processing module stuff if we haven't already found a module root
+        if (!modIgnored[0] || parent.getType() != DistributionContentItem.Type.MODULE_ROOT
+                || parent.getType() != DistributionContentItem.Type.MODULE_PARENT) {
+            DistributionContentItem item = structure.getContentItem(file, parent);
+            if (item.getType() == DistributionContentItem.Type.MODULE_ROOT) {
+                modIgnored[0] = true;
+            } else if (item.getType() == DistributionContentItem.Type.IGNORED) {
+                modIgnored[1] = true;
+            }
+            if (item.getType() != DistributionContentItem.Type.IGNORED) {
+                File[] children = file.listFiles();
+                if (children != null) {
+                    for (File child : children) {
+                        if (processModIgnored(child, item, structure, modIgnored)) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return modIgnored[0] && modIgnored[1];
+    }
+
+    private File findDefaultOldRoot(PatchConfig patchConfig) {
+        if (newRoot == null) {
+            return null;
+        }
+        File rootParent = newRoot.getParentFile();
+        if (rootParent == null) {
+            return null;
+        }
+
+        for (String appliesTo : patchConfig.getAppliesTo()) {
+            File root = new File(rootParent, appliesTo);
+            if (!root.exists()) {
+                continue;
+            }
+
+            // See if this root has a MODULE_ROOT child and an IGNORED child; if so it looks like an AS
+            boolean[] modIgnored = new boolean[2];
+            DistributionContentItem newDistRoot = DistributionContentItem.createDistributionRoot();
+            File[] children = root.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    if (processModIgnored(child, newDistRoot, oldStructure, modIgnored)) {
+                        break;
+                    }
+                }
+            }
+
+            if (modIgnored[0] && modIgnored[1]) {
+                return root;
+            }
+        }
+        return null;
     }
 
     private void createTempStructure(PatchConfig patchConfig) {
@@ -679,8 +785,6 @@ public class PatchGenerator {
         File newFile = null;
         File patchFile = null;
 
-        Set<String> required = new HashSet<String>();
-        Collections.addAll(required, "--applies-to-dist", "--output-file", "--patch-config", "--updated-dist");
         final int argsLength = args.length;
         for (int i = 0; i < argsLength; i++) {
             final String arg = args[i];
@@ -705,7 +809,6 @@ public class PatchGenerator {
                         usage();
                         return null;
                     }
-                    required.remove("--applies-to-dist");
                 } else if (arg.startsWith("--updated-dist=")) {
                     String val = arg.substring("--updated-dist=".length());
                     newFile = new File(val);
@@ -718,7 +821,6 @@ public class PatchGenerator {
                         usage();
                         return null;
                     }
-                    required.remove("--updated-dist");
                 } else if (arg.startsWith("--patch-config=")) {
                     String val = arg.substring("--patch-config=".length());
                     patchConfig = new File(val);
@@ -731,7 +833,6 @@ public class PatchGenerator {
                         usage();
                         return null;
                     }
-                    required.remove("--patch-config");
                 } else if (arg.startsWith("--output-file=")) {
                     String val = arg.substring("--output-file=".length());
                     patchFile = new File(val);
@@ -740,7 +841,6 @@ public class PatchGenerator {
                         usage();
                         return null;
                     }
-                    required.remove("--output-file");
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf(PatchMessages.MESSAGES.argumentExpected(arg));
@@ -749,8 +849,8 @@ public class PatchGenerator {
             }
         }
 
-        if (!required.isEmpty()) {
-            System.err.printf(PatchMessages.MESSAGES.missingRequiredArgs(required));
+        if (patchConfig == null) {
+            System.err.printf(PatchMessages.MESSAGES.missingRequiredArgs(Collections.singleton("--patch-config")));
             usage();
             return null;
         }
