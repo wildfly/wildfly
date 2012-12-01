@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -40,12 +41,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLES_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingOneOf;
@@ -84,6 +87,7 @@ import org.jboss.as.domain.management.security.AbstractPlugInAuthResourceDefinit
 import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.LocalAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PlugInAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthenticationResourceDefinition;
@@ -258,8 +262,14 @@ public class ManagementXml {
                         case DOMAIN_1_2:
                             parseSecurityRealm_1_1(reader, address, expectedNs, list);
                             break;
-                        default:
+                        case DOMAIN_1_3:
                             parseSecurityRealm_1_3(reader, address, expectedNs, list);
+                            break;
+                        case DOMAIN_1_4:
+                            parseSecurityRealm_1_4(reader, address, expectedNs, list);
+                            break;
+                        default:
+                            parseSecurityRealm_1_4(reader, address, expectedNs, list);
                             break;
                     }
                     break;
@@ -375,6 +385,45 @@ public class ManagementXml {
             }
         }
     }
+
+    private void parseSecurityRealm_1_4(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+            throws XMLStreamException {
+        requireSingleAttribute(reader, Attribute.NAME.getLocalName());
+        // After double checking the name of the only attribute we can retrieve it.
+        final String realmName = reader.getAttributeValue(0);
+
+        final ModelNode realmAddress = address.clone();
+        realmAddress.add(SECURITY_REALM, realmName);
+        final ModelNode add = new ModelNode();
+        add.get(OP_ADDR).set(realmAddress);
+        add.get(OP).set(ADD);
+        list.add(add);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PLUG_INS:
+                    parsePlugIns(reader, expectedNs, realmAddress, list);
+                    break;
+                case SERVER_IDENTITIES:
+                    parseServerIdentities(reader, expectedNs, realmAddress, list);
+                    break;
+                case AUTHENTICATION: {
+                    parseAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                    break;
+                }
+                case AUTHORIZATION:
+                    parseAuthorization_1_4(reader, expectedNs, realmAddress, list);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
 
     private void parsePlugIns(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode realmAddress, final List<ModelNode> list)
             throws XMLStreamException {
@@ -1180,6 +1229,186 @@ public class ManagementXml {
         }
     }
 
+    private void parseAuthorization_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        boolean authzFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            // Only a single element within the authorization element is currently supported.
+            if (authzFound) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PROPERTIES: {
+                    parsePropertiesAuthorization(reader, realmAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                case PLUG_IN: {
+                    ModelNode parentAddress = realmAddress.clone().add(AUTHORIZATION);
+                    parsePlugIn_Authorization(reader, expectedNs, parentAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                case LDAP: {
+                    parseLdapAuthorization_1_4(reader, expectedNs, realmAddress, list);
+                    authzFound = true;
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+
+        }
+    }
+
+    private void parseLdapAuthorization_1_4(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHORIZATION, LDAP);
+        ModelNode ldapAuthorization = Util.getEmptyOperation(ADD, addr);
+
+        list.add(ldapAuthorization);
+
+        Set<Attribute> required = EnumSet.of(Attribute.CONNECTION, Attribute.BASE_DN);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case CONNECTION: {
+                        LdapAuthorizationResourceDefinition.CONNECTION.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case BASE_DN: {
+                        LdapAuthorizationResourceDefinition.BASE_DN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case RECURSIVE: {
+                        LdapAuthorizationResourceDefinition.RECURSIVE.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case USER_DN: {
+                        LdapAuthorizationResourceDefinition.USER_DN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        boolean choiceFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ADVANCED_FILTER:
+                    choiceFound = true;
+                    parseAdvancePropertiesAuthorization(reader, realmAddress, list, ldapAuthorization);
+                    break;
+
+                case ROLES_FILTER: {
+                    choiceFound = true;
+                    parseRolesPropertiesAuthorization(reader, realmAddress, list, ldapAuthorization);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if (!choiceFound) {
+            throw missingOneOf(reader, EnumSet.of(Element.ADVANCED_FILTER, Element.USERNAME_FILTER, Element.ROLES_FILTER));
+        }
+    }
+
+    private void parseAdvancePropertiesAuthorization(XMLExtendedStreamReader reader, ModelNode realmAddress, List<ModelNode> list, ModelNode ldapAuthorization) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ATTRIBUTE:
+                        LdapAuthorizationResourceDefinition.ROLES_DN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    case FILTER:
+                        LdapAuthorizationResourceDefinition.ADVANCED_FILTER.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    case PATTERN: {
+                        LdapAuthorizationResourceDefinition.PATTERN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case GROUP: {
+                        LdapAuthorizationResourceDefinition.GROUP.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case RESULT_PATTERN: {
+                        LdapAuthorizationResourceDefinition.RESULT_PATTERN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        requireNoContent(reader);
+    }
+
+    private void parseRolesPropertiesAuthorization(XMLExtendedStreamReader reader, ModelNode realmAddress, List<ModelNode> list, ModelNode ldapAuthorization) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case ATTRIBUTE:
+                        LdapAuthorizationResourceDefinition.ROLES_DN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    case USERNAME_ATTRIBUTE:
+                        LdapAuthorizationResourceDefinition.USERNAME.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    case PATTERN: {
+                        LdapAuthorizationResourceDefinition.PATTERN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case GROUP: {
+                        LdapAuthorizationResourceDefinition.GROUP.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case RESULT_PATTERN: {
+                        LdapAuthorizationResourceDefinition.RESULT_PATTERN.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    case REVERSE_GROUP: {
+                        LdapAuthorizationResourceDefinition.REVERSE_GROUP.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        requireNoContent(reader);
+    }
+
     private void parsePropertiesAuthorization(final XMLExtendedStreamReader reader, final ModelNode realmAddress,
             final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHORIZATION, PROPERTIES);
@@ -1532,9 +1761,43 @@ public class ManagementXml {
             PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
         } else if (authorization.hasDefined(PLUG_IN)) {
             writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
+        } else if (authorization.hasDefined(LDAP)) {
+            writeLdapAuthorization(writer,authorization.get(LDAP));
         }
 
         writer.writeEndElement();
+    }
+
+    private void writeLdapAuthorization(XMLExtendedStreamWriter writer, ModelNode ldapNode) throws XMLStreamException {
+        writer.writeStartElement(Element.LDAP.getLocalName());
+        LdapAuthorizationResourceDefinition.CONNECTION.marshallAsAttribute(ldapNode, writer);
+        LdapAuthorizationResourceDefinition.BASE_DN.marshallAsAttribute(ldapNode, writer);
+        LdapAuthorizationResourceDefinition.RECURSIVE.marshallAsAttribute(ldapNode, writer);
+        LdapAuthorizationResourceDefinition.USER_DN.marshallAsAttribute(ldapNode, writer);
+        if (ldapNode.hasDefined(USERNAME_ATTRIBUTE)) {
+            writer.writeEmptyElement(ROLES_FILTER);
+            LdapAuthorizationResourceDefinition.USERNAME.marshallAsAttribute(ldapNode, writer);
+            LdapAuthorizationResourceDefinition.REVERSE_GROUP.marshallAsAttribute(ldapNode, writer);
+            writeLdapAuthorizationPattern(writer, ldapNode);
+        } else if (ldapNode.hasDefined(ADVANCED_FILTER)) {
+            writer.writeEmptyElement(ADVANCED_FILTER);
+            LdapAuthorizationResourceDefinition.ADVANCED_FILTER.marshallAsAttribute(ldapNode, writer);
+            writeLdapAuthorizationPattern(writer, ldapNode);
+        }
+        writer.writeEndElement();
+    }
+
+    protected void writeLdapAuthorizationPattern(XMLExtendedStreamWriter writer, ModelNode ldapNode) throws XMLStreamException {
+        LdapAuthorizationResourceDefinition.ROLES_DN.marshallAsAttribute(ldapNode, writer);
+        if (ldapNode.hasDefined(LdapAuthorizationResourceDefinition.PATTERN.getName())) {
+            LdapAuthorizationResourceDefinition.PATTERN.marshallAsAttribute(ldapNode, writer);
+        }
+        if (ldapNode.hasDefined(LdapAuthorizationResourceDefinition.GROUP.getName())) {
+            LdapAuthorizationResourceDefinition.GROUP.marshallAsAttribute(ldapNode, writer);
+        }
+        if (ldapNode.hasDefined(LdapAuthorizationResourceDefinition.RESULT_PATTERN.getName())) {
+            LdapAuthorizationResourceDefinition.RESULT_PATTERN.marshallAsAttribute(ldapNode, writer);
+        }
     }
 
     private void writePlugIn_Authorization(XMLExtendedStreamWriter writer, ModelNode plugIn) throws XMLStreamException {

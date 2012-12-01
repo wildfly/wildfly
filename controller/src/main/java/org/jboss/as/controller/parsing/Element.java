@@ -121,6 +121,7 @@ public enum Element {
     REMOTE("remote"),
     REMOTE_DESTINATION("remote-destination"),
     ROLLOUT_PLANS("rollout-plans"),
+    ROLES_FILTER("roles-filter"),
 
     SECRET("secret"),
     SECURITY_REALM("security-realm"),
