@@ -26,6 +26,8 @@ import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -316,14 +318,22 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
             }
         }
 
+        /*
+         * Maps the bundle.location to a deployment runtime name
+         */
         private String getRuntimeName(Deployment dep) {
-            String name = dep.getLocation();
-            if (name.endsWith("/"))
-                name = name.substring(0, name.length() - 1);
-            int idx = name.lastIndexOf("/");
-            if (idx > 0)
-                name = name.substring(idx + 1);
-            return name;
+            // Strip the query off the location if it is a valid URI
+            String location = dep.getLocation();
+            try {
+                new URI(location);
+                int queryIndex = location.indexOf('?');
+                if (queryIndex > 0) {
+                    location = location.substring(0, queryIndex);
+                }
+            } catch (URISyntaxException ex) {
+                // ignore
+            }
+            return location;
         }
 
         @SuppressWarnings("unchecked")
