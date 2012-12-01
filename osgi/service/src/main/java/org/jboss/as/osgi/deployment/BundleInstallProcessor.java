@@ -35,10 +35,10 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.spi.BundleManager;
+import org.jboss.osgi.framework.spi.BundleStorage;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageState;
-import org.jboss.osgi.framework.spi.StorageStatePlugin;
 import org.osgi.framework.BundleException;
 
 /**
@@ -88,7 +88,7 @@ public class BundleInstallProcessor implements DeploymentUnitProcessor {
 
     private void restoreStorageState(final DeploymentPhaseContext phaseContext, final Deployment deployment) {
         ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
-        StorageStatePlugin storageProvider = (StorageStatePlugin) serviceRegistry.getRequiredService(IntegrationServices.STORAGE_STATE_PLUGIN).getValue();
+        BundleStorage storageProvider = (BundleStorage) serviceRegistry.getRequiredService(IntegrationServices.BUNDLE_STORAGE).getValue();
         StorageState storageState = storageProvider.getStorageState(deployment.getLocation());
         if (storageState != null) {
             deployment.setAutoStart(storageState.isPersistentlyStarted());

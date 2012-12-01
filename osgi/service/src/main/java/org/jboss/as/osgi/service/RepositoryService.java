@@ -44,8 +44,8 @@ import org.jboss.osgi.repository.RepositoryStorage;
 import org.jboss.osgi.repository.RepositoryStorageException;
 import org.jboss.osgi.repository.RepositoryStorageFactory;
 import org.jboss.osgi.repository.XRepository;
-import org.jboss.osgi.repository.core.XRepositoryBuilder;
 import org.jboss.osgi.repository.core.FileBasedRepositoryStorage;
+import org.jboss.osgi.repository.core.XRepositoryBuilder;
 import org.jboss.osgi.resolver.XResource;
 import org.osgi.framework.BundleContext;
 
