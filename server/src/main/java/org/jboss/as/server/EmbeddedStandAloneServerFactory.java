@@ -22,10 +22,6 @@
 
 package org.jboss.as.server;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.xml.namespace.QName;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -40,29 +36,44 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import org.jboss.as.controller.extension.ExtensionRegistry;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.namespace.QName;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.TransientConfigurationPersister;
 import org.jboss.as.embedded.ServerStartException;
 import org.jboss.as.embedded.StandaloneServer;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
+import org.jboss.as.server.parsing.StandaloneXml;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.State;
+import org.jboss.msc.service.ServiceController.Substate;
+import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.Value;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
@@ -88,6 +99,7 @@ import org.jboss.vfs.VFSUtils;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @see org.jboss.as.embedded.EmbeddedServerFactory
  */
 public class EmbeddedStandAloneServerFactory {
@@ -138,6 +150,21 @@ public class EmbeddedStandAloneServerFactory {
             @Override
             public ModelControllerClient getModelControllerClient() {
                 return modelControllerClient;
+            }
+
+            @Override
+            @SuppressWarnings({ "rawtypes", "unchecked" })
+            public Object getService(long timeout, String ... parts) {
+                ServiceName name = ServiceName.of(parts);
+                try {
+                    ServiceController ctrl = serviceContainer.getRequiredService(name);
+                    FutureServiceUp future = new FutureServiceUp(ctrl);
+                    return future.get(timeout, TimeUnit.MILLISECONDS);
+                } catch (RuntimeException re) {
+                    throw re;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             @Override
@@ -339,6 +366,90 @@ public class EmbeddedStandAloneServerFactory {
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    static class FutureServiceUp<T> implements Future<T> {
+        private final ServiceController<T> controller;
+
+        public FutureServiceUp(ServiceController<T> controller) {
+           this.controller = controller;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return controller.getState() == State.UP;
+        }
+
+        @Override
+        public T get() throws ExecutionException {
+            try {
+                return get(5, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                throw new ExecutionException(ex);
+            }
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws ExecutionException, TimeoutException {
+            return getValue(timeout, unit);
+        }
+
+        private T getValue(long timeout, TimeUnit unit) throws ExecutionException, TimeoutException {
+            if (controller.getState() == State.UP)
+                return controller.getValue();
+
+            final CountDownLatch latch = new CountDownLatch(1);
+            ServiceListener<T> listener = new AbstractServiceListener<T>() {
+
+                @Override
+                public void listenerAdded(ServiceController<? extends T> controller) {
+                    State state = controller.getState();
+                    if (state == State.UP || state == State.START_FAILED)
+                        listenerDone(controller);
+                }
+
+                @Override
+                public void transition(final ServiceController<? extends T> controller, final ServiceController.Transition transition) {
+                    if (transition.getAfter() == Substate.UP || transition.getAfter() == Substate.START_FAILED)
+                        listenerDone(controller);
+                }
+
+                private void listenerDone(ServiceController<? extends T> controller) {
+                    latch.countDown();
+                }
+            };
+
+            controller.addListener(listener);
+            try {
+                latch.await(timeout, unit);
+            } catch (InterruptedException e) {
+                // ignore
+            } finally {
+                controller.removeListener(listener);
+            }
+
+            if (controller.getState() == State.UP)
+                return controller.getValue();
+
+            Throwable cause = controller.getStartException();
+            while (cause instanceof StartException && cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw ServerMessages.MESSAGES.cannotGetServiceValue(cause, controller.getName());
         }
     }
 }

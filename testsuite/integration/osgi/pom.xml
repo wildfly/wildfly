@@ -32,6 +32,12 @@
     </properties>
 
 	<dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-osgi-launcher</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+  
 	    <dependency>
 	        <groupId>com.sun.xml.bind</groupId>
 	        <artifactId>jaxb-impl</artifactId>
@@ -93,7 +99,8 @@
                                 <goals><goal>test</goal></goals>
                                 <phase>none</phase>
                             </execution>
-                            <!-- Multi node clustering tests. -->
+                            
+                            <!-- OSGi integration tests. -->
                             <execution>
                                 <id>tests-osgi.surefire</id>
                                 <phase>test</phase>
@@ -103,15 +110,39 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/osgi/**/*TestCase.java</include>
                                     </includes>
+                                    <excludes>
+                                        <exclude>org/jboss/as/test/integration/osgi/launch/*TestCase.java</exclude>
+                                    </excludes>
 
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.launch>osgi</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
 
+                            <!-- OSGi launcher tests. -->
+                            <execution>
+                                <id>tests-osgi-launcher.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Fork every test because it will launch a separate AS instance -->
+                                    <forkMode>always</forkMode>
+
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/osgi/launch/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>osgi</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
