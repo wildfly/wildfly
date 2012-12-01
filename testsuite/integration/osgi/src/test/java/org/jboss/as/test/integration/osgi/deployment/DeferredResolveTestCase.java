@@ -28,7 +28,6 @@ import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivato
 import org.jboss.as.test.osgi.FrameworkManagement;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.shrinkwrap.api.Archive;
@@ -91,7 +90,7 @@ public class DeferredResolveTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(ModelControllerClient.class, ModelNode.class, ManagementClient.class);
                 builder.addImportPackages(PackageAdmin.class, StartLevel.class, ServiceTracker.class);
-                builder.addImportPackages(XBundle.class, BundleManager.class);
+                builder.addImportPackages(XBundle.class);
                 return builder.openStream();
             }
         });
