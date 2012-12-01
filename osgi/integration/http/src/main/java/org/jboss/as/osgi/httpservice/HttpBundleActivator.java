@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.BundleActivator;

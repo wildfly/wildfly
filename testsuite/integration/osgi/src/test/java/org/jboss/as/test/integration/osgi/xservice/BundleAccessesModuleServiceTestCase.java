@@ -42,7 +42,6 @@ import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -81,11 +80,12 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "xservice-module-access");
         archive.addClasses(AbstractXServiceTestCase.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addImportPackages(Logger.class, Services.class, Module.class, ServiceContainer.class);
+                builder.addImportPackages(Logger.class, Module.class, ServiceContainer.class);
                 return builder.openStream();
             }
         });
@@ -131,6 +131,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CLIENT_BUNDLE_NAME);
         archive.addClasses(ClientBundleActivator.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleManifestVersion(2);
@@ -150,6 +151,7 @@ public class BundleAccessesModuleServiceTestCase extends AbstractXServiceTestCas
         archive.addClasses(Echo.class, EchoService.class, TargetModuleActivator.class);
         archive.addAsServiceProvider(ServiceActivator.class, TargetModuleActivator.class);
         archive.setManifest(new Asset() {
+            @Override
             public InputStream openStream() {
                 ManifestBuilder builder = ManifestBuilder.newInstance();
                 builder.addManifestHeader("Dependencies", "org.osgi.core,org.jboss.osgi.framework,org.jboss.modules,org.jboss.logging");
