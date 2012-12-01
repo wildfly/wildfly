@@ -30,11 +30,11 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.osgi.framework.Services;
 import org.osgi.framework.BundleContext;
 
