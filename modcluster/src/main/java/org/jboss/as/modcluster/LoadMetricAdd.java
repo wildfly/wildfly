@@ -59,6 +59,14 @@ public class LoadMetricAdd extends AbstractAddStepHandler {
         }
     }
 
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        // Our Stage.RUNTIME handling only sets context.reloadRequired();
+        // We only need to do that if ModClusterSubsystemAdd isn't running in the
+        // same overall operation. So check if they are
+        return !ModClusterSubsystemAdd.isActiveInContext(context) && super.requiresRuntime(context);
+    }
+
     /**
      * Make any runtime changes necessary to effect the changes indicated by the given {@code operation}. Executes
      * after {@link #populateModel(org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode)}, so the given {@code model}
@@ -83,19 +91,12 @@ public class LoadMetricAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        if (context.isNormalServer() && !context.isBooting()) {
-            context.reloadRequired();
-        }
+        context.reloadRequired();
+    }
 
-        context.completeStep(new OperationContext.RollbackHandler() {
-            @Override
-            public void handleRollback(OperationContext context, ModelNode operation) {
-                if (context.isNormalServer() && !context.isBooting()) {
-                    context.revertReloadRequired();
-                }
-            }
-        });
-
-
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        // just revert the reload-required
+        context.revertReloadRequired();
     }
 }
