@@ -22,10 +22,15 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -52,5 +57,24 @@ public class CustomLoadMetricAdd extends AbstractAddStepHandler {
         for (AttributeDefinition def : CustomLoadMetricDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, model);
         }
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        // Our Stage.RUNTIME handling only sets context.reloadRequired();
+        // We only need to do that if ModClusterSubsystemAdd isn't running in the
+        // same overall operation. So check if they are
+        return !ModClusterSubsystemAdd.isActiveInContext(context) && super.requiresRuntime(context);
+    }
+
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        context.reloadRequired();
+    }
+
+    @Override
+    protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
+        // just revert the reload-required
+        context.revertReloadRequired();
     }
 }

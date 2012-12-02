@@ -74,6 +74,9 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
  * @author Tomaz Cerar
  */
 class ModClusterSubsystemAdd extends AbstractAddStepHandler {
+
+    private static final OperationContext.AttachmentKey<Boolean> SUBSYSTEM_ADD_KEY = OperationContext.AttachmentKey.create(Boolean.class);
+
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
 
     @Override
@@ -116,11 +119,26 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             }
             context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
         }
+
+        // Inform handlers for child resources that we are part of the set of operations
+        // so they know we'll be utilizing any model they write. We do this in Stage.MODEL
+        // so in their Stage.MODEL they can decide to skip adding a runtime step
+        context.attach(SUBSYSTEM_ADD_KEY, Boolean.TRUE);
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
 
+    }
+
+    /**
+     * Allows handlers for child resources to check whether this operation is part of the set
+     * of operations active in the given {@code context}
+     * @param context the context
+     * @return {@code true} if this handler has executed in this context
+     */
+    static boolean isActiveInContext(final OperationContext context) {
+        return context.getAttachment(SUBSYSTEM_ADD_KEY) != null;
     }
 
     private ModClusterConfig getModClusterConfig(final OperationContext context, ModelNode model) throws OperationFailedException {
