@@ -42,6 +42,14 @@ class ModClusterAddSSL extends AbstractAddStepHandler {
     static final ModClusterAddSSL INSTANCE = new ModClusterAddSSL();
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        // Our Stage.RUNTIME handling only sets context.reloadRequired();
+        // We only need to do that if ModClusterSubsystemAdd isn't running in the
+        // same overall operation. So check if they are
+        return !ModClusterSubsystemAdd.isActiveInContext(context) && super.requiresRuntime(context);
+    }
+
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
