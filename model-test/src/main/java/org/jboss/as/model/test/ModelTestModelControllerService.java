@@ -196,7 +196,8 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     /**
-     * Grabs the current root resource
+     * Grabs the current root resource. This cannot be called after the kernelServices
+     * have been shut down
      *
      * @param kernelServices the kernel services used to access the controller
      */

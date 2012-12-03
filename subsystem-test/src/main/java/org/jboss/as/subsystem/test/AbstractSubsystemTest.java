@@ -202,7 +202,9 @@ public abstract class AbstractSubsystemTest {
 
     /**
      * Checks that the subystem resources can be removed, i.e. that people have registered
-     * working 'remove' operations for every 'add' level.
+     * working 'remove' operations for every 'add' level. This cannot be called after the
+     * kernelServices have been shut down.
+     *
      *
      * @param kernelServices the kernel services used to access the controller
      */
