@@ -23,24 +23,30 @@ package org.jboss.as.ejb3.timerservice.persistence;
 
 import java.util.List;
 
+import org.jboss.as.ejb3.timerservice.TimerImpl;
+import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
+import org.jboss.msc.service.ServiceName;
+
 /**
  * @author Stuart Douglas
  */
 public interface TimerPersistence {
 
-    /**
-     * Called when a timer is being persisted
-     *
-     * @param timerEntity
-     */
-    void addTimer(TimerEntity timerEntity);
+    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "timerService", "timerPersistence");
 
     /**
      * Called when a timer is being persisted
      *
      * @param timerEntity
      */
-    void persistTimer(TimerEntity timerEntity);
+    void addTimer(TimerImpl timer);
+
+    /**
+     * Called when a timer is being persisted
+     *
+     * @param timerEntity
+     */
+    void persistTimer(TimerImpl timer);
 
     /**
      * Signals that a timer is being undeployed, and all cached data relating to this object should
@@ -51,30 +57,11 @@ public interface TimerPersistence {
     void timerUndeployed(String timedObjectId);
 
     /**
-     * Load a timer from persistent storage
-     *
-     * @param id
-     * @param timedObjectId
-     * @return
-     */
-    TimerEntity loadTimer(String id, String timedObjectId);
-
-    /**
-     * Load all active timers for the given entity bean with the given primary key
-     *
-     * @param timedObjectId The timed object id to load timers for
-     * @param  primaryKey The primary key of the entity bean, or null for all timers
-     * @return A list of all active timers
-     */
-    List<TimerEntity> loadActiveTimers(String timedObjectId, Object primaryKey);
-
-
-    /**
      * Load all active timers for the given object. If the object is an entity bean timers for all beans will be returned.
      *
      * @param timedObjectId The timed object id to load timers for
      * @return A list of all active timers
      */
-    List<TimerEntity> loadActiveTimers(String timedObjectId);
+    List<TimerImpl> loadActiveTimers(String timedObjectId, final TimerServiceImpl timerService);
 
 }

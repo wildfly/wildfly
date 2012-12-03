@@ -44,9 +44,9 @@ public class AnnotationTimerServiceBean {
     private static volatile boolean timerServiceCalled = false;
     private static final int TIMER_CALL_WAITING_S = 2;
 
-    private static String timerInfo;
-    private static boolean isPersistent;
-    private static boolean isCalendar;
+    private static volatile String timerInfo;
+    private static volatile boolean isPersistent;
+    private static volatile boolean isCalendar;
 
     @Resource
     private SessionContext sessionContext;

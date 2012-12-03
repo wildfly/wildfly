@@ -2488,5 +2488,4 @@ public interface EjbMessages {
 
     // Don't add exception messages greater than 14240!!! If you need more go to
     // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
-
 }
