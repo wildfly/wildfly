@@ -64,8 +64,8 @@ public interface PoolAttributeDefinitions {
 
     SimpleAttributeDefinition THREAD_NAME_PATTERN = new SimpleAttributeDefinition(CommonAttributes.THREAD_NAME_PATTERN, ModelType.STRING, true);
 
-    SimpleAttributeDefinition PRIORITY = new SimpleAttributeDefinition(CommonAttributes.PRIORITY, CommonAttributes.PRIORITY, new ModelNode().set(-1),
-            ModelType.INT, true, true, MeasurementUnit.NONE, new IntRangeValidator(-1, 10, true, true));
+    SimpleAttributeDefinition PRIORITY = new SimpleAttributeDefinition(CommonAttributes.PRIORITY, CommonAttributes.PRIORITY, null,
+            ModelType.INT, true, true, MeasurementUnit.NONE, new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true));
 
     // Metrics
 
