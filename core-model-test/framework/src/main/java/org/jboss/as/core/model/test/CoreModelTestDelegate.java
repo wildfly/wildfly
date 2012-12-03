@@ -41,6 +41,7 @@ import javax.xml.stream.XMLStreamReader;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -150,7 +151,20 @@ public class CoreModelTestDelegate {
      */
     ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
         KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
-        ModelNode legacyModel = legacy.readWholeModel();
+//        ModelNode legacyModel = legacy.readWholeModel();
+        ModelNode op = new ModelNode();
+        op.get(OP_ADDR).setEmptyList();
+        op.get(OP).set("read-resource");
+        op.get("recursive").set(true);
+        op.get("include-defaults").set(false);
+        ModelNode legacyModel;
+        try {
+            legacyModel = legacy.executeForResult(op);
+        } catch (OperationFailedException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(legacyModel);
+
 
         if (legacyModelFixer != null) {
             legacyModel = legacyModelFixer.fixModel(legacyModel);
@@ -160,6 +174,10 @@ public class CoreModelTestDelegate {
         //The transformed model is done via the resource transformers
         //The model in the legacy controller is built up via transformed operations
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion);
+
+        //TODO temporary hacks
+        temporaryHack(transformed, legacyModel);
+
         ModelTestUtils.compare(legacyModel, transformed, true);
 
         //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
@@ -167,6 +185,28 @@ public class CoreModelTestDelegate {
         //ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
         //ModelTestUtils.checkModelAgainstDefinition(transformed, rr);
         return legacyModel;
+    }
+
+    private void temporaryHack(ModelNode transformedModel, ModelNode legacyModel) {
+        if (legacyModel.hasDefined("namespaces") && !transformedModel.hasDefined("namespaces")) {
+            if (legacyModel.get("namespaces").asList().isEmpty()) {
+                legacyModel.get("namespaces").set(new ModelNode());
+            }
+        }
+        if (legacyModel.hasDefined("schema-locations") && !transformedModel.hasDefined("schema-locations")) {
+            if (legacyModel.get("schema-locations").asList().isEmpty()) {
+                legacyModel.get("schema-locations").set(new ModelNode());
+            }
+        }
+
+
+        //Delete everything that does not get populated in the slave's copy of the domain model
+        legacyModel.remove("management-major-version");
+        legacyModel.remove("management-minor-version");
+        legacyModel.remove("management-micro-version");
+        legacyModel.remove("name");
+        legacyModel.remove("release-codename");
+        legacyModel.remove("release-version");
     }
 
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {

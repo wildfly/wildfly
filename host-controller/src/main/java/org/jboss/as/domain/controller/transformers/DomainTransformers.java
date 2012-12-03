@@ -22,6 +22,13 @@
 
 package org.jboss.as.domain.controller.transformers;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+
 import java.util.Map;
 
 import org.jboss.as.controller.ModelVersion;
@@ -32,12 +39,16 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.as.domain.controller.resources.SocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -47,7 +58,7 @@ import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 public class DomainTransformers {
 
     /** Dummy version for ignored subsystems. */
-    private static final ModelVersion IGNORED_SUBSYSTEMS = ModelVersion.create(-1);
+    static final ModelVersion IGNORED_SUBSYSTEMS = ModelVersion.create(-1);
 
     private static final String JSF_SUBSYSTEM = "jsf";
     private static final PathElement JSF_EXTENSION = PathElement.pathElement(ModelDescriptionConstants.EXTENSION, "org.jboss.as.jsf");
@@ -56,7 +67,8 @@ public class DomainTransformers {
     private static final ModelVersion VERSION_1_2 = ModelVersion.create(1, 2, 0);
     //AS 7.1.3.Final
     private static final ModelVersion VERSION_1_3 = ModelVersion.create(1, 3, 0);
-
+    //AS 7.2.0.Final
+    private static final ModelVersion VERSION_1_4 = ModelVersion.create(1, 4, 0);
     /**
      * Initialize the domain registry.
      *
@@ -66,6 +78,7 @@ public class DomainTransformers {
 
         initializeDomainRegistry(registry, VERSION_1_2);
         initializeDomainRegistry(registry, VERSION_1_3);
+        initializeDomainRegistry(registry, VERSION_1_4);
     }
 
     private static void initializeDomainRegistry(final TransformerRegistry registry, ModelVersion modelVersion) {
@@ -76,11 +89,36 @@ public class DomainTransformers {
 
             //Transform the system properties
             SystemPropertyTransformers.registerTransformers(domain);
-            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
+            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH,
+                        AddDefaultValueResourceTransformer.create(MANAGEMENT_SUBSYSTEM_ENDPOINT, new ModelNode(false)));
             SystemPropertyTransformers.registerTransformers(serverGroup);
+
+            //Transform the domain to add the interface names
+            domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
+
+            TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
+            socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH,
+                        AddDefaultValueResourceTransformer.create(FIXED_SOURCE_PORT, new ModelNode(false)));
+            socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH,
+                    AddDefaultValueResourceTransformer.create(FIXED_PORT, new ModelNode(false)));
+
 
             // Ignore the jsf subsystem as well
             registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
+        } else if (modelVersion == VERSION_1_4) {
+            //Transform the domain to add the interface and profile names
+            domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
+            domain.registerSubResource(PathElement.pathElement(PROFILE), AddNameFromAddressResourceTransformer.INSTANCE);
+            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH,
+                    AddDefaultValueResourceTransformer.Builder.createBuilder(MANAGEMENT_SUBSYSTEM_ENDPOINT, new ModelNode(false))
+                            .add(SOCKET_BINDING_PORT_OFFSET, new ModelNode(0))
+                            .build());
+            TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
+            socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH,
+                        AddDefaultValueResourceTransformer.create(FIXED_SOURCE_PORT, new ModelNode(false)));
+            socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH,
+                    AddDefaultValueResourceTransformer.create(FIXED_PORT, new ModelNode(false)));
+
         }
     }
 
@@ -108,5 +146,4 @@ public class DomainTransformers {
             }
         }
     }
-
 }
