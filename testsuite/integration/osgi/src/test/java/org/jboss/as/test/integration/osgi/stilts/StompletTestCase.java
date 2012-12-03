@@ -61,7 +61,6 @@ import org.projectodd.stilts.stomp.client.MessageHandler;
 import org.projectodd.stilts.stomp.client.StompClient;
 import org.projectodd.stilts.stomp.client.SubscriptionBuilder;
 import org.projectodd.stilts.stomplet.Stomplet;
-import org.junit.Ignore;
 
 /**
  * A simple {@link Stomplet} test case.
@@ -72,7 +71,6 @@ import org.junit.Ignore;
 @RunAsClient
 @RunWith(Arquillian.class)
 @ServerSetup(StompletTestCase.StompletTestCaseServerSetup.class)
-@Ignore("AS7-6016")
 public class StompletTestCase {
 
     static final String STOMPLET_NAME = "simple-stomplet";
