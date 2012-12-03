@@ -38,7 +38,6 @@ import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE_DEPTH;
 
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -224,6 +223,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                                 rrOp.get(ModelDescriptionConstants.PROXIES).set(proxies);
                                 rrOp.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(queryRuntime);
                                 rrOp.get(ModelDescriptionConstants.INCLUDE_ALIASES).set(aliases);
+                                rrOp.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).set(defaults);
                                 ModelNode rrRsp = new ModelNode();
                                 childResources.put(childPE, rrRsp);
 
