@@ -26,6 +26,7 @@ package org.jboss.as.patching.runner;
 import org.jboss.as.boot.DirectoryStructure;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 
@@ -96,7 +97,9 @@ class PatchingTasks {
             final Location location = new Location(item);
             final ContentModification original = originalModifications.remove(location);
             if(original == null) {
-                throw new IllegalStateException(item.toString()); // Only for development purpose
+                if(modification.getType() != ModificationType.ADD) {
+                    throw new IllegalStateException(item.toString()); // Only for development purpose
+                }
             }
 
             final ContentEntry contentEntry = new ContentEntry(patchId, modification);
@@ -117,6 +120,9 @@ class PatchingTasks {
                 }
                 //
                 definition.setTarget(contentEntry);
+            }
+            if(original == null) {
+                continue;
             }
 
             // Check if the current content was the original item (preserve)
