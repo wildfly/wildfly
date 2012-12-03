@@ -42,9 +42,12 @@ public enum EJB3SubsystemXMLElement {
     ENTITY_BEAN("entity-bean"),
 
     DATA_STORE("data-store"),
+    DATA_STORES("data-stores"),
     DEFAULT_DISTINCT_NAME("default-distinct-name"),
     DEFAULT_SECURITY_DOMAIN("default-security-domain"),
     DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS(EJB3SubsystemModel.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS),
+
+    FILE_DATA_STORE("file-data-store"),
 
     IIOP("iiop"),
     IN_VM_REMOTE_INTERFACE_INVOCATION("in-vm-remote-interface-invocation"),
@@ -56,6 +59,8 @@ public enum EJB3SubsystemXMLElement {
     CACHE("cache"),
     CACHES("caches"),
     CHANNEL_CREATION_OPTIONS("channel-creation-options"),
+
+    DATABASE_DATA_STORE("database-data-store"),
 
     OPTIMISTIC_LOCKING("optimistic-locking"),
     OPTION("option"),

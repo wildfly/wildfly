@@ -50,6 +50,7 @@ import org.jboss.as.ejb3.resourceadapterbinding.parser.EJBBoundResourceAdapterBi
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser;
 import org.jboss.as.ejb3.security.parser.EJBBoundSecurityMetaDataParser11;
 import org.jboss.as.ejb3.security.parser.SecurityRoleMetaDataParser;
+import org.jboss.as.ejb3.timerservice.TimerServiceMetaDataParser;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -305,6 +306,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
         parsers.put(EJBBoundPoolParser.NAMESPACE_URI, new EJBBoundPoolParser());
         parsers.put(EJBBoundCacheParser.NAMESPACE_URI, new EJBBoundCacheParser());
         parsers.put(ContainerInterceptorsParser.NAMESPACE_URI_1_0, ContainerInterceptorsParser.INSTANCE);
+        parsers.put(TimerServiceMetaDataParser.NAMESPACE_URI, TimerServiceMetaDataParser.INSTANCE);
         return parsers;
     }
 }
