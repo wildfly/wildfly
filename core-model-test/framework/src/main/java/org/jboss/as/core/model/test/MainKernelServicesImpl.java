@@ -21,8 +21,12 @@
 */
 package org.jboss.as.core.model.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,6 +34,7 @@ import java.util.Map;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.validation.OperationValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -95,8 +100,21 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
         final Transformers transformers = Transformers.Factory.create(target);
 
         ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler(transformers));
-        System.out.println(result);
-        return result;
+        if (FAILED.equals(result.get(OUTCOME).asString())) {
+            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+        }
+
+        ModelNode domainModel = new ModelNode();
+        //Reassemble the model from the reead master domain model handler result
+        for (ModelNode entry : result.get(RESULT).asList()) {
+            PathAddress address = PathAddress.pathAddress(entry.require("domain-resource-address"));
+            ModelNode toSet = domainModel;
+            for (PathElement pathElement : address) {
+                toSet = toSet.get(pathElement.getKey(), pathElement.getValue());
+            }
+            toSet.set(entry.require("domain-resource-model"));
+        }
+        return domainModel;
     }
 
     public ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op) {

@@ -75,13 +75,13 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler {
      * @param resource the root resource
      * @return the list of resources
      */
-    private static List<ModelNode> describeAsNodeList(final Resource resource) {
+    private List<ModelNode> describeAsNodeList(final Resource resource) {
         final List<ModelNode> list = new ArrayList<ModelNode>();
         describe(PathAddress.EMPTY_ADDRESS, resource, list);
         return list;
     }
 
-    private static void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
+    private void describe(final PathAddress base, final Resource resource, List<ModelNode> nodes) {
         if (resource.isProxy() || resource.isRuntime()) {
             return; // ignore runtime and proxies
         } else if (base.size() >= 1 && base.getElement(0).getKey().equals(ModelDescriptionConstants.HOST)) {

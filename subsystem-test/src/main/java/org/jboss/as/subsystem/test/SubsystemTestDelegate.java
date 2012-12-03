@@ -57,7 +57,6 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -434,65 +433,8 @@ final class SubsystemTestDelegate {
         //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
         ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(mainSubsystemName, modelVersion);
         ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
-        checkModelAgainstDefinition(transformed, rr);
+        ModelTestUtils.checkModelAgainstDefinition(transformed, rr);
         return legacyModel;
-    }
-
-    private void checkModelAgainstDefinition(final ModelNode model, ManagementResourceRegistration rr) {
-        final Set<String> children = rr.getChildNames(PathAddress.EMPTY_ADDRESS);
-        final Set<String> attributeNames = rr.getAttributeNames(PathAddress.EMPTY_ADDRESS);
-        for (ModelNode el : model.asList()) {
-            String name = el.asProperty().getName();
-            ModelNode value = el.asProperty().getValue();
-            if (attributeNames.contains(name)) {
-                AttributeAccess aa = rr.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
-                Assert.assertNotNull("Attribute " + name + " is not known", aa);
-                AttributeDefinition ad = aa.getAttributeDefinition();
-                if (!value.isDefined()) {
-                    Assert.assertTrue("Attribute is not allow null", ad.isAllowNull());
-                } else {
-                   // Assert.assertEquals("Attribute '" + name + "' type mismatch", value.getType(), ad.getType()); //todo re-enable this check
-                }
-                try {
-                    if (!ad.isAllowNull()&&value.isDefined()){
-                        ad.getValidator().validateParameter(name, value);
-                    }
-                } catch (OperationFailedException e) {
-                    Assert.fail("validation for attribute '" + name + "' failed, " + e.getFailureDescription().asString());
-                }
-
-            } else if (!children.contains(name)) {
-                Assert.fail("Element '" + name + "' is not known in target definition");
-            }
-        }
-
-        for (PathElement pe : rr.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
-            if (pe.isWildcard()) {
-                if (children.contains(pe.getKey()) && model.hasDefined(pe.getKey())) {
-                    for (ModelNode v : model.get(pe.getKey()).asList()) {
-                        String name = v.asProperty().getName();
-                        ModelNode value = v.asProperty().getValue();
-                        ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
-                        Assert.assertNotNull("Child with name '" + name + "' not found", sub);
-                        if (value.isDefined()) {
-                            checkModelAgainstDefinition(value, sub);
-                        }
-                    }
-                }
-            } else {
-                if (children.contains(pe.getKeyValuePair())) {
-                    String name = pe.getValue();
-                    ModelNode value = model.get(pe.getKeyValuePair());
-                    ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
-                    Assert.assertNotNull("Child with name '" + name + "' not found", sub);
-                    if (value.isDefined()) {
-                        checkModelAgainstDefinition(value, sub);
-                    }
-                }
-            }
-        }
-
-
     }
 
     void addAdditionalParsers(AdditionalParsers additionalParsers) {

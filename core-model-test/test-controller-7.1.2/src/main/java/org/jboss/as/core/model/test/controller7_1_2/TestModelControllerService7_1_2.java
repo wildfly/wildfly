@@ -112,6 +112,7 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
         if (modelInitializer != null) {
             modelInitializer.populateModel(rootResource);
         }
+        DomainModelUtil.updateCoreModel(rootResource, env);
     }
 
     @Override

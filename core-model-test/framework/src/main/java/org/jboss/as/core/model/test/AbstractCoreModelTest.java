@@ -21,6 +21,11 @@
 */
 package org.jboss.as.core.model.test;
 
+import java.io.IOException;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelFixer;
+import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
 
@@ -48,5 +53,30 @@ public class AbstractCoreModelTest {
 
     protected KernelServicesBuilder createKernelServicesBuilder(TestModelType type) {
         return delegate.createKernelServicesBuilder(type);
+    }
+
+    /**
+     * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
+     * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
+     *
+     * @param kernelServices the main kernel services
+     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @return the whole model of the legacy controller
+     */
+    protected ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
+        return checkCoreModelTransformation(kernelServices, modelVersion, null);
+    }
+
+    /**
+     * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
+     * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
+     *
+     * @param kernelServices the main kernel services
+     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
+     * @return the whole model of the legacy controller
+     */
+    protected ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
+        return delegate.checkCoreModelTransformation(kernelServices, modelVersion, legacyModelFixer);
     }
 }
