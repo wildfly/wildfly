@@ -57,16 +57,16 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
 import org.jboss.osgi.deployment.deployer.DeploymentFactory;
-import org.jboss.osgi.framework.BundleManager;
 import org.jboss.osgi.framework.Services;
 import org.jboss.osgi.framework.spi.AbstractBundleRevisionAdaptor;
 import org.jboss.osgi.framework.spi.BootstrapBundlesActivate;
 import org.jboss.osgi.framework.spi.BootstrapBundlesInstall;
 import org.jboss.osgi.framework.spi.BootstrapBundlesResolve;
+import org.jboss.osgi.framework.spi.BundleManager;
+import org.jboss.osgi.framework.spi.BundleStorage;
 import org.jboss.osgi.framework.spi.IntegrationService;
 import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.StorageState;
-import org.jboss.osgi.framework.spi.StorageStatePlugin;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
@@ -100,7 +100,7 @@ import org.osgi.service.startlevel.StartLevel;
 class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
 
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
-    private final InjectedValue<StorageStatePlugin> injectedStorageProvider = new InjectedValue<StorageStatePlugin>();
+    private final InjectedValue<BundleStorage> injectedStorageProvider = new InjectedValue<BundleStorage>();
     private final InjectedValue<ServerEnvironment> injectedServerEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<BundleContext> injectedSystemContext = new InjectedValue<BundleContext>();
     private final InjectedValue<PackageAdmin> injectedPackageAdmin = new InjectedValue<PackageAdmin>();
@@ -123,7 +123,7 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
         builder.addDependency(OSGiConstants.REPOSITORY_SERVICE_NAME, XRepository.class, injectedRepository);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
         builder.addDependency(Services.PACKAGE_ADMIN, PackageAdmin.class, injectedPackageAdmin);
-        builder.addDependency(IntegrationServices.STORAGE_STATE_PLUGIN, StorageStatePlugin.class, injectedStorageProvider);
+        builder.addDependency(IntegrationServices.BUNDLE_STORAGE, BundleStorage.class, injectedStorageProvider);
         builder.addDependency(Services.FRAMEWORK_CREATE, BundleContext.class, injectedSystemContext);
         builder.addDependency(Services.START_LEVEL, StartLevel.class, injectedStartLevel);
         builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
@@ -281,8 +281,9 @@ class BootstrapBundlesIntegration extends BootstrapBundlesInstall<Void> {
             dep.setStartLevel(level.intValue());
             dep.setAutoStart(true);
         }
-        StorageStatePlugin storageProvider = injectedStorageProvider.getValue();
-        StorageState storageState = storageProvider.createStorageState(location, startlevel, null);
+        BundleStorage storageProvider = injectedStorageProvider.getValue();
+        Long bundleId = injectedEnvironment.getValue().nextResourceIdentifier(null, dep.getSymbolicName());
+        StorageState storageState = storageProvider.createStorageState(bundleId, location, startlevel, null);
         dep.addAttachment(StorageState.class, storageState);
         return dep;
     }
