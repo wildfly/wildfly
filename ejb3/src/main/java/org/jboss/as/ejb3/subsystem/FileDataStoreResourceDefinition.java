@@ -27,57 +27,58 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.ejb3.timerservice.persistence.TimerPersistence;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for the timer-service resource.
- *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * {@link org.jboss.as.controller.ResourceDefinition} for the file data store
  */
-public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
+public class FileDataStoreResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition THREAD_POOL_NAME =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition PATH =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setValidator(new ModelTypeValidator(ModelType.STRING, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    public static final SimpleAttributeDefinition DEFAULT_DATA_STORE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_DATA_STORE, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition RELATIVE_TO =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.RELATIVE_TO, ModelType.STRING, true)
+                    .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
-
-    public static final Map<String, AttributeDefinition> ATTRIBUTES ;
 
     private final PathManager pathManager;
 
+    public static final Map<String, AttributeDefinition> ATTRIBUTES;
+
     static {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
-        map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
-        map.put(DEFAULT_DATA_STORE.getName(), DEFAULT_DATA_STORE);
+        map.put(PATH.getName(), PATH);
+        map.put(RELATIVE_TO.getName(), RELATIVE_TO);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
 
-    public TimerServiceResourceDefinition(final PathManager pathManager) {
-        super(EJB3SubsystemModel.TIMER_SERVICE_PATH,
-                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.TIMER_SERVICE),
-                TimerServiceAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE,
+    public FileDataStoreResourceDefinition(final PathManager pathManager) {
+        super(EJB3SubsystemModel.FILE_DATA_STORE_PATH,
+                EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.FILE_DATA_STORE),
+                FileDataStoreAdd.INSTANCE, new ServiceRemoveStepHandler(TimerPersistence.SERVICE_NAME, FileDataStoreAdd.INSTANCE),
                 OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.pathManager = pathManager;
     }
-
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
@@ -87,20 +88,16 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new FileDataStoreResourceDefinition(pathManager));
+    public void registerOperations(final ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
 
-        resourceRegistration.registerSubModel(DatabaseDataStoreResourceDefinition.INSTANCE);
-    }
-
-    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH)
-            .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EJB3SubsystemModel.PATH);
-    }
-
-    static void registerTransformers_1_2_0(ResourceTransformationDescriptionBuilder parent) {
-        ResourceTransformationDescriptionBuilder timerService = parent.addChildResource(EJB3SubsystemModel.TIMER_SERVICE_PATH);
-        timerService.rejectChildResource(PathElement.pathElement(EJB3SubsystemModel.DATABASE_DATA_STORE));
+        super.registerOperations(resourceRegistration);
+        if (pathManager != null) {
+            final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(pathManager)
+                    .setPathAttribute(PATH)
+                    .setRelativeToAttribute(RELATIVE_TO)
+                    .build();
+            resourceRegistration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        }
     }
 }

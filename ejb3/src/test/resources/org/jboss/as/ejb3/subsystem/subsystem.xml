@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:ejb3:1.4">
+<subsystem xmlns="urn:jboss:domain:ejb3:1.5">
     <session-bean>
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
@@ -10,6 +10,7 @@
         <bean-instance-pool-ref pool-name="entity-strict-max-pool"/>
         <optimistic-locking enabled="true"/>
     </entity-bean>
+
     <!-- EJB3 pools -->
     <pools>
         <bean-instance-pools>
@@ -27,8 +28,11 @@
         <cluster-passivation-store name="cluster" cache-container="sfsb" bean-cache="repl" client-mappings-cache="client-mappings" idle-timeout="${prop.idle-timeout:5}" idle-timeout-unit="${prop.idle-timeout-unit:MINUTES}"/>
     </passivation-stores>
     <async thread-pool-name="default"/>
-    <timer-service thread-pool-name="default">
-        <data-store path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
+    <timer-service thread-pool-name="default" default-data-store="file-data-store">
+        <data-stores>
+            <file-data-store name="file-data-store" path="${prop.timer-service.path:timer-service-data}" relative-to="jboss.server.data.dir"/>
+            <database-data-store name="database-data-store" datasource-jndi-name="${prop.timer-service-database:java:global/DataSource}"/>
+        </data-stores>
     </timer-service>
     <remote connector-ref="remoting-connector" thread-pool-name="default">
         <channel-creation-options>

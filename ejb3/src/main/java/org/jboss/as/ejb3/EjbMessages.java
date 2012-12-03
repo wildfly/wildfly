@@ -2454,4 +2454,6 @@ public interface EjbMessages {
     @Message(id = 14237, value = "Only session and message-driven beans with bean-managed transaction demarcation are allowed to access UserTransaction")
     IllegalStateException unauthorizedAccessToUserTransaction();
 
+    @Message(id = 14238, value = "More than one timer found in database with id %s")
+    RuntimeException moreThanOneTimerFoundWithId(String id);
 }

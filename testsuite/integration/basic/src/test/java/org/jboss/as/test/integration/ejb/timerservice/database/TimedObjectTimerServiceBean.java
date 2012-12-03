@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.timerservice.simple;
+package org.jboss.as.test.integration.ejb.timerservice.database;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -47,9 +47,9 @@ public class TimedObjectTimerServiceBean implements TimedObject {
 
     private TimerService timerService;
 
-    private static volatile String timerInfo;
-    private static volatile boolean isPersistent;
-    private static volatile boolean isCalendar;
+    private static String timerInfo;
+    private static boolean isPersistent;
+    private static boolean isCalendar;
 
     public synchronized TimerService getTimerService() {
         if (timerService == null) {

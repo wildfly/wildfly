@@ -30,7 +30,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +47,7 @@ public class DescriptorScheduleTestCase {
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testDescriptorSchedule.war");
         war.addPackage(DescriptorScheduleTestCase.class.getPackage());
-        war.addAsWebInfResource(new StringAsset(EJB_JAR), "ejb-jar.xml");
+        war.addAsWebInfResource(DescriptorScheduleTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return war;
 
     }
@@ -61,36 +60,5 @@ public class DescriptorScheduleTestCase {
         Assert.assertEquals("INFO", DescriptorScheduleBean.getTimerInfo());
         Assert.assertEquals(new Date(90, 0, 1, 0, 0, 0), DescriptorScheduleBean.getStart());
     }
-
-    private static final String EJB_JAR = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<ejb-jar xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-            "    version=\"3.1\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd\">\n" +
-            "    <enterprise-beans>\n" +
-            "        <session>\n" +
-            "            <ejb-name>DescriptorScheduleBean</ejb-name>\n" +
-            "            <local-bean />\n" +
-            "            <ejb-class>org.jboss.as.test.integration.ejb.timerservice.schedule.descriptor.DescriptorScheduleBean</ejb-class>\n" +
-            "            <session-type>Stateless</session-type>\n" +
-            "            <timer>\n" +
-            "                <description />\n" +
-            "                <schedule>\n" +
-            "                    <second>*</second>\n" +
-            "                    <minute>*</minute>\n" +
-            "                    <hour>*</hour>\n" +
-            "                    <day-of-month>*</day-of-month>\n" +
-            "                    <month>*</month>\n" +
-            "                    <day-of-week>*</day-of-week>\n" +
-            "                </schedule>\n" +
-            "                <start>1990-01-01T00:00:00</start>\n" +
-            "                <end>9000-12-31T00:00:00</end>\n" +
-            "                <timeout-method>\n" +
-            "                    <method-name>descriptorScheduledMethod</method-name>\n" +
-            "                </timeout-method>\n" +
-            "                <persistent>false</persistent>\n" +
-            "                <info>INFO</info>\n" +
-            "            </timer>\n" +
-            "        </session>\n" +
-            "    </enterprise-beans>\n" +
-            "</ejb-jar>";
 
 }
