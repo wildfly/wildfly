@@ -61,7 +61,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
 
-        assertRemoveSubsystemResources(servicesA);
+        assertRemoveSubsystemResources(servicesB);
     }
 
     @Override
