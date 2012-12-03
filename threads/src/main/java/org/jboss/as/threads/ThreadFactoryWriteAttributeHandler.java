@@ -66,7 +66,7 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
             tf.setThreadGroupName(value.isDefined() ? value.asString() : null);
         } else if(CommonAttributes.PRIORITY.equals(attributeName)) {
             final ModelNode value = PoolAttributeDefinitions.PRIORITY.resolveModelAttribute(context, operation);
-            tf.setPriority(value.isDefined() ? value.asInt() : -1);
+            tf.setPriority(value.isDefined() ? new Integer(value.asInt()) : null);
         } else if(CommonAttributes.THREAD_NAME_PATTERN.equals(attributeName)) {
             final ModelNode value = PoolAttributeDefinitions.THREAD_NAME_PATTERN.resolveModelAttribute(context, operation);
             tf.setNamePattern(value.isDefined() ? value.asString() : null);
