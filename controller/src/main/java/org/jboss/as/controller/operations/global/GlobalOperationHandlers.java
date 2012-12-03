@@ -215,6 +215,7 @@ public class GlobalOperationHandlers {
                                 rrOp.get(RECURSIVE_DEPTH).set(newDepth);
                                 rrOp.get(PROXIES).set(proxies);
                                 rrOp.get(INCLUDE_RUNTIME).set(queryRuntime);
+                                rrOp.get(INCLUDE_DEFAULTS).set(defaults);
                                 ModelNode rrRsp = new ModelNode();
                                 childResources.put(childPE, rrRsp);
 
