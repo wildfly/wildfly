@@ -64,7 +64,7 @@ public class AbstractCoreModelTest {
      * @return the whole model of the legacy controller
      */
     protected ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
-        return checkCoreModelTransformation(kernelServices, modelVersion, null);
+        return checkCoreModelTransformation(kernelServices, modelVersion, null, null);
     }
 
     /**
@@ -76,7 +76,7 @@ public class AbstractCoreModelTest {
      * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
      * @return the whole model of the legacy controller
      */
-    protected ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
-        return delegate.checkCoreModelTransformation(kernelServices, modelVersion, legacyModelFixer);
+    protected ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer, ModelFixer transformedModelFixer) throws IOException {
+        return delegate.checkCoreModelTransformation(kernelServices, modelVersion, legacyModelFixer, transformedModelFixer);
     }
 }

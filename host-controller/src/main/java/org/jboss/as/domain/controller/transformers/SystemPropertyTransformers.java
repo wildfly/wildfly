@@ -81,7 +81,7 @@ class SystemPropertyTransformers {
             public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
                     throws OperationFailedException {
                 ModelNode transformed = operation;
-                if (transformed.get(NAME).equals(BOOT_TIME) || transformed.get(NAME).equals(BOOT_TIME)) {
+                if (transformed.get(NAME).asString().equals(BOOT_TIME)) {
                     transformed = transformed.clone();
                     if (!transformed.get(VALUE).isDefined()) {
                         transformed.get(VALUE).set(true);

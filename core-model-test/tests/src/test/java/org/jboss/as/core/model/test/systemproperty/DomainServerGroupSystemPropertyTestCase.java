@@ -33,8 +33,8 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.ModelWriteSanitizer;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 
@@ -85,14 +85,14 @@ public class DomainServerGroupSystemPropertyTestCase extends AbstractSystemPrope
         }
     };
 
-    private static final ModelInitializer XML_MODEL_INITIALIZER = new ModelInitializer() {
+    static final ModelInitializer XML_MODEL_INITIALIZER = new ModelInitializer() {
         public void populateModel(Resource rootResource) {
             rootResource.registerChild(PathElement.pathElement(PROFILE, "test"), Resource.Factory.create());
             rootResource.registerChild(PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), Resource.Factory.create());
         }
     };
 
-    private final ModelWriteSanitizer XML_MODEL_WRITE_SANITIZER = new ModelWriteSanitizer() {
+    static final ModelWriteSanitizer XML_MODEL_WRITE_SANITIZER = new ModelWriteSanitizer() {
         @Override
         public ModelNode sanitize(ModelNode model) {
             //Remove the profile and socket-binding-group removed by the initializer so the xml does not include a profile

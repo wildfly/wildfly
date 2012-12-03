@@ -28,6 +28,7 @@ import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * Initializes the part of the model where the versions are stored
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
