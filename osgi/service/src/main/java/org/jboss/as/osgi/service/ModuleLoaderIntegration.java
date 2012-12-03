@@ -65,6 +65,7 @@ import org.jboss.osgi.framework.spi.FrameworkModuleLoaderPlugin;
 import org.jboss.osgi.resolver.XBundle;
 import org.jboss.osgi.resolver.XBundleRevision;
 import org.jboss.osgi.resolver.XIdentityCapability;
+import org.osgi.framework.wiring.BundleWire;
 
 /**
  * This is the single {@link ModuleLoader} that the OSGi layer uses for the modules that are associated with the bundles that
@@ -221,15 +222,26 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
         }
 
         @Override
-        public ServiceName createModuleService(XBundleRevision brev, ModuleIdentifier identifier) {
+        public ServiceName createModuleService(XBundleRevision brev, List<BundleWire> wires) {
             Deployment deployment = brev.getBundle().adapt(Deployment.class);
             DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+
+            // Add a dependency on the parent module if we have one
             List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
             if (depUnit != null && depUnit.getParent() != null) {
                 String parentName = depUnit.getParent().getName();
                 ModuleIdentifier depId = ModuleIdentifier.create(MODULE_PREFIX + parentName);
                 dependencies.add(new ModuleDependency(null, depId, false, false, false, false));
             }
+
+            // Add dependencies on all modules this brev has a wire to
+            for (BundleWire wire : wires) {
+                XBundleRevision provider = (XBundleRevision) wire.getProvider();
+                ModuleIdentifier providerid = provider.getModuleIdentifier();
+                dependencies.add(new ModuleDependency(null, providerid, false, false, false, false));
+            }
+
+            ModuleIdentifier identifier = brev.getModuleIdentifier();
             return ModuleLoadService.install(serviceTarget, identifier, dependencies);
         }
 
@@ -237,8 +249,9 @@ final class ModuleLoaderIntegration extends FrameworkModuleLoaderPlugin {
          * Remove the {@link Module} and {@link ModuleSpec} services associated with the given identifier.
          */
         @Override
-        public void removeModule(XBundleRevision brev, ModuleIdentifier identifier) {
+        public void removeModule(XBundleRevision brev) {
             Set<ServiceName> serviceNames = new HashSet<ServiceName>();
+            ModuleIdentifier identifier = brev.getModuleIdentifier();
             serviceNames.add(getModuleSpecServiceName(identifier));
             serviceNames.add(getModuleServiceName(identifier));
             for (ServiceName serviceName : serviceNames) {
