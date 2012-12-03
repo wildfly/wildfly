@@ -28,6 +28,7 @@ import static junit.framework.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -258,6 +259,10 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
                 node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
                 node.get(ATTRIBUTES, "name", REQUIRED).set(true);
+                node.get(ATTRIBUTES, "default", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "default", DESCRIPTION).set("The name of the thing");
+                node.get(ATTRIBUTES, "default", REQUIRED).set(false);
+                node.get(ATTRIBUTES, "default", DEFAULT).set("Default string");
                 return node;
             }
         });
