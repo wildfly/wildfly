@@ -22,19 +22,16 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.remoting.Attribute;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -46,9 +43,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DISTINCT_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_STATISTICS;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
 
@@ -60,30 +54,6 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
     public static final EJB3Subsystem13Parser INSTANCE = new EJB3Subsystem13Parser();
 
     protected EJB3Subsystem13Parser() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void writeElements(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        super.writeElements(writer, context);
-
-        ModelNode model = context.getModelNode();
-
-        // statistics element
-        if (model.hasDefined(ENABLE_STATISTICS)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.STATISTICS.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.ENABLED.getLocalName(), model.get(EJB3SubsystemModel.ENABLE_STATISTICS).asString());
-            writer.writeEndElement();
-        }
-
-        // default-distinct-name element
-        if (model.hasDefined(DEFAULT_DISTINCT_NAME)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_DISTINCT_NAME.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(EJB3SubsystemModel.DEFAULT_DISTINCT_NAME).asString());
-            writer.writeEndElement();
-        }
     }
 
     @Override
@@ -259,26 +229,4 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
         operations.add(channelOptionAddOperation);
     }
 
-    @Override
-    protected void writeRemote(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
-        super.writeRemote(writer, model);
-
-        // write out any channel creation options
-        if (model.hasDefined(CHANNEL_CREATION_OPTIONS)) {
-            writeChannelCreationOptions(writer, model.get(CHANNEL_CREATION_OPTIONS));
-        }
-    }
-
-    private void writeChannelCreationOptions(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
-        writer.writeStartElement(EJB3SubsystemXMLElement.CHANNEL_CREATION_OPTIONS.getLocalName());
-        for (final Property optionPropertyModelNode : node.asPropertyList()) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.OPTION.getLocalName());
-            writer.writeAttribute(Attribute.NAME.getLocalName(), optionPropertyModelNode.getName());
-            final ModelNode propertyValueModelNode = optionPropertyModelNode.getValue();
-            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.marshallAsAttribute(propertyValueModelNode, writer);
-            ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.marshallAsAttribute(propertyValueModelNode, writer);
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
-    }
 }
