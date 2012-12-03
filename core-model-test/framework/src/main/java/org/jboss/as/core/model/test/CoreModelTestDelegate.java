@@ -201,12 +201,12 @@ public class CoreModelTestDelegate {
 
 
         //Delete everything that does not get populated in the slave's copy of the domain model
-        legacyModel.remove("management-major-version");
-        legacyModel.remove("management-minor-version");
-        legacyModel.remove("management-micro-version");
-        legacyModel.remove("name");
-        legacyModel.remove("release-codename");
-        legacyModel.remove("release-version");
+//        legacyModel.remove("management-major-version");
+//        legacyModel.remove("management-minor-version");
+//        legacyModel.remove("management-micro-version");
+//        legacyModel.remove("name");
+//        legacyModel.remove("release-codename");
+//        legacyModel.remove("release-version");
     }
 
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {

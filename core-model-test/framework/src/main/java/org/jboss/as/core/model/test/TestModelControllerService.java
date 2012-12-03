@@ -71,6 +71,7 @@ import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.ServerEnvironmentResourceDescription;
 import org.jboss.as.server.ServerPathManagerService;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
+import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
@@ -390,7 +391,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         @Override
         public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            //Add the same stuff as is added in ServerService.initModel()
+            VersionModelInitializer.registerRootResource(rootResource, null);
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
             rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
@@ -468,6 +469,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         @Override
         public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+            VersionModelInitializer.registerRootResource(rootResource, null);
             final HostControllerEnvironment env = createHostControllerEnvironment();
             final LocalHostControllerInfoImpl info = createLocalHostControllerInfo(env);
             final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
