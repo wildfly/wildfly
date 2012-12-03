@@ -26,6 +26,7 @@ import static org.jboss.as.osgi.OSGiMessages.MESSAGES;
 import static org.jboss.as.server.Services.JBOSS_SERVER_CONTROLLER;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,20 +53,24 @@ import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.FrameworkMessages;
 import org.jboss.osgi.framework.Services;
-import org.jboss.osgi.framework.spi.AbstractIntegrationService;
+import org.jboss.osgi.framework.spi.BundleLifecycle;
 import org.jboss.osgi.framework.spi.BundleLifecyclePlugin;
+import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.framework.spi.FutureServiceValue;
 import org.jboss.osgi.framework.spi.IntegrationService;
-import org.jboss.osgi.framework.spi.IntegrationServices;
 import org.jboss.osgi.framework.spi.ServiceTracker;
 import org.jboss.osgi.resolver.XBundle;
+import org.jboss.osgi.resolver.XEnvironment;
+import org.jboss.osgi.resolver.XResolveContext;
+import org.jboss.osgi.resolver.XResolver;
 import org.jboss.vfs.VFSUtils;
 import org.osgi.framework.BundleException;
+import org.osgi.service.resolver.ResolutionException;
+import org.osgi.service.startlevel.StartLevel;
 
 /**
  * An {@link IntegrationService} that that handles the bundle lifecycle.
@@ -73,42 +78,39 @@ import org.osgi.framework.BundleException;
  * @author thomas.diesler@jboss.com
  * @since 24-Nov-2010
  */
-public final class BundleLifecycleIntegration extends AbstractIntegrationService<BundleLifecyclePlugin> implements BundleLifecyclePlugin {
+public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
 
     private static Map<String, Deployment> deploymentMap = new HashMap<String, Deployment>();
 
     private final InjectedValue<ModelController> injectedController = new InjectedValue<ModelController>();
     private final InjectedValue<BundleManager> injectedBundleManager = new InjectedValue<BundleManager>();
+    private final InjectedValue<XEnvironment> injectedEnvironment = new InjectedValue<XEnvironment>();
+    private final InjectedValue<StartLevel> injectedStartLevel = new InjectedValue<StartLevel>();
+    private final InjectedValue<XResolver> injectedResolver = new InjectedValue<XResolver>();
     private ServerDeploymentManager deploymentManager;
 
-    BundleLifecycleIntegration() {
-        super(IntegrationServices.BUNDLE_LIFECYCLE_PLUGIN);
-    }
-
     @Override
-    protected void addServiceDependencies(ServiceBuilder<BundleLifecyclePlugin> builder) {
+    protected void addServiceDependencies(ServiceBuilder<BundleLifecycle> builder) {
+        super.addServiceDependencies(builder);
         builder.addDependency(JBOSS_SERVER_CONTROLLER, ModelController.class, injectedController);
         builder.addDependency(Services.BUNDLE_MANAGER, BundleManager.class, injectedBundleManager);
+        builder.addDependency(Services.ENVIRONMENT, XEnvironment.class, injectedEnvironment);
+        builder.addDependency(Services.RESOLVER, XResolver.class, injectedResolver);
+        builder.addDependency(Services.START_LEVEL, StartLevel.class, injectedStartLevel);
         builder.addDependency(Services.FRAMEWORK_CREATE);
         builder.setInitialMode(Mode.ON_DEMAND);
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
-        ServiceController<?> controller = context.getController();
-        LOGGER.tracef("Starting: %s in mode %s", controller.getName(), controller.getMode());
+    public void start(StartContext startContext) throws StartException {
+        super.start(startContext);
         deploymentManager = new ModelControllerServerDeploymentManager(injectedController.getValue());
     }
 
     @Override
-    public void stop(StopContext context) {
-        ServiceController<?> controller = context.getController();
-        LOGGER.tracef("Stopping: %s in mode %s", controller.getName(), controller.getMode());
-    }
-
-    @Override
-    public BundleLifecyclePlugin getValue() throws IllegalStateException, IllegalArgumentException {
-        return this;
+    protected BundleLifecycle createServiceValue(StartContext startContext) throws StartException {
+        BundleLifecycle defaultService = super.createServiceValue(startContext);
+        return new BundleLifecycleImpl(defaultService);
     }
 
     public static Deployment getDeployment(String runtimeName) {
@@ -129,173 +131,207 @@ public final class BundleLifecycleIntegration extends AbstractIntegrationService
         }
     }
 
-    @Override
-    public void install(final Deployment dep, final DefaultHandler handler) throws BundleException {
-        // Do the install directly if we have a running management op
-        // https://issues.jboss.org/browse/AS7-5642
-        if (OperationAssociation.INSTANCE.getAssociation() != null) {
-            LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
-            BundleManager bundleManager = injectedBundleManager.getValue();
-            bundleManager.installBundle(dep, bundleManager.getServiceTarget(), null);
-        } else {
-            LOGGER.debugf("Install deployment: %s", dep);
-            String runtimeName = getRuntimeName(dep);
-            putDeployment(runtimeName, dep);
-            try {
-                InputStream input = dep.getRoot().openStream();
-                try {
-                    ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
-                    server.deploy(runtimeName, input);
-                } finally {
-                    VFSUtils.safeClose(input);
-                }
-            } catch (RuntimeException rte) {
-                throw rte;
-            } catch (Exception ex) {
-                throw MESSAGES.cannotDeployBundle(ex, dep);
-            }
-        }
-    }
+    class BundleLifecycleImpl implements BundleLifecycle {
 
-    @Override
-    public void start(XBundle bundle, int options, DefaultHandler handler) throws BundleException {
-        Deployment deployment = bundle.adapt(Deployment.class);
-        DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+        private final BundleLifecycle defaultService;
 
-        // The DeploymentUnit would be null for initial capabilities
-        if (depUnit == null) {
-            handler.start(bundle, options);
-            return;
+        public BundleLifecycleImpl(BundleLifecycle defaultService) {
+            this.defaultService = defaultService;
         }
 
-        // There is no deferred phase, activate using the default
-        List<String> deferredModules = DeploymentUtils.getDeferredModules(depUnit);
-        if (!deferredModules.contains(depUnit.getName())) {
-            handler.start(bundle, options);
-            return;
-        }
-
-        // Get the INSTALL phase service and check whether we need to activate it
-        ServiceController<Phase> phaseService = getDeferredPhaseService(depUnit);
-        if (phaseService.getMode() != Mode.NEVER) {
-            handler.start(bundle, options);
-            return;
-        }
-
-        activateDeferredPhase(bundle, depUnit, phaseService);
-    }
-
-    @Override
-    public void stop(XBundle bundle, int options, DefaultHandler handler) throws BundleException {
-        handler.stop(bundle, options);
-    }
-
-    @Override
-    public void uninstall(XBundle bundle, DefaultHandler handler) {
-        LOGGER.tracef("Uninstall deployment: %s", bundle);
-        try {
-            ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
-            Deployment dep = bundle.adapt(Deployment.class);
-            server.undeploy(getRuntimeName(dep));
-        } catch (Exception ex) {
-            LOGGER.warnCannotUndeployBundle(ex, bundle);
-        }
-    }
-
-    private void activateDeferredPhase(XBundle bundle, DeploymentUnit depUnit, ServiceController<Phase> phaseService) throws BundleException {
-
-        LOGGER.infoActivateDeferredModulePhase(bundle);
-
-        ServiceTracker<Object> serviceTracker = new ServiceTracker<Object>("DeferredActivation") {
-            private final AtomicInteger count = new AtomicInteger();
-
-            @Override
-            public void serviceListenerAdded(ServiceController<? extends Object> controller) {
-                LOGGER.debugf("Added: [%d] %s ", count.incrementAndGet(), controller.getName());
-            }
-
-            @Override
-            protected void serviceStarted(ServiceController<?> controller) {
-                LOGGER.debugf("Started: [%d] %s ", count.decrementAndGet(), controller.getName());
-            }
-
-            @Override
-            protected void serviceStartFailed(ServiceController<?> controller) {
-                LOGGER.debugf("Failed: [%d] %s ", count.decrementAndGet(), controller.getName());
-            }
-
-            @Override
-            protected void complete() {
-                LOGGER.debugf("Complete: [%d]", count.get());
-            }
-        };
-        phaseService.addListener(Inheritance.ALL, serviceTracker);
-
-        depUnit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT).incrementAndGet();
-        phaseService.setMode(Mode.ACTIVE);
-
-        try {
-            serviceTracker.awaitCompletion();
-        } catch (InterruptedException ex) {
-            // ignore
-        }
-
-        // In case of failure we go back to NEVER
-        if (serviceTracker.hasFailedServices()) {
-
-            // Collect the first start exception
-            StartException startex = null;
-            for (ServiceController<?> aux : serviceTracker.getFailedServices()) {
-                if (aux.getStartException() != null) {
-                    startex = aux.getStartException();
-                    break;
-                }
-            }
-
-            // Create the BundleException that we throw later
-            BundleException failure;
-            if (startex != null && startex.getCause() instanceof BundleException) {
-                failure = (BundleException)startex.getCause();
+        @Override
+        public void install(Deployment dep) throws BundleException {
+            // Do the install directly if we have a running management op
+            // https://issues.jboss.org/browse/AS7-5642
+            if (OperationAssociation.INSTANCE.getAssociation() != null) {
+                LOGGER.warnCannotDeployBundleFromManagementOperation(dep);
+                BundleManager bundleManager = injectedBundleManager.getValue();
+                bundleManager.installBundle(dep, null, null);
             } else {
-                failure = MESSAGES.cannotActivateDeferredModulePhase(startex, bundle);
+                LOGGER.debugf("Install deployment: %s", dep);
+                String runtimeName = getRuntimeName(dep);
+                putDeployment(runtimeName, dep);
+                try {
+                    InputStream input = dep.getRoot().openStream();
+                    try {
+                        ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+                        server.deploy(runtimeName, input);
+                    } finally {
+                        VFSUtils.safeClose(input);
+                    }
+                } catch (RuntimeException rte) {
+                    throw rte;
+                } catch (Exception ex) {
+                    throw MESSAGES.cannotDeployBundle(ex, dep);
+                }
             }
-
-            // Deactivate the deferred phase
-            LOGGER.warnDeactivateDeferredModulePhase(bundle);
-            phaseService.setMode(Mode.NEVER);
-
-            // Wait for the phase service to come down
-            try {
-                FutureServiceValue<Phase> future = new FutureServiceValue<Phase>(phaseService, State.DOWN);
-                future.get(30, TimeUnit.SECONDS);
-            } catch (ExecutionException ex) {
-                LOGGER.errorf(failure, failure.getMessage());
-                throw MESSAGES.cannotDeactivateDeferredModulePhase(ex, bundle);
-            } catch (TimeoutException ex) {
-                LOGGER.errorf(failure, failure.getMessage());
-                throw MESSAGES.cannotDeactivateDeferredModulePhase(ex, bundle);
-            }
-
-            // Throw the BundleException that caused the start failure
-            throw failure;
         }
-    }
 
-    private String getRuntimeName(Deployment dep) {
-        String name = dep.getLocation();
-        if (name.endsWith("/"))
-            name = name.substring(0, name.length() - 1);
-        int idx = name.lastIndexOf("/");
-        if (idx > 0)
-            name = name.substring(idx + 1);
-        return name;
-    }
+        @Override
+        public void start(XBundle bundle, int options) throws BundleException {
+            Deployment deployment = bundle.adapt(Deployment.class);
+            DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
 
-    @SuppressWarnings("unchecked")
-    private ServiceController<Phase> getDeferredPhaseService(DeploymentUnit depUnit) {
-        ServiceName serviceName = DeploymentUtils.getDeploymentUnitPhaseServiceName(depUnit, Phase.FIRST_MODULE_USE);
-        BundleManager bundleManager = injectedBundleManager.getValue();
-        ServiceContainer serviceContainer = bundleManager.getServiceContainer();
-        return (ServiceController<Phase>) serviceContainer.getRequiredService(serviceName);
+            // The DeploymentUnit would be null for initial capabilities
+            if (depUnit == null) {
+                defaultService.start(bundle, options);
+                return;
+            }
+
+            // There is no deferred phase, activate using the default
+            List<String> deferredModules = DeploymentUtils.getDeferredModules(depUnit);
+            if (!deferredModules.contains(depUnit.getName())) {
+                defaultService.start(bundle, options);
+                return;
+            }
+
+            // Get the INSTALL phase service and check whether we need to activate it
+            ServiceController<Phase> phaseService = getDeferredPhaseService(depUnit);
+            if (phaseService.getMode() != Mode.NEVER) {
+                defaultService.start(bundle, options);
+                return;
+            }
+
+            activateDeferredPhase(bundle, options, depUnit, phaseService);
+        }
+
+        @Override
+        public void stop(XBundle bundle, int options) throws BundleException {
+            defaultService.stop(bundle, options);
+        }
+
+        @Override
+        public void update(XBundle bundle, InputStream input) throws BundleException {
+            defaultService.update(bundle, input);
+        }
+
+        @Override
+        public void uninstall(XBundle bundle, int options) throws BundleException {
+            LOGGER.tracef("Uninstall deployment: %s", bundle);
+            try {
+                ServerDeploymentHelper server = new ServerDeploymentHelper(deploymentManager);
+                Deployment dep = bundle.adapt(Deployment.class);
+                server.undeploy(getRuntimeName(dep));
+            } catch (Exception ex) {
+                LOGGER.warnCannotUndeployBundle(ex, bundle);
+            }
+        }
+
+        private void activateDeferredPhase(XBundle bundle, int options, DeploymentUnit depUnit, ServiceController<Phase> phaseService) throws BundleException {
+
+            // If the Framework's current start level is less than this bundle's start level
+            StartLevel startLevel = injectedStartLevel.getValue();
+            int bundleStartLevel = startLevel.getBundleStartLevel(bundle);
+            if (bundleStartLevel > startLevel.getStartLevel()) {
+                LOGGER.debugf("Start level [%d] not valid for: %s", bundleStartLevel, bundle);
+                return;
+            }
+
+            LOGGER.infoActivateDeferredModulePhase(bundle);
+
+            ServiceTracker<Object> serviceTracker = new ServiceTracker<Object>("DeferredActivation") {
+                private final AtomicInteger count = new AtomicInteger();
+
+                @Override
+                public void serviceListenerAdded(ServiceController<? extends Object> controller) {
+                    LOGGER.debugf("Added: [%d] %s ", count.incrementAndGet(), controller.getName());
+                }
+
+                @Override
+                protected void serviceStarted(ServiceController<?> controller) {
+                    LOGGER.debugf("Started: [%d] %s ", count.decrementAndGet(), controller.getName());
+                }
+
+                @Override
+                protected void serviceStartFailed(ServiceController<?> controller) {
+                    LOGGER.debugf("Failed: [%d] %s ", count.decrementAndGet(), controller.getName());
+                }
+
+                @Override
+                protected void complete() {
+                    LOGGER.debugf("Complete: [%d]", count.get());
+                }
+            };
+            phaseService.addListener(Inheritance.ALL, serviceTracker);
+
+            if (!bundle.isResolved()) {
+                XEnvironment env = injectedEnvironment.getValue();
+                XResolver resolver = injectedResolver.getValue();
+                XResolveContext context = resolver.createResolveContext(env, Collections.singleton(bundle.getBundleRevision()), null);
+                try {
+                    resolver.resolveAndApply(context);
+                } catch (ResolutionException ex) {
+                    phaseService.removeListener(serviceTracker);
+                    throw FrameworkMessages.MESSAGES.cannotResolveBundle(ex, bundle);
+                }
+            }
+
+            depUnit.getAttachment(Attachments.DEFERRED_ACTIVATION_COUNT).incrementAndGet();
+            phaseService.setMode(Mode.ACTIVE);
+
+            try {
+                serviceTracker.awaitCompletion();
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+
+            // In case of failure we go back to NEVER
+            if (serviceTracker.hasFailedServices()) {
+
+                // Collect the first start exception
+                StartException startex = null;
+                for (ServiceController<?> aux : serviceTracker.getFailedServices()) {
+                    if (aux.getStartException() != null) {
+                        startex = aux.getStartException();
+                        break;
+                    }
+                }
+
+                // Create the BundleException that we throw later
+                BundleException failure;
+                if (startex != null && startex.getCause() instanceof BundleException) {
+                    failure = (BundleException) startex.getCause();
+                } else {
+                    failure = MESSAGES.cannotActivateDeferredModulePhase(startex, bundle);
+                }
+
+                // Deactivate the deferred phase
+                LOGGER.warnDeactivateDeferredModulePhase(bundle);
+                phaseService.setMode(Mode.NEVER);
+
+                // Wait for the phase service to come down
+                try {
+                    FutureServiceValue<Phase> future = new FutureServiceValue<Phase>(phaseService, State.DOWN);
+                    future.get(30, TimeUnit.SECONDS);
+                } catch (ExecutionException ex) {
+                    LOGGER.errorf(failure, failure.getMessage());
+                    throw MESSAGES.cannotDeactivateDeferredModulePhase(ex, bundle);
+                } catch (TimeoutException ex) {
+                    LOGGER.errorf(failure, failure.getMessage());
+                    throw MESSAGES.cannotDeactivateDeferredModulePhase(ex, bundle);
+                }
+
+                // Throw the BundleException that caused the start failure
+                throw failure;
+            }
+        }
+
+        private String getRuntimeName(Deployment dep) {
+            String name = dep.getLocation();
+            if (name.endsWith("/"))
+                name = name.substring(0, name.length() - 1);
+            int idx = name.lastIndexOf("/");
+            if (idx > 0)
+                name = name.substring(idx + 1);
+            return name;
+        }
+
+        @SuppressWarnings("unchecked")
+        private ServiceController<Phase> getDeferredPhaseService(DeploymentUnit depUnit) {
+            ServiceName serviceName = DeploymentUtils.getDeploymentUnitPhaseServiceName(depUnit, Phase.FIRST_MODULE_USE);
+            BundleManager bundleManager = injectedBundleManager.getValue();
+            ServiceContainer serviceContainer = bundleManager.getServiceContainer();
+            return (ServiceController<Phase>) serviceContainer.getRequiredService(serviceName);
+        }
     }
 }

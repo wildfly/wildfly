@@ -50,7 +50,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.resolver.XBundle;
 import org.osgi.framework.Bundle;
@@ -116,6 +116,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
         public void start(StartContext context) throws StartException {
             XBundle bundle = injectedBundle.getValue();
             Deployment deployment = depUnit.getAttachment(OSGiConstants.DEPLOYMENT_KEY);
+            BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
             Component activatorComponent = injectedComponent.getOptionalValue();
             if (activatorComponent != null && deployment.getAttachment(BundleActivator.class) == null) {
                 ComponentInstance componentInstance = activatorComponent.createInstance();
@@ -124,7 +125,7 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
             }
             OperationAssociation.INSTANCE.setAssociation(new ModelNode("deploy"));
             try {
-                bundle.start(Bundle.START_ACTIVATION_POLICY);
+                bundleManager.startBundle(bundle, Bundle.START_ACTIVATION_POLICY);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.ACTIVE);
             } catch (BundleException ex) {
                 throw MESSAGES.cannotStartBundle(ex, bundle);
@@ -138,7 +139,8 @@ public class BundleActivateProcessor implements DeploymentUnitProcessor {
             XBundle bundle = injectedBundle.getValue();
             try {
                 // Server shutdown should not modify the persistent start setting
-                bundle.stop(Bundle.STOP_TRANSIENT);
+                BundleManager bundleManager = depUnit.getAttachment(OSGiConstants.BUNDLE_MANAGER_KEY);
+                bundleManager.stopBundle(bundle, Bundle.STOP_TRANSIENT);
                 depUnit.putAttachment(Attachments.BUNDLE_STATE_KEY, BundleState.RESOLVED);
             } catch (BundleException ex) {
                 LOGGER.debugf(ex, "Cannot stop bundle: %s", bundle);

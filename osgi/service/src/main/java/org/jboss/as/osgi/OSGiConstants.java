@@ -26,7 +26,7 @@ import org.jboss.as.osgi.parser.SubsystemState;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.osgi.deployment.deployer.Deployment;
-import org.jboss.osgi.framework.BundleManager;
+import org.jboss.osgi.framework.spi.BundleManager;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.repository.XRepository;
 import org.jboss.osgi.resolver.XBundle;

@@ -60,7 +60,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.osgi.framework.spi.FrameworkBuilderFactory;
 import org.jboss.osgi.framework.spi.FrameworkBuilder;
-import org.jboss.osgi.framework.spi.SystemPathsPlugin;
+import org.jboss.osgi.framework.spi.SystemPaths;
 import org.jboss.osgi.framework.spi.FrameworkBuilder.FrameworkPhase;
 import org.osgi.framework.Constants;
 
@@ -193,7 +193,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         if (syspackages == null) {
             Set<String> sysPackages = new LinkedHashSet<String>();
             sysPackages.addAll(Arrays.asList(SystemPackagesIntegration.JAVAX_API_PACKAGES));
-            sysPackages.addAll(Arrays.asList(SystemPathsPlugin.DEFAULT_FRAMEWORK_PACKAGES));
+            sysPackages.addAll(Arrays.asList(SystemPaths.DEFAULT_FRAMEWORK_PACKAGES));
             sysPackages.addAll(Arrays.asList(SystemPackagesIntegration.DEFAULT_INTEGRATION_PACKAGES));
             syspackages = sysPackages.toString();
             syspackages = syspackages.substring(1, syspackages.length() - 1);
