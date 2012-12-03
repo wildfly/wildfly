@@ -81,7 +81,7 @@ public class EJB3Extension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
-        subsystem.registerXMLElementWriter(EJB3Subsystem13Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(EJB3SubsystemXMLPersister.INSTANCE);
 
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(EJB3SubsystemRootResourceDefinition.INSTANCE);
 
