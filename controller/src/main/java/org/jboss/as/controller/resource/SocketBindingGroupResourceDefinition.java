@@ -64,6 +64,8 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
 
     // Common attributes
 
+    public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP);
+
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
             .setResourceOnly()
             .setValidator(new StringLengthValidator(1)).build();
@@ -104,7 +106,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
 
 
     public SocketBindingGroupResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler, final boolean forDomainModel, ResourceDefinition...children) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
+        super(PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
         this.forDomainModel = forDomainModel;

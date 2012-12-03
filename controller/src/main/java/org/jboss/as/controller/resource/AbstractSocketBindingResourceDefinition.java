@@ -22,16 +22,12 @@
 
 package org.jboss.as.controller.resource;
 
-import java.util.Locale;
-
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -51,6 +47,8 @@ import org.jboss.dmr.ModelType;
 public abstract class AbstractSocketBindingResourceDefinition extends SimpleResourceDefinition {
 
     // Common attributes
+
+    public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING);
 
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
             .setResourceOnly()
@@ -80,7 +78,7 @@ public abstract class AbstractSocketBindingResourceDefinition extends SimpleReso
     public static final ClientMappingsAttributeDefinition CLIENT_MAPPINGS = new ClientMappingsAttributeDefinition(ModelDescriptionConstants.CLIENT_MAPPINGS);
 
     public AbstractSocketBindingResourceDefinition(final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
-        super(PathElement.pathElement(ModelDescriptionConstants.SOCKET_BINDING),
+        super(PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.SOCKET_BINDING),
                 addHandler, removeHandler, OperationEntry.Flag.RESTART_ALL_SERVICES, OperationEntry.Flag.RESTART_ALL_SERVICES);
     }

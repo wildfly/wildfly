@@ -40,6 +40,8 @@ import org.jboss.dmr.ModelType;
  */
 public class RemoteDestinationOutboundSocketBindingResourceDefinition extends OutboundSocketBindingResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING);
+
     public static final RemoteDestinationOutboundSocketBindingResourceDefinition INSTANCE = new RemoteDestinationOutboundSocketBindingResourceDefinition();
 
     public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING, false)
@@ -57,7 +59,7 @@ public class RemoteDestinationOutboundSocketBindingResourceDefinition extends Ou
     public static final SimpleAttributeDefinition[] ATTRIBUTES = {HOST, PORT, SOURCE_INTERFACE, SOURCE_PORT, FIXED_SOURCE_PORT};
 
     private RemoteDestinationOutboundSocketBindingResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING),
+        super(PATH,
                 ControllerResolver.getResolver(ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING),
                 RemoteDestinationOutboundSocketBindingAddHandler.INSTANCE,
                 OutboundSocketBindingRemoveHandler.INSTANCE, true);
