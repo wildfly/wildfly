@@ -52,6 +52,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.AbstractControllerService;
@@ -109,6 +110,7 @@ import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.repository.LocalFileRepository;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.RuntimeExpressionResolver;
+import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
@@ -376,6 +378,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType);
+        VersionModelInitializer.registerRootResource(rootResource, environment != null ? environment.getProductConfig() : null);
         this.modelNodeRegistration = rootRegistration;
     }
 

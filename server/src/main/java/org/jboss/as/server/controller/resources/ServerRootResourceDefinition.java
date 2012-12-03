@@ -102,9 +102,6 @@ import org.jboss.as.server.operations.ServerProcessReloadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
-import org.jboss.as.server.operations.ServerVersionOperations.ManagementVersionAttributeHandler;
-import org.jboss.as.server.operations.ServerVersionOperations.ProductInfoAttributeHandler;
-import org.jboss.as.server.operations.ServerVersionOperations.ReleaseVersionAttributeHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
@@ -299,16 +296,15 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(RUNNING_MODE, new RunningModeReadHandler(runningModeControl));
 
 
-        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, ManagementVersionAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, ManagementVersionAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, ManagementVersionAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, null);
 
-        resourceRegistration.registerReadOnlyAttribute(RELEASE_VERSION, ReleaseVersionAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, ReleaseVersionAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(RELEASE_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, null);
 
-        ProductInfoAttributeHandler infoHandler = new ProductInfoAttributeHandler(serverEnvironment != null ? serverEnvironment.getProductConfig() : null);
-        resourceRegistration.registerReadOnlyAttribute(PRODUCT_NAME, infoHandler);
-        resourceRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, infoHandler);
+        resourceRegistration.registerReadOnlyAttribute(PRODUCT_NAME, null);
+        resourceRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, null);
 
         resourceRegistration.registerReadOnlyAttribute(NAMESPACES, DefaultEmptyListAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, DefaultEmptyListAttributeHandler.INSTANCE);

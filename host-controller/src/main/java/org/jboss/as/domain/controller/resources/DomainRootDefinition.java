@@ -104,9 +104,6 @@ import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition
 import org.jboss.as.server.deploymentoverlay.DeploymentOverlayDefinition;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
-import org.jboss.as.server.operations.ServerVersionOperations.ManagementVersionAttributeHandler;
-import org.jboss.as.server.operations.ServerVersionOperations.ProductInfoAttributeHandler;
-import org.jboss.as.server.operations.ServerVersionOperations.ReleaseVersionAttributeHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -207,16 +204,15 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(LAUNCH_TYPE, new LaunchTypeHandler(ServerEnvironment.LaunchType.DOMAIN));
         resourceRegistration.registerReadOnlyAttribute(LOCAL_HOST_NAME, new LocalHostNameOperationHandler(hostControllerInfo));
 
-        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, ManagementVersionAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, ManagementVersionAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, ManagementVersionAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MAJOR_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MINOR_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(MANAGEMENT_MICRO_VERSION, null);
 
-        resourceRegistration.registerReadOnlyAttribute(RELEASE_VERSION, ReleaseVersionAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, ReleaseVersionAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(RELEASE_VERSION, null);
+        resourceRegistration.registerReadOnlyAttribute(RELEASE_CODENAME, null);
 
-        ProductInfoAttributeHandler infoHandler = new ProductInfoAttributeHandler(environment != null ? environment.getProductConfig() : null);
-        resourceRegistration.registerReadOnlyAttribute(PRODUCT_NAME, infoHandler);
-        resourceRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, infoHandler);
+        resourceRegistration.registerReadOnlyAttribute(PRODUCT_NAME, null);
+        resourceRegistration.registerReadOnlyAttribute(PRODUCT_VERSION, null);
 
         resourceRegistration.registerReadOnlyAttribute(NAMESPACES, DefaultEmptyListAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, DefaultEmptyListAttributeHandler.INSTANCE);

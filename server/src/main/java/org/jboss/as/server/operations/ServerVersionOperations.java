@@ -28,87 +28,13 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
-import org.jboss.as.version.ProductConfig;
-import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleClassLoader;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ServerVersionOperations {
-    public static class ManagementVersionAttributeHandler implements OperationStepHandler {
-        public static final OperationStepHandler INSTANCE = new ManagementVersionAttributeHandler();
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-            if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION)) {
-                context.getResult().set(Version.MANAGEMENT_MAJOR_VERSION);
-            } else if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION)) {
-                context.getResult().set(Version.MANAGEMENT_MINOR_VERSION);
-            } else if (attr.equals(ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION)) {
-                context.getResult().set(Version.MANAGEMENT_MICRO_VERSION);
-            }
-
-            context.stepCompleted();
-        }
-    }
-
-    public static class ReleaseVersionAttributeHandler implements OperationStepHandler {
-        public static final OperationStepHandler INSTANCE = new ReleaseVersionAttributeHandler();
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-            try {
-                if (attr.equals(ModelDescriptionConstants.RELEASE_VERSION)) {
-                    context.getResult().set(Version.AS_VERSION);
-                } else if (attr.equals(ModelDescriptionConstants.RELEASE_CODENAME)) {
-                    context.getResult().set(Version.AS_RELEASE_CODENAME);
-                }
-            } catch (RuntimeException e) {
-                if (SecurityActions.getClassLoader(this.getClass()) instanceof ModuleClassLoader) {
-                    throw new OperationFailedException(e.getMessage());
-                }
-                //We are running as a test and these cannot be determined
-                context.getResult().set("-");
-            }
-
-            context.stepCompleted();
-        }
-    }
-
-
-    public static class ProductInfoAttributeHandler implements OperationStepHandler {
-        final ProductConfig cfg;
-
-        public ProductInfoAttributeHandler(ProductConfig cfg) {
-            this.cfg = cfg;
-        }
-
-        @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            String attr = operation.get(ModelDescriptionConstants.NAME).asString();
-
-            //These are undefined for the community version
-            if (cfg != null) {
-                if (attr.equals(ModelDescriptionConstants.PRODUCT_VERSION)) {
-                    String productVersion = cfg.getProductVersion();
-                    if (productVersion != null) {
-                        context.getResult().set(productVersion);
-                    }
-                    context.getResult();
-                } else if (attr.equals(ModelDescriptionConstants.PRODUCT_NAME)) {
-                    String productName = cfg.getProductName();
-                    if (productName != null) {
-                        context.getResult().set(productName);
-                    }
-                }
-            }
-
-            context.stepCompleted();
-        }
-    }
 
     public static class DefaultEmptyListAttributeHandler implements OperationStepHandler {
         public static final OperationStepHandler INSTANCE = new DefaultEmptyListAttributeHandler();
