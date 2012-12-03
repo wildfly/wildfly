@@ -3462,16 +3462,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.python</groupId>
-      <artifactId>jython-standalone</artifactId>
-      <licenses>
-        <license>
-          <name>The Jython License</name>
-          <url>http://www.jython.org/license.html</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.rhq.helpers</groupId>
       <artifactId>rhq-pluginAnnotations</artifactId>
       <licenses>

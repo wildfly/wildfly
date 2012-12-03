@@ -1144,7 +1144,6 @@
                                                         <!-- AS7-3390 -->
                                                         <exclude name="org/apache/commons/beanutils/**/*"/>
                                                         <!-- AS7-3389 -->
-                                                        <exclude name="org/python/jython/standalone/**/*"/>
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">
