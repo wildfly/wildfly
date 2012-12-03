@@ -22,20 +22,18 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 import java.util.EnumSet;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SECURITY_DOMAIN;
 
 
 /**
@@ -45,23 +43,6 @@ public class EJB3Subsystem14Parser extends EJB3Subsystem13Parser {
     public static final EJB3Subsystem14Parser INSTANCE = new EJB3Subsystem14Parser();
 
     protected EJB3Subsystem14Parser() {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void writeElements(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
-        super.writeElements(writer, context);
-
-        final ModelNode model = context.getModelNode();
-
-        // default-security-domain element
-        if (model.hasDefined(DEFAULT_SECURITY_DOMAIN)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.DEFAULT_SECURITY_DOMAIN.getLocalName());
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.VALUE.getLocalName(), model.get(DEFAULT_SECURITY_DOMAIN).asString());
-            writer.writeEndElement();
-        }
     }
 
     @Override
@@ -104,5 +85,4 @@ public class EJB3Subsystem14Parser extends EJB3Subsystem13Parser {
             throw missingRequired(reader, missingRequiredAttributes);
         }
     }
-
 }
