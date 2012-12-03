@@ -72,7 +72,7 @@ class FileRemoveTask implements PatchingTask {
         // we create the backup in any case, since it is possible that the task
         // will be processed anyhow if the user specified OVERRIDE_ALL policy.
         // If the task is undone, the patch history will be deleted (including this backup).
-        backup(target, Collections.<String>emptyList(), rollback);
+        backup(target, backup, Collections.<String>emptyList(), rollback);
         // See if the hash matches the metadata
 
         final byte[] expected = description.getModification().getTargetHash();
@@ -93,24 +93,27 @@ class FileRemoveTask implements PatchingTask {
         }
     }
 
-    void backup(final File root, final List<String> path, final List<ContentModification> rollback) throws IOException {
+    void backup(final File root, final File backupLocation, final List<String> path, final List<ContentModification> rollback) throws IOException {
         if(!root.exists()) {
             // Perhaps an error condition?
         } else if(root.isDirectory()) {
             final File[] files = root.listFiles();
+            final String rootName = root.getName();
             if(files.length == 0) {
                 // Create empty directory
-                rollback.add(createRollbackItem(root.getName(), path, NO_CONTENT, true));
+                rollback.add(createRollbackItem(rootName, path, NO_CONTENT, true));
             } else {
+                final List<String> newPath = new ArrayList<String>(path);
+                newPath.add(rootName);
                 for (File file : files) {
-                    final List<String> newPath = new ArrayList<String>(path);
-                    newPath.add(file.getName());
-                    backup(file, newPath, rollback);
+                    final String name = file.getName();
+                    final File newBackupLocation = new File(backupLocation, name);
+                    backup(file, newBackupLocation, newPath, rollback);
                 }
             }
         } else {
             // Copy and record the backup action
-            final byte[] hash = copy(root, backup);
+            final byte[] hash = copy(root, backupLocation);
             rollback.add(createRollbackItem(root.getName(), path, hash, false));
         }
     }

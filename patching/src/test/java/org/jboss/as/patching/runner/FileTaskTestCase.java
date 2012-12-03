@@ -36,6 +36,7 @@ import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
+import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
@@ -47,6 +48,8 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
@@ -169,4 +172,60 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         File backupFile = assertFileExists(env.getHistoryDir(patchID), "misc", "bin", fileName);
         assertArrayEquals(existingHash, hashFile(backupFile));
     }
+
+    @Test
+    public void testRemoveDirectoryAndRollback() throws Exception {
+
+        // start from a base installation
+        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        // Create a directory
+        File test = mkdir(env.getInstalledImage().getJbossHome(), "test");
+        String one = "one";
+        String two = "two";
+        File fileOne = touch(test, one);
+        touch(fileOne); // touch one
+        dump(fileOne, randomString());
+        File fileTwo = touch(test, two);
+        touch(fileTwo); // touch two
+        dump(fileTwo, randomString());
+        File subDirOne = mkdir(test, "sub");
+        File subOne = touch(subDirOne, one);
+        touch(subOne);
+        dump(subOne, randomString());
+        File subTwo = touch(subDirOne, two);
+        touch(subTwo);
+        dump(subTwo, randomString());
+        byte[] existingHash = hashFile(test);
+
+        // build a one-off patch for the base installation
+        // with 1 removed directory
+        ContentModification fileRemoved = new ContentModification(new MiscContentItem("test", new String[0], NO_CONTENT), existingHash, REMOVE);
+
+        Patch patch = PatchBuilder.create()
+                .setPatchId(randomString())
+                .setDescription(randomString())
+                .setOneOffType(info.getVersion())
+                .addContentModification(fileRemoved)
+                .build();
+
+        // create the patch
+        File patchDir = mkdir(tempDir, patch.getPatchId());
+        createPatchXMLFile(patchDir, patch);
+        File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
+
+        // Apply
+        PatchingResult result = executePatch(info, zippedPatch);
+        assertFalse(test.exists());
+
+        // Rollback
+        result = rollback(result.getPatchInfo(), patch.getPatchId());
+        assertTrue(test.exists());
+        assertTrue(fileOne.isFile());
+        assertTrue(fileTwo.isFile());
+        assertTrue(subOne.isFile());
+        assertTrue(subTwo.isFile());
+
+    }
+
 }
+
