@@ -21,17 +21,16 @@
  */
 package org.jboss.as.ejb3.timerservice;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 
-import org.jboss.as.ejb3.timerservice.persistence.CalendarTimerEntity;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
-import org.jboss.as.ejb3.timerservice.persistence.TimerEntity;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
+import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.task.CalendarTimerTask;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
 
@@ -44,7 +43,6 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @version $Revision: $
  */
 public class CalendarTimer extends TimerImpl {
-
 
     /**
      * The calendar based timeout for this timer
@@ -59,30 +57,6 @@ public class CalendarTimer extends TimerImpl {
 
     private final Method timeoutMethod;
 
-    /**
-     * Constructs a {@link CalendarTimer}
-     *
-     * @param id              The id of this timer
-     * @param timerService    The timer service to which this timer belongs
-     * @param calendarTimeout The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
-     */
-    public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout, Object primaryKey) {
-        this(id, timerService, calendarTimeout, null, true, primaryKey);
-    }
-
-    /**
-     * Constructs a {@link CalendarTimer}
-     *
-     * @param id              The id of this timer
-     * @param timerService    The timer service to which this timer belongs
-     * @param calendarTimeout The {@link CalendarBasedTimeout} from which this {@link CalendarTimer} is being created
-     * @param info            The serializable info which will be made available through {@link javax.ejb.Timer#getInfo()}
-     * @param persistent      True if this timer is persistent. False otherwise
-     */
-    public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
-                         Serializable info, boolean persistent, Object primaryKey) {
-        this(id, timerService, calendarTimeout, info, persistent, null, primaryKey);
-    }
 
     /**
      * Constructs a {@link CalendarTimer}
@@ -96,52 +70,40 @@ public class CalendarTimer extends TimerImpl {
      *                        This <code>timeoutMethod</code> is then considered as the name of the timeout method which has to
      *                        be invoked when this timer times out.
      */
-    public CalendarTimer(String id, TimerServiceImpl timerService, CalendarBasedTimeout calendarTimeout,
-                         Serializable info, boolean persistent, Method timeoutMethod, Object primaryKey) {
-        super(id, timerService, calendarTimeout.getFirstTimeout() == null ? null : calendarTimeout.getFirstTimeout()
-                .getTime(), 0, info, persistent, primaryKey, TimerState.CREATED);
-        this.calendarTimeout = calendarTimeout;
+    public CalendarTimer(Builder builder, TimerServiceImpl timerService) {
+        super(builder, timerService);
 
-        // compute the next timeout (from "now")
-        Calendar nextTimeout = this.calendarTimeout.getNextTimeout();
-        if (nextTimeout != null) {
-            this.nextExpiration = nextTimeout.getTime();
-        }
-        // set this as an auto-timer if the passed timeout method name
-        // is not null
-        if (timeoutMethod != null) {
-            this.autoTimer = true;
-            this.timeoutMethod = timeoutMethod;
+        this.autoTimer = builder.autoTimer;
+        if (autoTimer) {
+            assert builder.timeoutMethod != null;
+            this.timeoutMethod = builder.timeoutMethod;
         } else {
-            this.autoTimer = false;
+            assert builder.timeoutMethod == null;
             this.timeoutMethod = null;
         }
-    }
 
-    /**
-     * Constructs a {@link CalendarTimer} from a persistent state
-     *
-     * @param persistedCalendarTimer The persistent state of the calendar timer
-     * @param timerService           The timer service to which this timer belongs
-     */
-    public CalendarTimer(CalendarTimerEntity persistedCalendarTimer, TimerServiceImpl timerService) {
-        super(persistedCalendarTimer, timerService);
-        this.calendarTimeout = persistedCalendarTimer.getCalendarTimeout();
-        // set the next expiration (which will be available in the persistent state)
-        this.nextExpiration = persistedCalendarTimer.getNextDate();
-        // auto-timer related attributes
-        if (persistedCalendarTimer.isAutoTimer()) {
-            this.autoTimer = true;
-            TimeoutMethod timeoutMethodInfo = persistedCalendarTimer.getTimeoutMethod();
-            this.timeoutMethod = this.getTimeoutMethod(timeoutMethodInfo);
-            if (this.timeoutMethod == null) {
-                throw MESSAGES.failToFindTimeoutMethod(timeoutMethodInfo);
+        ScheduleExpression s = new ScheduleExpression();
+        s.second(builder.scheduleExprSecond);
+        s.minute(builder.scheduleExprMinute);
+        s.hour(builder.scheduleExprHour);
+        s.dayOfWeek(builder.scheduleExprDayOfWeek);
+        s.dayOfMonth(builder.scheduleExprDayOfMonth);
+        s.month(builder.scheduleExprMonth);
+        s.year(builder.scheduleExprYear);
+        s.start(builder.scheduleExprStartDate);
+        s.end(builder.scheduleExprEndDate);
+        s.timezone(builder.scheduleExprTimezone);
+        this.calendarTimeout = new CalendarBasedTimeout(s);
+
+        if (builder.nextDate == null && builder.newTimer) {
+            // compute the next timeout (from "now")
+            Calendar nextTimeout = this.calendarTimeout.getNextTimeout();
+            if (nextTimeout != null) {
+                this.nextExpiration = nextTimeout.getTime();
             }
-        } else {
-            this.autoTimer = false;
-            this.timeoutMethod = null;
         }
     }
+
 
     /**
      * {@inheritDoc}
@@ -172,14 +134,6 @@ public class CalendarTimer extends TimerImpl {
     public boolean isCalendarTimer() throws IllegalStateException, EJBException {
         this.assertTimerState();
         return true;
-    }
-
-    /**
-     * Creates and return a new persistent state of this timer
-     */
-    @Override
-    protected TimerEntity createPersistentState() {
-        return new CalendarTimerEntity(this);
     }
 
     /**
@@ -242,18 +196,105 @@ public class CalendarTimer extends TimerImpl {
     }
 
 
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder extends TimerImpl.Builder {
+        private String scheduleExprSecond;
+        private String scheduleExprMinute;
+        private String scheduleExprHour;
+        private String scheduleExprDayOfWeek;
+        private String scheduleExprDayOfMonth;
+        private String scheduleExprMonth;
+        private String scheduleExprYear;
+        private Date scheduleExprStartDate;
+        private Date scheduleExprEndDate;
+        private String scheduleExprTimezone;
+        private boolean autoTimer;
+        private Method timeoutMethod;
+
+        public Builder setScheduleExprSecond(final String scheduleExprSecond) {
+            this.scheduleExprSecond = scheduleExprSecond;
+            return this;
+        }
+
+        public Builder setScheduleExprMinute(final String scheduleExprMinute) {
+            this.scheduleExprMinute = scheduleExprMinute;
+            return this;
+        }
+
+        public Builder setScheduleExprHour(final String scheduleExprHour) {
+            this.scheduleExprHour = scheduleExprHour;
+            return this;
+        }
+
+        public Builder setScheduleExprDayOfWeek(final String scheduleExprDayOfWeek) {
+            this.scheduleExprDayOfWeek = scheduleExprDayOfWeek;
+            return this;
+        }
+
+        public Builder setScheduleExprDayOfMonth(final String scheduleExprDayOfMonth) {
+            this.scheduleExprDayOfMonth = scheduleExprDayOfMonth;
+            return this;
+        }
+
+        public Builder setScheduleExprMonth(final String scheduleExprMonth) {
+            this.scheduleExprMonth = scheduleExprMonth;
+            return this;
+        }
+
+        public Builder setScheduleExprYear(final String scheduleExprYear) {
+            this.scheduleExprYear = scheduleExprYear;
+            return this;
+        }
+
+        public Builder setScheduleExprStartDate(final Date scheduleExprStartDate) {
+            this.scheduleExprStartDate = scheduleExprStartDate;
+            return this;
+        }
+
+        public Builder setScheduleExprEndDate(final Date scheduleExprEndDate) {
+            this.scheduleExprEndDate = scheduleExprEndDate;
+            return this;
+        }
+
+        public Builder setScheduleExprTimezone(final String scheduleExprTimezone) {
+            this.scheduleExprTimezone = scheduleExprTimezone;
+            return this;
+        }
+
+        public Builder setAutoTimer(final boolean autoTimer) {
+            this.autoTimer = autoTimer;
+            return this;
+        }
+
+        public Builder setTimeoutMethod(final Method timeoutMethod) {
+            this.timeoutMethod = timeoutMethod;
+            return this;
+        }
+
+        public CalendarTimer build(final TimerServiceImpl timerService) {
+            return new CalendarTimer(this, timerService);
+        }
+    }
+
     /**
-     * Returns the {@link java.lang.reflect.Method}, represented by the {@link TimeoutMethod}
+     * Returns the {@link java.lang.reflect.Method}, represented by the {@link org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod}
      * <p>
      * Note: This method uses the {@link Thread#getContextClassLoader()} to load the
      * relevant classes while getting the {@link java.lang.reflect.Method}
      * </p>
      *
-     * @param timeoutMethodInfo The timeout method
+     * @param timeoutMethodInfo  The timeout method
+     * @param timedObjectInvoker
      * @return
      */
-    private Method getTimeoutMethod(TimeoutMethod timeoutMethodInfo) {
-
+    public static Method getTimeoutMethod(TimeoutMethod timeoutMethodInfo, TimedObjectInvoker timedObjectInvoker) {
+        if(timeoutMethodInfo == null) {
+            return null;
+        }
         String declaringClass = timeoutMethodInfo.getDeclaringClass();
         Class<?> timeoutMethodDeclaringClass = null;
         try {
@@ -311,6 +352,4 @@ public class CalendarTimer extends TimerImpl {
         // no match found
         return null;
     }
-
-
 }

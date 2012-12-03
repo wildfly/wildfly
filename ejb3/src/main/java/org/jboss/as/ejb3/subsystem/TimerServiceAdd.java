@@ -25,29 +25,19 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.List;
 import java.util.Timer;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.services.path.PathManager;
-import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ejb3.deployment.processors.AroundTimeoutAnnotationParsingProcessor;
 import org.jboss.as.ejb3.deployment.processors.TimerServiceDeploymentProcessor;
 import org.jboss.as.ejb3.deployment.processors.annotation.TimerServiceAnnotationProcessor;
 import org.jboss.as.ejb3.deployment.processors.merging.TimerMethodMergingProcessor;
-import org.jboss.as.ejb3.timerservice.persistence.filestore.FileTimerPersistence;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.txn.service.TransactionManagerService;
-import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -56,6 +46,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 /**
  * Adds the timer service
  *
@@ -63,9 +54,11 @@ import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
  */
 public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
 
-
     public static final TimerServiceAdd INSTANCE = new TimerServiceAdd();
 
+    private TimerServiceAdd() {
+
+    }
 
     /**
      * Populate the <code>timerService</code> from the <code>operation</code>
@@ -85,37 +78,22 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(final OperationContext context, ModelNode operation, final ModelNode model,
                                    final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
-        final ModelNode pathNode = TimerServiceResourceDefinition.PATH.resolveModelAttribute(context, model);
-        final String path = pathNode.isDefined() ? pathNode.asString() : null;
-        final ModelNode relativeToNode = TimerServiceResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, model);
-        final String relativeTo = relativeToNode.isDefined() ? relativeToNode.asString() : null;
-
+        final String defaultDataStore = TimerServiceResourceDefinition.DEFAULT_DATA_STORE.resolveModelAttribute(context, model).asString();
         final String threadPoolName = TimerServiceResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName threadPoolServiceName = EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 ROOT_LOGGER.debug("Configuring timers");
-
-                //install the ejb timer service data store path service
-                if (path != null) {
-                    //we only add the timer service DUP's when the timer service in enabled in XML
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimerServiceAnnotationProcessor());
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimerMethodMergingProcessor());
-                    processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(threadPoolServiceName));
-                }
+                //we only add the timer service DUP's when the timer service in enabled in XML
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_TIMEOUT_ANNOTATION, new TimerServiceAnnotationProcessor());
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_AROUNDTIMEOUT_ANNOTATION, new AroundTimeoutAnnotationParsingProcessor());
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_METADATA_MERGE, new TimerMethodMergingProcessor());
+                processorTarget.addDeploymentProcessor(EJB3Extension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_TIMER_SERVICE, new TimerServiceDeploymentProcessor(threadPoolServiceName, defaultDataStore));
             }
         }, OperationContext.Stage.RUNTIME);
 
         newControllers.add(context.getServiceTarget().addService(TimerServiceDeploymentProcessor.TIMER_SERVICE_NAME, new TimerValueService())
-                .install());
-        final FileTimerPersistence fileTimerPersistence = new FileTimerPersistence(true, path, relativeTo);
-        newControllers.add(context.getServiceTarget().addService(FileTimerPersistence.SERVICE_NAME, fileTimerPersistence)
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, fileTimerPersistence.getModuleLoader())
-                .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, fileTimerPersistence.getPathManager())
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, fileTimerPersistence.getTransactionManager())
-                .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, fileTimerPersistence.getTransactionSynchronizationRegistry())
                 .install());
 
     }

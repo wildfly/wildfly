@@ -27,8 +27,10 @@
            <?CLUSTER-PASSIVATION-STORE?>
        </passivation-stores>
        <async thread-pool-name="default"/>
-       <timer-service thread-pool-name="default">
-           <data-store path="timer-service-data" relative-to="jboss.server.data.dir"/>
+       <timer-service thread-pool-name="default" default-data-store="default-file-store">
+           <data-stores>
+               <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
+           </data-stores>
        </timer-service>
        <remote connector-ref="remoting-connector" thread-pool-name="default"/>
        <thread-pools>

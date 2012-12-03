@@ -2451,4 +2451,6 @@ public interface EjbMessages {
     @Message(id = 14236, value = "default-missing-method-permissions-deny-access was set to true")
     String rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
 
+    @Message(id = 14237, value = "More than one timer found in database with id %s")
+    RuntimeException moreThanOneTimerFoundWithId(String id);
 }

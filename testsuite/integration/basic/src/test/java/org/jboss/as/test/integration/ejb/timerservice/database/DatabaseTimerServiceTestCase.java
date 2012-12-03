@@ -19,18 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.timerservice.simple;
+package org.jboss.as.test.integration.ejb.timerservice.database;
 
 import java.util.Date;
 
-import javax.ejb.Timer;
 import javax.ejb.TimerConfig;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.test.integration.management.ManagementOperations;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -38,47 +41,66 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 /**
  * Tests that an @Timeout method is called when a timer is created programatically.
  *
  * @author Stuart Douglas
  */
 @RunWith(Arquillian.class)
-public class SimpleTimerServiceTestCase {
+@ServerSetup(DatabaseTimerServiceTestCase.DatabaseTimerServiceTestCaseServerSetup.class)
+public class DatabaseTimerServiceTestCase {
 
     private static int TIMER_INIT_TIME_MS = 100;
     private static int TIMER_TIMEOUT_TIME_MS = 100;
 
     private static String INFO_MSG_FOR_CHECK = "info";
 
+    static class DatabaseTimerServiceTestCaseServerSetup implements ServerSetupTask {
+
+        @Override
+        public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+            ModelNode op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
+            op.get(OP_ADDR).add("service", "timer-service");
+            op.get(OP_ADDR).add("database-data-store", "dbstore");
+            op.get("datasource-jndi-name").set("java:jboss/datasources/ExampleDS");
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        }
+
+        @Override
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+            ModelNode op = new ModelNode();
+            op.get(OP).set(REMOVE);
+            op.get(OP_ADDR).add(SUBSYSTEM, "ejb3");
+            op.get(OP_ADDR).add("service", "timer-service");
+            op.get(OP_ADDR).add("database-data-store", "dbstore");
+            op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            ManagementOperations.executeOperation(managementClient.getControllerClient(), op);
+        }
+    }
+
     @Deployment
     public static Archive<?> deploy() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "testTimerServiceSimple.war");
-        war.addPackage(SimpleTimerServiceTestCase.class.getPackage());
+        war.addPackage(DatabaseTimerServiceTestCase.class.getPackage());
+        war.addAsManifestResource(DatabaseTimerServiceTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return war;
     }
 
-    @Test
-    @InSequence(1)
-    public void testAnnotationTimeoutMethod() throws NamingException {
-        InitialContext ctx = new InitialContext();
-        AnnotationTimerServiceBean bean = (AnnotationTimerServiceBean) ctx.lookup("java:module/" + AnnotationTimerServiceBean.class.getSimpleName());
-        bean.resetTimerServiceCalled();
-        bean.getTimerService().createTimer(TIMER_TIMEOUT_TIME_MS, INFO_MSG_FOR_CHECK);
-        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
-
-        bean.resetTimerServiceCalled();
-        long ts = (new Date()).getTime() + TIMER_INIT_TIME_MS;
-        bean.getTimerService().createTimer(new Date(ts), INFO_MSG_FOR_CHECK);
-        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
-
-        Assert.assertEquals(INFO_MSG_FOR_CHECK, bean.getTimerInfo());
-        Assert.assertFalse(bean.isCalendar());
-        Assert.assertTrue(bean.isPersistent());
-    }
 
     @Test
-    @InSequence(2)
     public void testTimedObjectTimeoutMethod() throws NamingException {
         InitialContext ctx = new InitialContext();
         TimedObjectTimerServiceBean bean = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());
@@ -96,31 +118,6 @@ public class SimpleTimerServiceTestCase {
         Assert.assertEquals(INFO_MSG_FOR_CHECK, bean.getTimerInfo());
         Assert.assertFalse(bean.isCalendar());
         Assert.assertTrue(bean.isPersistent());
-    }
-
-    @Test
-    @InSequence(3)
-    public void testIntervalTimer() throws NamingException {
-        InitialContext ctx = new InitialContext();
-        TimerConfig timerConfig = new TimerConfig();
-        timerConfig.setInfo(INFO_MSG_FOR_CHECK);
-
-        AnnotationTimerServiceBean bean1 = (AnnotationTimerServiceBean) ctx.lookup("java:module/" + AnnotationTimerServiceBean.class.getSimpleName());
-        bean1.resetTimerServiceCalled();
-        long ts = (new Date()).getTime() + TIMER_INIT_TIME_MS;
-        Timer timer1 = bean1.getTimerService().createIntervalTimer(new Date(ts), TIMER_TIMEOUT_TIME_MS, timerConfig);
-        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
-        bean1.resetTimerServiceCalled();
-        Assert.assertTrue(AnnotationTimerServiceBean.awaitTimerCall());
-        timer1.cancel();
-
-        TimedObjectTimerServiceBean bean2 = (TimedObjectTimerServiceBean) ctx.lookup("java:module/" + TimedObjectTimerServiceBean.class.getSimpleName());
-        bean2.resetTimerServiceCalled();
-        Timer timer2 = bean2.getTimerService().createIntervalTimer(TIMER_INIT_TIME_MS, TIMER_TIMEOUT_TIME_MS, timerConfig);
-        Assert.assertTrue(TimedObjectTimerServiceBean.awaitTimerCall());
-        bean2.resetTimerServiceCalled();
-        Assert.assertTrue(TimedObjectTimerServiceBean.awaitTimerCall());
-        timer2.cancel();
     }
 
 }

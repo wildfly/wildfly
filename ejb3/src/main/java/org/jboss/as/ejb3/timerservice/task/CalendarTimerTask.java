@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
+import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 
@@ -45,8 +46,8 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     }
 
     @Override
-    protected void callTimeout() throws Exception {
-        CalendarTimer calendarTimer = this.getTimer();
+    protected void callTimeout(TimerImpl timer) throws Exception {
+        CalendarTimer calendarTimer = (CalendarTimer) timer;
 
         // if we have any more schedules remaining, then schedule a new task
         if (calendarTimer.getNextExpiration() != null && !calendarTimer.isInRetry()) {
@@ -64,17 +65,17 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     }
 
     @Override
-    protected Date calculateNextTimeout() {
+    protected Date calculateNextTimeout(TimerImpl timer) {
         // The next timeout for the calendar timer will have to be computed using the
         // current "nextExpiration"
-        Date currentTimeout = this.getTimer().getNextExpiration();
+        Date currentTimeout = timer.getNextExpiration();
         if (currentTimeout == null) {
             return null;
         }
         Calendar cal = new GregorianCalendar();
         cal.setTime(currentTimeout);
         // now compute the next timeout date
-        Calendar nextTimeout = this.getTimer().getCalendarTimeout().getNextTimeout(cal);
+        Calendar nextTimeout = ((CalendarTimer) timer).getCalendarTimeout().getNextTimeout(cal);
         if (nextTimeout != null) {
             return nextTimeout.getTime();
         }
@@ -82,25 +83,30 @@ public class CalendarTimerTask extends TimerTask<CalendarTimer> {
     }
 
     @Override
-    protected void scheduleTimeoutIfRequired() {
-        if(this.timer.getNextExpiration() != null) {
-            this.timer.scheduleTimeout(false);
+    protected void scheduleTimeoutIfRequired(TimerImpl timer) {
+        if (timer.getNextExpiration() != null) {
+            timer.scheduleTimeout(false);
         }
     }
 
     @Override
-    protected void postTimeoutProcessing() {
-        final CalendarTimer calendarTimer = this.getTimer();
-        final TimerState timerState = calendarTimer.getState();
-        if (timerState != TimerState.CANCELED
-                && timerState != TimerState.EXPIRED) {
-            if (calendarTimer.getNextExpiration() == null) {
-                calendarTimer.expireTimer();
-            } else {
-                calendarTimer.setTimerState(TimerState.ACTIVE);
-                // persist changes
-                timerService.persistTimer(calendarTimer, false);
+    protected void postTimeoutProcessing(TimerImpl timer) {
+        timer.lock();
+        try {
+            final CalendarTimer calendarTimer = (CalendarTimer) timer;
+            final TimerState timerState = calendarTimer.getState();
+            if (timerState != TimerState.CANCELED
+                    && timerState != TimerState.EXPIRED) {
+                if (calendarTimer.getNextExpiration() == null) {
+                    timerService.expireTimer(calendarTimer);
+                } else {
+                    calendarTimer.setTimerState(TimerState.ACTIVE);
+                    // persist changes
+                    timerService.persistTimer(calendarTimer, false);
+                }
             }
+        } finally {
+            timer.unlock();
         }
     }
 

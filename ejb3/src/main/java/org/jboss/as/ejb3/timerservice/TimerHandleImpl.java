@@ -101,7 +101,7 @@ public class TimerHandleImpl implements TimerHandle {
             }
         }
         final TimerImpl timer = this.service.getTimer(this);
-        if (timer != null && timer.isActive() == false) {
+        if (timer == null || !timer.isActive()) {
             throw MESSAGES.timerHandleIsNotActive(this);
         }
         return timer;

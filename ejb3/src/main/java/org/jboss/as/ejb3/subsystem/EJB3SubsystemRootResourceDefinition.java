@@ -269,6 +269,14 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
+
+
+        ModelVersion subsystem120 = ModelVersion.create(1, 2);
+        builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem120);
+
+
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
