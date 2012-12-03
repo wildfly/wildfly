@@ -255,7 +255,6 @@
         <version.org.picketlink>2.1.4.Final</version.org.picketlink>
         <version.org.powermock>1.4.11</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26</version.org.projectodd.stilts>
-        <version.org.python.jython.standalone>2.5.2</version.org.python.jython.standalone>
         <version.org.rhq.helpers>3.0.4</version.org.rhq.helpers>
         <version.org.scannotation>1.0.2</version.org.scannotation>
         <version.org.slf4j>1.6.1</version.org.slf4j>
@@ -6112,12 +6111,6 @@
                         <artifactId>jta</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.python</groupId>
-                <artifactId>jython-standalone</artifactId>
-                <version>${version.org.python.jython.standalone}</version>
             </dependency>
 
             <dependency>

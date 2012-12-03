@@ -1299,10 +1299,6 @@
             <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
         </module-def>
 
-        <module-def name="org.python.jython.standalone">
-            <maven-resource group="org.python" artifact="jython-standalone"/>
-        </module-def>
-
         <module-def name="org.slf4j.jcl-over-slf4j">
             <maven-resource group="org.slf4j" artifact="jcl-over-slf4j"/>
         </module-def>
