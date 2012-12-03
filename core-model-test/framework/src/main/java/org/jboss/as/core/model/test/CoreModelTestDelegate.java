@@ -21,10 +21,32 @@
 */
 package org.jboss.as.core.model.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_SUBSYSTEM_ENDPOINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -60,6 +82,7 @@ import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConf
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationFailure;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLMapper;
 import org.sonatype.aether.collection.DependencyCollectionException;
 import org.sonatype.aether.resolution.DependencyResolutionException;
@@ -71,6 +94,7 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class CoreModelTestDelegate {
+
 
     private final Namespace NAMESPACE = Namespace.CURRENT;
 
@@ -103,12 +127,12 @@ public class CoreModelTestDelegate {
 
     private void validateDescriptionProviders(TestModelType type, KernelServices kernelServices) {
         ModelNode op = new ModelNode();
-        op.get(OP).set("read-resource-description");
+        op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
         op.get(OP_ADDR).setEmptyList();
-        op.get("recursive").set(true);
-        op.get("inherited").set(false);
-        op.get("operations").set(true);
-        op.get("include-aliases").set(true);
+        op.get(RECURSIVE).set(true);
+        op.get(INHERITED).set(false);
+        op.get(OPERATIONS).set(true);
+        op.get(INCLUDE_ALIASES).set(true);
         ModelNode result = kernelServices.executeOperation(op);
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
             throw new RuntimeException(result.get(FAILURE_DESCRIPTION).toString());
@@ -120,7 +144,7 @@ public class CoreModelTestDelegate {
             //Big big hack to get around the fact that the tests install the host description twice
             //we're only interested in the host model anyway
             //See KnownIssuesValidator.createHostPlatformMBeanAddress
-            model = model.require("children").require("host").require("model-description").require("master");
+            model = model.require(CHILDREN).require(HOST).require(MODEL_DESCRIPTION).require(MASTER);
         }
 
         //System.out.println(model);
@@ -149,31 +173,37 @@ public class CoreModelTestDelegate {
      * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
      * @return the whole model of the legacy controller
      */
-    ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
-        KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
-//        ModelNode legacyModel = legacy.readWholeModel();
+    ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer, ModelFixer transformedModelFixer) throws IOException {
+        KernelServices legacyServices = kernelServices.getLegacyServices(modelVersion);
+
+        //Only read the model without any defaults
         ModelNode op = new ModelNode();
         op.get(OP_ADDR).setEmptyList();
-        op.get(OP).set("read-resource");
-        op.get("recursive").set(true);
-        op.get("include-defaults").set(false);
+        op.get(OP).set(READ_RESOURCE_OPERATION);
+        op.get(RECURSIVE).set(true);
+        op.get(INCLUDE_DEFAULTS).set(false);
         ModelNode legacyModel;
         try {
-            legacyModel = legacy.executeForResult(op);
+            legacyModel = legacyServices.executeForResult(op);
         } catch (OperationFailedException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(legacyModel);
 
-
-        if (legacyModelFixer != null) {
-            legacyModel = legacyModelFixer.fixModel(legacyModel);
-        }
+        //Work around known problem where the recursice :read-resource on legacy controllers in ModelVersion < 1.4.0
+        //incorrectly does not propagate include-defaults=true when recursing
+        //https://issues.jboss.org/browse/AS7-6077
+        removeDefaultAttributesWronglyShowingInRecursiveReadResource(modelVersion, legacyServices, legacyModel);
 
         //1) Check that the transformed model is the same as the whole model read from the legacy controller.
         //The transformed model is done via the resource transformers
         //The model in the legacy controller is built up via transformed operations
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion);
+        if (legacyModelFixer != null) {
+            legacyModel = legacyModelFixer.fixModel(legacyModel);
+        }
+        if (transformedModelFixer != null) {
+            transformed = transformedModelFixer.fixModel(transformed);
+        }
 
         //TODO temporary hacks
         temporaryHack(transformed, legacyModel);
@@ -188,26 +218,88 @@ public class CoreModelTestDelegate {
     }
 
     private void temporaryHack(ModelNode transformedModel, ModelNode legacyModel) {
-        if (legacyModel.hasDefined("namespaces") && !transformedModel.hasDefined("namespaces")) {
-            if (legacyModel.get("namespaces").asList().isEmpty()) {
-                legacyModel.get("namespaces").set(new ModelNode());
+        if (legacyModel.hasDefined(NAMESPACES) && !transformedModel.hasDefined(NAMESPACES)) {
+            if (legacyModel.get(NAMESPACES).asList().isEmpty()) {
+                legacyModel.get(NAMESPACES).set(new ModelNode());
             }
         }
-        if (legacyModel.hasDefined("schema-locations") && !transformedModel.hasDefined("schema-locations")) {
-            if (legacyModel.get("schema-locations").asList().isEmpty()) {
-                legacyModel.get("schema-locations").set(new ModelNode());
+        if (legacyModel.hasDefined(SCHEMA_LOCATIONS) && !transformedModel.hasDefined(SCHEMA_LOCATIONS)) {
+            if (legacyModel.get(SCHEMA_LOCATIONS).asList().isEmpty()) {
+                legacyModel.get(SCHEMA_LOCATIONS).set(new ModelNode());
             }
         }
 
 
-        //Delete everything that does not get populated in the slave's copy of the domain model
-//        legacyModel.remove("management-major-version");
-//        legacyModel.remove("management-minor-version");
-//        legacyModel.remove("management-micro-version");
-//        legacyModel.remove("name");
-//        legacyModel.remove("release-codename");
-//        legacyModel.remove("release-version");
+        //We will test these in mixed-domain instead since something differs in the test setup for these attributes
+        legacyModel.remove(MANAGEMENT_MAJOR_VERSION);
+        legacyModel.remove(MANAGEMENT_MINOR_VERSION);
+        legacyModel.remove(MANAGEMENT_MICRO_VERSION);
+        legacyModel.remove(NAME);
+        legacyModel.remove(RELEASE_CODENAME);
+        legacyModel.remove(RELEASE_VERSION);
+        transformedModel.remove(MANAGEMENT_MAJOR_VERSION);
+        transformedModel.remove(MANAGEMENT_MINOR_VERSION);
+        transformedModel.remove(MANAGEMENT_MICRO_VERSION);
+        transformedModel.remove(NAME);
+        transformedModel.remove(RELEASE_CODENAME);
+        transformedModel.remove(RELEASE_VERSION);
     }
+
+    private void removeDefaultAttributesWronglyShowingInRecursiveReadResource(ModelVersion modelVersion, KernelServices legacyServices, ModelNode legacyModel) {
+
+        if (modelVersion.getMajor() == 1 && modelVersion.getMinor() < 4) {
+            //Work around known problem where the recursice :read-resource on legacy controllers in ModelVersion < 1.4.0
+            //incorrectly does not propagate include-defaults=true when recursing
+            //https://issues.jboss.org/browse/AS7-6077
+            checkAttributeIsActuallyDefinedAndReplaceIfNot(legacyServices, legacyModel, MANAGEMENT_SUBSYSTEM_ENDPOINT, SERVER_GROUP);
+        }
+    }
+
+    private void checkAttributeIsActuallyDefinedAndReplaceIfNot(KernelServices legacyServices, ModelNode legacyModel, String attributeName, String...parentAddress) {
+
+        ModelNode parentNode = legacyModel;
+        for (String s : parentAddress) {
+            if (parentNode.hasDefined(s)) {
+                parentNode = parentNode.get(s);
+            } else {
+                return;
+            }
+            if (!parentNode.isDefined()) {
+                return;
+            }
+        }
+
+        for (Property prop : parentNode.asPropertyList()) {
+            if (prop.getValue().isDefined()) {
+                ModelNode attribute = parentNode.get(prop.getName(), attributeName);
+                if (attribute.isDefined()) {
+                    //Attribute is defined in the legacy model - remove it if that is not the case
+                    ModelNode op = new ModelNode();
+                    op.get(OP).set(READ_ATTRIBUTE_OPERATION);
+                    for (int i = 0 ; i < parentAddress.length ; i ++) {
+                        if (i < parentAddress.length -1) {
+                            op.get(OP_ADDR).add(parentAddress[i], parentAddress[++i]);
+                        } else {
+                            op.get(OP_ADDR).add(parentAddress[i], prop.getName());
+                        }
+                    }
+                    op.get(NAME).set(attributeName);
+                    op.get(INCLUDE_DEFAULTS).set(false);
+                    try {
+                        ModelNode result = legacyServices.executeForResult(op);
+                        if (!result.isDefined()) {
+                                attribute.set(new ModelNode());
+                        }
+                    } catch (OperationFailedException e) {
+                        //TODO this might get thrown because the attribute does not exist in the legacy model?
+                        //In which case it should perhaps be undefined
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    }
+
 
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
 
@@ -368,5 +460,6 @@ public class CoreModelTestDelegate {
             return this;
         }
     }
+
 
 }

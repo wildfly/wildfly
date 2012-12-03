@@ -277,10 +277,10 @@ public class ModelTestUtils {
             final Set<String> keys2 = new TreeSet<String>(model2.keys());
 
             // compare string representations of the keys to help see the difference
-//            if (!keys1.toString().equals(keys2.toString())){
-//                //Just to make debugging easier
-//                System.out.print("");
-//            }
+            if (!keys1.toString().equals(keys2.toString())){
+                //Just to make debugging easier
+                System.out.print("");
+            }
             Assert.assertEquals(node1 + "\n" + node2, keys1.toString(), keys2.toString());
             Assert.assertTrue(keys1.containsAll(keys2));
 
