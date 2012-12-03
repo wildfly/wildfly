@@ -42,9 +42,13 @@ import java.util.TreeSet;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -361,6 +365,61 @@ public class ModelTestUtils {
             result += element;
         }
         return result;
+    }
+
+    public static void checkModelAgainstDefinition(final ModelNode model, ManagementResourceRegistration rr) {
+        final Set<String> children = rr.getChildNames(PathAddress.EMPTY_ADDRESS);
+        final Set<String> attributeNames = rr.getAttributeNames(PathAddress.EMPTY_ADDRESS);
+        for (ModelNode el : model.asList()) {
+            String name = el.asProperty().getName();
+            ModelNode value = el.asProperty().getValue();
+            if (attributeNames.contains(name)) {
+                AttributeAccess aa = rr.getAttributeAccess(PathAddress.EMPTY_ADDRESS, name);
+                Assert.assertNotNull("Attribute " + name + " is not known", aa);
+                AttributeDefinition ad = aa.getAttributeDefinition();
+                if (!value.isDefined()) {
+                    Assert.assertTrue("Attribute is not allow null", ad.isAllowNull());
+                } else {
+                   // Assert.assertEquals("Attribute '" + name + "' type mismatch", value.getType(), ad.getType()); //todo re-enable this check
+                }
+                try {
+                    if (!ad.isAllowNull()&&value.isDefined()){
+                        ad.getValidator().validateParameter(name, value);
+                    }
+                } catch (OperationFailedException e) {
+                    Assert.fail("validation for attribute '" + name + "' failed, " + e.getFailureDescription().asString());
+                }
+
+            } else if (!children.contains(name)) {
+                Assert.fail("Element '" + name + "' is not known in target definition");
+            }
+        }
+
+        for (PathElement pe : rr.getChildAddresses(PathAddress.EMPTY_ADDRESS)) {
+            if (pe.isWildcard()) {
+                if (children.contains(pe.getKey()) && model.hasDefined(pe.getKey())) {
+                    for (ModelNode v : model.get(pe.getKey()).asList()) {
+                        String name = v.asProperty().getName();
+                        ModelNode value = v.asProperty().getValue();
+                        ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
+                        Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                        if (value.isDefined()) {
+                            checkModelAgainstDefinition(value, sub);
+                        }
+                    }
+                }
+            } else {
+                if (children.contains(pe.getKeyValuePair())) {
+                    String name = pe.getValue();
+                    ModelNode value = model.get(pe.getKeyValuePair());
+                    ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
+                    Assert.assertNotNull("Child with name '" + name + "' not found", sub);
+                    if (value.isDefined()) {
+                        checkModelAgainstDefinition(value, sub);
+                    }
+                }
+            }
+        }
     }
 
 }

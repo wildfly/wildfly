@@ -52,6 +52,7 @@ import org.jboss.as.core.model.bridge.local.ScopedKernelServicesBootstrap;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator;
 import org.jboss.as.model.test.ModelTestModelDescriptionValidator.ValidationConfiguration;
@@ -136,6 +137,36 @@ public class CoreModelTestDelegate {
             }
             Assert.fail("Failed due to validation errors in the model. Please fix :-) " + builder.toString());
         }
+    }
+
+    /**
+     * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
+     * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
+     *
+     * @param kernelServices the main kernel services
+     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
+     * @return the whole model of the legacy controller
+     */
+    ModelNode checkCoreModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
+        KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
+        ModelNode legacyModel = legacy.readWholeModel();
+
+        if (legacyModelFixer != null) {
+            legacyModel = legacyModelFixer.fixModel(legacyModel);
+        }
+
+        //1) Check that the transformed model is the same as the whole model read from the legacy controller.
+        //The transformed model is done via the resource transformers
+        //The model in the legacy controller is built up via transformed operations
+        ModelNode transformed = kernelServices.readTransformedModel(modelVersion);
+        ModelTestUtils.compare(legacyModel, transformed, true);
+
+        //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller
+        //ResourceDefinition rd = TransformerRegistry.loadSubsystemDefinition(mainSubsystemName, modelVersion);
+        //ManagementResourceRegistration rr = ManagementResourceRegistration.Factory.create(rd);
+        //ModelTestUtils.checkModelAgainstDefinition(transformed, rr);
+        return legacyModel;
     }
 
     private class KernelServicesBuilderImpl implements KernelServicesBuilder, ModelTestBootOperationsBuilder.BootOperationParser {
