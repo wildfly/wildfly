@@ -22,7 +22,10 @@
 
 package org.jboss.as.domain.controller;
 
+import java.util.List;
+
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 
 /**
  * Core information about the local host controller.
@@ -96,23 +99,19 @@ public interface LocalHostControllerInfo {
     String getHttpManagementSecurityRealm();
 
     /**
-     *  Gets the host name of the remote domain controller
-     *  @return the host name
-     */
-    String getRemoteDomainControllerHost();
-
-    /**
-     * Gets the port of the remote domain controller
-     * @return the port number
-     */
-    int getRemoteDomainControllerPort();
-
-    /**
      * Gets the username to use when authenticating against the
      * remote domain controller.
+     *
      * @return the user name.
      */
     String getRemoteDomainControllerUsername();
+
+    /**
+     * Gets a list of discovery options that can be used to discover the
+     * remote domain controller.
+     * @return the list of discovery options.
+     */
+    List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions();
 
     /**
      * Gets the current state of the host controller process.

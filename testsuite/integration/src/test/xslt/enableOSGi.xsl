@@ -1,7 +1,7 @@
 <xsl:stylesheet version="2.0"
 		xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-		xmlns="urn:jboss:domain:1.4"
-		xmlns:d="urn:jboss:domain:1.4"
+		xmlns="urn:jboss:domain:1.5"
+		xmlns:d="urn:jboss:domain:1.5"
                 xmlns:o='urn:jboss:domain:osgi:1.2'> 
 
  <!-- Copy everything else. -->

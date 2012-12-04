@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<domain xmlns="urn:jboss:domain:1.4">
+<domain xmlns="urn:jboss:domain:1.5">
     <interfaces>
     </interfaces>
 </domain>        

@@ -141,7 +141,8 @@ public class ServerOperationResolver {
         INTERFACE("interface"),
         JVM("jvm"),
         SERVER("server"),
-        SERVER_CONFIG("server-config");
+        SERVER_CONFIG("server-config"),
+        DISCOVERY_OPTION("discovery-option");
 
         private final String name;
 
@@ -535,6 +536,9 @@ public class ServerOperationResolver {
                 }
                 case SERVER_CONFIG: {
                     return resolveServerConfigOperation(operation, address, domain, host);
+                }
+                case DISCOVERY_OPTION: {
+                    return Collections.emptyMap();
                 }
                 case SERVER:
                 default:

@@ -35,6 +35,7 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain elements in alpha order
+    ACCESS_KEY("access-key"),
     ADVANCED_FILTER("advanced-filter"),
     AGENT_LIB("agent-lib"),
     AGENT_PATH("agent-path"),
@@ -48,6 +49,7 @@ public enum Element {
     CLIENT_MAPPING("client-mapping"),
     CONTENT("content"),
 
+    DISCOVERY_OPTIONS("discovery-options"),
     DOMAIN("domain"),
     DOMAIN_CONTROLLER("domain-controller"),
     DEPLOYMENT("deployment"),
@@ -86,6 +88,7 @@ public enum Element {
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
     LOCAL_DESTINATION("local-destination"),
+    LOCATION("location"),
     LOOPBACK("loopback"),
     LOOPBACK_ADDRESS("loopback-address"),
 
@@ -112,6 +115,9 @@ public enum Element {
     PLUG_IN("plug-in"),
     PLUG_INS("plug-ins"),
     POINT_TO_POINT("point-to-point"),
+    PREFIX("prefix"),
+    PRE_SIGNED_DELETE_URL("pre-signed-delete-url"),
+    PRE_SIGNED_PUT_URL("pre-signed-put-url"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
@@ -122,7 +128,9 @@ public enum Element {
     REMOTE_DESTINATION("remote-destination"),
     ROLLOUT_PLANS("rollout-plans"),
 
+    S3_DISCOVERY("S3-discovery"),
     SECRET("secret"),
+    SECRET_ACCESS_KEY("secret-access-key"),
     SECURITY_REALM("security-realm"),
     SECURITY_REALMS("security-realms"),
     SERVER("server"),

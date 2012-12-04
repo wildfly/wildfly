@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<server xmlns="urn:jboss:domain:1.4">
+<server xmlns="urn:jboss:domain:1.5">
 
     <extensions>
         <?EXTENSIONS?>

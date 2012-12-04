@@ -25,8 +25,10 @@ package org.jboss.as.host.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_KEY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
@@ -35,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -44,7 +47,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PREFIX;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRE_SIGNED_DELETE_URL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRE_SIGNED_PUT_URL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.S3_DISCOVERY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET_ACCESS_KEY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -61,6 +69,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.parsePossibleExpression
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
+import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
@@ -73,6 +82,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
@@ -81,6 +91,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.discovery.S3DiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
@@ -125,7 +136,8 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             case DOMAIN_1_1:
             case DOMAIN_1_2:
             case DOMAIN_1_3:
-            case DOMAIN_1_4:{
+            case DOMAIN_1_4:
+            case DOMAIN_1_5:{
                 readHostElement_1_1(readerNS, reader, address, operationList);
                 break;
             }
@@ -178,11 +190,15 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
 
         if (modelNode.hasDefined(DOMAIN_CONTROLLER)) {
             ModelNode ignoredResources = null;
+            ModelNode discoveryOptions = null;
             if (hasCoreServices && modelNode.get(CORE_SERVICE).hasDefined(IGNORED_RESOURCES)
                     && modelNode.get(CORE_SERVICE, IGNORED_RESOURCES).hasDefined(IGNORED_RESOURCE_TYPE)) {
                 ignoredResources = modelNode.get(CORE_SERVICE, IGNORED_RESOURCES, IGNORED_RESOURCE_TYPE);
             }
-            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources);
+            if (modelNode.hasDefined(DISCOVERY_OPTION)) {
+                discoveryOptions = modelNode.get(DISCOVERY_OPTION);
+            }
+            writeDomainController(writer, modelNode.get(DOMAIN_CONTROLLER), ignoredResources, discoveryOptions);
             writeNewLine(writer);
         }
 
@@ -742,8 +758,21 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         throw MESSAGES.childAlreadyDeclared(Element.REMOTE.getLocalName(),
                                 Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     }
-                    requireNoAttributes(reader);
-                    requireNoContent(reader);
+                    switch (expectedNs) {
+                        case DOMAIN_1_0:
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4: {
+                            requireNoAttributes(reader);
+                            requireNoContent(reader);
+                            break;
+                        }
+                        default: {
+                            parseLocalDomainController1_5(reader, address, expectedNs, list);
+                            break;
+                        }
+                    }
                     hasLocal = true;
                     break;
                 }
@@ -759,9 +788,17 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                         case DOMAIN_1_0:
                             parseRemoteDomainController1_0(reader, address, list);
                             break;
-                        default:
+                        case DOMAIN_1_1:
+                        case DOMAIN_1_2:
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4: {
                             parseRemoteDomainController1_1(reader, address, expectedNs, list);
                             break;
+                        }
+                        default: {
+                            parseRemoteDomainController1_5(reader, address, expectedNs, list);
+                            break;
+                        }
                     }
 
                     hasRemote = true;
@@ -784,6 +821,28 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
     }
 
+    private void parseLocalDomainController1_5(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        boolean hasDiscoveryOptions = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case DISCOVERY_OPTIONS: {
+                    if (hasDiscoveryOptions) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseDiscoveryOptions(reader, address, expectedNs, list);
+                    hasDiscoveryOptions = true;
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
     private void parseRemoteDomainController1_0(final XMLExtendedStreamReader reader, final ModelNode address,
             final List<ModelNode> list) throws XMLStreamException {
         parseRemoteDomainControllerAttributes_1_0(reader, address, list);
@@ -814,6 +873,52 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 default:
                     throw unexpectedElement(reader);
             }
+        }
+    }
+
+    private void parseRemoteDomainController1_5(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        boolean requireDiscoveryOptions = false;
+        boolean hasDiscoveryOptions = false;
+        switch (expectedNs) {
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+                parseRemoteDomainControllerAttributes_1_0(reader, address, list);
+                break;
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+                parseRemoteDomainControllerAttributes_1_3(reader, address, list);
+                break;
+            default:
+                requireDiscoveryOptions = parseRemoteDomainControllerAttributes_1_5(reader, address, list);
+                break;
+        }
+
+        Set<String> types = new HashSet<String>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case IGNORED_RESOURCE: {
+                    parseIgnoredResource(reader, address, expectedNs, list, types);
+                    break;
+                }
+                case DISCOVERY_OPTIONS: { // Different from parseRemoteDomainController1_1
+                    if (hasDiscoveryOptions) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseDiscoveryOptions(reader, address, expectedNs, list);
+                    hasDiscoveryOptions = true;
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+
+        if (requireDiscoveryOptions && !hasDiscoveryOptions) {
+            MESSAGES.discoveryOptionsMustBeDeclared(Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
+                    Attribute.PORT.getLocalName(), reader.getLocation());
         }
     }
 
@@ -943,6 +1048,75 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         list.add(update);
     }
 
+    private boolean parseRemoteDomainControllerAttributes_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
+            final List<ModelNode> list) throws XMLStreamException {
+        // Handle attributes
+        String host = null;
+        ModelNode port = null;
+        String securityRealm = null;
+        String username = null;
+        boolean requireDiscoveryOptions = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case HOST: {
+                        host = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = parsePossibleExpression(value);
+                        if(port.getType() != ModelType.EXPRESSION) {
+                            try {
+                                Integer portNo = Integer.valueOf(value);
+                                if (portNo.intValue() < 1) {
+                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                }
+                            }catch(NumberFormatException e) {
+                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                            }
+                        }
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        securityRealm = value;
+                        break;
+                    }
+                    case USERNAME: {
+                        username = value;
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        final ModelNode update = new ModelNode();
+        update.get(OP_ADDR).set(address);
+        update.get(OP).set("write-remote-domain-controller");
+
+        // Different from parseRemoteDomainControllerAttributes_1_3
+        if ((host == null) || (port == null)) {
+            requireDiscoveryOptions = true;
+        } else {
+            update.get(HOST).set(parsePossibleExpression(host));
+            update.get(PORT).set(port);
+        }
+        if (securityRealm != null) {
+            update.get(SECURITY_REALM).set(securityRealm);
+        }
+        if (username != null) {
+            update.get(USERNAME).set(username);
+        }
+        list.add(update);
+        return requireDiscoveryOptions;
+    }
+
     private void parseIgnoredResource(final XMLExtendedStreamReader reader, final ModelNode address,
             Namespace expectedNs, final List<ModelNode> list, final Set<String> foundTypes) throws XMLStreamException {
 
@@ -998,6 +1172,82 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         list.add(op);
+    }
+
+    protected void parseDiscoveryOptions(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        // Handle elements
+        boolean hasS3Discovery = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case S3_DISCOVERY:
+                    if (hasS3Discovery) {
+                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                    }
+                    parseS3Discovery(reader, address, expectedNs, list);
+                    hasS3Discovery = true;
+                    break;
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    protected void parseS3Discovery(final XMLExtendedStreamReader reader, final ModelNode address,
+            Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+
+        final ModelNode S3DiscoveryAddress = address.clone();
+        S3DiscoveryAddress.add(DISCOVERY_OPTION, S3_DISCOVERY);
+        final ModelNode addOp = Util.getEmptyOperation(ADD, S3DiscoveryAddress);
+        list.add(addOp);
+
+        // Handle elements
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            final String localName = element.getLocalName();
+            switch (element) {
+                case ACCESS_KEY: {
+                    parseS3DiscoveryAttribute(reader, addOp, S3DiscoveryResourceDefinition.ACCESS_KEY);
+                    break;
+                }
+                case SECRET_ACCESS_KEY: {
+                    parseS3DiscoveryAttribute(reader, addOp, S3DiscoveryResourceDefinition.SECRET_ACCESS_KEY);
+                    break;
+                }
+                case LOCATION: {
+                    parseS3DiscoveryAttribute(reader, addOp, S3DiscoveryResourceDefinition.LOCATION);
+                    break;
+                }
+                case PREFIX: {
+                    parseS3DiscoveryAttribute(reader, addOp, S3DiscoveryResourceDefinition.PREFIX);
+                    break;
+                }
+                case PRE_SIGNED_PUT_URL: {
+                    parseS3DiscoveryAttribute(reader, addOp, S3DiscoveryResourceDefinition.PRE_SIGNED_PUT_URL);
+                    break;
+                }
+                case PRE_SIGNED_DELETE_URL: {
+                    parseS3DiscoveryAttribute(reader, addOp, S3DiscoveryResourceDefinition.PRE_SIGNED_DELETE_URL);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseS3DiscoveryAttribute(final XMLExtendedStreamReader reader, final ModelNode operation,
+            final SimpleAttributeDefinition attribute) throws XMLStreamException {
+        requireSingleAttribute(reader, Attribute.VALUE.getLocalName());
+        final String value = reader.getAttributeValue(0);
+        requireNoContent(reader);
+        attribute.parseAndSetParameter(value, operation, reader);
     }
 
     private void parseJvms(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
@@ -1306,18 +1556,24 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         writer.writeEndElement();
     }
 
-    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode, ModelNode ignoredResources)
+    private void writeDomainController(final XMLExtendedStreamWriter writer, final ModelNode modelNode, ModelNode ignoredResources, ModelNode discoveryOptions)
             throws XMLStreamException {
         writer.writeStartElement(Element.DOMAIN_CONTROLLER.getLocalName());
         if (modelNode.hasDefined(LOCAL)) {
-            writer.writeEmptyElement(Element.LOCAL.getLocalName());
+            if (discoveryOptions != null) {
+                writer.writeStartElement(Element.LOCAL.getLocalName());
+                writeDiscoveryOptions(writer, discoveryOptions);
+                writer.writeEndElement();
+            } else {
+                writer.writeEmptyElement(Element.LOCAL.getLocalName());
+            }
         } else if (modelNode.hasDefined(REMOTE)) {
             writer.writeStartElement(Element.REMOTE.getLocalName());
             final ModelNode remote = modelNode.get(REMOTE);
-            if (remote.has(HOST)) {
+            if (remote.hasDefined(HOST)) {
                 writeAttribute(writer, Attribute.HOST, remote.get(HOST).asString());
             }
-            if (remote.has(PORT)) {
+            if (remote.hasDefined(PORT)) {
                 writeAttribute(writer, Attribute.PORT, remote.get(PORT).asString());
             }
             if (remote.hasDefined(SECURITY_REALM)) {
@@ -1328,6 +1584,9 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             }
             if (ignoredResources != null) {
                 writeIgnoredResources(writer, ignoredResources);
+            }
+            if (discoveryOptions != null) {
+                writeDiscoveryOptions(writer, discoveryOptions);
             }
             writer.writeEndElement();
         }
@@ -1358,6 +1617,30 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
                 writer.writeEndElement();
             }
         }
+    }
+
+    private void writeDiscoveryOptions(XMLExtendedStreamWriter writer, ModelNode discoveryOptions) throws XMLStreamException {
+        writer.writeStartElement(Element.DISCOVERY_OPTIONS.getLocalName());
+
+        if (discoveryOptions.hasDefined(S3_DISCOVERY)) {
+            ModelNode S3Discovery = discoveryOptions.get(S3_DISCOVERY);
+            writeS3Discovery(writer, S3Discovery);
+        }
+        writer.writeEndElement();
+    }
+
+    private void writeS3Discovery(XMLExtendedStreamWriter writer, ModelNode S3Discovery) throws XMLStreamException {
+        writer.writeStartElement(Element.S3_DISCOVERY.getLocalName());
+
+        for (Property property : S3Discovery.asPropertyList()) {
+            final Element element = Element.forName(property.getName());
+            if (property.getValue().isDefined()) {
+                final String value = property.getValue().asString();
+                writer.writeEmptyElement(element.getLocalName());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), value);
+            }
+        }
+        writer.writeEndElement();
     }
 
     private void writeServers(final XMLExtendedStreamWriter writer, final ModelNode modelNode) throws XMLStreamException {

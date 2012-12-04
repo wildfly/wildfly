@@ -65,6 +65,7 @@ import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.host.controller.descriptions.HostEnvironmentResourceDescription;
+import org.jboss.as.host.controller.discovery.S3DiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostShutdownHandler;
@@ -336,6 +337,9 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
 
         //server configurations
         hostRegistration.registerSubModel(new ServerConfigResourceDefinition(serverInventory, pathManager));
+
+        // discovery options
+        hostRegistration.registerSubModel(new S3DiscoveryResourceDefinition(hostControllerInfo));
 
     }
 }
