@@ -63,7 +63,10 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition PATCHES = PrimitiveListAttributeDefinition.Builder.of(Constants.PATCHES, ModelType.STRING)
             .setStorageRuntime()
             .build();
-    static final AttributeDefinition MODULE_PATH = PrimitiveListAttributeDefinition.Builder.of("module-path", ModelType.STRING)
+    static final AttributeDefinition MODULE_PATH = PrimitiveListAttributeDefinition.Builder.of(Constants.MODULE_PATH, ModelType.STRING)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition BUNDLE_PATH = PrimitiveListAttributeDefinition.Builder.of(Constants.BUNDLE_PATH, ModelType.STRING)
             .setStorageRuntime()
             .build();
 
@@ -157,6 +160,15 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             void handle(ModelNode result, PatchInfo info) {
                 result.setEmptyList();
                 for(final File id : info.getModulePath()) {
+                    result.add(id.getAbsolutePath());
+                }
+            }
+        });
+        registry.registerReadOnlyAttribute(BUNDLE_PATH, new PatchAttributeReadHandler() {
+            @Override
+            void handle(ModelNode result, PatchInfo info) {
+                result.setEmptyList();
+                for(final File id : info.getBundlePath()) {
                     result.add(id.getAbsolutePath());
                 }
             }
