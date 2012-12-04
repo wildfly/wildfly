@@ -1084,7 +1084,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         if (modelNode.hasDefined(PATH)) {
-            writePaths(writer, modelNode.get(PATH));
+            writePaths(writer, modelNode.get(PATH), false);
             writeNewLine(writer);
         }
 

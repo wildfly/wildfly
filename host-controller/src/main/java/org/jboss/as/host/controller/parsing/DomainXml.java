@@ -170,7 +170,7 @@ public class DomainXml extends CommonXml {
             writeNewLine(writer);
         }
         if (modelNode.hasDefined(PATH)) {
-            writePaths(writer, modelNode.get(PATH));
+            writePaths(writer, modelNode.get(PATH), true);
             writeNewLine(writer);
         }
         if (modelNode.hasDefined(PROFILE)) {

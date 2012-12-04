@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller.transformers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import java.util.Map;
 
@@ -83,8 +84,9 @@ public class DomainTransformers {
             TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
             SystemPropertyTransformers.registerTransformers(serverGroup);
 
-            //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
+            //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
+            domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
 
             //TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
             //socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH);
@@ -97,8 +99,10 @@ public class DomainTransformers {
             //socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH);
             //socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH);
 
+            //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
             //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
+            domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
         }
     }
 
