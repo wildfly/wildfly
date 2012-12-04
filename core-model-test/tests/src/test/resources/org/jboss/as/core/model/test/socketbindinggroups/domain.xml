@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<domain xmlns="urn:jboss:domain:1.4">
+  <interfaces>
+    <interface name="public"/>
+    <interface name="management"/>
+  </interfaces>
+  <socket-binding-groups>
+    <socket-binding-group name="standard-sockets" default-interface="public">
+        <socket-binding name="specified-interface" interface="management" port="1111"/>
+        <socket-binding name="default-interface" port="8009"/>
+        <outbound-socket-binding name="out-local">
+            <local-destination socket-binding-ref="standard-sockets"/>
+        </outbound-socket-binding>
+        <outbound-socket-binding name="out-remote">
+            <remote-destination host="localhost" port="25"/>
+        </outbound-socket-binding>
+    </socket-binding-group>
+  </socket-binding-groups>
+</domain>        

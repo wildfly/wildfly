@@ -23,10 +23,13 @@ package org.jboss.as.core.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FIXED_SOURCE_PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
@@ -38,15 +41,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -252,6 +260,20 @@ public class CoreModelTestDelegate {
             //incorrectly does not propagate include-defaults=true when recursing
             //https://issues.jboss.org/browse/AS7-6077
             checkAttributeIsActuallyDefinedAndReplaceIfNot(legacyServices, legacyModel, MANAGEMENT_SUBSYSTEM_ENDPOINT, SERVER_GROUP);
+            checkAttributeIsActuallyDefinedAndReplaceIfNot(legacyServices, legacyModel, READ_ONLY, PATH);
+            removeDefaultAttributesWronglyShowingInRecursiveReadResourceInSocketBindingGroup(modelVersion, legacyServices, legacyModel);
+        }
+    }
+
+    private void removeDefaultAttributesWronglyShowingInRecursiveReadResourceInSocketBindingGroup(ModelVersion modelVersion, KernelServices legacyServices, ModelNode legacyModel) {
+        if (legacyModel.hasDefined(SOCKET_BINDING_GROUP)) {
+            for (Property prop : legacyModel.get(SOCKET_BINDING_GROUP).asPropertyList()) {
+                if (prop.getValue().isDefined()) {
+                    checkAttributeIsActuallyDefinedAndReplaceIfNot(legacyServices, legacyModel, FIXED_SOURCE_PORT, SOCKET_BINDING_GROUP, prop.getName(), REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING);
+                    checkAttributeIsActuallyDefinedAndReplaceIfNot(legacyServices, legacyModel, FIXED_SOURCE_PORT, SOCKET_BINDING_GROUP, prop.getName(), LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING);
+                    checkAttributeIsActuallyDefinedAndReplaceIfNot(legacyServices, legacyModel, FIXED_PORT, SOCKET_BINDING_GROUP, prop.getName(), SOCKET_BINDING);
+                }
+            }
         }
     }
 
