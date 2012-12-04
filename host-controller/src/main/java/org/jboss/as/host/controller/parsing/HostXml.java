@@ -22,36 +22,6 @@
 
 package org.jboss.as.host.controller.parsing;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.controller.parsing.Element;
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.domain.management.parsing.ManagementXml;
-import org.jboss.as.host.controller.HostControllerMessages;
-import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
-import org.jboss.as.host.controller.model.host.HostResourceDefinition;
-import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
-import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
-import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
-import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
-import org.jboss.as.server.parsing.CommonXml;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -93,6 +63,36 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.domain.management.parsing.ManagementXml;
+import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
+import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
+import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
+import org.jboss.as.server.parsing.CommonXml;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * A mapper between an AS server's configuration model and XML representations, particularly {@code host.xml}
@@ -160,7 +160,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         if (modelNode.hasDefined(PATH)) {
-            writePaths(writer, modelNode.get(PATH));
+            writePaths(writer, modelNode.get(PATH), false);
             writeNewLine(writer);
         }
 
@@ -1371,7 +1371,7 @@ public class HostXml extends CommonXml implements ManagementXml.Delegate {
             ServerConfigResourceDefinition.GROUP.marshallAsAttribute(server, writer);
             ServerConfigResourceDefinition.AUTO_START.marshallAsAttribute(server, writer);
             if (server.hasDefined(PATH)) {
-                writePaths(writer, server.get(PATH));
+                writePaths(writer, server.get(PATH), false);
             }
             if (server.hasDefined(SYSTEM_PROPERTY)) {
                 writeProperties(writer, server.get(SYSTEM_PROPERTY), Element.SYSTEM_PROPERTIES, false);

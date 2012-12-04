@@ -241,7 +241,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         writer.writeStartElement(element.getLocalName());
     }
 
-    protected void writePaths(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
+    protected void writePaths(final XMLExtendedStreamWriter writer, final ModelNode node, final boolean namedPath) throws XMLStreamException {
         List<Property> paths = node.asPropertyList();
 
         for (Iterator<Property> it = paths.iterator(); it.hasNext(); ) {
@@ -260,7 +260,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final ModelNode value = path.getValue();
                 writer.writeEmptyElement(Element.PATH.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), path.getName());
-                writer.writeAttribute(Attribute.PATH.getLocalName(), value.get(PATH).asString());
+                if (!namedPath || value.get(PATH).isDefined()) {
+                    writer.writeAttribute(Attribute.PATH.getLocalName(), value.get(PATH).asString());
+                }
                 if (value.has(RELATIVE_TO) && value.get(RELATIVE_TO).isDefined()) {
                     writer.writeAttribute(Attribute.RELATIVE_TO.getLocalName(), value.get(RELATIVE_TO).asString());
                 }
@@ -361,7 +363,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PATH, name);
         update.get(OP).set(ADD);
-        update.get(NAME).set(name);
+        //update.get(NAME).set(name);
         if (path != null)
             update.get(PATH).set(path);
         if (relativeTo != null)
