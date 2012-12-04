@@ -58,9 +58,9 @@ function convertModuleNameToGA() {
   
   echo > $outFile-unsorted;
   while read -r MODULE ; do
-    echo "Artifacts for module '$MODULE':"
+    error "Artifacts for module '$MODULE':"
     GROUP_IDS=`xsltproc --stringparam moduleName "$MODULE"  $DIRNAME/convertModuleNameToGA.xsl $PROJECT_ROOT_DIR/build/build.xml`
-    echo "$GROUP_IDS" | sed 's#.*#        \0#'
+    error "$GROUP_IDS" | sed 's#.*#        \0#'
     echo "$GROUP_IDS" >> $outFile-unsorted;
   done < $inFile;
   cat $outFile-unsorted | sort | uniq > $outFile;
@@ -79,6 +79,8 @@ convertModuleNameToGA $TARGET/modules.exclude.txt $TARGET/artifacts.ex.tmp.txt;
 
 ###  Wrap it as includes for pom.xml, removing empty lines first.
 errore "\n\n===  Wrapping list of groupID:artifactID into <include> / <exclude> tags.\n"
+echo '<?xml version="1.0" ?>'
+echo '<root>'
 echo '<dependencySourceIncludes>'
 cat $TARGET/artifacts.in.tmp-blist.txt | sed '/^$/d' | sed 's#.*#    <include>\0</include>#' | sed 's@    <.*#.*@    <!-- \0 -->@'
 echo '</dependencySourceIncludes>'
@@ -88,6 +90,7 @@ echo '    <!-- Blacklisted artifacts - see build/javadoc/artifactsBlacklist.txt.
 echo '    <!-- [ERROR] java.lang.ClassCastException: com.sun.tools.javadoc.ClassDocImpl cannot be cast to com.sun.javadoc.AnnotationTypeDoc -->'
 cat $DIRNAME/artifactsBlacklist.txt   | sed '/^$/d' | sed 's#.*#    <exclude>\0</exclude>#'
 echo '</dependencySourceExcludes>'
+echo '</root>'
 
 
 
