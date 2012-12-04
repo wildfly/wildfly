@@ -44,6 +44,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -77,7 +78,7 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
         final ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
         if (bridgeService == null) {
-            throw new OperationFailedException(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
+            throw new OperationFailedException(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
         }
 
         final JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());

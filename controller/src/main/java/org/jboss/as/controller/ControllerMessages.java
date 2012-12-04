@@ -52,6 +52,13 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
+ * This module is using message IDs in the ranges 14600-14899 and 13400-13499.
+ * <p/>
+ * This file is using the subsets 14630-14899 and 13450-13499 for non-logger messages.
+ * <p/>
+ * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
+ * list of currently reserved JBAS message id blocks.
+ * <p/>
  * Date: 02.11.2011
  *
  * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 14600 - 14899
@@ -1301,8 +1308,11 @@ public interface ControllerMessages {
      * @param stepOpName the step operation name.
      * @param address    the address.
      *
-     * @return the message.
+     * @return the message
+     *
+     * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
+    @Deprecated
     @Message(id = 14739, value = "No handler for %s at address %s")
     String noHandler(String stepOpName, PathAddress address);
 
@@ -2547,4 +2557,23 @@ public interface ControllerMessages {
 
     @Message(id = 14882, value = "There is no registered path to resolve with path attribute '%s' and/or relative-to attribute '%s on: %s")
     IllegalStateException noPathToResolve(String pathAttributeName, String relativeToAttributeName, ModelNode model);
+
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource registration.
+     *
+     * @param address    the address.
+     */
+    @Message(id = 14883, value = "No resource definition is registered for address %s")
+    String noSuchResourceType(PathAddress address);
+
+    /**
+     * Logs an error message indicating no handler is registered for an operation, represented by the {@code operationName}
+     * parameter, at {@code address}.
+     *
+     * @param operationName the operation name.
+     * @param address    the address.
+     */
+    @Message(id = 14884, value = "No operation named '%s' exists at address %s")
+    String noHandlerForOperation(String operationName, PathAddress address);
 }

@@ -78,7 +78,12 @@ public final class CompositeOperationHandler implements OperationStepHandler {
             String stepOpName = subOperation.require(OP).asString();
             OperationStepHandler stepHandler = registry.getOperationHandler(stepAddress, stepOpName);
             if (stepHandler == null) {
-                context.getFailureDescription().set(MESSAGES.noHandler(stepOpName, stepAddress));
+                ImmutableManagementResourceRegistration child = registry.getSubModel(stepAddress);
+                if (child == null) {
+                   context.getFailureDescription().set(MESSAGES.noSuchResourceType(stepAddress));
+                } else {
+                    context.getFailureDescription().set(MESSAGES.noHandlerForOperation(stepOpName, stepAddress));
+                }
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 return;
             }

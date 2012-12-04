@@ -40,9 +40,9 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * This module is using message IDs in the range 14600-14899.
+ * This module is using message IDs in the ranges 14600-14899 and 13400-13499.
  * <p/>
- * This file is using the subset 14600-14629 for logger messages.
+ * This file is using the subsets 14600-14629 and 13400-13449 for logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
@@ -219,8 +219,11 @@ public interface ControllerLogger extends BasicLogger {
      * parameter, at {@code address}.
      *
      * @param stepOpName the step operation name.
-     * @param address    the address.
+     * @param address    the address
+     *
+     * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
+    @Deprecated
     @LogMessage(level = ERROR)
     @Message(id = 14611, value = "No handler for %s at address %s")
     void noHandler(String stepOpName, PathAddress address);
@@ -404,4 +407,27 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 14628, value = "Cannot delete temp file %s, will be deleted on exit")
     void cannotDeleteTempFile(String name);
+
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource registration.
+     *
+     * @param address    the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14629, value = "No resource definition is registered for address %s")
+    void noSuchResourceType(PathAddress address);
+
+    // END OF 146xx SERIES USABLE FOR LOGGER MESSAGES
+
+    /**
+     * Logs an error message indicating no handler is registered for an operation, represented by the {@code operationName}
+     * parameter, at {@code address}.
+     *
+     * @param operationName the operation name.
+     * @param address    the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 13400, value = "No operation named '%s' exists at address %s")
+    void noHandlerForOperation(String operationName, PathAddress address);
 }

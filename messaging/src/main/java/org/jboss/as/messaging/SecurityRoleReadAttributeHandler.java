@@ -23,7 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.AddressControl;
@@ -61,7 +61,7 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
         AddressControl control = AddressControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_ADDRESS + addressName));
 
         if (control == null) {
-            rollbackOperationWithNoHandler(context, operation);
+            rollbackOperationWithResourceNotFound(context, operation);
             return;
         }
 

@@ -25,12 +25,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -115,7 +115,14 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                 PathAddress relativeAddress = PathAddress.pathAddress(pe);
                 OperationStepHandler subsysHandler = registry.getOperationHandler(relativeAddress, opName);
                 if (subsysHandler == null) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation(opName, fullAddress)));
+                    String errMsg;
+                    ImmutableManagementResourceRegistration child = registry.getSubModel(relativeAddress);
+                    if (child == null) {
+                       errMsg = ControllerMessages.MESSAGES.noSuchResourceType(fullAddress);
+                    } else {
+                        errMsg = ControllerMessages.MESSAGES.noHandlerForOperation(opName, fullAddress);
+                    }
+                    throw new OperationFailedException(new ModelNode(errMsg));
                 }
 
                 // Step to store subsystem ops in overall list

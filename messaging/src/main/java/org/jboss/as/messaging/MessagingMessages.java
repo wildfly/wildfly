@@ -22,10 +22,13 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.logging.annotations.Message.INHERIT;
+
 import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -38,8 +41,6 @@ import org.jboss.logging.Messages;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
-
-import static org.jboss.logging.Message.INHERIT;
 
 /**
  * Date: 10.06.2011
@@ -522,4 +523,13 @@ public interface MessagingMessages {
      */
     @Message(id = 11675, value = "Resources of type %s cannot be removed")
     UnsupportedOperationException canNotRemoveResourceOfType(String childType);
+
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource. Meant for use with runtime resources available via {@link HornetQServer#getManagementService()}
+     *
+     * @param address    the address.
+     */
+    @Message(id = 11676, value = "No resource exists at address %s")
+    String hqServerManagementServiceResourceNotFound(PathAddress address);
 }

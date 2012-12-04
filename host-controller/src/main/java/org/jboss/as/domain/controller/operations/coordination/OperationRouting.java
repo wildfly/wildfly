@@ -28,12 +28,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -53,7 +53,7 @@ public class OperationRouting {
                                                     final ImmutableManagementResourceRegistration registry)
                                                         throws OperationFailedException {
 
-        checkNull(operation, registry);
+        checkNullRegistration(operation, registry);
 
         OperationRouting routing = null;
 
@@ -72,7 +72,7 @@ public class OperationRouting {
 
         if (targetHost != null) {
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName);
-            checkNull(operation, flags);
+            checkNullFlags(operation, flags);
             if(flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
                 routing =  new OperationRouting(targetHost, false);
             }
@@ -122,7 +122,7 @@ public class OperationRouting {
         } else {
             // Domain level operation
             Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName);
-            checkNull(operation, flags);
+            checkNullFlags(operation, flags);
             if (flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
                 // Direct read of domain model
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
@@ -143,12 +143,17 @@ public class OperationRouting {
 
     }
 
-    private static void checkNull(final ModelNode operation, final Object toCheck) throws OperationFailedException {
+    private static void checkNullRegistration(final ModelNode operation, final ImmutableManagementResourceRegistration toCheck) throws OperationFailedException {
         if (toCheck == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.noHandlerForOperation( operation.require(OP).asString(),
+            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR)))));
+        }
+    }
+
+    private static void checkNullFlags(final ModelNode operation, final Set<OperationEntry.Flag> toCheck) throws OperationFailedException {
+        if (toCheck == null) {
+            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noHandlerForOperation( operation.require(OP).asString(),
                     PathAddress.pathAddress(operation.get(OP_ADDR)))));
         }
-
     }
 
     private final String singleHost;

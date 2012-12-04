@@ -56,6 +56,7 @@ import org.jboss.as.controller.extension.ParallelExtensionAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -172,7 +173,7 @@ class ModelControllerImpl implements ModelController {
             for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
                 if (stepHandler == null) {
-                    ROOT_LOGGER.noHandler(parsedOp.operationName, parsedOp.address);
+                    logNoHandler(parsedOp);
                     postExtContext.setRollbackOnly();
                     // stop
                     break;
@@ -250,7 +251,7 @@ class ModelControllerImpl implements ModelController {
                 if (!sawExtensionAdd && stepHandler == null) {
                     // Odd case. An op prior to the first extension add where there is no handler. This would really
                     // only happen during AS development
-                    ROOT_LOGGER.noHandler(parsedOp.operationName, parsedOp.address);
+                    logNoHandler(parsedOp);
                     context.setRollbackOnly();
                     // stop
                     break;
@@ -464,6 +465,16 @@ class ModelControllerImpl implements ModelController {
         return expressionResolver.resolveExpressions(node);
     }
 
+    private void logNoHandler(ParsedBootOp parsedOp) {
+        ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(parsedOp.address);
+        if (child == null) {
+            ROOT_LOGGER.noSuchResourceType(parsedOp.address);
+        } else {
+            ROOT_LOGGER.noHandlerForOperation(parsedOp.operationName, parsedOp.address);
+        }
+
+    }
+
     private class DefaultPrepareStepHandler implements OperationStepHandler {
 
         @Override
@@ -477,7 +488,12 @@ class ModelControllerImpl implements ModelController {
             if(stepHandler != null) {
                 context.addStep(stepHandler, OperationContext.Stage.MODEL);
             } else {
-                context.getFailureDescription().set(MESSAGES.noHandler(operationName, address));
+                ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(address);
+                if (child == null) {
+                    context.getFailureDescription().set(MESSAGES.noSuchResourceType(address));
+                } else {
+                    context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, address));
+                }
             }
             context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
@@ -487,7 +503,7 @@ class ModelControllerImpl implements ModelController {
      * The root resource, maintains a read-only reference to the current model. All write operations have to performed
      * after acquiring the write lock on a clone of the underlying model.
      */
-    private class RootResource implements Resource {
+    private final class RootResource implements Resource {
 
         private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
 

@@ -91,8 +91,8 @@ public class ManagementUtil {
         return result;
     }
 
-    public static void rollbackOperationWithNoHandler(OperationContext context, ModelNode operation) {
-        context.getFailureDescription().set(ControllerMessages.MESSAGES.noHandler(READ_ATTRIBUTE_OPERATION, PathAddress.pathAddress(operation.require(OP_ADDR))));
+    public static void rollbackOperationWithResourceNotFound(OperationContext context, ModelNode operation) {
+        context.getFailureDescription().set(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
         context.setRollbackOnly();
         context.stepCompleted();
     }

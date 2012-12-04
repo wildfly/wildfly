@@ -28,11 +28,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -117,7 +117,12 @@ public class PrepareStepHandler  implements OperationStepHandler {
         if(stepHandler != null) {
             context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
-            context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
+            PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
+            if (registration == null) {
+                context.getFailureDescription().set(ControllerMessages.MESSAGES.noSuchResourceType(pathAddress));
+            } else {
+                context.getFailureDescription().set(ControllerMessages.MESSAGES.noHandlerForOperation(operationName, pathAddress));
+            }
         }
         context.stepCompleted();
     }
