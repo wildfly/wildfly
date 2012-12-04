@@ -44,6 +44,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-5929") // disabled until intermittent failures are resolved
 public class GlobalOpsTestCase extends AbstractCliTestBase {
 
     public static final String DEFAULT_JBOSSAS = "default-jbossas";
