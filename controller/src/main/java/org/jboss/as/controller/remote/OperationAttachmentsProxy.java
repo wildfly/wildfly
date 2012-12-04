@@ -47,11 +47,11 @@ import org.jboss.as.protocol.mgmt.ProtocolUtils;
  */
 class OperationAttachmentsProxy implements OperationAttachments {
 
-    final List<ProxiedInputStream> proxiedStreams;
+    private final List<ProxiedInputStream> proxiedStreams;
 
-    public OperationAttachmentsProxy(final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
+    private OperationAttachmentsProxy(final ManagementChannelAssociation channelAssociation, final int batchId, final int size) {
         proxiedStreams = new ArrayList<ProxiedInputStream>(size);
-        for (int i = 0 ; i < size ; i++) {
+        for (int i = 0; i < size; i++) {
             proxiedStreams.add(new ProxiedInputStream(channelAssociation, batchId, i));
         }
     }
@@ -83,43 +83,60 @@ class OperationAttachmentsProxy implements OperationAttachments {
         }
     }
 
-    public static class ProxiedInputStream extends InputStream {
+    private static class ProxiedInputStream extends InputStream {
         static final int BUFFER_SIZE = 8192;
 
         private final int index;
         private final int batchId;
-        private volatile Pipe pipe = new Pipe(BUFFER_SIZE);
+        private final Pipe pipe;
         private final ManagementChannelAssociation channelAssociation;
 
-        private volatile boolean initialized;
+        private boolean initialized;
         private volatile Exception error;
 
         ProxiedInputStream(final ManagementChannelAssociation channelAssociation, final int batchId, final int index) {
             this.channelAssociation = channelAssociation;
             this.batchId = batchId;
             this.index = index;
+            pipe = new Pipe(BUFFER_SIZE);
         }
-
 
         @Override
         public int read() throws IOException {
-            if(! initialized && error == null) {
-                synchronized (this) {
-                    if(!initialized) {
-                        initializeBytes();
-                    }
-                }
-            }
-            if (error != null) {
-                if (error instanceof IOException) {
-                    throw (IOException)error;
-                }
-                throw new IOException(error);
-            }
+            prepareForRead();
             return pipe.getIn().read();
         }
 
-        void initializeBytes() {
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            prepareForRead();
+            return pipe.getIn().read(b, off, len);
+        }
+
+        @Override
+        public void close() throws IOException {
+            IOException ex = null;
+            try {
+                pipe.getOut().close();
+            } catch (IOException e) {
+                ex = e;
+            }
+            try {
+                pipe.getIn().close();
+            } catch (IOException e) {
+                ex = e;
+            }
+            if (ex != null) {
+                throw ex;
+            }
+        }
+
+        private void prepareForRead() throws IOException {
+            initializeBytes();
+            throwIfError();
+        }
+
+        private void initializeBytes() {
             if (!initialized) {
                 initialized = true;
                 try {
@@ -147,13 +164,13 @@ class OperationAttachmentsProxy implements OperationAttachments {
                                 final byte[] buffer = new byte[BUFFER_SIZE];
                                 int totalRead = 0;
                                 while (totalRead < size) {
-                                    int len = Math.min((int) (size - totalRead), buffer.length);
+                                    int len = Math.min(size - totalRead, buffer.length);
                                     input.readFully(buffer, 0, len);
                                     os.write(buffer, 0, len);
                                     totalRead += len;
                                 }
                                 os.close();
-                            } catch(IOException e) {
+                            } catch (IOException e) {
                                 shutdown(e);
                                 throw e;
                             }
@@ -165,27 +182,18 @@ class OperationAttachmentsProxy implements OperationAttachments {
             }
         }
 
-        void shutdown(Exception error) {
-            StreamUtils.safeClose(this);
-            this.error = error;
+        private void throwIfError() throws IOException {
+            if (error != null) {
+                if (error instanceof IOException) {
+                    throw (IOException) error;
+                }
+                throw new IOException(error);
+            }
         }
 
-        @Override
-        public void close() throws IOException {
-            IOException ex = null;
-            try {
-                pipe.getOut().close();
-            } catch (IOException e) {
-                ex = e;
-            }
-            try {
-                pipe.getIn().close();
-            } catch (IOException e) {
-                ex = e;
-            }
-            if (ex != null) {
-                throw ex;
-            }
+        private void shutdown(Exception error) {
+            StreamUtils.safeClose(this);
+            this.error = error;
         }
     }
 }
