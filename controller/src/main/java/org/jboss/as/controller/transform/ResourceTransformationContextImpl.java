@@ -23,6 +23,10 @@
 package org.jboss.as.controller.transform;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
+import java.util.Iterator;
+import java.util.Set;
+
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -33,9 +37,6 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-
-import java.util.Iterator;
-import java.util.Set;
 
 /**
 * @author Emanuel Muckenhuber
@@ -106,32 +107,37 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
 
     public ResourceTransformationContext addTransformedRecursiveResourceFromRoot(final PathAddress absoluteAddress, final Resource toAdd) {
         Resource model = this.root;
-        final Iterator<PathElement> i = absoluteAddress.iterator();
-        while (i.hasNext()) {
-            final PathElement element = i.next();
-            if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
-            }
-            if (! i.hasNext()) {
-                if(model.hasChild(element)) {
-                    throw MESSAGES.duplicateResourceAddress(absoluteAddress);
-                } else {
-                    model.registerChild(element, toAdd);
-                    model = toAdd;
+        if (absoluteAddress.size() > 0) {
+            final Iterator<PathElement> i = absoluteAddress.iterator();
+            while (i.hasNext()) {
+                final PathElement element = i.next();
+                if (element.isMultiTarget()) {
+                    throw MESSAGES.cannotWriteTo("*");
                 }
-            } else {
-                model = model.getChild(element);
-                if (model == null) {
-                    PathAddress ancestor = PathAddress.EMPTY_ADDRESS;
-                    for (PathElement pe : absoluteAddress) {
-                        ancestor = ancestor.append(pe);
-                        if (element.equals(pe)) {
-                            break;
-                        }
+                if (! i.hasNext()) {
+                    if(model.hasChild(element)) {
+                        throw MESSAGES.duplicateResourceAddress(absoluteAddress);
+                    } else {
+                        model.registerChild(element, toAdd);
+                        model = toAdd;
                     }
-                    throw MESSAGES.resourceNotFound(ancestor, absoluteAddress);
+                } else {
+                    model = model.getChild(element);
+                    if (model == null) {
+                        PathAddress ancestor = PathAddress.EMPTY_ADDRESS;
+                        for (PathElement pe : absoluteAddress) {
+                            ancestor = ancestor.append(pe);
+                            if (element.equals(pe)) {
+                                break;
+                            }
+                        }
+                        throw MESSAGES.resourceNotFound(ancestor, absoluteAddress);
+                    }
                 }
             }
+        } else {
+            //If this was the root address, replace the resource model
+            model.writeModel(toAdd.getModel());
         }
         return new ResourceTransformationContextImpl(root, absoluteAddress, originalModel);
     }
