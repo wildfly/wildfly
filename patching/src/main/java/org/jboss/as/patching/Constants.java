@@ -44,5 +44,7 @@ public class Constants {
     public static final String CUMULATIVE = "cumulative";
     public static final String PATCHES = "patches";
     public static final String TIMESTAMP = "timestamp";
+    public static final String MODULE_PATH = "module-path";
+    public static final String BUNDLE_PATH = "bundle-path";
 
 }

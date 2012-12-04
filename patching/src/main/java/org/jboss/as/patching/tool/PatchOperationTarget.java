@@ -118,6 +118,14 @@ public abstract class PatchOperationTarget {
             for(final String patch : info.getPatchIDs()) {
                 result.get(RESULT, Constants.PATCHES).add(patch);
             }
+            result.get(RESULT, Constants.MODULE_PATH).setEmptyList();
+            for(final File path : info.getModulePath()) {
+                result.get(RESULT, Constants.MODULE_PATH).add(path.getAbsolutePath());
+            }
+            result.get(RESULT, Constants.BUNDLE_PATH).setEmptyList();
+            for(final File path : info.getBundlePath()) {
+                result.get(RESULT, Constants.BUNDLE_PATH).add(path.getAbsolutePath());
+            }
             return result;
         }
 
