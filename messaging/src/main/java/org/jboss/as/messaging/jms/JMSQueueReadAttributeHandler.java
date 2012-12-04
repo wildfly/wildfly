@@ -67,7 +67,7 @@ public class JMSQueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
         JMSQueueControl control = getControl(context, operation);
         if (control == null) {
-            ManagementUtil.rollbackOperationWithNoHandler(context, operation);
+            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
             return;
         }
 

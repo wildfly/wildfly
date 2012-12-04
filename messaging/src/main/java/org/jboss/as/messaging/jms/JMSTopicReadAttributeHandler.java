@@ -23,7 +23,7 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.jms.JMSTopicDefinition.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.jms.JMSTopicDefinition.DURABLE_SUBSCRIPTION_COUNT;
@@ -79,7 +79,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         TopicControl control = TopicControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
 
         if (control == null) {
-            rollbackOperationWithNoHandler(context, operation);
+            rollbackOperationWithResourceNotFound(context, operation);
             return;
         }
 

@@ -25,7 +25,7 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithNoHandler;
+import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
@@ -84,7 +84,7 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         TopicControl control = TopicControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
 
         if (control == null) {
-            rollbackOperationWithNoHandler(context, operation);
+            rollbackOperationWithResourceNotFound(context, operation);
             return;
         }
 

@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
@@ -279,7 +280,10 @@ public interface DomainControllerMessages {
      * @param address       the address the operation was to be executed on.
      *
      * @return the message.
+     *
+     * @deprecated use {@link ControllerMessages#noHandlerForOperation(String, PathAddress)} or {@link ControllerMessages#noSuchResourceType(PathAddress)}
      */
+    @Deprecated
     @Message(id = 10850, value = "No handler for operation %s at address %s")
     String noHandlerForOperation(String operationName, PathAddress address);
 

@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -157,7 +158,12 @@ public class OperationCoordinatorStepHandler {
         if(stepHandler != null) {
             context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
-            context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, PathAddress.pathAddress(operation.get(OP_ADDR))));
+            PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
+            if (registration == null) {
+                context.getFailureDescription().set(ControllerMessages.MESSAGES.noSuchResourceType(pathAddress));
+            } else {
+                context.getFailureDescription().set(ControllerMessages.MESSAGES.noHandlerForOperation(operationName, pathAddress));
+            }
         }
         context.stepCompleted();
     }

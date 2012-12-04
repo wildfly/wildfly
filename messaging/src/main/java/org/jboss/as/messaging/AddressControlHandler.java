@@ -73,7 +73,7 @@ public class AddressControlHandler extends AbstractRuntimeOnlyHandler {
     private void handleReadAttribute(OperationContext context, ModelNode operation) {
         final AddressControl addressControl = getAddressControl(context, operation);
         if (addressControl == null) {
-            ManagementUtil.rollbackOperationWithNoHandler(context, operation);
+            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
             return;
         }
 
