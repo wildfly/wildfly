@@ -33,7 +33,7 @@ import org.junit.Before;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class AbstractCoreModelTest {
+public abstract class AbstractCoreModelTest {
 
     private final CoreModelTestDelegate delegate;
 

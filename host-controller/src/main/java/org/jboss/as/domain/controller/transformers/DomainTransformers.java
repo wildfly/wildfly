@@ -23,7 +23,6 @@
 package org.jboss.as.domain.controller.transformers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 
 import java.util.Map;
 
@@ -35,15 +34,12 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
-import org.jboss.as.domain.controller.resources.SocketBindingResourceDefinition;
-import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -82,38 +78,27 @@ public class DomainTransformers {
             // Discard all operations to the newly introduced jsf extension
             domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
 
-            //Transform the system properties
+            //Transform the system properties to use boot-time=true if it is undefined
             SystemPropertyTransformers.registerTransformers(domain);
-            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH/*,
-                        AddDefaultValueResourceTransformer.create(MANAGEMENT_SUBSYSTEM_ENDPOINT, new ModelNode(false))*/);
+            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
             SystemPropertyTransformers.registerTransformers(serverGroup);
 
-            //Transform the domain to add the interface names
+            //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
 
-            TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
-            socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH/*,
-                        AddDefaultValueResourceTransformer.create(FIXED_SOURCE_PORT, new ModelNode(false))*/);
-            socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH/*,
-                    AddDefaultValueResourceTransformer.create(FIXED_PORT, new ModelNode(false))*/);
-
+            //TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
+            //socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH);
+            //socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH);
 
             // Ignore the jsf subsystem as well
             registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
         } else if (modelVersion == VERSION_1_4) {
-            //Transform the domain to add the interface and profile names
-            domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
-            domain.registerSubResource(PathElement.pathElement(PROFILE), AddNameFromAddressResourceTransformer.INSTANCE);
-//            TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH,
-//                    AddDefaultValueResourceTransformer.Builder.createBuilder(MANAGEMENT_SUBSYSTEM_ENDPOINT, new ModelNode(false))
-//                            .add(SOCKET_BINDING_PORT_OFFSET, new ModelNode(0))
-//                            .build());
-            TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
-            socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH/*,
-                        AddDefaultValueResourceTransformer.create(FIXED_SOURCE_PORT, new ModelNode(false))*/);
-            socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH/*,
-                    AddDefaultValueResourceTransformer.create(FIXED_PORT, new ModelNode(false))*/);
+            //TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
+            //socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH);
+            //socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH);
 
+            //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
+            domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
         }
     }
 

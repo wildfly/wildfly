@@ -34,6 +34,20 @@
 
     <artifactId>jboss-as-core-model-test-tests</artifactId>
     <name>JBoss Application Server: Core Model Tests</name>
+    
+    <build>
+       <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                  <enableAssertions>true</enableAssertions>
+              </configuration>
+          </plugin>
+       </plugins>
+    </build>
+    
     <dependencies>
         <dependency>
            <groupId>org.jboss.as</groupId>
