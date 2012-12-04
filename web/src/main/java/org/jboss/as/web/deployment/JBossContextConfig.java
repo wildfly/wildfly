@@ -39,6 +39,7 @@ import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import org.apache.catalina.Container;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
+import org.apache.catalina.Valve;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.Multipart;
@@ -60,6 +61,7 @@ import org.jboss.as.clustering.web.OutgoingDistributableSessionData;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.WebLogger;
+import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.deployment.helpers.VFSDirContext;
 import org.jboss.as.web.session.DistributableSessionManager;
 import org.jboss.marshalling.ClassResolver;
@@ -121,7 +123,7 @@ public class JBossContextConfig extends ContextConfig {
     private DeploymentUnit deploymentUnitContext = null;
     private Set<String> overlays = new HashSet<String>();
     private final InjectedValue<DistributedCacheManagerFactory> factory = new InjectedValue<DistributedCacheManagerFactory>();
-
+    private Map<String, Valve> authenValves = null;
     /**
      * <p>
      * Creates a new instance of {@code JBossContextConfig}.
@@ -130,6 +132,13 @@ public class JBossContextConfig extends ContextConfig {
     public JBossContextConfig(DeploymentUnit deploymentUnitContext) {
         super();
         this.deploymentUnitContext = deploymentUnitContext;
+    }
+
+    public JBossContextConfig(DeploymentUnit deploymentUnitContext, WebServerService service) {
+        super();
+        this.deploymentUnitContext = deploymentUnitContext;
+        if (service !=null)
+            this.authenValves = service.getAuthenValves();
     }
 
     @Override
@@ -874,6 +883,8 @@ public class JBossContextConfig extends ContextConfig {
 
         // Configure an authenticator if we need one
         if (ok) {
+            if (authenValves != null)
+                setCustomAuthenticators(authenValves);
             authenticatorConfig();
         }
 

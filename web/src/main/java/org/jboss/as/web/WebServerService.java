@@ -17,6 +17,8 @@ package org.jboss.as.web;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.management.MBeanServer;
 
@@ -42,7 +44,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-class WebServerService implements WebServer, Service<WebServer> {
+public class WebServerService implements WebServer, Service<WebServer> {
 
     private static final String JBOSS_WEB = "jboss.web";
 
@@ -54,6 +56,7 @@ class WebServerService implements WebServer, Service<WebServer> {
     private Engine engine;
     private StandardServer server;
     private StandardService service;
+    private Map<String, Valve> authenvalves = null;
 
     private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
@@ -170,8 +173,13 @@ class WebServerService implements WebServer, Service<WebServer> {
     }
 
     @Override
-    public void addValve(Valve valve) {
+    public void addValve(String name, Valve valve) {
         final Engine engine = this.engine;
+        if (valve instanceof org.apache.catalina.authenticator.AuthenticatorBase) {
+            /* needs to be add to all contexts */
+            addAuthenValve(name, valve);
+            return;
+        }
         ((StandardEngine) engine).addValve(valve);
     }
 
@@ -179,6 +187,15 @@ class WebServerService implements WebServer, Service<WebServer> {
     public void removeValve(Valve valve) {
         final Engine engine = this.engine;
         ((StandardEngine) engine).removeValve(valve);
+    }
+
+    public Map<String, Valve> getAuthenValves() {
+        return this.authenvalves;
+    }
+    public void addAuthenValve(String name, Valve valve) {
+        if (this.authenvalves == null)
+            this.authenvalves = new HashMap<String, Valve>();
+        this.authenvalves.put(name, valve);
     }
 
 }

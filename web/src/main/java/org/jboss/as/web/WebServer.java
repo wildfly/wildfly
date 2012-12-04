@@ -74,10 +74,10 @@ public interface WebServer {
 
     /**
      * Add a global valve.
-     *
+     * @param name of the authenticator. (the auth-method of the login-config).
      * @param valve the valve
      */
-    void addValve(Valve valve);
+    void addValve(String name, Valve valve);
 
     /**
      * Remove a global valve.

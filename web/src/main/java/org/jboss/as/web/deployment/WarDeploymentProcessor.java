@@ -48,6 +48,8 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.VirtualHost;
 import org.jboss.as.web.WebDeploymentDefinition;
+import org.jboss.as.web.WebServer;
+import org.jboss.as.web.WebServerService;
 import org.jboss.as.web.WebSubsystemServices;
 import org.jboss.as.web.deployment.WebDeploymentService.ContextActivator;
 import org.jboss.as.web.deployment.component.ComponentInstantiator;
@@ -96,14 +98,23 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
     private final String defaultHost;
+    private final WebServerService service;
+
+    public WarDeploymentProcessor(String defaultHost, WebServerService service) {
+        if (defaultHost == null) {
+            throw MESSAGES.nullDefaultHost();
+        }
+        this.defaultHost = defaultHost;
+        this.service = service;
+    }
 
     public WarDeploymentProcessor(String defaultHost) {
         if (defaultHost == null) {
             throw MESSAGES.nullDefaultHost();
         }
         this.defaultHost = defaultHost;
+        this.service = null;
     }
-
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -155,7 +166,7 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Create the context
         final StandardContext webContext = contextFactory.createContext(deploymentUnit);
-        final JBossContextConfig config = new JBossContextConfig(deploymentUnit);
+        final JBossContextConfig config = new JBossContextConfig(deploymentUnit, this.service);
 
         // Add SecurityAssociationValve right at the beginning
         webContext.addValve(new SecurityContextAssociationValve(deploymentUnit));

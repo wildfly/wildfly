@@ -48,10 +48,12 @@ public class WebValveService implements Service<Valve> {
 
     private final InjectedValue<WebServer> webServer = new InjectedValue<WebServer>();
     private Valve valve;
+    private String name;
 
     public WebValveService(String name, String classname, String module) {
         this.classname = classname;
         this.module = module;
+        this.name = name;
     }
 
     /** {@inheritDoc} */
@@ -71,7 +73,7 @@ public class WebValveService implements Service<Valve> {
                 IntrospectionUtils.setProperty(valve, param.getName(), param.getValue().asString());
             }
         }
-        webServer.getValue().addValve(valve);
+        webServer.getValue().addValve(this.name, valve);
         this.valve = valve;
     }
 
