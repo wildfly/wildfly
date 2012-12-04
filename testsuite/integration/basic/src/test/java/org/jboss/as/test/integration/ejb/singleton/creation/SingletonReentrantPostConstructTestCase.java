@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,7 +44,7 @@ import org.junit.runner.RunWith;
  * The scenario itself is illegal because the business method {@link SingletonBeanOne#performSomething()} is being invoked from
  * {@link SingletonBeanTwo#initialise()} before SingletonBeanOne is "method-ready" - it's PostConstruct method is not yet
  * completed.
- * 
+ *
  * @author steve.coy
  */
 @RunWith(Arquillian.class)
@@ -63,14 +64,18 @@ public class SingletonReentrantPostConstructTestCase {
 
     /**
      * Indirectly invokes the {@link PostConstruct} annotated {@link SingletonBeanOne#initialise()} method.
-     *
-     * @throws Exception
      */
-    @Test(expected = javax.ejb.EJBException.class)
-    public void testReentrantPostConstruction() throws Exception {
+    @Test
+    public void testReentrantPostConstruction() {
         // trigger the bean creation life-cycle
-        singletonBean.start();
-        Assert.fail("Expected an EJBException");
+        try {
+            singletonBean.start();
+            Assert.fail("Expected an EJBException");
+        } catch (EJBException expected) {
+            final Throwable cause = expected.getCause();
+            Assert.assertTrue("Expected exception cause to be an java.lang.IllegalStateException, but it was a " + cause,
+                    cause instanceof IllegalStateException);
+        }
     }
 
 }
