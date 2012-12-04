@@ -78,6 +78,8 @@ public class DomainTransformers {
         if (modelVersion == VERSION_1_2 || modelVersion == VERSION_1_3) {
             // Discard all operations to the newly introduced jsf extension
             domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
+            // Ignore the jsf subsystem as well
+            registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
 
             //Transform the system properties to use boot-time=true if it is undefined
             SystemPropertyTransformers.registerTransformers(domain);
@@ -88,17 +90,7 @@ public class DomainTransformers {
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
             domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
 
-            //TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
-            //socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH);
-            //socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH);
-
-            // Ignore the jsf subsystem as well
-            registry.registerSubsystemTransformers(JSF_SUBSYSTEM, IGNORED_SUBSYSTEMS, ResourceTransformer.DISCARD);
         } else if (modelVersion == VERSION_1_4) {
-            //TransformersSubRegistration socketBindingGroup = domain.registerSubResource(SocketBindingGroupResourceDefinition.PATH);
-            //socketBindingGroup.registerSubResource(RemoteDestinationOutboundSocketBindingResourceDefinition.PATH);
-            //socketBindingGroup.registerSubResource(SocketBindingResourceDefinition.PATH);
-
             //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
             //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
