@@ -3,16 +3,41 @@
         <hornetq-server>
             <!-- disable messaging persistence -->
             <persistence-enabled>false</persistence-enabled>
+            <scheduled-thread-pool-max-size>${messaging.scheduled.thread.pool.max.size:6}</scheduled-thread-pool-max-size>
             <thread-pool-max-size>${messaging.thread.pool.max.size:5}</thread-pool-max-size>
             <security-domain>someDomain</security-domain>
+            <security-enabled>false</security-enabled>
+            <security-invalidation-interval>1234</security-invalidation-interval>
+            <wild-card-routing-enabled>false</wild-card-routing-enabled>
+            <management-address>my.management.address</management-address>
+            <management-notification-address>my.management.notif.address</management-notification-address>
             <cluster-user>${messaging.cluster.user.name}</cluster-user>
             <cluster-password>${messaging.cluster.user.password}</cluster-password>
+            <jmx-management-enabled>false</jmx-management-enabled>
+            <jmx-domain>my.jmx.domain</jmx-domain>
+            <message-counter-enabled>true</message-counter-enabled>
+            <message-counter-sample-period>7654</message-counter-sample-period>
+            <message-counter-max-day-history>23</message-counter-max-day-history>
+            <connection-ttl-override>5432</connection-ttl-override>
+            <async-connection-execution-enabled>false</async-connection-execution-enabled>
+            <transaction-timeout>4321</transaction-timeout>
+            <transaction-timeout-scan-period>5432</transaction-timeout-scan-period>
+            <message-expiry-scan-period>7654</message-expiry-scan-period>
+            <message-expiry-thread-priority>7</message-expiry-thread-priority>
             <id-cache-size>102030</id-cache-size>
+            <persist-id-cache>false</persist-id-cache>
             <remoting-interceptors>
                 <class-name>foo.bar</class-name>
                 <class-name>bar.foo</class-name>
             </remoting-interceptors>
+            <backup>false</backup>
+            <allow-failback>false</allow-failback>
+            <failback-delay>9876</failback-delay>
+            <failover-on-shutdown>true</failover-on-shutdown>
+            <shared-store>true</shared-store>
+            <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
             <page-max-concurrent-io>10</page-max-concurrent-io>
+            <create-bindings-dir>false</create-bindings-dir>
             <create-journal-dir>true</create-journal-dir>
             <journal-type>NIO</journal-type>
             <journal-buffer-timeout>1357</journal-buffer-timeout>
@@ -134,8 +159,8 @@
                     <reconnect-attempts>3</reconnect-attempts>
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <confirmation-window-size>350</confirmation-window-size>
-                    <user>Brian</user>
-                    <password>secret</password>
+                    <user>${user:Brian}</user>
+                    <password>${password:secret}</password>
                     <static-connectors>
                         <connector-ref>in-vm</connector-ref>
                         <connector-ref>netty</connector-ref>

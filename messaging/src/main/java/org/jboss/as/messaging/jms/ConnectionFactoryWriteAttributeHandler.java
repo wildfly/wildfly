@@ -127,7 +127,7 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 control.setCallFailoverTimeout(value.asLong());
             }else if (attributeName.equals(Common.DUPS_OK_BATCH_SIZE.getName())) {
                 control.setDupsOKBatchSize(value.asInt());
-            } else if (attributeName.equals(CommonAttributes.CONSUMER_MAX_RATE.getName())) {
+            } else if (attributeName.equals(Common.CONSUMER_MAX_RATE.getName())) {
                 control.setConsumerMaxRate(value.asInt());
             } else if (attributeName.equals(Common.CONSUMER_WINDOW_SIZE.getName())) {
                 control.setConsumerWindowSize(value.asInt());
@@ -151,11 +151,11 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 control.setMinLargeMessageSize(value.asInt());
             } else if (attributeName.equals(Common.AUTO_GROUP.getName())) {
                 control.setAutoGroup(value.asBoolean());
-            } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL.getName())) {
+            } else if (attributeName.equals(Common.RETRY_INTERVAL.getName())) {
                 control.setRetryInterval(value.asLong());
-            } else if (attributeName.equals(CommonAttributes.RETRY_INTERVAL_MULTIPLIER.getName())) {
+            } else if (attributeName.equals(Common.RETRY_INTERVAL_MULTIPLIER.getName())) {
                 control.setRetryIntervalMultiplier(value.asDouble());
-            } else if (attributeName.equals(CommonAttributes.RECONNECT_ATTEMPTS.getName())) {
+            } else if (attributeName.equals(Common.RECONNECT_ATTEMPTS.getName())) {
                 control.setReconnectAttempts(value.asInt());
             } else if (attributeName.equals(Common.FAILOVER_ON_INITIAL_CONNECTION.getName())) {
                 control.setFailoverOnInitialConnection(value.asBoolean());

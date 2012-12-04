@@ -46,6 +46,8 @@ import org.jboss.as.messaging.MessagingExtension;
  */
 public class JMSQueueDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CommonAttributes.JMS_QUEUE);
+
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.DESTINATION_ENTRIES, CommonAttributes.SELECTOR, CommonAttributes.DURABLE };
 
     /**
@@ -93,7 +95,7 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
     }
 
     private JMSQueueDefinition(final boolean registerRuntimeOnly, final boolean deployed, final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
-        super(PathElement.pathElement(CommonAttributes.JMS_QUEUE),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.JMS_QUEUE),
                 addHandler,
                 removeHandler);

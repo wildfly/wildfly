@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.GROUP_PORT;
 import static org.jboss.as.messaging.CommonAttributes.JGROUPS_CHANNEL;
@@ -32,6 +31,7 @@ import static org.jboss.as.messaging.CommonAttributes.JGROUPS_STACK;
 import static org.jboss.as.messaging.CommonAttributes.LOCAL_BIND_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.SOCKET_BINDING;
 
+import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -50,20 +50,23 @@ import org.jboss.dmr.ModelType;
 */
 public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
 
-    private static final PathElement DISCOVERY_GROUP_PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.DISCOVERY_GROUP);
 
     public static SimpleAttributeDefinition REFRESH_TIMEOUT = create("refresh-timeout", ModelType.LONG)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT))
+            // FIXME the default value should be set to HornetQDefaultConfiguration.DEFAULT_BROADCAST_REFRESH_TIMEOUT,
+            .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static SimpleAttributeDefinition INITIAL_WAIT_TIMEOUT = create("initial-wait-timeout", ModelType.LONG)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT))
+            .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING, LOCAL_BIND_ADDRESS, GROUP_ADDRESS, GROUP_PORT,
@@ -73,7 +76,7 @@ public class DiscoveryGroupDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public DiscoveryGroupDefinition(final boolean registerRuntimeOnly) {
-        super(DiscoveryGroupDefinition.DISCOVERY_GROUP_PATH,
+        super(DiscoveryGroupDefinition.PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.DISCOVERY_GROUP),
                 DiscoveryGroupAdd.INSTANCE,
                 DiscoveryGroupRemove.INSTANCE);

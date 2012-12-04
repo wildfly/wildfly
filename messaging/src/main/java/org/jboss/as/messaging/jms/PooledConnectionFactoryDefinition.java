@@ -68,7 +68,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
         // replace the reconnect-attempts attribute to use a different default value for pooled CF
         for (int i = 0; i < result.length; i++) {
             ConnectionFactoryAttribute attribute = result[i];
-            if (attribute.getDefinition() == CommonAttributes.RECONNECT_ATTEMPTS) {
+            if (attribute.getDefinition() == Common.RECONNECT_ATTEMPTS) {
                 result[i] = ConnectionFactoryAttribute.create(Pooled.RECONNECT_ATTEMPTS, Pooled.RECONNECT_ATTEMPTS_PROP_NAME, true);
             }
         }

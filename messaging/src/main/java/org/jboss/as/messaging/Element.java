@@ -189,8 +189,8 @@ public enum Element {
    CONNECTION_FACTORY(getConnectionFactoryDefinitions()),
    CONNECTION_FACTORIES(CommonAttributes.JMS_CONNECTION_FACTORIES),
    CONNECTION_TTL(getConnectionTTLDefinitions()),
-   CONFIRMATION_WINDOW_SIZE(Common.CONFIRMATION_WINDOW_SIZE),
-   CONSUMER_MAX_RATE(CommonAttributes.CONSUMER_MAX_RATE),
+   CONFIRMATION_WINDOW_SIZE(getConfirmationWindowSizeDefinitions()),
+   CONSUMER_MAX_RATE(Common.CONSUMER_MAX_RATE),
    CONSUMER_WINDOW_SIZE(Common.CONSUMER_WINDOW_SIZE),
    DISCOVERY_INITIAL_WAIT_TIMEOUT(Common.DISCOVERY_INITIAL_WAIT_TIMEOUT),
    DISCOVERY_GROUP_REF(CommonAttributes.DISCOVERY_GROUP_REF),
@@ -369,10 +369,18 @@ public enum Element {
 
     private static Map<String, AttributeDefinition> getReconnectAttemptsDefinitions() {
         final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
-        result.put("connection", CommonAttributes.RECONNECT_ATTEMPTS);
+        result.put("connection", Common.RECONNECT_ATTEMPTS);
         result.put("pooled-connection", Pooled.RECONNECT_ATTEMPTS);
         result.put("bridge", BridgeDefinition.RECONNECT_ATTEMPTS);
         result.put("cluster", ClusterConnectionDefinition.RECONNECT_ATTEMPTS);
+        return result;
+
+    }
+
+    private static Map<String, AttributeDefinition> getConfirmationWindowSizeDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("connection", ConnectionFactoryAttributes.Common.CONFIRMATION_WINDOW_SIZE);
+        result.put("bridge", CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE);
         return result;
 
     }

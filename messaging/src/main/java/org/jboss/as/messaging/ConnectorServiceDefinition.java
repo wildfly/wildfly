@@ -36,12 +36,14 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class ConnectorServiceDefinition extends SimpleResourceDefinition {
 
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE);
+
     public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS };
 
     private final boolean registerRuntimeOnly;
 
     public ConnectorServiceDefinition(final boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.CONNECTOR_SERVICE),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
                 ConnectorServiceAdd.INSTANCE,
                 ConnectorServiceRemove.INSTANCE);

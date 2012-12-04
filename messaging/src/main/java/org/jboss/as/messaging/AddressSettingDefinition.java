@@ -24,6 +24,7 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.messaging.CommonAttributes.DEAD_LETTER_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.EXPIRY_ADDRESS;
@@ -49,61 +50,72 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
 
     private final boolean registerRuntimeOnly;
 
-    private static final PathElement ADDRESS_SETTING_PATH = PathElement.pathElement(CommonAttributes.ADDRESS_SETTING);
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.ADDRESS_SETTING);
 
     public static final SimpleAttributeDefinition ADDRESS_FULL_MESSAGE_POLICY = create("address-full-policy", ModelType.STRING)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_ADDRESS_FULL_MESSAGE_POLICY.toString()))
             .setValidator(new EnumValidator<AddressFullMessagePolicy>(AddressFullMessagePolicy.class, true, false))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition LAST_VALUE_QUEUE = create("last-value-queue", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_LAST_VALUE_QUEUE))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_DELIVERY_ATTEMPTS = create("max-delivery-attempts", ModelType.INT)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MAX_SIZE_BYTES = create("max-size-bytes", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MAX_SIZE_BYTES))
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition MESSAGE_COUNTER_HISTORY_DAY_LIMIT = create("message-counter-history-day-limit", ModelType.INT)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT))
+            .setMeasurementUnit(DAYS)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition PAGE_MAX_CACHE_SIZE = create("page-max-cache-size", ModelType.INT)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_PAGE_MAX_CACHE))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition PAGE_SIZE_BYTES = create("page-size-bytes", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_PAGE_SIZE))
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDELIVERY_DELAY = create("redelivery-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDELIVER_DELAY))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition REDISTRIBUTION_DELAY = create("redistribution-delay", ModelType.LONG)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_REDISTRIBUTION_DELAY))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     public static final SimpleAttributeDefinition SEND_TO_DLA_ON_NO_ROUTE = create("send-to-dla-on-no-route", ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(AddressSettings.DEFAULT_SEND_TO_DLA_ON_NO_ROUTE))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
 
     /**
@@ -125,7 +137,7 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
     };
 
     public AddressSettingDefinition(final boolean registerRuntimeOnly) {
-        super(AddressSettingDefinition.ADDRESS_SETTING_PATH,
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.ADDRESS_SETTING),
                 AddressSettingAdd.INSTANCE,
                 AddressSettingRemove.INSTANCE);

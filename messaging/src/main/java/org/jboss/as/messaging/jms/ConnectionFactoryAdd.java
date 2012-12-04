@@ -28,7 +28,6 @@ import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.CONSUMER_MAX_RATE;
 import static org.jboss.as.messaging.CommonAttributes.HA;
 
 import java.util.ArrayList;
@@ -47,7 +46,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
-import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
@@ -120,7 +118,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
             List<String> connectorNames = new ArrayList<String>(connectorRefs.keys());
             config.setConnectorNames(connectorNames);
         }
-        config.setConsumerMaxRate(CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());
+        config.setConsumerMaxRate(Common.CONSUMER_MAX_RATE.resolveModelAttribute(context, model).asInt());
         config.setConsumerWindowSize(Common.CONSUMER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
         final ModelNode discoveryGroupName = Common.DISCOVERY_GROUP_NAME.resolveModelAttribute(context, model);
         if (discoveryGroupName.isDefined()) {
@@ -144,7 +142,7 @@ public class ConnectionFactoryAdd extends AbstractAddStepHandler {
         config.setPreAcknowledge(Common.PRE_ACKNOWLEDGE.resolveModelAttribute(context, model).asBoolean());
         config.setProducerMaxRate(Common.PRODUCER_MAX_RATE.resolveModelAttribute(context, model).asInt());
         config.setProducerWindowSize(Common.PRODUCER_WINDOW_SIZE.resolveModelAttribute(context, model).asInt());
-        config.setReconnectAttempts(CommonAttributes.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt());
+        config.setReconnectAttempts(Common.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt());
         config.setRetryInterval(Common.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong());
         config.setRetryIntervalMultiplier(Common.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble());
         config.setScheduledThreadPoolMaxSize(Common.SCHEDULED_THREAD_POOL_MAX_SIZE.resolveModelAttribute(context, model).asInt());

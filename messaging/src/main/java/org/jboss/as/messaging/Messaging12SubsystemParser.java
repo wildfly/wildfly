@@ -83,14 +83,9 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
             }
             required.remove(element);
             switch (element) {
-                case CHECK_PERIOD:
-                case CONNECTION_TTL:
                 case QUEUE_NAME:
                 case HA:
                 case TRANSFORMER_CLASS_NAME:
-                case RETRY_INTERVAL_MULTIPLIER:
-                case MAX_RETRY_INTERVAL:
-                case CONFIRMATION_WINDOW_SIZE:
                 case USER:
                 case PASSWORD:
                     handleElementText(reader, element, bridgeAdd);
@@ -100,11 +95,16 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     FILTER.parseAndSetParameter(string, bridgeAdd, reader);
                     break;
                 }
+                case CHECK_PERIOD:
+                case CONNECTION_TTL:
+                case MAX_RETRY_INTERVAL:
                 case MIN_LARGE_MESSAGE_SIZE:
                 case RETRY_INTERVAL:
+                case RETRY_INTERVAL_MULTIPLIER:
                     // Use the "default" variant
                     handleElementText(reader, element, "default", bridgeAdd);
                     break;
+                case CONFIRMATION_WINDOW_SIZE:
                 case FORWARDING_ADDRESS:
                 case RECONNECT_ATTEMPTS:
                 case USE_DUPLICATE_DETECTION:
@@ -145,7 +145,6 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
             throws XMLStreamException {
         switch (element) {
             case CALL_TIMEOUT:
-            case MIN_LARGE_MESSAGE_SIZE:
                 handleElementText(reader, element, clusterConnectionAdd);
                 break;
             case CHECK_PERIOD:
@@ -156,7 +155,9 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 // Use the "cluster" variant
                 handleElementText(reader, element, "cluster", clusterConnectionAdd);
                 break;
-
+            case MIN_LARGE_MESSAGE_SIZE:
+                handleElementText(reader, element, "default", clusterConnectionAdd);
+                break;
             default: {
                 super.handleUnknownClusterConnectionAttribute(reader, element, clusterConnectionAdd);
             }

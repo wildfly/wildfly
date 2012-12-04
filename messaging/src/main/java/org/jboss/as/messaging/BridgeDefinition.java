@@ -32,7 +32,6 @@ import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
@@ -51,7 +50,7 @@ import org.jboss.dmr.ModelNode;
 public class BridgeDefinition extends SimpleResourceDefinition {
 
     public static final String[] OPERATIONS = {START, STOP};
-    private static final PathElement BRIDGE_PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.BRIDGE);
 
     private final boolean registerRuntimeOnly;
 
@@ -72,6 +71,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition QUEUE_NAME = create(CommonAttributes.QUEUE_NAME, STRING)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
@@ -92,22 +92,25 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition USE_DUPLICATE_DETECTION = create("use-duplicate-detection", BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BRIDGE_DUPLICATE_DETECTION))
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS))
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition FORWARDING_ADDRESS = create("forwarding-address", STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = {
-            BridgeDefinition.QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
+            QUEUE_NAME, FORWARDING_ADDRESS, CommonAttributes.HA,
             CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
@@ -118,7 +121,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     };
 
     public BridgeDefinition(final boolean registerRuntimeOnly) {
-        super(BRIDGE_PATH,
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BRIDGE),
                 BridgeAdd.INSTANCE,
                 BridgeRemove.INSTANCE);
