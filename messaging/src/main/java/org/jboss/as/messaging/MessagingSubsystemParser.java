@@ -413,7 +413,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             switch (element) {
                 case FORWARD_WHEN_NO_CONSUMERS:
                 case MAX_HOPS:
-                case CONFIRMATION_WINDOW_SIZE:
                     handleElementText(reader, element, clusterConnectionAdd);
                     break;
                 case ADDRESS:  {
@@ -425,6 +424,9 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, "simple", clusterConnectionAdd);
                     break;
                 }
+                case CONFIRMATION_WINDOW_SIZE:
+                    handleElementText(reader, element, "bridge", clusterConnectionAdd);
+                    break;
                 case USE_DUPLICATE_DETECTION:
                 case RETRY_INTERVAL:
                     // Use the "cluster" variant
@@ -500,17 +502,19 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case QUEUE_NAME:
                 case HA:
                 case TRANSFORMER_CLASS_NAME:
-                case RETRY_INTERVAL_MULTIPLIER:
-                case CONFIRMATION_WINDOW_SIZE:
                 case USER:
                 case PASSWORD:
                     handleElementText(reader, element, bridgeAdd);
+                    break;
+                case CONFIRMATION_WINDOW_SIZE:
+                    handleElementText(reader, element, "bridge", bridgeAdd);
                     break;
                 case FILTER:  {
                     String string = readStringAttributeElement(reader, CommonAttributes.STRING);
                     FILTER.parseAndSetParameter(string, bridgeAdd, reader);
                     break;
                 }
+                case RETRY_INTERVAL_MULTIPLIER:
                 case RETRY_INTERVAL:
                     // Use the "default" variant
                     handleElementText(reader, element, DEFAULT, bridgeAdd);
@@ -1555,7 +1559,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case CALL_TIMEOUT:
                 case CONSUMER_WINDOW_SIZE:
                 case CONSUMER_MAX_RATE:
-                case CONFIRMATION_WINDOW_SIZE:
                 case PRODUCER_WINDOW_SIZE:
                 case PRODUCER_MAX_RATE:
                 case CACHE_LARGE_MESSAGE_CLIENT:
@@ -1574,6 +1577,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case GROUP_ID:
                     handleElementText(reader, element, connectionFactory);
                     break;
+                case CONFIRMATION_WINDOW_SIZE:
                 case CONNECTION_TTL:
                 case MAX_RETRY_INTERVAL:
                 case MIN_LARGE_MESSAGE_SIZE:

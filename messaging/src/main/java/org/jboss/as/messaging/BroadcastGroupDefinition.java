@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
-import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTORS;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
@@ -41,7 +40,6 @@ import static org.jboss.dmr.ModelType.STRING;
 import java.util.EnumSet;
 
 import org.hornetq.api.config.HornetQDefaultConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
@@ -61,19 +59,24 @@ import org.jboss.dmr.ModelNode;
  */
 public class BroadcastGroupDefinition extends SimpleResourceDefinition {
 
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.BROADCAST_GROUP);
+
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(CONNECTORS, STRING)
             .setAllowNull(true)
             .setValidator(new StringLengthValidator(1))
             .setXmlName(CONNECTOR_REF_STRING)
             .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(null))
+            // disallow expressions since the attribute references other configuration items
+            .setAllowExpression(false)
             .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition BROADCAST_PERIOD = create("broadcast-period", LONG)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD))
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_BROADCAST_PERIOD))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { JGROUPS_STACK, JGROUPS_CHANNEL, SOCKET_BINDING, LOCAL_BIND_ADDRESS, LOCAL_BIND_PORT,
@@ -84,7 +87,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
 
     public BroadcastGroupDefinition(boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(CommonAttributes.BROADCAST_GROUP),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.BROADCAST_GROUP),
                 BroadcastGroupAdd.INSTANCE,
                 BroadcastGroupRemove.INSTANCE);

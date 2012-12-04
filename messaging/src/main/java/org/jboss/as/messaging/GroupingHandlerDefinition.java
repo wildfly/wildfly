@@ -49,22 +49,24 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition GROUPING_HANDLER_ADDRESS = create("grouping-handler-address", STRING)
             .setXmlName(CommonAttributes.ADDRESS)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     // FIXME GroupingHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed
     // [HORNETQ-885]
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", INT)
-            .setDefaultValue(new ModelNode().set(GroupingHandlerConfiguration.DEFAULT_TIMEOUT))
+            .setDefaultValue(new ModelNode(GroupingHandlerConfiguration.DEFAULT_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<GroupingHandlerConfiguration.TYPE>(GroupingHandlerConfiguration.TYPE.class, false, true))
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };

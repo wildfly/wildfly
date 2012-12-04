@@ -44,6 +44,9 @@ import org.jboss.dmr.ModelNode;
 public class TransportParamDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition VALUE = create("value", STRING)
+            // FIXME AS7-5121 transport parameter parsing and configuration must be refactored
+            // prior to allow expressions for the param's value
+            .setAllowExpression(false)
             .setRestartAllServices()
             .build();
 

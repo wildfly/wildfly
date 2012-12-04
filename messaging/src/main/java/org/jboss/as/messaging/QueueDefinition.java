@@ -51,8 +51,11 @@ import org.jboss.dmr.ModelType;
  */
 public class QueueDefinition extends SimpleResourceDefinition {
 
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.QUEUE);
+
     public static final SimpleAttributeDefinition ADDRESS = create("queue-address", ModelType.STRING)
             .setXmlName(CommonAttributes.ADDRESS)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 

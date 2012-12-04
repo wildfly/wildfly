@@ -27,6 +27,7 @@ import static org.hornetq.api.core.client.HornetQClient.DEFAULT_CONNECTION_TTL;
 import static org.hornetq.api.core.client.HornetQClient.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
+import static org.jboss.as.controller.client.helpers.MeasurementUnit.DAYS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PERCENTAGE;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
@@ -46,13 +47,13 @@ import org.hornetq.api.config.HornetQDefaultConfiguration;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.config.impl.FileConfiguration;
+import org.hornetq.core.server.JournalType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -66,33 +67,45 @@ public interface CommonAttributes {
     String DISCOVERY_GROUP_NAME = "discovery-group-name";
     String ENTRIES = "entries";
 
-    SimpleAttributeDefinition ALLOW_FAILBACK = new SimpleAttributeDefinition("allow-failback",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_ALLOW_AUTO_FAILBACK), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition ALLOW_FAILBACK = create("allow-failback", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_ALLOW_AUTO_FAILBACK))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = new SimpleAttributeDefinition(
-            "async-connection-execution-enabled",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition ASYNC_CONNECTION_EXECUTION_ENABLED = create( "async-connection-execution-enabled", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition BACKUP = new SimpleAttributeDefinition("backup",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_BACKUP), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition BACKUP = create("backup", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_BACKUP))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition CALL_TIMEOUT = create("call-timeout", LONG)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CALL_TIMEOUT)).setMeasurementUnit(MILLISECONDS)
-            .setAllowNull(true).build();
+            .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_CALL_TIMEOUT))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     SimpleAttributeDefinition CALL_FAILOVER_TIMEOUT = create("call-failover-timeout",LONG)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT))
+            .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_CALL_FAILOVER_TIMEOUT))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .build();
 
     SimpleAttributeDefinition CHECK_PERIOD = create("check-period", LONG)
-            .setDefaultValue(new ModelNode()
-            .set(DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
+            .setDefaultValue(new ModelNode(DEFAULT_CLIENT_FAILURE_CHECK_PERIOD))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
             .setFlags(RESTART_ALL_SERVICES)
             .build();
@@ -104,6 +117,8 @@ public interface CommonAttributes {
     SimpleAttributeDefinition CHECK_FOR_LIVE_SERVER = create("check-for-live-server", BOOLEAN)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CHECK_FOR_LIVE_SERVER))
             .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CLUSTERED = create("clustered", BOOLEAN)
@@ -114,46 +129,60 @@ public interface CommonAttributes {
             .setStorageRuntime()
             .build();
 
-    SimpleAttributeDefinition CLUSTER_PASSWORD = new SimpleAttributeDefinition("cluster-password", "cluster-password",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD), ModelType.STRING, true, true, null,
-            RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition CLUSTER_PASSWORD = create("cluster-password", ModelType.STRING)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CLUSTER_PASSWORD))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
-    SimpleAttributeDefinition CLUSTER_USER = new SimpleAttributeDefinition("cluster-user", "cluster-user",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER), ModelType.STRING, true, true, null,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition CLUSTER_USER = create("cluster-user", ModelType.STRING)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CLUSTER_USER))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition CONSUMER_COUNT = create("consumer-count", INT)
             .setStorageRuntime()
             .build();
 
     SimpleAttributeDefinition BRIDGE_CONFIRMATION_WINDOW_SIZE = create("confirmation-window-size", INT)
-            .setDefaultValue(new ModelNode().set(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE))
+            .setDefaultValue(new ModelNode(FileConfiguration.DEFAULT_CONFIRMATION_WINDOW_SIZE))
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition CONNECTION_TTL = create("connection-ttl", LONG)
             .setDefaultValue(new ModelNode().set(DEFAULT_CONNECTION_TTL))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setMeasurementUnit(MILLISECONDS)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = new SimpleAttributeDefinition("connection-ttl-override",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CONNECTION_TTL_OVERRIDE), ModelType.LONG, true,
-            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition CONNECTION_TTL_OVERRIDE = create("connection-ttl-override", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CONNECTION_TTL_OVERRIDE))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition CONSUMER_MAX_RATE = new SimpleAttributeDefinition("consumer-max-rate",
-            new ModelNode().set(HornetQClient.DEFAULT_CONSUMER_MAX_RATE), ModelType.INT, true, MeasurementUnit.PER_SECOND);
+    SimpleAttributeDefinition CREATE_BINDINGS_DIR = create("create-bindings-dir", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CREATE_BINDINGS_DIR))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition CREATE_BINDINGS_DIR = new SimpleAttributeDefinition("create-bindings-dir",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CREATE_BINDINGS_DIR), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition CREATE_JOURNAL_DIR = new SimpleAttributeDefinition("create-journal-dir",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_CREATE_JOURNAL_DIR), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition CREATE_JOURNAL_DIR = create("create-journal-dir", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_CREATE_JOURNAL_DIR))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition DEAD_LETTER_ADDRESS = new SimpleAttributeDefinition("dead-letter-address", ModelType.STRING, true);
 
@@ -171,18 +200,24 @@ public interface CommonAttributes {
     SimpleAttributeDefinition DURABLE = create("durable", BOOLEAN)
             .setDefaultValue(new ModelNode().set(true))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition FACTORY_CLASS = create("factory-class", ModelType.STRING)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition EXPIRY_ADDRESS = new SimpleAttributeDefinition("expiry-address", ModelType.STRING, true);
 
-    SimpleAttributeDefinition FAILBACK_DELAY = new SimpleAttributeDefinition("failback-delay",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_FAILBACK_DELAY), ModelType.LONG, true, MeasurementUnit.MILLISECONDS,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition FAILBACK_DELAY = create("failback-delay", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_FAILBACK_DELAY))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
             .setAllowNull(true)
@@ -190,17 +225,20 @@ public interface CommonAttributes {
             .setAttributeMarshaller(NOOP_MARSHALLER)
             .build();
 
-    SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = new SimpleAttributeDefinition("failover-on-shutdown",
-            new ModelNode().set(false /*
-                                       * TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is
-                                       * private
-                                       */), ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = create("failover-on-shutdown", BOOLEAN)
+            // TODO should be ConfigurationImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN but field is private
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
     SimpleAttributeDefinition FILTER = create("filter", ModelType.STRING)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
+    // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
             .setDefaultValue(null)
@@ -210,6 +248,7 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
+    // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
             .setDefaultValue(null)
@@ -223,56 +262,105 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode()
             .set(HornetQClient.DEFAULT_HA))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition ID_CACHE_SIZE = new SimpleAttributeDefinition("id-cache-size",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_ID_CACHE_SIZE), ModelType.INT, true, MeasurementUnit.NONE,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition ID_CACHE_SIZE = create("id-cache-size", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_ID_CACHE_SIZE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JMX_DOMAIN = new SimpleAttributeDefinition("jmx-domain",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN), ModelType.STRING, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JMX_DOMAIN = create("jmx-domain", ModelType.STRING)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JMX_DOMAIN))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = new SimpleAttributeDefinition("jmx-management-enabled",
-            new ModelNode().set(false), ModelType.BOOLEAN, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JMX_MANAGEMENT_ENABLED = create("jmx-management-enabled", BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = new SimpleAttributeDefinition("journal-buffer-size", ModelType.LONG, true,
-            MeasurementUnit.BYTES, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    // no default values, depends on whether NIO or AIO is used.
+    SimpleAttributeDefinition JOURNAL_BUFFER_SIZE = create("journal-buffer-size", LONG)
+            .setMeasurementUnit(BYTES)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = new SimpleAttributeDefinition("journal-buffer-timeout", ModelType.LONG,
-            true, MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    // no default values, depends on whether NIO or AIO is used.
+    SimpleAttributeDefinition JOURNAL_BUFFER_TIMEOUT = create("journal-buffer-timeout", LONG)
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_COMPACT_MIN_FILES = new SimpleAttributeDefinition("journal-compact-min-files",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_MIN_FILES), ModelType.INT, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_COMPACT_MIN_FILES = create("journal-compact-min-files", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_MIN_FILES))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_COMPACT_PERCENTAGE = new SimpleAttributeDefinition("journal-compact-percentage",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE), ModelType.INT, true,
-            MeasurementUnit.PERCENTAGE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_COMPACT_PERCENTAGE = create("journal-compact-percentage", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_COMPACT_PERCENTAGE))
+            .setMeasurementUnit(PERCENTAGE)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_FILE_SIZE = new SimpleAttributeDefinition("journal-file-size",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE), ModelType.LONG, true, MeasurementUnit.BYTES,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_FILE_SIZE = create("journal-file-size", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_FILE_SIZE))
+            .setMeasurementUnit(BYTES)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_MAX_IO = new SimpleAttributeDefinition("journal-max-io", ModelType.INT, true,
-            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    // no default values, depends on whether NIO or AIO is used.
+    SimpleAttributeDefinition JOURNAL_MAX_IO = create("journal-max-io", INT)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_MIN_FILES = new SimpleAttributeDefinition("journal-min-files",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MIN_FILES), ModelType.INT, true, MeasurementUnit.NONE,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_MIN_FILES = create("journal-min-files", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_MIN_FILES))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = new SimpleAttributeDefinition("journal-sync-non-transactional",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_SYNC_NON_TRANSACTIONAL = create("journal-sync-non-transactional", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = new SimpleAttributeDefinition("journal-sync-transactional",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_SYNC_TRANSACTIONAL = create("journal-sync-transactional", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_SYNC_TRANSACTIONAL))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition JOURNAL_TYPE = new SimpleAttributeDefinition("journal-type", "journal-type",
-            new ModelNode().set(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()), ModelType.STRING, true, false,
-            MeasurementUnit.NONE, JournalTypeValidator.INSTANCE, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition JOURNAL_TYPE = create("journal-type", ModelType.STRING)
+            .setDefaultValue(new ModelNode(ConfigurationImpl.DEFAULT_JOURNAL_TYPE.toString()))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setValidator(new EnumValidator<JournalType>(JournalType.class, true, true))
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition LIVE_CONNECTOR_REF = create("live-connector-ref", ModelType.STRING)
             .setAllowNull(true)
@@ -281,6 +369,7 @@ public interface CommonAttributes {
             .setAttributeMarshaller(NOOP_MARSHALLER)
             .build();
 
+    // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
             .setDefaultValue(null)
@@ -290,6 +379,7 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
+    // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_PORT = create("local-bind-port", INT)
             .setDefaultValue(new ModelNode().set(-1))
@@ -302,133 +392,171 @@ public interface CommonAttributes {
     SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
                     "local-bind-address", "local-bind-port")
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
             .setDefaultValue(null)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setAlternatives("socket-binding",
                     "group-address", "group-port",
                     "local-bind-address", "local-bind-port")
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = new SimpleAttributeDefinition("log-journal-write-rate",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_LOG_WRITE_RATE), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition LOG_JOURNAL_WRITE_RATE = create("log-journal-write-rate", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_LOG_WRITE_RATE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition MANAGEMENT_ADDRESS = new SimpleAttributeDefinition("management-address",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS.toString()), ModelType.STRING, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition MANAGEMENT_ADDRESS = create("management-address", ModelType.STRING)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_ADDRESS.toString()))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleAttributeDefinition(
-            "management-notification-address", new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS
-                    .toString()), ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition MANAGEMENT_NOTIFICATION_ADDRESS = create("management-notification-address", ModelType.STRING)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS.toString()))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition MAX_RETRY_INTERVAL = create("max-retry-interval", LONG)
-            .setDefaultValue(new ModelNode().set(DEFAULT_MAX_RETRY_INTERVAL))
+            .setDefaultValue(new ModelNode(DEFAULT_MAX_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition MEMORY_MEASURE_INTERVAL = create("memory-measure-interval", LONG)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MEMORY_MEASURE_INTERVAL))
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MEMORY_MEASURE_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition MEMORY_WARNING_THRESHOLD = create("memory-warning-threshold", INT)
-            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MEMORY_WARNING_THRESHOLD))
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MEMORY_WARNING_THRESHOLD))
             .setMeasurementUnit(PERCENTAGE)
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     AttributeDefinition MESSAGE_COUNT = create("message-count", LONG)
             .setStorageRuntime()
             .build();
 
-    SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = new SimpleAttributeDefinition("message-counter-enabled",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_ENABLED), ModelType.BOOLEAN, true);
+    SimpleAttributeDefinition MESSAGE_COUNTER_ENABLED = create("message-counter-enabled", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_ENABLED))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
-    SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = new SimpleAttributeDefinition(
-            "message-counter-max-day-history", new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY),
-            ModelType.INT, true, MeasurementUnit.DAYS);
+    SimpleAttributeDefinition MESSAGE_COUNTER_MAX_DAY_HISTORY = create("message-counter-max-day-history", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY))
+            .setMeasurementUnit(DAYS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
-    SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = new SimpleAttributeDefinition("message-counter-sample-period",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD), ModelType.LONG, true,
-            MeasurementUnit.MILLISECONDS);
+    SimpleAttributeDefinition MESSAGE_COUNTER_SAMPLE_PERIOD = create("message-counter-sample-period", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MESSAGE_COUNTER_SAMPLE_PERIOD))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
 
-    SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = new SimpleAttributeDefinition("message-expiry-scan-period",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD), ModelType.LONG, true,
-            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition MESSAGE_EXPIRY_SCAN_PERIOD = create("message-expiry-scan-period", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition MESSAGE_EXPIRY_THREAD_PRIORITY = new SimpleAttributeDefinition("message-expiry-thread-priority",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY), ModelType.INT, true,
-            MeasurementUnit.NONE, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    // FIXME add min/max size for thread priority (0-9)
+    SimpleAttributeDefinition MESSAGE_EXPIRY_THREAD_PRIORITY = create("message-expiry-thread-priority", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition MESSAGES_ADDED = create("messages-added", LONG)
             .setStorageRuntime()
             .build();
 
     AttributeDefinition MIN_LARGE_MESSAGE_SIZE = create("min-large-message-size", INT)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
+            .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_MIN_LARGE_MESSAGE_SIZE))
             .setMeasurementUnit(BYTES)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition BACKUP_GROUP_NAME = create("backup-group-name", ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition PAGE_MAX_CONCURRENT_IO = create("page-max-concurrent-io", INT)
-            .setDefaultValue(new ModelNode()
-            .set(HornetQDefaultConfiguration.DEFAULT_MAX_CONCURRENT_PAGE_IO))
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_MAX_CONCURRENT_PAGE_IO))
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     AttributeDefinition PAUSED = create("paused", BOOLEAN)
             .setStorageRuntime()
             .build();
 
-    SimpleAttributeDefinition PERF_BLAST_PAGES = new SimpleAttributeDefinition("perf-blast-pages",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_JOURNAL_PERF_BLAST_PAGES), ModelType.INT, true, MeasurementUnit.NONE,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = new SimpleAttributeDefinition(
-            "persist-delivery-count-before-delivery",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition PERSISTENCE_ENABLED = new SimpleAttributeDefinition("persistence-enabled",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_PERSISTENCE_ENABLED), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    SimpleAttributeDefinition PERSIST_ID_CACHE = new SimpleAttributeDefinition("persist-id-cache",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_PERSIST_ID_CACHE), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
-
-    AttributeDefinition RECONNECT_ATTEMPTS = create("reconnect-attempts", INT)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RECONNECT_ATTEMPTS))
+    SimpleAttributeDefinition PERF_BLAST_PAGES = create("perf-blast-pages", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_JOURNAL_PERF_BLAST_PAGES))
             .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
-    PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder(CommonAttributes.REMOTING_INTERCEPTORS_STRING, ModelType.STRING)
+    SimpleAttributeDefinition PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = create("persist-delivery-count-before-delivery", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY))
             .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    SimpleAttributeDefinition PERSISTENCE_ENABLED = create("persistence-enabled", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_PERSISTENCE_ENABLED))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    SimpleAttributeDefinition PERSIST_ID_CACHE = create("persist-id-cache", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_PERSIST_ID_CACHE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    PrimitiveListAttributeDefinition REMOTING_INTERCEPTORS = new PrimitiveListAttributeDefinition.Builder("remoting-interceptors", ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setValidator(new StringLengthValidator(1))
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
@@ -453,6 +581,7 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition REPLICATION_CLUSTERNAME = create("replication-clustername", ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
@@ -460,18 +589,23 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
     AttributeDefinition RETRY_INTERVAL_MULTIPLIER = create("retry-interval-multiplier", BIG_DECIMAL)
-            .setDefaultValue(new ModelNode().set(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
+            .setDefaultValue(new ModelNode(HornetQClient.DEFAULT_RETRY_INTERVAL_MULTIPLIER))
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = new SimpleAttributeDefinition("run-sync-speed-test",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_RUN_SYNC_SPEED_TEST), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition RUN_SYNC_SPEED_TEST = create("run-sync-speed-test", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_RUN_SYNC_SPEED_TEST))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     AttributeDefinition SCHEDULED_COUNT = create("scheduled-count", LONG)
             .setStorageRuntime()
@@ -481,32 +615,52 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE))
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setRestartAllServices().build();
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinition("security-domain", new ModelNode().set("other"),
-            ModelType.STRING, true, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition SECURITY_DOMAIN = create("security-domain", ModelType.STRING)
+            .setDefaultValue(new ModelNode("other"))
+            .setAllowNull(true)
+            .setAllowExpression(false) // references the security domain service name
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition SECURITY_ENABLED = new SimpleAttributeDefinition("security-enabled",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_SECURITY_ENABLED), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition SECURITY_ENABLED = create("security-enabled", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_SECURITY_ENABLED))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = new SimpleAttributeDefinition("security-invalidation-interval",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_SECURITY_INVALIDATION_INTERVAL), ModelType.LONG, true,
-            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition SECURITY_INVALIDATION_INTERVAL = create("security-invalidation-interval", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_SECURITY_INVALIDATION_INTERVAL))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition SELECTOR = create("selector", ModelType.STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .setAttributeMarshaller(AttributeMarshallers.SELECTOR_MARSHALLER)
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition SERVER_DUMP_INTERVAL = new SimpleAttributeDefinition("server-dump-interval",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_SERVER_DUMP_INTERVAL), ModelType.LONG, true,
-            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition SERVER_DUMP_INTERVAL = create("server-dump-interval", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_SERVER_DUMP_INTERVAL))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition SHARED_STORE = new SimpleAttributeDefinition("shared-store",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_SHARED_STORE), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition SHARED_STORE = create("shared-store", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_SHARED_STORE))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
             .setDefaultValue(null)
@@ -531,17 +685,26 @@ public interface CommonAttributes {
             .setRestartAllServices()
             .build();
 
-    SimpleAttributeDefinition TRANSACTION_TIMEOUT = new SimpleAttributeDefinition("transaction-timeout",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_TRANSACTION_TIMEOUT), ModelType.LONG, true,
-            MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition TRANSACTION_TIMEOUT = create("transaction-timeout", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_TRANSACTION_TIMEOUT))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
-    SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = new SimpleAttributeDefinition(
-            "transaction-timeout-scan-period", new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD),
-            ModelType.LONG, true, MeasurementUnit.MILLISECONDS, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition TRANSACTION_TIMEOUT_SCAN_PERIOD = create("transaction-timeout-scan-period", LONG)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     SimpleAttributeDefinition TRANSFORMER_CLASS_NAME = create("transformer-class-name", ModelType.STRING)
             .setAllowNull(true)
-            .setFlags(RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
     SimpleAttributeDefinition USER = new SimpleAttributeDefinition("user", "user",
@@ -549,9 +712,12 @@ public interface CommonAttributes {
 
     SimpleAttributeDefinition VALUE = new SimpleAttributeDefinition("value", ModelType.STRING, false);
 
-    SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = new SimpleAttributeDefinition("wild-card-routing-enabled",
-            new ModelNode().set(HornetQDefaultConfiguration.DEFAULT_WILDCARD_ROUTING_ENABLED), ModelType.BOOLEAN, true,
-            AttributeAccess.Flag.RESTART_ALL_SERVICES);
+    SimpleAttributeDefinition WILD_CARD_ROUTING_ENABLED = create("wild-card-routing-enabled", BOOLEAN)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.DEFAULT_WILDCARD_ROUTING_ENABLED))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     String ACCEPTOR = "acceptor";
     String ACCEPTORS = "acceptors";
@@ -625,7 +791,6 @@ public interface CommonAttributes {
     String QUEUE = "queue";
     String QUEUE_NAME = "queue-name";
     String QUEUE_NAMES = "queue-names";
-    String REMOTING_INTERCEPTORS_STRING = "remoting-interceptors";
     String REMOTE_ACCEPTOR = "remote-acceptor";
     String REMOTE_CONNECTOR = "remote-connector";
     String REMOTING_INTERCEPTOR = "remoting-interceptor";
