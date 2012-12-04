@@ -17,6 +17,9 @@
                <in-vm-connector name="in-vm" server-id="0"/>
            </connectors>
 
+           <!-- jmx-management is disabled as on AS7 it's preferred to use the AS7's management style -->
+           <jmx-management-enabled>false</jmx-management-enabled>
+
            <acceptors>
                <netty-acceptor name="netty" socket-binding="messaging"/>
                <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
