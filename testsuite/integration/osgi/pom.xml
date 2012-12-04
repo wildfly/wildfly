@@ -103,11 +103,10 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/osgi/**/*TestCase.java</include>
                                     </includes>
-
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <arquillian.launch>osgi</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

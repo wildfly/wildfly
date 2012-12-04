@@ -46,6 +46,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -53,6 +55,7 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceListener.Inheritance;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.InjectedValue;
@@ -170,11 +173,40 @@ public final class BundleLifecycleIntegration extends BundleLifecyclePlugin {
         }
 
         @Override
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public void resolve(XBundle bundle) throws ResolutionException {
+
+            // Resolve the bundle
+            defaultService.resolve(bundle);
+
+            // In case there is no DeploymentUnit there is a possiblity
+            // of a race between the first class load and the availability of the Module
+            // Here we wait for the ModuleSpec service to come up before we are done resolving
+            // https://issues.jboss.org/browse/AS7-6016
+            Deployment deployment = bundle.adapt(Deployment.class);
+            DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
+            if (depUnit == null) {
+                ModuleIdentifier identifier = bundle.getBundleRevision().getModuleIdentifier();
+                ServiceName moduleServiceName = ServiceModuleLoader.moduleServiceName(identifier);
+                ServiceRegistry serviceRegistry = injectedBundleManager.getValue().getServiceContainer();
+                ServiceController<?> controller = serviceRegistry.getRequiredService(moduleServiceName);
+                FutureServiceValue<?> future = new FutureServiceValue(controller);
+                try {
+                    future.get(2, TimeUnit.SECONDS);
+                } catch (Exception ex) {
+                    throw FrameworkMessages.MESSAGES.illegalStateCannotLoadModule(ex, identifier);
+                }
+            }
+        }
+
+        @Override
         public void start(XBundle bundle, int options) throws BundleException {
             Deployment deployment = bundle.adapt(Deployment.class);
             DeploymentUnit depUnit = deployment.getAttachment(DeploymentUnit.class);
 
             // The DeploymentUnit would be null for initial capabilities
+            // or for bundles that have been installed in nested mgmnt ops
+            // https://issues.jboss.org/browse/AS7-5642
             if (depUnit == null) {
                 defaultService.start(bundle, options);
                 return;
