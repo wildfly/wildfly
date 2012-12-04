@@ -51,6 +51,8 @@ import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 /**
@@ -269,4 +271,58 @@ public class CumulativePatchTestCase extends AbstractTaskTestCase {
 
         assertDefinedModule(resultOfCumulativePatchRollback.getPatchInfo().getModulePath(), moduleName, existingHash);
     }
+
+    @Test
+    public void testInvalidateOneOffPatches() throws Exception {
+
+        // start from a base installation
+        PatchInfo info = new LocalPatchInfo(randomString(), PatchInfo.BASE, Collections.<String>emptyList(), env);
+        String moduleName = randomString();
+
+        // build a one-off patch for the base installation
+        String patchID = randomString();
+        File patchDir = mkdir(tempDir, patchID);
+        File oneModuleDir = createModule(patchDir, moduleName);
+        byte[] oneModuleHash = hashFile(oneModuleDir);
+        ContentModification oneModuleAdded = new ContentModification(new ModuleItem(moduleName, null, oneModuleHash), NO_CONTENT , ADD);
+
+        Patch patch = PatchBuilder.create()
+                .setPatchId(patchID)
+                .setDescription(randomString())
+                .setOneOffType(info.getVersion())
+                .addContentModification(oneModuleAdded)
+                .build();
+        createPatchXMLFile(patchDir, patch);
+        File zippedPatch = createZippedPatchFile(patchDir, patchID);
+
+        PatchingResult result = executePatch(info, zippedPatch);
+
+        assertPatchHasBeenApplied(result, patch);
+        tree(env.getInstalledImage().getJbossHome());
+        assertDefinedModule(result.getPatchInfo().getModulePath(), moduleName, oneModuleHash);
+
+        // build a CP patch for the base installation
+        String culumativePatchID = randomString() + "-CP";
+        File cumulativePatchDir = mkdir(tempDir, culumativePatchID);
+        File moduleDir = createModule(cumulativePatchDir, moduleName, "this is a module update in a cumulative patch");
+        byte[] updatedHashCP = hashFile(moduleDir);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, null, updatedHashCP), NO_CONTENT, ADD);
+
+        Patch cumulativePatch = PatchBuilder.create()
+                .setPatchId(culumativePatchID)
+                .setDescription(randomString())
+                .setCumulativeType(info.getVersion(), info.getVersion() + "-CP")
+                .addContentModification(moduleAdded)
+                .build();
+        createPatchXMLFile(cumulativePatchDir, cumulativePatch);
+        File zippedCumulativePatch = createZippedPatchFile(cumulativePatchDir, culumativePatchID);
+
+        PatchingResult resultOfCumulativePatch = executePatch(info, zippedCumulativePatch);
+
+        assertPatchHasBeenApplied(resultOfCumulativePatch, cumulativePatch);
+        assertEquals(2, resultOfCumulativePatch.getPatchInfo().getModulePath().length); // only CP and modules
+        assertDefinedModule(resultOfCumulativePatch.getPatchInfo().getModulePath(), moduleName, updatedHashCP);
+
+    }
+
 }
