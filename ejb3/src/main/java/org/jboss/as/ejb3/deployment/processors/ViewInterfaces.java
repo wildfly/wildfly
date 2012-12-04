@@ -34,6 +34,7 @@ import java.util.Set;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 class ViewInterfaces {
+
     /**
      * Returns all interfaces implemented by a bean that are eligible to be view interfaces
      *
@@ -41,19 +42,17 @@ class ViewInterfaces {
      * @return A collection of all potential view interfaces
      */
     static Set<Class<?>> getPotentialViewInterfaces(Class<?> beanClass) {
-        Class<?>[] interfaces = beanClass.getInterfaces();
-        if (interfaces == null) {
-            return Collections.emptySet();
-        }
         final Set<Class<?>> potentialBusinessInterfaces = new HashSet<Class<?>>();
-        for (Class<?> klass : interfaces) {
-            // EJB 3.1 FR 4.9.7 bullet 5.3
-            if (klass.equals(Serializable.class) ||
-                    klass.equals(Externalizable.class) ||
-                    klass.getName().startsWith("javax.ejb.")) {
-                continue;
+        while (beanClass != null) {
+            for (Class<?> klass : beanClass.getInterfaces()) {
+                // EJB 3.1 FR 4.9.7 bullet 5.3
+                if (klass.equals(Serializable.class) || klass.equals(Externalizable.class)
+                        || klass.getName().startsWith("javax.ejb.")) {
+                    continue;
+                }
+                potentialBusinessInterfaces.add(klass);
             }
-            potentialBusinessInterfaces.add(klass);
+            beanClass = beanClass.getSuperclass();
         }
         return potentialBusinessInterfaces;
     }

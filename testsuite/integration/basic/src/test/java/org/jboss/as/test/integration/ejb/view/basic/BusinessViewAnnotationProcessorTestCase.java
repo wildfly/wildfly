@@ -93,4 +93,12 @@ public class BusinessViewAnnotationProcessorTestCase {
         assertNotNull("View " + MyInterface.class.getName() + " not found", noInterfaceBean);
     }
 
+    @Test
+    public void testExtendedPojoBean() throws Exception {
+        final Context ctx = new InitialContext();
+
+        final MyInterface myInterfaceView = (MyInterface) ctx.lookup("java:module/" + MyExtendedBean.class.getSimpleName());
+        assertNotNull("View " + MyExtendedBean.class.getName() + " not found", myInterfaceView);
+
+    }
 }
