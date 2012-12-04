@@ -93,20 +93,27 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         assertTrue(result.isIsOutcomeSuccess());
         checkResponseHeadersForProcessState(result);
         cli.sendLine(":read-resource");
-        assertTrue(result.isIsOutcomeSuccess());
         result = cli.readAllAsOpResult();
+        assertTrue(result.isIsOutcomeSuccess());
         checkResponseHeadersForProcessState(result);
 
         
-        cli.sendLine(":reload");        
-        assertTrue(result.isIsOutcomeSuccess());
-        result = cli.readAllAsOpResult();
-        assertNoProcessState(result);
+        boolean sendLineResult = cli.sendLine(":reload",true);
+        assertTrue(sendLineResult);
+        //null when comm is broken on :reload before answer is sent.
+        if (cli.readOutput() != null) {
+            result = cli.readAllAsOpResult();
+            assertTrue(result.isIsOutcomeSuccess());
+            assertNoProcessState(result);
+        }
         
-        TimeUnit.SECONDS.sleep(10);
+        while(!cli.sendConnect()){
+            TimeUnit.SECONDS.sleep(2);
+        }
+
         cli.sendLine(":read-resource");        
-        assertTrue(result.isIsOutcomeSuccess());
         result = cli.readAllAsOpResult();
+        assertTrue(result.isIsOutcomeSuccess());
         checkResponseHeadersForProcessState(result);
         
     }
