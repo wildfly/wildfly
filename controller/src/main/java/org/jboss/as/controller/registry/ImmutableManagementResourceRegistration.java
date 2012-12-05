@@ -39,11 +39,19 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 public interface ImmutableManagementResourceRegistration {
 
     /**
+     * A {@link RuntimePermission} needed to create a {@link ImmutableManagementResourceRegistration} or invoke one
+     * of its methods. The name of the necessary {@code RuntimePermission} is "{@code canAccessManagementResourceRegistration}."
+     */
+    RuntimePermission ACCESS_PERMISSION = new RuntimePermission("canAccessManagementResourceRegistration");
+
+    /**
      * Gets whether this model node only exists in the runtime and has no representation in the
      * persistent configuration model.
      *
      * @return {@code true} if the model node has no representation in the
      * persistent configuration model; {@code false} otherwise
+     *
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     boolean isRuntimeOnly();
 
@@ -52,6 +60,7 @@ public interface ImmutableManagementResourceRegistration {
      * a remote process.
      *
      * @return {@code true} if this registration represents a remote resource; {@code false} otherwise
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     boolean isRemote();
 
@@ -59,6 +68,7 @@ public interface ImmutableManagementResourceRegistration {
      * Gets whether this resource registration is an alias to another resource.
      *
      * @return {@code true} if this registration represents an alias; {@code false} otherwise
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     boolean isAlias();
 
@@ -67,6 +77,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @return the alias entry if this registration represents an aliased resource; {@code null} otherwise
      * @throws IllegalStateException if {@link #isAlias()} returns {@code false}
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     AliasEntry getAliasEntry();
 
@@ -76,6 +87,7 @@ public interface ImmutableManagementResourceRegistration {
      * @param address the address, relative to this node
      * @param operationName the operation name
      * @return the operation handler
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     OperationStepHandler getOperationHandler(PathAddress address, String operationName);
 
@@ -85,6 +97,7 @@ public interface ImmutableManagementResourceRegistration {
      * @param address the address, relative to this node
      * @param operationName the operation name
      * @return the operation description
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     DescriptionProvider getOperationDescription(PathAddress address, String operationName);
 
@@ -95,6 +108,7 @@ public interface ImmutableManagementResourceRegistration {
      * @param operationName the operation name
      * @return the operation entry flags or {@code null}
      *
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Set<OperationEntry.Flag> getOperationFlags(PathAddress address, String operationName);
 
@@ -105,6 +119,7 @@ public interface ImmutableManagementResourceRegistration {
      * @param operationName the operation name
      * @return the operation entry or {@code null}
      *
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     OperationEntry getOperationEntry(PathAddress address, String operationName);
 
@@ -113,6 +128,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address, relative to this node
      * @return the attribute names. If there are none an empty set is returned
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Set<String> getAttributeNames(PathAddress address);
 
@@ -123,6 +139,7 @@ public interface ImmutableManagementResourceRegistration {
      * @param attributeName the name of the attribute
      *
      * @return the handling information, or {@code null} if the attribute or address is unknown
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     AttributeAccess getAttributeAccess(PathAddress address, String attributeName);
 
@@ -131,6 +148,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address, relative to this node
      * @return the operation names. If there are none an empty set is returned
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Set<String> getChildNames(PathAddress address);
 
@@ -139,6 +157,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address we want to find children for
      * @return the set of direct child elements
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Set<PathElement> getChildAddresses(PathAddress address);
 
@@ -147,6 +166,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address, relative to this node
      * @return the model description
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     DescriptionProvider getModelDescription(PathAddress address);
 
@@ -156,6 +176,7 @@ public interface ImmutableManagementResourceRegistration {
      * @param address the address
      * @param inherited true to include inherited operations
      * @return the operation map
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Map<String, OperationEntry> getOperationDescriptions(PathAddress address, boolean inherited);
 
@@ -166,6 +187,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address to look for a proxy under
      * @return the found proxy controller, or <code>null</code> if there is none
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     ProxyController getProxyController(PathAddress address);
 
@@ -178,6 +200,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address to start looking for proxies under
      * @return the found proxy controllers, or an empty set if there are none
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Set<ProxyController> getProxyControllers(PathAddress address);
 
@@ -186,6 +209,7 @@ public interface ImmutableManagementResourceRegistration {
      *
      * @param address the address, relative to this node
      * @return the node registration, <code>null</code> if there is none
+     * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     ImmutableManagementResourceRegistration getSubModel(PathAddress address);
 }

@@ -113,6 +113,12 @@ class ModelControllerImpl implements ModelController {
     }
 
     protected ModelNode internalExecute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments, final OperationStepHandler prepareStep) {
+
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ModelController.ACCESS_PERMISSION);
+        }
+
         final ModelNode headers = operation.has(OPERATION_HEADERS) ? operation.get(OPERATION_HEADERS) : null;
         final boolean rollbackOnFailure = headers == null || !headers.hasDefined(ROLLBACK_ON_RUNTIME_FAILURE) || headers.get(ROLLBACK_ON_RUNTIME_FAILURE).asBoolean();
         final EnumSet<OperationContextImpl.ContextFlag> contextFlags = rollbackOnFailure ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL) : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
@@ -299,6 +305,12 @@ class ModelControllerImpl implements ModelController {
     }
 
     public ModelControllerClient createClient(final Executor executor) {
+
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ModelController.ACCESS_PERMISSION);
+        }
+
         return new ModelControllerClient() {
 
             @Override
