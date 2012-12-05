@@ -45,16 +45,18 @@ import org.jboss.dmr.ModelType;
  */
 public class ProfileResourceDefinition extends SimpleResourceDefinition {
 
-    public static SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
-            .setValidator(new StringLengthValidator(1))
-            .setResourceOnly()
-            .build();
-
     private static OperationDefinition DESCRIBE = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, DomainResolver.getResolver(PROFILE, false))
             .setReplyType(ModelType.LIST)
             .setReplyValueType(ModelType.OBJECT)
             .setPrivateEntry()
             .setReadOnly()
+            .build();
+
+    //This attribute exists in 7.1.2 and 7.1.3 but was always nillable
+    public static SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
+            .setValidator(new StringLengthValidator(1, true))
+            .setAllowNull(true)
+            .setResourceOnly()
             .build();
 
     private final ExtensionRegistry extensionRegistry;
@@ -68,6 +70,7 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         resourceRegistration.registerOperationHandler(DESCRIBE, ProfileDescribeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
 
         extensionRegistry.setSubsystemParentResourceRegistrations(resourceRegistration, null);
     }
@@ -75,7 +78,6 @@ public class ProfileResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
     }
 
 

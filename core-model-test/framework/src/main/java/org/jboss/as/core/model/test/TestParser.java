@@ -28,6 +28,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -58,15 +59,15 @@ public class TestParser implements ModelTestParser {
         this.writer = writer;
     }
 
-    public static TestParser create(XMLMapper xmlMapper, TestModelType type) {
+    public static TestParser create(ExtensionRegistry registry, XMLMapper xmlMapper, TestModelType type) {
         TestParser testParser;
         String root;
         if (type == TestModelType.STANDALONE) {
-            StandaloneXml standaloneXml = new StandaloneXml(null, Executors.newCachedThreadPool(), null);
+            StandaloneXml standaloneXml = new StandaloneXml(null, Executors.newCachedThreadPool(), registry);
             testParser = new TestParser(type, standaloneXml, standaloneXml);
             root = "server";
         } else if (type == TestModelType.DOMAIN) {
-            DomainXml domainXml = new DomainXml(null, Executors.newCachedThreadPool(), null);
+            DomainXml domainXml = new DomainXml(null, Executors.newCachedThreadPool(), registry);
             testParser = new TestParser(type, domainXml, domainXml);
             root = "domain";
         } else if (type == TestModelType.HOST) {
