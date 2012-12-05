@@ -23,6 +23,7 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
@@ -43,8 +44,10 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformationContext;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformerEntry;
@@ -72,8 +75,8 @@ public class TransactionExtension implements Extension {
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final ServiceName MBEAN_SERVER_SERVICE_NAME = ServiceName.JBOSS.append("mbean", "server");
     static final PathElement LOG_STORE_PATH = PathElement.pathElement(LogStoreConstants.LOG_STORE, LogStoreConstants.LOG_STORE);
@@ -136,7 +139,7 @@ public class TransactionExtension implements Extension {
             transactionChild.registerSubModel(LogStoreTransactionParticipantDefinition.INSTANCE);
         }
 
-        subsystem.registerXMLElementWriter(TransactionSubsystem12Parser.INSTANCE);
+        subsystem.registerXMLElementWriter(TransactionSubsystem13Parser.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             // Register the model transformers
@@ -151,6 +154,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_0.getUriString(), TransactionSubsystem10Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_1.getUriString(), TransactionSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_2.getUriString(), TransactionSubsystem12Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_3.getUriString(), TransactionSubsystem13Parser.INSTANCE);
     }
 
     // Transformation
@@ -164,8 +168,20 @@ public class TransactionExtension implements Extension {
 
         // Check the resource and operations for expressions
 
+        // Transformations to the 1.1.1 Model:
+        final ModelVersion version111 = ModelVersion.create(1, 1, 1);
+        // Check for new attributes
+        final DiscardUndefinedAttributesTransformer discardTransformer =
+                new DiscardUndefinedAttributesTransformer(TransactionSubsystemRootResourceDefinition.attributes_1_2);
+        final TransformersSubRegistration transformers111 = subsystem.registerModelTransformers(version111, discardTransformer);
+        transformers111.registerOperationTransformer(ADD, discardTransformer);
+        transformers111.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, discardTransformer.getWriteAttributeTransformer());
+        transformers111.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardTransformer.getUndefineAttributeTransformer());
+        // Check the resource and operations for expressions
+
         // Transformations to the 1.1.0 Model:
         final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+        // Reject expressions, check for new attributes, store UUID in the root resource if undefined
         final RejectExpressionValuesTransformer reject =
                 new RejectExpressionValuesTransformer(TransactionSubsystemRootResourceDefinition.attributes);
         final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, new ChainedResourceTransformer(
@@ -177,13 +193,14 @@ public class TransactionExtension implements Extension {
                         if (!model.hasDefined(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName())) {
                             model.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).set(false);
                         }
-                        System.out.println(resource.getModel());
                     }
                 },
-                reject.getChainedTransformer()));
+                reject.getChainedTransformer(),
+                discardTransformer));
         registration.registerOperationTransformer(ADD, reject);
-        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, reject.getWriteAttributeTransformer());
-
+        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION,
+                new ChainedOperationTransformer(reject.getWriteAttributeTransformer(), discardTransformer.getWriteAttributeTransformer()));
+        registration.registerOperationTransformer(UNDEFINE_ATTRIBUTE_OPERATION, discardTransformer.getUndefineAttributeTransformer());
     }
 
 }

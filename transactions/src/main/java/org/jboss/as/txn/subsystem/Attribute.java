@@ -43,6 +43,9 @@ enum Attribute {
     RECOVERY_LISTENER("recovery-listener"),
     RELATIVE_TO("relative-to"),
     PATH("path"),
+    DATASOURCE_JNDI_NAME("datasource-jndi-name"),
+    TABLE_PREFIX("table-prefix"),
+    DROP_TABLE("drop-table"),
     ;
     private final String name;
 
