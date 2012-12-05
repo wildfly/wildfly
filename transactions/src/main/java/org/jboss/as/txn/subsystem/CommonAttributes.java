@@ -42,6 +42,15 @@ interface CommonAttributes {
 
     String JTS = "jts";
     String USEHORNETQSTORE = "use-hornetq-store";
+    String USE_JDBC_STORE = "use-jdbc-store";
+    String JDBC_STORE_DATASOURCE = "jdbc-store-datasource";
+    String JDBC_ACTION_STORE_TABLE_PREFIX = "jdbc-action-store-table-prefix";
+    String JDBC_ACTION_STORE_DROP_TABLE = "jdbc-action-store-drop-table";
+    String JDBC_COMMUNICATION_STORE_TABLE_PREFIX = "jdbc-communication-store-table-prefix";
+    String JDBC_COMMUNICATION_STORE_DROP_TABLE = "jdbc-communication-store-drop-table";
+    String JDBC_STATE_STORE_TABLE_PREFIX = "jdbc-state-store-table-prefix";
+    String JDBC_STATE_STORE_DROP_TABLE = "jdbc-state-store-drop-table";
+
 
     /** The com.arjuna.ats.arjuna.utils.Process implementation type */
     String PROCESS_ID = "process-id";

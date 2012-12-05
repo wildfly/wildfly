@@ -47,12 +47,20 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
     private final boolean useHornetqJournalStore;
     private final String path;
     private final String pathRef;
+
+    private final boolean useJdbcStore;
+    private final String dataSourceJndiName;
+    private final JdbcStoreConfig jdbcSoreConfig;
+
     private volatile PathManager.Callback.Handle callbackHandle;
 
-    public ArjunaObjectStoreEnvironmentService(boolean useHornetqJournalStore, String path, String pathRef) {
+    public ArjunaObjectStoreEnvironmentService(final boolean useHornetqJournalStore, final String path, final String pathRef, final boolean useJdbcStore, final String dataSourceJndiName, final JdbcStoreConfig jdbcSoreConfig) {
         this.useHornetqJournalStore = useHornetqJournalStore;
         this.path = path;
         this.pathRef = pathRef;
+        this.useJdbcStore = useJdbcStore;
+        this.dataSourceJndiName = dataSourceJndiName;
+        this.jdbcSoreConfig = jdbcSoreConfig;
     }
 
     @Override
@@ -67,6 +75,7 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
          final ObjectStoreEnvironmentBean defaultActionStoreObjectStoreEnvironmentBean =
            BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "default");
+
 
         if(useHornetqJournalStore) {
             HornetqJournalEnvironmentBean hornetqJournalEnvironmentBean = BeanPopulator.getDefaultInstance(
@@ -86,7 +95,30 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
         final ObjectStoreEnvironmentBean communicationStoreObjectStoreEnvironmentBean =
             BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, "communicationStore");
         communicationStoreObjectStoreEnvironmentBean.setObjectStoreDir(objectStoreDir);
+
+        if(useJdbcStore) {
+            defaultActionStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
+            stateStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
+            communicationStoreObjectStoreEnvironmentBean.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
+
+            defaultActionStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
+            stateStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
+            communicationStoreObjectStoreEnvironmentBean.setJdbcAccess("com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;datasourceName=" + dataSourceJndiName);
+
+
+            defaultActionStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getActionTablePrefix());
+            stateStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getStateTablePrefix());
+            communicationStoreObjectStoreEnvironmentBean.setTablePrefix(jdbcSoreConfig.getCommunicationTablePrefix());
+
+
+            defaultActionStoreObjectStoreEnvironmentBean.setDropTable(jdbcSoreConfig.isActionDropTable());
+            stateStoreObjectStoreEnvironmentBean.setDropTable(jdbcSoreConfig.isStateDropTable());
+            communicationStoreObjectStoreEnvironmentBean.setDropTable(jdbcSoreConfig.isCommunicationDropTable());
+
+        }
+
     }
+
 
     @Override
     public void stop(StopContext context) {
@@ -95,5 +127,90 @@ public class ArjunaObjectStoreEnvironmentService implements Service<Void> {
 
     public InjectedValue<PathManager> getPathManagerInjector() {
         return pathManagerInjector;
+    }
+
+    public static final class JdbcStoreConfig {
+        private final String actionTablePrefix;
+        private final boolean actionDropTable;
+        private final String stateTablePrefix;
+        private final boolean stateDropTable;
+        private final String communicationTablePrefix;
+        private final boolean communicationDropTable;
+
+        private JdbcStoreConfig(final String actionTablePrefix, final boolean actionDropTable, final String stateTablePrefix, final boolean stateDropTable, final String communicationTablePrefix, final boolean communicationDropTable) {
+            this.actionTablePrefix = actionTablePrefix;
+            this.actionDropTable = actionDropTable;
+            this.stateTablePrefix = stateTablePrefix;
+            this.stateDropTable = stateDropTable;
+            this.communicationTablePrefix = communicationTablePrefix;
+            this.communicationDropTable = communicationDropTable;
+        }
+
+        public String getActionTablePrefix() {
+            return actionTablePrefix;
+        }
+
+        public boolean isActionDropTable() {
+            return actionDropTable;
+        }
+
+        public String getStateTablePrefix() {
+            return stateTablePrefix;
+        }
+
+        public boolean isStateDropTable() {
+            return stateDropTable;
+        }
+
+        public String getCommunicationTablePrefix() {
+            return communicationTablePrefix;
+        }
+
+        public boolean isCommunicationDropTable() {
+            return communicationDropTable;
+        }
+    }
+
+    public static final class JdbcStoreConfigBulder {
+            private String actionTablePrefix;
+            private boolean actionDropTable;
+            private String stateTablePrefix;
+            private boolean stateDropTable;
+            private String communicationTablePrefix;
+            private boolean communicationDropTable;
+
+        public JdbcStoreConfigBulder setActionTablePrefix(String actionTablePrefix) {
+            this.actionTablePrefix = actionTablePrefix;
+            return this;
+        }
+
+        public JdbcStoreConfigBulder setActionDropTable(boolean actionDropTable) {
+            this.actionDropTable = actionDropTable;
+            return this;
+        }
+
+        public JdbcStoreConfigBulder setStateTablePrefix(String stateTablePrefix) {
+            this.stateTablePrefix = stateTablePrefix;
+            return this;
+        }
+
+        public JdbcStoreConfigBulder setStateDropTable(boolean stateDropTable) {
+            this.stateDropTable = stateDropTable;
+            return this;
+        }
+
+        public JdbcStoreConfigBulder setCommunicationTablePrefix(String communicationTablePrefix) {
+            this.communicationTablePrefix = communicationTablePrefix;
+            return this;
+        }
+
+        public JdbcStoreConfigBulder setCommunicationDropTable(boolean communicationDropTable) {
+            this.communicationDropTable = communicationDropTable;
+            return this;
+        }
+
+        public JdbcStoreConfig build() {
+            return new JdbcStoreConfig(actionTablePrefix, actionDropTable, stateTablePrefix, stateDropTable, communicationTablePrefix, communicationDropTable);
+        }
     }
 }
