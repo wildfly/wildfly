@@ -21,13 +21,9 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -641,5 +637,30 @@ public class Utils {
         sb.append("\n\t<security-domain>").append(securityDomain).append("</security-domain>");
         sb.append("\n</jboss-web>");
         return new StringAsset(sb.toString());
+    }
+
+    /**
+     * Creates content of users.properties and/or roles.properties files for given array of role names.
+     * <p>
+     * For instance if you provide 2 roles - "role1", "role2" then the result will be:
+     * 
+     * <pre>
+     * role1=role1
+     * role2=role2
+     * </pre>
+     * 
+     * If you use it as users.properties and roles.properties, then <code>roleName == userName == password</code>
+     * 
+     * @param roles role names (used also as user names and passwords)
+     * @return not-<code>null</code> content of users.properties and/or roles.properties
+     */
+    public static String createUsersFromRoles(String... roles) {
+        final StringBuilder sb = new StringBuilder();
+        if (roles != null) {
+            for (String role : roles) {
+                sb.append(role).append("=").append(role).append("\n");
+            }
+        }
+        return sb.toString();
     }
 }
