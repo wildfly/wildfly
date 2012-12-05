@@ -52,7 +52,7 @@
         <version.org.jboss.arquillian.extension.drone>1.1.0.Final</version.org.jboss.arquillian.extension.drone>
         <version.org.jboss.arquillian.graphene>1.0.0.Final</version.org.jboss.arquillian.graphene>
         <version.org.jboss.as.arquillian.container>7.1.1.Final</version.org.jboss.as.arquillian.container>
-        <version.org.jboss.errai>2.0.0.Final</version.org.jboss.errai>
+        <version.org.jboss.errai>2.1.1.Final</version.org.jboss.errai>
         <version.org.jboss.jbossts.jbossjts>4.16.4.Final</version.org.jboss.jbossts.jbossjts>
         <version.org.jboss.logging>3.1.0.GA</version.org.jboss.logging>
         <version.org.jboss.logging.processor>1.0.3.Final</version.org.jboss.logging.processor>
