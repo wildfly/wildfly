@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
@@ -42,10 +43,10 @@ import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
@@ -1504,8 +1505,9 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14758, value = "Profile has no subsystem configurations")
-    XMLStreamException profileHasNoSubsystems(@Param Location location);
+    //No longer used
+    //@Message(id = 14758, value = "Profile has no subsystem configurations")
+    //XMLStreamException profileHasNoSubsystems(@Param Location location);
 
     /**
      * Creates an exception indicating no profile found for inclusion.

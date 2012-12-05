@@ -884,10 +884,6 @@ public class DomainXml extends CommonXml {
                     list.add(update);
                 }
             }
-
-            if (profileOps.size() == 0) {
-                throw MESSAGES.profileHasNoSubsystems(reader.getLocation());
-            }
         }
     }
 

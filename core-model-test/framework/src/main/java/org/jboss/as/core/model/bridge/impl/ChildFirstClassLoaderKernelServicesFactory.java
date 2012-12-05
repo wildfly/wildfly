@@ -30,8 +30,8 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.AbstractKernelServicesImpl;
+import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
@@ -52,7 +52,7 @@ public class ChildFirstClassLoaderKernelServicesFactory {
 
         TestModelType type = TestModelType.DOMAIN;
         XMLMapper xmlMapper = XMLMapper.Factory.create();
-        TestParser testParser = TestParser.create(xmlMapper, type);
+        TestParser testParser = TestParser.create(null, xmlMapper, type);
         ModelInitializer modelInitializer = null;
         if (modelInitializerEntries != null && modelInitializerEntries.size() > 0) {
             modelInitializer = new LegacyModelInitializer(modelInitializerEntries);

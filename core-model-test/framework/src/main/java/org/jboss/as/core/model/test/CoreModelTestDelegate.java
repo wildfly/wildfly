@@ -42,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
@@ -206,6 +207,9 @@ public class CoreModelTestDelegate {
         //The transformed model is done via the resource transformers
         //The model in the legacy controller is built up via transformed operations
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion);
+
+        adjustUndefinedInTransformedToEmpty(modelVersion, legacyModel, transformed);
+
         if (legacyModelFixer != null) {
             legacyModel = legacyModelFixer.fixModel(legacyModel);
         }
@@ -277,6 +281,26 @@ public class CoreModelTestDelegate {
         }
     }
 
+    private void adjustUndefinedInTransformedToEmpty(ModelVersion modelVersion, ModelNode legacyModel, ModelNode transformed) {
+        boolean is7_1_x = modelVersion.getMajor() == 1 && modelVersion.getMinor() < 4;
+        //Test profiles
+        if (legacyModel.hasDefined(PROFILE) && transformed.hasDefined(PROFILE)) {
+            for (String key : legacyModel.get(PROFILE).keys()) {
+                if (legacyModel.get(PROFILE).hasDefined(key)) {
+                    if (transformed.get(PROFILE).has(key) && ! transformed.get(PROFILE).hasDefined(key)) {
+                        if (is7_1_x) {
+                            //7.2.x
+                            transformed.get(PROFILE, key).setEmptyObject();
+                        } else {
+                            //7.2.x has ReadResourceNameOperationStepHandler reporting the profile name although it is undefined in the transformed model
+                            transformed.get(PROFILE, key).get(NAME).set(legacyModel.get(PROFILE, key).get(NAME));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private void checkAttributeIsActuallyDefinedAndReplaceIfNot(KernelServices legacyServices, ModelNode legacyModel, String attributeName, String...parentAddress) {
 
         ModelNode parentNode = legacyModel;
@@ -329,19 +353,21 @@ public class CoreModelTestDelegate {
         private final ModelTestBootOperationsBuilder bootOperationBuilder = new ModelTestBootOperationsBuilder(testClass, this);
         private final TestParser testParser;
         private ProcessType processType;
-        private RunningMode runningMode;
         private ModelInitializer modelInitializer;
         private boolean validateDescription;
         private boolean validateOperations = true;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
         private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
+        RunningModeControl runningModeControl;
+        ExtensionRegistry extensionRegistry;
 
 
         public KernelServicesBuilderImpl(TestModelType type) {
             this.type = type;
             this.processType = type == TestModelType.HOST || type == TestModelType.DOMAIN ? ProcessType.HOST_CONTROLLER : ProcessType.STANDALONE_SERVER;
-            runningMode = RunningMode.ADMIN_ONLY;
-            testParser = TestParser.create(xmlMapper, type);
+            runningModeControl = type == TestModelType.HOST ? new HostRunningModeControl(RunningMode.ADMIN_ONLY, RestartMode.HC_ONLY) : new RunningModeControl(RunningMode.ADMIN_ONLY);
+            extensionRegistry = new ExtensionRegistry(processType, runningModeControl);
+            testParser = TestParser.create(extensionRegistry, xmlMapper, type);
         }
 
 
@@ -380,9 +406,7 @@ public class CoreModelTestDelegate {
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            RunningModeControl runningModeControl = type == TestModelType.HOST ? new HostRunningModeControl(runningMode, RestartMode.HC_ONLY) : new RunningModeControl(runningMode);
-            ExtensionRegistry registry = new ExtensionRegistry(processType, runningModeControl);
-            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, registry);
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, extensionRegistry);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
