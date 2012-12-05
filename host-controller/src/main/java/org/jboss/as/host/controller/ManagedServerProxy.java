@@ -22,15 +22,10 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
-import org.jboss.as.controller.operations.common.ProcessReloadHandler;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.protocol.ProtocolMessages;
@@ -49,14 +44,11 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 
     private static final TransactionalProtocolClient DISCONNECTED = new DisconnectedProtocolClient();
 
-    private final ModelNode address;
     private final ManagedServer server;
-
     private volatile TransactionalProtocolClient remoteClient;
 
-    ManagedServerProxy(final ManagedServer server, final PathAddress address) {
+    ManagedServerProxy(final ManagedServer server) {
         this.server = server;
-        this.address = address.toModelNode();
         this.remoteClient = DISCONNECTED;
     }
 
@@ -88,23 +80,13 @@ class ManagedServerProxy implements TransactionalProtocolClient {
         } else {
             // Handle operations targeting the server root
             if(op.get(OP_ADDR).asInt() == 0) {
-                // Handle reload state
+                // Handle the reload state
                 if("reload".equals(op.get(OP).asString())) {
                     server.reloading();
                 }
             }
         }
         return remoteClient.execute(listener, operation);
-    }
-
-    /**
-     * See if this is a user operation, or from the DC.
-     *
-     * @param op the operation
-     * @return
-     */
-    static boolean isUserOperation(final ModelNode op) {
-        return op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString());
     }
 
     static final class DisconnectedProtocolClient implements TransactionalProtocolClient {
@@ -120,5 +102,15 @@ class ManagedServerProxy implements TransactionalProtocolClient {
         }
 
     }
+
+//    /**
+//     * Check if this is a user operation, or from the DC.
+//     *
+//     * @param op the operation to check
+//     * @return
+//     */
+//    static boolean isUserOperation(final ModelNode op) {
+//        return op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString());
+//    }
 
 }

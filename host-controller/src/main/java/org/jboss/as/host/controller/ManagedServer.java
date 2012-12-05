@@ -118,7 +118,6 @@ class ManagedServer {
     private final TransformingProxyController proxyController;
 
     private volatile boolean requiresReload;
-    private volatile boolean reloading;
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
@@ -148,7 +147,7 @@ class ManagedServer {
         // Setup the proxy controller
         final PathElement serverPath = PathElement.pathElement(RUNNING_SERVER, serverName);
         final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(HOST, hostControllerName), serverPath);
-        this.protocolClient = new ManagedServerProxy(this, address);
+        this.protocolClient = new ManagedServerProxy(this);
         this.proxyController = TransformingProxyController.Factory.create(protocolClient,
                 Transformers.Factory.create(transformationTarget), address, ProxyOperationAddressTranslator.SERVER);
     }
@@ -206,16 +205,24 @@ class ManagedServer {
         }
     }
 
-    protected void reloading() {
-        this.reloading = true;
-    }
-
     protected boolean isRequiresReload() {
         return requiresReload;
     }
 
+    /**
+     * Require a reload on the the next reconnect.
+     */
     protected void requireReload() {
         requiresReload = true;
+    }
+
+    /**
+     * Set the server into the reloading state.
+     *
+     * @return whether the state was changed successfully or not
+     */
+    protected synchronized boolean reloading() {
+        return internalSetState(null, InternalState.SERVER_STARTED, InternalState.RELOADING);
     }
 
     /**
@@ -360,10 +367,16 @@ class ManagedServer {
         final InternalState current = this.internalState;
         // Create the remote controller client
         final TransactionalProtocolClient remoteClient = TransactionalProtocolHandlers.createClient(channelAssociation);
-        if(reloading) {
-            // Update the current remote connection
-            protocolClient.connected(remoteClient);
-            this.requiresReload = false;
+        if(current == InternalState.RELOADING) {
+            internalSetState(new TransitionTask() {
+                @Override
+                public void execute(ManagedServer server) throws Exception {
+                    // Update the current remote connection
+                    protocolClient.connected(remoteClient);
+                    // clear reload required state
+                    requiresReload = false;
+                }
+            }, InternalState.RELOADING, InternalState.SERVER_STARTED);
         } else {
             internalSetState(new TransitionTask() {
                 @Override
@@ -374,7 +387,6 @@ class ManagedServer {
             // TODO we just check that we are in the correct state, perhaps introduce a new state
             }, InternalState.SEND_STDIN, InternalState.SERVER_STARTING);
         }
-        this.reloading = false;
         return remoteClient;
     }
 
@@ -397,10 +409,6 @@ class ManagedServer {
         // Disconnect the remote connection
         protocolClient.disconnected(old);
 
-        if(reloading) {
-            return true;
-        }
-
         // If the connection dropped without us stopping the process ask for reconnection
         if(! shuttingDown && requiredState == InternalState.SERVER_STARTED) {
             final InternalState state = internalState;
@@ -408,6 +416,10 @@ class ManagedServer {
                     || state == InternalState.PROCESS_STOPPING
                     || state == InternalState.STOPPED) {
                 // In case it stopped we don't reconnect
+                return true;
+            }
+            // In case we are reloading, it will reconnect automatically
+            if( state == InternalState.RELOADING) {
                 return true;
             }
             try {
@@ -592,6 +604,13 @@ class ManagedServer {
                     return InternalState.PROCESS_STOPPING;
                 }
                 break;
+            } case RELOADING: {
+                if(required == InternalState.SERVER_STARTED) {
+                    return InternalState.SERVER_STARTED;
+                } else if( required == InternalState.STOPPED) {
+                    return InternalState.PROCESS_STOPPING;
+                }
+                break;
             } case PROCESS_STOPPING: {
                 if(required == InternalState.STOPPED) {
                     return InternalState.PROCESS_STOPPED;
@@ -666,6 +685,7 @@ class ManagedServer {
         SEND_STDIN(true),
         SERVER_STARTING(true),
         SERVER_STARTED,
+        RELOADING(true),
         PROCESS_STOPPING(true),
         PROCESS_STOPPED,
         PROCESS_REMOVING(true),

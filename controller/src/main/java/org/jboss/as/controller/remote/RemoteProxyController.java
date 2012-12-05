@@ -27,7 +27,10 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.dmr.ModelNode;
 
@@ -180,7 +183,11 @@ public class RemoteProxyController implements ProxyController {
             }
             Thread.currentThread().interrupt();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            final ModelNode result = new ModelNode();
+            result.get(OUTCOME).set(FAILED);
+            result.get(FAILURE_DESCRIPTION).set(e.getLocalizedMessage());
+            // Notify the proxy control that the operation failed
+            control.operationFailed(result);
         }
     }
 
