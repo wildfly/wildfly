@@ -124,20 +124,17 @@ public final class DomainServerMain {
         } finally {
         }
         for (;;) try {
-            String hostName = StreamUtils.readUTFZBytes(initialInput);
-            int port = StreamUtils.readInt(initialInput);
-            // TODO remove managementSubsystemEndpoint ?
-            // This property does not make sense on reconnect, since there can't be any configuration changes
-            // while the channel is down. Other changes are either applied to the runtime directly or require a restart.
-            boolean managementSubsystemEndpoint = StreamUtils.readBoolean(initialInput);
-            byte[] asAuthKey = new byte[16];
+            final String hostName = StreamUtils.readUTFZBytes(initialInput);
+            final int port = StreamUtils.readInt(initialInput);
+            final boolean managementSubsystemEndpoint = StreamUtils.readBoolean(initialInput);
+            final byte[] asAuthKey = new byte[16];
             StreamUtils.readFully(initialInput, asAuthKey);
 
             // Get the host-controller server client
             final ServiceContainer container = containerFuture.get();
             final HostControllerClient client = getRequiredService(container, HostControllerConnectionService.SERVICE_NAME, HostControllerClient.class);
             // Reconnect to the host-controller
-            client.reconnect(hostName, port, asAuthKey);
+            client.reconnect(hostName, port, asAuthKey, managementSubsystemEndpoint);
 
         } catch (InterruptedIOException e) {
             Thread.interrupted();

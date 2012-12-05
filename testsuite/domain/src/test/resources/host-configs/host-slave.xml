@@ -111,6 +111,8 @@
             </interfaces>
             <socket-bindings socket-binding-group="osgi-sockets" port-offset="550"/>
         </server>
-        <server name="reload-two" group="reload-test-group"  auto-start="false"/>
+        <server name="reload-two" group="reload-test-group"  auto-start="false">
+            <jvm name="default" />
+        </server>
     </servers>
 </host>

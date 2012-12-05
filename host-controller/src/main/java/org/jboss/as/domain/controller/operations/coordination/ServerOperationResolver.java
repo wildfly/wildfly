@@ -318,6 +318,33 @@ public class ServerOperationResolver {
         return result;
     }
 
+    private Map<Set<ServerIdentity>, ModelNode> getJVMRestartOperations(final PathAddress address, final ModelNode hostModel) {
+        // See which servers are affected by this JVM change
+        final String pathName = address.getElement(0).getValue();
+        final Map<Set<ServerIdentity>, ModelNode> result;
+        if (hostModel.hasDefined(SERVER_CONFIG)) {
+            final Set<ServerIdentity> servers = new HashSet<ServerIdentity>();
+            for (Property prop : hostModel.get(SERVER_CONFIG).asPropertyList()) {
+                final String serverName = prop.getName();
+                if (serverProxies.get(serverName) == null) {
+                    // No running server
+                    continue;
+                }
+                final ModelNode server = prop.getValue();
+                if (server.hasDefined(JVM) && server.get(JVM).keys().contains(pathName)) {
+                    final String serverGroupName = server.require(GROUP).asString();
+                    final ServerIdentity groupedServer = new ServerIdentity(localHostName, serverGroupName, serverName);
+                    servers.add(groupedServer);
+                }
+            }
+            result = getServerRestartRequiredOperations(servers);
+        } else {
+            result = Collections.emptyMap();
+        }
+        return result;
+    }
+
+
     private Map<Set<ServerIdentity>, ModelNode> getServerPathOperations(ModelNode operation, PathAddress address, ModelNode hostModel, boolean forDomain) {
         String pathName = address.getElement(0).getValue();
         Map<Set<ServerIdentity>, ModelNode> result;
@@ -383,8 +410,10 @@ public class ServerOperationResolver {
         if (address.size() > 1) {
             String type = address.getElement(1).getKey();
             if (JVM.equals(type)) {
-                // TODO need to reflect that affected servers are out of date. Perhaps an op for this?
-                result = Collections.emptyMap();
+                // Changes to the JVM require a restart
+                String groupName = address.getElement(0).getValue();
+                Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
+                return getServerRestartRequiredOperations(servers);
             } else if (DEPLOYMENT.equals(type)) {
                 String groupName = address.getElement(0).getValue();
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
@@ -502,8 +531,7 @@ public class ServerOperationResolver {
                     return getServerInterfaceOperations(operation, address, host, false);
                 }
                 case JVM: {
-                    // TODO does server need to know about change?
-                    return Collections.emptyMap();
+                    return getJVMRestartOperations(address, host);
                 }
                 case SERVER_CONFIG: {
                     return resolveServerConfigOperation(operation, address, domain, host);
@@ -698,6 +726,14 @@ public class ServerOperationResolver {
                 serverOp = operation.clone();
                 PathAddress serverAddress = address.subAddress(1);
                 serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
+            } else if(JVM.equals(type)) {
+                final String serverName = address.getElement(0).getValue();
+                // If the server is running require a restart
+                if(serverProxies.containsKey(serverName)) {
+                    final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).asString();
+                    final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
+                    return getServerRestartRequiredOperations(Collections.singleton(id));
+                }
             } else if (SYSTEM_PROPERTY.equals(type) && isServerAffectingSystemPropertyOperation(operation)) {
                 String propName = address.getLastElement().getValue();
                 String serverName = address.getElement(0).getValue();

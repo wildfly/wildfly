@@ -78,16 +78,18 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private final byte[] initialAuthKey;
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
+    private final boolean managementSubsystemEndpoint;
 
     private HostControllerClient client;
 
-    public HostControllerConnectionService(final String hostName, final int port, final String serverName, final String serverProcessName, final byte[] authKey) {
+    public HostControllerConnectionService(final String hostName, final int port, final String serverName, final String serverProcessName, final byte[] authKey, final boolean managementSubsystemEndpoint) {
         this.port = port;
         this.hostName = hostName;
         this.serverName = serverName;
         this.userName = "=" + serverName;
         this.serverProcessName = serverProcessName;
         this.initialAuthKey = authKey;
+        this.managementSubsystemEndpoint = managementSubsystemEndpoint;
     }
 
     @Override
@@ -117,7 +119,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
                     }
                 }
             });
-            this.client = new HostControllerClient(serverName, connection.getChannelHandler(), connection);
+            this.client = new HostControllerClient(serverName, connection.getChannelHandler(), connection, managementSubsystemEndpoint);
         } catch (Exception e) {
             throw new StartException(e);
         }
