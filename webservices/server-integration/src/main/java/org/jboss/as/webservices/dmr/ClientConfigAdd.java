@@ -63,7 +63,7 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
             clientConfig.setConfigName(name);
             config.addClientConfig(clientConfig);
             if (!context.isBooting()) {
-                context.restartRequired();
+                context.reloadRequired();
             }
         }
     }

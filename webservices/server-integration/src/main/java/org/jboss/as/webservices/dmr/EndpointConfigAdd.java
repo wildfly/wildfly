@@ -64,7 +64,7 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
             endpointConfig.setConfigName(name);
             config.addEndpointConfig(endpointConfig);
             if (!context.isBooting()) {
-                context.restartRequired();
+                context.reloadRequired();
             }
         }
     }
