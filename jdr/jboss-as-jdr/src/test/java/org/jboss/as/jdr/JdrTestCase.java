@@ -122,19 +122,10 @@ public class JdrTestCase {
         assertFalse(filter.accepts(bad2));
     }
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void testWildcardFilterPrefixSingle() throws Exception {
         VirtualFileFilter filter = Filters.wildcard("?this/is/a/test.txt");
-        VirtualFile good = VFS.getChild("/this/is/a/test.txt");
-        VirtualFile bad = VFS.getChild("/that/is/a/test.txt");
-        assertTrue(filter.accepts(good));
-        assertFalse(filter.accepts(bad));
-
         VirtualFileFilter filter2 = Filters.wildcard("?????/is/a/test.txt");
-        VirtualFile good2 = VFS.getChild("/this/is/a/test.txt");
-        VirtualFile bad2 = VFS.getChild("/this/was/a/test.txt");
-        assertTrue(filter2.accepts(good2));
-        assertFalse(filter2.accepts(bad2));
     }
 
     @Test

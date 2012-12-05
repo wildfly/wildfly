@@ -36,7 +36,15 @@ public class WildcardPattern {
 
     private final String[] tokens;
 
-    public WildcardPattern(final String pattern){
+    public WildcardPattern(String pattern){
+        if (pattern.startsWith("?")) {
+            throw new IllegalArgumentException("Patterns may not start with ?");
+        }
+
+        if (!pattern.startsWith("*")) {
+            pattern = "*" + pattern;
+        }
+
         StringTokenizer st = new StringTokenizer(pattern, WILDCARDS, true);
         List<String> t = new ArrayList<String>();
         while(st.hasMoreTokens()){
