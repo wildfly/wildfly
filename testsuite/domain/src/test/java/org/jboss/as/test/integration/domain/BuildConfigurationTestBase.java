@@ -22,6 +22,14 @@
 
 package org.jboss.as.test.integration.domain;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -35,10 +43,17 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.Test;
 
 /**
@@ -59,6 +74,10 @@ public abstract class BuildConfigurationTestBase {
         try {
             URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(masterAddress) + ":8080").openConnection();
             connection.connect();
+
+            if (Boolean.getBoolean("expression.audit")) {
+                writeExpressionAudit(utils);
+            }
         } finally {
             utils.stop(); // Stop
         }
@@ -185,5 +204,63 @@ public abstract class BuildConfigurationTestBase {
             c.close();
         } catch (Exception ignore) {
         }
+    }
+
+    private void writeExpressionAudit(final DomainLifecycleUtil utils) throws IOException {
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(RECURSIVE).set(true);
+
+        final ModelNode result = utils.getDomainClient().execute(operation);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertTrue(result.hasDefined(RESULT));
+
+        PathAddress pa = PathAddress.EMPTY_ADDRESS;
+        writeExpressionAudit(pa, result.get(RESULT));
+    }
+
+    private static void writeExpressionAudit(PathAddress pa, ModelNode resourceDescription) {
+        String paString = getPaString(pa);
+        if (resourceDescription.hasDefined(ModelDescriptionConstants.ATTRIBUTES)) {
+            for (Property property : resourceDescription.get(ModelDescriptionConstants.ATTRIBUTES).asPropertyList()) {
+                ModelNode attrdesc = property.getValue();
+                if (!attrdesc.hasDefined(ModelDescriptionConstants.STORAGE) ||
+                        AttributeAccess.Storage.CONFIGURATION.name().toLowerCase().equals(attrdesc.get(ModelDescriptionConstants.STORAGE).asString().toLowerCase())) {
+                    StringBuilder sb = new StringBuilder(paString);
+                    sb.append(",").append(property.getName());
+                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.TYPE).asString());
+                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).asBoolean(false));
+                    sb.append(",").append(attrdesc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+                    System.out.println(sb.toString());
+                }
+            }
+        }
+
+        if (resourceDescription.hasDefined(ModelDescriptionConstants.CHILDREN)) {
+            for (Property childTypeProp : resourceDescription.get(ModelDescriptionConstants.CHILDREN).asPropertyList()) {
+                String childType = childTypeProp.getName();
+                ModelNode childTypeDesc = childTypeProp.getValue();
+                if (childTypeDesc.hasDefined(ModelDescriptionConstants.MODEL_DESCRIPTION)) {
+                    for (Property childInstanceProp : childTypeDesc.get(ModelDescriptionConstants.MODEL_DESCRIPTION).asPropertyList()) {
+                        PathAddress childAddress = pa.append(childType, childInstanceProp.getName());
+                        writeExpressionAudit(childAddress, childInstanceProp.getValue());
+                    }
+                }
+            }
+        }
+
+    }
+
+    private static String getPaString(PathAddress pa) {
+        if (pa.size() == 0) {
+            return "/";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (PathElement pe : pa) {
+            sb.append("/").append(pe.getKey()).append("=").append(pe.getValue());
+        }
+        return sb.toString();
     }
 }
