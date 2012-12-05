@@ -22,6 +22,11 @@
 
 package org.jboss.as.host.controller.resources;
 
+import org.jboss.as.controller.CompositeOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 
 import java.util.Arrays;
@@ -58,6 +63,7 @@ import org.jboss.as.host.controller.operations.ServerStatusHandler;
 import org.jboss.as.host.controller.operations.ServerStopHandler;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
+import org.jboss.as.server.operations.ServerProcessReloadHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceAddHandler;
 import org.jboss.as.server.services.net.SpecifiedInterfaceRemoveHandler;
 import org.jboss.dmr.ModelNode;
@@ -179,13 +185,12 @@ public class ServerConfigResourceDefinition extends SimpleResourceDefinition {
     }
 
     public static void registerServerLifecycleOperations(final ManagementResourceRegistration resourceRegistration, final ServerInventory serverInventory) {
-            // TODO convert these to use OperationDefinition
-            ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerStartHandler.DEFINITION, startHandler);
-            ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
-            ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
-            resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
+        final ServerStartHandler startHandler = new ServerStartHandler(serverInventory);
+        resourceRegistration.registerOperationHandler(ServerStartHandler.DEFINITION, startHandler);
+        final ServerRestartHandler restartHandler = new ServerRestartHandler(serverInventory);
+        resourceRegistration.registerOperationHandler(ServerRestartHandler.DEFINITION, restartHandler);
+        final ServerStopHandler stopHandler = new ServerStopHandler(serverInventory);
+        resourceRegistration.registerOperationHandler(ServerStopHandler.DEFINITION, stopHandler);
         ServerProcessHandlers.ServerDestroyHandler destroyHandler = new ServerProcessHandlers.ServerDestroyHandler(serverInventory);
         resourceRegistration.registerOperationHandler(ServerProcessHandlers.DESTROY_OPERATION, destroyHandler);
         ServerProcessHandlers.ServerKillHandler killHandler = new ServerProcessHandlers.ServerKillHandler(serverInventory);
