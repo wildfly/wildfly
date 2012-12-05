@@ -129,6 +129,7 @@
                     <inet-address value="${jboss.test.host.master.address}"/>
                 </interface>
             </interfaces>
+            <jvm name="default" />
         </server>
     </servers>
 </host>

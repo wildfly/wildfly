@@ -85,7 +85,7 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
             // Install the communication services
             final int port = managementSocket.getPort();
             final String host = managementSocket.getAddress().getHostAddress();
-            HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey);
+            HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey, managementSubsystemEndpoint);
             serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, service)
                     .addDependency(endpointName, Endpoint.class, service.getEndpointInjector())
                     .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getProcessStateServiceInjectedValue())

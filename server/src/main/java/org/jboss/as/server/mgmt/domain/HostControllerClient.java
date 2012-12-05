@@ -58,12 +58,14 @@ public class HostControllerClient implements Closeable {
     private final ManagementChannelHandler channelHandler;
     private final RemoteFileRepositoryExecutorImpl executor;
     private volatile ModelController controller;
+    private final boolean managementSubsystemEndpoint;
 
-    HostControllerClient(final String serverName, final ManagementChannelHandler channelHandler, final HostControllerConnection connection) {
+    HostControllerClient(final String serverName, final ManagementChannelHandler channelHandler, final HostControllerConnection connection, final boolean managementSubsystemEndpoint) {
         this.serverName = serverName;
         this.connection = connection;
         this.channelHandler = channelHandler;
         this.executor = new RemoteFileRepositoryExecutorImpl();
+        this.managementSubsystemEndpoint = managementSubsystemEndpoint;
     }
 
     /**
@@ -88,11 +90,12 @@ public class HostControllerClient implements Closeable {
         this.controller = controller;
     }
 
-    public void reconnect(final String hostName, final int port, final byte[] authKey) throws IOException, URISyntaxException {
+    public void reconnect(final String hostName, final int port, final byte[] authKey, final boolean mgmtSubsystemEndpoint) throws IOException, URISyntaxException {
         final String host = NetworkUtils.formatPossibleIpv6Address(hostName);
         final URI uri = new URI("remote://" + host + ":" + port);
         // In case the server is out of sync after the reconnect, set reload required
-        if(! connection.reConnect(uri, authKey)) {
+        final boolean mgmtEndpointChanged = this.managementSubsystemEndpoint != mgmtSubsystemEndpoint;
+        if(! connection.reConnect(uri, authKey) || mgmtEndpointChanged) {
             // It would be nicer if we'd have direct access to the ControlledProcessState
             final ModelNode operation = new ModelNode();
             operation.get(ModelDescriptionConstants.OP).set(ServerRestartRequiredHandler.OPERATION_NAME); // TODO only require reload
