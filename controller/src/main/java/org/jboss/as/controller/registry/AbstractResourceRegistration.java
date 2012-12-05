@@ -59,8 +59,16 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     private RootInvocation rootInvocation;
 
     AbstractResourceRegistration(final String valueString, final NodeSubregistry parent) {
+        checkPermission();
         this.valueString = valueString;
         this.parent = parent;
+    }
+
+    static void checkPermission() {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ImmutableManagementResourceRegistration.ACCESS_PERMISSION);
+        }
     }
 
     NodeSubregistry getParent() {
@@ -80,6 +88,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     @Override
     public boolean isAllowsOverride() {
+        checkPermission();
         return !isRemote() && parent != null && PathElement.WILDCARD_VALUE.equals(valueString);
     }
 

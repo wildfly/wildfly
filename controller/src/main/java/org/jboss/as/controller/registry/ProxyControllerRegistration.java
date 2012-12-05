@@ -59,27 +59,31 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     OperationEntry getOperationEntry(final ListIterator<PathElement> iterator, final String operationName, OperationEntry inherited) {
+        checkPermission();
         return operationEntry;
     }
 
     @Override
     OperationEntry getInheritableOperationEntry(String operationName) {
+        checkPermission();
         return null;
     }
 
     @Override
     public boolean isRuntimeOnly() {
+        checkPermission();
         return true;
     }
 
     @Override
     public void setRuntimeOnly(final boolean runtimeOnly) {
-
+        checkPermission();
     }
 
 
     @Override
     public boolean isRemote() {
+        checkPermission();
         return true;
     }
 
@@ -120,7 +124,7 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     public void unregisterOperationHandler(final String operationName) {
-
+        checkPermission();
     }
 
     @Override
@@ -195,45 +199,53 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
-
+        checkPermission();
     }
 
     @Override
     void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
+        checkPermission();
     }
 
     @Override
     DescriptionProvider getModelDescription(final ListIterator<PathElement> iterator) {
+        checkPermission();
         return null;
     }
 
     @Override
     Set<String> getAttributeNames(final ListIterator<PathElement> iterator) {
+        checkPermission();
         return Collections.emptySet();
     }
 
     @Override
     Set<String> getChildNames(final ListIterator<PathElement> iterator) {
+        checkPermission();
         return Collections.emptySet();
     }
 
     @Override
     Set<PathElement> getChildAddresses(final ListIterator<PathElement> iterator) {
+        checkPermission();
         return Collections.emptySet();
     }
 
     @Override
     AttributeAccess getAttributeAccess(final ListIterator<PathElement> address, final String attributeName) {
+        checkPermission();
         return null;
     }
 
     @Override
     ProxyController getProxyController(ListIterator<PathElement> iterator) {
+        checkPermission();
         return proxyController;
     }
 
     @Override
     void getProxyControllers(ListIterator<PathElement> iterator, Set<ProxyController> controllers) {
+        checkPermission();
         controllers.add(proxyController);
     }
 
@@ -246,11 +258,13 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 //        throw new IllegalArgumentException("Can't get child registrations of a proxy");
         while (iterator.hasNext())
             iterator.next();
+        checkPermission();
         return this;
     }
 
     @Override
     public ModelNode getModelDescription(Locale locale) {
+        checkPermission();
         //TODO
         return new ModelNode();
     }
@@ -261,6 +275,7 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     public AliasEntry getAliasEntry() {
+        checkPermission();
         return null;
     }
 

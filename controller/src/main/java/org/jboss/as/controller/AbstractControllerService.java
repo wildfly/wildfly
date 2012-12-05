@@ -239,7 +239,16 @@ public abstract class AbstractControllerService implements Service<ModelControll
         controller = null;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws SecurityException if the caller does not have {@link ModelController#ACCESS_PERMISSION}
+     */
     public ModelController getValue() throws IllegalStateException, IllegalArgumentException {
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(ModelController.ACCESS_PERMISSION);
+        }
         final ModelController controller = this.controller;
         if (controller == null) {
             throw new IllegalStateException();

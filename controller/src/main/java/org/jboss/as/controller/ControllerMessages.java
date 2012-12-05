@@ -2578,4 +2578,13 @@ public interface ControllerMessages {
      */
     @Message(id = 14884, value = "No operation named '%s' exists at address %s")
     String noHandlerForOperation(String operationName, PathAddress address);
+
+    /**
+     * Indicates {@code permissionName} is not a valid permission for use with permission class {@code permissionClass}
+     * @param permissionClass the class of the permission
+     * @param permissionName the name of the permission provided by the user
+     * @return the exception
+     */
+    @Message(id = 14885, value = "Invalid %s \"%s\"")
+    IllegalArgumentException invalidPermission(String permissionClass, String permissionName);
 }
