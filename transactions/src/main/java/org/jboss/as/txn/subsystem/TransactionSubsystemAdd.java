@@ -22,10 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import java.util.List;
-
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import com.arjuna.ats.internal.arjuna.utils.UuidProcessId;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.ats.jts.common.jtsPropertyManager;
@@ -72,9 +68,13 @@ import org.jboss.tm.JBossXATerminator;
 import org.jboss.tm.usertx.UserTransactionRegistry;
 import org.omg.CORBA.ORB;
 
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.util.List;
+
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 import static org.jboss.as.txn.subsystem.CommonAttributes.JTS;
 import static org.jboss.as.txn.subsystem.CommonAttributes.USEHORNETQSTORE;
+import static org.jboss.as.txn.subsystem.CommonAttributes.USE_JDBC_STORE;
 
 
 /**
@@ -165,7 +165,6 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                    List<ServiceController<?>> controllers) throws OperationFailedException {
 
         boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
-        boolean useHornetqJournalStore = model.hasDefined(USEHORNETQSTORE) && model.get(USEHORNETQSTORE).asBoolean();
 
         //recovery environment
         performRecoveryEnvBoottime(context, operation, model, verificationHandler, controllers, jts);
@@ -177,7 +176,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         performCoordinatorEnvBoottime(context, operation, model, verificationHandler, controllers, jts);
 
         //object store
-        performObjectStoreBoottime(context, operation, model, verificationHandler, controllers, useHornetqJournalStore);
+        performObjectStoreBoottime(context, operation, model, verificationHandler, controllers);
 
 
         //always propagate the transaction context
@@ -267,23 +266,39 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
-    private void performObjectStoreBoottime(OperationContext context, ModelNode operation, ModelNode recoveryEnvModel,
+    private void performObjectStoreBoottime(OperationContext context, ModelNode operation, ModelNode model,
                                             ServiceVerificationHandler verificationHandler,
-                                            List<ServiceController<?>> controllers, boolean useHornetqJournalStore) throws OperationFailedException {
+                                            List<ServiceController<?>> controllers) throws OperationFailedException {
+        boolean useHornetqJournalStore = model.hasDefined(USEHORNETQSTORE) && model.get(USEHORNETQSTORE).asBoolean();
+        final String objectStorePathRef =TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, model).asString();
+        final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, model).asString();
 
-        final String objectStorePathRef =TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, recoveryEnvModel).asString();
-        final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, recoveryEnvModel).asString();
+        final boolean useJdbcStore =  model.hasDefined(USE_JDBC_STORE) && model.get(USE_JDBC_STORE).asBoolean();
+        final String dataSourceJndiName = TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.resolveModelAttribute(context, model).asString();
+
+        ArjunaObjectStoreEnvironmentService.JdbcStoreConfigBulder confiBuilder = new ArjunaObjectStoreEnvironmentService.JdbcStoreConfigBulder();
+        confiBuilder.setActionDropTable(TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean())
+                .setActionTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString())
+                .setStateDropTable(TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean())
+                .setStateTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString())
+                .setCommunicationDropTable(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_DROP_TABLE.resolveModelAttribute(context, model).asBoolean())
+                .setCommunicationTablePrefix(TransactionSubsystemRootResourceDefinition.JDBC_COMMUNICATION_STORE_TABLE_PREFIX.resolveModelAttribute(context, model).asString());
+
+
         if (ROOT_LOGGER.isDebugEnabled()) {
             ROOT_LOGGER.debugf("objectStorePathRef=%s, objectStorePath=%s\n", objectStorePathRef, objectStorePath);
         }
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore, objectStorePath, objectStorePathRef);
-        controllers.add(target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
+        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
+        ServiceBuilder builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector())
-                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT)
-                .addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
+                .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
+        if (useJdbcStore) {
+            builder.addDependency(ServiceName.JBOSS.append("data-source").append(dataSourceJndiName));
+        }
+        controllers.add(builder.addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
 
         controllers.add(TransactionManagerService.addService(target, verificationHandler));
         controllers.add(UserTransactionService.addService(target, verificationHandler));

@@ -30,8 +30,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.BytesValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -147,7 +145,43 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     public static final SimpleAttributeDefinition USEHORNETQSTORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USEHORNETQSTORE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setAlternatives(CommonAttributes.USE_JDBC_STORE)
             .setAllowExpression(false).build();
+
+    public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
+                .setDefaultValue(new ModelNode().set(false))
+                .setFlags(AttributeAccess.Flag.RESTART_JVM)
+                .setAlternatives(CommonAttributes.USEHORNETQSTORE)
+                .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_STORE_DATASOURCE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STORE_DATASOURCE, ModelType.STRING, true)
+                .setFlags(AttributeAccess.Flag.RESTART_JVM)
+                .setXmlName(Attribute.RELATIVE_TO.getLocalName())
+                .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_ACTION_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_TABLE_PREFIX, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.PATH.getLocalName())
+            .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_ACTION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_ACTION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_TABLE_PREFIX, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.PATH.getLocalName())
+            .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_COMMUNICATION_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_COMMUNICATION_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_STATE_STORE_TABLE_PREFIX = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_TABLE_PREFIX, ModelType.STRING, true)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.PATH.getLocalName())
+            .setAllowExpression(true).build();
+    public static final SimpleAttributeDefinition JDBC_STATE_STORE_DROP_TABLE = new SimpleAttributeDefinitionBuilder(CommonAttributes.JDBC_STATE_STORE_DROP_TABLE, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setAllowExpression(true).build();
+
 
     private final boolean registerRuntimeOnly;
 
@@ -165,6 +199,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE
     };
 
+    static final AttributeDefinition[] attributes_1_2 = new AttributeDefinition[] {USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+                JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX,
+                JDBC_COMMUNICATION_STORE_DROP_TABLE, JDBC_COMMUNICATION_STORE_TABLE_PREFIX,
+                JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX
+    };
+
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
@@ -172,6 +212,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         for(final AttributeDefinition def : attributes) {
             resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
         }
+        for(final AttributeDefinition def : attributes_1_2) {
+                    resourceRegistration.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
+                }
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
