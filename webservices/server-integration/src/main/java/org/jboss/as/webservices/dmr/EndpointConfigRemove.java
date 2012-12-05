@@ -60,7 +60,7 @@ final class EndpointConfigRemove extends AbstractRemoveStepHandler {
             }
             if (target != null) {
                 config.getEndpointConfigs().remove(target);
-                context.restartRequired();
+                context.reloadRequired();
             }
         }
     }

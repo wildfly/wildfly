@@ -60,7 +60,7 @@ final class PropertyRemove extends AbstractRemoveStepHandler {
                 if (configName.equals(commonConfig.getConfigName())) {
                     if (commonConfig.getProperties().containsKey(propertyName)) {
                         commonConfig.getProperties().remove(propertyName);
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }

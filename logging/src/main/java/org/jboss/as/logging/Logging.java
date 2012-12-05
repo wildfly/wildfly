@@ -61,6 +61,25 @@ public final class Logging {
     }
 
     /**
+     * Checks to see within the flags if a reload, i.e. not a full restart, is required.
+     *
+     * @param flags the flags to check
+     *
+     * @return {@code true} if a reload is required, otherwise {@code false}
+     */
+    public static boolean requiresReload(final Set<Flag> flags) {
+        for (Flag flag : flags) {
+            switch (flag) {
+                case RESTART_ALL_SERVICES:
+                case RESTART_RESOURCE_SERVICES: {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Creates a new {@link OperationFailedException} with the message as a {@link ModelNode model node}.
      *
      * @param message the message to initialize the {@link ModelNode model node} with

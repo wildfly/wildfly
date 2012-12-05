@@ -60,7 +60,7 @@ final class ClientConfigRemove extends AbstractRemoveStepHandler {
             }
             if (target != null) {
                 config.getClientConfigs().remove(target);
-                context.restartRequired();
+                context.reloadRequired();
             }
         }
     }

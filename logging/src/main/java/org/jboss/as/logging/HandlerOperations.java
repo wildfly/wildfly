@@ -108,11 +108,17 @@ final class HandlerOperations {
                 throw createOperationFailure(LoggingMessages.MESSAGES.handlerConfigurationNotFound(name));
             }
             if (attributes != null) {
+                boolean restartRequired = false;
+                boolean reloadRequired = false;
                 for (AttributeDefinition attribute : attributes) {
                     handleProperty(attribute, context, model, logContextConfiguration, configuration);
-                    if (Logging.requiresRestart(attribute.getFlags())) {
-                        context.restartRequired();
-                    }
+                    restartRequired = restartRequired || Logging.requiresRestart(attribute.getFlags());
+                    reloadRequired = reloadRequired || Logging.requiresReload(attribute.getFlags());
+                }
+                if (restartRequired) {
+                    context.restartRequired();
+                } else if (reloadRequired) {
+                    context.reloadRequired();
                 }
             }
             performRuntime(context, configuration, name, model);
@@ -129,11 +135,17 @@ final class HandlerOperations {
                             configuration.removeProperty(property.getName());
                         }
                     }
+                    boolean restartRequired = false;
+                    boolean reloadRequired = false;
                     for (AttributeDefinition attribute : attributes) {
                         handleProperty(attribute, context, originalModel, logContextConfiguration, configuration);
-                        if (Logging.requiresRestart(attribute.getFlags())) {
-                            context.restartRequired();
-                        }
+                        restartRequired = restartRequired || Logging.requiresRestart(attribute.getFlags());
+                        reloadRequired = reloadRequired || Logging.requiresReload(attribute.getFlags());
+                    }
+                    if (restartRequired) {
+                        context.restartRequired();
+                    } else if (reloadRequired) {
+                        context.reloadRequired();
                     }
                 }
                 performRollback(context, configuration, name, originalModel);
