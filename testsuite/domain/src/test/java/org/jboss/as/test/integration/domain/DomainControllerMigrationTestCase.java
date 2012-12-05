@@ -37,6 +37,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.test.integration.domain.management.util.DomainControllerClientConfig;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
@@ -80,8 +81,9 @@ public class DomainControllerMigrationTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
+        final DomainControllerClientConfig config = DomainControllerClientConfig.create();
         for (int k = 0; k<3; k++) {
-            hostUtils[k] = new DomainLifecycleUtil(getHostConfiguration(k+1));
+            hostUtils[k] = new DomainLifecycleUtil(getHostConfiguration(k+1), config);
             hostUtils[k].start();
         }
 
@@ -121,7 +123,7 @@ public class DomainControllerMigrationTestCase {
         hostConfig.setHostConfigFile(new File(url.toURI()).getAbsolutePath());
         System.out.println(hostConfig.getHostConfigFile());
         hostConfig.setDomainDirectory(hostDir.getAbsolutePath());
-        hostConfig.setHostName("failover" + String.valueOf(host));
+        hostConfig.setHostName("failover-h" + String.valueOf(host));
         hostConfig.setHostControllerManagementPort(MGMT_PORTS[host - 1]);
         hostConfig.setStartupTimeoutInSeconds(120);
         File usersFile = new File(hostConfigDir, "mgmt-users.properties");
@@ -159,24 +161,24 @@ public class DomainControllerMigrationTestCase {
         hostUtils[0].stop();
         log.info("Domain controller on failover-h1 stopped.");
 
-        // check that the failover2 hc sees only itself
+        // check that the failover-h2 hc sees only itself
         hosts = getHosts(hostUtils[1]);
         Assert.assertTrue(hosts.contains(HOSTS[1]));
         Assert.assertEquals(hosts.size(), 1);
 
-        // Reconfigure failover2 host so it acts as domain controller
+        // Reconfigure failover-h2 host so it acts as domain controller
         ModelNode becomeMasterOp = new ModelNode();
-        becomeMasterOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, "failover2");
+        becomeMasterOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, "failover-h2");
         becomeMasterOp.get(ModelDescriptionConstants.OP).set("write-local-domain-controller");
 
         hostUtils[1].executeForResult(becomeMasterOp);
 
         ModelNode restartOp = new ModelNode();
-        restartOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, "failover2");
+        restartOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, "failover-h2");
         restartOp.get(ModelDescriptionConstants.OP).set("reload");
         restartOp.get(ModelDescriptionConstants.RESTART_SERVERS).set(false);
 
-        log.info("Reloading failover2 to act as the domain controller.");
+        log.info("Reloading failover-h2 to act as the domain controller.");
         hostUtils[1].executeAwaitConnectionClosed(restartOp);
 
         waitUntilHostControllerReady(hostUtils[1]);
@@ -201,7 +203,7 @@ public class DomainControllerMigrationTestCase {
 
         waitUntilHostControllerReady(hostUtils[2]);
 
-        // test some management ops on failover-h3 using new domain controller on failover2
+        // test some management ops on failover-h3 using new domain controller on failover-h2
 
         Operation deployOp = buildDeployOperation();
         hostUtils[1].executeForResult(deployOp);
