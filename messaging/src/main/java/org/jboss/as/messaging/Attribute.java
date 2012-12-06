@@ -50,7 +50,7 @@ public enum Attribute {
    SOCKET_BINDING(RemoteTransportDefinition.SOCKET_BINDING),
    STRING(CommonAttributes.STRING),
    TYPE_ATTR_NAME(CommonAttributes.TYPE_ATTR_NAME),
-   VALUE(CommonAttributes.VALUE),
+   VALUE(ConnectorServiceParamDefinition.VALUE),
    MODULE(JMSBridgeDefinition.MODULE);
 
 

@@ -47,17 +47,13 @@ import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * Basic {@link TransportConfiguration} (Acceptor/Connector) related operations.
@@ -65,45 +61,6 @@ import org.jboss.msc.service.ServiceName;
  * @author Emanuel Muckenhuber
  */
 class TransportConfigOperationHandlers {
-
-    /**
-     * The transport-config remove operation handler.
-     */
-    static final OperationStepHandler REMOVE = new OperationStepHandler() {
-        @Override
-        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            context.removeResource(PathAddress.EMPTY_ADDRESS);
-            reloadRequiredStep(context);
-            context.stepCompleted();
-        }
-    };
-
-    /**
-     * Add a step triggering the {@linkplain org.jboss.as.controller.OperationContext#reloadRequired()} in case the
-     * the messaging service is installed, since the transport-config operations need a reload/restart and can't be
-     * applied to the runtime directly.
-     *
-     * @param context the operation context
-     */
-    static void reloadRequiredStep(final OperationContext context) {
-        if (context.isNormalServer()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
-                    OperationContext.RollbackHandler rh;
-                    if (controller != null) {
-                        context.reloadRequired();
-                        rh = OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER;
-                    } else {
-                        rh = OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER;
-                    }
-                    context.completeStep(rh);
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
-    }
 
     /**
      * Process the acceptor information.
@@ -161,12 +118,9 @@ class TransportConfigOperationHandlers {
         if (config.hasDefined(PARAM)) {
             for (final Property parameter : config.get(PARAM).asPropertyList()) {
                 String name = parameter.getName();
-                // FIXME with https://issues.jboss.org/browse/AS7-5121, PARAM will be represented with an AttributeDefinition
-                // and expressions will be resolved automatically
-                ModelNode value =  parameter.getValue().get(ModelDescriptionConstants.VALUE);
-                ModelNode expression = ParseUtils.parsePossibleExpression(value.asString());
-                String resolvedValue = context.resolveExpressions(expression).asString();
-                parameters.put(name, resolvedValue);            }
+                String value = TransportParamDefinition.VALUE.resolveModelAttribute(context, parameter.getValue()).asString();
+                parameters.put(name, value);
+            }
         }
         return parameters;
     }
@@ -187,7 +141,7 @@ class TransportConfigOperationHandlers {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
-                final String clazz = config.get(FACTORY_CLASS.getName()).asString();
+                final String clazz = FACTORY_CLASS.resolveModelAttribute(context, config).asString();
                 connectors.put(connectorName, new TransportConfiguration(clazz, parameters, connectorName));
             }
         }
@@ -214,7 +168,7 @@ class TransportConfigOperationHandlers {
         configuration.setConnectorConfigurations(connectors);
     }
 
-    static class BasicTransportConfigAdd implements OperationStepHandler, DescriptionProvider {
+    static class BasicTransportConfigAdd extends HornetQReloadRequiredHandlers.AddStepHandler implements DescriptionProvider {
 
         private final AttributeDefinition[] attributes;
         private final boolean isAcceptor;
@@ -225,12 +179,16 @@ class TransportConfigOperationHandlers {
         }
 
         @Override
-        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-            final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
-            final ModelNode subModel = resource.getModel();
+        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
             for (final AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, subModel);
+                attribute.validateAndSet(operation, model);
             }
+        }
+
+        @Override
+        protected void populateModel(OperationContext context, ModelNode operation, Resource resource)
+                throws OperationFailedException {
+            super.populateModel(context, operation, resource);
 
             if(operation.hasDefined(CommonAttributes.PARAM)) {
                 for(Property property : operation.get(CommonAttributes.PARAM).asPropertyList()) {
@@ -242,9 +200,6 @@ class TransportConfigOperationHandlers {
                     param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
                 }
             }
-            // This needs a reload
-            reloadRequiredStep(context);
-            context.stepCompleted();
         }
 
         @Override
