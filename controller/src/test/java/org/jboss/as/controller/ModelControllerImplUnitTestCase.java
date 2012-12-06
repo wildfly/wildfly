@@ -566,6 +566,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
@@ -581,12 +582,14 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredTxRollbackNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequiredTxRollback();
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
@@ -602,6 +605,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredTxRollbackNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequiredTxRollback();

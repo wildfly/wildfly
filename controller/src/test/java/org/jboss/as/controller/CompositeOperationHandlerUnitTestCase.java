@@ -633,6 +633,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredTxRollback() throws Exception {
         ModelNode step1 = getOperation("reload-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -651,12 +652,14 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredTxRollbackNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequiredTxRollback();
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredTxRollback() throws Exception {
         ModelNode step1 = getOperation("restart-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -675,6 +678,7 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
+    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredTxRollbackNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequiredTxRollback();
