@@ -61,7 +61,7 @@ final class PropertyAdd extends AbstractAddStepHandler {
                 if (configName.equals(endpointConfig.getConfigName())) {
                     endpointConfig.setProperty(propertyName, propertyValue);
                     if (!context.isBooting()) {
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }

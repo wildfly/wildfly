@@ -72,7 +72,7 @@ final class HandlerChainRemove extends AbstractRemoveStepHandler {
                         throw MESSAGES.missingHandlerChain(configName, handlerChainType, handlerChainId);
                     }
                     handlerChains.remove(handlerChain);
-                    context.restartRequired();
+                    context.reloadRequired();
                     return;
                 }
             }

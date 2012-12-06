@@ -55,7 +55,7 @@ final class PropertyRemove extends AbstractRemoveStepHandler {
                 if (configName.equals(endpointConfig.getConfigName())) {
                     if (endpointConfig.getProperties().containsKey(propertyName)) {
                         endpointConfig.getProperties().remove(propertyName);
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }
