@@ -14,10 +14,6 @@ This is the shipped configuration with the extensions and profiles removed
         <server-group name="test" profile="test">
            <!-- Needed for the add operation -->
            <socket-binding-group ref="test-sockets"/>
-	        <deployment-overlays>
-		         <deployment-overlay name="test-overlay">
-	            </deployment-overlay>
-	        </deployment-overlays>
         </server-group> 
     </server-groups>
 </domain>

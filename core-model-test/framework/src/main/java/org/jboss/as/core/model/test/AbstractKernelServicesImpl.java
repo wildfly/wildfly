@@ -71,11 +71,10 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         ServiceTarget target = container.subTarget();
 
         //Initialize the content repository
+        File repositoryFile = new File("target/deployment-repository");
         if (contentRepositoryHashes != null) {
-            File repositoryFile = new File("target/deployment-repository");
             deleteFile(repositoryFile);
-            ContentRepository.Factory.addService(target, repositoryFile);
-            ContentRepository repo = ContentRepository.Factory.create(repositoryFile);
+            repositoryFile.mkdir();
             for (String hash : contentRepositoryHashes) {
                 File file = new File(repositoryFile, hash.substring(0, 2));
                 file.mkdir();
@@ -85,6 +84,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
                 file.createNewFile();
             }
         }
+        ContentRepository.Factory.addService(target, repositoryFile);
 
         //Initialize the controller
         StringConfigurationPersister persister = new StringConfigurationPersister(bootOperations, testParser);
@@ -112,7 +112,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
                 new MainKernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
                         new OperationValidator(svc.getRootRegistration()), legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), extensionRegistry) :
                             new LegacyKernelServicesImpl(container, svc, persister, svc.getRootRegistration(),
-                                    new OperationValidator(svc.getRootRegistration()), legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), extensionRegistry);
+                                    new OperationValidator(svc.getRootRegistration()), legacyModelVersion, svc.isSuccessfulBoot(), svc.getBootError(), extensionRegistry, ContentRepository.Factory.create(repositoryFile));
 
         return kernelServices;
     }
@@ -130,6 +130,8 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
     public abstract TransformedOperation transformOperation(ModelVersion modelVersion, ModelNode operation) throws OperationFailedException;
 
     public abstract ModelNode readTransformedModel(ModelVersion modelVersion);
+
+    public abstract ModelNode callReadMasterDomainModelHandler(ModelVersion modelVersion);
 
     public abstract ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op);
 

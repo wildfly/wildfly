@@ -27,7 +27,6 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
@@ -61,8 +60,7 @@ public class InterfacesTransformersTestCase extends AbstractCoreModelTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setXmlResource("domain.xml");
 
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(modelVersion)
-            .setTestControllerVersion(testControllerVersion);
+        builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
