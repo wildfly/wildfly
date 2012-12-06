@@ -103,6 +103,7 @@ public interface KernelServicesBuilder {
      */
     KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer);
 
+    KernelServicesBuilder createContentRepositoryContent(String hash);
     /**
      * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
      * When {@link #build()} is called any legacy controllers will be created as well.

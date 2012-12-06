@@ -62,7 +62,7 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
     }
 
     public static AbstractKernelServicesImpl create(ProcessType processType, RunningModeControl runningModeControl, boolean validateOperations,
-            List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) throws Exception {
+            List<ModelNode> bootOperations, ModelTestParser testParser, ModelVersion legacyModelVersion, TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry, List<String> contentRepositoryHashes) throws Exception {
 
         //TODO initialize the path manager service like we do for subsystems?
 
@@ -71,9 +71,20 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         ServiceTarget target = container.subTarget();
 
         //Initialize the content repository
-        File repositoryFile = new File("target/deployment-repository");
-        deleteFile(repositoryFile);
-        ContentRepository.Factory.addService(target, repositoryFile);
+        if (contentRepositoryHashes != null) {
+            File repositoryFile = new File("target/deployment-repository");
+            deleteFile(repositoryFile);
+            ContentRepository.Factory.addService(target, repositoryFile);
+            ContentRepository repo = ContentRepository.Factory.create(repositoryFile);
+            for (String hash : contentRepositoryHashes) {
+                File file = new File(repositoryFile, hash.substring(0, 2));
+                file.mkdir();
+                file = new File(file, hash.substring(2, hash.length()));
+                file.mkdir();
+                file = new File(file, "content");
+                file.createNewFile();
+            }
+        }
 
         //Initialize the controller
         StringConfigurationPersister persister = new StringConfigurationPersister(bootOperations, testParser);

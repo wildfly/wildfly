@@ -358,6 +358,7 @@ public class CoreModelTestDelegate {
         private boolean validateOperations = true;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
         private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
+        private List<String> contentRepositoryContents = new ArrayList<String>();
         RunningModeControl runningModeControl;
         ExtensionRegistry extensionRegistry;
 
@@ -403,10 +404,16 @@ public class CoreModelTestDelegate {
         }
 
 
+        @Override
+        public KernelServicesBuilder createContentRepositoryContent(String hash) {
+            contentRepositoryContents.add(hash);
+            return this;
+        }
+
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, extensionRegistry);
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, extensionRegistry, contentRepositoryContents);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
