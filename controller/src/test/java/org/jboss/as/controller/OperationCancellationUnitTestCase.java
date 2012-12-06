@@ -37,7 +37,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -46,12 +45,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -102,15 +97,13 @@ public class OperationCancellationUnitTestCase {
         System.out.println("=========  New Test \n");
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(processState);
+        ModelControllerService svc = new ModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.awaitStartup(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
 
         client = controller.createClient(executor);
     }
@@ -156,18 +149,7 @@ public class OperationCancellationUnitTestCase {
         }
     }
 
-    public static class ModelControllerService extends AbstractControllerService {
-
-        final AtomicBoolean state = new AtomicBoolean(true);
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        ModelControllerService(final ControlledProcessState processState) {
-            this(processState, new NullConfigurationPersister());
-        }
-
-        ModelControllerService(final ControlledProcessState processState, final ConfigurationPersister configurationPersister) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
-        }
+    public static class ModelControllerService extends TestModelControllerService {
 
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
@@ -176,19 +158,13 @@ public class OperationCancellationUnitTestCase {
             rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("good", new ModelStageGoodHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("block-model", new ModelStageBlocksHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("block-runtime", new RuntimeStageBlocksHandler(state), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler("block-runtime", new RuntimeStageBlocksHandler(getSharedState()), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("block-verify", new BlockingServiceHandler(), DESC_PROVIDER, false);
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
             rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
-        }
-
-        @Override
-        protected void finishBoot() throws ConfigurationPersistenceException {
-            super.finishBoot();
-            latch.countDown();
         }
     }
 
@@ -522,13 +498,6 @@ public class OperationCancellationUnitTestCase {
             }
         }
     }
-
-    public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 
     static class RollbackTransactionControl implements ModelController.OperationTransactionControl {
 
