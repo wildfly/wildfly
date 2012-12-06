@@ -89,7 +89,7 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
                     handlerChain.setProtocolBindings(protocolBindings);
                     handlerChains.add(handlerChain);
                     if (!context.isBooting()) {
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }

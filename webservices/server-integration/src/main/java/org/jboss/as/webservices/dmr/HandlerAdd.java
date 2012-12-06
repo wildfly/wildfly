@@ -82,7 +82,7 @@ final class HandlerAdd extends AbstractAddStepHandler {
                     handler.setHandlerClass(handlerClass);
                     handlerChain.addHandler(handler);
                     if (!context.isBooting()) {
-                        context.restartRequired();
+                        context.reloadRequired();
                     }
                     return;
                 }
