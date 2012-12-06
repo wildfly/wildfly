@@ -48,7 +48,6 @@ import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
-import static org.jboss.as.messaging.CommonAttributes.VALUE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
@@ -253,7 +252,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
             for(final Property parameter : value.get(PARAM).asPropertyList()) {
                 writer.writeStartElement(Element.PARAM.getLocalName());
                 writer.writeAttribute(Attribute.KEY.getLocalName(), parameter.getName());
-                writer.writeAttribute(Attribute.VALUE.getLocalName(), parameter.getValue().get(VALUE.getName()).asString());
+                writer.writeAttribute(Attribute.VALUE.getLocalName(), parameter.getValue().get(TransportParamDefinition.VALUE.getName()).asString());
                 writer.writeEndElement();
             }
         }
@@ -573,7 +572,7 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     for (Property param : service.get(CommonAttributes.PARAM).asPropertyList()) {
                         writer.writeEmptyElement(Element.PARAM.getLocalName());
                         writer.writeAttribute(Attribute.KEY.getLocalName(), param.getName());
-                        writer.writeAttribute(Attribute.VALUE.getLocalName(), param.getValue().get(CommonAttributes.VALUE.getName()).asString());
+                        writer.writeAttribute(Attribute.VALUE.getLocalName(), param.getValue().get(ConnectorServiceParamDefinition.VALUE.getName()).asString());
                     }
                 }
                 writer.writeEndElement();

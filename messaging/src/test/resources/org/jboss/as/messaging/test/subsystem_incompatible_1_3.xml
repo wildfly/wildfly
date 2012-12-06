@@ -66,11 +66,11 @@
             <connectors>
                <netty-connector name="netty" socket-binding="messaging" />
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
-                  <param key="batch-delay" value="50"/>
+                  <param key="batch-delay" value="${batch.delay:50}"/>
                </netty-connector>
                <in-vm-connector name="in-vm" server-id="0" />
                <connector name="myconnector">
-                  <factory-class>org.hornetq.core.remoting.impl.netty.NettyConnectorFactory</factory-class>
+                  <factory-class>${factory.class:org.hornetq.core.remoting.impl.netty.NettyConnectorFactory}</factory-class>
                   <param key="host" value="192.168.1.2"/>
                   <param key="port" value="5445"/>
                   <param key="key-store-path" value="path/to/server.jks"/>
@@ -84,6 +84,10 @@
                   <param key="direct-deliver" value="false"/>
                </netty-acceptor>
                <in-vm-acceptor name="in-vm" server-id="0" />
+               <acceptor name="myacceptor">
+                  <factory-class>${factory.class:org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory}</factory-class>
+                  <param key="batch-delay" value="${batch.delay:50}"/>
+               </acceptor>
             </acceptors>
             <broadcast-groups>
                 <broadcast-group name="groupA">
@@ -259,8 +263,8 @@
                     <factory-class>${factory.class:foo.bar}</factory-class>
                 </connector-service>
                 <connector-service name="b">
-                    <factory-class>bar.foo</factory-class>
-                    <param key="foo" value="bar"/>
+                    <factory-class>${factory.class:bar.foo}</factory-class>
+                    <param key="foo" value="${connector.value:bar}"/>
                     <param key="bar" value="2"/>
                 </connector-service>
             </connector-services>

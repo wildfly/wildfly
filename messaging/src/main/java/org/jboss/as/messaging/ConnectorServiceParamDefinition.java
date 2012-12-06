@@ -22,10 +22,17 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Connector service resource definition
@@ -34,20 +41,38 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class ConnectorServiceParamDefinition extends SimpleResourceDefinition {
 
-    public static final AttributeDefinition[] ATTRIBUTES = { CommonAttributes.VALUE };
+    static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
+
+    public static final SimpleAttributeDefinition VALUE = create("value", ModelType.STRING)
+            .setAllowNull(false)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTES = { VALUE };
+
+    static final OperationStepHandler PARAM_ADD = new HornetQReloadRequiredHandlers.AddStepHandler() {
+        @Override
+        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+            for (AttributeDefinition attribute : ATTRIBUTES) {
+                attribute.validateAndSet(operation, model);
+            }
+        }
+    };
 
     public ConnectorServiceParamDefinition() {
-        super(PathElement.pathElement(CommonAttributes.PARAM),
+        super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(CommonAttributes.CONNECTOR_SERVICE, CommonAttributes.PARAM),
-                ConnectorServiceParamAdd.INSTANCE,
-                ConnectorServiceParamRemove.INSTANCE);
+                PARAM_ADD,
+                new HornetQReloadRequiredHandlers.RemoveStepHandler());
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
+        OperationStepHandler writeHandler = new HornetQReloadRequiredHandlers.WriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
-            registry.registerReadWriteAttribute(attr, null, ConnectorServiceParamWriteAttributeHandler.INSTANCE);
+            registry.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
 }
