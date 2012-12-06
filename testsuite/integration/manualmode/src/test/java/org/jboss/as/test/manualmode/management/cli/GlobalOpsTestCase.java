@@ -45,6 +45,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,16 +55,17 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("AS7-5929")
 public class GlobalOpsTestCase extends AbstractCliTestBase {
 
     public static final String DEFAULT_JBOSSAS = "default-jbossas";
     public static final String DEPLOYMENT_NAME = "DUMMY";
-    
+
     @ArquillianResource
     private static ContainerController container;
     @ArquillianResource
     private Deployer deployer;
-    
+
     //NOTE: BeforeClass is not subject to ARQ injection.
     @Before
     public void initServer() throws Exception {
@@ -89,7 +91,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
     @Test
     public void testPersistentRestart() throws Exception {
         //AS7-5929
-        cli.sendLine(":server-set-restart-required");        
+        cli.sendLine(":server-set-restart-required");
         CLIOpResult result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
         checkResponseHeadersForProcessState(result);
@@ -98,7 +100,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         assertTrue(result.isIsOutcomeSuccess());
         checkResponseHeadersForProcessState(result);
 
-        
+
         boolean sendLineResult = cli.sendLine(":reload",true);
         assertTrue(sendLineResult);
         //null when comm is broken on :reload before answer is sent.
@@ -107,16 +109,16 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
             assertTrue(result.isIsOutcomeSuccess());
             assertNoProcessState(result);
         }
-        
+
         while(!cli.sendConnect()){
             TimeUnit.SECONDS.sleep(2);
         }
 
-        cli.sendLine(":read-resource");        
+        cli.sendLine(":read-resource");
         result = cli.readAllAsOpResult();
         assertTrue(result.isIsOutcomeSuccess());
         checkResponseHeadersForProcessState(result);
-        
+
     }
 
     protected void checkResponseHeadersForProcessState(CLIOpResult result) {
@@ -128,7 +130,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         assertEquals("Wrong content of process-state header", "restart-required", (String) processState);
 
     }
-    
+
     protected void assertNoProcessState(CLIOpResult result) {
         if(result.getFromResponse(ModelDescriptionConstants.RESPONSE_HEADERS) == null){
             return;
@@ -136,7 +138,7 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
         Map responseHeaders = (Map) result.getFromResponse(ModelDescriptionConstants.RESPONSE_HEADERS);
         Object processState = responseHeaders.get("process-state");
         assertNull(processState);
-        
+
 
     }
 }

@@ -100,13 +100,21 @@ public class ControlledProcessState {
     }
 
     public void setRunning() {
-        synchronized (service) {
-            if(restartRequiredFlag){
-                state.set(State.RESTART_REQUIRED, stamp.incrementAndGet());
-                service.stateChanged(State.RESTART_REQUIRED);
-            }else{
-                state.set(State.RUNNING, stamp.incrementAndGet());
-                service.stateChanged(State.RUNNING);
+        AtomicStampedReference<State> stateRef = state;
+        int newStamp = stamp.incrementAndGet();
+        int[] receiver = new int[1];
+        // Keep trying until stateRef is set with our stamp
+        for (;;) {
+            State was = stateRef.get(receiver);
+            if (was != State.STARTING) { // AS7-1103 only transition to running from STARTING
+                break;
+            }
+            synchronized (service) {
+                State newState = restartRequiredFlag ? State.RESTART_REQUIRED : State.RUNNING;
+                if (state.compareAndSet(was, newState, receiver[0], newStamp)) {
+                    service.stateChanged(newState);
+                    break;
+                }
             }
         }
     }
@@ -160,7 +168,7 @@ public class ControlledProcessState {
             }
         }
         return Integer.valueOf(newStamp);
-    };
+    }
 
     public void revertReloadRequired(Object stamp) {
         if (!reloadSupported) {
