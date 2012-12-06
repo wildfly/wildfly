@@ -22,9 +22,6 @@
 
 package org.jboss.as.host.controller.resources;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -36,7 +33,6 @@ import static org.jboss.as.host.controller.resources.ServerConfigResourceDefinit
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.operations.LaunchTypeHandler;
-import org.jboss.dmr.ModelNode;
 
 /**
  * {@code ResourceDescription} describing a stopped (running) server.

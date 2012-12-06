@@ -24,8 +24,12 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.protocol.ProtocolMessages;
@@ -71,6 +75,7 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 
     @Override
     public <T extends Operation> AsyncFuture<ModelNode> execute(final TransactionalOperationListener<T> listener, final T operation) throws IOException {
+        final TransactionalProtocolClient remoteClient = this.remoteClient;
         final ModelNode op = operation.getOperation();
         if(remoteClient == DISCONNECTED) {
             // Handle the restartRequired operation also when disconnected
@@ -80,13 +85,49 @@ class ManagedServerProxy implements TransactionalProtocolClient {
         } else {
             // Handle operations targeting the server root
             if(op.get(OP_ADDR).asInt() == 0) {
-                // Handle the reload state
-                if("reload".equals(op.get(OP).asString())) {
-                    server.reloading();
-                }
+                final TransactionalOperationListener<T> wrappedListener = checkLifecycleOperation(listener, operation, op);
+                return remoteClient.execute(wrappedListener, operation);
             }
         }
         return remoteClient.execute(listener, operation);
+    }
+
+
+    private <T extends Operation> TransactionalOperationListener<T> checkLifecycleOperation(final TransactionalOperationListener<T> listener, final T operation, final ModelNode op) {
+        final String operationName = op.get(OP).asString();
+        if(COMPOSITE.equals(operationName)) {
+            if(op.has(STEPS)) {
+                // scan for lifecycle operations
+                for(final ModelNode step : op.get(STEPS).asList()) {
+                    return checkLifecycleOperation(listener, operation, step);
+                }
+            }
+        } else if ("reload".equals(operationName)) {
+            // Handle the reload state
+            server.reloading();
+            return new TransactionalOperationListener<T>() {
+                @Override
+                public void operationPrepared(PreparedOperation<T> prepared) {
+                    listener.operationPrepared(prepared);
+                }
+
+                @Override
+                public void operationFailed(T operation, ModelNode result) {
+                    try {
+                        listener.operationFailed(operation, result);
+                    } finally {
+                        // In case the operation fails, it should not be reloading
+                        server.cancelReloading();
+                    }
+                }
+
+                @Override
+                public void operationComplete(T operation, ModelNode result) {
+                    listener.operationComplete(operation, result);
+                }
+            };
+        }
+        return listener;
     }
 
     static final class DisconnectedProtocolClient implements TransactionalProtocolClient {

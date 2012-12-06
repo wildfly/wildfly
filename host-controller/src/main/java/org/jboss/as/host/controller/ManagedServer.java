@@ -226,6 +226,13 @@ class ManagedServer {
     }
 
     /**
+     * Cancel the reloading state.
+     */
+    protected synchronized void cancelReloading() {
+        internalSetState(null, InternalState.RELOADING, InternalState.SERVER_STARTED);
+    }
+
+    /**
      * Start a managed server.
      */
     protected synchronized void start() {
