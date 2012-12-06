@@ -98,8 +98,12 @@ public class JdrTestCase {
         VirtualFileFilter filter = Filters.wildcard("*.txt");
         VirtualFile good = VFS.getChild("/this/is/a/test.txt");
         VirtualFile bad = VFS.getChild("/this/is/a/test.xml");
+        VirtualFile wingood = VFS.getChild("/C:/this/is/a/test.txt");
+        VirtualFile winbad = VFS.getChild("/C:/this/is/a/test.xml");
         assertTrue(filter.accepts(good));
         assertFalse(filter.accepts(bad));
+        assertTrue(filter.accepts(wingood));
+        assertFalse(filter.accepts(winbad));
     }
 
     @Test
@@ -107,8 +111,12 @@ public class JdrTestCase {
         VirtualFileFilter filter = Filters.wildcard("/this/is*");
         VirtualFile good = VFS.getChild("/this/is/a/test.txt");
         VirtualFile bad = VFS.getChild("/that/is/a/test.txt");
+        VirtualFile wingood = VFS.getChild("/C:/this/is/a/test.txt");
+        VirtualFile winbad = VFS.getChild("/C:/that/is/a/test.txt");
         assertTrue(filter.accepts(good));
         assertFalse(filter.accepts(bad));
+        assertTrue(filter.accepts(wingood));
+        assertFalse(filter.accepts(winbad));
     }
 
     @Test
@@ -117,46 +125,12 @@ public class JdrTestCase {
         VirtualFile good = VFS.getChild("/this/is/a/test.txt");
         VirtualFile bad1 = VFS.getChild("/that/is/a/test.txt");
         VirtualFile bad2 = VFS.getChild("/this/is/a/test.xml");
+        VirtualFile win = VFS.getChild("/C:/this/is/a/test.txt");
+        VirtualFile winbad = VFS.getChild("/C:/this/is/a/test.xml");
         assertTrue(filter.accepts(good));
+        assertTrue(filter.accepts(win));
         assertFalse(filter.accepts(bad1));
         assertFalse(filter.accepts(bad2));
-    }
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testWildcardFilterPrefixSingle() throws Exception {
-        VirtualFileFilter filter = Filters.wildcard("?this/is/a/test.txt");
-        VirtualFileFilter filter2 = Filters.wildcard("?????/is/a/test.txt");
-    }
-
-    @Test
-    public void testWildcardFilterPostfixSingle() throws Exception {
-        VirtualFileFilter filter1 = Filters.wildcard("/this/is/a/test.tx?");
-        VirtualFile good1 = VFS.getChild("/this/is/a/test.txt");
-        VirtualFile bad1 = VFS.getChild("/that/is/a/test.dat");
-        assertTrue(filter1.accepts(good1));
-        assertFalse(filter1.accepts(bad1));
-
-        VirtualFileFilter filter2 = Filters.wildcard("/this/is/a/test.???");
-        VirtualFile good2 = VFS.getChild("/this/is/a/test.txt");
-        VirtualFile bad2 = VFS.getChild("/that/is/a/blah.txt");
-        assertTrue(filter2.accepts(good2));
-        assertFalse(filter2.accepts(bad2));
-
-    }
-
-    @Test
-    public void testWildcardFilterMiddleSingle() throws Exception {
-        VirtualFileFilter filter1 = Filters.wildcard("/this/???/a/test.txt");
-        VirtualFile good1 = VFS.getChild("/this/iss/a/test.txt");
-        VirtualFile bad1 = VFS.getChild("/that/was/no/test.dat");
-        assertTrue(filter1.accepts(good1));
-        assertFalse(filter1.accepts(bad1));
-
-        VirtualFileFilter filter2 = Filters.wildcard("/????/is/a/????.txt");
-        VirtualFile good2 = VFS.getChild("/this/is/a/test.txt");
-        VirtualFile bad2 = VFS.getChild("/that/is/no/test.txt");
-        assertTrue(filter2.accepts(good2));
-        assertFalse(filter2.accepts(bad2));
-
+        assertFalse(filter.accepts(winbad));
     }
 }
