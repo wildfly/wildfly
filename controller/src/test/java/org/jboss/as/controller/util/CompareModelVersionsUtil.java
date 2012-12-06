@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
 import java.io.File;
@@ -54,6 +55,7 @@ import java.util.TreeMap;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -286,6 +288,7 @@ public class CompareModelVersionsUtil {
             compareAccessType(context, id, currentAttribute, legacyAttribute);
             compareStorage(context, id, currentAttribute, legacyAttribute);
             compareDefault(context, id, currentAttribute, legacyAttribute);
+            compareUnit(context, id, currentAttribute, legacyAttribute);
         }
     }
 
@@ -398,6 +401,12 @@ public class CompareModelVersionsUtil {
     private void compareDeprecated(CompareContext context, String id, ModelNode current, ModelNode legacy) {
         if (!current.get(DEPRECATED).equals(legacy.get(DEPRECATED))) {
             context.println("Different 'deprecated' for " + id + ". Current: " + current.get(DEPRECATED) + "; legacy: " + legacy.get(DEPRECATED));
+        }
+    }
+
+    private void compareUnit(CompareContext context, String id, ModelNode current, ModelNode legacy) {
+        if (!current.get(UNIT).equals(legacy.get(UNIT))) {
+            context.println("Different 'unit' for " + id + ". Current: " + current.get(UNIT) + "; legacy: " + legacy.get(UNIT));
         }
     }
 
