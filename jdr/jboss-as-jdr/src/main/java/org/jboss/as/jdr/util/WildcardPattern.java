@@ -26,20 +26,17 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
- * Simple wildcard matcher for * and ?
+ * Simple wildcard matcher for *
  * @author csams@redhat.com
  *         Date: 11/6/12
  */
 public class WildcardPattern {
 
-    private static final String WILDCARDS = "?*";
+    private static final String WILDCARDS = "*";
 
     private final String[] tokens;
 
     public WildcardPattern(String pattern){
-        if (pattern.startsWith("?")) {
-            throw new IllegalArgumentException("Patterns may not start with ?");
-        }
 
         if (!pattern.startsWith("*")) {
             pattern = "*" + pattern;
@@ -61,11 +58,6 @@ public class WildcardPattern {
         int tokenEnd = tokens.length;
 
         while(tokenIdx < tokenEnd && targetIdx < targetEnd && targetIdx > -1){
-            if("?".equals(tokens[tokenIdx])){
-                targetIdx++;
-                tokenIdx++;
-            }
-            else
             if("*".equals(tokens[tokenIdx])){
                 if(tokenIdx == (tokenEnd - 1)){
                     targetIdx = targetEnd;
