@@ -105,7 +105,6 @@ public class ModelControllerImplUnitTestCase {
 
     @Before
     public void setupController() throws InterruptedException {
-
         // restore default
         useNonRecursive = false;
 
@@ -120,7 +119,8 @@ public class ModelControllerImplUnitTestCase {
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
+
+        assertEquals(ControlledProcessState.State.RUNNING, svc.processState.getState());
     }
 
     @After
@@ -140,8 +140,9 @@ public class ModelControllerImplUnitTestCase {
 
     public static class ModelControllerService extends AbstractControllerService {
 
+        final ControlledProcessState processState;
         final AtomicBoolean state = new AtomicBoolean(true);
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CountDownLatch latch = new CountDownLatch(2);
 
         ModelControllerService(final ControlledProcessState processState) {
             this(processState, new NullConfigurationPersister());
@@ -149,6 +150,13 @@ public class ModelControllerImplUnitTestCase {
 
         ModelControllerService(final ControlledProcessState processState, final ConfigurationPersister configurationPersister) {
             super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+            this.processState = processState;
+        }
+
+        @Override
+        public void start(StartContext context) throws StartException {
+            super.start(context);
+            latch.countDown();
         }
 
         @Override
@@ -180,8 +188,8 @@ public class ModelControllerImplUnitTestCase {
         }
 
         @Override
-        protected void finishBoot() throws ConfigurationPersistenceException {
-            super.finishBoot();
+        protected void bootThreadDone()  {
+            super.bootThreadDone();
             latch.countDown();
         }
     }
@@ -522,7 +530,7 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -537,14 +545,14 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequired();
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, null, null);
         System.out.println(result);
@@ -559,14 +567,13 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
+//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequired();
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
@@ -582,14 +589,12 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredTxRollbackNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequiredTxRollback();
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
         System.out.println(result);
@@ -605,7 +610,6 @@ public class ModelControllerImplUnitTestCase {
     }
 
     @Test
-    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredTxRollbackNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequiredTxRollback();
