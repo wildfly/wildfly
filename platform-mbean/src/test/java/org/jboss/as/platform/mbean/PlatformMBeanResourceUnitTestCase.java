@@ -43,8 +43,6 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -72,15 +70,13 @@ public class PlatformMBeanResourceUnitTestCase {
     public static void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        PlatformMBeanTestModelControllerService svc = new PlatformMBeanTestModelControllerService(processState);
+        PlatformMBeanTestModelControllerService svc = new PlatformMBeanTestModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.latch.await(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
 
         client = controller.createClient(Executors.newSingleThreadExecutor());
     }

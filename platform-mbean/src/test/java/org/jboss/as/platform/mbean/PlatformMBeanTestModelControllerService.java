@@ -55,15 +55,14 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
         }
     };
 
-    final CountDownLatch latch = new CountDownLatch(1);
+    final CountDownLatch latch = new CountDownLatch(2);
 
     /**
      * Construct a new instance.
      *
-     * @param processState   the state of the controlled process
      */
-    protected PlatformMBeanTestModelControllerService(final ControlledProcessState processState) {
-        super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), processState, DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
+    protected PlatformMBeanTestModelControllerService() {
+        super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new NullConfigurationPersister(), new ControlledProcessState(true), DESC_PROVIDER, null, ExpressionResolver.DEFAULT);
     }
 
     @Override
@@ -80,6 +79,12 @@ public class PlatformMBeanTestModelControllerService extends AbstractControllerS
     @Override
     public void start(StartContext context) throws StartException {
         super.start(context);
+        latch.countDown();
+    }
+
+    @Override
+    protected void bootThreadDone() {
+        super.bootThreadDone();
         latch.countDown();
     }
 }

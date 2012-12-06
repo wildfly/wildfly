@@ -91,14 +91,11 @@ public class InterleavedSubsystemTestCase {
     public void testInterleavedOps() throws Exception {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerImplUnitTestCase.ModelControllerService svc =
-                new InterleavedSubsystemModelControllerService(processState);
+        TestModelControllerService svc = new InterleavedSubsystemModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.awaitStartup(30, TimeUnit.SECONDS);
         ModelController controller = svc.getValue();
-        processState.setRunning();
 
         final ModelNode op = Util.getEmptyOperation(READ_RESOURCE_OPERATION, new ModelNode());
         op.get(RECURSIVE).set(true);
@@ -130,10 +127,10 @@ public class InterleavedSubsystemTestCase {
 
     }
 
-    public static class InterleavedSubsystemModelControllerService extends ModelControllerImplUnitTestCase.ModelControllerService {
+    public static class InterleavedSubsystemModelControllerService extends TestModelControllerService {
 
-        InterleavedSubsystemModelControllerService(final ControlledProcessState processState) {
-            super(processState, InterleavedConfigurationPersister.INSTANCE);
+        InterleavedSubsystemModelControllerService() {
+            super(InterleavedConfigurationPersister.INSTANCE, new ControlledProcessState(true));
         }
 
         @Override

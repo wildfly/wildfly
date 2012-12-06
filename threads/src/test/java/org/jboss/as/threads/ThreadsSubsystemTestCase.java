@@ -172,15 +172,13 @@ public class ThreadsSubsystemTestCase {
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(processState);
+        ModelControllerService svc = new ModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.latch.await(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
     }
 
     @After
@@ -1320,15 +1318,21 @@ public class ThreadsSubsystemTestCase {
 
     public class ModelControllerService extends AbstractControllerService {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch latch = new CountDownLatch(2);
 
-        ModelControllerService(final ControlledProcessState processState) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), processState, NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
+        ModelControllerService() {
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.NORMAL), new TestConfigurationPersister(), new ControlledProcessState(true), NULL_PROVIDER, null, ExpressionResolver.DEFAULT);
         }
 
         @Override
         public void start(StartContext context) throws StartException {
             super.start(context);
+            latch.countDown();
+        }
+
+        @Override
+        protected void bootThreadDone() {
+            super.bootThreadDone();
             latch.countDown();
         }
 

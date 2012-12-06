@@ -39,7 +39,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -47,7 +46,6 @@ import org.junit.Test;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-//@Ignore("Composite ops not working yet")
 public class CompositeOperationHandlerUnitTestCase {
 
     private ServiceContainer container;
@@ -63,17 +61,16 @@ public class CompositeOperationHandlerUnitTestCase {
 
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerImplUnitTestCase.ModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService(processState);
+        TestModelControllerService svc = new ModelControllerImplUnitTestCase.ModelControllerService();
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        sharedState = svc.state;
-        svc.latch.await();
+        sharedState = svc.getSharedState();
+        svc.awaitStartup(30, TimeUnit.SECONDS);
         controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
 
-        assertEquals(ControlledProcessState.State.RUNNING, svc.processState.getState());
+        assertEquals(ControlledProcessState.State.RUNNING, svc.getCurrentProcessState());
     }
 
     @After
@@ -588,7 +585,6 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequired() throws Exception {
         ModelNode step1 = getOperation("reload-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -606,14 +602,12 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testReloadRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testReloadRequired();
     }
 
     @Test
-//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequired() throws Exception {
         ModelNode step1 = getOperation("restart-required", "attr1", 5);
         ModelNode step2 = getOperation("good", "attr2", 1);
@@ -631,7 +625,6 @@ public class CompositeOperationHandlerUnitTestCase {
     }
 
     @Test
-//    @Ignore("AS7-1103 Fails intermittently for unknown reasons")
     public void testRestartRequiredNonRecursive() throws Exception {
         useNonRecursive = true;
         testRestartRequired();

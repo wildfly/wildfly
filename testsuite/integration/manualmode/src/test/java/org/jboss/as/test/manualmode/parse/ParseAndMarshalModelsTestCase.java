@@ -59,7 +59,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.AbstractControllerService;
-import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
@@ -82,7 +81,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
@@ -134,6 +132,8 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -873,15 +873,14 @@ public class ParseAndMarshalModelsTestCase {
         }
 
         ServiceTarget target = serviceContainer.subTarget();
-        ControlledProcessState processState = new ControlledProcessState(true);
-        ModelControllerService svc = new ModelControllerService(processType, processState, registration, model);
+        ModelControllerService svc = new ModelControllerService(processType, registration, model);
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
-        svc.latch.await();
+        svc.latch.await(30, TimeUnit.SECONDS);
         ModelController controller = svc.getValue();
         ModelNode setup = Util.getEmptyOperation("setup", new ModelNode());
         controller.execute(setup, null, null, null);
-        processState.setRunning();
+
         return controller;
     }
 
@@ -978,23 +977,26 @@ public class ParseAndMarshalModelsTestCase {
 
     class ModelControllerService extends AbstractControllerService {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch latch = new CountDownLatch(2);
         private final ModelNode model;
         private final Setup registration;
 
-        ModelControllerService(final ProcessType processType, final ControlledProcessState processState, final Setup registration, final ModelNode model) {
-            super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), processState, getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
+        ModelControllerService(final ProcessType processType, final Setup registration, final ModelNode model) {
+            super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), new ControlledProcessState(true), getRootDescriptionProvider(), null, ExpressionResolver.DEFAULT);
             this.model = model;
             this.registration = registration;
         }
 
         @Override
-        protected void boot(BootContext context) throws ConfigurationPersistenceException {
-            try {
-                super.boot(context);
-            } finally {
-                latch.countDown();
-            }
+        public void start(StartContext context) throws StartException {
+            super.start(context);
+            latch.countDown();
+        }
+
+        @Override
+        protected void bootThreadDone() {
+            super.bootThreadDone();
+            latch.countDown();
         }
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
