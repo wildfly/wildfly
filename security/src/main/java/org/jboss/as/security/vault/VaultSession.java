@@ -216,8 +216,28 @@ public final class VaultSession {
      * @param vaultBlock
      * @param attributeName
      * @param attributeValue
+     * @return secured attribute configuration
      */
-    public void addSecuredAttribute(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
+    public String addSecuredAttribute(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
+        if (handshakeKey == null) {
+            throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
+        }
+        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
+        return securedAttributeConfigurationString(vaultBlock, attributeName, null);
+    }
+
+    /**
+     * Add secured attribute to specified vault block. This method can be called only after successful
+     * startVaultSession() call.
+     * After successful storage the secured attribute information will be displayed at standard output.
+     * For silent method @see addSecuredAttribute
+     *
+     * @param vaultBlock
+     * @param attributeName
+     * @param attributeValue
+     * @throws Exception
+     */
+    public void addSecuredAttributeWithDisplay(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
         if (handshakeKey == null) {
             throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
         }
@@ -256,8 +276,22 @@ public final class VaultSession {
         System.out.println("Attribute Name:" + attributeName);
         System.out.println("Shared Key:" + keyAsString);
         System.out.println("Configuration should be done as follows:");
-        System.out.println("VAULT::" + vaultBlock + "::" + attributeName + "::" + keyAsString);
+        System.out.println(securedAttributeConfigurationString(vaultBlock, attributeName, keyAsString));
         System.out.println("********************************************");
+    }
+
+
+    /**
+     * Returns configuration string for secured attribute.
+     * keyAsString parameter can be null. In this case proper value will be calculated.
+     *
+     * @param vaultBlock
+     * @param attributeName
+     * @param keyAsString
+     * @return
+     */
+    private String securedAttributeConfigurationString(String vaultBlock, String attributeName, String keyAsString) {
+        return "VAULT::" + vaultBlock + "::" + attributeName + "::" + (keyAsString != null ? keyAsString : new String(handshakeKey, CHARSET));
     }
 
     /**
@@ -268,15 +302,25 @@ public final class VaultSession {
         System.out.println("********************************************");
         System.out.println("...");
         System.out.println("</extensions>");
-        System.out.println("<vault>");
-        System.out.println("  <vault-option name=\"KEYSTORE_URL\" value=\"" + keystoreURL + "\"/>");
-        System.out.println("  <vault-option name=\"KEYSTORE_PASSWORD\" value=\"" + keystoreMaskedPassword + "\"/>");
-        System.out.println("  <vault-option name=\"KEYSTORE_ALIAS\" value=\"" + vaultAlias + "\"/>");
-        System.out.println("  <vault-option name=\"SALT\" value=\"" + salt + "\"/>");
-        System.out.println("  <vault-option name=\"ITERATION_COUNT\" value=\"" + iterationCount + "\"/>");
-        System.out.println("  <vault-option name=\"ENC_FILE_DIR\" value=\"" + encryptionDirectory + "\"/>");
-        System.out.println("</vault>");
+        System.out.print(vaultConfiguration());
         System.out.println("<management> ...");
         System.out.println("********************************************");
+    }
+
+    /**
+     * Returns vault configuration string in user readable form.
+     * @return
+     */
+    public String vaultConfiguration() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<vault>").append("\n");
+        sb.append("  <vault-option name=\"KEYSTORE_URL\" value=\"" + keystoreURL + "\"/>").append("\n");
+        sb.append("  <vault-option name=\"KEYSTORE_PASSWORD\" value=\"" + keystoreMaskedPassword + "\"/>").append("\n");
+        sb.append("  <vault-option name=\"KEYSTORE_ALIAS\" value=\"" + vaultAlias + "\"/>").append("\n");
+        sb.append("  <vault-option name=\"SALT\" value=\"" + salt + "\"/>").append("\n");
+        sb.append("  <vault-option name=\"ITERATION_COUNT\" value=\"" + iterationCount + "\"/>").append("\n");
+        sb.append("  <vault-option name=\"ENC_FILE_DIR\" value=\"" + encryptionDirectory + "\"/>").append("\n");
+        sb.append("</vault>");
+        return sb.toString();
     }
 }
