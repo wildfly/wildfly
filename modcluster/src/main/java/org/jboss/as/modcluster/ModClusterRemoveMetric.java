@@ -22,6 +22,8 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Set;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -30,7 +32,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 public class ModClusterRemoveMetric implements OperationStepHandler {
 
@@ -59,12 +60,10 @@ public class ModClusterRemoveMetric implements OperationStepHandler {
     }
 
     private String getMetricName(OperationContext context, String type) {
-        ModelNode loadProvider = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getModel();
-        ModelNode loadMetrics = loadProvider.get(CommonAttributes.LOAD_METRIC);
-        for (Property p : loadMetrics.asPropertyList()) {
-            String metricType = p.getValue().get(CommonAttributes.TYPE).asString();
-            if (metricType.equals(type)) {
-                return p.getName();
+        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getChildrenNames(CommonAttributes.LOAD_METRIC);
+        for (String name : metrics) {
+            if (name.equals(type)) {
+                return name;
             }
         }
         return null;
