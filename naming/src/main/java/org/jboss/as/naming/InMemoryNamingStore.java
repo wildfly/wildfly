@@ -97,7 +97,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
-        checkPermissions(name, JndiPermission.Action.BIND);
 
         writeLock.lock();
         try {
@@ -117,7 +116,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
-        checkPermissions(name, JndiPermission.Action.REBIND);
 
         writeLock.lock();
         try {
@@ -137,7 +135,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
-        checkPermissions(name, JndiPermission.Action.UNBIND);
 
         writeLock.lock();
         try {
@@ -157,10 +154,8 @@ public class InMemoryNamingStore implements WritableNamingStore {
     public Object lookup(final Name name) throws NamingException {
         if (isEmpty(name)) {
             final Name emptyName = new CompositeName("");
-            checkPermissions(emptyName, JndiPermission.Action.LOOKUP);
             return new NamingContext(emptyName, this, new Hashtable<String, Object>());
         }
-        checkPermissions(name, JndiPermission.Action.LOOKUP);
         return root.accept(new LookupVisitor(name));
     }
 
@@ -179,7 +174,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
      */
     public List<NameClassPair> list(final Name name) throws NamingException {
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        checkPermissions(nodeName, JndiPermission.Action.LIST);
         return root.accept(new ListVisitor(nodeName));
     }
 
@@ -192,7 +186,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
      */
     public List<Binding> listBindings(final Name name) throws NamingException {
         final Name nodeName = name.isEmpty() ? new CompositeName("") : name;
-        checkPermissions(nodeName, JndiPermission.Action.LIST_BINDINGS);
         return root.accept(new ListBindingsVisitor(name));
     }
 
@@ -200,7 +193,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
         if (isLastComponentEmpty(name)) {
             throw emptyNameException();
         }
-        checkPermissions(name, JndiPermission.Action.CREATE_SUBCONTEXT);
         return root.accept(new CreateSubContextVisitor(name));
     }
 
@@ -259,13 +251,6 @@ public class InMemoryNamingStore implements WritableNamingStore {
             if (((Reference) object).get("nns") != null) {
                 throw cannotProceedException(object, name);
             }
-        }
-    }
-
-    private void checkPermissions(final Name name, JndiPermission.Action permission) {
-        final SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new JndiPermission(name, permission));
         }
     }
 
