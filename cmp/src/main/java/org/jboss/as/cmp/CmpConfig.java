@@ -28,7 +28,7 @@ package org.jboss.as.cmp;
 public class CmpConfig {
     private boolean syncOnCommitOnly;
     private boolean insertAfterEjbPostCreate;
-    private boolean callEjbStoreOnClean;
+    private boolean callEjbStoreOnClean = true;
 
     public boolean isSyncOnCommitOnly() {
         return syncOnCommitOnly;
