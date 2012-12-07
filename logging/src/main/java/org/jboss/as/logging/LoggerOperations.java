@@ -45,6 +45,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.logmanager.config.LoggerConfiguration;
@@ -61,13 +62,6 @@ final class LoggerOperations {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
 
-        }
-
-        @Override
-        public final void performRollback(final OperationContext context, final ModelNode operation, final ModelNode model, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            final String loggerName = getLogManagerLoggerName(name);
-            LoggerConfiguration configuration = logContextConfiguration.getLoggerConfiguration(loggerName);
-            performRollback(context, operation, configuration, name, originalModel);
         }
 
         @Override
@@ -92,19 +86,6 @@ final class LoggerOperations {
          * @throws OperationFailedException if a processing error occurs
          */
         public abstract void performRuntime(OperationContext context, ModelNode operation, LoggerConfiguration configuration, String name, ModelNode model) throws OperationFailedException;
-
-        /**
-         * Perform any rollback operations to rollback the changes.
-         *
-         * @param context       the operation context
-         * @param operation     the operation being executed
-         * @param configuration the logger configuration
-         * @param name          the name of the logger
-         * @param originalModel the original model
-         *
-         * @throws OperationFailedException if the rollback fails
-         */
-        public abstract void performRollback(OperationContext context, ModelNode operation, LoggerConfiguration configuration, String name, ModelNode originalModel) throws OperationFailedException;
     }
 
 
@@ -145,15 +126,6 @@ final class LoggerOperations {
 
             for (AttributeDefinition attribute : attributes) {
                 handleProperty(attribute, context, model, configuration);
-            }
-        }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name) {
-            if (logContextConfiguration != null) {
-                final String loggerName = getLogManagerLoggerName(name);
-                LoggingLogger.ROOT_LOGGER.tracef("Rolling back added logger '%s' at '%s'", name, LoggingOperations.getAddress(operation));
-                logContextConfiguration.removeLoggerConfiguration(loggerName);
             }
         }
     }
@@ -216,19 +188,11 @@ final class LoggerOperations {
                 configuration.setUseParentHandlers(true);
                 configuration.setHandlerNames(Collections.<String>emptyList());
                 // Commit the current changes as they need to be committed on a configured logger.
-                logContextConfiguration.commit();
+                // TODO need to use the API when available
+                ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getConfigurationPersistence(logContextConfiguration.getLogContext());
+                if (configurationPersistence != null) configurationPersistence.prepare();
             }
             logContextConfiguration.removeLoggerConfiguration(loggerName);
-        }
-
-        @Override
-        protected void performRollback(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            final String loggerName = getLogManagerLoggerName(name);
-            if (loggerName.equals(ROOT_LOGGER_NAME)) {
-                RootLoggerResourceDefinition.ADD_ROOT_LOGGER.performRuntime(context, operation, logContextConfiguration, name, originalModel);
-            } else {
-                LoggerResourceDefinition.ADD_LOGGER.performRuntime(context, operation, logContextConfiguration, name, originalModel);
-            }
         }
     };
 
@@ -253,17 +217,6 @@ final class LoggerOperations {
             }
             LoggingLogger.ROOT_LOGGER.tracef("Adding handler '%s' to logger '%s' at '%s'", handlerName, getLogManagerLoggerName(loggerName), LoggingOperations.getAddress(operation));
             configuration.addHandlerName(handlerName);
-        }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            // Get the handler name
-            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
-            final String loggerName = getLogManagerLoggerName(name);
-            if (configuration.getHandlerNames().contains(handlerName)) {
-                LoggingLogger.ROOT_LOGGER.tracef("Rolling back added handler '%s' to logger '%s' at '%s'", handlerName, getLogManagerLoggerName(loggerName), LoggingOperations.getAddress(operation));
-                configuration.removeHandlerName(handlerName);
-            }
         }
     };
 
@@ -296,17 +249,6 @@ final class LoggerOperations {
         public void performRuntime(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, model).asString());
         }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            // Get the handler name
-            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
-            final String loggerName = getLogManagerLoggerName(name);
-            if (!configuration.getHandlerNames().contains(handlerName)) {
-                LoggingLogger.ROOT_LOGGER.tracef("Rolling back removed handler '%s' to logger '%s' at '%s'", handlerName, getLogManagerLoggerName(loggerName), LoggingOperations.getAddress(operation));
-                configuration.addHandlerName(handlerName);
-            }
-        }
     };
 
     /**
@@ -322,11 +264,6 @@ final class LoggerOperations {
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             handleProperty(LEVEL, context, model, configuration);
-        }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            handleProperty(LEVEL, context, originalModel, configuration);
         }
     };
 

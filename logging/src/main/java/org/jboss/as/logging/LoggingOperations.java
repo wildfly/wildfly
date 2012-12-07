@@ -28,7 +28,8 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
-import org.jboss.as.controller.OperationContext.RollbackHandler;
+import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.OperationContext.ResultHandler;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,6 +67,56 @@ final class LoggingOperations {
         return PathAddress.pathAddress(operation.require(OP_ADDR));
     }
 
+    /**
+     * Adds a {@link Stage#RUNTIME runtime} step to the context that will commit or rollback any logging changes. Also
+     * if not a logging profile writes the {@code logging.properties} file.
+     *
+     * @param context                  the context to add the step to
+     * @param configurationPersistence the configuration to commit
+     */
+    static void addCommitStep(final OperationContext context, final ConfigurationPersistence configurationPersistence) {
+        context.addStep(new CommitOperationStepHandler(configurationPersistence), Stage.RUNTIME);
+    }
+
+    private static final class LoggingResultHandler implements ResultHandler {
+        private static AttachmentKey<Boolean> WRITTEN_KEY = AttachmentKey.create(Boolean.class);
+        private final ConfigurationPersistence configurationPersistence;
+
+        LoggingResultHandler(final ConfigurationPersistence configurationPersistence) {
+            this.configurationPersistence = configurationPersistence;
+        }
+
+        @Override
+        public void handleResult(final ResultAction resultAction, final OperationContext context, final ModelNode operation) {
+            if (resultAction == ResultAction.KEEP) {
+                configurationPersistence.commit();
+            } else if (resultAction == ResultAction.ROLLBACK) {
+                configurationPersistence.rollback();
+            }
+            if (!LoggingProfileOperations.isLoggingProfileAddress(getAddress(operation))) {
+                // Write once
+                if (context.getAttachment(WRITTEN_KEY) == null) {
+                    context.attachIfAbsent(WRITTEN_KEY, Boolean.TRUE);
+                    configurationPersistence.writeConfiguration(context);
+                }
+            }
+        }
+    }
+
+    private static final class CommitOperationStepHandler implements OperationStepHandler {
+        private final ConfigurationPersistence configurationPersistence;
+
+        CommitOperationStepHandler(final ConfigurationPersistence configurationPersistence) {
+            this.configurationPersistence = configurationPersistence;
+        }
+
+        @Override
+        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+            configurationPersistence.prepare();
+            context.completeStep(new LoggingResultHandler(configurationPersistence));
+        }
+    }
+
     public static class ReadFilterOperationStepHandler implements OperationStepHandler {
 
         public static final ReadFilterOperationStepHandler INSTANCE = new ReadFilterOperationStepHandler();
@@ -89,7 +140,6 @@ final class LoggingOperations {
      * The base logging OSH.
      */
     private abstract static class LoggingOperationStepHandler implements OperationStepHandler {
-        private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
 
         @Override
         public final void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -108,64 +158,25 @@ final class LoggingOperations {
 
             execute(context, operation, name, logContextConfiguration);
             if (context.getProcessType().isServer()) {
-                // Don't add a write step for profiles
-                if (isLoggingProfile) {
-                    // Add a new OSH for writing the configuration
-                    context.addStep(new OperationStepHandler() {
-                        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                            try {
-                                logContextConfiguration.commit();
-                            } finally {
-                                logContextConfiguration.forget();
-                            }
-                            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                        }
-                    }, Stage.RUNTIME);
-                } else {
-                    // Add a new OSH for writing the configuration
-                    context.addStep(new OperationStepHandler() {
-                        public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                            context.attachIfAbsent(ATTACHMENT_KEY, Boolean.TRUE);
-                            context.addStep(new OperationStepHandler() {
-                                @Override
-                                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                                    final Boolean addCommit = context.getAttachment(ATTACHMENT_KEY);
-                                    try {
-                                        logContextConfiguration.commit();
-                                    } finally {
-                                        logContextConfiguration.forget();
-                                    }
-                                    if (addCommit != null && addCommit) {
-                                        configurationPersistence.writeConfiguration(context);
-                                        context.detach(ATTACHMENT_KEY);
-
-                                        context.completeStep(new RollbackHandler() {
-                                            @Override
-                                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                                final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
-                                                // The real rollbacks should happen in the subclasses
-                                                logContextConfiguration.forget();
-                                                try {
-                                                    configurationPersistence.writeConfiguration(context);
-                                                } catch (OperationFailedException e) {
-                                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
-                                                }
-                                            }
-                                        });
-                                    } else {
-                                        context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                                    }
-                                }
-                            }, Stage.RUNTIME);
-                            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
-                        }
-                    }, Stage.RUNTIME);
-                }
+                addCommitStep(context, configurationPersistence);
             }
-            context.completeStep(RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            context.completeStep(new LoggingResultHandler(configurationPersistence));
         }
 
         public abstract void execute(OperationContext context, ModelNode operation, String name, LogContextConfiguration logContextConfiguration) throws OperationFailedException;
+
+        /**
+         * Executes additional processing for this step.
+         *
+         * @param context                 the operation context
+         * @param operation               the operation being executed
+         * @param logContextConfiguration the logging context configuration
+         * @param name                    the name of the logger
+         * @param model                   the model to update
+         *
+         * @throws OperationFailedException if a processing error occurs
+         */
+        public abstract void performRuntime(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name, ModelNode model) throws OperationFailedException;
     }
 
 
@@ -184,18 +195,7 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        context.completeStep(new RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                logContextConfiguration.forget();
-                                try {
-                                    performRollback(context, operation, logContextConfiguration, name);
-                                    logContextConfiguration.commit();
-                                } catch (OperationFailedException e) {
-                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
-                                }
-                            }
-                        });
+                        context.stepCompleted();
                     }
                 }, Stage.RUNTIME);
             }
@@ -210,33 +210,6 @@ final class LoggingOperations {
          * @throws OperationFailedException if a processing error occurs
          */
         public abstract void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException;
-
-        /**
-         * Executes additional processing for this step.
-         *
-         * @param context                 the operation context
-         * @param operation               the operation being executed
-         * @param logContextConfiguration the logging context configuration
-         * @param name                    the name of the logger
-         * @param model                   the model to update
-         *
-         * @throws OperationFailedException if a processing error occurs
-         */
-        public abstract void performRuntime(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name, ModelNode model) throws OperationFailedException;
-
-        /**
-         * Perform any rollback operations to rollback the changes. Any changes in the {@link LogContextConfiguration
-         * logContextConfiguration} will first be {@link LogContextConfiguration#forget() forgotten} then {@link
-         * LogContextConfiguration#commit() committed} before and after this method is invoked.
-         *
-         * @param context                 the operation context
-         * @param operation               the operation being executed
-         * @param logContextConfiguration the logging context configuration
-         * @param name                    the name of the logger
-         *
-         * @throws OperationFailedException if the rollback fails
-         */
-        public abstract void performRollback(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name) throws OperationFailedException;
 
     }
 
@@ -250,27 +223,13 @@ final class LoggingOperations {
         public final void execute(final OperationContext context, final ModelNode operation, final String name, final LogContextConfiguration logContextConfiguration) throws OperationFailedException {
             final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = resource.getModel();
-            final ModelNode originalModel = model.clone();
             updateModel(operation, model);
             if (context.getProcessType().isServer()) {
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        context.completeStep(new RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                // Forget the original changes
-                                logContextConfiguration.forget();
-                                try {
-                                    performRollback(context, operation, model, logContextConfiguration, name, originalModel);
-                                    // Commit any new changes
-                                    logContextConfiguration.commit();
-                                } catch (OperationFailedException e) {
-                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
-                                }
-                            }
-                        });
+                        context.stepCompleted();
                     }
                 }, Stage.RUNTIME);
             }
@@ -286,35 +245,6 @@ final class LoggingOperations {
          */
         public abstract void updateModel(ModelNode operation, ModelNode model) throws OperationFailedException;
 
-        /**
-         * Executes additional processing for this step.
-         *
-         * @param context                 the operation context
-         * @param operation               the operation being executed
-         * @param logContextConfiguration the logging context configuration
-         * @param name                    the name of the logger
-         * @param model                   the model to update
-         *
-         * @throws OperationFailedException if a processing error occurs
-         */
-        public abstract void performRuntime(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name, ModelNode model) throws OperationFailedException;
-
-        /**
-         * Perform any rollback operations to rollback the changes. Any changes in the {@link LogContextConfiguration
-         * logContextConfiguration} will first be {@link LogContextConfiguration#forget() forgotten} then {@link
-         * LogContextConfiguration#commit() committed} before and after this method is invoked.
-         *
-         * @param context                 the operation context
-         * @param operation               the operation being executed
-         * @param model                   the model current model
-         * @param logContextConfiguration the logging context configuration
-         * @param name                    the name of the logger
-         * @param originalModel           the original model
-         *
-         * @throws OperationFailedException if the rollback fails
-         */
-        public abstract void performRollback(OperationContext context, ModelNode operation, final ModelNode model, LogContextConfiguration logContextConfiguration, String name, ModelNode originalModel) throws OperationFailedException;
-
     }
 
 
@@ -327,7 +257,6 @@ final class LoggingOperations {
         public final void execute(final OperationContext context, final ModelNode operation, final String name, final LogContextConfiguration logContextConfiguration) throws OperationFailedException {
 
             final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-            final ModelNode originalModel = model.clone();
 
             performRemove(context, operation, logContextConfiguration, name, model);
             if (context.getProcessType().isServer()) {
@@ -335,18 +264,7 @@ final class LoggingOperations {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                         performRuntime(context, operation, logContextConfiguration, name, model);
-                        context.completeStep(new RollbackHandler() {
-                            @Override
-                            public void handleRollback(OperationContext context, ModelNode operation) {
-                                logContextConfiguration.forget();
-                                try {
-                                    performRollback(context, operation, logContextConfiguration, name, originalModel);
-                                    logContextConfiguration.commit();
-                                } catch (OperationFailedException e) {
-                                    throw LoggingMessages.MESSAGES.rollbackFailure(e);
-                                }
-                            }
-                        });
+                        context.stepCompleted();
                     }
                 }, Stage.RUNTIME);
             }
@@ -364,34 +282,6 @@ final class LoggingOperations {
          * @throws OperationFailedException if the remove fails
          */
         protected abstract void performRemove(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name, ModelNode model) throws OperationFailedException;
-
-        /**
-         * Executes additional processing for this step.
-         *
-         * @param context                 the operation context
-         * @param operation               the operation being executed
-         * @param logContextConfiguration the logging context configuration
-         * @param name                    the name of the logger
-         * @param model                   the model to update
-         *
-         * @throws OperationFailedException if a processing error occurs
-         */
-        public abstract void performRuntime(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name, ModelNode model) throws OperationFailedException;
-
-        /**
-         * Perform any rollback operations to rollback the changes. Any changes in the {@link LogContextConfiguration
-         * logContextConfiguration} will first be {@link LogContextConfiguration#forget() forgotten} then {@link
-         * LogContextConfiguration#commit() committed} before and after this method is invoked.
-         *
-         * @param context                 the operation context
-         * @param operation               the operation being executed
-         * @param logContextConfiguration the logging context configuration
-         * @param name                    the name of the logger
-         * @param originalModel           the original model
-         *
-         * @throws OperationFailedException if the rollback fails
-         */
-        protected abstract void performRollback(OperationContext context, ModelNode operation, LogContextConfiguration logContextConfiguration, String name, ModelNode originalModel) throws OperationFailedException;
 
     }
 
@@ -422,14 +312,7 @@ final class LoggingOperations {
             final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
             handbackHolder.setHandback(configurationPersistence);
             final boolean restartRequired = applyUpdate(context, attributeName, name, resolvedValue, logContextConfiguration);
-            try {
-                logContextConfiguration.commit();
-            } finally {
-                logContextConfiguration.forget();
-            }
-            // Write the configuration
-            if (!isLoggingProfile)
-                configurationPersistence.writeConfiguration(context);
+            addCommitStep(context, configurationPersistence);
             return restartRequired;
         }
 
@@ -453,11 +336,6 @@ final class LoggingOperations {
             final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
             // First forget the configuration
             logContextConfiguration.forget();
-            final String name = getAddressName(operation);
-            applyUpdate(context, attributeName, name, valueToRestore, logContextConfiguration);
-            // Write the configuration
-            if (!LoggingProfileOperations.isLoggingProfileAddress(getAddress(operation)))
-                configurationPersistence.writeConfiguration(context);
         }
 
         @Override

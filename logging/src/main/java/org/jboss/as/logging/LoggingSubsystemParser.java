@@ -78,6 +78,7 @@ import static org.jboss.as.logging.CommonAttributes.USE_PARENT_HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.VALUE;
 import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -125,6 +126,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         list.add(Util.createAddOperation(address));
 
+        final List<ModelNode> loggerOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> asyncHandlerOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> otherOperations = new ArrayList<ModelNode>();
+
         // Elements
         final Set<String> loggerNames = new HashSet<String>();
         final Set<String> handlerNames = new HashSet<String>();
@@ -138,7 +143,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGGER: {
-                            parseLoggerElement(reader, address, list, loggerNames);
+                            parseLoggerElement(reader, address, loggerOperations, loggerNames);
                             break;
                         }
                         case ROOT_LOGGER: {
@@ -146,33 +151,33 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                                 throw unexpectedElement(reader);
                             }
                             gotRoot = true;
-                            parseRootLoggerElement(reader, address, list);
+                            parseRootLoggerElement(reader, address, loggerOperations);
                             break;
                         }
                         case CONSOLE_HANDLER: {
-                            parseConsoleHandlerElement(reader, address, list, handlerNames);
+                            parseConsoleHandlerElement(reader, address, otherOperations, handlerNames);
                             break;
                         }
                         case FILE_HANDLER: {
-                            parseFileHandlerElement(reader, address, list, handlerNames);
+                            parseFileHandlerElement(reader, address, otherOperations, handlerNames);
                             break;
                         }
                         case CUSTOM_HANDLER: {
                             if (namespace == Namespace.LOGGING_1_0)
                                 throw unexpectedElement(reader);
-                            parseCustomHandlerElement(reader, address, list, handlerNames);
+                            parseCustomHandlerElement(reader, address, otherOperations, handlerNames);
                             break;
                         }
                         case PERIODIC_ROTATING_FILE_HANDLER: {
-                            parsePeriodicRotatingFileHandlerElement(reader, address, list, handlerNames);
+                            parsePeriodicRotatingFileHandlerElement(reader, address, otherOperations, handlerNames);
                             break;
                         }
                         case SIZE_ROTATING_FILE_HANDLER: {
-                            parseSizeRotatingHandlerElement(reader, address, list, handlerNames);
+                            parseSizeRotatingHandlerElement(reader, address, otherOperations, handlerNames);
                             break;
                         }
                         case ASYNC_HANDLER: {
-                            parseAsyncHandlerElement(reader, address, list, handlerNames);
+                            parseAsyncHandlerElement(reader, address, asyncHandlerOperations, handlerNames);
                             break;
                         }
                         case LOGGING_PROFILES:
@@ -192,6 +197,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
+        list.addAll(otherOperations);
+        list.addAll(asyncHandlerOperations);
+        list.addAll(loggerOperations);
     }
 
 
@@ -989,6 +997,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final PathAddress profileAddress = address.append(LOGGING_PROFILE, name);
         list.add(Util.createAddOperation(profileAddress));
 
+        final List<ModelNode> loggerOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> asyncHandlerOperations = new ArrayList<ModelNode>();
+        final List<ModelNode> otherOperations = new ArrayList<ModelNode>();
+
         final Set<String> loggerNames = new HashSet<String>();
         final Set<String> handlerNames = new HashSet<String>();
         boolean gotRoot = false;
@@ -996,7 +1008,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case LOGGER: {
-                    parseLoggerElement(reader, profileAddress, list, loggerNames);
+                    parseLoggerElement(reader, profileAddress, loggerOperations, loggerNames);
                     break;
                 }
                 case ROOT_LOGGER: {
@@ -1004,31 +1016,31 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                         throw unexpectedElement(reader);
                     }
                     gotRoot = true;
-                    parseRootLoggerElement(reader, profileAddress, list);
+                    parseRootLoggerElement(reader, profileAddress, loggerOperations);
                     break;
                 }
                 case CONSOLE_HANDLER: {
-                    parseConsoleHandlerElement(reader, profileAddress, list, handlerNames);
+                    parseConsoleHandlerElement(reader, profileAddress, otherOperations, handlerNames);
                     break;
                 }
                 case FILE_HANDLER: {
-                    parseFileHandlerElement(reader, profileAddress, list, handlerNames);
+                    parseFileHandlerElement(reader, profileAddress, otherOperations, handlerNames);
                     break;
                 }
                 case CUSTOM_HANDLER: {
-                    parseCustomHandlerElement(reader, profileAddress, list, handlerNames);
+                    parseCustomHandlerElement(reader, profileAddress, otherOperations, handlerNames);
                     break;
                 }
                 case PERIODIC_ROTATING_FILE_HANDLER: {
-                    parsePeriodicRotatingFileHandlerElement(reader, profileAddress, list, handlerNames);
+                    parsePeriodicRotatingFileHandlerElement(reader, profileAddress, otherOperations, handlerNames);
                     break;
                 }
                 case SIZE_ROTATING_FILE_HANDLER: {
-                    parseSizeRotatingHandlerElement(reader, profileAddress, list, handlerNames);
+                    parseSizeRotatingHandlerElement(reader, profileAddress, otherOperations, handlerNames);
                     break;
                 }
                 case ASYNC_HANDLER: {
-                    parseAsyncHandlerElement(reader, profileAddress, list, handlerNames);
+                    parseAsyncHandlerElement(reader, profileAddress, asyncHandlerOperations, handlerNames);
                     break;
                 }
                 default: {
@@ -1037,6 +1049,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
             }
         }
+        list.addAll(otherOperations);
+        list.addAll(asyncHandlerOperations);
+        list.addAll(loggerOperations);
     }
 
     private static void parseFilter(final Namespace namespace, final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {

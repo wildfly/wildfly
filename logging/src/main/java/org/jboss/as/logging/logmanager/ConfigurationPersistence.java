@@ -22,8 +22,6 @@
 
 package org.jboss.as.logging.logmanager;
 
-import static org.jboss.as.logging.Logging.createOperationFailure;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -76,7 +74,7 @@ public final class ConfigurationPersistence implements Configurator {
     private static final byte[] NOTE_MESSAGE = String.format("# Note this file has been generated and will be overwritten if a%n" +
             "# logging subsystem has been defined in the XML configuration.%n%n").getBytes();
 
-    private final LogContextConfiguration config;
+    private final LogContextConfigurationImpl config;
 
     public ConfigurationPersistence() {
         this(LogContext.getSystemLogContext());
@@ -135,6 +133,7 @@ public final class ConfigurationPersistence implements Configurator {
      * @return the property configurator or {@code null}
      */
     public static ConfigurationPersistence getConfigurationPersistence(final LogContext logContext) {
+        if (logContext == null) return null;
         return (ConfigurationPersistence) logContext.getAttachment(CommonAttributes.ROOT_LOGGER_NAME, Configurator.ATTACHMENT_KEY);
     }
 
@@ -148,6 +147,28 @@ public final class ConfigurationPersistence implements Configurator {
             safeClose(inputStream);
         }
         configure(properties);
+    }
+
+    /**
+     * Prepare the runtime configuration. Applies the changes to the runtime, but allows the changes to be {@link
+     * #rollback() rolled back} until {@link #commit()} is invoked.
+     */
+    public void prepare() {
+        config.prepare();
+    }
+
+    /**
+     * Commits the runtime changes.
+     */
+    public void commit() {
+        config.commit();
+    }
+
+    /**
+     * Rolls back the runtime changes.
+     */
+    public void rollback() {
+        config.forget();
     }
 
     /**
@@ -169,10 +190,8 @@ public final class ConfigurationPersistence implements Configurator {
      * Write the logging configuration to the {@code logging.properties} file.
      *
      * @param context the context used to determine the file location.
-     *
-     * @throws OperationFailedException if the write fails.
      */
-    public void writeConfiguration(final OperationContext context) throws OperationFailedException {
+    public void writeConfiguration(final OperationContext context) {
         final String loggingConfig;
         switch (context.getProcessType()) {
             case DOMAIN_SERVER: {
@@ -199,7 +218,7 @@ public final class ConfigurationPersistence implements Configurator {
                         out.close();
                         LoggingLogger.ROOT_LOGGER.tracef("Logging configuration file '%s' successfully written.", configFile.getAbsolutePath());
                     } catch (IOException e) {
-                        throw createOperationFailure(e, LoggingMessages.MESSAGES.failedToWriteConfigurationFile(configFile));
+                        throw LoggingMessages.MESSAGES.failedToWriteConfigurationFile(e, configFile);
                     } finally {
                         safeClose(out);
                     }
@@ -583,7 +602,7 @@ public final class ConfigurationPersistence implements Configurator {
     }
 
     private void configureFilter(final Properties properties, final String filterName) throws IOException {
-        if (config.getFilterConfiguration(filterName) == null) {
+        if (config.getFilterConfiguration(filterName) != null) {
             // already configured!
             return;
         }

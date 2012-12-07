@@ -124,39 +124,7 @@ final class HandlerOperations {
             performRuntime(context, configuration, name, model);
         }
 
-        @Override
-        public final void performRollback(final OperationContext context, final ModelNode operation, final ModelNode model, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            final HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(name);
-            if (configuration != null) {
-                if (attributes != null) {
-                    // Remove all properties from the operation, they will be added if there are any previously
-                    if (model.hasDefined(PROPERTIES.getName())) {
-                        for (Property property : PROPERTIES.resolveModelAttribute(context, model).asPropertyList()) {
-                            configuration.removeProperty(property.getName());
-                        }
-                    }
-                    boolean restartRequired = false;
-                    boolean reloadRequired = false;
-                    for (AttributeDefinition attribute : attributes) {
-                        handleProperty(attribute, context, originalModel, logContextConfiguration, configuration);
-                        restartRequired = restartRequired || Logging.requiresRestart(attribute.getFlags());
-                        reloadRequired = reloadRequired || Logging.requiresReload(attribute.getFlags());
-                    }
-                    if (restartRequired) {
-                        context.revertRestartRequired();
-                    } else if (reloadRequired) {
-                        context.revertReloadRequired();
-                    }
-                }
-                performRollback(context, configuration, name, originalModel);
-            }
-        }
-
         public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
-            // No-op by default
-        }
-
-        public void performRollback(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
             // No-op by default
         }
     }
@@ -223,12 +191,6 @@ final class HandlerOperations {
                 if (!skip)
                     handleProperty(attribute, context, model, logContextConfiguration, configuration);
             }
-        }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name) throws OperationFailedException {
-            if (logContextConfiguration != null)
-                logContextConfiguration.removeHandlerConfiguration(name);
         }
 
         protected HandlerConfiguration createHandlerConfiguration(final OperationContext context,
@@ -328,11 +290,6 @@ final class HandlerOperations {
                 logContextConfiguration.removeFormatterConfiguration(name);
             }
         }
-
-        @Override
-        protected void performRollback(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            ADD_HANDLER.performRuntime(context, operation, logContextConfiguration, name, originalModel);
-        }
     };
 
     /**
@@ -356,11 +313,6 @@ final class HandlerOperations {
                 throw createOperationFailure(LoggingMessages.MESSAGES.handlerAlreadyDefined(handlerName));
             }
             configuration.addHandlerName(handlerName);
-        }
-
-        @Override
-        public void performRollback(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            REMOVE_SUBHANDLER.performRollback(context, configuration, name, originalModel);
         }
     };
 
@@ -392,11 +344,6 @@ final class HandlerOperations {
         public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, model).asString());
         }
-
-        @Override
-        public void performRollback(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            ADD_SUBHANDLER.performRollback(context, configuration, name, originalModel);
-        }
     };
 
     /**
@@ -414,11 +361,6 @@ final class HandlerOperations {
         public void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             enableHandler(configuration, name);
         }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final ModelNode model, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            // Nothing to do
-        }
     };
 
     public static LoggingUpdateOperationStepHandler DISABLE_HANDLER = new LoggingUpdateOperationStepHandler() {
@@ -430,11 +372,6 @@ final class HandlerOperations {
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             disableHandler(configuration, name);
-        }
-
-        @Override
-        public void performRollback(final OperationContext context, final ModelNode operation, final ModelNode model, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode originalModel) throws OperationFailedException {
-            // Nothing to do
         }
     };
 
