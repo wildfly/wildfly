@@ -110,8 +110,8 @@ public final class JndiPermission extends Permission
         LIST_BINDINGS("listBindings", 32),
         CREATE_SUBCONTEXT("createSubcontext", 64),
         DESTROY_SUBCONTEXT("destroySubcontext", 128),
-        ADD_NAMING_LISTENER("addNamingListener", 256),        
-        ALL("all", BIND.mask | REBIND.mask | UNBIND.mask | LOOKUP.mask | LIST.mask | LIST_BINDINGS.mask | 
+        ADD_NAMING_LISTENER("addNamingListener", 256),
+        ALL("all", BIND.mask | REBIND.mask | UNBIND.mask | LOOKUP.mask | LIST.mask | LIST_BINDINGS.mask |
             CREATE_SUBCONTEXT.mask | DESTROY_SUBCONTEXT.mask | ADD_NAMING_LISTENER.mask);
 
         private String actionName;
@@ -257,9 +257,9 @@ public final class JndiPermission extends Permission
 
     /**
      * @see #JndiPermission(String, Action...)
-     * 
+     *
      * The default policy file parser ({@code sun.security.provider.PolicyFile}) requires this constructor.
-     * 
+     *
      * @param path the pathname to grant the permission
      * @param actions the comma separated string of actions granted
      */
@@ -267,7 +267,7 @@ public final class JndiPermission extends Permission
         super(path);
         init(getMask(actions));
     }
-    
+
     /**
      * Checks if this JndiPermission object "implies" the specified permission.
      * <p/>

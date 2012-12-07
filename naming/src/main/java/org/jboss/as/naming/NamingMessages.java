@@ -456,7 +456,7 @@ public interface NamingMessages {
      */
     @Message(id = 11873, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
     String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
-    
+
     /**
      * An unexpected checked exception was thrown when doing a lookup on a naming context during a privileged action.
      * @param cause the cause of failure

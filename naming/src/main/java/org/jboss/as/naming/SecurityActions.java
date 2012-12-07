@@ -120,7 +120,7 @@ final class SecurityActions {
             }
         }
     }
-    
+
     static Object lookup(final NamingContext context, final Name name, final boolean dereference) throws NamingException {
         if (System.getSecurityManager() == null) {
             return context.lookup(name, dereference);
@@ -138,7 +138,7 @@ final class SecurityActions {
             }
         }
     }
-    
+
     static Object lookup(final javax.naming.InitialContext context, final String name) throws NamingException {
         if (System.getSecurityManager() == null) {
             return context.lookup(name);
@@ -156,7 +156,7 @@ final class SecurityActions {
             }
         }
     }
-    
+
     static NamingEnumeration<NameClassPair> list(final Context context, final Name name) throws NamingException {
         if (System.getSecurityManager() == null) {
             return context.list(name);
@@ -174,7 +174,7 @@ final class SecurityActions {
             }
         }
     }
-    
+
     static NamingEnumeration<Binding> listBindings(final Context context, final Name name) throws NamingException {
         if (System.getSecurityManager() == null) {
             return context.listBindings(name);
@@ -192,7 +192,7 @@ final class SecurityActions {
             }
         }
     }
-    
+
     private static <T extends Throwable> RuntimeException rethrowTypedOrUnchecked(Class<T> exceptionType, Throwable exception, RuntimeException fallback) throws T {
         if (exceptionType.isInstance(exception)) {
             throw exceptionType.cast(exception);
