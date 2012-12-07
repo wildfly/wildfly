@@ -136,7 +136,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
     public NonPassivatingBackingCacheEntry<K, V> release(K key) {
         NonPassivatingBackingCacheEntry<K, V> entry = cache.get(key);
         if (entry == null) {
-            EjbLogger.ROOT_LOGGER.cacheEntryNotFound(key);
+            log.debug("SFSB instance with session ID " + key + " not available in cache");
             return null;
         }
         if (!entry.isInUse()) {
