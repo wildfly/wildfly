@@ -50,7 +50,6 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
     FilePersistenceResource(final ModelNode model, final File fileName, final AbstractConfigurationPersister persister) throws ConfigurationPersistenceException {
         this.fileName = fileName;
         tempFileName = new File(fileName.getParentFile(), fileName.getName() + ".tmp");
-        tempFileName.deleteOnExit();
         this.persister = persister;
         marshalled = new ExposedByteArrayOutputStream(1024 * 8);
         try {
@@ -111,6 +110,11 @@ public class FilePersistenceResource implements ConfigurationPersister.Persisten
             deleteFile(tempFileName);
         } catch (Exception e) {
             throw MESSAGES.failedToRenameTempFile(e, tempFileName, fileName);
+        } finally {
+            if (tempFileName.exists() && !tempFileName.delete()) {
+                MGMT_OP_LOGGER.cannotDeleteTempFile(tempFileName.getName());
+                tempFileName.deleteOnExit();
+            }
         }
     }
 

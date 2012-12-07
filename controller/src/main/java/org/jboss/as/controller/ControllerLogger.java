@@ -388,4 +388,13 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id = 14626, value = "Operation was interrupted before stability could be reached")
     void interruptedWaitingStability();
+
+    /**
+     * Logs a warnning message indicating a temp file could not be deleted.
+     *
+     * @param name temp filename
+     */
+     @LogMessage(level = Level.WARN)
+     @Message(id = 14628, value = "Cannot delete temp file %s, will be deleted on exit")
+     void cannotDeleteTempFile(String name);
 }

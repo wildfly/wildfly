@@ -55,4 +55,13 @@ public interface ControllerClientLogger extends BasicLogger {
     @Message(id = 10600, value = "Closing leaked controller client")
     void leakedControllerClient(@Cause Throwable allocationStackTrace);
 
+    /**
+     * Logs a warning message indicating a temp file could not be deleted.
+     *
+     * @param name temp filename
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10601, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String name);
+
 }
