@@ -297,7 +297,7 @@ public class NamingContext implements EventContext {
     /** {@inheritDoc} */
     public void rename(final Name oldName, final Name newName) throws NamingException {
         //check for appropriate permissions first so that no other info leaks from this context
-        //in case of insufficient perms (like the fact if it is readonly or not)        
+        //in case of insufficient perms (like the fact if it is readonly or not)
         check(oldName, Action.LOOKUP, Action.UNBIND);
         check(newName, Action.BIND);
 
@@ -341,7 +341,7 @@ public class NamingContext implements EventContext {
     /** {@inheritDoc} */
     public NamingEnumeration<Binding> listBindings(final Name name) throws NamingException {
         check(name, Action.LIST_BINDINGS);
-        
+
         try {
             return namingEnumeration(namingStore.listBindings(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
@@ -365,7 +365,7 @@ public class NamingContext implements EventContext {
     /** {@inheritDoc} */
     public void destroySubcontext(final Name name) throws NamingException {
         check(name, Action.DESTROY_SUBCONTEXT);
-        
+
         if(!(namingStore instanceof WritableNamingStore)) {
             throw MESSAGES.readOnlyNamingContext();
         }
@@ -379,7 +379,7 @@ public class NamingContext implements EventContext {
     /** {@inheritDoc} */
     public Context createSubcontext(Name name) throws NamingException {
         check(name, Action.CREATE_SUBCONTEXT);
-        
+
         if(namingStore instanceof WritableNamingStore) {
             final Name absoluteName = getAbsoluteName(name);
             return getWritableNamingStore().createSubcontext(absoluteName);
@@ -396,7 +396,7 @@ public class NamingContext implements EventContext {
     /** {@inheritDoc} */
     public Object lookupLink(Name name) throws NamingException {
         check(name, Action.LOOKUP);
-        
+
         if (name.isEmpty()) {
             return lookup(name);
         }
@@ -540,10 +540,10 @@ public class NamingContext implements EventContext {
 
     private void check(Name name, Action... actions) throws NamingException {
         Name absoluteName = getAbsoluteName(name);
-        
+
         JndiPermission.check(absoluteName, actions);
     }
-    
+
     Name getPrefix() {
         return prefix;
     }
