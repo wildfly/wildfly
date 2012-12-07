@@ -221,8 +221,10 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
 
         final String moduleName = name.getValue(parsedCmd, true);
 
-        final String resourcePaths = resources.getValue(parsedCmd, true);
-        final String[] resourceArr = resourcePaths.split(PATH_SEPARATOR);
+        // resources required only if we are generating module.xml
+        final String resourcePaths = resources.getValue(parsedCmd, !moduleArg.isPresent(parsedCmd));
+        final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(PATH_SEPARATOR);
+
         File[] resourceFiles = new File[resourceArr.length];
         for(int i = 0; i < resourceArr.length; ++i) {
             final File f = new File(ctx.getCurrentDir(), resourceArr[i]);
