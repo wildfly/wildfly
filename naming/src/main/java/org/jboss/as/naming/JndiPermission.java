@@ -225,7 +225,6 @@ public final class JndiPermission extends Permission
      * @throws IllegalArgumentException If actions is <code>null</code>, empty or contains an action
      *                                  other than the specified possible actions.
      */
-
     public JndiPermission(String path, Action... actions) {
         super(path);
         init(getMask(actions));
@@ -235,6 +234,19 @@ public final class JndiPermission extends Permission
         this(path.toString(), actions);
     }
 
+    /**
+     * @see #JndiPermission(String, Action...)
+     * 
+     * The default policy file parser ({@code sun.security.provider.PolicyFile}) requires this constructor.
+     * 
+     * @param path the pathname to grant the permission
+     * @param actions the comma separated string of actions granted
+     */
+    public JndiPermission(String path, String actions) {
+        super(path);
+        init(getMask(actions));
+    }
+    
     /**
      * Checks if this JndiPermission object "implies" the specified permission.
      * <p/>
@@ -399,7 +411,7 @@ public final class JndiPermission extends Permission
 
         String[] sa = actions.split(",");
         for (String s : sa) {
-            String key = s.toLowerCase(Locale.ENGLISH);
+            String key = s.trim().toLowerCase(Locale.ENGLISH);
             action = Action.forName(key);
             if (action == null) {
                 throw MESSAGES.invalidPermissionAction(s);
