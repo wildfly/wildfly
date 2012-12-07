@@ -143,9 +143,9 @@ final class HandlerOperations {
                         reloadRequired = reloadRequired || Logging.requiresReload(attribute.getFlags());
                     }
                     if (restartRequired) {
-                        context.restartRequired();
+                        context.revertRestartRequired();
                     } else if (reloadRequired) {
-                        context.reloadRequired();
+                        context.revertReloadRequired();
                     }
                 }
                 performRollback(context, configuration, name, originalModel);
