@@ -36,7 +36,6 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -52,7 +51,6 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         return readResource("/logging.xml");
     }
 
-    @Ignore("Write of logging configuration is broken")
     @Test
     public void testConfiguration() throws Exception {
         final KernelServices kernelServices = boot();
