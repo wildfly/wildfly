@@ -47,7 +47,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REGULAR_EXPRESSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -577,11 +576,8 @@ public final class ManagedServerOperationsFactory {
                         for (Property content : deploymentsNode.get(DEPLOYMENT).asPropertyList()) {
                             final String deploymentName = content.getName();
                             final ModelNode deploymentDetails = content.getValue();
-                            boolean regEx = deploymentDetails.hasDefined(REGULAR_EXPRESSION) ? deploymentDetails.require(REGULAR_EXPRESSION).asBoolean() : false;
-
                             addr = PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT_OVERLAY, name), PathElement.pathElement(DEPLOYMENT, deploymentName));
                             addOp = Util.getEmptyOperation(ADD, addr.toModelNode());
-                            addOp.get(REGULAR_EXPRESSION).set(regEx);
                             updates.add(addOp);
                         }
                         }

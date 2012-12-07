@@ -53,17 +53,13 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
     private final String deployment;
     private final DeploymentOverlayPriority priority;
     private final Pattern pattern;
-    private final boolean regex;
+    private final boolean wildcard;
 
-    public DeploymentOverlayLinkService(final String deployment, final boolean regex, final DeploymentOverlayPriority priority) {
+    public DeploymentOverlayLinkService(final String deployment, final DeploymentOverlayPriority priority) {
         this.deployment = deployment;
         this.priority = priority;
-        this.regex = regex;
-        if (regex) {
-            this.pattern = Pattern.compile(wildcardToJavaRegexp(deployment));
-        } else {
-            this.pattern = null;
-        }
+        this.pattern = Pattern.compile(wildcardToJavaRegexp(deployment));
+        wildcard = deployment.contains("*") || deployment.contains("?");
     }
 
     @Override
@@ -101,7 +97,7 @@ public class DeploymentOverlayLinkService implements Service<DeploymentOverlayLi
         return pattern;
     }
 
-    public boolean isRegex() {
-        return regex;
+    public boolean isWildcard() {
+        return wildcard;
     }
 }

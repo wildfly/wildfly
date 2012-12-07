@@ -51,8 +51,7 @@ public class DeploymentOverlayDeploymentRemove extends AbstractRemoveStepHandler
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
         final String deploymentOverlay = address.getElement(address.size() - 2).getValue();
-        final Boolean regularExpression = DeploymentOverlayDeploymentDefinition.REGULAR_EXPRESSION.resolveModelAttribute(context, model).asBoolean();
-        DeploymentOverlayDeploymentAdd.installServices(context, null, null, name, deploymentOverlay, regularExpression, priority);
+        DeploymentOverlayDeploymentAdd.installServices(context, null, null, name, deploymentOverlay, priority);
     }
 
     @Override

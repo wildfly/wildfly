@@ -23,16 +23,11 @@
 package org.jboss.as.server.deploymentoverlay;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Links a deployment overlay to a deployment
@@ -40,15 +35,7 @@ import org.jboss.dmr.ModelType;
  */
 public class DeploymentOverlayDeploymentDefinition extends SimpleResourceDefinition {
 
-    static final SimpleAttributeDefinition REGULAR_EXPRESSION =
-            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REGULAR_EXPRESSION, ModelType.BOOLEAN, false)
-                    .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-
-
-    private static final AttributeDefinition[] ATTRIBUTES = { REGULAR_EXPRESSION };
+    private static final AttributeDefinition[] ATTRIBUTES = {  };
 
     public static AttributeDefinition[] attributes() {
         return ATTRIBUTES.clone();
