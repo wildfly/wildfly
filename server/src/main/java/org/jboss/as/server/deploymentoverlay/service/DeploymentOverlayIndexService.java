@@ -72,7 +72,7 @@ public class DeploymentOverlayIndexService implements Service<DeploymentOverlayI
 
         final List<DeploymentOverlayLinkService> matched = new ArrayList<DeploymentOverlayLinkService>();
         for (final DeploymentOverlayLinkService service : services) {
-            if (service.isRegex()) {
+            if (service.isWildcard()) {
                 if (service.getPattern().matcher(deploymentName).matches()) {
                     matched.add(service);
                 }
@@ -87,9 +87,9 @@ public class DeploymentOverlayIndexService implements Service<DeploymentOverlayI
                 if (res != 0) {
                     return res;
                 }
-                if (o2.isRegex() && !o1.isRegex()) {
+                if (o2.isWildcard() && !o1.isWildcard()) {
                     return -1;
-                } else if (o1.isRegex() && !o2.isRegex()) {
+                } else if (o1.isWildcard() && !o2.isWildcard()) {
                     return 1;
                 }
                 return 0;

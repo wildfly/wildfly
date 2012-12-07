@@ -45,7 +45,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REGULAR_EXPRESSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
@@ -1060,8 +1059,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-
-    protected void parseDeploymentOverlays(final XMLExtendedStreamReader reader, final Namespace namespace, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseDeploymentOverlays(final XMLExtendedStreamReader reader, final Namespace namespace, final ModelNode baseAddress, final List<ModelNode> list, final boolean allowContent, final boolean allowDeployment) throws XMLStreamException {
         requireNoAttributes(reader);
 
         while (reader.nextTag() != END_ELEMENT) {
@@ -1070,7 +1068,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             switch (element) {
                 case DEPLOYMENT_OVERLAY:
-                    parseDeploymentOverlay(reader, baseAddress, list);
+                    parseDeploymentOverlay(reader, baseAddress, list, allowContent, allowDeployment);
                     break;
                 default:
                     throw unexpectedElement(reader);
@@ -1078,7 +1076,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
     }
 
-    protected void parseDeploymentOverlay(final XMLExtendedStreamReader reader, final ModelNode baseAddress, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseDeploymentOverlay(final XMLExtendedStreamReader reader, final ModelNode baseAddress, final List<ModelNode> list, final boolean allowContent, final boolean allowDeployment) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
@@ -1112,16 +1110,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         while (reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-
-            switch (element) {
-                case CONTENT:
-                    parseContentOverride(name, reader, baseAddress, list);
-                    break;
-                case DEPLOYMENT:
-                    parseDeploymentOverlayDeployment(name, reader, baseAddress, list);
-                    break;
-                default:
-                    throw unexpectedElement(reader);
+            if(element == Element.CONTENT && allowContent) {
+                parseContentOverride(name, reader, baseAddress, list);
+            } else if(element == Element.DEPLOYMENT && allowDeployment) {
+                parseDeploymentOverlayDeployment(name, reader, baseAddress, list);
+            } else {
+                throw unexpectedElement(reader);
             }
         }
     }
@@ -1174,7 +1168,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String depName = null;
-        boolean regEx = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -1184,10 +1177,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             switch (attribute) {
                 case NAME: {
                     depName = value;
-                    break;
-                }
-                case REGULAR_EXPRESSION: {
-                    regEx = Boolean.parseBoolean(value);
                     break;
                 }
                 default:
@@ -1208,7 +1197,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         final ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(address);
-        op.get(REGULAR_EXPRESSION).set(regEx);
         list.add(op);
 
     }
@@ -1645,12 +1633,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     if (deploymentNames.size() > 0) {
                         for (String deploymentName : deploymentNames) {
                             final ModelNode depNode = deployments.get(deploymentName);
-                            final boolean regEx = depNode.hasDefined(REGULAR_EXPRESSION) ? depNode.get(REGULAR_EXPRESSION).asBoolean() : false;
                             writer.writeStartElement(Element.DEPLOYMENT.getLocalName());
                             writeAttribute(writer, Attribute.NAME, deploymentName);
-                            if (regEx) {
-                                writeAttribute(writer, Attribute.REGULAR_EXPRESSION, "true");
-                            }
                             writer.writeEndElement();
                         }
                     }

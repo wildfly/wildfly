@@ -48,7 +48,7 @@
                 <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="domain-deploymentsType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="deployment-overlays" type="deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="deployment-overlays" type="domain-deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="server-groups" type="server-groupsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="management-client-content" type="management-client-contentType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
@@ -123,7 +123,7 @@
                 <xs:element name="interfaces" type="specified-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-group" type="standalone-socket-binding-groupType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="deployments" type="server-deploymentsType" minOccurs="0" maxOccurs="1"/>
-                <xs:element name="deployment-overlays" type="deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="deployment-overlays" type="standalone-deployment-overlaysType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="optional">
                 <xs:annotation>
@@ -232,10 +232,10 @@
         <xs:attribute name="security-realm" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                    A reference to a security realm to obtain an initialised SSLContext to use when establishing a 
+                    A reference to a security realm to obtain an initialised SSLContext to use when establishing a
                     connection to the LDAP server.
-                    
-                    The realm referenced here MUST NOT be a realm that is also configured to use this connection.                
+
+                    The realm referenced here MUST NOT be a realm that is also configured to use this connection.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -2307,7 +2307,7 @@
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="deployment-overlaysType">
+    <xs:complexType name="standalone-deployment-overlaysType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
@@ -2316,11 +2316,11 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="deployment-overlay" type="deployment-overlayType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="deployment-overlay" type="standalone-deployment-overlayType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
-    <xs:complexType name="deployment-overlayType">
+    <xs:complexType name="standalone-deployment-overlayType">
         <xs:sequence>
             <xs:element name="content" type="deployment-overlay-contentType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="deployment" type="deployment-overlay-deploymentType" minOccurs="0" maxOccurs="unbounded"/>
@@ -2328,18 +2328,26 @@
         <xs:attribute name="name" use="required" type="xs:token"/>
     </xs:complexType>
 
-    <xs:complexType name="deployment-overlay-contentType">
-        <xs:attribute name="path" type="xs:token" use="required"/>
-        <xs:attribute name="content" type="xs:token" use="required"/>
+    <xs:complexType name="domain-deployment-overlaysType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Stores information about deployment overlays that can be used to override deployment content.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="deployment-overlay" type="domain-deployment-overlayType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
     </xs:complexType>
 
-
-    <xs:complexType name="deployment-overlay-deploymentType">
-        <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="regular-expression" type="xs:boolean" use="optional"/>
+    <xs:complexType name="domain-deployment-overlayType">
+        <xs:sequence>
+            <xs:element name="content" type="deployment-overlay-contentType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:token"/>
     </xs:complexType>
-
-
+        
     <xs:complexType name="server-group-deployment-overlaysType">
         <xs:annotation>
             <xs:documentation>
@@ -2359,5 +2367,15 @@
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:token"/>
     </xs:complexType>
+
+    <xs:complexType name="deployment-overlay-contentType">
+        <xs:attribute name="path" type="xs:token" use="required"/>
+        <xs:attribute name="content" type="xs:token" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="deployment-overlay-deploymentType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
 
 </xs:schema>
