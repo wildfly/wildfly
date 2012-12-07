@@ -425,7 +425,7 @@ public class DomainXml extends CommonXml {
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.DEPLOYMENT_OVERLAYS) {
-            parseDeploymentOverlays(reader, expectedNs, new ModelNode(), list);
+            parseDeploymentOverlays(reader, expectedNs, new ModelNode(), list, true, false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -763,7 +763,7 @@ public class DomainXml extends CommonXml {
                         break;
                     }
                     case DEPLOYMENT_OVERLAYS: {
-                        parseDeploymentOverlays(reader, expectedNs, groupAddress, list);
+                        parseDeploymentOverlays(reader, expectedNs, groupAddress, list, false, true);
                         break;
                     }
                     case SYSTEM_PROPERTIES: {

@@ -468,7 +468,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
         if (element == Element.DEPLOYMENT_OVERLAYS) {
-            parseDeploymentOverlays(reader, namespace, new ModelNode(), list);
+            parseDeploymentOverlays(reader, namespace, new ModelNode(), list, true, true);
             element = nextElement(reader, namespace);
         }
         if (element != null) {
