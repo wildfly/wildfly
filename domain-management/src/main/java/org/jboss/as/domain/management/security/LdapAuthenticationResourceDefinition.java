@@ -73,6 +73,12 @@ public class LdapAuthenticationResourceDefinition extends SimpleResourceDefiniti
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition ALLOW_EMPTY_PASSWORDS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ALLOW_EMPTY_PASSWORDS, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
     public static final SimpleAttributeDefinition USERNAME_FILTER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelType.STRING, false)
             .setXmlName("attribute")
             .setAlternatives(ModelDescriptionConstants.ADVANCED_FILTER)
@@ -91,7 +97,7 @@ public class LdapAuthenticationResourceDefinition extends SimpleResourceDefiniti
             .build();
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        CONNECTION, BASE_DN, RECURSIVE, USER_DN, USERNAME_FILTER, ADVANCED_FILTER
+        CONNECTION, BASE_DN, RECURSIVE, USER_DN, ALLOW_EMPTY_PASSWORDS, USERNAME_FILTER, ADVANCED_FILTER
     };
 
     public LdapAuthenticationResourceDefinition() {

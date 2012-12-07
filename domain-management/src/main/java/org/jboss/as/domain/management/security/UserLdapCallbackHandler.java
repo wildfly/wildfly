@@ -74,9 +74,10 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
     private final String advancedFilter;
     private final boolean recursive;
     private final String userDn;
+    private final boolean allowEmptyPassword;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    public UserLdapCallbackHandler(String baseDn, String userNameAttribute, String advancedFilter, boolean recursive, String userDn) {
+    public UserLdapCallbackHandler(String baseDn, String userNameAttribute, String advancedFilter, boolean recursive, String userDn, boolean allowEmptyPassword) {
         this.baseDn = baseDn;
         if (userNameAttribute == null && advancedFilter == null) {
             throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
@@ -85,6 +86,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         this.advancedFilter = advancedFilter;
         this.recursive = recursive;
         this.userDn = userDn;
+        this.allowEmptyPassword = allowEmptyPassword;
     }
 
     /*
@@ -171,6 +173,10 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         if (verifyPasswordCallback == null) {
             throw MESSAGES.noPassword();
         }
+        String password = verifyPasswordCallback.getPassword();
+        if (password == null || (allowEmptyPassword == false && password.length() == 0)) {
+            throw MESSAGES.noPassword();
+        }
 
         InitialDirContext searchContext = null;
         InitialDirContext userContext = null;
@@ -214,7 +220,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             }
 
             // 3 - Connect as user once their DN is identified
-            userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, verifyPasswordCallback.getPassword());
+            userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, password);
             if (userContext != null) {
                 verifyPasswordCallback.setVerified(true);
             }

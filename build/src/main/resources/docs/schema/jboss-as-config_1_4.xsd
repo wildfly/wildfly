@@ -597,6 +597,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="allow-empty-passwords" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Should users be allowed to supply an empty password?  Some LDAP servers will
+                    allow an anonymous bind so an empty password could appear as a successful authentication
+                    even though no password was sent to verify.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 

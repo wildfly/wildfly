@@ -40,6 +40,7 @@ public enum Attribute {
 
     // domain attributes in alpha order
     ALIAS("alias"),
+    ALLOW_EMPTY_PASSWORDS("allow-empty-passwords"),
     ALLOWED_USERS("allowed-users"),
     ATTRIBUTE("attribute"),
     AUTO_START("auto-start"),
