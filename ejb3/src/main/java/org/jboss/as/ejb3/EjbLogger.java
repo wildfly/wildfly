@@ -800,6 +800,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14259, value = "BMT stateful bean '%s' did not complete user transaction properly status=%s")
     void transactionNotComplete(String componentName, String status);
 
+    @LogMessage (level = ERROR)
+    @Message(id = 14260, value = "Cannot delete cache %s %s, will be deleted on exit")
+    void cannotDeleteCacheFile(String fileType, String fileName);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
