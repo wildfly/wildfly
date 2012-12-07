@@ -22,8 +22,19 @@
 
 package org.jboss.as.naming;
 
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
+import javax.naming.Binding;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NameClassPair;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 
 final class SecurityActions {
 
@@ -92,4 +103,105 @@ final class SecurityActions {
         }
     }
 
+    static Object lookup(final Context context, final Name name) throws NamingException {
+        if (System.getSecurityManager() == null) {
+            return context.lookup(name);
+        } else {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                    @Override
+                    public Object run() throws Exception {
+                        return context.lookup(name);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable cause = e.getCause();
+                throw rethrowTypedOrUnchecked(NamingException.class, cause, MESSAGES.unexpectedExceptionDuringPrivilegedLookup(cause));
+            }
+        }
+    }
+    
+    static Object lookup(final NamingContext context, final Name name, final boolean dereference) throws NamingException {
+        if (System.getSecurityManager() == null) {
+            return context.lookup(name, dereference);
+        } else {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                    @Override
+                    public Object run() throws Exception {
+                        return context.lookup(name, dereference);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable cause = e.getCause();
+                throw rethrowTypedOrUnchecked(NamingException.class, cause, MESSAGES.unexpectedExceptionDuringPrivilegedLookup(cause));
+            }
+        }
+    }
+    
+    static Object lookup(final javax.naming.InitialContext context, final String name) throws NamingException {
+        if (System.getSecurityManager() == null) {
+            return context.lookup(name);
+        } else {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                    @Override
+                    public Object run() throws Exception {
+                        return context.lookup(name);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable cause = e.getCause();
+                throw rethrowTypedOrUnchecked(NamingException.class, cause, MESSAGES.unexpectedExceptionDuringPrivilegedLookup(cause));
+            }
+        }
+    }
+    
+    static NamingEnumeration<NameClassPair> list(final Context context, final Name name) throws NamingException {
+        if (System.getSecurityManager() == null) {
+            return context.list(name);
+        } else {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<NamingEnumeration<NameClassPair>>() {
+                    @Override
+                    public NamingEnumeration<NameClassPair> run() throws Exception {
+                        return context.list(name);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable cause = e.getCause();
+                throw rethrowTypedOrUnchecked(NamingException.class, cause, MESSAGES.unexpectedExceptionDuringPrivilegedList(cause));
+            }
+        }
+    }
+    
+    static NamingEnumeration<Binding> listBindings(final Context context, final Name name) throws NamingException {
+        if (System.getSecurityManager() == null) {
+            return context.listBindings(name);
+        } else {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<NamingEnumeration<Binding>>() {
+                    @Override
+                    public NamingEnumeration<Binding> run() throws Exception {
+                        return context.listBindings(name);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable cause = e.getCause();
+                throw rethrowTypedOrUnchecked(NamingException.class, cause, MESSAGES.unexpectedExceptionDuringPrivilegedListBindings(cause));
+            }
+        }
+    }
+    
+    private static <T extends Throwable> RuntimeException rethrowTypedOrUnchecked(Class<T> exceptionType, Throwable exception, RuntimeException fallback) throws T {
+        if (exceptionType.isInstance(exception)) {
+            throw exceptionType.cast(exception);
+        } else if (exception instanceof RuntimeException) {
+            throw (RuntimeException) exception;
+        } else if (exception instanceof Error) {
+            throw (Error) exception;
+        } else {
+            throw fallback;
+        }
+    }
 }
