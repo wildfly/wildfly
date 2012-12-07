@@ -44,15 +44,18 @@ import org.jboss.as.ejb3.component.entity.interceptors.InternalInvocationMarker;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.logging.Logger;
 
 /**
  * @author John Bailey
  */
 public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance {
+    private final Logger log;
     private final Interceptor relationshipInterceptor;
 
     CmpEntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final Interceptor relationshipInterceptor) {
         super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+        log = Logger.getLogger(CmpEntityBeanComponentInstance.class.getName() + "." + component.getComponentName());
         this.relationshipInterceptor = relationshipInterceptor;
     }
 
@@ -127,6 +130,27 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
             throw new WrappedRemoteException(e);
         } catch (Exception e) {
             throw new EJBException(e);
+        }
+    }
+
+    /*
+     * Overwrite to check whether the CMP configuration flag 'call-ejb-store-on-clean' is false and suppress invocation if the
+     * entity is not modified.
+     */
+    @Override
+    protected void invokeEjbStore() throws Exception {
+        // if call-ejb-store-for-clean=true then invoke ejbStore first (the last chance to modify the instance)
+        final CmpEntityBeanComponent component = getComponent();
+        if (component.getStoreManager().getCmpConfig().isCallEjbStoreOnClean()) {
+            log.trace("invoke ejbStore on clean component");
+            super.invokeEjbStore();
+        } else {
+            // else check whether the instance is dirty and invoke ejbStore only
+            // if it is really dirty
+            if (component.getStoreManager().isStoreRequired(getEjbContext())) {
+                log.trace("invoke ejbStore on dirty component");
+                super.invokeEjbStore();
+            }
         }
     }
 

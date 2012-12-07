@@ -22,6 +22,11 @@
 
 package org.jboss.as.cmp.processors;
 
+import java.io.InputStream;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.metadata.JDBCApplicationMetaData;
 import org.jboss.as.cmp.jdbc.metadata.parser.JDBCMetaDataParser;
@@ -35,10 +40,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import java.io.InputStream;
 
 /**
  * @author John Bailey
@@ -81,7 +82,6 @@ public class CmpParsingProcessor implements DeploymentUnitProcessor {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT).getRoot();
         // Locate the descriptor
         final VirtualFile descriptor = deploymentRoot.getChild("META-INF/jbosscmp-jdbc.xml");
-        JDBCApplicationMetaData deploymentJdbcApplicationMetaData = null;
         if (descriptor != null && descriptor.exists()) {
             try {
                 inputStream = descriptor.openStream();

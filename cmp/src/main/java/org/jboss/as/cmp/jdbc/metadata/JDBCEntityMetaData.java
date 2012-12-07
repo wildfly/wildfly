@@ -21,8 +21,6 @@
  */
 package org.jboss.as.cmp.jdbc.metadata;
 
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.cmp.CmpConfig;
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedCmpField;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedEntity;
@@ -38,6 +37,8 @@ import org.jboss.as.cmp.jdbc.metadata.parser.ParsedQuery;
 import org.jboss.metadata.ejb.spec.CMPFieldMetaData;
 import org.jboss.metadata.ejb.spec.EntityBeanMetaData;
 import org.jboss.metadata.ejb.spec.QueryMetaData;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * This immutable class contains information about an entity
@@ -247,6 +248,8 @@ public final class JDBCEntityMetaData {
      */
     private final boolean throwRuntimeExceptions;
 
+    private final CmpConfig cmpConfig;
+
 
     public JDBCEntityMetaData(final JDBCApplicationMetaData jdbcApplication) {
         this.jdbcApplication = jdbcApplication;
@@ -281,6 +284,7 @@ public final class JDBCEntityMetaData {
         cleanReadAheadOnLoad = false;
         optimisticLocking = null;
         audit = null;
+        cmpConfig = new CmpConfig();
 
     }
 
@@ -408,6 +412,7 @@ public final class JDBCEntityMetaData {
         entityCommand = null;
         optimisticLocking = null;
         audit = null;
+        cmpConfig = new CmpConfig();
     }
 
     public JDBCEntityMetaData(JDBCApplicationMetaData jdbcApplication, JDBCEntityMetaData defaultValues) {
@@ -457,6 +462,7 @@ public final class JDBCEntityMetaData {
         for (JDBCQueryMetaData query : defaultValues.queries.values()) {
             queries.put(query.getMethod(), queryFactory.createJDBCQueryMetaData(query, readAhead, qlCompiler));
         }
+        cmpConfig = new CmpConfig();
     }
 
     public JDBCEntityMetaData(JDBCApplicationMetaData jdbcApplication, ParsedEntity parsed, JDBCEntityMetaData defaultValues) {
@@ -734,6 +740,8 @@ public final class JDBCEntityMetaData {
         } else {
             entityCommand = defaultValues.getEntityCommand();
         }
+
+        cmpConfig = parsed.getCmpConfig();
     }
 
     /**
@@ -1128,6 +1136,10 @@ public final class JDBCEntityMetaData {
 
     public boolean isCleanReadAheadOnLoad() {
         return cleanReadAheadOnLoad;
+    }
+
+    public CmpConfig getCmpConfig() {
+        return cmpConfig;
     }
 
     /**

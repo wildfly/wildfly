@@ -23,6 +23,7 @@
 package org.jboss.as.cmp.jdbc.metadata.parser;
 
 import java.util.List;
+
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCTypeMappingMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCUserTypeMappingMetaData;

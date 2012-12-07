@@ -22,8 +22,6 @@
 
 package org.jboss.as.cmp.jdbc.metadata.parser;
 
-import static org.jboss.as.cmp.CmpMessages.MESSAGES;
-
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +32,7 @@ import java.util.Map;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.cmp.CmpConfig;
 import org.jboss.as.cmp.jdbc.SQLUtil;
 import org.jboss.as.cmp.jdbc.metadata.JDBCApplicationMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCCMPFieldPropertyMetaData;
@@ -49,6 +48,8 @@ import org.jboss.as.cmp.jdbc.metadata.JDBCUserTypeMappingMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCValueClassMetaData;
 import org.jboss.as.cmp.jdbc.metadata.JDBCValuePropertyMetaData;
 import org.jboss.metadata.parser.util.MetaDataElementParser;
+
+import static org.jboss.as.cmp.CmpMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -101,6 +102,33 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
         }
 
         return new JDBCApplicationMetaData(application, defaults);
+    }
+
+    private static CmpConfig parseContainerConfiguration(final XMLStreamReader reader, final CmpConfig defaults) throws XMLStreamException {
+        final CmpConfig config = new CmpConfig();
+        config.setCallEjbStoreOnClean(defaults.isCallEjbStoreOnClean());
+        config.setSyncOnCommitOnly(defaults.isSyncOnCommitOnly());
+        config.setInsertAfterEjbPostCreate(defaults.isInsertAfterEjbPostCreate());
+        for (Element element : children(reader)) {
+            switch (element) {
+                case SYNC_ON_COMMIT_ONLY: {
+                    config.setSyncOnCommitOnly(Boolean.parseBoolean(reader.getElementText()));
+                    break;
+                }
+                case INSERT_AFTER_EJB_POST_CREATE: {
+                    config.setInsertAfterEjbPostCreate(Boolean.parseBoolean(reader.getElementText()));
+                    break;
+                }
+                case CALL_EJB_STORE_ON_CLEAN: {
+                    config.setCallEjbStoreOnClean(Boolean.parseBoolean(reader.getElementText()));
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        return config;
     }
 
     private static List<JDBCTypeMappingMetaData> parseTypeMappings(final XMLStreamReader reader) throws XMLStreamException {
@@ -847,6 +875,18 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                 }
                 case THROW_RUNTIME_EX: {
                     metaData.throwRuntimeExceptions = Boolean.valueOf(getElementText(reader));
+                    break;
+                }
+                case SYNC_ON_COMMIT_ONLY: {
+                    metaData.getCmpConfig().setSyncOnCommitOnly(Boolean.parseBoolean(reader.getElementText()));
+                    break;
+                }
+                case INSERT_AFTER_EJB_POST_CREATE: {
+                    metaData.getCmpConfig().setInsertAfterEjbPostCreate(Boolean.parseBoolean(reader.getElementText()));
+                    break;
+                }
+                case CALL_EJB_STORE_ON_CLEAN: {
+                    metaData.getCmpConfig().setCallEjbStoreOnClean(Boolean.parseBoolean(reader.getElementText()));
                     break;
                 }
                 default: {

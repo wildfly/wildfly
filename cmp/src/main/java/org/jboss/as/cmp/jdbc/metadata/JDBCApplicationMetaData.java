@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.jboss.as.cmp.CmpMessages;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedApplication;
 import org.jboss.as.cmp.jdbc.metadata.parser.ParsedEntity;
@@ -478,4 +479,5 @@ public final class JDBCApplicationMetaData {
     public void setDefaultEntity(JDBCEntityMetaData defaultEntity) {
         this.defaultEntity = defaultEntity;
     }
+
 }

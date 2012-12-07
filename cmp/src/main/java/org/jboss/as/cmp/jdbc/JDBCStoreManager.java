@@ -143,10 +143,10 @@ public final class JDBCStoreManager implements JDBCEntityPersistenceStore {
      */
     private TransactionLocal cascadeDeleteSet;
 
-    public JDBCStoreManager(final DeploymentUnit deploymentUnit, final JDBCEntityMetaData metaData, final CmpConfig cmpConfig, final Catalog catalog) {
+    public JDBCStoreManager(final DeploymentUnit deploymentUnit, final JDBCEntityMetaData metaData, final Catalog catalog) {
         this.deploymentUnit = deploymentUnit;
         this.metaData = metaData;
-        this.cmpConfig = cmpConfig;
+        this.cmpConfig = metaData.getCmpConfig();
         this.catalog = catalog;
     }
 

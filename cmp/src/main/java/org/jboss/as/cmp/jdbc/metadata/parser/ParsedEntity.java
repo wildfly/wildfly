@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.cmp.CmpConfig;
 import org.jboss.as.cmp.jdbc.metadata.JDBCEntityCommandMetaData;
 
 /**
@@ -62,6 +63,7 @@ public class ParsedEntity {
     final List<ParsedCmpField> cmpFields = new ArrayList<ParsedCmpField>();
     final List<String> lazyLoadGroups = new ArrayList<String>();
     String preferredMappingStyle;
+    CmpConfig cmpConfig = new CmpConfig();
 
     public String getDataSourceName() {
         return dataSourceName;
@@ -177,5 +179,9 @@ public class ParsedEntity {
 
     public String getPreferredMappingStyle() {
         return preferredMappingStyle;
+    }
+
+    public CmpConfig getCmpConfig() {
+        return cmpConfig;
     }
 }

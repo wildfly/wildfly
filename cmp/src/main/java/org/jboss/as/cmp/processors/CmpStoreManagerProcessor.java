@@ -24,7 +24,7 @@ package org.jboss.as.cmp.processors;
 
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
-import org.jboss.as.cmp.CmpConfig;
+
 import org.jboss.as.cmp.TransactionEntityMap;
 import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentCreateService;
@@ -106,7 +106,7 @@ public class CmpStoreManagerProcessor implements DeploymentUnitProcessor {
 
                         final JDBCEntityMetaData entityMetaData = componentDescription.getEntityMetaData();
 
-                        final JDBCStoreManager storeManager = new JDBCStoreManager(context.getDeploymentUnit(), entityMetaData, new CmpConfig(), catalog);
+                        final JDBCStoreManager storeManager = new JDBCStoreManager(context.getDeploymentUnit(), entityMetaData, catalog);
 
                         // Phase 1: Init the store
                         final JdbcStoreManagerInitService initService = new JdbcStoreManagerInitService(storeManager);
