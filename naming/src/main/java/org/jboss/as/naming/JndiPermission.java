@@ -432,8 +432,9 @@ public final class JndiPermission extends Permission
         StringBuilder sb = new StringBuilder();
         boolean insertComma = false;
         final Action[] allActions = Action.values();
-        for (int n = 0; n < allActions.length; n++) {
-            int action = 1 << n;
+        //none is an illegal value, so we're skipping it
+        for (int n = 1; n < allActions.length; n++) {
+            int action = 1 << (n - 1);
             if ((mask & action) == action) {
                 if (insertComma)
                     sb.append(',');
