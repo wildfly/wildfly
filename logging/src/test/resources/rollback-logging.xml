@@ -48,4 +48,29 @@
             <handler name="FILE"/>
         </handlers>
     </root-logger>
+
+    <logging-profiles>
+        <logging-profile name="test-profile">
+
+            <console-handler name="CONSOLE">
+                <level name="ALL"/>
+                <filter-spec value="levelRange(TRACE,WARN)"/>
+                <formatter>
+                    <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+                </formatter>
+            </console-handler>
+
+            <logger category="org.jboss.as.logging">
+                <level name="TRACE"/>
+                <filter-spec value="levelRange[TRACE,WARN)"/>
+            </logger>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                </handlers>
+            </root-logger>
+        </logging-profile>
+    </logging-profiles>
 </subsystem>

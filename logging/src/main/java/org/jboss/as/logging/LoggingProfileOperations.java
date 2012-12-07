@@ -25,6 +25,9 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.OperationContext.ResultHandler;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -56,45 +59,56 @@ public class LoggingProfileOperations {
             final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
             // Get the logging profile
             final String loggingProfile = getLoggingProfileName(address);
-            final LogContext logContext = LoggingProfileContextSelector.getInstance().remove(loggingProfile);
+            final LoggingProfileContextSelector contextSelector = LoggingProfileContextSelector.getInstance();
+            final LogContext logContext = contextSelector.get(loggingProfile);
             if (logContext != null) {
-                final ConfigurationPersistence configuration = ConfigurationPersistence.getConfigurationPersistence(logContext);
-                if (configuration != null) {
-                    final LogContextConfiguration logContextConfiguration = configuration.getLogContextConfiguration();
-                    try {
-                        // Remove all loggers
-                        for (String loggerName : logContextConfiguration.getLoggerNames()) {
-                            logContextConfiguration.removeLoggerConfiguration(loggerName);
+                context.addStep(new OperationStepHandler() {
+                    @Override
+                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                        final ConfigurationPersistence configuration = ConfigurationPersistence.getConfigurationPersistence(logContext);
+                        if (configuration != null) {
+                            final LogContextConfiguration logContextConfiguration = configuration.getLogContextConfiguration();
+                            // Remove all loggers
+                            for (String loggerName : logContextConfiguration.getLoggerNames()) {
+                                logContextConfiguration.removeLoggerConfiguration(loggerName);
+                            }
+                            // Remove all the handlers
+                            for (String handlerName : logContextConfiguration.getHandlerNames()) {
+                                logContextConfiguration.removeHandlerConfiguration(handlerName);
+                            }
+                            // Remove all the filters
+                            for (String filterName : logContextConfiguration.getFilterNames()) {
+                                logContextConfiguration.removeFilterConfiguration(filterName);
+                            }
+                            // Remove all the formatters
+                            for (String formatterName : logContextConfiguration.getFormatterNames()) {
+                                logContextConfiguration.removeFormatterConfiguration(formatterName);
+                            }
+                            // Remove all the error managers
+                            for (String errorManager : logContextConfiguration.getErrorManagerNames()) {
+                                logContextConfiguration.removeErrorManagerConfiguration(errorManager);
+                            }
+                            // Add a commit step
+                            LoggingOperations.addCommitStep(context, configuration);
+                            context.reloadRequired();
                         }
-                        // Remove all the handlers
-                        for (String handlerName : logContextConfiguration.getHandlerNames()) {
-                            logContextConfiguration.removeHandlerConfiguration(handlerName);
-                        }
-                        // Remove all the filters
-                        for (String filterName : logContextConfiguration.getFilterNames()) {
-                            logContextConfiguration.removeFilterConfiguration(filterName);
-                        }
-                        // Remove all the formatters
-                        for (String formatterName : logContextConfiguration.getFormatterNames()) {
-                            logContextConfiguration.removeFormatterConfiguration(formatterName);
-                        }
-                        // Remove all the error managers
-                        for (String errorManager : logContextConfiguration.getErrorManagerNames()) {
-                            logContextConfiguration.removeErrorManagerConfiguration(errorManager);
-                        }
-                        logContextConfiguration.commit();
-                        // Requires a reload
-                        context.reloadRequired();
-                    } finally {
-                        logContextConfiguration.forget();
+                        context.completeStep(new ResultHandler() {
+                            @Override
+                            public void handleResult(final ResultAction resultAction, final OperationContext context, final ModelNode operation) {
+                                if (resultAction == ResultAction.KEEP) {
+                                    contextSelector.remove(loggingProfile);
+                                } else if (configuration != null) {
+                                    context.revertReloadRequired();
+                                }
+                            }
+                        });
                     }
-                }
+                }, Stage.RUNTIME);
             }
         }
 
         @Override
         protected void recoverServices(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            // TODO (jrp) might need to find a way to add the profile back.
         }
     };
 
