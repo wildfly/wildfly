@@ -22,6 +22,8 @@
 
 package org.jboss.as.modcluster;
 
+import java.util.Set;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -58,17 +60,13 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private String getMetricName(OperationContext context, String clazz) {
-        ModelNode loadProvider = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getModel();
-        ModelNode loadMetrics = loadProvider.get(CommonAttributes.CUSTOM_LOAD_METRIC);
-        for (Property p : loadMetrics.asPropertyList()) {
-            String metricClass = p.getValue().get(CommonAttributes.TYPE).asString();
-            if (metricClass.equals(clazz)) {
-                return p.getName();
+    private String getMetricName(OperationContext context, String type) {
+        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getChildrenNames(CommonAttributes.CUSTOM_LOAD_METRIC);
+        for (String name : metrics) {
+            if (name.equals(type)) {
+                return name;
             }
         }
         return null;
     }
-
-
 }
