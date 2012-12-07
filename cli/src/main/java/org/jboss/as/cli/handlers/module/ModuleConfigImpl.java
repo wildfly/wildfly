@@ -46,6 +46,7 @@ public class ModuleConfigImpl implements ModuleConfig {
     static final String MODULE = "module";
     static final String MODULE_NS = "urn:jboss:module:1.1";
     static final String NAME = "name";
+    static final String SLOT = "slot";
     static final String PATH = "path";
     static final String PROPERTY = "property";
     static final String PROPERTIES = "properties";
@@ -58,6 +59,7 @@ public class ModuleConfigImpl implements ModuleConfig {
 
     private String moduleName;
     private String mainClass;
+    private String slotName;
 
     private Collection<Resource> resources;
     private Collection<Dependency> dependencies;
@@ -85,6 +87,15 @@ public class ModuleConfigImpl implements ModuleConfig {
     @Override
     public String getModuleName() {
         return moduleName;
+    }
+
+    @Override
+    public String getSlot() {
+        return slotName;
+    }
+
+    public void setSlot(String slot) {
+        this.slotName = slot;
     }
 
     @Override
@@ -167,6 +178,10 @@ public class ModuleConfigImpl implements ModuleConfig {
             throw new XMLStreamException("Module name is missing.");
         }
         writer.writeAttribute(NAME, moduleName);
+
+        if (slotName != null) {
+            writer.writeAttribute(SLOT, slotName);
+        }
 
         if(properties != null) {
             writeNewLine(writer);

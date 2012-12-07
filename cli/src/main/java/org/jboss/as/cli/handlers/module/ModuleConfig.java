@@ -36,6 +36,8 @@ public interface ModuleConfig extends XMLElementWriter<ModuleConfig> {
 
     String getModuleName();
 
+    String getSlot();
+
     String getMainClass();
 
     Collection<Resource> getResources();
