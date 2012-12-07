@@ -289,6 +289,11 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                 }
             }
 
+            final String slotVal = slot.getValue(parsedCmd);
+            if (slotVal != null) {
+                config.setSlot(slotVal);
+            }
+
             final String mainCls = mainClass.getValue(parsedCmd);
             if(mainCls != null) {
                 config.setMainClass(mainCls);
