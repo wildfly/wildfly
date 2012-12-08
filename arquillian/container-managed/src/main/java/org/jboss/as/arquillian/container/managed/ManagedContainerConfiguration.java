@@ -58,6 +58,10 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private Integer waitForPortsTimeoutInSeconds;
 
+    private boolean setupCleanServerBaseDir = false;
+
+    private String cleanServerBaseDir;
+
     public ManagedContainerConfiguration() {
         super();
     }
@@ -189,4 +193,19 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         this.adminOnly = adminOnly;
     }
 
+    public boolean isSetupCleanServerBaseDir() {
+        return setupCleanServerBaseDir;
+    }
+
+    public void setSetupCleanServerBaseDir(boolean setupCleanServerBaseDir) {
+        this.setupCleanServerBaseDir = setupCleanServerBaseDir;
+    }
+
+    public String getCleanServerBaseDir() {
+        return cleanServerBaseDir;
+    }
+
+    public void setCleanServerBaseDir(String cleanServerBaseDir) {
+        this.cleanServerBaseDir = cleanServerBaseDir;
+    }
 }
