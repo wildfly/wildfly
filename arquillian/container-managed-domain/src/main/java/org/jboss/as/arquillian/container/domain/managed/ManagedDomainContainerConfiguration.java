@@ -53,6 +53,10 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private boolean enableAssertions = true;
 
+    private boolean setupCleanServerBaseDir = false;
+
+    private String cleanServerBaseDir;
+
     public ManagedDomainContainerConfiguration() {
         // if no javaHome is set use java.home of already running jvm
         if (javaHome == null || javaHome.isEmpty()) {
@@ -226,5 +230,21 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     public void setEnableAssertions(final boolean enableAssertions) {
         this.enableAssertions = enableAssertions;
+    }
+
+    public boolean isSetupCleanServerBaseDir() {
+        return setupCleanServerBaseDir;
+    }
+
+    public void setSetupCleanServerBaseDir(boolean setupCleanServerBaseDir) {
+        this.setupCleanServerBaseDir = setupCleanServerBaseDir;
+    }
+
+    public String getCleanServerBaseDir() {
+        return cleanServerBaseDir;
+    }
+
+    public void setCleanServerBaseDir(String cleanServerBaseDir) {
+        this.cleanServerBaseDir = cleanServerBaseDir;
     }
 }
