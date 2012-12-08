@@ -65,17 +65,17 @@ public class StrictMaxPoolWriteHandler extends AbstractWriteAttributeHandler<Voi
         final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         final ServiceName serviceName = PoolConfigService.EJB_POOL_CONFIG_BASE_SERVICE_NAME.append(poolName);
         final ServiceRegistry registry = context.getServiceRegistry(true);
-        ServiceController sc = registry.getService(serviceName);
+        ServiceController<?> sc = registry.getService(serviceName);
         if (sc != null) {
             StrictMaxPoolConfig smpc = StrictMaxPoolConfig.class.cast(sc.getValue());
             if (smpc != null) {
-                if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.equals(attributeName)) {
+                if (StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.getName().equals(attributeName)) {
                     int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, model).asInt();
                     smpc.setMaxPoolSize(maxPoolSize);
-                } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.equals(attributeName)) {
+                } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.getName().equals(attributeName)) {
                     long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.resolveModelAttribute(context, model).asLong();
                     smpc.setTimeout(timeout);
-                } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.equals(attributeName)) {
+                } else if (StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.getName().equals(attributeName)) {
                     String timeoutUnit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.resolveModelAttribute(context, model).asString();
                     smpc.setTimeoutUnit(TimeUnit.valueOf(timeoutUnit));
                 }
