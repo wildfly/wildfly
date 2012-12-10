@@ -352,9 +352,9 @@ public class RaOperationUtil {
             try {
                 VirtualFile child;
                 if (path.getPath().contains("!")) {
-                    child = VFS.getChild(path.getPath().split("!")[0].split(":")[1]);
+                    child = VFS.getChild(path.getPath().split("!")[0].split("file:")[1]);
 
-                    closable = VFS.mountZip(new File(path.getPath().split("!")[0].split(":")[1]), child, TempFileProviderService.provider());
+                    closable = VFS.mountZip(new File(path.getPath().split("!")[0].split("file:")[1]), child, TempFileProviderService.provider());
                 } else {
                     child = VFS.getChild(path.getPath().split("META-INF")[0]);
 
