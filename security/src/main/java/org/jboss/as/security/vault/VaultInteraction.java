@@ -70,7 +70,7 @@ public class VaultInteraction {
                         attributeName = console.readLine("Enter Attribute Name:");
                     }
                     try {
-                        vaultNISession.addSecuredAttribute(vaultBlock, attributeName, attributeValue);
+                        vaultNISession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, attributeValue);
                     } catch (Exception e) {
                         System.out.println("Exception occurred:" + e.getLocalizedMessage());
                     }
