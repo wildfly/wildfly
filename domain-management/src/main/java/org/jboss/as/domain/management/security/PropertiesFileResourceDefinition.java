@@ -46,8 +46,10 @@ import org.jboss.dmr.ModelType;
  */
 public abstract class PropertiesFileResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH,
-            ModelType.STRING, false).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+    public static final SimpleAttributeDefinition PATH =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PATH, ModelType.STRING, false)
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(

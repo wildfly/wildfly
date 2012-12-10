@@ -50,7 +50,8 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PATH, ModelType.STRING, true)
-                    .setValidator(new ModelTypeValidator(ModelType.STRING, true, false))
+                    .setAllowExpression(true)
+                    .setValidator(new ModelTypeValidator(ModelType.STRING, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 

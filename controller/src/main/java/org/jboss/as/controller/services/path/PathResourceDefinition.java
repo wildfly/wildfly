@@ -59,6 +59,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition PATH_NAMED =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PATH, ModelType.STRING, true)
+                .setAllowExpression(true)
                 .setValidator(new StringLengthValidator(1, true))
                 .build();
 
