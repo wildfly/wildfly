@@ -22,7 +22,6 @@
 
 package org.jboss.as.test.integration.security.auditing;
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -39,13 +38,17 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.security.Constants;
+import org.jboss.as.test.integration.ejb.security.AnnSBTest;
+import org.jboss.as.test.integration.ejb.security.authorization.SingleMethodsAnnOnlyCheckSFSB;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,12 +64,17 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
 /**
  * This class tests Security auditing functionality
- *
+ * 
  * @author <a href="mailto:jlanik@redhat.com">Jan Lanik</a>.
  */
 @RunWith(Arquillian.class)
 @ServerSetup(SecurityAuditingTestCase.SecurityAuditingTestCaseSetup.class)
-public class SecurityAuditingTestCase {
+public class SecurityAuditingTestCase extends AnnSBTest {
+
+    private static final Logger log = Logger.getLogger(testClass());
+
+    private static File auditLog = new File(System.getProperty("jbossas.ts.submodule.dir"),
+            "target/jbossas/standalone/log/audit.log");
 
     static class SecurityAuditingTestCaseSetup extends AbstractMgmtServerSetupTask {
 
@@ -93,7 +101,7 @@ public class SecurityAuditingTestCase {
             op = new ModelNode();
             op.get(OP).set(ADD);
             op.get(OP_ADDR).add(SUBSYSTEM, "logging");
-            op.get(OP_ADDR).add("logger", "org.jboss.security.audit.providers.LogAuditProvider");
+            op.get(OP_ADDR).add("logger", "org.jboss.security.audit");
             op.get("level").set("TRACE");
             ModelNode list = op.get("handlers");
             list.add("AUDIT");
@@ -130,7 +138,6 @@ public class SecurityAuditingTestCase {
         }
     }
 
-
     @Deployment
     public static WebArchive deploy() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "form-auth.war");
@@ -145,51 +152,92 @@ public class SecurityAuditingTestCase {
         return war;
     }
 
-    @Ignore("AS7-3346")
+    private static final String MODULE = "singleMethodsAnnOnlySFSB";
+
+    private static Class<?> testClass() {
+        return SecurityAuditingTestCase.class;
+    }
+
+    private static Class<?> beanClass() {
+        return SingleMethodsAnnOnlyCheckSFSB.class;
+    }
+
+    @Deployment(name = MODULE + ".jar", order = 1, testable = false)
+    public static Archive<JavaArchive> deployment() {
+        return testAppDeployment(Logger.getLogger(testClass()), MODULE, beanClass());
+    }
+
+    /**
+     * Basic test if auditing works in EJB module.
+     * 
+     * @throws Exception
+     */
     @RunAsClient
     @Test
-    public void test(@ArquillianResource URL url) throws Exception {
-
-        File auditLog = new File(System.getProperty("jbossas.ts.submodule.dir"), "target/jbossas/standalone/log/audit.log");
-
+    public void testSingleMethodAnnotationsUser1Template() throws Exception {
 
         assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
         assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
 
         BufferedReader reader = new BufferedReader(new FileReader(auditLog));
 
-        String line;
-        while (null != (line = reader.readLine())) {
+        while (reader.readLine() != null) {
             // we need to get trough all old records (if any)
         }
 
+        testSingleMethodAnnotationsUser1Template(MODULE, log, beanClass());
+
+        checkAuditLog(reader, "TRACE.+org.jboss.security.audit.+Success.+user1");
+
+    }
+
+    /**
+     * Basic test if auditing works for web module.
+     * 
+     * @param url
+     * @throws Exception
+     */
+    @RunAsClient
+    @Test
+    public void test(@ArquillianResource URL url) throws Exception {
+
+        assertTrue("Audit log file has not been created (" + auditLog.getAbsolutePath() + ")", auditLog.exists());
+        assertTrue("Audit log file is closed for reading (" + auditLog.getAbsolutePath() + ")", auditLog.canRead());
+
+        BufferedReader reader = new BufferedReader(new FileReader(auditLog));
+
+        while (reader.readLine() != null) {
+            // we need to get trough all old records (if any)
+        }
 
         Utils.makeCall(url.toString(), "anil", "anil", 200);
 
-        Pattern successPattern = Pattern.compile("TRACE.+org.jboss.security.audit.providers.LogAuditProvider.+Success");
+        checkAuditLog(reader, "TRACE.+org.jboss.security.audit.+Success.+anil");
+    }
+
+    private void checkAuditLog(BufferedReader reader, String regex) throws Exception {
+
+        Pattern successPattern = Pattern.compile(regex);
 
         // we'll be actively waiting for a given INTERVAL for the record to appear
         final long INTERVAL = 5000;
         long startTime = System.currentTimeMillis();
-        while (true) {
-            boolean recordFound = false;
-            //some new line were added -> go trough those and check whether our record is present
+        String line;
+        search_for_log: while (true) {
+            // some new lines were added -> go trough those and check whether our record is present
             while (null != (line = reader.readLine())) {
-                if (successPattern.matcher(line).matches()) {
-                    recordFound = true;
+                if (successPattern.matcher(line).find()) {
+                    break search_for_log;
                 }
             }
-            if (recordFound) {
-                break; // we are done
-            }
-            //record not written to log yet -> continue checking if the time has not yet expired
+            // record not written to log yet -> continue checking if the time has not yet expired
             if (System.currentTimeMillis() > startTime + INTERVAL) {
-                //time expired
-                throw new AssertionError("Login record has not been written into audit log! (time expired)");
+                // time expired
+                throw new AssertionError("Login record has not been written into audit log! (time expired). Checked regex="
+                        + regex);
             }
         }
 
     }
-
 
 }
