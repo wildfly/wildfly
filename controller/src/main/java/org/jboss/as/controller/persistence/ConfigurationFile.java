@@ -445,12 +445,25 @@ public class ConfigurationFile {
             }
 
             //Copy any existing history directory to a timestamped backup directory
-            final Date date = new Date();
-            if (currentHistory.listFiles().length > 0) {
-                final String backupName = getTimeStamp(date);
-                final File old = new File(historyRoot, backupName);
+            Date date = new Date();
+            File[] currentHistoryFiles = currentHistory.listFiles();
+            if (currentHistoryFiles != null && currentHistoryFiles.length > 0) {
+                String backupName = getTimeStamp(date);
+                File old = new File(historyRoot, backupName);
                 if (!new File(currentHistory.getAbsolutePath()).renameTo(old)) {
-                    throw MESSAGES.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
+                    if (old.exists()) {
+                        // AS7-5801. Unit tests sometimes fail on File.renameTo due to only having 100 ms
+                        // precision on the timestamps we use for dir names on some systems. So, if that happens,
+                        // we bump the timestamp once and try again before failing
+                        date = new Date(date.getTime() + 100);
+                        backupName = getTimeStamp(date);
+                        old = new File(historyRoot, backupName);
+                        if (!new File(currentHistory.getAbsolutePath()).renameTo(old)) {
+                            throw MESSAGES.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
+                        }
+                    } else {
+                        throw MESSAGES.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
+                    }
                 }
             }
 
