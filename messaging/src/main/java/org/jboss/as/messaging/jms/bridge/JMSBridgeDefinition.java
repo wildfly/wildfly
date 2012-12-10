@@ -87,6 +87,7 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
 
     public static final PropertiesAttributeDefinition SOURCE_CONTEXT = new PropertiesAttributeDefinition.Builder("source-context", true)
             .setXmlName(CONTEXT)
+            .setAllowExpression(true)
             .setAttributeMarshaller(AttributeMarshallers.JNDI_CONTEXT_MARSHALLER)
             .build();
 
@@ -113,35 +114,44 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
 
     public static final PropertiesAttributeDefinition TARGET_CONTEXT = new PropertiesAttributeDefinition.Builder("target-context", true)
             .setXmlName(CONTEXT)
+            .setAllowExpression(true)
             .setAttributeMarshaller(AttributeMarshallers.JNDI_CONTEXT_MARSHALLER)
             .build();
 
     public static final SimpleAttributeDefinition QUALITY_OF_SERVICE = create("quality-of-service", STRING)
             .setValidator(new EnumValidator<QualityOfServiceMode>(QualityOfServiceMode.class, false, false))
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition FAILURE_RETRY_INTERVAL = create("failure-retry-interval", LONG)
             .setMeasurementUnit(MILLISECONDS)
             .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition MAX_RETRIES = create("max-retries", INT)
             .setValidator(InfiniteOrPositiveValidators.INT_INSTANCE)
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition MAX_BATCH_SIZE = create("max-batch-size", INT)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, false))
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition MAX_BATCH_TIME = create("max-batch-time", LONG)
             .setMeasurementUnit(MILLISECONDS)
             .setValidator(InfiniteOrPositiveValidators.LONG_INSTANCE)
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition SUBSCRIPTION_NAME = create("subscription-name", STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition CLIENT_ID = create("client-id", STRING)
             .setAllowNull(true)
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition ADD_MESSAGE_ID_IN_HEADER = create("add-messageID-in-header", BOOLEAN)
             .setAllowNull(true)
             .setDefaultValue(new ModelNode().set(false))
+            .setAllowExpression(true)
             .build();
     public static final SimpleAttributeDefinition STARTED = create(CommonAttributes.STARTED, BOOLEAN)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)

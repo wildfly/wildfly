@@ -12,11 +12,11 @@
 	            <user>${userInExpression}</user>
                 <password>${passwordInExpression}</password>
                 <context>
-                    <property key="java.naming.factory.initial"  value="org.jnp.interfaces.NamingContextFactory" />
-                    <property key="java.naming.provider.url"     value="jnp://localhost:1099" />
-                    <property key="java.naming.factory.url.pkgs" value="org.jboss.naming:org.jnp.interfaces"/>
-                    <property key="jnp.timeout"                  value="5000"/>
-                    <property key="jnp.sotimeout"                value="5000"/>
+                    <property key="java.naming.factory.initial"  value="${java.naming.factory.initial:org.jnp.interfaces.NamingContextFactory}" />
+                    <property key="java.naming.provider.url"     value="${java.naming.provider.url:jnp://localhost:1099}" />
+                    <property key="java.naming.factory.url.pkgs" value="${java.naming.factory.url.pkgs:org.jboss.naming:org.jnp.interfaces}"/>
+                    <property key="jnp.timeout"                  value="${jnp.timeout:5000}"/>
+                    <property key="jnp.sotimeout"                value="${jnp.sotimeout:5000}"/>
                 </context>
             </target>
             <quality-of-service>ONCE_AND_ONLY_ONCE</quality-of-service>
@@ -24,10 +24,10 @@
             <max-retries>-1</max-retries>
             <max-batch-size>1</max-batch-size>
             <max-batch-time>-1</max-batch-time>
-            <selector string="color='red'"/>
-            <subscription-name>mySubscription</subscription-name>
-            <client-id>myClientID</client-id>
-            <add-messageID-in-header>true</add-messageID-in-header>
+            <selector string="${selector:color='red'}"/>
+            <subscription-name>${subscription.name:mySubscription}</subscription-name>
+            <client-id>${client.id:myClientID}</client-id>
+            <add-messageID-in-header>${add.messageID.in.header:true}</add-messageID-in-header>
         </jms-bridge>
 
         <jms-bridge name="bridgeB">
@@ -39,10 +39,10 @@
                 <connection-factory name="/cf/targetCF" />
                 <destination name="anotherMQ/jms/queue/anotherTargetQueue" />
             </target>
-            <quality-of-service>AT_MOST_ONCE</quality-of-service>
-            <failure-retry-interval>45678</failure-retry-interval>
-            <max-retries>7890</max-retries>
-            <max-batch-size>12345</max-batch-size>
-            <max-batch-time>10000</max-batch-time>
+            <quality-of-service>${quality.of.service:AT_MOST_ONCE}</quality-of-service>
+            <failure-retry-interval>${failure.retry.interval:45678}</failure-retry-interval>
+            <max-retries>${max.retries:7890}</max-retries>
+            <max-batch-size>${max.batch.size:12345}</max-batch-size>
+            <max-batch-time>${max.batch.time:10000}</max-batch-time>
         </jms-bridge>
     </subsystem>
