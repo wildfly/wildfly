@@ -64,6 +64,8 @@
         <maven.compiler.target>1.6</maven.compiler.target>
         <version.checkstyle.plugin>2.9.1</version.checkstyle.plugin>
         <version.compiler.plugin>2.5.1-jboss-2</version.compiler.plugin>
+        <version.enforcer.plugin>1.2</version.enforcer.plugin>
+        <maven.min.version>3.0.3</maven.min.version>
 
         <!--
             Dependency versions. Please keep alphabetical.
@@ -123,9 +125,9 @@
         <version.org.apache.juddi.scout>1.2.6</version.org.apache.juddi.scout>
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
-        <version.org.apache.maven>3.0.3</version.org.apache.maven>
-        <version.org.apache.maven.wagon>1.0-beta-7</version.org.apache.maven.wagon>
-        <version.org.apache.maven.wagon.http-lightweight>1.0</version.org.apache.maven.wagon.http-lightweight>
+        <version.org.apache.maven>3.0.4</version.org.apache.maven>
+        <version.org.apache.maven.wagon>2.2</version.org.apache.maven.wagon>
+        <version.org.apache.maven.wagon.http-lightweight>2.2</version.org.apache.maven.wagon.http-lightweight>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.openjpa>2.1.1</version.org.apache.openjpa>
@@ -137,7 +139,7 @@
         <version.org.apache.xerces>2.9.1-jbossas-2</version.org.apache.xerces>
         <version.org.codehaus.jackson>1.9.2</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
-        <version.org.codehaus.plexus.plexus-utils>2.0.4</version.org.codehaus.plexus.plexus-utils>
+        <version.org.codehaus.plexus.plexus-utils>3.0.9</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.1.1</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.hibernate>4.1.6.Final</version.org.hibernate>
