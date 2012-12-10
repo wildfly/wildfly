@@ -131,7 +131,7 @@
         <!-- Add this dependency to make sure that the core model is tested before we build the server -->
         <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-core-model-test</artifactId>
+            <artifactId>jboss-as-core-model-test-framework</artifactId>
         </dependency>
 
         <dependency>
