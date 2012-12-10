@@ -39,6 +39,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
 import org.jboss.as.test.integration.osgi.deployment.bundle.DeferredFailActivator;
 import org.jboss.as.test.integration.osgi.webapp.bundle.AnnotatedServlet;
+import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleAnnotatedServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
@@ -249,7 +250,13 @@ public class WebAppTestCase {
         try {
             Assert.assertEquals("INSTALLED", Bundle.INSTALLED, bundle.getState());
             try {
-                performCall("/bundle-d/servlet?input=Hello");
+                performCall("/bundle-c/servlet?input=Hello");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+            try {
+                performCall("/bundle-c/message.txt");
                 Assert.fail("IOException expected");
             } catch (IOException ex) {
                 // expected
@@ -315,7 +322,7 @@ public class WebAppTestCase {
     @Deployment(name = SIMPLE_WAR, managed = false, testable = false)
     public static Archive<?> getSimpleWar() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, SIMPLE_WAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
         return archive;
     }
@@ -323,7 +330,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_A_WAR, managed = false, testable = false)
     public static Archive<?> getBundleA() {
         final WebArchive archive = ShrinkWrap.create(WebArchive.class, BUNDLE_A_WAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsWebResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -343,7 +350,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_B_WAR, managed = false, testable = false)
     public static Archive<?> getBundleB() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_B_WAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -362,7 +369,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_C_WAB, managed = false, testable = false)
     public static Archive<?> getBundleC() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_C_WAB);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -381,7 +388,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_D_WAB, managed = false, testable = false)
     public static Archive<?> getBundleD() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_D_WAB);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -401,7 +408,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_E_JAR, managed = false, testable = false)
     public static Archive<?> getBundleE() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_E_JAR);
-        archive.addClasses(AnnotatedServlet.class, Echo.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -421,7 +428,7 @@ public class WebAppTestCase {
     @Deployment(name = BUNDLE_F_WAB, managed = false, testable = false)
     public static Archive<?> getBundleF() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_F_WAB);
-        archive.addClasses(AnnotatedServlet.class, Echo.class, DeferredFailActivator.class);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class, DeferredFailActivator.class);
         archive.addAsResource(STRING_ASSET, "message.txt");
         archive.setManifest(new Asset() {
             @Override

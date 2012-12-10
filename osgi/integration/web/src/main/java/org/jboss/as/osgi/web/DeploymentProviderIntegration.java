@@ -21,13 +21,7 @@
  */
 package org.jboss.as.osgi.web;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.jar.Manifest;
-
-import javax.servlet.Servlet;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -36,12 +30,10 @@ import org.jboss.osgi.deployment.deployer.DeploymentFactory;
 import org.jboss.osgi.framework.spi.DeploymentProvider;
 import org.jboss.osgi.framework.spi.DeploymentProviderPlugin;
 import org.jboss.osgi.framework.spi.StorageState;
-import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.metadata.OSGiMetaData;
 import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 import org.jboss.osgi.vfs.VirtualFile;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
 
 /**
  * A integration point for 'webbundle' locations.
