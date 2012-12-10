@@ -54,7 +54,7 @@ public class FileStoreResource extends BaseStoreResource {
     static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(ModelKeys.PATH, ModelType.STRING, true)
                     .setXmlName(Attribute.PATH.getLocalName())
-                    .setAllowExpression(false)
+                    .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
