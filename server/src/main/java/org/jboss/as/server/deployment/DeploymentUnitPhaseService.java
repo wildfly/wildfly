@@ -90,7 +90,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         if (nextPhase != null) {
             final ServiceName serviceName = DeploymentUtils.getDeploymentUnitPhaseServiceName(deploymentUnit, nextPhase);
             phaseService = DeploymentUnitPhaseService.create(deploymentUnit, nextPhase);
-            phaseServiceBuilder = serviceTarget.addService(serviceName, phaseService);
+            phaseServiceBuilder = this.deploymentUnit.getAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_BUILDER).build(serviceTarget, serviceName, phaseService, nextPhase);
         } else {
             phaseServiceBuilder = null;
             phaseService = null;
@@ -141,7 +141,6 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                     AttachedDependency result = new AttachedDependency(attachableDep.getAttachmentKey(), attachableDep.isDeploymentUnit());
                     phaseServiceBuilder.addDependency(attachableDep.getServiceName(), result.getValue());
                     phaseService.injectedAttachedDependencies.add(result);
-
                 }
             }
 

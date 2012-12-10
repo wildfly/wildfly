@@ -35,6 +35,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
+import org.jboss.as.server.deployment.DefaultDeploymentUnitPhaseServiceBuilder;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepositoryService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
@@ -160,6 +161,8 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
         // Add server environment
         ServerEnvironmentService.addService(serverEnvironment, serviceTarget);
+        // Add standard deployment policy
+        new DefaultDeploymentUnitPhaseServiceBuilder().build(serviceTarget).install();
 
         //Add server path manager service
         ServerPathManagerService serverPathManagerService = new ServerPathManagerService();

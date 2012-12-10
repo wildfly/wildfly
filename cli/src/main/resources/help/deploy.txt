@@ -65,5 +65,5 @@ ARGUMENTS
                        The deploy command will execute the script given by the --script argument. 
                        All paths in the scripts are relative to the root directory in the cli archive. 
                        The script is executed as a batch.
-                                 
-               
+
+ --policy            - optional, the policy used to deploy the application.

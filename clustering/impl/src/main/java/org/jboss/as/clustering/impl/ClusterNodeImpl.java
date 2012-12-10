@@ -108,14 +108,7 @@ public class ClusterNodeImpl implements ClusterNode {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-
-        if (!(obj instanceof ClusterNodeImpl))
-            return false;
-
-        ClusterNodeImpl other = (ClusterNodeImpl) obj;
-        return this.id.equals(other.id);
+        return (obj != null) && (obj instanceof ClusterNode) ? this.id.equals(((ClusterNode) obj).getName()) : false;
     }
 
     @Override

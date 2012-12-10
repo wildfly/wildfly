@@ -51,6 +51,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
     private static final String FIRST_PHASE_NAME = Phase.values()[0].name();
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
+    private final InjectedValue<DeploymentUnitPhaseServiceBuilder> builder = new InjectedValue<DeploymentUnitPhaseServiceBuilder>();
 
     private DeploymentUnit deploymentUnit;
     private volatile DeploymentServiceListener listener;
@@ -68,6 +69,7 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         target.addListener(ServiceListener.Inheritance.ALL, listener);
         deploymentUnit = createAndInitializeDeploymentUnit(context.getController().getServiceContainer());
         deploymentUnit.putAttachment(Attachments.STATUS_LISTENER, listener);
+        deploymentUnit.putAttachment(Attachments.DEPLOYMENT_UNIT_PHASE_SERVICE_BUILDER, builder.getValue());
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
@@ -106,6 +108,10 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
 
     Injector<DeployerChains> getDeployerChainsInjector() {
         return deployerChainsInjector;
+    }
+
+    Injector<DeploymentUnitPhaseServiceBuilder> getBuilderInjector() {
+        return this.builder;
     }
 
     public enum DeploymentStatus {

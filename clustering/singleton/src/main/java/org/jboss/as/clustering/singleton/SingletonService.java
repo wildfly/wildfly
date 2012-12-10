@@ -22,48 +22,51 @@
 
 package org.jboss.as.clustering.singleton;
 
-import java.io.Serializable;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.ClusterNode;
 import org.jboss.as.clustering.GroupRpcDispatcher;
 import org.jboss.as.clustering.ResponseFilter;
+import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
 import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.clustering.msc.DelegatingServiceBuilder;
+import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.clustering.msc.ServiceControllerFactory;
 import org.jboss.as.clustering.service.ServiceProviderRegistry;
 import org.jboss.as.clustering.service.ServiceProviderRegistryService;
 import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.BatchServiceTarget;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
  */
-public class SingletonService<T extends Serializable> implements Service<T>, ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
+public class SingletonService<T> implements Service<T>, ServiceProviderRegistry.Listener, SingletonRpcHandler<T>, Singleton {
 
-    public static final String DEFAULT_CONTAINER = "cluster";
+    public static final String DEFAULT_CONTAINER = "singleton";
 
     private final InjectedValue<ServiceProviderRegistry> registryRef = new InjectedValue<ServiceProviderRegistry>();
     private final InjectedValue<GroupRpcDispatcher> dispatcherRef = new InjectedValue<GroupRpcDispatcher>();
     private final Service<T> service;
-    private final ServiceName serviceName;
+    final ServiceName targetServiceName;
     private final ServiceName singletonServiceName;
     private final AtomicBoolean master = new AtomicBoolean(false);
 
@@ -77,24 +80,8 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
     public SingletonService(Service<T> service, ServiceName serviceName) {
         this.service = service;
-        this.serviceName = serviceName.append("service");
         this.singletonServiceName = serviceName;
-    }
-
-    /*
-     * Retain for binary-compatibility w/7.1.2.Final
-     */
-    @Deprecated
-    public ServiceBuilder<T> build(ServiceContainer target) {
-        return this.build((ServiceTarget) target);
-    }
-
-    /*
-     * Retain for binary-compatibility w/7.1.2.Final
-     */
-    @Deprecated
-    public ServiceBuilder<T> build(ServiceContainer target, String container) {
-        return this.build((ServiceTarget) target, DEFAULT_CONTAINER);
+        this.targetServiceName = serviceName.append("service");
     }
 
     public ServiceBuilder<T> build(ServiceTarget target) {
@@ -102,20 +89,43 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String container) {
-        final BatchServiceTarget batchTarget = target.batchTarget();
-        batchTarget.addService(this.serviceName, this.service).setInitialMode(ServiceController.Mode.NEVER).install();
-        batchTarget.addService(this.singletonServiceName.append("singleton"), new ValueService<Singleton>(new ImmediateValue<Singleton>(this))).addDependency(this.singletonServiceName).setInitialMode(ServiceController.Mode.PASSIVE).install();
+        final ServiceBuilder<T> serviceBuilder = target.addService(this.targetServiceName, this.service).setInitialMode(ServiceController.Mode.NEVER);
+        // Remove target service when this service is removed
         final ServiceListener<T> listener = new AbstractServiceListener<T>() {
             @Override
             public void serviceRemoveRequested(ServiceController<? extends T> controller) {
-                batchTarget.removeServices();
+                ServiceController<?> service = controller.getServiceContainer().getService(SingletonService.this.targetServiceName);
+                if (service != null) {
+                    service.setMode(ServiceController.Mode.REMOVE);
+                }
             }
         };
-        return AsynchronousService.addService(target, this.singletonServiceName, this)
+        final ServiceBuilder<T> singletonBuilder = AsynchronousService.addService(target, this.singletonServiceName, this)
+                .addAliases(this.singletonServiceName.append("singleton"))
                 .addDependency(ServiceProviderRegistryService.getServiceName(container), ServiceProviderRegistry.class, this.registryRef)
-                .addDependency(ServiceName.JBOSS.append(DEFAULT_CONTAINER, container), GroupRpcDispatcher.class, this.dispatcherRef)
+                .addDependency(CoreGroupCommunicationService.getServiceName(container), GroupRpcDispatcher.class, this.dispatcherRef)
                 .addListener(listener)
         ;
+        // Add dependencies to the target service builder, but install should return the installed singleton controller
+        return new DelegatingServiceBuilder<T>(serviceBuilder, ServiceControllerFactory.SIMPLE) {
+            @Override
+            public ServiceBuilder<T> addAliases(ServiceName... aliases) {
+                singletonBuilder.addAliases(aliases);
+                return this;
+            }
+
+            @Override
+            public ServiceBuilder<T> setInitialMode(ServiceController.Mode mode) {
+                singletonBuilder.setInitialMode(mode);
+                return this;
+            }
+
+            @Override
+            public ServiceController<T> install() {
+                super.install();
+                return singletonBuilder.install();
+            }
+        };
     }
 
     @Override
@@ -136,6 +146,8 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         String name = this.singletonServiceName.getCanonicalName();
         this.registry.unregister(name);
         this.dispatcher.unregisterRPCHandler(name, this);
+        // Make sure our service is stopped before returning
+        this.stopOldMaster();
     }
 
     @Override
@@ -191,7 +203,34 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
 
     private void startNewMaster() {
         this.master.set(true);
-        this.container.getRequiredService(this.serviceName).setMode(ServiceController.Mode.ACTIVE);
+        final ServiceController<?> controller = this.container.getRequiredService(this.targetServiceName);
+        final Queue<ServiceController<?>> installedControllers = new ConcurrentLinkedQueue<ServiceController<?>>();
+        final ServiceListener<Object> listener = new AbstractServiceListener<Object>() {
+            @Override
+            public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
+                // We only want to track services installed by the target service
+                if (serviceController != controller) {
+                    if (serviceController.getState() == ServiceController.State.STARTING) {
+                        installedControllers.add(serviceController);
+                    }
+                }
+            }
+        };
+        controller.addListener(ServiceListener.Inheritance.ALL, listener);
+        try {
+            ServiceContainerHelper.start(controller);
+            while (!installedControllers.isEmpty()) {
+                ServiceController<?> installedController = installedControllers.remove();
+                if (!ServiceContainerHelper.wait(installedController, EnumSet.of(ServiceController.State.STARTING), ServiceController.State.UP)) {
+                    throw installedController.getStartException();
+                }
+            }
+        } catch (StartException e) {
+            SingletonLogger.ROOT_LOGGER.serviceStartFailed(e, this.targetServiceName.getCanonicalName());
+            ServiceContainerHelper.stop(controller);
+        } finally {
+            controller.removeListener(listener);
+        }
     }
 
     @Override
@@ -211,7 +250,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     @Override
     public void stopOldMaster() {
         if (this.master.compareAndSet(true, false)) {
-            this.container.getRequiredService(this.serviceName).setMode(ServiceController.Mode.NEVER);
+            ServiceContainerHelper.stop(this.container.getRequiredService(this.targetServiceName));
         }
     }
 

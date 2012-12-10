@@ -1183,6 +1183,11 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="policy" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>Identifies the policy used to deploy this deployment.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -1253,6 +1258,11 @@
                         <xs:element name="fs-exploded" type="fs-explodedType"/>
                     </xs:choice>
                 </xs:sequence>
+                <xs:attribute name="policy" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>Identifies the policy used to deploy this deployment.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

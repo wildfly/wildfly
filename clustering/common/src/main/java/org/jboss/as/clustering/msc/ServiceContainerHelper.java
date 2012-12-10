@@ -87,19 +87,8 @@ public class ServiceContainerHelper {
     public static void start(ServiceController<?> controller) throws StartException {
         // If service is down, set the mode appropriately so the controller will start it
         if (controller.getState() == ServiceController.State.DOWN) {
-            switch (controller.getMode()) {
-                case NEVER: {
-                    controller.setMode(ServiceController.Mode.ACTIVE);
-                    break;
-                }
-                case ON_DEMAND: {
-                    controller.setMode(ServiceController.Mode.PASSIVE);
-                    break;
-                }
-                default: {
-                    // Do nothing
-                }
-            }
+            controller.compareAndSetMode(ServiceController.Mode.NEVER, ServiceController.Mode.ACTIVE);
+            controller.compareAndSetMode(ServiceController.Mode.ON_DEMAND, ServiceController.Mode.PASSIVE);
         }
         if (!wait(controller, EnumSet.of(ServiceController.State.DOWN, ServiceController.State.STARTING), ServiceController.State.UP)) {
             throw controller.getStartException();
@@ -113,19 +102,8 @@ public class ServiceContainerHelper {
     public static void stop(ServiceController<?> controller) {
         // If service is up, set the mode appropriately so the controller will stop it
         if (controller.getState() == ServiceController.State.UP) {
-            switch (controller.getMode()) {
-                case ACTIVE: {
-                    controller.setMode(ServiceController.Mode.NEVER);
-                    break;
-                }
-                case PASSIVE: {
-                    controller.setMode(ServiceController.Mode.ON_DEMAND);
-                    break;
-                }
-                default: {
-                    // Do nothing
-                }
-            }
+            controller.compareAndSetMode(ServiceController.Mode.ACTIVE, ServiceController.Mode.NEVER);
+            controller.compareAndSetMode(ServiceController.Mode.PASSIVE, ServiceController.Mode.ON_DEMAND);
         }
         wait(controller, EnumSet.of(ServiceController.State.UP, ServiceController.State.STOPPING), ServiceController.State.DOWN);
     }
@@ -139,7 +117,7 @@ public class ServiceContainerHelper {
         wait(controller, EnumSet.of(ServiceController.State.UP, ServiceController.State.STOPPING, ServiceController.State.DOWN), ServiceController.State.REMOVED);
     }
 
-    private static <T> boolean wait(ServiceController<T> controller, Collection<ServiceController.State> expectedStates, ServiceController.State targetState) {
+    public static <T> boolean wait(ServiceController<T> controller, Collection<ServiceController.State> expectedStates, ServiceController.State targetState) {
         if (controller.getState() == targetState) return true;
         ServiceListener<T> listener = new NotifyingServiceListener<T>(controller);
         controller.addListener(listener);

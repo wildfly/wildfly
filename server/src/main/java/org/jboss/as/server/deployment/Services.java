@@ -36,6 +36,10 @@ public final class Services {
      */
     public static final ServiceName JBOSS_DEPLOYMENT = ServiceName.JBOSS.append("deployment");
     /**
+     * The base name for deployment services.
+     */
+    public static final ServiceName JBOSS_DEPLOYMENT_POLICY = JBOSS_DEPLOYMENT.append("policy");
+    /**
      * The base name for deployment unit services and phase services.
      */
     public static final ServiceName JBOSS_DEPLOYMENT_UNIT = JBOSS_DEPLOYMENT.append("unit");
@@ -60,6 +64,16 @@ public final class Services {
      */
     public static ServiceName deploymentUnitName(String name) {
         return JBOSS_DEPLOYMENT_UNIT.append(name);
+    }
+
+    /**
+     * Get the service name of a deployment policy.
+     *
+     * @param name the simple name of the deployment policy
+     * @return the service name
+     */
+    public static ServiceName deploymentPolicyName(String policy) {
+        return (policy != null) ? JBOSS_DEPLOYMENT_POLICY.append(policy) : JBOSS_DEPLOYMENT_POLICY;
     }
 
     /**

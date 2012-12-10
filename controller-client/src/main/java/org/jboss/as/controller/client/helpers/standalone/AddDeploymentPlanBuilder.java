@@ -39,6 +39,15 @@ public interface AddDeploymentPlanBuilder extends DeploymentPlanBuilder {
 
     /**
      * Indicates content that was added via an immediately preceding
+     * <code>add</code> operation should be deployed.
+     *
+     * @param indicates the deployment policy to use when deploying this content
+     * @return a builder that can continue building the overall deployment plan
+     */
+    DeploymentPlanBuilder andDeploy(String policy);
+
+    /**
+     * Indicates content that was added via an immediately preceding
      * <code>add</code> operation should be deployed, replacing the specified
      * existing content in the runtime.
      *
@@ -47,5 +56,4 @@ public interface AddDeploymentPlanBuilder extends DeploymentPlanBuilder {
      * @return a builder that can continue building the overall deployment plan
      */
     ReplaceDeploymentPlanBuilder andReplace(String toReplace);
-
 }

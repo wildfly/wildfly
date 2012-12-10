@@ -103,6 +103,11 @@ public final class Attachments {
      */
     public static final AttachmentKey<ServiceVerificationHandler> SERVICE_VERIFICATION_HANDLER = AttachmentKey.create(ServiceVerificationHandler.class);
 
+    /**
+     * The deployment policy
+     */
+    public static final AttachmentKey<DeploymentUnitPhaseServiceBuilder> DEPLOYMENT_UNIT_PHASE_SERVICE_BUILDER = AttachmentKey.create(DeploymentUnitPhaseServiceBuilder.class);
+
     //
     // STRUCTURE
     //

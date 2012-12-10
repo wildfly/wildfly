@@ -47,6 +47,7 @@ import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.deployment.AbstractDeploymentUnitService;
@@ -63,8 +64,8 @@ public class DeploymentAttributes {
 
     //Top level attributes
     public static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, false)
-        .setValidator(new StringLengthValidator(1, false))
-        .build();
+            .setValidator(new StringLengthValidator(1, false))
+            .build();
     public static final AttributeDefinition TO_REPLACE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.TO_REPLACE, NAME).build();
 
     //For use in resources
@@ -77,13 +78,15 @@ public class DeploymentAttributes {
             .build();
 
     public static final SimpleAttributeDefinition ENABLED = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ENABLED, ModelType.BOOLEAN, true)
-         .setDefaultValue(new ModelNode(false))
-        .build();
-    public static final AttributeDefinition PERSISTENT = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PERSISTENT, ModelType.BOOLEAN, false)
-        .build();
+            .setDefaultValue(new ModelNode(false))
+            .build();
+    public static final SimpleAttributeDefinition POLICY = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DEPLOYMENT_POLICY, ModelType.STRING, true)
+            .setXmlName(Attribute.DEPLOYMENT_POLICY.getLocalName())
+            .build();
+    public static final AttributeDefinition PERSISTENT = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.PERSISTENT, ModelType.BOOLEAN, false).build();
     public static final AttributeDefinition STATUS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.STATUS, ModelType.STRING, false)
-        .setValidator(new EnumValidator<AbstractDeploymentUnitService.DeploymentStatus>(AbstractDeploymentUnitService.DeploymentStatus.class, false))
-        .build();
+            .setValidator(new EnumValidator<AbstractDeploymentUnitService.DeploymentStatus>(AbstractDeploymentUnitService.DeploymentStatus.class, false))
+            .build();
 
     //Managed content value attributes
     public static final SimpleAttributeDefinition CONTENT_INPUT_STREAM_INDEX =
@@ -174,6 +177,7 @@ public class DeploymentAttributes {
     public static final Map<String, AttributeDefinition> UNMANAGED_CONTENT_ATTRIBUTES = createAttributeMap(CONTENT_PATH, CONTENT_RELATIVE_TO, CONTENT_ARCHIVE);
 
     /** All attributes of the content attribute */
+    @SuppressWarnings("unchecked")
     public static final Map<String, AttributeDefinition> ALL_CONTENT_ATTRIBUTES = createAttributeMap(MANAGED_CONTENT_ATTRIBUTES, UNMANAGED_CONTENT_ATTRIBUTES);
 
     public static OperationDefinition DEPLOY_DEFINITION = new SimpleOperationDefinition(ModelDescriptionConstants.DEPLOY, DEPLOYMENT_RESOLVER);

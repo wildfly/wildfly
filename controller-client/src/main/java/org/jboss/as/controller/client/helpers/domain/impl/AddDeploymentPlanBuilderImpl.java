@@ -47,11 +47,16 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
 
     @Override
     public DeployDeploymentPlanBuilder andDeploy() {
+        return this.andDeploy(null);
+    }
+
+    @Override
+    public DeployDeploymentPlanBuilder andDeploy(String policy) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
             throw MESSAGES.cannotAddDeploymentAction();
         }
-        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey);
+        DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey, policy);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
         return new DeployDeploymentPlanBuilderImpl(this, newSet);
     }
