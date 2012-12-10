@@ -154,7 +154,7 @@ public class VaultTool {
         options.addOption("e", ENC_DIR_PARAM, true, "Directory containing encrypted files");
         options.addOption("s", SALT_PARAM, true, "8 character salt");
         options.addOption("i", ITERATION_PARAM, true, "Iteration count");
-        options.addOption("a", ALIAS_PARAM, true, "Vault keystore alias");
+        options.addOption("v", ALIAS_PARAM, true, "Vault keystore alias");
         options.addOption("b", VAULT_BLOCK_PARAM, true, "Vault block");
         options.addOption("a", ATTRIBUTE_PARAM, true, "Attribute name");
 
@@ -201,7 +201,7 @@ public class VaultTool {
         } else {
             // add password
             String password = cmdLine.getOptionValue(ATTRIBUTE_PARAM, "password");
-            nonInteractiveSession.addSecuredAttribute(vaultBlock, attributeName, password.toCharArray());
+            nonInteractiveSession.addSecuredAttributeWithDisplay(vaultBlock, attributeName, password.toCharArray());
             return 0;
         }
     }
