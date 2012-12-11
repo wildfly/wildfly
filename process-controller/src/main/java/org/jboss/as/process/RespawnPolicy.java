@@ -49,7 +49,7 @@ interface RespawnPolicy {
 
     RespawnPolicy RESPAWN = new RespawnPolicy() {
 
-        private static final int MAX_WAIT = 60;
+        private static final int MAX_WAIT = 30;
         private static final int MAX_RESTARTS = 10;
 
         @Override
