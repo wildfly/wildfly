@@ -671,7 +671,7 @@ public class JDBCMetaDataParser extends MetaDataElementParser {
                     break;
                 }
                 case NOT_NULL: {
-                    metaData.setNotNul(Boolean.parseBoolean(getElementText(reader)));
+                    metaData.setNotNull(Boolean.parseBoolean(getElementText(reader)));
                     break;
                 }
                 case JDBC_TYPE: {
