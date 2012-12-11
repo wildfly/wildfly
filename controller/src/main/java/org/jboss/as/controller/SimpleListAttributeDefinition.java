@@ -48,7 +48,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
 
     protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+        super(name, xmlName, false, allowNull, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         this.valueType = valueType;
     }
 
