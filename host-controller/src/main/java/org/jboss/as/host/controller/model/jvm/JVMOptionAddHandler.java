@@ -42,8 +42,10 @@ final class JVMOptionAddHandler implements OperationStepHandler {
     static final String OPERATION_NAME = "add-jvm-option";
     static final JVMOptionAddHandler INSTANCE = new JVMOptionAddHandler();
 
+    // the attribute allows expressions that are resolved in JVMAddHandler upon server restart
     static final SimpleAttributeDefinition JVM_OPTION = SimpleAttributeDefinitionBuilder.create(JvmAttributes.JVM_OPTION, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1))
+            .setValidator(new StringLengthValidator(1, false, true))
+            .setAllowExpression(true)
             .build();
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("jvm"))

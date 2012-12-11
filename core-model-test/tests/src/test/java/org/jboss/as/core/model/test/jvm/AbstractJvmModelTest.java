@@ -47,6 +47,7 @@ import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableAddHandler;
 import org.jboss.as.host.controller.model.jvm.JVMEnvironmentVariableRemoveHandler;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Test;
 
 /**
@@ -171,6 +172,13 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
     }
 
     @Test
+    public void testWriteJvmOptionsWithExpression() throws Exception {
+        KernelServices kernelServices = doEmptyJvmAdd();
+        ModelNode value = new ModelNode().add("-Xmx${my.xmx:100}m");
+        Assert.assertEquals(value, writeTest(kernelServices, "jvm-options", value));
+    }
+
+    @Test
     public void testWriteEnvironmentVariables() throws Exception {
         KernelServices kernelServices = doEmptyJvmAdd();
         ModelNode value = new ModelNode().add("ENV1", "one").add("ENV2", "two");
@@ -247,6 +255,16 @@ public abstract class AbstractJvmModelTest extends AbstractCoreModelTest {
         Assert.assertEquals(new ModelNode().add("-Xoption"), getJvmResource(kernelServices).get("jvm-options"));
         kernelServices.executeForFailure(createAddJvmOptionOperation("-Xoption"));
         Assert.assertEquals(new ModelNode().add("-Xoption"), getJvmResource(kernelServices).get("jvm-options"));
+    }
+
+    @Test
+    public void testAddJvmOptionWithExpression() throws Exception {
+        KernelServices kernelServices = doEmptyJvmAdd();
+        kernelServices.executeForResult(createAddJvmOptionOperation("-X${myoption:option}"));
+
+        ModelNode result = getJvmResource(kernelServices).get("jvm-options");
+        Assert.assertEquals(ModelType.EXPRESSION, result.get(0).getType());
+        Assert.assertEquals("-X${myoption:option}", result.get(0).asString());
     }
 
     @Test

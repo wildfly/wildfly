@@ -118,7 +118,27 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
 
         final String jvmName = serverVMName != null ? serverVMName : groupVMName;
         final ModelNode hostVM = jvmName != null ? hostModel.get(JVM, jvmName) : null;
-        this.jvmElement = new JvmElement(jvmName, hostVM, groupVM, serverVM);
+
+        this.jvmElement = new JvmElement(jvmName,
+                resolveJVMOptions(hostVM),
+                resolveJVMOptions(groupVM),
+                resolveJVMOptions(serverVM));
+    }
+
+    /**
+     * resolve expressions of the jvm model (if there is any)
+     */
+    private ModelNode resolveJVMOptions(final ModelNode vmModel) {
+        if (vmModel == null) {
+            return null;
+        }
+        try {
+            return expressionResolver.resolveExpressions(vmModel.clone());
+        } catch (OperationFailedException e) {
+            // should we fail or allow to proceed without having resolved the expression?
+            HostControllerLogger.CONTROLLER_MANAGEMENT_LOGGER.warn(e.getLocalizedMessage());
+            return vmModel;
+        }
     }
 
     /**
