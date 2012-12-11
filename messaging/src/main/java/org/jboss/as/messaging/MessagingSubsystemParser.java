@@ -40,7 +40,6 @@ import static org.jboss.as.messaging.CommonAttributes.CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
@@ -361,10 +360,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
                 case PARAM: {
                     String[] attrs = ParseUtils.requireAttributes(reader, Attribute.KEY.getLocalName(), Attribute.VALUE.getLocalName());
-                    requireNoContent(reader);
-                    final ModelNode paramAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, serviceAddress.clone().add(CommonAttributes.PARAM, attrs[0]));
-                    CommonAttributes.VALUE.parseAndSetParameter(attrs[1], paramAdd, reader);
+                    final String key = attrs[0];
+                    final String value = attrs[1];
+                    final ModelNode paramAdd = org.jboss.as.controller.operations.common.Util.getEmptyOperation(ADD, serviceAddress.clone().add(CommonAttributes.PARAM, key));
+                    ConnectorServiceParamDefinition.VALUE.parseAndSetParameter(value, paramAdd, reader);
                     updates.add(paramAdd);
+                    requireNoContent(reader);
                     break;
                 }
                 default: {
@@ -874,7 +875,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case ACCEPTOR: {
                     acceptorAddress.add(ACCEPTOR, name);
                     if(socketBinding != null) operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, operation, true);
+                    parseTransportConfiguration(reader, operation, true);
                     break;
                 } case NETTY_ACCEPTOR: {
                     acceptorAddress.add(REMOTE_ACCEPTOR, name);
@@ -882,12 +883,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, operation, false);
+                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case IN_VM_ACCEPTOR: {
                     acceptorAddress.add(IN_VM_ACCEPTOR, name);
                     operation.get(InVMTransportDefinition.SERVER_ID.getName()).set(serverId);
-                    parseTransportConfigurationParams(reader, operation, false);
+                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -1102,7 +1103,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 case CONNECTOR: {
                     connectorAddress.add(CONNECTOR, name);
                     if(socketBinding != null) operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, operation, true);
+                    parseTransportConfiguration(reader, operation, true);
                     break;
                 } case NETTY_CONNECTOR: {
                     connectorAddress.add(REMOTE_CONNECTOR, name);
@@ -1110,12 +1111,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                         ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfigurationParams(reader, operation, false);
+                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case IN_VM_CONNECTOR: {
                     connectorAddress.add(IN_VM_CONNECTOR, name);
                     operation.get(InVMTransportDefinition.SERVER_ID.getName()).set(serverId);
-                    parseTransportConfigurationParams(reader, operation, false);
+                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
@@ -1182,39 +1183,36 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         return addressSettingsSpec;
     }
 
-    static void parseTransportConfigurationParams(final XMLExtendedStreamReader reader, final ModelNode transportConfig, final boolean generic) throws XMLStreamException {
-        final ModelNode params = new ModelNode();
-
+    static void parseTransportConfiguration(final XMLExtendedStreamReader reader, final ModelNode operation, final boolean generic) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            int count = reader.getAttributeCount();
-            String key = null;
-            String value = null;
-            for (int n = 0; n < count; n++) {
-                String attrName = reader.getAttributeLocalName(n);
-                Attribute attribute = Attribute.forName(attrName);
-                switch (attribute) {
-                    case KEY:
-                        key = reader.getAttributeValue(n);
-                        break;
-                    case VALUE:
-                        value = reader.getAttributeValue(n);
-                        break;
-                    default:
-                        throw unexpectedAttribute(reader, n);
-                }
-            }
-
             Element element = Element.forName(reader.getLocalName());
             switch(element) {
                 case FACTORY_CLASS: {
                     if(! generic) {
                         throw ParseUtils.unexpectedElement(reader);
                     }
-                    transportConfig.get(FACTORY_CLASS.getName()).set(reader.getElementText().trim());
+                    handleElementText(reader, element, operation);
                     break;
                 }
                 case PARAM: {
-                    params.add(key, value);
+                    int count = reader.getAttributeCount();
+                    String key = null;
+                    String value = null;
+                    for (int n = 0; n < count; n++) {
+                        String attrName = reader.getAttributeLocalName(n);
+                        Attribute attribute = Attribute.forName(attrName);
+                        switch (attribute) {
+                            case KEY:
+                                key = reader.getAttributeValue(n);
+                                break;
+                            case VALUE:
+                                value = reader.getAttributeValue(n);
+                                break;
+                            default:
+                                throw unexpectedAttribute(reader, n);
+                        }
+                    }
+                    operation.get(PARAM).add(key, TransportParamDefinition.VALUE.parse(value, reader));
                     ParseUtils.requireNoContent(reader);
                     break;
                 } default: {
@@ -1222,7 +1220,6 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
             }
         }
-        transportConfig.get(PARAM).set(params);
     }
 
     static void parseDirectory(final XMLExtendedStreamReader reader, final String name, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {

@@ -25,7 +25,9 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
@@ -46,16 +48,17 @@ public class ConnectorServiceDefinition extends SimpleResourceDefinition {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
                 ConnectorServiceAdd.INSTANCE,
-                ConnectorServiceRemove.INSTANCE);
+                new HornetQReloadRequiredHandlers.RemoveStepHandler());
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registry) {
         super.registerAttributes(registry);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, ConnectorServiceWriteAttributeHandler.INSTANCE);
+                registry.registerReadWriteAttribute(attr, null, writeHandler);
             }
         }
     }

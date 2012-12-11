@@ -96,7 +96,6 @@ import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_SCAN_PERIOD
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_EXPIRY_THREAD_PRIORITY;
 import static org.jboss.as.messaging.CommonAttributes.MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PAGE_MAX_CONCURRENT_IO;
-import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.PERF_BLAST_PAGES;
 import static org.jboss.as.messaging.CommonAttributes.PERSISTENCE_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
@@ -470,7 +469,7 @@ public class MessagingExtension implements Extension {
                 CommonAttributes.CONNECTOR, CommonAttributes.REMOTE_CONNECTOR, CommonAttributes.IN_VM_CONNECTOR };
         for (String path : transports) {
             TransformersSubRegistration transport = rejectExpressions(server, PathElement.pathElement(path), CommonAttributes.FACTORY_CLASS);
-            rejectExpressions(transport, PathElement.pathElement(PARAM), VALUE);
+            rejectExpressions(transport, TransportParamDefinition.PATH, VALUE);
         }
 
         for (final String path : MessagingPathHandlers.PATHS.keySet()) {
@@ -487,7 +486,8 @@ public class MessagingExtension implements Extension {
         clusterConnection.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, new OperationTransformers.MultipleOperationalTransformer(rejectClusterConnectionExpressions,
                 new OperationTransformers.FailUnignoredAttributesOperationTransformer(CALL_FAILOVER_TIMEOUT)));
 
-        rejectExpressions(server, ConnectorServiceDefinition.PATH, CommonAttributes.FACTORY_CLASS);
+        TransformersSubRegistration connectorService = rejectExpressions(server, ConnectorServiceDefinition.PATH, CommonAttributes.FACTORY_CLASS);
+        rejectExpressions(connectorService, ConnectorServiceParamDefinition.PATH, VALUE);
 
         RejectExpressionValuesTransformer rejectConnectionFactoryExpressions = new RejectExpressionValuesTransformer(Regular.FACTORY_TYPE,
                 HA, MIN_LARGE_MESSAGE_SIZE, CALL_TIMEOUT,
