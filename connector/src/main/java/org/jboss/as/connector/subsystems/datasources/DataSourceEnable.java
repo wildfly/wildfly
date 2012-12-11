@@ -238,7 +238,7 @@ public class DataSourceEnable implements OperationStepHandler {
                                 SUBSYSTEM_DATASOURCES_LOGGER.boundDataSource(jndiName);
                                 break;
                             }
-                            case START_REQUESTED_to_DOWN: {
+                            case STOPPING_to_DOWN: {
                                 SUBSYSTEM_DATASOURCES_LOGGER.unboundDataSource(jndiName);
                                 break;
                             }
