@@ -36,6 +36,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.naming.JndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
+import org.jboss.as.naming.NamingLogger;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
@@ -139,21 +140,24 @@ public class JndiViewOperation implements OperationStepHandler {
                 } else if (value instanceof Reference) {
                     //node.get("value").set(value.toString());
                 } else {
-                    final String jndiViewValue;
+                    String jndiViewValue = JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE;
                     if (value instanceof JndiViewManagedReferenceFactory) {
-                        jndiViewValue = JndiViewManagedReferenceFactory.class.cast(value)
+                       try {
+                           jndiViewValue = JndiViewManagedReferenceFactory.class.cast(value)
                                 .getJndiViewInstanceValue();
-                    } else {
-                        if (value instanceof ManagedReferenceFactory) {
-                            jndiViewValue = JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE;
-                        } else {
-                            jndiViewValue = String.valueOf(value);
-                        }
+                       }
+                       catch (Throwable e) {
+                           // just log, don't stop the operation
+                           NamingLogger.ROOT_LOGGER.failedToLookupJndiViewValue(pair.getName(),e);
+                       }
+                    } else if (!(value instanceof ManagedReferenceFactory)) {
+                       jndiViewValue = String.valueOf(value);
                     }
                     node.get("value").set(jndiViewValue);
                 }
             } catch (NamingException e) {
-                // Ignore for now..
+                // just log, don't stop the operation
+                NamingLogger.ROOT_LOGGER.failedToLookupJndiViewValue(pair.getName(),e);
             }
         }
     }
