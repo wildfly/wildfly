@@ -32,7 +32,7 @@
     </supplement>
     <supplement name="ha">
         <replacement placeholder="CACHE-CONTAINERS">
-            <cache-container name="cluster" aliases="ha-partition" default-cache="default">
+            <cache-container name="singleton" aliases="cluster ha-partition" default-cache="default">
                 <transport lock-timeout="60000"/>
                 <replicated-cache name="default" mode="SYNC" batching="true">
                     <locking isolation="REPEATABLE_READ"/>

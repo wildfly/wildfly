@@ -24,16 +24,21 @@ package org.jboss.as.clustering.msc;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Collection;
-import java.util.EnumSet;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceController.Transition;
+import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -42,6 +47,28 @@ import org.jboss.msc.service.StartException;
  */
 public class ServiceContainerHelper {
     private static Logger log = Logger.getLogger(ServiceContainerHelper.class);
+
+    // Mapping of service controller mode changes that appropriate for toggling to a given controller state
+    private static final Map<State, Map<Mode, Mode>> modeToggle = new EnumMap<State, Map<Mode, Mode>>(State.class);
+    static {
+        Map<Mode, Mode> map = new EnumMap<Mode, Mode>(Mode.class);
+        map.put(Mode.NEVER, Mode.ACTIVE);
+        map.put(Mode.ON_DEMAND, Mode.PASSIVE);
+        modeToggle.put(State.UP, map);
+
+        map = new EnumMap<Mode, Mode>(Mode.class);
+        map.put(Mode.ACTIVE, Mode.NEVER);
+        map.put(Mode.PASSIVE, Mode.ON_DEMAND);
+        modeToggle.put(State.DOWN, map);
+
+        map = new EnumMap<Mode, Mode>(Mode.class);
+        for (Mode mode: Mode.values()) {
+            if (mode != Mode.REMOVE) {
+                map.put(mode, Mode.REMOVE);
+            }
+        }
+        modeToggle.put(State.REMOVED, map);
+    }
 
     /**
      * Returns the current service container.
@@ -84,26 +111,8 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      * @throws StartException if the specified service could not be started
      */
-    public static void start(ServiceController<?> controller) throws StartException {
-        // If service is down, set the mode appropriately so the controller will start it
-        if (controller.getState() == ServiceController.State.DOWN) {
-            switch (controller.getMode()) {
-                case NEVER: {
-                    controller.setMode(ServiceController.Mode.ACTIVE);
-                    break;
-                }
-                case ON_DEMAND: {
-                    controller.setMode(ServiceController.Mode.PASSIVE);
-                    break;
-                }
-                default: {
-                    // Do nothing
-                }
-            }
-        }
-        if (!wait(controller, EnumSet.of(ServiceController.State.DOWN, ServiceController.State.STARTING), ServiceController.State.UP)) {
-            throw controller.getStartException();
-        }
+    public static void start(final ServiceController<?> controller) throws StartException {
+        transition(controller, State.UP);
     }
 
     /**
@@ -111,23 +120,12 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      */
     public static void stop(ServiceController<?> controller) {
-        // If service is up, set the mode appropriately so the controller will stop it
-        if (controller.getState() == ServiceController.State.UP) {
-            switch (controller.getMode()) {
-                case ACTIVE: {
-                    controller.setMode(ServiceController.Mode.NEVER);
-                    break;
-                }
-                case PASSIVE: {
-                    controller.setMode(ServiceController.Mode.ON_DEMAND);
-                    break;
-                }
-                default: {
-                    // Do nothing
-                }
-            }
+        try {
+            transition(controller, State.DOWN);
+        } catch (StartException e) {
+            // This can't happen
+            throw new IllegalStateException(e);
         }
-        wait(controller, EnumSet.of(ServiceController.State.UP, ServiceController.State.STOPPING), ServiceController.State.DOWN);
     }
 
     /**
@@ -135,44 +133,64 @@ public class ServiceContainerHelper {
      * @param controller a service controller
      */
     public static void remove(ServiceController<?> controller) {
-        controller.setMode(ServiceController.Mode.REMOVE);
-        wait(controller, EnumSet.of(ServiceController.State.UP, ServiceController.State.STOPPING, ServiceController.State.DOWN), ServiceController.State.REMOVED);
+        try {
+            transition(controller, State.REMOVED);
+        } catch (StartException e) {
+            // This can't happen
+            throw new IllegalStateException(e);
+        }
     }
 
-    private static <T> boolean wait(ServiceController<T> controller, Collection<ServiceController.State> expectedStates, ServiceController.State targetState) {
-        if (controller.getState() == targetState) return true;
-        ServiceListener<T> listener = new NotifyingServiceListener<T>(controller);
-        controller.addListener(listener);
+    private static void transition(final ServiceController<?> targetController, State targetState) throws StartException {
+        // Short-circuit if the service is already at the target state
+        if (targetController.getState() == targetState) return;
+
+        // Track any services installed by the target service
+        final Queue<ServiceController<?>> controllers = new ConcurrentLinkedQueue<ServiceController<?>>(Collections.singleton(targetController));
+        final ServiceListener<Object> listener = new AbstractServiceListener<Object>() {
+            @Override
+            public void transition(ServiceController<? extends Object> controller, Transition transition) {
+                log.tracef("%s transitioned from %s", controller.getName(), transition);
+                if (transition.leavesRestState()) {
+                    // Target controller is already in queue
+                    if (controller != targetController) {
+                        controllers.add(controller);
+                    }
+                } else if (transition.entersRestState()) {
+                    synchronized (controller) {
+                        controller.notify();
+                    }
+                }
+            }
+        };
+        targetController.addListener(ServiceListener.Inheritance.ALL, listener);
         try {
-            synchronized (controller) {
-                ServiceController.State state = controller.getState();
-                while (expectedStates.contains(state)) {
-                    log.tracef("Waiting for %s transition from %s to %s, unavailable dependencies: %s", controller.getName(), state, targetState, controller.getImmediateUnavailableDependencies());
-                    controller.wait();
-                    state = controller.getState();
-                    log.tracef("%s state is now %s", controller.getName(), state);
+            if (targetController.getSubstate().isRestState()) {
+                // Force service to transition to desired state
+                Mode targetMode = modeToggle.get(targetState).get(targetController.getMode());
+                if (targetMode != null) {
+                    targetController.setMode(targetMode);
+                }
+            }
+            while (!controllers.isEmpty()) {
+                ServiceController<?> controller = controllers.remove();
+                synchronized (controller) {
+                    if (!controller.getSubstate().isRestState()) {
+                        // Listener will notify us when we enter rest state
+                        controller.wait();
+                    }
+                }
+                if (targetState == State.UP) {
+                    StartException exception = controller.getStartException();
+                    if (exception != null) {
+                        throw exception;
+                    }
                 }
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-        controller.removeListener(listener);
-        return controller.getState() == targetState;
-    }
-
-    private static class NotifyingServiceListener<T> extends AbstractServiceListener<T> {
-        private final ServiceController<T> controller;
-
-        NotifyingServiceListener(final ServiceController<T> controller) {
-            this.controller = controller;
-        }
-
-        @Override
-        public void transition(ServiceController<? extends T> controller, Transition transition) {
-            log.tracef("%s transitioned from %s", controller.getName(), transition);
-            synchronized (this.controller) {
-                this.controller.notify();
-            }
+        } finally {
+            targetController.removeListener(listener);
         }
     }
 
