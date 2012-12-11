@@ -55,10 +55,6 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
     private final boolean stateful;
     private final Value<ClassLoader> viewClassLoader;
 
-    public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
-        this(appName, moduleName, distinctName, beanName, viewClass, stateful, null);
-    }
-
     public RemoteViewManagedReferenceFactory(final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
         this.appName = appName == null ? "" : appName;
         this.moduleName = moduleName;
@@ -86,7 +82,7 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
         try {
             viewClass = Class.forName(this.viewClass, false, SecurityActions.getContextClassLoader());
         } catch (ClassNotFoundException e) {
-            if(viewClassLoader == null) {
+            if(viewClassLoader == null || viewClassLoader.getValue() == null) {
                 throw MESSAGES.failToLoadViewClassEjb(beanName, e);
             }
             try {

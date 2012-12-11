@@ -45,10 +45,6 @@ public class RemoteViewInjectionSource extends InjectionSource {
     private final boolean stateful;
     private final Value<ClassLoader> viewClassLoader;
 
-    public RemoteViewInjectionSource(final ServiceName serviceName, final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful) {
-        this(serviceName, appName, moduleName, distinctName, beanName, viewClass, stateful, null);
-    }
-
     public RemoteViewInjectionSource(final ServiceName serviceName, final String appName, final String moduleName, final String distinctName, final String beanName, final String viewClass, final boolean stateful, final Value<ClassLoader> viewClassLoader) {
         this.serviceName = serviceName;
         this.appName = appName;
@@ -67,8 +63,7 @@ public class RemoteViewInjectionSource extends InjectionSource {
         if(serviceName != null) {
             serviceBuilder.addDependency(serviceName);
         }
-        final RemoteViewManagedReferenceFactory factory = viewClassLoader != null ? new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful, viewClassLoader)
-            : new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful);
+        final RemoteViewManagedReferenceFactory factory = new RemoteViewManagedReferenceFactory(appName, moduleName, distinctName, beanName, viewClass, stateful, viewClassLoader);
         injector.inject(factory);
     }
 
