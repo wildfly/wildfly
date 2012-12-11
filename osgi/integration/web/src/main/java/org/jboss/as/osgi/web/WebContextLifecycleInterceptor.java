@@ -120,8 +120,10 @@ class WebContextLifecycleInterceptor extends AbstractLifecycleInterceptor implem
     }
 
     private void uninjectBundleContext(ServletContext webContext) {
-        OSGiLogger.LOGGER.debugf("Uninjecting bundle context from %s", webContext);
-        webContext.removeAttribute(WebExtension.OSGI_BUNDLECONTEXT);
+        if (webContext != null) {
+            OSGiLogger.LOGGER.debugf("Uninjecting bundle context from %s", webContext);
+            webContext.removeAttribute(WebExtension.OSGI_BUNDLECONTEXT);
+        }
     }
 
     private void registerServletContextService(ServletContext servletContext, BundleContext bundleContext) {
