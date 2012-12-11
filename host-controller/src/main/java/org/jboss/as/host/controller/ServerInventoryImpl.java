@@ -259,6 +259,8 @@ public class ServerInventoryImpl implements ServerInventory {
         if(running) {
             if(!stopping) {
                  server.reconnectServerProcess();
+                 // Register the server proxy at the domain controller
+                 domainController.registerRunningServer(server.getProxyController());
             } else {
                  server.setServerProcessStopping();
             }
