@@ -112,4 +112,15 @@ public interface NamingLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11811, value = "Failed to release binder service, used for a runtime made JNDI binding")
     void failedToReleaseBinderService(@Cause Throwable cause);
+
+    /**
+     *  A message indicating that the lookup of an entry's JNDI view value failed.
+     *
+     * @param cause the cause of the error.
+     * @param entry the jndi name of the entry
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11812, value = "Failed to obtain jndi view value for entry %s.")
+    void failedToLookupJndiViewValue(String entry, @Cause Throwable cause);
+
 }
