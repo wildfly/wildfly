@@ -44,7 +44,7 @@ interface HornetQReloadRequiredHandlers {
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-            if (HornetQService.isHornetQServiceRunning(context, operation)) {
+            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.reloadRequired();
             }
         }
@@ -52,7 +52,7 @@ interface HornetQReloadRequiredHandlers {
         @Override
         protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model,
                 List<ServiceController<?>> controllers) {
-            if (HornetQService.isHornetQServiceRunning(context, operation)) {
+            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.revertReloadRequired();
             }
         }
@@ -61,14 +61,14 @@ interface HornetQReloadRequiredHandlers {
     final class RemoveStepHandler extends AbstractRemoveStepHandler {
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (HornetQService.isHornetQServiceRunning(context, operation)) {
+            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.reloadRequired();
             }
         }
 
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-            if (HornetQService.isHornetQServiceRunning(context, operation)) {
+            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.revertReloadRequired();
             }
         }
@@ -85,13 +85,13 @@ interface HornetQReloadRequiredHandlers {
                 ModelNode resolvedValue, ModelNode currentValue,
                 org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> handbackHolder)
                 throws OperationFailedException {
-            return HornetQService.isHornetQServiceRunning(context, operation);
+            return HornetQService.isHornetQServiceInstalled(context, operation);
         }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
                 ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-            if (HornetQService.isHornetQServiceRunning(context, operation)) {
+            if (HornetQService.isHornetQServiceInstalled(context, operation)) {
                 context.revertReloadRequired();
             }
         }

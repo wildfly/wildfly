@@ -59,6 +59,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.inject.MapInjector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -320,12 +322,16 @@ class HornetQService implements Service<HornetQServer> {
     }
 
     /**
-     * Returns true if the HornetQ service is up and running.
+     * Returns true if a {@link ServiceController} for this service has been {@link ServiceBuilder#install() installed}
+     * in MSC under the
+     * {@link MessagingServices#getHornetQServiceName(PathAddress) service name appropriate to the given operation}.
      *
      * @param context the operation context
      * @param operation the operation
+     *
+     * @return {@code true} if a {@link ServiceController} is installed
      */
-    static boolean isHornetQServiceRunning(final OperationContext context, final ModelNode operation) {
+    static boolean isHornetQServiceInstalled(final OperationContext context, final ModelNode operation) {
         if (context.isNormalServer()) {
             final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(hqServiceName);
