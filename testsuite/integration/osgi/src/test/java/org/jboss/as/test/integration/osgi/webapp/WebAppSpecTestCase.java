@@ -49,11 +49,14 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
@@ -77,6 +80,8 @@ public class WebAppSpecTestCase {
     static final String FRAGMENT_C = "fragment-c.jar";
     static final String BUNDLE_D_WAB = "bundle-d.wab";
     static final String BUNDLE_E_WAB = "bundle-e.wab";
+    static final String BUNDLE_F1_WAB = "bundle-f1.wab";
+    static final String BUNDLE_F2_WAB = "bundle-f2.wab";
 
     @ArquillianResource
     Deployer deployer;
@@ -86,6 +91,9 @@ public class WebAppSpecTestCase {
 
     @ArquillianResource
     PackageAdmin packageAdmin;
+
+    @ArquillianResource
+    BundleContext syscontext;
 
     @Deployment
     public static Archive<?> deployment() {
@@ -123,7 +131,7 @@ public class WebAppSpecTestCase {
         deployer.deploy(BUNDLE_B_WAB);
         try {
             String result = performCall("/bundleB/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-b.wab called with: Hello", result);
             result = performCall("/bundleB/host-message.txt");
             Assert.assertEquals("Hello from Host", result);
             Bundle bundle = packageAdmin.getBundles(BUNDLE_B_WAB, null)[0];
@@ -142,7 +150,7 @@ public class WebAppSpecTestCase {
         deployer.deploy(BUNDLE_C_WAB);
         try {
             String result = performCall("/bundleC/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-c.wab called with: Hello", result);
             Bundle bundle = packageAdmin.getBundles(BUNDLE_C_WAB, null)[0];
             Enumeration<URL> entries = bundle.findEntries("WEB-INF", "web.xml", true);
             Assert.assertNotNull("WEb-INF/web.xml entries found", entries);
@@ -164,7 +172,7 @@ public class WebAppSpecTestCase {
             Assert.assertEquals("Hello from Host", result);
             //Assert.assertEquals(Bundle.STARTING, bundle.getState());
             result = performCall("/bundleD/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-d.wab called with: Hello", result);
             Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
         } finally {
             deployer.undeploy(BUNDLE_D_WAB);
@@ -204,9 +212,41 @@ public class WebAppSpecTestCase {
                 // expected
             }
             result = performCall("/bundleE/servlet?input=Hello");
-            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+            Assert.assertEquals("bundle-e.wab called with: Hello", result);
         } finally {
             deployer.undeploy(BUNDLE_E_WAB);
+        }
+    }
+
+    @Test
+    @Ignore("[AS7-5653] Cannot restart webapp bundle after activation failure")
+    public void testCollidingContextPath() throws Exception {
+        // The Web Extender must attempt to deploy the colliding WAB with the lowest bundle id.
+        Bundle bundleF1 = syscontext.installBundle(BUNDLE_F1_WAB, deployer.getDeployment(BUNDLE_F1_WAB));
+        try {
+            bundleF1.start();
+            String result = performCall("/bundleF/host-message.txt");
+            Assert.assertEquals("Hello from Host", result);
+            result = performCall("/bundleF/servlet?input=Hello");
+            Assert.assertEquals("bundle-f1.wab called with: Hello", result);
+            Bundle bundleF2 = syscontext.installBundle(BUNDLE_F2_WAB, deployer.getDeployment(BUNDLE_F2_WAB));
+            try {
+                try {
+                    bundleF2.start();
+                    Assert.fail("IOException expected");
+                } catch (BundleException ex) {
+                    // expected
+                }
+                bundleF1.stop();
+                result = performCall("/bundleF/host-message.txt");
+                Assert.assertEquals("Hello from Host", result);
+                result = performCall("/bundleF/servlet?input=Hello");
+                Assert.assertEquals("bundle-f2.wab called with: Hello", result);
+            } finally {
+                bundleF2.uninstall();
+            }
+        } finally {
+            bundleF1.uninstall();
         }
     }
 
@@ -248,6 +288,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleB");
                 return builder.openStream();
             }
@@ -267,6 +308,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleC");
                 return builder.openStream();
             }
@@ -306,6 +348,7 @@ public class WebAppSpecTestCase {
                 builder.addBundleManifestVersion(2);
                 builder.addBundleActivationPolicy(Constants.ACTIVATION_LAZY);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleD");
                 return builder.openStream();
             }
@@ -328,9 +371,49 @@ public class WebAppSpecTestCase {
                 OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
                 builder.addBundleSymbolicName(archive.getName());
                 builder.addBundleManifestVersion(2);
-                builder.addBundleActivationPolicy(Constants.ACTIVATION_LAZY);
                 builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
                 builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleE");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_F1_WAB, managed = false, testable = false)
+    public static Archive<?> getBundleF() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_F1_WAB);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
+        archive.addAsResource(HOST_ASSET, "host-message.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
+                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleF");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
+
+    @Deployment(name = BUNDLE_F2_WAB, managed = false, testable = false)
+    public static Archive<?> getBundleF2() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_F2_WAB);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
+        archive.addAsResource(HOST_ASSET, "host-message.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addImportPackages(FrameworkUtil.class);
+                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleF");
                 return builder.openStream();
             }
         });
