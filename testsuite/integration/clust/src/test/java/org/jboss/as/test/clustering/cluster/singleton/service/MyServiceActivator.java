@@ -19,60 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.test.clustering.cluster.singleton.service;
 
 import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
-
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.clustering.singleton.SingletonService;
 import org.jboss.as.clustering.singleton.election.NamePreference;
 import org.jboss.as.clustering.singleton.election.PreferredSingletonElectionPolicy;
 import org.jboss.as.clustering.singleton.election.SimpleSingletonElectionPolicy;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.msc.service.ServiceActivator;
+import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
 
-@WebListener
-public class MyServiceContextListener implements ServletContextListener {
+/**
+ * @author Paul Ferraro
+ */
+public class MyServiceActivator implements ServiceActivator {
 
     public static final String PREFERRED_NODE = NODE_2;
 
     @Override
-    public void contextInitialized(ServletContextEvent event) {
+    public void activate(ServiceActivatorContext context) {
         MyService service = new MyService();
         SingletonService<Environment> singleton = new SingletonService<Environment>(service, MyService.SERVICE_NAME);
-        singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER), new SimpleSingletonElectionPolicy()));
-        ServiceController<Environment> controller = singleton.build(ServiceContainerHelper.getCurrentServiceContainer())
+        singleton.setElectionPolicy(new PreferredSingletonElectionPolicy(new SimpleSingletonElectionPolicy(), new NamePreference(PREFERRED_NODE + "/" + SingletonService.DEFAULT_CONTAINER)));
+        singleton.build(context.getServiceTarget())
             .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.getEnvInjector())
             .setInitialMode(ServiceController.Mode.ACTIVE)
             .install()
         ;
-        try {
-            ServiceContainerHelper.start(controller);
-        } catch (StartException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent event) {
-        System.out.println(String.format("Initiating removal of %s", MyService.SERVICE_NAME.getCanonicalName()));
-        ServiceContainerHelper.remove(ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(MyService.SERVICE_NAME));
-        System.out.println(String.format("Removal of %s complete", MyService.SERVICE_NAME.getCanonicalName()));
-        this.verifyRemoved(MyService.SERVICE_NAME.append("service"));
-        this.verifyRemoved(MyService.SERVICE_NAME.append("singleton"));
-    }
-
-    private void verifyRemoved(ServiceName name) {
-        ServiceController<?> controller = ServiceContainerHelper.getCurrentServiceContainer().getService(name);
-        if ((controller != null) && (controller.getState() != ServiceController.State.REMOVED)) {
-            throw new IllegalStateException(String.format("%s state = %s", name.getCanonicalName(), controller.getState()));
-        }
     }
 }
