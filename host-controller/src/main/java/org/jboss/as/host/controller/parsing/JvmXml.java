@@ -431,7 +431,7 @@ public class JvmXml {
             final Element element = Element.forName(reader.getLocalName());
             if (element == Element.OPTION) {
                 // Handle attributes
-                String option = null;
+                ModelNode option = null;
                 final int count = reader.getAttributeCount();
                 for (int i = 0; i < count; i++) {
                     final String attrValue = reader.getAttributeValue(i);
@@ -441,7 +441,7 @@ public class JvmXml {
                         final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                         switch (attribute) {
                             case VALUE: {
-                                option = attrValue;
+                                option = ParseUtils.parsePossibleExpression(attrValue);
                                 break;
                             }
                             default:
@@ -454,7 +454,6 @@ public class JvmXml {
                 }
 
                 options.add(option);
-
                 // Handle elements
                 requireNoContent(reader);
             } else {
