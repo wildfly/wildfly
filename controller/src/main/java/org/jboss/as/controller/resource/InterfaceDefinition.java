@@ -40,7 +40,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceNameOperationStepHandler;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
@@ -219,7 +219,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
         for (final AttributeDefinition def : InterfaceDefinition.ROOT_ATTRIBUTES) {
             registration.registerReadWriteAttribute(def, null, handler);
         }
-        registration.registerReadOnlyAttribute(InterfaceDefinition.NAME, ResourceNameOperationStepHandler.INSTANCE);
+        registration.registerReadOnlyAttribute(InterfaceDefinition.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
     }
 
     @Deprecated

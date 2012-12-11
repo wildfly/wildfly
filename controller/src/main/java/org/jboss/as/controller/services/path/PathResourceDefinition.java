@@ -22,7 +22,7 @@
 package org.jboss.as.controller.services.path;
 
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ResourceNameOperationStepHandler;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -106,7 +106,7 @@ public abstract class PathResourceDefinition extends SimpleResourceDefinition {
     }
 
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(NAME, ResourceNameOperationStepHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(RELATIVE_TO, null, new PathWriteAttributeHandler(pathManager, RELATIVE_TO, services));
         SimpleAttributeDefinition pathAttr = specified ? PATH_SPECIFIED : PATH_NAMED;
         resourceRegistration.registerReadWriteAttribute(pathAttr, null, new PathWriteAttributeHandler(pathManager, pathAttr, services));
