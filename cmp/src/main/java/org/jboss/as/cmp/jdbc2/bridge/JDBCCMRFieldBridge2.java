@@ -660,12 +660,9 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         }
 
         public void cascadeDelete(CmpEntityBeanContext ctx) throws RemoveException {
-            Collection value = (Collection) getValue(ctx);
-            if (!value.isEmpty()) {
-                EJBLocalObject[] locals = (EJBLocalObject[]) value.toArray();
-                for (int i = 0; i < locals.length; ++i) {
-                    locals[i].remove();
-                }
+            Collection<EJBLocalObject> cmrs = (Collection<EJBLocalObject>) getValue(ctx);
+            for (EJBLocalObject localEjb : cmrs) {
+                localEjb.remove();
             }
         }
 
@@ -1118,8 +1115,7 @@ public class JDBCCMRFieldBridge2 extends JDBCAbstractCMRFieldBridge {
         void addRelatedId(CmpEntityBeanContext ctx, Object relatedId);
     }
 
-    private class CMRSet
-            implements Set {
+    private class CMRSet implements Set {
         private final CmpEntityBeanContext ctx;
         private final CollectionValuedFieldState state;
 
