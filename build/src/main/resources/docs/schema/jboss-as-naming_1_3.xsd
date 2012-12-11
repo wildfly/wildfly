@@ -101,7 +101,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="factoryClass" type="xs:token" use="required">
+        <xs:attribute name="class" type="xs:token" use="required">
             <xs:annotation>
                 <xs:documentation>
                     The javax.naming.spi.ObjectFactory that provides the value.
