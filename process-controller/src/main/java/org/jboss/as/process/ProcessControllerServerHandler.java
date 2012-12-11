@@ -92,6 +92,8 @@ public final class ProcessControllerServerHandler implements ConnectionHandler {
             connection.setMessageHandler(new ConnectedMessageHandler(processController, process.isPrivileged()));
             processController.addManagedConnection(connection);
             dataStream.close();
+            // Reset the respawn count for the connecting process
+            process.resetRespawnCount();
         }
 
         public void handleShutdown(final Connection connection) throws IOException {
