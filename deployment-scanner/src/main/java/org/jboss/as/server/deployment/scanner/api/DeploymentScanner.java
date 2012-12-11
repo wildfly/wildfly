@@ -137,13 +137,4 @@ public interface DeploymentScanner {
      * @param timeout The deployment timeout
      */
     void setDeploymentTimeout(long timeout);
-
-    /**
-     * Perform a scan as part of the server boot operation.
-     *
-     * @param context
-     * @param verificationHandler
-     * @param newControllers
-     */
-    void bootTimeScan(OperationContext context, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers);
 }
