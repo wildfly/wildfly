@@ -83,6 +83,7 @@ public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
         valueType.get(CODE, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, CODE));
         valueType.get(Constants.TYPE, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.TYPE));
+        valueType.get(Constants.MODULE, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.MODULE));
         valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getResourceAttributeValueTypeDescription(getName(), locale, bundle, Constants.MODULE_OPTIONS));
     }
 
@@ -91,6 +92,7 @@ public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
         final ModelNode valueType = getNoTextValueTypeDescription(node);
         valueType.get(CODE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, CODE));
         valueType.get(Constants.TYPE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.TYPE));
+        valueType.get(Constants.MODULE, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE));
         valueType.get(Constants.MODULE_OPTIONS, DESCRIPTION).set(resolver.getOperationParameterValueTypeDescription(operationName, getName(), locale, bundle, Constants.MODULE_OPTIONS));
     }
 
@@ -102,6 +104,10 @@ public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
                 writer.writeStartElement(getXmlName());
                 writer.writeAttribute(Attribute.CODE.getLocalName(), module.get(CODE).asString());
                 writer.writeAttribute(Attribute.TYPE.getLocalName(), module.get(Constants.TYPE).asString().toLowerCase(Locale.ENGLISH));
+
+                if(module.hasDefined(Constants.MODULE)){
+                     writer.writeAttribute(Attribute.MODULE.getLocalName(), module.get(Constants.MODULE).asString());
+                 }
 
                 if (module.hasDefined(Constants.MODULE_OPTIONS)) {
                     for (ModelNode option : module.get(Constants.MODULE_OPTIONS).asList()) {
@@ -144,6 +150,11 @@ public class MappingModulesAttributeDefinition extends ListAttributeDefinition {
         flag.get(DESCRIPTION);  // placeholder
         flag.get(TYPE).set(ModelType.STRING);
         flag.get(NILLABLE).set(false);
+
+        final ModelNode module = valueType.get(Constants.MODULE);
+        flag.get(DESCRIPTION);  // placeholder
+        module.get(TYPE).set(ModelType.STRING);
+        module.get(NILLABLE).set(false);
 
         final ModelNode moduleOptions = valueType.get(Constants.MODULE_OPTIONS);
         moduleOptions.get(DESCRIPTION);  // placeholder
