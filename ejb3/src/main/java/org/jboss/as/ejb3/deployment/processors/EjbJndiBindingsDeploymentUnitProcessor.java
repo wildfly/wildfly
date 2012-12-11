@@ -185,8 +185,7 @@ public class EjbJndiBindingsDeploymentUnitProcessor implements DeploymentUnitPro
 
     private void registerBinding(final EJBComponentDescription componentDescription, final ViewDescription viewDescription, final String jndiName) {
         if (appclient) {
-            final EEModuleDescription moduleDescription = componentDescription.getModuleDescription();
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(jndiName, new RemoteViewInjectionSource(null, moduleDescription.getEarApplicationName(), moduleDescription.getModuleName(), moduleDescription.getDistinctName(), componentDescription.getComponentName(), viewDescription.getViewClassName(), componentDescription.isStateful())));
+            registerRemoteBinding(componentDescription, viewDescription, jndiName);
         } else {
             viewDescription.getBindingNames().add(jndiName);
         }
