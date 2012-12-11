@@ -21,40 +21,31 @@
  */
 package org.jboss.as.osgi.web;
 
-import java.util.jar.Manifest;
-
 import org.jboss.as.osgi.OSGiConstants;
-import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.web.common.WarMetaData;
 import org.jboss.osgi.metadata.OSGiMetaData;
-import org.jboss.osgi.metadata.OSGiMetaDataBuilder;
 
 /**
- * Provide OSGi metadata for webbundle:// deployments
+ * Provide OSGi meatadata for WAB deployments
  *
  * @author Thomas.Diesler@jboss.com
  * @since 30-Nov-2012
  */
-public class WebBundleStructureProcessor implements DeploymentUnitProcessor {
+public class WebBundleContextProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
-        // Generate the OSGi metadata from a webbundle:// URI
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
+        WarMetaData warMetaData = depUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
         OSGiMetaData metadata = depUnit.getAttachment(OSGiConstants.OSGI_METADATA_KEY);
-        if (metadata == null) {
-            // [TODO] this should generate OSGiMetaData directly
-            Manifest manifest = WebBundleURIParser.parse(depUnit.getName());
-            if (manifest != null) {
-                metadata = OSGiMetaDataBuilder.load(manifest);
-                depUnit.putAttachment(OSGiConstants.OSGI_METADATA_KEY, metadata);
-                depUnit.putAttachment(Attachments.OSGI_MANIFEST, manifest);
-            }
-        }
+        if (warMetaData == null || metadata == null)
+            return;
+
     }
 
     @Override
