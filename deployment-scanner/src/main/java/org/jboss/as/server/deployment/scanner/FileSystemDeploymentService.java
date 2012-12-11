@@ -246,11 +246,6 @@ class FileSystemDeploymentService implements DeploymentScanner {
     }
 
     @Override
-    public void bootTimeScan(final OperationContext context, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
-
-    }
-
-    @Override
     public synchronized void startScanner() {
         assert deploymentOperationsFactory != null : "deploymentOperationsFactory is null";
         startScanner(deploymentOperationsFactory.create());
