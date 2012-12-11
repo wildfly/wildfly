@@ -54,6 +54,8 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.value.Values;
 
 /**
  *
@@ -106,8 +108,10 @@ class JSR77ManagementSubsystemAdd extends AbstractAddStepHandler {
                 //TODO null for source ok?
                 final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(JNDI_NAME);
                 final BinderService binderService = new BinderService(bindInfo.getBindName(), null);
+                final InjectedValue<ClassLoader> viewClassLoader = new InjectedValue<ClassLoader>();
+                viewClassLoader.setValue(Values.immediateValue(ManagementHome.class.getClassLoader()));
                 newControllers.add(target.addService(bindInfo.getBinderServiceName(), binderService)
-                    .addInjection(binderService.getManagedObjectInjector(), new RemoteViewManagedReferenceFactory(APP_NAME, MODULE_NAME, DISTINCT_NAME, EJB_NAME, ManagementHome.class.getName(), false))
+                    .addInjection(binderService.getManagedObjectInjector(), new RemoteViewManagedReferenceFactory(APP_NAME, MODULE_NAME, DISTINCT_NAME, EJB_NAME, ManagementHome.class.getName(), false, viewClassLoader))
                     .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                     .addListener(verificationHandler)
                     .setInitialMode(Mode.ACTIVE)
