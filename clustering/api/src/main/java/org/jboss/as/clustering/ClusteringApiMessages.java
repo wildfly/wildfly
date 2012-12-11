@@ -22,15 +22,17 @@
 
 package org.jboss.as.clustering;
 
+import java.io.Serializable;
+
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-
-import java.io.Serializable;
 
 /**
- * Date: 26.08.2011
+ * ClusteringApiMessages
+ *
+ * logging id range: 10210 - 10219
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

@@ -30,7 +30,9 @@ import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
 /**
- * Date: 29.08.2011
+ * JGroupsMessages
+ *
+ * logging id range: 10270 - 10279
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

@@ -35,7 +35,9 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 29.08.2011
+ * JGroupsLogger
+ *
+ * logging id ranges: 10260 - 10269
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

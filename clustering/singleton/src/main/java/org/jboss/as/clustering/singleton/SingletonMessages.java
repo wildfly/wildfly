@@ -25,6 +25,13 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
 
+/**
+ * SingletonMessages
+ *
+ * logging id ranges: 10350 - 10359
+ *
+ * @author <a href="mailto:pferraro@redhat.com">Paul Ferraro</a>
+ */
 @MessageBundle(projectCode = "JBAS")
 public interface SingletonMessages {
 

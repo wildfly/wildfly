@@ -32,7 +32,9 @@ import org.jboss.logging.Messages;
 import org.jgroups.Address;
 
 /**
- * Date: 26.08.2011
+ * ClusteringImplMessages
+ *
+ * logging id range: 10240 - 10259
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
