@@ -156,11 +156,11 @@ public final class JDBCCMPFieldPropertyMetaData {
         this.columnName = columnName;
     }
 
-    public void setNotNul(final boolean notNul) {
+    public void setNotNull(final boolean notNull) {
         this.notNull = notNull;
     }
 
-    public void setSqlType(final String elementText) {
+    public void setSqlType(final String sqlType) {
         this.sqlType = sqlType;
     }
 
