@@ -34,7 +34,9 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 29.08.2011
+ * InfinispanWebLogger
+ *
+ * logging id range: 10320 - 10329
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

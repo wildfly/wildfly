@@ -29,6 +29,13 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
+/**
+ * SingletonLogger
+ *
+ * logging id ranges: 10340 - 10349
+ *
+ * @author <a href="mailto:pferraro@redhat.com">Paul Ferraro</a>
+ */
 @MessageLogger(projectCode = "JBAS")
 public interface SingletonLogger {
     String ROOT_LOGGER_CATEGORY = SingletonLogger.class.getPackage().getName();

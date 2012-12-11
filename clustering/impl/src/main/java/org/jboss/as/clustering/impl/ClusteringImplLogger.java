@@ -41,7 +41,9 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jgroups.Address;
 
 /**
- * Date: 26.08.2011
+ * ClusteringImplLogger
+ *
+ * logging id range: 10220 - 10239
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */

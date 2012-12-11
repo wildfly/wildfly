@@ -37,7 +37,9 @@ import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.service.StartException;
 
 /**
- * Date: 29.08.2011
+ * InfinispanMessages
+ *
+ * logging id range: 10290 - 10299,10380 - 10389
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
@@ -78,7 +80,7 @@ public interface InfinispanMessages {
     /**
      * Creates an exception indicating an invalid cache store.
      *
-     * @param cacheStoreName     the name of the cache store.
+     * @param cacheName     the name of the cache store.
      * @param cacheContainerName the container name.
      *
      * @return an {@link IllegalArgumentException} for the error.
@@ -157,7 +159,7 @@ public interface InfinispanMessages {
      *
      * @return the String message.
      */
-    @Message(id = 10300, value = "Failed to locate %s")
+    @Message(id = 10380, value = "Failed to locate %s")
     String notFound(String resourceName);
 
     /**
@@ -167,7 +169,7 @@ public interface InfinispanMessages {
      *
      * @return IllegalStateException instance.
      */
-    @Message(id = 10301, value = "Failed to parse %s")
+    @Message(id = 10381, value = "Failed to parse %s")
     IllegalStateException failedToParse(@Cause Throwable cause, String resourceName);
 
     /**
@@ -177,7 +179,7 @@ public interface InfinispanMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 10302, value = "Add operation failed: singleton %s already exists.")
+    @Message(id = 10382, value = "Add operation failed: singleton %s already exists.")
     OperationFailedException singletonResourceAlreadyExists(String resourceName);
 
     /**
@@ -187,7 +189,7 @@ public interface InfinispanMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 10303, value = "cannot remove alias % from empty list.")
+    @Message(id = 10383, value = "cannot remove alias % from empty list.")
     OperationFailedException cannotRemoveAliasFromEmptyList(String aliasName);
 
     /**
@@ -196,7 +198,7 @@ public interface InfinispanMessages {
      * @param attributeName the name of the deprecated attribute
      * @return an {@link OperationFailedException} for the error
      */
-    @Message(id = 10304, value = "Attribute '%s' has been deprecated.")
+    @Message(id = 10384, value = "Attribute '%s' has been deprecated.")
     OperationFailedException attributeDeprecated(String attributeName);
 
 }
