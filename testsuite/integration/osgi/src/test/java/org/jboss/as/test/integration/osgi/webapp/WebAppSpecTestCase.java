@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.integration.osgi.webapp;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
@@ -38,6 +39,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.osgi.web.WebExtension;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.osgi.api.Echo;
+import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleAnnotatedServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.SimpleServlet;
 import org.jboss.as.test.integration.osgi.webapp.bundle.TestServletContext;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
@@ -74,6 +76,7 @@ public class WebAppSpecTestCase {
     static final String BUNDLE_C_WAB = "bundle-c.wab";
     static final String FRAGMENT_C = "fragment-c.jar";
     static final String BUNDLE_D_WAB = "bundle-d.wab";
+    static final String BUNDLE_E_WAB = "bundle-e.wab";
 
     @ArquillianResource
     Deployer deployer;
@@ -165,6 +168,45 @@ public class WebAppSpecTestCase {
             Assert.assertEquals(Bundle.ACTIVE, bundle.getState());
         } finally {
             deployer.undeploy(BUNDLE_D_WAB);
+        }
+    }
+
+    @Test
+    public void testForbiddenPaths() throws Exception {
+        // For confidentiality reasons, a Web Runtime must not return any static content for paths that start with one of the following prefixes:
+        // WEB-INF, OSGI-INF, META-INF, OSGI-OPT
+        deployer.deploy(BUNDLE_E_WAB);
+        try {
+            String result = performCall("/bundleE/host-message.txt");
+            Assert.assertEquals("Hello from Host", result);
+            try {
+                performCall("/bundleE/WEB-INF/forbidden.txt");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+            try {
+                performCall("/bundleE/META-INF/forbidden.txt");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+            try {
+                performCall("/bundleE/OSGI-INF/forbidden.txt");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+            try {
+                performCall("/bundleE/OSGI-OPT/forbidden.txt");
+                Assert.fail("IOException expected");
+            } catch (IOException ex) {
+                // expected
+            }
+            result = performCall("/bundleE/servlet?input=Hello");
+            Assert.assertEquals("Simple Servlet called with input=Hello", result);
+        } finally {
+            deployer.undeploy(BUNDLE_E_WAB);
         }
     }
 
@@ -271,4 +313,27 @@ public class WebAppSpecTestCase {
         return archive;
     }
 
+    @Deployment(name = BUNDLE_E_WAB, managed = false, testable = false)
+    public static Archive<?> getBundleE() {
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, BUNDLE_E_WAB);
+        archive.addClasses(SimpleAnnotatedServlet.class, Echo.class);
+        archive.addAsResource(HOST_ASSET, "host-message.txt");
+        archive.addAsResource(HOST_ASSET, "WEB-INF/forbidden.txt");
+        archive.addAsResource(HOST_ASSET, "OSGI-INF/forbidden.txt");
+        archive.addAsResource(HOST_ASSET, "META-INF/forbidden.txt");
+        archive.addAsResource(HOST_ASSET, "OSGI-OPT/forbidden.txt");
+        archive.setManifest(new Asset() {
+            @Override
+            public InputStream openStream() {
+                OSGiManifestBuilder builder = OSGiManifestBuilder.newInstance();
+                builder.addBundleSymbolicName(archive.getName());
+                builder.addBundleManifestVersion(2);
+                builder.addBundleActivationPolicy(Constants.ACTIVATION_LAZY);
+                builder.addImportPackages(Servlet.class, HttpServlet.class);
+                builder.addManifestHeader(WebExtension.WEB_CONTEXT_PATH,  "/bundleE");
+                return builder.openStream();
+            }
+        });
+        return archive;
+    }
 }

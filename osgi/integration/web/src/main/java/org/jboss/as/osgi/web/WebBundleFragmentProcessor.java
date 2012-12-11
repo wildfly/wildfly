@@ -52,7 +52,7 @@ import org.osgi.framework.wiring.BundleWiring;
  * @author Thomas.Diesler@jboss.com
  * @since 10-Dec-2012
  */
-public class WabFragmentProcessor implements DeploymentUnitProcessor {
+public class WebBundleFragmentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {

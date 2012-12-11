@@ -295,6 +295,7 @@ public enum Phase {
     public static final int PARSE_DISTINCT_NAME                         = 0x3601;
     public static final int PARSE_OSGI_DEPLOYMENT                       = 0x3700;
     public static final int PARSE_OSGI_SUBSYSTEM_ACTIVATOR              = 0x3800;
+    public static final int PARSE_WAB_CONTEXT_FACTORY                   = 0x3900;
     // should be after all components are known
     public static final int PARSE_EJB_INJECTION_ANNOTATION              = 0x4000;
     public static final int PARSE_JACORB                                = 0x4100;
