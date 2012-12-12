@@ -24,9 +24,7 @@ package org.jboss.as.logging;
 
 import java.io.File;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 
@@ -36,7 +34,6 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class LoggingTestEnvironment extends AdditionalInitialization {
-    public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
 
     private static final LoggingTestEnvironment INSTANCE;
     private static final LoggingTestEnvironment MANAGEMENT_INSTANCE;
@@ -75,6 +72,7 @@ class LoggingTestEnvironment extends AdditionalInitialization {
     public File getConfigDir() {
         return configDir;
     }
+
     @Override
     protected RunningMode getRunningMode() {
         return runningMode;

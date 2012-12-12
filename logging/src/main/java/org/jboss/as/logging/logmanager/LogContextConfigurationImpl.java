@@ -85,6 +85,8 @@ final class LogContextConfigurationImpl implements LogContextConfiguration {
     private final Deque<ConfigAction<?>> transactionState = new ArrayDeque<ConfigAction<?>>();
     private final Set<String> log4jAppendersName = new HashSet<String>();
 
+    private boolean prepared = false;
+
     private static final ObjectProducer ACCEPT_PRODUCER = new SimpleObjectProducer(AcceptAllFilter.getInstance());
     private static final ObjectProducer DENY_PRODUCER = new SimpleObjectProducer(DenyAllFilter.getInstance());
 
@@ -256,7 +258,7 @@ final class LogContextConfigurationImpl implements LogContextConfiguration {
         return new ArrayList<String>(errorManagers.keySet());
     }
 
-    public void commit() {
+    public void prepare() {
         List<Object> items = new ArrayList<Object>();
         for (ConfigAction<?> action : transactionState) {
             items.add(action.validate());
@@ -272,6 +274,14 @@ final class LogContextConfigurationImpl implements LogContextConfiguration {
         for (String name : log4jAppendersName) {
             handlers.get(name).activate();
         }
+        prepared = true;
+    }
+
+    public void commit() {
+        if (!prepared) {
+            prepare();
+        }
+        prepared = false;
         log4jAppendersName.clear();
         transactionState.clear();
     }
@@ -301,6 +311,7 @@ final class LogContextConfigurationImpl implements LogContextConfiguration {
             } catch (Throwable ignored) {
             }
         }
+        prepared = false;
         log4jAppendersName.clear();
         transactionState.clear();
     }

@@ -47,7 +47,8 @@ import org.jboss.msc.service.ServiceController;
 class LoggingSubsystemAdd extends AbstractAddStepHandler {
 
     static final LoggingSubsystemAdd INSTANCE = new LoggingSubsystemAdd();
-    private LoggingSubsystemAdd(){
+
+    private LoggingSubsystemAdd() {
 
     }
 
@@ -67,42 +68,39 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
 
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
 
-        final LogContextConfiguration logContextConfiguration = ConfigurationPersistence.getOrCreateConfigurationPersistence().getLogContextConfiguration();
-        try {
-            // root logger
-            if (!resource.hasChild(RootLoggerResourceDefinition.ROOT_LOGGER_PATH)) {
-                LoggingLogger.ROOT_LOGGER.tracef("Removing the root logger configuration.");
-                logContextConfiguration.removeLoggerConfiguration(CommonAttributes.ROOT_LOGGER_NAME);
-            }
-
-            // remove all configured loggers which aren't in the model
-            if (resource.hasChild(PathElement.pathElement(CommonAttributes.LOGGER))) {
-                final Set<String> loggerNames = resource.getChildrenNames(CommonAttributes.LOGGER);
-                final List<String> configuredLoggerNames = logContextConfiguration.getLoggerNames();
-                // Always remove the root
-                configuredLoggerNames.remove(CommonAttributes.ROOT_LOGGER_NAME);
-                configuredLoggerNames.removeAll(loggerNames);
-                for (String name : configuredLoggerNames) {
-                    LoggingLogger.ROOT_LOGGER.tracef("Removing logger configuration for '%s'", name);
-                    logContextConfiguration.removeLoggerConfiguration(name);
-                }
-            }
-            // handlers
-            final List<String> configuredHandlerNames = logContextConfiguration.getHandlerNames();
-            configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.ASYNC_HANDLER));
-            configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.CONSOLE_HANDLER));
-            configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.CUSTOM_HANDLER));
-            configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.FILE_HANDLER));
-            configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER));
-            configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.SIZE_ROTATING_FILE_HANDLER));
-            for (String name : configuredHandlerNames) {
-                LoggingLogger.ROOT_LOGGER.tracef("Removing handler configuration for '%s'", name);
-                logContextConfiguration.removeHandlerConfiguration(name);
-            }
-            logContextConfiguration.commit();
-            LoggingLogger.ROOT_LOGGER.trace("Logging subsystem has been added.");
-        } finally {
-            logContextConfiguration.forget();
+        final ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getOrCreateConfigurationPersistence();
+        final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
+        // root logger
+        if (!resource.hasChild(RootLoggerResourceDefinition.ROOT_LOGGER_PATH)) {
+            LoggingLogger.ROOT_LOGGER.tracef("Removing the root logger configuration.");
+            logContextConfiguration.removeLoggerConfiguration(CommonAttributes.ROOT_LOGGER_NAME);
         }
+
+        // remove all configured loggers which aren't in the model
+        if (resource.hasChild(PathElement.pathElement(CommonAttributes.LOGGER))) {
+            final Set<String> loggerNames = resource.getChildrenNames(CommonAttributes.LOGGER);
+            final List<String> configuredLoggerNames = logContextConfiguration.getLoggerNames();
+            // Always remove the root
+            configuredLoggerNames.remove(CommonAttributes.ROOT_LOGGER_NAME);
+            configuredLoggerNames.removeAll(loggerNames);
+            for (String name : configuredLoggerNames) {
+                LoggingLogger.ROOT_LOGGER.tracef("Removing logger configuration for '%s'", name);
+                logContextConfiguration.removeLoggerConfiguration(name);
+            }
+        }
+        // handlers
+        final List<String> configuredHandlerNames = logContextConfiguration.getHandlerNames();
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.ASYNC_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.CONSOLE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.CUSTOM_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.FILE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.PERIODIC_ROTATING_FILE_HANDLER));
+        configuredHandlerNames.removeAll(resource.getChildrenNames(CommonAttributes.SIZE_ROTATING_FILE_HANDLER));
+        for (String name : configuredHandlerNames) {
+            LoggingLogger.ROOT_LOGGER.tracef("Removing handler configuration for '%s'", name);
+            logContextConfiguration.removeHandlerConfiguration(name);
+        }
+        LoggingOperations.addCommitStep(context, configurationPersistence);
+        LoggingLogger.ROOT_LOGGER.trace("Logging subsystem has been added.");
     }
 }

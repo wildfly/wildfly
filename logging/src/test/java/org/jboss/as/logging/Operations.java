@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelType;
  */
 public class Operations extends ClientConstants {
 
+    public static final String PATH = ModelDescriptionConstants.PATH;
     public static final String READ_ATTRIBUTE = ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
     public static final String READ_RESOURCE = ModelDescriptionConstants.READ_RESOURCE_OPERATION;
     public static final String RECURSIVE = ModelDescriptionConstants.RECURSIVE;

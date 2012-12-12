@@ -400,7 +400,7 @@ public interface LoggingMessages {
      * @return the message
      */
     @Message(id = 11565, value = "Failed to write configuration file %s")
-    String failedToWriteConfigurationFile(File fileName);
+    RuntimeException failedToWriteConfigurationFile(@Cause Throwable e, File fileName);
 
     /**
      * Creates an exception indicating a failure was detected while performing a rollback.

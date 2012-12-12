@@ -22,25 +22,20 @@
 package org.jboss.as.logging;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
-import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
 import org.junit.BeforeClass;
@@ -49,7 +44,7 @@ import org.junit.Test;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
+public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystemTest {
 
     private static final String PROFILE = "testProfile";
     private static final String FQCN = LoggingOperationsSubsystemTestCase.class.getName();
@@ -63,17 +58,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
     };
 
-    private static final String ROOT_LOGGER_PATH = String.format("%s=%s", CommonAttributes.ROOT_LOGGER, CommonAttributes.ROOT_LOGGER_ATTRIBUTE_NAME);
-
     private static File logDir;
-
-    static {
-        System.setProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
-    }
-
-    public LoggingOperationsSubsystemTestCase() {
-        super(LoggingExtension.SUBSYSTEM_NAME, new LoggingExtension());
-    }
 
     @BeforeClass
     public static void setupLoggingDir() {
@@ -81,6 +66,16 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         for (File file : logDir.listFiles()) {
             file.delete();
         }
+    }
+
+    @Override
+    protected void standardSubsystemTest(final String configId) throws Exception {
+        // do nothing as this is not a subsystem parsing test
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("/operations.xml");
     }
 
     @Test
@@ -103,12 +98,12 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testLegacyFilters() throws Exception {
-        final KernelServices kernelServices = createKernelServicesBuilder(LoggingTestEnvironment.get()).setSubsystemXml(readResource("/operations.xml")).build();
+        final KernelServices kernelServices = boot();
         final String fileHandlerName = "test-file-handler";
 
         // add new file logger so we can track logged messages
         final File logFile = createLogFile();
-        final ModelNode handlerAddress = parseAddress(String.format("%s=%s", CommonAttributes.FILE_HANDLER, fileHandlerName), null);
+        final ModelNode handlerAddress = createFileHandlerAddress(fileHandlerName).toModelNode();
         addFileHandler(kernelServices, null, fileHandlerName, org.jboss.logmanager.Level.TRACE, logFile, true);
         // Write legacy filters
         for (Map.Entry<String, ModelNode> entry : FilterConversionTestCase.MAP.entrySet()) {
@@ -121,7 +116,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
             assertEquals(entry.getKey(), filterSpecResult);
 
             // Validate an add operation
-            final ModelNode tempHandlerAddress = parseAddress(String.format("%s=%s", CommonAttributes.CONSOLE_HANDLER, "temp"), null);
+            final ModelNode tempHandlerAddress = createConsoleHandlerAddress("temp").toModelNode();
             op = Operations.createAddOperation(tempHandlerAddress);
             op.get(CommonAttributes.FILTER.getName()).set(entry.getValue());
             executeOperation(kernelServices, op);
@@ -134,7 +129,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
             executeOperation(kernelServices, op);
 
             // Add to a logger
-            final ModelNode loggerAddress = parseAddress(String.format("%s=%s", CommonAttributes.LOGGER, "test-logger"), null);
+            final ModelNode loggerAddress = createLoggerAddress("test-logger").toModelNode();
             op = Operations.createAddOperation(loggerAddress);
             op.get(CommonAttributes.FILTER.getName()).set(entry.getValue());
             executeOperation(kernelServices, op);
@@ -176,7 +171,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
             ModelTestUtils.compare(entry.getValue(), filterResult);
 
             // Validate an add operation
-            final ModelNode tempHandlerAddress = parseAddress(String.format("%s=%s", CommonAttributes.CONSOLE_HANDLER, "temp"), null);
+            final ModelNode tempHandlerAddress = createConsoleHandlerAddress("temp").toModelNode();
             op = Operations.createAddOperation(tempHandlerAddress);
             op.get(CommonAttributes.FILTER_SPEC.getName()).set(entry.getKey());
             executeOperation(kernelServices, op);
@@ -189,7 +184,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
             executeOperation(kernelServices, op);
 
             // Add to a logger
-            final ModelNode loggerAddress = parseAddress(String.format("%s=%s", CommonAttributes.LOGGER, "test-logger"), null);
+            final ModelNode loggerAddress = createLoggerAddress("test-logger").toModelNode();
             op = Operations.createAddOperation(loggerAddress);
             op.get(CommonAttributes.FILTER_SPEC.getName()).set(entry.getKey());
             executeOperation(kernelServices, op);
@@ -215,13 +210,13 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testLoggingProfile() throws Exception {
-        final KernelServices kernelServices = createKernelServicesBuilder(LoggingTestEnvironment.get()).setSubsystemXml(readResource("/operations.xml")).build();
+        final KernelServices kernelServices = boot();
         final String handlerName = "test-file-handler";
 
         final File logFile = createLogFile();
         final File profileLogFile = createLogFile("profile.log");
-        final ModelNode handlerAddress = parseAddress(String.format("%s=%s", CommonAttributes.FILE_HANDLER, handlerName), null);
-        final ModelNode profileHandlerAddress = parseAddress(String.format("%s=%s", CommonAttributes.FILE_HANDLER, handlerName), PROFILE);
+        final ModelNode handlerAddress = createFileHandlerAddress(handlerName).toModelNode();
+        final ModelNode profileHandlerAddress = createFileHandlerAddress(PROFILE, handlerName).toModelNode();
 
         // Add handlers
         addFileHandler(kernelServices, null, handlerName, org.jboss.logmanager.Level.INFO, logFile, true);
@@ -265,7 +260,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private void testChangeRootLogLevel(final String loggingProfile) throws Exception {
-        final KernelServices kernelServices = createKernelServicesBuilder(LoggingTestEnvironment.get()).setSubsystemXml(readResource("/operations.xml")).build();
+        final KernelServices kernelServices = boot();
         final String fileHandlerName = "test-file-handler";
 
         // add new file logger so we can track logged messages
@@ -289,7 +284,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         levelOrd.put(org.jboss.logmanager.Level.TRACE, 5);
 
         // log messages on all levels with different root logger level settings
-        final ModelNode address = parseAddress(ROOT_LOGGER_PATH, loggingProfile);
+        final ModelNode address = createRootLoggerAddress(loggingProfile).toModelNode();
         for (Level level : levels) {
             // change root log level
             final ModelNode op = Operations.createWriteAttributeOperation(address, CommonAttributes.LEVEL, level.getName());
@@ -329,7 +324,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private void testSetRootLogger(final String loggingProfile) throws Exception {
-        final KernelServices kernelServices = createKernelServicesBuilder(LoggingTestEnvironment.get()).setSubsystemXml(readResource("/operations.xml")).build();
+        final KernelServices kernelServices = boot();
         final String fileHandlerName = "test-file-handler";
 
         // Add new file logger so we can test root logger change
@@ -337,7 +332,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         addFileHandler(kernelServices, loggingProfile, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, false);
 
         // Read root logger
-        final ModelNode rootLoggerAddress = parseAddress(ROOT_LOGGER_PATH, loggingProfile);
+        final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
         ModelNode op = Operations.createOperation(Operations.READ_RESOURCE, rootLoggerAddress);
         final ModelNode rootLoggerResult = executeOperation(kernelServices, op);
         final List<String> handlers = modelNodeAsStringList(rootLoggerResult.get(CommonAttributes.HANDLERS.getName()));
@@ -374,7 +369,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private void testAddRemoveFileHandler(final String loggingProfile) throws Exception {
-        final KernelServices kernelServices = createKernelServicesBuilder(LoggingTestEnvironment.get()).setSubsystemXml(readResource("/operations.xml")).build();
+        final KernelServices kernelServices = boot();
         final String fileHandlerName = "test-file-handler";
 
         File logFile = createLogFile();
@@ -383,7 +378,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         addFileHandler(kernelServices, loggingProfile, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, true);
 
         // Ensure the handler is listed
-        final ModelNode rootLoggerAddress = parseAddress(ROOT_LOGGER_PATH, loggingProfile);
+        final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
         ModelNode op = Operations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
         ModelNode handlerResult = executeOperation(kernelServices, op);
         List<String> handlerList = Operations.readResultAsList(handlerResult);
@@ -418,7 +413,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
                                 final Level level, final File file, final boolean assign) throws Exception {
 
         // add file handler
-        ModelNode op = Operations.createAddOperation(parseAddress(String.format("%s=%s", CommonAttributes.FILE_HANDLER, name), loggingProfile));
+        ModelNode op = Operations.createAddOperation(createFileHandlerAddress(loggingProfile, name).toModelNode());
         op.get(CommonAttributes.NAME.getName()).set(name);
         op.get(CommonAttributes.LEVEL.getName()).set(level.getName());
         op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(file.getAbsolutePath());
@@ -427,7 +422,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         if (!assign) return;
 
         // register it with root logger
-        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, parseAddress(ROOT_LOGGER_PATH, loggingProfile));
+        op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
         op.get(CommonAttributes.NAME.getName()).set(name);
         executeOperation(kernelServices, op);
     }
@@ -437,13 +432,13 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
 
         if (unassign) {
             // Remove the handler from the logger
-            final ModelNode op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, parseAddress(ROOT_LOGGER_PATH, loggingProfile));
+            final ModelNode op = Operations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_REMOVE_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
             op.get(CommonAttributes.NAME.getName()).set(name);
             executeOperation(kernelServices, op);
         }
 
         // Remove the handler
-        final ModelNode op = Operations.createRemoveOperation(parseAddress(String.format("%s=%s", CommonAttributes.FILE_HANDLER, name), loggingProfile), false);
+        final ModelNode op = Operations.createRemoveOperation(createFileHandlerAddress(loggingProfile, name).toModelNode(), false);
         executeOperation(kernelServices, op);
     }
 
@@ -469,31 +464,6 @@ public class LoggingOperationsSubsystemTestCase extends AbstractSubsystemTest {
         for (Level lvl : levels) {
             log.log(lvl, String.format(format, params));
         }
-    }
-
-    private static ModelNode parseAddress(final String address, final String profileName) {
-        final ModelNode result = new ModelNode(ClientConstants.OP_ADDR).setEmptyList();
-        result.add("subsystem", "logging");
-        if (profileName != null) {
-            result.add(CommonAttributes.LOGGING_PROFILE, profileName);
-        }
-        if (address != null) {
-            String[] pathSegments = address.split("/");
-            for (String segment : pathSegments) {
-                String[] elements = segment.split("=");
-                result.add(elements[0], elements[1]);
-            }
-        }
-        return result;
-    }
-
-    private static List<String> modelNodeAsStringList(final ModelNode node) {
-        if (node.getType() == ModelType.LIST) {
-            final List<String> result = new ArrayList<String>();
-            for (ModelNode n : node.asList()) result.add(n.asString());
-            return result;
-        }
-        return Collections.emptyList();
     }
 
     private static File createLogFile() {
