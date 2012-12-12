@@ -32,7 +32,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 public class ModClusterRemoveCustomMetric implements OperationStepHandler {
 
@@ -44,7 +43,7 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
         PathAddress parent = PathAddress.pathAddress(
                 ModClusterExtension.SUBSYSTEM_PATH,
                 ModClusterExtension.CONFIGURATION_PATH,
-                ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+                ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
 
         String clazz = CustomLoadMetricDefinition.CLASS.resolveModelAttribute(context, operation).asString();
 
@@ -54,14 +53,14 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
             context.setRollbackOnly();
             return;
         }
-        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), name)));
+        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH.getKey(), name)));
 
         context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.IMMEDIATE);
         context.stepCompleted();
     }
 
     private String getMetricName(OperationContext context, String type) {
-        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getChildrenNames(CommonAttributes.CUSTOM_LOAD_METRIC);
+        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH)).getChildrenNames(CommonAttributes.CUSTOM_LOAD_METRIC);
         for (String name : metrics) {
             if (name.equals(type)) {
                 return name;

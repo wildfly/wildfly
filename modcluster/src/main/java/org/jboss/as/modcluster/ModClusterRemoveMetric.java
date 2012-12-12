@@ -43,7 +43,7 @@ public class ModClusterRemoveMetric implements OperationStepHandler {
         PathAddress parent = PathAddress.pathAddress(
                 ModClusterExtension.SUBSYSTEM_PATH,
                 ModClusterExtension.CONFIGURATION_PATH,
-                ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+                ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
 
         String type = LoadMetricDefinition.TYPE.resolveModelAttribute(context, operation).asString();
 
@@ -53,14 +53,14 @@ public class ModClusterRemoveMetric implements OperationStepHandler {
             context.setRollbackOnly();
             return;
         }
-        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.LOAD_METRIC.getKey(), name)));
+        ModelNode targetOperation = Util.createRemoveOperation(parent.append(PathElement.pathElement(ModClusterExtension.LOAD_METRIC_PATH.getKey(), name)));
 
         context.addStep(targetOperation, new ReloadRequiredRemoveStepHandler(), OperationContext.Stage.IMMEDIATE);
         context.stepCompleted();
     }
 
     private String getMetricName(OperationContext context, String type) {
-        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER)).getChildrenNames(CommonAttributes.LOAD_METRIC);
+        Set<String> metrics = context.readResource(PathAddress.pathAddress(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH)).getChildrenNames(CommonAttributes.LOAD_METRIC);
         for (String name : metrics) {
             if (name.equals(type)) {
                 return name;

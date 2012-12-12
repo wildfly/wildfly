@@ -65,8 +65,8 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (config.hasDefined(SIMPLE_LOAD_PROVIDER_FACTOR)) {
             writeSimpleLoadProvider(writer, config);
         }
-        if (config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()).isDefined()) {
-            writeDynamicLoadProvider(writer, config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER.getKeyValuePair()));
+        if (config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()).isDefined()) {
+            writeDynamicLoadProvider(writer, config.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()));
         }
         if (config.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
             writeSSL(writer, config.get(ModClusterExtension.SSL_CONFIGURATION_PATH.getKeyValuePair()));

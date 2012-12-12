@@ -28,7 +28,6 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
@@ -50,7 +49,7 @@ public class CustomLoadMetricDefinition extends SimpleResourceDefinition {
     };
 
     private CustomLoadMetricDefinition() {
-        super(ModClusterExtension.CUSTOM_LOAD_METRIC,
+        super(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.LOAD_METRIC),
                 CustomLoadMetricAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()

@@ -78,9 +78,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
     static final PathElement CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
     static final PathElement SSL_CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
-    static final PathElement DYNAMIC_LOAD_PROVIDER = PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION);
-    static final PathElement LOAD_METRIC = PathElement.pathElement(CommonAttributes.LOAD_METRIC);
-    static final PathElement CUSTOM_LOAD_METRIC = PathElement.pathElement(CommonAttributes.CUSTOM_LOAD_METRIC);
+    static final PathElement DYNAMIC_LOAD_PROVIDER_PATH = PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION);
+    static final PathElement LOAD_METRIC_PATH = PathElement.pathElement(CommonAttributes.LOAD_METRIC);
+    static final PathElement CUSTOM_LOAD_METRIC_PATH = PathElement.pathElement(CommonAttributes.CUSTOM_LOAD_METRIC);
 
     private static final String RESOURCE_NAME = ModClusterExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -148,19 +148,19 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         // DynamicLoadProviderDefinition
         RejectExpressionValuesTransformer dynamicProviderRejectExpressionTransformer = new RejectExpressionValuesTransformer(DECAY, HISTORY);
-        TransformersSubRegistration dynamicProvider = transformers.registerSubResource(DYNAMIC_LOAD_PROVIDER);
+        TransformersSubRegistration dynamicProvider = transformers.registerSubResource(DYNAMIC_LOAD_PROVIDER_PATH);
         dynamicProvider.registerOperationTransformer(ADD, dynamicProviderRejectExpressionTransformer);
         dynamicProvider.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, dynamicProviderRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // CustomLoadMetricDefinition
         RejectExpressionValuesTransformer customRejectExpressionTransformer = new RejectExpressionValuesTransformer(CLASS);
-        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC);
+        TransformersSubRegistration customMetric = dynamicProvider.registerSubResource(CUSTOM_LOAD_METRIC_PATH);
         customMetric.registerOperationTransformer(ADD, customRejectExpressionTransformer);
         customMetric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, customRejectExpressionTransformer.getWriteAttributeTransformer());
 
         // LoadMetricDefinition
         RejectExpressionValuesTransformer loadMetricRejectExpressionTransformer = new RejectExpressionValuesTransformer(TYPE, WEIGHT, CAPACITY, PROPERTY);
-        TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC);
+        TransformersSubRegistration metric = dynamicProvider.registerSubResource(LOAD_METRIC_PATH);
         metric.registerOperationTransformer(ADD, loadMetricRejectExpressionTransformer);
         metric.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, loadMetricRejectExpressionTransformer.getWriteAttributeTransformer());
 
