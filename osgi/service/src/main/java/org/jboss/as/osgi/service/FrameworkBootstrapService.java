@@ -191,7 +191,7 @@ public class FrameworkBootstrapService implements Service<Void> {
         }
 
         // Setup default system packages
-        String syspackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES);
+        String syspackages = (String) getPropertyWithSystemFallback(props, Constants.FRAMEWORK_SYSTEMPACKAGES);
         if (syspackages == null) {
             Set<String> sysPackages = new LinkedHashSet<String>();
             sysPackages.addAll(Arrays.asList(SystemPackagesIntegration.JAVAX_API_PACKAGES));
@@ -202,9 +202,18 @@ public class FrameworkBootstrapService implements Service<Void> {
             props.put(Constants.FRAMEWORK_SYSTEMPACKAGES, syspackages);
         }
 
-        String extrapackages = (String) props.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
+        String extrapackages = (String) getPropertyWithSystemFallback(props, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
         if (extrapackages != null) {
             props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extrapackages);
         }
+    }
+
+    // [TODO] Remove this hack when the TCK setup can configure the subsystem properly
+    Object getPropertyWithSystemFallback(Map<String, Object> props, String key) {
+        Object value = props.get(key);
+        if (value == null) {
+            value = SecurityActions.getSystemProperty(key);
+        }
+        return value;
     }
 }

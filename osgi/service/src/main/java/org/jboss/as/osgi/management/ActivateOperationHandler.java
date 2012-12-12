@@ -34,6 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author David Bosschaert
  * @author Thomas.Diesler@jboss.com
+ * @author Brian.Stansberry@jboss.com
  */
 public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
 
@@ -45,7 +46,15 @@ public class ActivateOperationHandler extends AbstractRuntimeOnlyHandler  {
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // This verification handler will cause context.completeStep() to wait until controller is active.
+        // We bypass the normal OperationContext service installation handling here by letting a ServiceTarget
+        // cached previously handle service installation. But we still need to tell the context
+        // this step is going to manipulate the service registry so it can acquire the exclusive operation lock and
+        // also so it knows to await full MSC ServiceContainer stability before proceeding to Stage.VERIFY
+        // So, ask for the service registry as a way of communicating this.
+        context.getServiceRegistry(true);
+
+        // This verification handler will track any problems associated with service controllers
+        // we associate it with, making that information available in the operation response failure description.
         ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
         if (FrameworkActivator.activateEagerly(verificationHandler)) {
             context.addStep(verificationHandler, Stage.VERIFY);

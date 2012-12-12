@@ -105,7 +105,18 @@ public class EmbeddedStandAloneServerFactory {
     private EmbeddedStandAloneServerFactory() {
     }
 
-    public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv) {
+    public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv, final String[] cmdargs) {
+        if (jbossHomeDir == null)
+            MESSAGES.nullVar("jbossHomeDir");
+        if (moduleLoader == null)
+            MESSAGES.nullVar("moduleLoader");
+        if (systemProps == null)
+            MESSAGES.nullVar("systemProps");
+        if (systemEnv == null)
+            MESSAGES.nullVar("systemEnv");
+        if (cmdargs == null)
+            MESSAGES.nullVar("cmdargs");
+
         setupCleanDirectories(jbossHomeDir, systemProps);
 
         StandaloneServer standaloneServer = new StandaloneServer() {
@@ -152,7 +163,7 @@ public class EmbeddedStandAloneServerFactory {
             public void start() throws ServerStartException {
                 try {
                     // Determine the ServerEnvironment
-                    ServerEnvironment serverEnvironment = Main.determineEnvironment(new String[0], systemProps, systemEnv, ServerEnvironment.LaunchType.EMBEDDED);
+                    ServerEnvironment serverEnvironment = Main.determineEnvironment(cmdargs, systemProps, systemEnv, ServerEnvironment.LaunchType.EMBEDDED);
 
                     Bootstrap bootstrap = Bootstrap.Factory.newInstance();
 
