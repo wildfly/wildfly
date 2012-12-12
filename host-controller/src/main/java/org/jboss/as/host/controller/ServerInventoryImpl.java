@@ -253,7 +253,7 @@ public class ServerInventoryImpl implements ServerInventory {
         }
         final ManagedServer server = createManagedServer(serverName, domainModel, authKey);
         if(servers.putIfAbsent(serverName, server) != null) {
-            ROOT_LOGGER.existingServerWithState(serverName, existing.getState());
+            ROOT_LOGGER.existingServerWithState(serverName, server.getState());
             return;
         }
         if(running) {

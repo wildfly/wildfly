@@ -437,7 +437,7 @@ public final class ManagedServerOperationsFactory {
                 final String ref = include.asString();
                 if (processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);
-                    if (group == null) {
+                    if (includedGroup == null) {
                         throw MESSAGES.undefinedSocketBindingGroup(ref);
                     }
                     mergeBindingGroups(updates, groups, groupName, includedGroup, processed);
