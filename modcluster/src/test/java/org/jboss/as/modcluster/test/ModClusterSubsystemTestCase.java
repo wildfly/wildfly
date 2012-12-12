@@ -24,7 +24,6 @@ package org.jboss.as.modcluster.test;
 import org.jboss.as.modcluster.ModClusterExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 
 import java.io.IOException;

@@ -34,7 +34,6 @@ import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -54,45 +53,47 @@ import java.util.Map;
 class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition ADVERTISE_SOCKET = SimpleAttributeDefinitionBuilder.create(CommonAttributes.ADVERTISE_SOCKET, ModelType.STRING, true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition CONNECTOR = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONNECTOR, ModelType.STRING, false)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     // TODO: Convert into xs:list of outbound socket binding names
     static final SimpleAttributeDefinition PROXY_LIST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_LIST, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition PROXY_URL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_URL, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("/"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition ADVERTISE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.ADVERTISE, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition ADVERTISE_SECURITY_KEY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.ADVERTISE_SECURITY_KEY, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     // TODO: Convert into an xs:list of host:context
     static final SimpleAttributeDefinition EXCLUDED_CONTEXTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.EXCLUDED_CONTEXTS, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("ROOT,invoker,jbossws,juddi,console"))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition AUTO_ENABLE_CONTEXTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.AUTO_ENABLE_CONTEXTS, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition STOP_CONTEXT_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STOP_CONTEXT_TIMEOUT, ModelType.INT, true)
@@ -100,7 +101,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(10))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(1, true, true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition SOCKET_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SOCKET_TIMEOUT, ModelType.INT, true)
@@ -108,22 +109,25 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(20))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(1, true, true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition STICKY_SESSION = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STICKY_SESSION, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition STICKY_SESSION_REMOVE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STICKY_SESSION_REMOVE, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition STICKY_SESSION_FORCE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.STICKY_SESSION_FORCE, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition WORKER_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WORKER_TIMEOUT, ModelType.INT, true)
@@ -132,19 +136,20 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
             .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition MAX_ATTEMPTS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.MAX_ATTEMPTS, ModelType.INT, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(1))
             .setValidator(new IntRangeValidator(-1, true, true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition FLUSH_PACKETS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.FLUSH_PACKETS, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition FLUSH_WAIT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.FLUSH_WAIT, ModelType.INT, true)
@@ -153,13 +158,14 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
             .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition PING = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PING, ModelType.INT, true)
+            .setAllowExpression(true)
             .setDefaultValue(new ModelNode(10))
             .setMeasurementUnit(MeasurementUnit.SECONDS)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition SMAX = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SMAX, ModelType.INT, true)
@@ -167,7 +173,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(-1))
             .setValidator(new IntRangeValidator(-1, true, true))
             .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition TTL = SimpleAttributeDefinitionBuilder.create(CommonAttributes.TTL, ModelType.INT, true)
@@ -176,7 +182,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
             .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition NODE_TIMEOUT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.NODE_TIMEOUT, ModelType.INT, true)
@@ -185,22 +191,22 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setMeasurementUnit(MeasurementUnit.SECONDS)
             .setValidator(new IntRangeValidator(-1, true, true))
             .setCorrector(ZeroToNegativeOneParameterCorrector.INSTANCE)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition BALANCER = SimpleAttributeDefinitionBuilder.create(CommonAttributes.BALANCER, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .build();
 
     static final SimpleAttributeDefinition LOAD_BALANCING_GROUP = SimpleAttributeDefinitionBuilder.create(CommonAttributes.LOAD_BALANCING_GROUP, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .addAlternatives("domain")
             .build();
 
     static final SimpleAttributeDefinition SIMPLE_LOAD_PROVIDER = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR, ModelType.INT, true)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setRestartAllServices()
             .setXmlName(CommonAttributes.FACTOR)
                     //.setDefaultValue(new ModelNode(1))
             .setAllowExpression(true)

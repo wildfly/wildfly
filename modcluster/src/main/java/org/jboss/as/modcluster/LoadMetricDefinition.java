@@ -44,19 +44,27 @@ public class LoadMetricDefinition extends SimpleResourceDefinition {
     protected static final LoadMetricDefinition INSTANCE = new LoadMetricDefinition();
 
     static final SimpleAttributeDefinition TYPE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.TYPE, ModelType.STRING, false)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(false)
+            .setRestartAllServices()
             .setValidator(new EnumValidator<LoadMetricEnum>(LoadMetricEnum.class, false, false))
             .build();
 
     static final SimpleAttributeDefinition WEIGHT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WEIGHT, ModelType.INT, true)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .setDefaultValue(new ModelNode(LoadMetric.DEFAULT_WEIGHT))
             .build();
+
     static final SimpleAttributeDefinition CAPACITY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CAPACITY, ModelType.DOUBLE, true)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .setDefaultValue(new ModelNode(LoadMetric.DEFAULT_CAPACITY))
             .build();
-    static final PropertiesAttributeDefinition PROPERTY = new PropertiesAttributeDefinition(CommonAttributes.PROPERTY, CommonAttributes.PROPERTY, true);
+
+    static final PropertiesAttributeDefinition PROPERTY = new PropertiesAttributeDefinition.Builder(CommonAttributes.PROPERTY, true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {
             TYPE, WEIGHT, CAPACITY, PROPERTY

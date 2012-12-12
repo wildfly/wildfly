@@ -41,12 +41,14 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
     protected static final DynamicLoadProviderDefinition INSTANCE = new DynamicLoadProviderDefinition();
 
     static final SimpleAttributeDefinition DECAY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.DECAY, ModelType.INT, true)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .setDefaultValue(new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR))
             .build();
 
     static final SimpleAttributeDefinition HISTORY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.HISTORY, ModelType.INT, true)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .setDefaultValue(new ModelNode(DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY))
             .build();
 
