@@ -40,10 +40,10 @@ public class ModClusterAddCustomMetric implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-        PathAddress parent = opAddress.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+        PathAddress parent = opAddress.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
         String name = CustomLoadMetricDefinition.CLASS.resolveModelAttribute(context, operation).asString();
 
-        ModelNode targetOperation = Util.createAddOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), name)));
+        ModelNode targetOperation = Util.createAddOperation(parent.append(PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH.getKey(), name)));
 
         for (AttributeDefinition def : CustomLoadMetricDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, targetOperation);

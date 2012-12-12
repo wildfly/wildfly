@@ -28,7 +28,6 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -53,7 +52,7 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
             .build();
 
     private DynamicLoadProviderDefinition() {
-        super(ModClusterExtension.DYNAMIC_LOAD_PROVIDER,
+        super(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER),
                 DynamicLoadProviderAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()

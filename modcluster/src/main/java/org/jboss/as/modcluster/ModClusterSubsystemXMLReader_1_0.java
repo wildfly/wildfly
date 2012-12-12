@@ -184,7 +184,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
     }
 
     void parseDynamicLoadProvider(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
-        PathAddress address = parent.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
+        PathAddress address = parent.append(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH);
         final ModelNode load = Util.createAddOperation(address);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -242,7 +242,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     throw unexpectedAttribute(reader, i);
             }
         }
-        PathElement pe = PathElement.pathElement(ModClusterExtension.LOAD_METRIC.getKey(), metric.get(CommonAttributes.TYPE).asString());
+        PathElement pe = PathElement.pathElement(ModClusterExtension.LOAD_METRIC_PATH.getKey(), metric.get(CommonAttributes.TYPE).asString());
         metric.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         metric.get(ModelDescriptionConstants.OP_ADDR).set(address.append(pe).toModelNode());
         readProperties(reader, metric);
@@ -284,7 +284,7 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
                     throw unexpectedAttribute(reader, i);
             }
         }
-        PathElement pe = PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC.getKey(), customMetric.get(CommonAttributes.CLASS).asString());
+        PathElement pe = PathElement.pathElement(ModClusterExtension.CUSTOM_LOAD_METRIC_PATH.getKey(), customMetric.get(CommonAttributes.CLASS).asString());
         customMetric.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
         customMetric.get(ModelDescriptionConstants.OP_ADDR).set(address.append(pe).toModelNode());
         readProperties(reader, customMetric);
