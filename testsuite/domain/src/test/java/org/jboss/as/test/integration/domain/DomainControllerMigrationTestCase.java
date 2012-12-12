@@ -55,7 +55,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -63,7 +62,6 @@ import org.junit.Test;
  *
  * @author <a href="dpospisi@redhat.com">Dominik Pospisil</a>
  */
-@Ignore("AS7-5306")
 public class DomainControllerMigrationTestCase {
 
     private static final Logger log = Logger.getLogger(DomainControllerMigrationTestCase.class);
