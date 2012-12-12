@@ -40,7 +40,8 @@ public class CustomLoadMetricDefinition extends SimpleResourceDefinition {
     protected static final CustomLoadMetricDefinition INSTANCE = new CustomLoadMetricDefinition();
 
     static final SimpleAttributeDefinition CLASS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CLASS, ModelType.STRING, false)
-            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setRestartAllServices()
             .build();
 
 
