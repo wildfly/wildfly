@@ -72,7 +72,7 @@ public class ClientMappingsAttributeDefinition extends ListAttributeDefinition {
 
 
     public ClientMappingsAttributeDefinition(String name) {
-        super(name, name, true, 0, Integer.MAX_VALUE, validator, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+        super(name, name, true, false, 0, Integer.MAX_VALUE, validator, null, null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
     }
 
     @Override
