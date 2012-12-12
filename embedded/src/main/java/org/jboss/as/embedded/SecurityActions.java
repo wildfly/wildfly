@@ -88,6 +88,7 @@ class SecurityActions {
             return System.getProperties();
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<Properties>() {
+                @Override
                 public Properties run() {
                     return System.getProperties();
                 }
@@ -100,8 +101,40 @@ class SecurityActions {
             return System.getenv();
         } else {
             return AccessController.doPrivileged(new PrivilegedAction<Map<String, String>>() {
+                @Override
                 public Map<String, String> run() {
                     return System.getenv();
+                }
+            });
+        }
+    }
+
+    static ClassLoader getContextClassLoader() {
+
+        if (System.getSecurityManager() == null) {
+            return Thread.currentThread().getContextClassLoader();
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+
+                @Override
+                public ClassLoader run() {
+                    return Thread.currentThread().getContextClassLoader();
+                }
+            });
+        }
+    }
+
+    static void setContextClassLoader(final ClassLoader tccl) {
+
+        if (System.getSecurityManager() == null) {
+            Thread.currentThread().setContextClassLoader(tccl);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
+                    Thread.currentThread().setContextClassLoader(tccl);
+                    return null;
                 }
             });
         }
