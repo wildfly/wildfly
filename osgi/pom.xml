@@ -41,6 +41,7 @@
 
     <modules>
         <module>service</module>
+        <module>launcher</module>
         <module>integration</module>
     </modules>
 </project>
