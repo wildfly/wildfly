@@ -46,10 +46,10 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -672,4 +672,6 @@ public interface ServerMessages {
     @Message(id = 18784, value = "Null '%s'")
     OperationFailedException nullParameter(String name);
 
+    @Message(id = 18785, value = "Cannot obtain service value: %s")
+    RuntimeException cannotGetServiceValue(@Cause Throwable cause, ServiceName name);
 }

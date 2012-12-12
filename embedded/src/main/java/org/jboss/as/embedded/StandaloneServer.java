@@ -33,6 +33,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
  * The standalone server interface.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author David Bosschaert
  * @since 17-Nov-2010
  */
 public interface StandaloneServer {
@@ -48,10 +49,25 @@ public interface StandaloneServer {
      */
     Context getContext();
 
+    /**
+     * Retrieve an MSC service and waits for the service to be active.
+     * @param timeout The amount to time (in milliseconds) to wait for the service
+     * @param nameSegments The ServiceName segments
+     * @return the service or null if not found
+     */
+    Object getService(long timeout, String ... nameSegments);
+
     ModelControllerClient getModelControllerClient();
 
+    /**
+     * Start the server. This method blocks until all services have been started or failed.
+     * @throws ServerStartException
+     */
     void start() throws ServerStartException;
 
+    /**
+     * Shuts down the server and wait for its termination.
+     */
     void stop();
 
     // TODO: use a DeploymentPlan
