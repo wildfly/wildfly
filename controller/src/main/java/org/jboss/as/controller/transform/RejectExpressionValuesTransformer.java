@@ -55,6 +55,10 @@ public class RejectExpressionValuesTransformer implements ResourceTransformer, O
         this.attributeNames = names;
     }
 
+    public RejectExpressionValuesTransformer(Set<String> attributeNames) {
+        this.attributeNames = attributeNames;
+    }
+
     public RejectExpressionValuesTransformer(String... attributeNames) {
         this.attributeNames = new HashSet<String>();
         this.attributeNames.addAll(Arrays.asList(attributeNames));

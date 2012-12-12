@@ -22,10 +22,15 @@
 
 package org.jboss.as.jacorb;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -33,6 +38,12 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <p>
@@ -64,6 +75,8 @@ public class JacORBExtension implements Extension {
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JacORBSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(PARSER);
+        // Register the model transformers
+        registerTransformers(subsystem);
     }
 
     @Override
@@ -72,4 +85,25 @@ public class JacORBExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_2.getUriString(), PARSER);
     }
+
+    /**
+     * Register the transformers for older model versions.
+     *
+     * @param subsystem the subsystems registration
+     */
+    protected static void registerTransformers(final SubsystemRegistration subsystem) {
+        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+        final ResourceTransformer resourceTransformer = ResourceTransformer.DEFAULT;
+        final Set<String> expressionKeys = new HashSet<String>();
+        for(final AttributeDefinition def : JacORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
+            if(def.isAllowExpression()) {
+                expressionKeys.add(def.getName());
+            }
+        }
+        final RejectExpressionValuesTransformer operationTransformer = new RejectExpressionValuesTransformer(expressionKeys);
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, resourceTransformer);
+        registration.registerOperationTransformer(ADD, operationTransformer);
+        registration.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, operationTransformer.getWriteAttributeTransformer());
+    }
+
 }
