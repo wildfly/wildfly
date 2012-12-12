@@ -162,11 +162,13 @@ public abstract class ModelTestModelControllerService extends AbstractController
     protected void bootThreadDone() {
         try {
             super.bootThreadDone();
-        } catch (Exception ignore) {
-            //7.1.2 does not have this method
         } finally {
-            latch.countDown();
+            countdownDoneLatch();
         }
+    }
+
+    protected void countdownDoneLatch() {
+        latch.countDown();
     }
 
     @Override

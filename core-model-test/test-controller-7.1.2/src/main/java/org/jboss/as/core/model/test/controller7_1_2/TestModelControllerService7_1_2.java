@@ -126,7 +126,7 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
         try {
             super.boot(context);
         } finally {
-            bootThreadDone();
+            countdownDoneLatch();
         }
     }
 
