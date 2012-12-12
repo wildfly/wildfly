@@ -22,15 +22,14 @@
 
 package org.jboss.as.embedded;
 
+import java.lang.reflect.Method;
+
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.File;
 
 /**
  * Date: 05.11.2011
@@ -40,112 +39,79 @@ import java.io.File;
 @MessageBundle(projectCode = "JBAS")
 public interface EmbeddedMessages {
 
-    /**
-     * The messages
-     */
     EmbeddedMessages MESSAGES = Messages.getBundle(EmbeddedMessages.class);
 
     /**
      * Creates an exception indicating the file, represented by the {@code fileName} parameter, could not be mounted.
-     *
-     * @param cause    the cause of the error.
-     * @param fileName the name of the file.
-     *
-     * @return a {@link RuntimeException} for the error.
      */
     @Message(id = 11130, value = "Could not mount file '%s'")
     RuntimeException cannotMountFile(@Cause Throwable cause, String fileName);
 
     /**
      * Creates an exception indicating the contents of the file could not be read.
-     *
-     * @param cause the cause of the error.
-     * @param file  the file that could not be read.
-     *
-     * @return a {@link RuntimeException} for the error.
      */
     @Message(id = 11131, value = "Could not read contents of %s")
     RuntimeException cannotReadContent(@Cause Throwable cause, VirtualFile file);
 
     /**
-     * Creates an exception indicating one or more exclusion values must be specified.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 11132, value = "One or more exclusion values must be specified")
     IllegalArgumentException exclusionValuesRequired();
 
-    /**
-     * A message indicating a failure to load the specified log module.
-     *
-     * @param moduleId the module id.
-     *
-     * @return the message.
-     */
-    @Message(id = 11133, value = "WARNING: Failed to load the specified logmodule %s")
-    String failedToLoadLogModule(ModuleIdentifier moduleId);
+    //@Message(id = 11133, value = "WARNING: Failed to load the specified logmodule %s")
+    //String failedToLoadLogModule(ModuleIdentifier moduleId);
 
     /**
-     * Creates an exception indicating the JBoss hom directory is invalid.
-     *
-     * @param dir the invalid directory.
-     *
-     * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 11134, value = "Invalid JBoss home directory: %s")
-    IllegalStateException invalidJbossHome(File dir);
+    IllegalStateException invalidJBossHome(String jbossHome);
 
     /**
      * Creates an exception indicating the module path is invalid.
-     *
-     * @param file the invalid file.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 11135, value = "Invalid module path: %s")
-    IllegalArgumentException invalidModulePath(File file);
+    IllegalArgumentException invalidModulePath(String file);
 
     /**
      * Creates an exception indicating the module, represented by the {@code moduleName} parameter, was not a valid
      * type of {@code File[]}, {@code File}, {@code String[]} or {@code String}.
-     *
-     * @param moduleName the name of the module.
-     * @param type       the type the module actually is.
-     *
-     * @return a {@link RuntimeException} for the error.
      */
     @Message(id = 11136, value = "%s was not of type File[], File, String[] or String, but of type %s")
     RuntimeException invalidModuleType(String moduleName, Class<?> type);
 
     /**
      * Creates an exception indicating there was an error in the module loader.
-     *
-     * @param cause        the cause of the error.
-     * @param msg          the error message.
-     * @param moduleLoader the module loader that had the error.
-     *
-     * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11137, value = "%s in %s")
+    @Message(id = 11137, value = "Cannot load module %s from: %s")
     RuntimeException moduleLoaderError(@Cause Throwable cause, String msg, ModuleLoader moduleLoader);
 
     /**
      * Creates an exception indicating the variable, represented by the {@code name} parameter, is {@code null}.
-     *
-     * @param name the name of the variable.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
      */
     @Message(id = 11138, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
      * Creates an exception indicating the system property could not be found.
-     *
-     * @param key they key to the system property.
-     *
-     * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 11139, value = "Cannot find system property: %s")
     IllegalStateException systemPropertyNotFound(String key);
+
+    @Message(id = 11140, value = "Cannot load embedded server factory: %s")
+    IllegalStateException cannotLoadEmbeddedServerFactory(@Cause ClassNotFoundException cause, String className);
+
+    @Message(id = 11141, value = "Cannot get reflective method '%s' for: %s")
+    IllegalStateException cannotGetReflectiveMethod(@Cause NoSuchMethodException cause, String method, String className);
+
+    @Message(id = 11142, value = "Cannot create standalone server using factory: %s")
+    IllegalStateException cannotCreateStandaloneServer(@Cause Throwable cause, Method createMethod);
+
+    @Message(id = 11143, value = "Cannot setup embedded server")
+    IllegalStateException cannotSetupEmbeddedServer(@Cause Throwable cause);
+
+    @Message(id = 11144, value = "Cannot start embedded server")
+    ServerStartException cannotStartEmbeddedServer(@Cause Throwable cause);
+
+    @Message(id = 11145, value = "Cannot invoke '%s' on standalone server")
+    IllegalStateException cannotInvokeStandaloneServer(@Cause Throwable cause, String methodName);
 }
