@@ -36,8 +36,6 @@ import org.jboss.dmr.ModelType;
 
 import java.util.EnumSet;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
-
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
@@ -50,7 +48,7 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
             .build();
-    public static final SimpleAttributeDefinition VIRUTAL_HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VIRUTAL_HOST, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition VIRTUAL_HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VIRTUAL_HOST, ModelType.STRING, false)
             .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setStorageRuntime()
             .build();
@@ -130,13 +128,13 @@ public class ModClusterDefinition extends SimpleResourceDefinition {
         registration.registerOperationHandler(CommonAttributes.STOP, ModClusterStop.INSTANCE, stop, false);
 
         // Context related operations.
-        final DescriptionProvider enableContext = new DefaultOperationDescriptionProvider(CommonAttributes.ENABLE_CONTEXT, rootResolver, VIRUTAL_HOST, CONTEXT);
+        final DescriptionProvider enableContext = new DefaultOperationDescriptionProvider(CommonAttributes.ENABLE_CONTEXT, rootResolver, VIRTUAL_HOST, CONTEXT);
         registration.registerOperationHandler(CommonAttributes.ENABLE_CONTEXT, ModClusterEnableContext.INSTANCE, enableContext, false);
 
-        final DescriptionProvider disableContext = new DefaultOperationDescriptionProvider(CommonAttributes.DISABLE_CONTEXT, rootResolver, VIRUTAL_HOST, CONTEXT);
+        final DescriptionProvider disableContext = new DefaultOperationDescriptionProvider(CommonAttributes.DISABLE_CONTEXT, rootResolver, VIRTUAL_HOST, CONTEXT);
         registration.registerOperationHandler(CommonAttributes.DISABLE_CONTEXT, ModClusterDisableContext.INSTANCE, disableContext, false);
 
-        final DescriptionProvider stopContext = new DefaultOperationDescriptionProvider(CommonAttributes.STOP_CONTEXT, rootResolver, VIRUTAL_HOST, CONTEXT, WAIT_TIME);
+        final DescriptionProvider stopContext = new DefaultOperationDescriptionProvider(CommonAttributes.STOP_CONTEXT, rootResolver, VIRTUAL_HOST, CONTEXT, WAIT_TIME);
         registration.registerOperationHandler(CommonAttributes.STOP_CONTEXT, ModClusterStopContext.INSTANCE, stopContext, false);
     }
 

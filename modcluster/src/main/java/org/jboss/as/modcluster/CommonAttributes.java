@@ -84,7 +84,7 @@ interface CommonAttributes {
 
     String PORT = "port";
     String HOST = "host";
-    String VIRUTAL_HOST = "virtualhost";
+    String VIRTUAL_HOST = "virtualhost";
     String CONTEXT = "context";
     String WAIT_TIME = "waittime";
 
