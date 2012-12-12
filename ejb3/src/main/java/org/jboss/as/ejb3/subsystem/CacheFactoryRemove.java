@@ -53,7 +53,7 @@ public class CacheFactoryRemove extends AbstractRemoveStepHandler {
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (context.isResourceServiceRestartAllowed()) {
-            this.addHandler.installRuntimeServices(context, model, null);
+            this.addHandler.installRuntimeServices(context, operation, model, null);
         } else {
             context.revertReloadRequired();
         }

@@ -22,9 +22,13 @@
 
 package org.jboss.as.controller;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -36,6 +40,19 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
                                           final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
                                           final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, ModelType.STRING, minSize, maxSize, alternatives, requires, elementValidator, attributeMarshaller, resourceOnly, deprecated, flags);
+    }
+
+
+    public List<String> unwrap(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        if (!model.hasDefined(getName())) {
+            return null;
+        }
+        ModelNode modelProps = model.get(getName());
+        List<String> result = new LinkedList<String>();
+        for (ModelNode p : modelProps.asList()) {
+            result.add(context.resolveExpressions(p).asString());
+        }
+        return result;
     }
 
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, StringListAttributeDefinition> {

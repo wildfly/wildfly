@@ -30,9 +30,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreConfig;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSourceService;
 import org.jboss.dmr.ModelNode;
@@ -45,25 +43,31 @@ import org.jboss.msc.service.ServiceController;
 public abstract class PassivationStoreAdd extends AbstractAddStepHandler {
 
     private final AttributeDefinition[] attributes;
+    private AttributeDefinition MAX_SIZE_ATTR = null;
 
     PassivationStoreAdd(AttributeDefinition... attributes) {
         this.attributes = attributes;
+        for (AttributeDefinition attribute : attributes) {
+            if (attribute.getName().equals(EJB3SubsystemModel.MAX_SIZE)) {
+                MAX_SIZE_ATTR = attribute;
+                break;
+            }
+        }
+        if (MAX_SIZE_ATTR == null) {
+            throw new IllegalArgumentException("MAX_SIZE should be one of attributes");
+        }
     }
 
     /**
      * Populate the <code>strictMaxPoolModel</code> from the <code>operation</code>
      *
-     * @param operation          the operation
-     * @param model strict-max-pool ModelNode
+     * @param operation the operation
+     * @param model     strict-max-pool ModelNode
      * @throws OperationFailedException
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        model.get(EJB3SubsystemModel.NAME).set(name);
-
-        for (AttributeDefinition attr: this.attributes) {
+        for (AttributeDefinition attr : this.attributes) {
             attr.validateAndSet(operation, model);
         }
     }
@@ -73,21 +77,19 @@ public abstract class PassivationStoreAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
         // add this to the service controllers
-        serviceControllers.addAll(installRuntimeServices(context, model, verificationHandler));
+        serviceControllers.addAll(installRuntimeServices(context, operation, model, verificationHandler));
     }
 
-    abstract Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException;
+    abstract Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException;
 
-    ServiceController<?> installBackingCacheEntryStoreSourceService(BackingCacheEntryStoreSourceService<?, ?, ?, ?> service, OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    ServiceController<?> installBackingCacheEntryStoreSourceService(final BackingCacheEntryStoreSourceService<?, ?, ?, ?> service, final OperationContext context,
+                                                                    final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         BackingCacheEntryStoreConfig config = service.getValue();
-        if (model.hasDefined(EJB3SubsystemModel.IDLE_TIMEOUT)) {
-            config.setIdleTimeout(model.get(EJB3SubsystemModel.IDLE_TIMEOUT).asLong());
-        }
-        if (model.hasDefined(EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)) {
-            config.setIdleTimeoutUnit(TimeUnit.valueOf(model.get(EJB3SubsystemModel.IDLE_TIMEOUT_UNIT).asString()));
-        }
-        if (model.hasDefined(EJB3SubsystemModel.MAX_SIZE)) {
-            config.setMaxSize(model.get(EJB3SubsystemModel.MAX_SIZE).asInt());
+        config.setIdleTimeout(PassivationStoreResourceDefinition.IDLE_TIMEOUT.resolveModelAttribute(context, model).asLong());
+        config.setIdleTimeoutUnit(TimeUnit.valueOf(PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.resolveModelAttribute(context, model).asString()));
+        ModelNode maxSizeModel = MAX_SIZE_ATTR.resolveModelAttribute(context, model);
+        if (maxSizeModel.isDefined()) {
+            config.setMaxSize(maxSizeModel.asInt());
         }
         ServiceBuilder<?> builder = service.build(context.getServiceTarget());
         if (verificationHandler != null) {

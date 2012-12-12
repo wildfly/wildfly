@@ -357,18 +357,18 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 // <strict-max-pool>
                 writer.writeStartElement(EJB3SubsystemXMLElement.STRICT_MAX_POOL.getLocalName());
                 // contents of strict-max-pool
-                final ModelNode strictMaxPoolModelNode = property.getValue();
-                this.writeStrictMaxPoolConfig(writer, strictMaxPoolModelNode);
+                this.writeStrictMaxPoolConfig(writer, property);
                 // </strict-max-pool>
                 writer.writeEndElement();
             }
         }
     }
 
-    private void writeStrictMaxPoolConfig(final XMLExtendedStreamWriter writer, final ModelNode strictMaxPoolModelNode) throws XMLStreamException {
+    private void writeStrictMaxPoolConfig(final XMLExtendedStreamWriter writer, final Property strictMaxPoolModel) throws XMLStreamException {
         // write the "name" attribute of the pool
-        final String poolName = strictMaxPoolModelNode.get(EJB3SubsystemModel.NAME).asString();
-        writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), poolName);
+        final ModelNode strictMaxPoolModelNode = strictMaxPoolModel.getValue();
+
+        writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), strictMaxPoolModel.getName());
 
         StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.marshallAsAttribute(strictMaxPoolModelNode, writer);
         StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.marshallAsAttribute(strictMaxPoolModelNode, writer);
@@ -381,7 +381,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             // <strict-max-pool>
             writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
             ModelNode cache = property.getValue();
-            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), cache.get(EJB3SubsystemModel.NAME).asString());
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
             CacheFactoryResourceDefinition.PASSIVATION_STORE.marshallAsAttribute(cache, writer);
             CacheFactoryResourceDefinition.ALIASES.marshallAsElement(cache, writer);
             writer.writeEndElement();
@@ -395,7 +395,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 // <strict-max-pool>
                 writer.writeStartElement(EJB3SubsystemXMLElement.CLUSTER_PASSIVATION_STORE.getLocalName());
                 ModelNode store = property.getValue();
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), store.get(EJB3SubsystemModel.NAME).asString());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
                 ClusterPassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
@@ -415,7 +415,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 // <strict-max-pool>
                 writer.writeStartElement(EJB3SubsystemXMLElement.FILE_PASSIVATION_STORE.getLocalName());
                 ModelNode store = property.getValue();
-                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), store.get(EJB3SubsystemModel.NAME).asString());
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
                 PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
                 FilePassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);

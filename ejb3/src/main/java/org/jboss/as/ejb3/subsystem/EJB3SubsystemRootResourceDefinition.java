@@ -44,24 +44,24 @@ import org.jboss.dmr.ModelType;
  */
 public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    public static final SimpleAttributeDefinition DEFAULT_SLSB_INSTANCE_POOL =
+    static final SimpleAttributeDefinition DEFAULT_SLSB_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL, ModelType.STRING, true)
                     .setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition DEFAULT_MDB_INSTANCE_POOL =
+    static final SimpleAttributeDefinition DEFAULT_MDB_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL, ModelType.STRING, true)
                     .setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition DEFAULT_RESOURCE_ADAPTER_NAME =
+    static final SimpleAttributeDefinition DEFAULT_RESOURCE_ADAPTER_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME, ModelType.STRING, true)
                     .setDefaultValue(new ModelNode().set("hornetq-ra"))
                     .setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_INSTANCE_POOL =
+    static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_INSTANCE_POOL =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL, ModelType.STRING, true)
                     .setAllowExpression(true).build();
-    public static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING =
+    static final SimpleAttributeDefinition DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING, ModelType.BOOLEAN, true)
                     .setAllowExpression(true).build();
 
-    public static final SimpleAttributeDefinition DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT =
+    static final SimpleAttributeDefinition DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName())
                     .setDefaultValue(new ModelNode().set(5000)) // TODO: this should come from component description
@@ -70,7 +70,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
-    public static final SimpleAttributeDefinition DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT =
+    static final SimpleAttributeDefinition DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT, ModelType.LONG, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT.getLocalName())
                     .setDefaultValue(new ModelNode().set(5000)) // TODO: this should come from component description
@@ -78,21 +78,21 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
-    public static final SimpleAttributeDefinition DEFAULT_SFSB_CACHE =
+    static final SimpleAttributeDefinition DEFAULT_SFSB_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_CACHE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .build();
-    public static final SimpleAttributeDefinition DEFAULT_CLUSTERED_SFSB_CACHE =
+    static final SimpleAttributeDefinition DEFAULT_CLUSTERED_SFSB_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setAllowNull(true)
                     .build();
 
-    public static final SimpleAttributeDefinition ENABLE_STATISTICS =
+    static final SimpleAttributeDefinition ENABLE_STATISTICS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
                     .build();
 
-    public static final SimpleAttributeDefinition DEFAULT_DISTINCT_NAME =
+    static final SimpleAttributeDefinition DEFAULT_DISTINCT_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_DISTINCT_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(0, true))

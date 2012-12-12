@@ -22,29 +22,10 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.threads.Namespace;
-import org.jboss.as.threads.ThreadsParser;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.duplicateAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
@@ -52,31 +33,36 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ALIASES;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.BEAN_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE_CONTAINER;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ENABLE_BY_DEFAULT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.GROUPS_PATH;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IDLE_TIMEOUT_UNIT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.INSTANCE_ACQUISITION_TIMEOUT_UNIT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_POOL_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.MAX_SIZE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATION_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SESSIONS_PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.STRICT_MAX_BEAN_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SUBDIRECTORY_COUNT;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.USE_QUALIFIED_NAME;
+
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.threads.Namespace;
+import org.jboss.as.threads.ThreadsParser;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * @author Jaikiran Pai
@@ -84,19 +70,16 @@ import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TIMER_SERVICE;
 public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> {
 
     public static final EJB3Subsystem12Parser INSTANCE = new EJB3Subsystem12Parser();
+    protected static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
 
     protected EJB3Subsystem12Parser() {
     }
 
 
-    protected void readAttribute(final ModelNode subsystemAddOperation, final XMLExtendedStreamReader reader, final int i) throws XMLStreamException {
-        ParseUtils.requireNoNamespaceAttribute(reader, i);
-        throw ParseUtils.unexpectedAttribute(reader, i);
-    }
-
-    protected void readAttributes(final ModelNode subsystemAddOperation, final XMLExtendedStreamReader reader) throws XMLStreamException {
+    protected void readAttributes(final XMLExtendedStreamReader reader) throws XMLStreamException {
         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            readAttribute(subsystemAddOperation, reader, i);
+            ParseUtils.requireNoNamespaceAttribute(reader, i);
+            throw ParseUtils.unexpectedAttribute(reader, i);
         }
     }
 
@@ -105,16 +88,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
      */
     @Override
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
-
-
-        final ModelNode ejb3SubsystemAddOperation = new ModelNode();
-        ejb3SubsystemAddOperation.get(OP).set(ADD);
-        ejb3SubsystemAddOperation.get(OP_ADDR).add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-
+        final ModelNode ejb3SubsystemAddOperation = Util.createAddOperation(SUBSYSTEM_PATH);
         operations.add(ejb3SubsystemAddOperation);
-
-        readAttributes(ejb3SubsystemAddOperation, reader);
-
+        readAttributes(reader);
         // elements
         final EnumSet<EJB3SubsystemXMLElement> encountered = EnumSet.noneOf(EJB3SubsystemXMLElement.class);
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -193,8 +169,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
 
     protected void parseRemote(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
-        String connectorName = null;
-        String threadPoolName = null;
+        ModelNode operation = Util.createAddOperation(SUBSYSTEM_PATH.append(SERVICE, REMOTE));
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.CONNECTOR_REF, EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -203,10 +178,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             required.remove(attribute);
             switch (attribute) {
                 case CONNECTOR_REF:
-                    connectorName = value;
+                    EJB3RemoteResourceDefinition.CONNECTOR_REF.parseAndSetParameter(value, operation, reader);
                     break;
                 case THREAD_POOL_NAME:
-                    threadPoolName = value;
+                    EJB3RemoteResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -216,12 +191,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
-        operations.add(EJB3RemoteServiceAdd.create(connectorName, threadPoolName));
+        operations.add(operation);
     }
 
     private void parseAsync(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
-        String threadPoolName = null;
+        //String threadPoolName = null;
+        ModelNode operation = Util.createAddOperation(SUBSYSTEM_PATH.append(SERVICE, ASYNC));
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -230,7 +206,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             required.remove(attribute);
             switch (attribute) {
                 case THREAD_POOL_NAME:
-                    threadPoolName = value;
+                    EJB3AsyncResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -239,14 +215,14 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
+
         requireNoContent(reader);
-        operations.add(EJB3AsyncServiceAdd.create(threadPoolName));
+        operations.add(operation);
     }
 
     private void parseIIOP(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        ModelNode operation = Util.createAddOperation(SUBSYSTEM_PATH.append(SERVICE, IIOP));
         final int count = reader.getAttributeCount();
-        boolean enableByDefault = true;
-        boolean useQualifiedName = true;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.ENABLE_BY_DEFAULT, EJB3SubsystemXMLAttribute.USE_QUALIFIED_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -255,10 +231,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             required.remove(attribute);
             switch (attribute) {
                 case ENABLE_BY_DEFAULT:
-                    enableByDefault = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    EJB3IIOPResourceDefinition.ENABLE_BY_DEFAULT.parseAndSetParameter(value,operation,reader);
                     break;
                 case USE_QUALIFIED_NAME:
-                    useQualifiedName = Boolean.parseBoolean(reader.getAttributeValue(i));
+                    EJB3IIOPResourceDefinition.USE_QUALIFIED_NAME.parseAndSetParameter(value,operation,reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -268,7 +244,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
-        operations.add(EJB3IIOPAdd.create(enableByDefault, useQualifiedName));
+        operations.add(operation);
     }
 
     private void parseMDB(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
@@ -292,14 +268,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                 }
             }
         }
-        // if the resource-adapter-ref *hasn't* been explicitly specified, then default it to hornetq-ra
-        if (!ejb3SubsystemAddOperation.hasDefined(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME)) {
-            final ModelNode defaultRAName = EJB3SubsystemRootResourceDefinition.DEFAULT_RESOURCE_ADAPTER_NAME.getDefaultValue();
-            if (defaultRAName != null) {
-                ejb3SubsystemAddOperation.get(EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME).set(defaultRAName);
-            }
-        }
-
     }
 
     private void parseEntityBean(final XMLExtendedStreamReader reader, List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
@@ -372,24 +340,21 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
     private void parseStatefulBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT, EJB3SubsystemXMLAttribute.CACHE_REF);
-        String defaultAccessTimeout = null;
-        String cache = null;
-        String clusteredCache = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_ACCESS_TIMEOUT: {
-                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parse(value, reader).asString();
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 case CACHE_REF: {
-                    cache = EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parse(value, reader).asString();
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 case CLUSTERED_CACHE_REF: {
-                    clusteredCache = EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parse(value, reader).asString();
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {
@@ -403,22 +368,18 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
-        EJB3SubsystemRootResourceDefinition.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader);
-        EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(cache, ejb3SubsystemAddOperation, reader);
-        EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(clusteredCache, ejb3SubsystemAddOperation, reader);
     }
 
     private void parseSingletonBean(final XMLExtendedStreamReader reader, final List<ModelNode> operations, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
-        String defaultAccessTimeout = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DEFAULT_ACCESS_TIMEOUT:
-                    defaultAccessTimeout = EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parse(value, reader).asString();
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     // found the mandatory attribute
                     missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.DEFAULT_ACCESS_TIMEOUT);
                     break;
@@ -430,7 +391,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
-        EJB3SubsystemRootResourceDefinition.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT.parseAndSetParameter(defaultAccessTimeout, ejb3SubsystemAddOperation, reader);
     }
 
     private void parsePools(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
@@ -469,9 +429,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
     private void parseStrictMaxPool(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String poolName = null;
-        Integer maxPoolSize = null;
-        Long timeout = null;
-        String unit = null;
+        final ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -481,13 +439,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     poolName = value;
                     break;
                 case MAX_POOL_SIZE:
-                    maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parse(value, reader).asInt();
+                    StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.parseAndSetParameter(value, operation, reader);
                     break;
                 case INSTANCE_ACQUISITION_TIMEOUT:
-                    timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parse(value, reader).asLong();
+                    StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 case INSTANCE_ACQUISITION_TIMEOUT_UNIT:
-                    unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parse(value, reader).asString();
+                    StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
 
                 default:
@@ -499,7 +457,10 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operations.add(this.createAddStrictMaxBeanInstancePoolOperation(poolName, maxPoolSize, timeout, unit));
+        // create /subsystem=ejb3/strict-max-bean-instance-pool=name:add(...)
+        final PathAddress address = this.getEJB3SubsystemAddress().append(STRICT_MAX_BEAN_INSTANCE_POOL, poolName);
+        operation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(operation);
     }
 
     private void parseCaches(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
@@ -521,8 +482,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
 
     private void parseCache(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
-        String passivationStore = null;
-        Set<String> aliases = new LinkedHashSet<String>();
+        ModelNode operation = Util.createAddOperation();
+        //Set<String> aliases = new LinkedHashSet<String>();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -532,12 +493,12 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case PASSIVATION_STORE_REF: {
-                    passivationStore = CacheFactoryResourceDefinition.PASSIVATION_STORE.parse(value, reader).asString();
+                    CacheFactoryResourceDefinition.PASSIVATION_STORE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case ALIASES: {
                     for (String alias : reader.getListAttributeValue(i)) {
-                        aliases.add(CacheFactoryResourceDefinition.ALIASES.parse(alias, reader).asString());
+                        CacheFactoryResourceDefinition.ALIASES.parseAndAddParameterElement(alias, operation, reader);
                     }
                     break;
                 }
@@ -550,8 +511,9 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (name == null) {
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
-        // create and add the operation
-        operations.add(this.createAddStatefulCacheOperation(name, aliases, passivationStore));
+        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(CACHE, name));
+        operation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(operation);
     }
 
     private void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
@@ -577,13 +539,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
 
     private void parseFilePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
-        Integer maxSize = null;
-        Long timeout = null;
-        String unit = null;
-        String relativeTo = null;
-        String groupsPath = null;
-        String sessionsPath = null;
-        Integer subdirectoryCount = null;
+        ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -593,31 +549,31 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case MAX_SIZE: {
-                    maxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader).asInt();
+                    FilePassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader).asLong();
+                    PassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader).asString();
+                    PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case RELATIVE_TO: {
-                    relativeTo = FilePassivationStoreResourceDefinition.RELATIVE_TO.parse(value, reader).asString();
+                    FilePassivationStoreResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case GROUPS_PATH: {
-                    groupsPath = FilePassivationStoreResourceDefinition.GROUPS_PATH.parse(value, reader).asString();
+                    FilePassivationStoreResourceDefinition.GROUPS_PATH.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case SESSIONS_PATH: {
-                    sessionsPath = FilePassivationStoreResourceDefinition.SESSIONS_PATH.parse(value, reader).asString();
+                    FilePassivationStoreResourceDefinition.SESSIONS_PATH.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case SUBDIRECTORY_COUNT: {
-                    subdirectoryCount = FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.parse(value, reader).asInt();
+                    FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default: {
@@ -630,18 +586,13 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operations.add(this.createAddFilePassivationStoreOperation(name, maxSize, timeout, unit, relativeTo, groupsPath, sessionsPath, subdirectoryCount));
+        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(FILE_PASSIVATION_STORE, name).toModelNode());
+        operations.add(operation);
     }
 
     private void parseClusterPassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
-        Integer maxSize = null;
-        Long timeout = null;
-        String unit = null;
-        String cacheContainer = null;
-        String beanCache = null;
-        String clientMappingsCache = null;
-        Boolean passivateEventsOnReplicate = null;
+        ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -651,31 +602,31 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case MAX_SIZE: {
-                    maxSize = ClusterPassivationStoreResourceDefinition.MAX_SIZE.parse(value, reader).asInt();
+                    ClusterPassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    timeout = PassivationStoreResourceDefinition.IDLE_TIMEOUT.parse(value, reader).asLong();
+                    PassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    unit = PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parse(value, reader).asString();
+                    PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case CACHE_CONTAINER: {
-                    cacheContainer = ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.parse(value, reader).asString();
+                    ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case BEAN_CACHE: {
-                    beanCache = ClusterPassivationStoreResourceDefinition.BEAN_CACHE.parse(value, reader).asString();
+                    ClusterPassivationStoreResourceDefinition.BEAN_CACHE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case CLIENT_MAPPINGS_CACHE: {
-                    clientMappingsCache = ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.parse(value, reader).asString();
+                    ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case PASSIVATE_EVENTS_ON_REPLICATE: {
-                    passivateEventsOnReplicate = ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.parse(value, reader).asBoolean();
+                    ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default: {
@@ -688,23 +639,17 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operations.add(this.createAddClusterPassivationStoreOperation(name, maxSize, timeout, unit, cacheContainer, beanCache, clientMappingsCache, passivateEventsOnReplicate));
+        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(CLUSTER_PASSIVATION_STORE, name).toModelNode());
+        operations.add(operation);
     }
 
     private void parseTimerService(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
-
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        address.add(SERVICE, TIMER_SERVICE);
-        final ModelNode timerServiceAdd = new ModelNode();
-        timerServiceAdd.get(OP).set(ADD);
-        timerServiceAdd.get(OP_ADDR).set(address);
+        final ModelNode timerServiceAdd = Util.createAddOperation(SUBSYSTEM_PATH.append(SERVICE, TIMER_SERVICE));
 
         String dataStorePath = null;
         String dataStorePathRelativeTo = null;
 
         final int attCount = reader.getAttributeCount();
-        String threadPoolName = null;
         final EnumSet<EJB3SubsystemXMLAttribute> required = EnumSet.of(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME);
         for (int i = 0; i < attCount; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -713,7 +658,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             required.remove(attribute);
             switch (attribute) {
                 case THREAD_POOL_NAME:
-                    threadPoolName = value;
+                    TimerServiceResourceDefinition.THREAD_POOL_NAME.parseAndSetParameter(value, timerServiceAdd, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -722,7 +667,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!required.isEmpty()) {
             throw missingRequired(reader, required);
         }
-        timerServiceAdd.get(THREAD_POOL_NAME).set(threadPoolName);
 
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
@@ -771,10 +715,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         // no attributes expected
         requireNoAttributes(reader);
 
-
-        final ModelNode parentAddress = new ModelNode();
-        parentAddress.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-
+        final ModelNode parentAddress = SUBSYSTEM_PATH.toModelNode();
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             EJB3SubsystemNamespace readerNS = EJB3SubsystemNamespace.forUri(reader.getNamespaceURI());
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
@@ -790,160 +731,25 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    /**
-     * <p>
-     * Parses all attributes from the current element and sets them in the specified {@code ModelNode}.
-     * </p>
-     *
-     * @param reader             the {@code XMLExtendedStreamReader} used to read the configuration XML.
-     * @param node               the {@code ModelNode} that will hold the parsed attributes.
-     * @param expectedAttributes an {@code EnumSet} containing all expected attributes. If the parsed attribute is not
-     *                           one of the expected attributes, an exception is thrown.
-     * @param requiredAttributes an {@code EnumSet} containing all required attributes. If a required attribute is not
-     *                           found, an exception is thrown.
-     * @throws javax.xml.stream.XMLStreamException
-     *          if an error occurs while parsing the XML, if an attribute is not one of the expected
-     *          attributes or if one of the required attributes is not parsed.
-     */
-    private void parseAttributes(XMLExtendedStreamReader reader, ModelNode node, EnumSet<EJB3SubsystemXMLAttribute> expectedAttributes,
-                                 EnumSet<EJB3SubsystemXMLAttribute> requiredAttributes) throws XMLStreamException {
-
-        EnumSet<EJB3SubsystemXMLAttribute> parsedAttributes = EnumSet.noneOf(EJB3SubsystemXMLAttribute.class);
-        if (requiredAttributes == null) {
-            requiredAttributes = EnumSet.noneOf(EJB3SubsystemXMLAttribute.class);
-        }
-
-        for (int i = 0; i < reader.getAttributeCount(); i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String attrValue = reader.getAttributeValue(i);
-            final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
-            // check for unexpected attributes.
-            if (!expectedAttributes.contains(attribute))
-                throw unexpectedAttribute(reader, i);
-            // check for duplicate attributes.
-            if (!parsedAttributes.add(attribute)) {
-                throw duplicateAttribute(reader, attribute.getLocalName());
-            }
-            requiredAttributes.remove(attribute);
-            node.get(attribute.getLocalName()).set(attrValue);
-        }
-
-        // throw an exception if a required attribute wasn't found.
-        if (!requiredAttributes.isEmpty()) {
-            throw missingRequired(reader, requiredAttributes);
-        }
-    }
-
-    private ModelNode createAddStrictMaxBeanInstancePoolOperation(final String name, final Integer maxPoolSize, final Long timeout, final String timeoutUnit) {
-        // create /subsystem=ejb3/strict-max-bean-instance-pool=name:add(...)
-        final ModelNode addStrictMaxPoolOperation = new ModelNode();
-        addStrictMaxPoolOperation.get(OP).set(ADD);
-        // set the address for this operation
-        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(STRICT_MAX_BEAN_INSTANCE_POOL, name));
-        addStrictMaxPoolOperation.get(OP_ADDR).set(address.toModelNode());
-        // set the params for the operation
-        if (maxPoolSize != null) {
-            addStrictMaxPoolOperation.get(MAX_POOL_SIZE).set(maxPoolSize);
-        }
-        if (timeout != null) {
-            addStrictMaxPoolOperation.get(INSTANCE_ACQUISITION_TIMEOUT).set(timeout);
-        }
-        if (timeoutUnit != null) {
-            addStrictMaxPoolOperation.get(INSTANCE_ACQUISITION_TIMEOUT_UNIT).set(timeoutUnit);
-        }
-
-        return addStrictMaxPoolOperation;
-    }
-
-    private ModelNode createAddStatefulCacheOperation(String name, Set<String> aliases, String passivationStoreRef) {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        // set the address for this operation
-        final PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(CACHE, name));
-        operation.get(OP_ADDR).set(address.toModelNode());
-        // set the params for the operation
-        if (passivationStoreRef != null) {
-            operation.get(PASSIVATION_STORE).set(passivationStoreRef);
-        }
-        if (!aliases.isEmpty()) {
-            ModelNode aliasModel = operation.get(ALIASES).setEmptyList();
-            for (String alias : aliases) {
-                aliasModel.add(alias);
-            }
-        }
-        return operation;
-    }
-
-    private ModelNode createAddPassivationStoreOperation(String operationName, String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit) {
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        PathAddress address = this.getEJB3SubsystemAddress().append(PathElement.pathElement(operationName, name));
-        operation.get(OP_ADDR).set(address.toModelNode());
-        if (idleTimeout != null) {
-            operation.get(IDLE_TIMEOUT).set(idleTimeout);
-        }
-        if (idleTimeoutUnit != null) {
-            operation.get(IDLE_TIMEOUT_UNIT).set(idleTimeoutUnit);
-        }
-        if (maxSize != null) {
-            operation.get(MAX_SIZE).set(maxSize);
-        }
-        return operation;
-    }
-
-    private ModelNode createAddFilePassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String relativeTo, String groupsPath, String sessionsPath, Integer subdirectoryCount) {
-        ModelNode operation = this.createAddPassivationStoreOperation(FILE_PASSIVATION_STORE, name, maxSize, idleTimeout, idleTimeoutUnit);
-        if (relativeTo != null) {
-            operation.get(RELATIVE_TO).set(relativeTo);
-        }
-        if (groupsPath != null) {
-            operation.get(GROUPS_PATH).set(groupsPath);
-        }
-        if (sessionsPath != null) {
-            operation.get(SESSIONS_PATH).set(sessionsPath);
-        }
-        if (subdirectoryCount != null) {
-            operation.get(SUBDIRECTORY_COUNT).set(subdirectoryCount);
-        }
-        return operation;
-    }
-
-    private ModelNode createAddClusterPassivationStoreOperation(String name, Integer maxSize, Long idleTimeout, String idleTimeoutUnit, String cacheContainer, String beanCache, String clientMappingsCache, Boolean passivateEventsOnReplicate) {
-        ModelNode operation = this.createAddPassivationStoreOperation(CLUSTER_PASSIVATION_STORE, name, maxSize, idleTimeout, idleTimeoutUnit);
-        if (cacheContainer != null) {
-            operation.get(CACHE_CONTAINER).set(cacheContainer);
-        }
-        if (beanCache != null) {
-            operation.get(BEAN_CACHE).set(beanCache);
-        }
-        if (clientMappingsCache != null) {
-            operation.get(CLIENT_MAPPINGS_CACHE).set(clientMappingsCache);
-        }
-        if (passivateEventsOnReplicate != null) {
-            operation.get(PASSIVATE_EVENTS_ON_REPLICATE).set(passivateEventsOnReplicate);
-        }
-        return operation;
-    }
-
     protected EJB3SubsystemNamespace getExpectedNamespace() {
         return EJB3SubsystemNamespace.EJB3_1_2;
     }
 
     private PathAddress getEJB3SubsystemAddress() {
-        return PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
+        return SUBSYSTEM_PATH;
     }
 
     private void parseInVMRemoteInterfaceInvocation(final XMLExtendedStreamReader reader, final ModelNode ejb3SubsystemAddOperation) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         final EnumSet<EJB3SubsystemXMLAttribute> missingRequiredAttributes = EnumSet.of(EJB3SubsystemXMLAttribute.PASS_BY_VALUE);
-        String passByValue = null;
+        //String passByValue = null;
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final EJB3SubsystemXMLAttribute attribute = EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PASS_BY_VALUE:
-                    passByValue = EJB3SubsystemRootResourceDefinition.PASS_BY_VALUE.parse(value, reader).asString();
+                    EJB3SubsystemRootResourceDefinition.PASS_BY_VALUE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     // found the mandatory attribute
                     missingRequiredAttributes.remove(EJB3SubsystemXMLAttribute.PASS_BY_VALUE);
                     break;
@@ -955,7 +761,6 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         if (!missingRequiredAttributes.isEmpty()) {
             throw missingRequired(reader, missingRequiredAttributes);
         }
-        EJB3SubsystemRootResourceDefinition.PASS_BY_VALUE.parseAndSetParameter(passByValue, ejb3SubsystemAddOperation, reader);
     }
 
 }

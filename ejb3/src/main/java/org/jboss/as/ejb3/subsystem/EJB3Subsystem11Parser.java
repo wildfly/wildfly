@@ -269,8 +269,6 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
         timerServiceAdd.get(OP).set(ADD);
         timerServiceAdd.get(OP_ADDR).set(address);
 
-        Integer coreThreads = null;
-        Integer maxThreads = null;
         String dataStorePath = null;
         String dataStorePathRelativeTo = null;
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -358,7 +356,6 @@ public class EJB3Subsystem11Parser implements XMLElementReader<List<ModelNode>> 
     }
 
     private PathAddress getEJB3SubsystemAddress() {
-        PathAddress addr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME));
-        return addr;
+       return EJB3Subsystem12Parser.SUBSYSTEM_PATH;
     }
 }

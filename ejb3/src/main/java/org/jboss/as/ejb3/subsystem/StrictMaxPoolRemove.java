@@ -52,7 +52,7 @@ public class StrictMaxPoolRemove extends AbstractRemoveStepHandler {
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (context.isResourceServiceRestartAllowed()) {
-            StrictMaxPoolAdd.INSTANCE.installRuntimeService(context, model, null);
+            StrictMaxPoolAdd.INSTANCE.installRuntimeService(context, operation, model, null);
         } else {
             context.revertReloadRequired();
         }

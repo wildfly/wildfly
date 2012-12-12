@@ -54,7 +54,7 @@ public abstract class PassivationStoreRemove extends AbstractRemoveStepHandler {
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (context.isResourceServiceRestartAllowed()) {
-            this.add.installRuntimeServices(context, model, null);
+            this.add.installRuntimeServices(context, operation, model, null);
         } else {
             context.revertReloadRequired();
         }
