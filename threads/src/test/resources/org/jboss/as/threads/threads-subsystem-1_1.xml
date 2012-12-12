@@ -1,0 +1,17 @@
+<subsystem xmlns="urn:jboss:domain:threads:1.1">
+    <thread-factory name="test-factory"/>
+    <queueless-thread-pool name="other">
+        <max-threads count="1"/>
+    </queueless-thread-pool>
+    <queueless-thread-pool name="test-pool">
+        <max-threads count="${prop.max-thread-count:100}"/>
+        <keepalive-time time="1000" unit="milliseconds"/>
+        <thread-factory name="test-factory"/>
+        <handoff-executor name="other"/>
+    </queueless-thread-pool>
+    <scheduled-thread-pool name="test-pool">
+        <max-threads count="${prop.max-thread-count:10}"/>
+        <keepalive-time time="${prop.keep-alive-time:1000}" unit="milliseconds"/>
+        <thread-factory name="test-factory"/>
+    </scheduled-thread-pool>
+</subsystem>

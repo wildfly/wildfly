@@ -38,7 +38,9 @@ import org.jboss.dmr.ModelType;
  */
 public interface PoolAttributeDefinitions {
 
-    SimpleAttributeDefinition NAME = new SimpleAttributeDefinition(CommonAttributes.NAME, ModelType.STRING, true);
+    SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(CommonAttributes.NAME, ModelType.STRING, true)
+            .setResourceOnly()
+            .build();
 
     SimpleAttributeDefinition THREAD_FACTORY = new SimpleAttributeDefinitionBuilder(CommonAttributes.THREAD_FACTORY, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
@@ -46,7 +48,7 @@ public interface PoolAttributeDefinitions {
     SimpleAttributeDefinition MAX_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.MAX_THREADS, ModelType.INT, false)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, false, true)).setAllowExpression(true).build();
 
-    SimpleAttributeDefinition KEEPALIVE_TIME = new KeepAliveTimeAttributeDefinition();
+    KeepAliveTimeAttributeDefinition KEEPALIVE_TIME = new KeepAliveTimeAttributeDefinition();
 
     SimpleAttributeDefinition CORE_THREADS = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_THREADS, ModelType.INT, true)
             .setValidator(new IntRangeValidator(0, Integer.MAX_VALUE, true, true)).setAllowExpression(true).build();

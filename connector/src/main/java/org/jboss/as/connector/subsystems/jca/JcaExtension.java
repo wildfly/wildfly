@@ -179,10 +179,10 @@ public class JcaExtension implements Extension {
                     }
                     for (Property prop : property.getValue().asPropertyList()) {
                         if (WORKMANAGER_LONG_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty().getValue(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.LONG_RUNNING_THREADS.getLocalName(), false);
                         }
                         if (WORKMANAGER_SHORT_RUNNING.equals(prop.getName()) && prop.getValue().isDefined() && prop.getValue().asPropertyList().size() != 0) {
-                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty().getValue(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
+                            ThreadsParser.getInstance().writeBoundedQueueThreadPool(writer, prop.getValue().asProperty(), Element.SHORT_RUNNING_THREADS.getLocalName(), false);
                         }
                     }
                     writer.writeEndElement();

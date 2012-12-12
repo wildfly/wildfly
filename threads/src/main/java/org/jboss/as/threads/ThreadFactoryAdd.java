@@ -57,10 +57,6 @@ public class ThreadFactoryAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-        model.get(NAME).set(name);
-
         for(final AttributeDefinition attribute : ATTRIBUTES) {
             attribute.validateAndSet(operation, model);
         }

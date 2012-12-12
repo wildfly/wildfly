@@ -24,6 +24,7 @@ package org.jboss.as.threads;
 
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -82,7 +83,7 @@ public class BoundedQueueThreadPoolResourceDefinition extends SimpleResourceDefi
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
+        resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         BoundedQueueThreadPoolWriteAttributeHandler writeHandler = new BoundedQueueThreadPoolWriteAttributeHandler(blocking, serviceNameBase);
         writeHandler.registerAttributes(resourceRegistration);
         if (registerRuntimeOnly) {
