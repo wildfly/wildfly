@@ -35,8 +35,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.apache.maven.repository.internal.MavenServiceLocator;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
+import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.aether.AbstractRepositoryListener;
 import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.RepositorySystem;
@@ -221,7 +223,7 @@ class MavenUtil {
          * using the prepopulated DefaultServiceLocator, we only need to
          * register the repository connector factories.
          */
-        DefaultServiceLocator locator = new DefaultServiceLocator();
+        MavenServiceLocator locator = new MavenServiceLocator();
         locator.addService(RepositoryConnectorFactory.class, FileRepositoryConnectorFactory.class);
         locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
         locator.setServices(WagonProvider.class, new ManualWagonProvider());
@@ -233,7 +235,8 @@ class MavenUtil {
 
         public Wagon lookup(String roleHint) throws Exception {
             if ("http".equals(roleHint)) {
-                return new LightweightHttpWagon();
+                return new DefaultPlexusContainer().lookup(Wagon.class, roleHint);
+                // return new LightweightHttpWagon();
             }
             return null;
         }
