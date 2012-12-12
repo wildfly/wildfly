@@ -61,10 +61,6 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
-        String cacheName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        model.get(EJB3SubsystemModel.NAME).set(cacheName);
-
         for (AttributeDefinition attr: this.attributes) {
             attr.validateAndSet(operation, model);
         }
@@ -75,21 +71,16 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
         // add this to the service controllers
-        serviceControllers.addAll(this.installRuntimeServices(context, model, verificationHandler));
+        serviceControllers.addAll(this.installRuntimeServices(context, operation, model, verificationHandler));
     }
 
-    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+    Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
-        String name = model.require(EJB3SubsystemModel.NAME).asString();
-        String passivationStore = model.hasDefined(EJB3SubsystemModel.PASSIVATION_STORE) ? model.get(EJB3SubsystemModel.PASSIVATION_STORE).asString() : null;
+        ModelNode passivationStoreModel = CacheFactoryResourceDefinition.PASSIVATION_STORE.resolveModelAttribute(context,model);
+        String passivationStore = passivationStoreModel.isDefined() ? passivationStoreModel.asString() : null;
 
-        Set<String> aliases = new HashSet<String>();
-        if (model.hasDefined(EJB3SubsystemModel.ALIASES)) {
-            for (ModelNode alias: model.get(EJB3SubsystemModel.ALIASES).asList()) {
-                aliases.add(alias.asString());
-            }
-        }
-
+        Set<String> aliases = new HashSet<String>(CacheFactoryResourceDefinition.ALIASES.unwrap(context,model));
         ServiceTarget target = context.getServiceTarget();
         ServiceBuilder<?> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target);
         if (verificationHandler != null) {
@@ -102,7 +93,7 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
                     .addDependency(ClusteredBackingCacheEntryStoreSourceService.getPassivationStoreClusterNameServiceName(passivationStore), String.class, clusterName)
                     .setInitialMode(ServiceController.Mode.ON_DEMAND)
                     .install();
-            return Arrays.<ServiceController<?>>asList(controller, clusterNameController);
+            return Arrays.asList(controller, clusterNameController);
         }
         return Collections.<ServiceController<?>>singleton(controller);
     }

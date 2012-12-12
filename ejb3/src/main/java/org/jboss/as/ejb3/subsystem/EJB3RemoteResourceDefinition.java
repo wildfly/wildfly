@@ -44,13 +44,13 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
 
     public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
 
-    private static final SimpleAttributeDefinition CONNECTOR_REF =
+    static final SimpleAttributeDefinition CONNECTOR_REF =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CONNECTOR_REF, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
-    private static final SimpleAttributeDefinition THREAD_POOL_NAME =
+    static final SimpleAttributeDefinition THREAD_POOL_NAME =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.THREAD_POOL_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)

@@ -21,6 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
@@ -35,19 +37,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
 /**
  * A {@link org.jboss.as.controller.AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
  * remote service, in the EJB subsystem
  * <p/>
- * TODO: implement this
  *
  * @author Stuart Douglas
  */
@@ -56,21 +49,6 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
 
 
     private EJB3AsyncServiceAdd() {
-    }
-
-    static ModelNode create(final String threadPoolName) {
-        // set the address for this operation
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        address.add(SERVICE, ASYNC);
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
-
-        operation.get(THREAD_POOL_NAME).set(threadPoolName);
-
-        return operation;
     }
 
     @Override
@@ -88,6 +66,6 @@ public class EJB3AsyncServiceAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(THREAD_POOL_NAME).set(operation.require(THREAD_POOL_NAME).asString());
+        EJB3AsyncResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
     }
 }

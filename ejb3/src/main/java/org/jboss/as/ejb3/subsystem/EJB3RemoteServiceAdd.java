@@ -21,6 +21,18 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TYPE;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -53,24 +65,6 @@ import org.xnio.Option;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.SERVICE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TYPE;
-
 
 /**
  * A {@link AbstractBoottimeAddStepHandler} to handle the add operation for the EJB
@@ -82,22 +76,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
 
     private EJB3RemoteServiceAdd() {
-    }
-
-    static ModelNode create(final String connectorName, final String threadPoolName) {
-        // set the address for this operation
-        final ModelNode address = new ModelNode();
-        address.add(SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME);
-        address.add(SERVICE, REMOTE);
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).set(address);
-
-        operation.get(CONNECTOR_REF).set(connectorName);
-        operation.get(THREAD_POOL_NAME).set(threadPoolName);
-
-        return operation;
     }
 
     // TODO why is this a boottime-only handler?
@@ -122,9 +100,9 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
-    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) {
-        final String connectorName = model.require(CONNECTOR_REF).asString();
-        final String threadPoolName = model.require(THREAD_POOL_NAME).asString();
+    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
+        final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
         final ServiceName remotingServerServiceName = RemotingServices.serverServiceName(connectorName);
 
         final List<ServiceController<?>> services = new ArrayList<ServiceController<?>>();
@@ -173,11 +151,11 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.get(CONNECTOR_REF).set(operation.require(CONNECTOR_REF).asString());
-        model.get(THREAD_POOL_NAME).set(operation.require(THREAD_POOL_NAME).asString());
+        EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
+        EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
     }
 
-    private OptionMap getChannelCreationOptions(final OperationContext context) {
+    private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {
         // read the full model of the current resource
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode channelCreationOptions = fullModel.get(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS);
@@ -187,11 +165,11 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             for (final Property optionProperty : channelCreationOptions.asPropertyList()) {
                 final String name = optionProperty.getName();
                 final ModelNode propValueModel = optionProperty.getValue();
-                final String type = propValueModel.get(TYPE).asString();
+                final String type = ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_TYPE.resolveModelAttribute(context,propValueModel).asString();
                 final String optionClassName = this.getClassNameForChannelOptionType(type);
                 final String fullyQualifiedOptionName = optionClassName + "." + name;
                 final Option option = Option.fromString(fullyQualifiedOptionName, loader);
-                final String value = propValueModel.get(EJB3SubsystemModel.VALUE).asString();
+                final String value = ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE.resolveModelAttribute(context, propValueModel).asString();
                 builder.set(option, option.parseValue(value, loader));
             }
             return builder.getMap();

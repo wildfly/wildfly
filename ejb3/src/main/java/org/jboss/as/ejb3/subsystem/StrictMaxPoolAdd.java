@@ -59,10 +59,6 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode strictMaxPoolModel) throws OperationFailedException {
-
-        final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        strictMaxPoolModel.get(EJB3SubsystemModel.NAME).set(poolName);
-
         for (AttributeDefinition attr : StrictMaxPoolResourceDefinition.ATTRIBUTES.values()) {
             attr.validateAndSet(operation, strictMaxPoolModel);
         }
@@ -73,16 +69,14 @@ public class StrictMaxPoolAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler,
                                   List<ServiceController<?>> serviceControllers) throws OperationFailedException {
 
-        final ServiceController serviceController = installRuntimeService(context, strictMaxPoolModel, verificationHandler);
+        final ServiceController serviceController = installRuntimeService(context, operation, strictMaxPoolModel, verificationHandler);
         // add this to the service controllers
         serviceControllers.add(serviceController);
-
     }
 
-    ServiceController installRuntimeService(OperationContext context, ModelNode strictMaxPoolModel,
-                                  ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-
-        final String poolName = strictMaxPoolModel.require(EJB3SubsystemModel.NAME).asString();
+    ServiceController installRuntimeService(OperationContext context, ModelNode operation, ModelNode strictMaxPoolModel,
+                                            ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final String poolName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         final int maxPoolSize = StrictMaxPoolResourceDefinition.MAX_POOL_SIZE.resolveModelAttribute(context, strictMaxPoolModel).asInt();
         final long timeout = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT.resolveModelAttribute(context, strictMaxPoolModel).asLong();
         final String unit = StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT.resolveModelAttribute(context, strictMaxPoolModel).asString();

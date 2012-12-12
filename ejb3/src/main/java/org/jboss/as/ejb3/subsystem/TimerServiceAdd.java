@@ -77,7 +77,6 @@ public class TimerServiceAdd extends AbstractBoottimeAddStepHandler {
      */
 
     protected void populateModel(ModelNode operation, ModelNode timerServiceModel) throws OperationFailedException {
-
         for (AttributeDefinition attr : TimerServiceResourceDefinition.ATTRIBUTES.values()) {
             attr.validateAndSet(operation, timerServiceModel);
         }
