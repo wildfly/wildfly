@@ -41,6 +41,7 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -85,6 +86,7 @@ public class DomainTransformers {
             SystemPropertyTransformers.registerTransformers(domain);
             TransformersSubRegistration serverGroup = domain.registerSubResource(ServerGroupResourceDefinition.PATH);
             SystemPropertyTransformers.registerTransformers(serverGroup);
+            JvmTransformers.registerTransformers(serverGroup);
 
             //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
             domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<domain xmlns="urn:jboss:domain:1.4">
+    <server-groups>
+        <server-group name="test" profile="test">
+            <jvm name="default">
+                <heap size="${heap.size:heapSize}" max-size="${max.heap.size:maxHeapSize}"/>
+                <permgen size="${permgen.size:permgenSize}" max-size="${max.permgen.size:maxPermGenSize}"/>
+                <jvm-options>
+                    <option value="${option:option1}"/>
+                </jvm-options>
+             </jvm>
+             <socket-binding-group ref="test-sockets"/>
+         </server-group>
+    </server-groups>
+</domain>
