@@ -93,7 +93,7 @@ public interface EmbeddedMessages {
      * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 11134, value = "Invalid JBoss home directory: %s")
-    IllegalStateException invalidJbossHome(File dir);
+    IllegalStateException invalidJbossHome(String jbossHome);
 
     /**
      * Creates an exception indicating the module path is invalid.

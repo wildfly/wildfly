@@ -31,15 +31,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.jboss.as</groupId>
-		<artifactId>jboss-as-arquillian</artifactId>
-		<version>7.2.0.Alpha1-SNAPSHOT</version>
-	</parent>
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-osgi</artifactId>
+        <version>7.2.0.Alpha1-SNAPSHOT</version>
+    </parent>
 
-	<artifactId>jboss-as-arquillian-container-embedded</artifactId>
-
-	<name>JBoss Application Server: Arquillian Embedded Container</name>
+    <artifactId>jboss-as-osgi-launcher</artifactId>
+    <name>JBoss Application Server: OSGi Launcher</name>
 
 	<packaging>jar</packaging>
 
@@ -64,18 +63,30 @@
 			<groupId>org.jboss.logmanager</groupId>
 			<artifactId>jboss-logmanager</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.jboss.osgi.resolver</groupId>
+            <artifactId>jbosgi-resolver-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+        </dependency>
 
 		<!-- Test Dependencies -->
-		<dependency>
-			<groupId>org.jboss.arquillian.junit</groupId>
-			<artifactId>arquillian-junit-container</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.arquillian.protocol</groupId>
-			<artifactId>arquillian-protocol-servlet</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
 	</dependencies>
 
