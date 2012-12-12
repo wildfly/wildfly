@@ -251,6 +251,22 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
+            if (attributeMarshaller == null) {
+                attributeMarshaller = new AttributeMarshaller() {
+                    @Override
+                    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                        if (resourceModel.hasDefined(attribute.getName())) {
+                            writer.writeStartElement(attribute.getXmlName());
+                            for (AttributeDefinition valueType : valueTypes) {
+                                for (ModelNode handler : resourceModel.get(attribute.getName()).asList()) {
+                                    valueType.marshallAsElement(handler, writer);
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                    }
+                };
+            }
             return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 
