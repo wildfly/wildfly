@@ -40,28 +40,46 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Date: 15.11.2011
+ * {@link AttributeDefinition} for attributes of type {@link ModelType#OBJECT} that aren't simple maps, but
+ * rather a set fixed keys where each key may be associated with a value of a different type.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author Richard Achmatowicz (c) 2012 RedHat Inc.
+ *
+ * @see MapAttributeDefinition
  */
 public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
     private final AttributeDefinition[] valueTypes;
     private final String suffix;
 
-    /*
-     * Constructor which allows specifying a custom ParameterValidator. Disabled by default.
-     */
     protected ObjectTypeAttributeDefinition(final String name, final String xmlName, final String suffix, final AttributeDefinition[] valueTypes, final boolean allowNull,
                                             final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
                                             final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+        super(name, xmlName, null, ModelType.OBJECT, allowNull, false, null, corrector, validator, false, alternatives,
+                requires, getAttributeMarshaller(attributeMarshaller, valueTypes), resourceOnly, deprecated, flags);
         this.valueTypes = valueTypes;
         if (suffix == null) {
             this.suffix = "";
         } else {
             this.suffix = suffix;
         }
+    }
+
+    private static AttributeMarshaller getAttributeMarshaller(final AttributeMarshaller provided, final AttributeDefinition[] valueTypes) {
+        return provided != null ? provided : new AttributeMarshaller() {
+            @Override
+            public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                if (resourceModel.hasDefined(attribute.getName())) {
+                    writer.writeStartElement(attribute.getXmlName());
+                    for (AttributeDefinition valueType : valueTypes) {
+                        for (ModelNode handler : resourceModel.get(attribute.getName()).asList()) {
+                            valueType.marshallAsElement(handler, writer);
+                        }
+                    }
+                    writer.writeEndElement();
+                }
+            }
+        };
     }
 
 
@@ -233,22 +251,6 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
 
         public ObjectTypeAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
-            if (attributeMarshaller == null) {
-                attributeMarshaller = new AttributeMarshaller() {
-                    @Override
-                    public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                        if (resourceModel.hasDefined(attribute.getName())) {
-                            writer.writeStartElement(attribute.getXmlName());
-                            for (AttributeDefinition valueType : valueTypes) {
-                                for (ModelNode handler : resourceModel.get(attribute.getName()).asList()) {
-                                    valueType.marshallAsElement(handler, writer);
-                                }
-                            }
-                            writer.writeEndElement();
-                        }
-                    }
-                };
-            }
             return new ObjectTypeAttributeDefinition(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
         }
 
@@ -266,4 +268,5 @@ public class ObjectTypeAttributeDefinition extends SimpleAttributeDefinition {
             return super.setAllowNull(allowNull);
         }
     }
+
 }
