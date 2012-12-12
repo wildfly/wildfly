@@ -37,6 +37,8 @@ import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
+import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusContainer;
 import org.sonatype.aether.AbstractRepositoryListener;
 import org.sonatype.aether.RepositoryEvent;
 import org.sonatype.aether.RepositorySystem;
@@ -233,7 +235,10 @@ class MavenUtil {
 
         public Wagon lookup(String roleHint) throws Exception {
             if ("http".equals(roleHint)) {
-                return new LightweightHttpWagon();
+                PlexusContainer container= new DefaultPlexusContainer();
+                Wagon httpWagon = (Wagon) container.lookup( org.apache.maven.wagon.Wagon.ROLE, "http" );
+                container.dispose();
+                return httpWagon;
             }
             return null;
         }
