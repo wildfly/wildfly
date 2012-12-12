@@ -23,6 +23,7 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -42,12 +43,14 @@ public class ThreadFactoryResourceDefinition extends SimpleResourceDefinition {
     public ThreadFactoryResourceDefinition(String type) {
         super(PathElement.pathElement(type),
                 new StandardResourceDescriptionResolver(CommonAttributes.THREAD_FACTORY, ThreadsExtension.RESOURCE_NAME,
-                ThreadsExtension.class.getClassLoader(), true, false), ThreadFactoryAdd.INSTANCE, ThreadFactoryRemove.INSTANCE);
+                ThreadsExtension.class.getClassLoader(), true, false),
+                ThreadFactoryAdd.INSTANCE,
+                ThreadFactoryRemove.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
+        resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         ThreadFactoryWriteAttributeHandler.INSTANCE.registerAttributes(resourceRegistration);
     }
 }

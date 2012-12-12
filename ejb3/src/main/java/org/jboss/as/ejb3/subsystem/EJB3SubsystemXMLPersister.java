@@ -237,7 +237,7 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
 
     private void writeThreadPools(final XMLExtendedStreamWriter writer, final ModelNode threadPoolsModel) throws XMLStreamException {
         for (Property threadPool : threadPoolsModel.asPropertyList()) {
-            ThreadsParser.getInstance().writeUnboundedQueueThreadPool(writer, threadPool.getValue(), EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
+            ThreadsParser.getInstance().writeUnboundedQueueThreadPool(writer, threadPool, EJB3SubsystemXMLElement.THREAD_POOL.getLocalName(), true);
         }
     }
 

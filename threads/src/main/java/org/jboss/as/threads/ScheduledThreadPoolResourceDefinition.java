@@ -23,6 +23,7 @@
 package org.jboss.as.threads;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -59,7 +60,7 @@ public class ScheduledThreadPoolResourceDefinition extends SimpleResourceDefinit
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, null);
+        resourceRegistration.registerReadOnlyAttribute(PoolAttributeDefinitions.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
         new ScheduledThreadPoolWriteAttributeHandler(serviceNameBase).registerAttributes(resourceRegistration);
         if (registerRuntimeOnly) {
             new ScheduledThreadPoolMetricsHandler(serviceNameBase).registerAttributes(resourceRegistration);

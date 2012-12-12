@@ -13,8 +13,8 @@
     <!-- EJB3 pools -->
     <pools>
         <bean-instance-pools>
-            <strict-max-pool name="slsb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
-            <strict-max-pool name="mdb-strict-max-pool" max-pool-size="20" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+            <strict-max-pool name="slsb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="MINUTES"/>
+            <strict-max-pool name="mdb-strict-max-pool" max-pool-size="${prop.strict-max-pool:20}" instance-acquisition-timeout="${prop.instance-acquisition-timeout:5}" instance-acquisition-timeout-unit="MINUTES"/>
         </bean-instance-pools>
     </pools>
     <caches>
@@ -40,8 +40,8 @@
     <!-- Session bean configurations -->
     <thread-pools>
         <thread-pool name="default">
-            <max-threads count="10"/>
-            <keepalive-time time="100" unit="milliseconds"/>
+            <max-threads count="${prop.max-thread-count:10}"/>
+            <keepalive-time time="${prop.keepalive-time:100}" unit="milliseconds"/>
         </thread-pool>
     </thread-pools>
 
