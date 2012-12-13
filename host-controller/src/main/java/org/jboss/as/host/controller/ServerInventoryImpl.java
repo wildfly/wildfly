@@ -246,14 +246,14 @@ public class ServerInventoryImpl implements ServerInventory {
         if(shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
-        final ManagedServer existing = servers.get(serverName);
+        ManagedServer existing = servers.get(serverName);
         if(existing != null) {
             ROOT_LOGGER.existingServerWithState(serverName, existing.getState());
             return;
         }
         final ManagedServer server = createManagedServer(serverName, domainModel, authKey);
-        if(servers.putIfAbsent(serverName, server) != null) {
-            ROOT_LOGGER.existingServerWithState(serverName, server.getState());
+        if ((existing = servers.putIfAbsent(serverName, server)) != null) {
+            ROOT_LOGGER.existingServerWithState(serverName, existing.getState());
             return;
         }
         if(running) {
