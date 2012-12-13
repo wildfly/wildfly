@@ -24,8 +24,6 @@ package org.jboss.as.osgi.web;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Locale;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.jboss.as.server.ServerMessages;
@@ -37,9 +35,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.MountExplodedMarker;
 import org.jboss.as.server.deployment.MountType;
+import org.jboss.as.server.deployment.module.DeploymentRootMountProcessor;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.web.deployment.WarDeploymentInitializingProcessor;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -54,24 +54,15 @@ import org.jboss.vfs.VirtualFile;
  */
 public class RemountDeploymentRootProcessor implements DeploymentUnitProcessor {
 
+    @Override
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit depUnit = phaseContext.getDeploymentUnit();
         Manifest manifest = depUnit.getAttachment(Attachments.OSGI_MANIFEST);
         if (manifest == null || MountExplodedMarker.isMountExploded(depUnit))
             return;
 
-        boolean remountExploded = false;
-
-        // Check for WAB with *.jar extension
-        String deploymentName = depUnit.getName().toLowerCase(Locale.ENGLISH);
-        if (deploymentName.endsWith(".jar")) {
-            Attributes mainAttributes = manifest.getMainAttributes();
-            if (mainAttributes.getValue(WebExtension.WEB_CONTEXT_PATH) != null) {
-                remountExploded = true;
-            }
-        }
-
-        if (!remountExploded)
+        // Check for WAB
+        if (!WarDeploymentInitializingProcessor.isWebApplicationBundle(depUnit))
             return;
 
         // Close the already mounted root
@@ -81,7 +72,7 @@ public class RemountDeploymentRootProcessor implements DeploymentUnitProcessor {
 
         VirtualFile deploymentContents = depUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS);
         DeploymentMountProvider deploymentMountProvider = depUnit.getAttachment(Attachments.SERVER_DEPLOYMENT_REPOSITORY);
-        VirtualFile deploymentRoot = VFS.getChild("content/" + deploymentName);
+        VirtualFile deploymentRoot = VFS.getChild("content/" + depUnit.getName());
 
         MountHandle mountHandle;
         try {
@@ -99,6 +90,7 @@ public class RemountDeploymentRootProcessor implements DeploymentUnitProcessor {
         depUnit.putAttachment(Attachments.DEPLOYMENT_ROOT, resourceRoot);
     }
 
+    @Override
     public void undeploy(final DeploymentUnit depUnit) {
     }
 }

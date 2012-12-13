@@ -103,24 +103,4 @@ public class EmbeddedServerFactory {
             throw new RuntimeException(e);
         }
     }
-
-    @Deprecated
-    public static void main(String[] args) throws Throwable {
-        SecurityActions.setSystemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager");
-
-        String jbossHomeKey = "jboss.home";
-        String jbossHomeProp = System.getProperty(jbossHomeKey);
-        if (jbossHomeProp == null)
-            throw MESSAGES.systemPropertyNotFound(jbossHomeKey);
-
-        File jbossHomeDir = new File(jbossHomeProp);
-        if (jbossHomeDir.isDirectory() == false)
-            throw MESSAGES.invalidJbossHome(jbossHomeDir);
-
-        Module.registerURLStreamHandlerFactoryModule(Module.getBootModuleLoader().loadModule(ModuleIdentifier.create("org.jboss.vfs")));
-        StandaloneServer server = create(jbossHomeDir, System.getProperties(), System.getenv());
-        server.start();
-        server.stop();
-        System.exit(0);
-    }
 }
