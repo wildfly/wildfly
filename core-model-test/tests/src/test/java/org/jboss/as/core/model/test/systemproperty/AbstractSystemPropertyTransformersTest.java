@@ -31,14 +31,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.dmr.ModelNode;
@@ -71,14 +70,12 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setXmlResource(xmlResource);
         if (serverGroup) {
-            builder.setModelInitializer(DomainServerGroupSystemPropertyTestCase.XML_MODEL_INITIALIZER, DomainServerGroupSystemPropertyTestCase.XML_MODEL_WRITE_SANITIZER);
+            builder.setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER);
         }
 
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(modelVersion)
-            .setTestControllerVersion(testControllerVersion);
+        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion);
         if (serverGroup) {
-            legacyInitializer.initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(PROFILE, "test"), null);
-            legacyInitializer.initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), new ModelNode().setEmptyObject());
+            StandardServerGroupInitializers.addServerGroupInitializers(legacyInitializer);
         }
 
         KernelServices mainServices = builder.build();

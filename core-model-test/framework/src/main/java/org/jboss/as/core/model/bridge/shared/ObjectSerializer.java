@@ -46,6 +46,10 @@ public interface ObjectSerializer {
 
     Object deserializeLegacyModelInitializerEntry(byte[] object) throws IOException;
 
+    byte[] serializeIgnoreDomainTypeResource(Object object) throws IOException;
+
+    Object deserializeIgnoreDomainTypeResource(byte[] object) throws IOException;
+
     public static class FACTORY {
         public static ObjectSerializer createSerializer(ClassLoader classLoader) {
             try {

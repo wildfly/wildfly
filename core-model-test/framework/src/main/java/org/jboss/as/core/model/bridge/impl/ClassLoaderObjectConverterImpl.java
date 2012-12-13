@@ -27,6 +27,7 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.bridge.local.ClassLoaderObjectConverter;
 import org.jboss.as.core.model.bridge.shared.ObjectSerializer;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
+import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -86,6 +87,15 @@ public class ClassLoaderObjectConverterImpl implements ClassLoaderObjectConverte
         }
         try {
             return remote.deserializeLegacyModelInitializerEntry(local.serializeLegacyModelInitializerEntry(initializer));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Object convertIgnoreDomainTypeResourceToChildCl(IgnoreDomainResourceTypeResource resource) {
+        try {
+            return remote.deserializeIgnoreDomainTypeResource(local.serializeIgnoreDomainTypeResource(resource));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
