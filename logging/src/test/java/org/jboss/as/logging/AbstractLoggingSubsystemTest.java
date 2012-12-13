@@ -42,10 +42,12 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.config.FormatterConfiguration;
 import org.jboss.logmanager.config.HandlerConfiguration;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.logmanager.config.LoggerConfiguration;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
@@ -79,6 +81,39 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
     public static void setUp() {
         // Just need to set-up the test environment
         LoggingTestEnvironment.get();
+    }
+
+    @After
+    public void clearLogContext() {
+        clearLogContext(LogContext.getLogContext());
+    }
+
+    protected void clearLogContext(final LogContext logContext) {
+        final ConfigurationPersistence configuration = ConfigurationPersistence.getConfigurationPersistence(logContext);
+        if (configuration != null) {
+            final LogContextConfiguration logContextConfiguration = configuration.getLogContextConfiguration();
+            // Remove all loggers
+            for (String loggerName : logContextConfiguration.getLoggerNames()) {
+                logContextConfiguration.removeLoggerConfiguration(loggerName);
+            }
+            // Remove all the handlers
+            for (String handlerName : logContextConfiguration.getHandlerNames()) {
+                logContextConfiguration.removeHandlerConfiguration(handlerName);
+            }
+            // Remove all the filters
+            for (String filterName : logContextConfiguration.getFilterNames()) {
+                logContextConfiguration.removeFilterConfiguration(filterName);
+            }
+            // Remove all the formatters
+            for (String formatterName : logContextConfiguration.getFormatterNames()) {
+                logContextConfiguration.removeFormatterConfiguration(formatterName);
+            }
+            // Remove all the error managers
+            for (String errorManager : logContextConfiguration.getErrorManagerNames()) {
+                logContextConfiguration.removeErrorManagerConfiguration(errorManager);
+            }
+            configuration.commit();
+        }
     }
 
     @Override

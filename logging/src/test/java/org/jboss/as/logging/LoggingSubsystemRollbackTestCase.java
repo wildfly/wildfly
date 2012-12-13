@@ -34,7 +34,6 @@ import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
-import org.jboss.logmanager.config.LogContextConfiguration;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,40 +57,13 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
     }
 
     @After
-    public void cleanUp() throws Exception {
-        cleanUp(LogContext.getLogContext());
+    @Override
+    public void clearLogContext() {
+        super.clearLogContext();
         final LoggingProfileContextSelector contextSelector = LoggingProfileContextSelector.getInstance();
         if (contextSelector.exists(PROFILE_NAME)) {
-            cleanUp(contextSelector.get(PROFILE_NAME));
+            clearLogContext(contextSelector.get(PROFILE_NAME));
             contextSelector.remove(PROFILE_NAME);
-        }
-    }
-
-    private void cleanUp(final LogContext logContext) {
-        final ConfigurationPersistence configuration = ConfigurationPersistence.getConfigurationPersistence(logContext);
-        if (configuration != null) {
-            final LogContextConfiguration logContextConfiguration = configuration.getLogContextConfiguration();
-            // Remove all loggers
-            for (String loggerName : logContextConfiguration.getLoggerNames()) {
-                logContextConfiguration.removeLoggerConfiguration(loggerName);
-            }
-            // Remove all the handlers
-            for (String handlerName : logContextConfiguration.getHandlerNames()) {
-                logContextConfiguration.removeHandlerConfiguration(handlerName);
-            }
-            // Remove all the filters
-            for (String filterName : logContextConfiguration.getFilterNames()) {
-                logContextConfiguration.removeFilterConfiguration(filterName);
-            }
-            // Remove all the formatters
-            for (String formatterName : logContextConfiguration.getFormatterNames()) {
-                logContextConfiguration.removeFormatterConfiguration(formatterName);
-            }
-            // Remove all the error managers
-            for (String errorManager : logContextConfiguration.getErrorManagerNames()) {
-                logContextConfiguration.removeErrorManagerConfiguration(errorManager);
-            }
-            configuration.commit();
         }
     }
 

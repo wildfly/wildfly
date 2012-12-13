@@ -180,18 +180,6 @@ final class LoggerOperations {
             if (configuration == null) {
                 throw createOperationFailure(LoggingMessages.MESSAGES.loggerNotFound(loggerName));
             }
-            // This is a bit of a hack, but since loggers don't really get removed, set the logger to match the root logger.
-            final LoggerConfiguration rootConfiguration = logContextConfiguration.getLoggerConfiguration(ROOT_LOGGER_NAME);
-            if (rootConfiguration != null) {
-                configuration.setLevel(rootConfiguration.getLevel());
-                configuration.setFilter(rootConfiguration.getFilter());
-                configuration.setUseParentHandlers(true);
-                configuration.setHandlerNames(Collections.<String>emptyList());
-                // Commit the current changes as they need to be committed on a configured logger.
-                // TODO need to use the API when available
-                ConfigurationPersistence configurationPersistence = ConfigurationPersistence.getConfigurationPersistence(logContextConfiguration.getLogContext());
-                if (configurationPersistence != null) configurationPersistence.prepare();
-            }
             logContextConfiguration.removeLoggerConfiguration(loggerName);
         }
     };
