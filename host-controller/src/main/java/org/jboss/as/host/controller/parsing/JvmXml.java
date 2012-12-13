@@ -210,7 +210,7 @@ public class JvmXml {
             }
             final String[] array = requireAttributes(reader, Attribute.NAME.getLocalName(), Attribute.VALUE.getLocalName());
             requireNoContent(reader);
-            properties.add(array[0], array[1]);
+            properties.add(array[0], ParseUtils.parsePossibleExpression(array[1]));
         }
 
         if (!properties.isDefined()) {
