@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.core.model.test.KernelServices;
+import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceContainer;
 
@@ -62,6 +64,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
     private Method executeOperation;
     private Method validateOperations;
     private Method validateOperation;
+    private Method applyMasterDomainModel;
 
     public LegacyControllerKernelServicesProxy(ClassLoader childFirstClassLoader, Object childFirstClassLoaderServices, ClassLoaderObjectConverter converter) {
         this.childFirstClassLoader = childFirstClassLoader;
@@ -101,6 +104,10 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
         throw new IllegalStateException("Can only be called for the main controller");
     }
 
+    @Override
+    public void applyMasterDomainModel(ModelVersion modelVersion, List<IgnoreDomainResourceTypeResource> ignoredResources) {
+        throw new IllegalStateException("Can only be called for the main controller");
+    }
 
     @Override
     public boolean isSuccessfulBoot() {
@@ -110,6 +117,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             return ((Boolean)isSuccessfulBoot.invoke(childFirstClassLoaderServices)).booleanValue();
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -122,6 +130,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             return (String)getPersistedSubsystemXml.invoke(childFirstClassLoaderServices);
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -134,6 +143,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             shutdown.invoke(childFirstClassLoaderServices);
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -147,6 +157,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             return (Throwable)getBootError.invoke(childFirstClassLoaderServices);
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -159,6 +170,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             return converter.convertModelNodeFromChildCl(readWholeModel0.invoke(childFirstClassLoaderServices));
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -171,6 +183,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             return converter.convertModelNodeFromChildCl(readWholeModel1.invoke(childFirstClassLoaderServices, includeAliases));
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -183,6 +196,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             return converter.convertModelNodeFromChildCl(readWholeModel2.invoke(childFirstClassLoaderServices, includeAliases, includeRuntime));
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -200,6 +214,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
                             converter.convertModelNodeToChildCl(operation),
                             inputStreams));
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -236,6 +251,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             validateOperations.invoke(childFirstClassLoaderServices, convertedOps);
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -249,6 +265,7 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
             }
             validateOperation.invoke(childFirstClassLoaderServices, converter.convertModelNodeToChildCl(operation));
         } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
             throw new RuntimeException(e);
         }
     }
@@ -257,5 +274,36 @@ public class LegacyControllerKernelServicesProxy implements KernelServices {
     public ImmutableManagementResourceRegistration getRootRegistration() {
         //TODO - this might be a problem
         return null;
+    }
+
+    public void applyMasterDomainModel(ModelNode resources, List<IgnoreDomainResourceTypeResource> ignoredResources) {
+        try {
+            if (applyMasterDomainModel == null) {
+                applyMasterDomainModel = childFirstClassLoaderServices.getClass().getMethod("applyMasterDomainModel",
+                        childFirstClassLoader.loadClass(resources.getClass().getName()),
+                        List.class);
+            }
+
+            List<Object> convertedResources = new ArrayList<Object>();
+            if (ignoredResources != null) {
+                for (IgnoreDomainResourceTypeResource resource : ignoredResources) {
+                    convertedResources.add(converter.convertIgnoreDomainTypeResourceToChildCl(resource));
+                }
+            }
+            applyMasterDomainModel.invoke(childFirstClassLoaderServices, converter.convertModelNodeToChildCl(resources), convertedResources);
+        } catch (Exception e) {
+            unwrapInvocationTargetRuntimeException(e);
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void unwrapInvocationTargetRuntimeException(Exception e) {
+        if (e instanceof InvocationTargetException) {
+            Throwable t = e.getCause();
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException)t;
+            }
+        }
     }
 }

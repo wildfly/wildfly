@@ -22,9 +22,7 @@
 package org.jboss.as.core.model.test.jvm;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import junit.framework.Assert;
 
 import org.jboss.as.controller.PathAddress;
@@ -32,8 +30,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.ModelInitializer;
-import org.jboss.as.core.model.test.ModelWriteSanitizer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -54,7 +52,7 @@ public class DomainModelJvmModelTestCase extends GlobalJvmModelTestCase {
     public void testFullJvmXml() throws Exception {
         KernelServices kernelServices = createKernelServicesBuilder()
                 .setXmlResource("domain-full.xml")
-                .setModelInitializer(XML_MODEL_INITIALIZER, XML_MODEL_WRITE_SANITIZER)
+                .setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER)
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         String xml = kernelServices.getPersistedSubsystemXml();
@@ -70,7 +68,7 @@ public class DomainModelJvmModelTestCase extends GlobalJvmModelTestCase {
     public void testEmptyJvmXml() throws Exception {
         KernelServices kernelServices = createKernelServicesBuilder()
                 .setXmlResource("domain-empty.xml")
-                .setModelInitializer(XML_MODEL_INITIALIZER, XML_MODEL_WRITE_SANITIZER)
+                .setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER)
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
         String xml = kernelServices.getPersistedSubsystemXml();
@@ -97,21 +95,4 @@ public class DomainModelJvmModelTestCase extends GlobalJvmModelTestCase {
     protected ModelNode getPathAddress(String jvmName, String... subaddress) {
         return PathAddress.pathAddress(PARENT, PathElement.pathElement(JVM, "test")).toModelNode();
     }
-
-    private static final ModelInitializer XML_MODEL_INITIALIZER = new ModelInitializer() {
-        public void populateModel(Resource rootResource) {
-            rootResource.registerChild(PathElement.pathElement(PROFILE, "test"), Resource.Factory.create());
-            rootResource.registerChild(PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), Resource.Factory.create());
-        }
-    };
-
-    private final ModelWriteSanitizer XML_MODEL_WRITE_SANITIZER = new ModelWriteSanitizer() {
-        @Override
-        public ModelNode sanitize(ModelNode model) {
-            //Remove the profile and socket-binding-group removed by the initializer so the xml does not include a profile
-            model.remove(PROFILE);
-            model.remove(SOCKET_BINDING_GROUP);
-            return model;
-        }
-    };
 }

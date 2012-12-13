@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.controller.ModelVersion;
@@ -47,7 +48,9 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.core.model.bridge.local.LegacyControllerKernelServicesProxy;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
+import org.jboss.as.host.controller.ignored.IgnoreDomainResourceTypeResource;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.dmr.ModelNode;
@@ -94,6 +97,21 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
     public ModelNode readTransformedModel(ModelVersion modelVersion) {
         checkIsMainController();
 
+        ModelNode domainModel = new ModelNode();
+        //Reassemble the model from the reead master domain model handler result
+        for (ModelNode entry : callReadMasterDomainModelHandler(modelVersion).asList()) {
+            PathAddress address = PathAddress.pathAddress(entry.require("domain-resource-address"));
+            ModelNode toSet = domainModel;
+            for (PathElement pathElement : address) {
+                toSet = toSet.get(pathElement.getKey(), pathElement.getValue());
+            }
+            toSet.set(entry.require("domain-resource-model"));
+        }
+        return domainModel;
+    }
+
+    public ModelNode callReadMasterDomainModelHandler(ModelVersion modelVersion){
+        checkIsMainController();
 
         final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
                 Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
@@ -104,17 +122,16 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
             throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
         }
 
-        ModelNode domainModel = new ModelNode();
-        //Reassemble the model from the reead master domain model handler result
-        for (ModelNode entry : result.get(RESULT).asList()) {
-            PathAddress address = PathAddress.pathAddress(entry.require("domain-resource-address"));
-            ModelNode toSet = domainModel;
-            for (PathElement pathElement : address) {
-                toSet = toSet.get(pathElement.getKey(), pathElement.getValue());
-            }
-            toSet.set(entry.require("domain-resource-model"));
-        }
-        return domainModel;
+        return result.get(RESULT);
+    }
+
+    @Override
+    public void applyMasterDomainModel(ModelVersion modelVersion, List<IgnoreDomainResourceTypeResource> ignoredResources) {
+        checkIsMainController();
+        LegacyControllerKernelServicesProxy legacyServices = (LegacyControllerKernelServicesProxy)getLegacyServices(modelVersion);
+        ModelNode masterResources = callReadMasterDomainModelHandler(modelVersion);
+        legacyServices.applyMasterDomainModel(masterResources, ignoredResources);
+
     }
 
     public ModelNode executeOperation(final ModelVersion modelVersion, final TransformedOperation op) {

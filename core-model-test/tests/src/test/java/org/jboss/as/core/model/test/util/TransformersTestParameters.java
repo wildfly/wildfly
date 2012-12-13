@@ -36,7 +36,7 @@ public class TransformersTestParameters {
     private final ModelVersion modelVersion;
     private final TestControllerVersion testControllerVersion;
 
-    protected TransformersTestParameters(ModelVersion modelVersion, TestControllerVersion testControllerVersion) {
+    public TransformersTestParameters(ModelVersion modelVersion, TestControllerVersion testControllerVersion) {
         this.modelVersion = modelVersion;
         this.testControllerVersion = testControllerVersion;
     }
@@ -57,6 +57,17 @@ public class TransformersTestParameters {
         List<Object[]> data = new ArrayList<Object[]>();
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), TestControllerVersion.V7_1_2_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), TestControllerVersion.MASTER)});
+        for (int i = 0 ; i < data.size() ; i++) {
+            Object[] entry = data.get(i);
+            System.out.println("Parameter " + i + ": " + entry[0]);
+        }
         return data;
     }
+
+    @Override
+    public String toString() {
+        return "TransformersTestParameters={modelVersion=" + modelVersion + "; testControllerVersion=" + testControllerVersion + "}";
+    }
+
+
 }

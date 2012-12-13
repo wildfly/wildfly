@@ -28,7 +28,6 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.core.model.bridge.impl.ChildFirstClassLoaderKernelServicesFactory;
 import org.jboss.as.core.model.bridge.impl.ClassLoaderObjectConverterImpl;
-import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.LegacyModelInitializerEntry;
 import org.jboss.dmr.ModelNode;
 
@@ -46,7 +45,7 @@ public class ScopedKernelServicesBootstrap {
     }
 
 
-    public KernelServices createKernelServices(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
+    public LegacyControllerKernelServicesProxy createKernelServices(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion, List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
 
         Object childClassLoaderKernelServices = createChildClassLoaderKernelServices(bootOperations, validateOperations, legacyModelVersion, modelInitializerEntries);
         return new LegacyControllerKernelServicesProxy(legacyChildFirstClassLoader, childClassLoaderKernelServices, objectConverter);

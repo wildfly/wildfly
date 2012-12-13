@@ -57,10 +57,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,9 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.core.model.bridge.local.LegacyControllerKernelServicesProxy;
 import org.jboss.as.core.model.bridge.local.ScopedKernelServicesBootstrap;
+import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
@@ -93,8 +96,6 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLMapper;
-import org.sonatype.aether.collection.DependencyCollectionException;
-import org.sonatype.aether.resolution.DependencyResolutionException;
 
 
 
@@ -358,6 +359,7 @@ public class CoreModelTestDelegate {
         private boolean validateOperations = true;
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
         private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
+        private List<String> contentRepositoryContents = new ArrayList<String>();
         RunningModeControl runningModeControl;
         ExtensionRegistry extensionRegistry;
 
@@ -403,10 +405,16 @@ public class CoreModelTestDelegate {
         }
 
 
+        @Override
+        public KernelServicesBuilder createContentRepositoryContent(String hash) {
+            contentRepositoryContents.add(hash);
+            return this;
+        }
+
         public KernelServices build() throws Exception {
             bootOperationBuilder.validateNotAlreadyBuilt();
             List<ModelNode> bootOperations = bootOperationBuilder.build();
-            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, extensionRegistry);
+            AbstractKernelServicesImpl kernelServices = AbstractKernelServicesImpl.create(processType, runningModeControl, validateOperations, bootOperations, testParser, null, type, modelInitializer, extensionRegistry, contentRepositoryContents);
             CoreModelTestDelegate.this.kernelServices.add(kernelServices);
 
             if (validateDescription) {
@@ -420,18 +428,22 @@ public class CoreModelTestDelegate {
             for (Map.Entry<ModelVersion, LegacyKernelServicesInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
                 LegacyKernelServicesInitializerImpl legacyInitializer = entry.getValue();
 
-                List<ModelNode> transformedBootOperations = new ArrayList<ModelNode>();
-                for (ModelNode op : bootOperations) {
+                List<ModelNode> transformedBootOperations;
+                if (legacyInitializer.isDontUseBootOperations()) {
+                    transformedBootOperations = Collections.emptyList();
+                } else {
+                    transformedBootOperations = new ArrayList<ModelNode>();
+                    for (ModelNode op : bootOperations) {
 
-                    ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
-                    if (transformed != null) {
-                        transformedBootOperations.add(transformed);
+                        ModelNode transformed = kernelServices.transformOperation(entry.getKey(), op).getTransformedOperation();
+                        if (transformed != null) {
+                            transformedBootOperations.add(transformed);
+                        }
                     }
                 }
 
-                KernelServices legacyServices = legacyInitializer.install(transformedBootOperations);
+                LegacyControllerKernelServicesProxy legacyServices = legacyInitializer.install(kernelServices, transformedBootOperations);
                 kernelServices.addLegacyKernelService(entry.getKey(), legacyServices);
-
             }
 
 
@@ -446,11 +458,11 @@ public class CoreModelTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion) {
+        public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, TestControllerVersion testControllerVersion) {
             if (type != TestModelType.DOMAIN) {
                 throw new IllegalStateException("Can only create legacy kernel services for DOMAIN.");
             }
-            LegacyKernelServicesInitializerImpl legacyKernelServicesInitializerImpl = new LegacyKernelServicesInitializerImpl(modelVersion);
+            LegacyKernelServicesInitializerImpl legacyKernelServicesInitializerImpl = new LegacyKernelServicesInitializerImpl(modelVersion, testControllerVersion);
             legacyControllerInitializers.put(modelVersion, legacyKernelServicesInitializerImpl);
             return legacyKernelServicesInitializerImpl;
         }
@@ -467,22 +479,44 @@ public class CoreModelTestDelegate {
         private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
         private final ModelVersion modelVersion;
         private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
+        private final TestControllerVersion testControllerVersion;
         private boolean validateOperations = true;
+        private boolean dontUseBootOperations = false;
 
-        public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion) {
+        public LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, TestControllerVersion version) {
             this.modelVersion = modelVersion;
+            this.testControllerVersion = version;
         }
 
-        private KernelServices install(List<ModelNode> bootOperations) throws Exception {
-            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:7.2.0.Alpha1-SNAPSHOT");
-            classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:7.2.0.Alpha1-SNAPSHOT");
-            classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
-            ClassLoader legacyCl = classLoaderBuilder.build();
+        private LegacyControllerKernelServicesProxy install(AbstractKernelServicesImpl mainServices, List<ModelNode> bootOperations) throws Exception {
+            if (testControllerVersion == null) {
+                throw new IllegalStateException();
+            }
 
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
+
+            File file = new File("target", "cached-classloader" + modelVersion + "_" + testControllerVersion);
+            boolean cached = file.exists();
+            ClassLoader legacyCl;
+            if (cached) {
+                classLoaderBuilder.createFromFile(file);
+                legacyCl = classLoaderBuilder.build();
+            } else {
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:7.2.0.Alpha1-SNAPSHOT");
+                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:7.2.0.Alpha1-SNAPSHOT");
+
+                if (testControllerVersion != TestControllerVersion.MASTER) {
+                    classLoaderBuilder.addRecursiveMavenResourceURL(testControllerVersion.getLegacyControllerMavenGav());
+                    classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + VERSION);
+                }
+                legacyCl = classLoaderBuilder.build(file);
+            }
 
 
             ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);
-            return scopedBootstrap.createKernelServices(bootOperations, validateOperations, modelVersion, modelInitializerEntries);
+            LegacyControllerKernelServicesProxy legacyServices = scopedBootstrap.createKernelServices(bootOperations, validateOperations, modelVersion, modelInitializerEntries);
+
+            return legacyServices;
         }
 
         @Override
@@ -492,20 +526,20 @@ public class CoreModelTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer setTestControllerVersion(TestControllerVersion version) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
-            classLoaderBuilder.addRecursiveMavenResourceURL(version.getLegacyControllerMavenGav());
-            if (version.getTestControllerVersion() != null) {
-                classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-controller-" + version.getTestControllerVersion() + ":" + VERSION);
-            }
-            return this;
-        }
-
-        @Override
         public LegacyKernelServicesInitializer setDontValidateOperations() {
             validateOperations = false;
             return this;
         }
+
+        @Override
+        public LegacyKernelServicesInitializer setDontUseBootOperations() {
+            dontUseBootOperations = true;
+            return this;
+        }
+
+        boolean isDontUseBootOperations() {
+            return dontUseBootOperations;
+        }
+
     }
-
-
 }
