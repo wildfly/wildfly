@@ -172,8 +172,14 @@ class DataSourceModelNodeUtil {
         final boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
-        final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
-                .forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
+        TransactionIsolation transactionIsolation = null;
+        if (dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName())) {
+            transactionIsolation = TransactionIsolation.forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+            if (transactionIsolation == null) {
+                transactionIsolation = TransactionIsolation.customLevel(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+            }
+        }
+
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL, null);
 
         final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
@@ -253,8 +259,13 @@ class DataSourceModelNodeUtil {
         final Boolean setTxQueryTimeout = getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, SET_TX_QUERY_TIMEOUT, Defaults.SET_TX_QUERY_TIMEOUT);
         final TimeOut timeOut = new TimeOutImpl(blockingTimeoutMillis, idleTimeoutMinutes, allocationRetry,
                 allocationRetryWaitMillis, xaResourceTimeout, setTxQueryTimeout, queryTimeout, useTryLock);
-        final TransactionIsolation transactionIsolation = dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName()) ? TransactionIsolation
-                .forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString()) : null;
+        TransactionIsolation transactionIsolation = null;
+        if (dataSourceNode.hasDefined(TRANSACTION_ISOLATION.getName())) {
+            transactionIsolation = TransactionIsolation.forName(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+            if (transactionIsolation == null) {
+                transactionIsolation = TransactionIsolation.customLevel(dataSourceNode.get(TRANSACTION_ISOLATION.getName()).asString());
+            }
+        }
         final String checkValidConnectionSql = getResolvedStringIfSetOrGetDefault(operationContext, dataSourceNode, CHECK_VALID_CONNECTION_SQL, null);
 
         final Extension exceptionSorter = extractExtension(operationContext, dataSourceNode, EXCEPTION_SORTER_CLASSNAME, EXCEPTION_SORTER_PROPERTIES);
