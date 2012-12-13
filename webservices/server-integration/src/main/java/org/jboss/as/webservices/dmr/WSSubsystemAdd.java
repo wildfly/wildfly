@@ -102,7 +102,7 @@ public class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ServerConfigImpl config = ServerConfigImpl.newInstance();
         try {
             ModelNode wsdlHost = Attributes.WSDL_HOST.resolveModelAttribute(context, configuration);
-            config.setWebServiceHost(wsdlHost.asString());
+            config.setWebServiceHost(wsdlHost.isDefined() ? wsdlHost.asString() : null);
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
