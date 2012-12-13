@@ -23,6 +23,7 @@ package org.jboss.as.domain.controller.transformers;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.host.controller.model.jvm.JvmAttributes.ENVIRONMENT_VARIABLES;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.HEAP_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.MAX_HEAP_SIZE;
 import static org.jboss.as.host.controller.model.jvm.JvmAttributes.MAX_PERMGEN_SIZE;
@@ -46,7 +47,7 @@ class JvmTransformers {
         TransformersSubRegistration reg = parent.registerSubResource(JvmResourceDefinition.GLOBAL.getPathElement(), ResourceTransformer.DEFAULT);
 
         RejectExpressionValuesTransformer rejectExpression = new RejectExpressionValuesTransformer(HEAP_SIZE, MAX_HEAP_SIZE, PERMGEN_SIZE, MAX_PERMGEN_SIZE,
-                STACK_SIZE, OPTIONS);
+                STACK_SIZE, OPTIONS, ENVIRONMENT_VARIABLES);
 
         reg.registerOperationTransformer(ADD, rejectExpression);
         reg.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, rejectExpression.getWriteAttributeTransformer());

@@ -82,8 +82,7 @@ public class JvmTransformersTestCase extends AbstractCoreModelTest {
                 .setXmlResource(xmlResource)
                 .setModelInitializer(XML_MODEL_INITIALIZER, XML_MODEL_WRITE_SANITIZER);
 
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(modelVersion);
-        legacyInitializer.setTestControllerVersion(testControllerVersion)
+        builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
                 .initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(PROFILE, "test"), null)
                 .initializerCreateModelResource(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(SOCKET_BINDING_GROUP, "test-sockets"), new ModelNode().setEmptyObject());
 

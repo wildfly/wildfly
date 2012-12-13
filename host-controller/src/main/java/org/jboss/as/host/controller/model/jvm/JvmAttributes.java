@@ -83,7 +83,8 @@ public class JvmAttributes {
     public static final PropertiesAttributeDefinition ENVIRONMENT_VARIABLES = new PropertiesAttributeDefinition.Builder(JvmAttributes.JVM_ENV_VARIABLES, true)
             .setXmlName(Element.VARIABLE.getLocalName())
             .setAllowNull(true)
-            .setValidator(new StringLengthValidator(1, true))
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, true, true))
             .setWrapperElement(JvmAttributes.JVM_ENV_VARIABLES)
             .build();
 

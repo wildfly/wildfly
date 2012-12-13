@@ -9,6 +9,9 @@
                 <jvm-options>
                     <option value="option1"/>
                 </jvm-options>
+                <environment-variables>
+                    <variable name="name1" value="value1"/>
+                </environment-variables>
              </jvm>
              <socket-binding-group ref="test-sockets"/>
          </server-group>
