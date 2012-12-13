@@ -29,7 +29,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -98,7 +97,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
                     throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), protocolRelativePath.toString());
                 }
                 // set the value of the property
-                param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
+                PropertyResource.VALUE.validateAndSet(value, param.getModel());
             }
         }
         // This needs a reload
