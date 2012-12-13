@@ -198,9 +198,9 @@ public class NamingContext implements EventContext {
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
             if (continuationContext instanceof NamingContext) {
-                result = SecurityActions.lookup((NamingContext)continuationContext, cpe.getRemainingName(), dereference);
+                result = ((NamingContext)continuationContext).lookup(cpe.getRemainingName(), dereference);
             } else {
-                result = SecurityActions.lookup(continuationContext, cpe.getRemainingName());
+                result = continuationContext.lookup(cpe.getRemainingName());
             }
         }
 
@@ -221,9 +221,9 @@ public class NamingContext implements EventContext {
             }
             final Context namingContext = (Context) context;
             if (namingContext instanceof NamingContext) {
-                return SecurityActions.lookup((NamingContext)namingContext, resolveResult.getRemainingName(), dereference);
+                return ((NamingContext)namingContext).lookup(resolveResult.getRemainingName(), dereference);
             } else {
-                return SecurityActions.lookup(namingContext, resolveResult.getRemainingName());
+                return namingContext.lookup(resolveResult.getRemainingName());
             }
         } else if (result instanceof LinkRef) {
             result = resolveLink(result,dereference);
@@ -322,11 +322,11 @@ public class NamingContext implements EventContext {
             return namingEnumeration(namingStore.list(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            return SecurityActions.list(continuationContext, cpe.getRemainingName());
+            return continuationContext.list(cpe.getRemainingName());
         }  catch (RequireResolveException r) {
-            final Object o = SecurityActions.lookup(this, r.getResolve());
+            final Object o = lookup(r.getResolve());
             if (o instanceof Context) {
-                return SecurityActions.list((Context)o, name.getSuffix(r.getResolve().size()));
+                return ((Context)o).list(name.getSuffix(r.getResolve().size()));
             }
 
             throw notAContextException(r.getResolve());
@@ -346,11 +346,11 @@ public class NamingContext implements EventContext {
             return namingEnumeration(namingStore.listBindings(getAbsoluteName(name)));
         } catch(CannotProceedException cpe) {
             final Context continuationContext = NamingManager.getContinuationContext(cpe);
-            return SecurityActions.listBindings(continuationContext, cpe.getRemainingName());
+            return continuationContext.listBindings(cpe.getRemainingName());
         } catch (RequireResolveException r) {
-            final Object o = SecurityActions.lookup(this, r.getResolve());
+            final Object o = lookup(r.getResolve());
             if (o instanceof Context) {
-                return SecurityActions.listBindings((Context)o, name.getSuffix(r.getResolve().size()));
+                return ((Context)o).listBindings(name.getSuffix(r.getResolve().size()));
             }
 
             throw notAContextException(r.getResolve());
@@ -528,9 +528,9 @@ public class NamingContext implements EventContext {
             final LinkRef linkRef = (LinkRef) result;
             final String referenceName = linkRef.getLinkName();
             if (referenceName.startsWith("./")) {
-                linkResult = SecurityActions.lookup(this, parseName(referenceName.substring(2)) ,dereference);
+                linkResult = lookup(parseName(referenceName.substring(2)) ,dereference);
             } else {
-                linkResult = SecurityActions.lookup(new InitialContext(), referenceName);
+                linkResult = new InitialContext().lookup(referenceName);
             }
         } catch (Throwable t) {
             throw MESSAGES.cannotDeferenceObject(t);
