@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationContext.ResultHandler;
+import org.jboss.as.controller.OperationContext.RollbackHandler;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -78,32 +79,8 @@ final class LoggingOperations {
         context.addStep(new CommitOperationStepHandler(configurationPersistence), Stage.RUNTIME);
     }
 
-    private static final class LoggingResultHandler implements ResultHandler {
-        private static AttachmentKey<Boolean> WRITTEN_KEY = AttachmentKey.create(Boolean.class);
-        private final ConfigurationPersistence configurationPersistence;
-
-        LoggingResultHandler(final ConfigurationPersistence configurationPersistence) {
-            this.configurationPersistence = configurationPersistence;
-        }
-
-        @Override
-        public void handleResult(final ResultAction resultAction, final OperationContext context, final ModelNode operation) {
-            if (resultAction == ResultAction.KEEP) {
-                configurationPersistence.commit();
-                if (!LoggingProfileOperations.isLoggingProfileAddress(getAddress(operation))) {
-                    // Write once
-                    if (context.getAttachment(WRITTEN_KEY) == null) {
-                        context.attachIfAbsent(WRITTEN_KEY, Boolean.TRUE);
-                        configurationPersistence.writeConfiguration(context);
-                    }
-                }
-            } else if (resultAction == ResultAction.ROLLBACK) {
-                configurationPersistence.rollback();
-            }
-        }
-    }
-
     private static final class CommitOperationStepHandler implements OperationStepHandler {
+        private static AttachmentKey<Boolean> WRITTEN_KEY = AttachmentKey.create(Boolean.class);
         private final ConfigurationPersistence configurationPersistence;
 
         CommitOperationStepHandler(final ConfigurationPersistence configurationPersistence) {
@@ -113,7 +90,23 @@ final class LoggingOperations {
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             configurationPersistence.prepare();
-            context.completeStep(new LoggingResultHandler(configurationPersistence));
+            context.completeStep(new ResultHandler() {
+                @Override
+                public void handleResult(final ResultAction resultAction, final OperationContext context, final ModelNode operation) {
+                    if (resultAction == ResultAction.KEEP) {
+                        configurationPersistence.commit();
+                        if (!LoggingProfileOperations.isLoggingProfileAddress(getAddress(operation))) {
+                            // Write once
+                            if (context.getAttachment(WRITTEN_KEY) == null) {
+                                context.attachIfAbsent(WRITTEN_KEY, Boolean.TRUE);
+                                configurationPersistence.writeConfiguration(context);
+                            }
+                        }
+                    } else if (resultAction == ResultAction.ROLLBACK) {
+                        configurationPersistence.rollback();
+                    }
+                }
+            });
         }
     }
 
@@ -159,8 +152,16 @@ final class LoggingOperations {
             execute(context, operation, name, logContextConfiguration);
             if (context.getProcessType().isServer()) {
                 addCommitStep(context, configurationPersistence);
+                // Add rollback handler in case rollback is invoked before a commit step is invoked
+                context.completeStep(new RollbackHandler() {
+                    @Override
+                    public void handleRollback(final OperationContext context, final ModelNode operation) {
+                        configurationPersistence.rollback();
+                    }
+                });
+            } else {
+                context.stepCompleted();
             }
-            context.completeStep(new LoggingResultHandler(configurationPersistence));
         }
 
         public abstract void execute(OperationContext context, ModelNode operation, String name, LogContextConfiguration logContextConfiguration) throws OperationFailedException;
