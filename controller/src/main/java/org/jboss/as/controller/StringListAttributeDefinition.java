@@ -55,6 +55,19 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
         return result;
     }
 
+
+    public List<String> unwrap(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        if (!model.hasDefined(getName())) {
+            return null;
+        }
+        ModelNode modelProps = model.get(getName());
+        List<String> result = new LinkedList<String>();
+        for (ModelNode p : modelProps.asList()) {
+            result.add(context.resolveExpressions(p).asString());
+        }
+        return result;
+    }
+
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, StringListAttributeDefinition> {
         public Builder(final String name) {
             super(name, ModelType.STRING);
