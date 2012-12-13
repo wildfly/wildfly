@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>org.jboss.bom</groupId>
-        <version>1.0.4-SNAPSHOT</version>
+        <version>1.0.4.CR4</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -69,6 +69,20 @@
                 <artifactId>deltaspike-jpa-module-impl</artifactId>
                 <version>${version.org.apache.deltaspike}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-security-module-api</artifactId>
+                <version>${version.org.apache.deltaspike}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.apache.deltaspike.modules</groupId>
+                <artifactId>deltaspike-security-module-impl</artifactId>
+                <version>${version.org.apache.deltaspike}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
