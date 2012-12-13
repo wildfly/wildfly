@@ -177,7 +177,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
     }
 
     protected KernelServices boot() throws Exception {
-        final KernelServices kernelServices = createKernelServicesBuilder(LoggingTestEnvironment.get()).setSubsystemXml(getSubsystemXml()).build();
+        final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
         final Throwable bootError = kernelServices.getBootError();
         Assert.assertTrue("Failed to boot: " + String.valueOf(bootError), kernelServices.isSuccessfulBoot());
         return kernelServices;
