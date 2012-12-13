@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.publish;
 
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -53,8 +54,12 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
             jbossWebMetaData = new JBossWebMetaData();
         }
         jbossWebMetaData.setContextRoot(context);
+        String endpointName = null;
+        String className = null;
         for (String urlPattern : urlPatternToClassName.keySet()) {
-            addEndpoint(jbossWebMetaData, jaxwsDeployment, urlPatternToClassName.get(urlPattern), urlPattern);
+            className = urlPatternToClassName.get(urlPattern);
+            endpointName = getShortName(className, urlPattern);
+            addEndpoint(jbossWebMetaData, jaxwsDeployment, endpointName, className, urlPattern);
         }
         this.putAttachment(WSAttachmentKeys.CLASSLOADER_KEY, loader);
         this.putAttachment(WSAttachmentKeys.JAXWS_ENDPOINTS_KEY, jaxwsDeployment);
@@ -64,7 +69,23 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
         }
     }
 
-    private void addEndpoint(JBossWebMetaData jbossWebMetaData, JAXWSDeployment jaxwsDeployment, String className, String urlPattern) {
+    private String getShortName(String className, String urlPattern) {
+        final StringTokenizer st = new StringTokenizer(urlPattern, "/*");
+        final StringBuilder sb = new StringBuilder();
+        String token = null;
+        boolean first = true;
+        while (st.hasMoreTokens()) {
+            token = st.nextToken();
+            if (token != null) {
+                if (!first) sb.append('.');
+                sb.append(token);
+                first = false;
+            }
+        }
+        return first ? className : sb.toString();
+    }
+
+    private void addEndpoint(JBossWebMetaData jbossWebMetaData, JAXWSDeployment jaxwsDeployment, String endpointName, String className, String urlPattern) {
         if (urlPattern == null) {
             urlPattern = "/*";
         } else {
@@ -73,7 +94,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
                 urlPattern = "/" + urlPattern;
             }
         }
-        jaxwsDeployment.addEndpoint(new POJOEndpoint(className, null, urlPattern));
+        jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointName, className, null, urlPattern, false));
     }
 
     @Override
