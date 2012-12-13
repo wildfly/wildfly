@@ -60,18 +60,18 @@ import org.jboss.vfs.spi.MountHandle;
  */
 public class DeployHandler extends BatchModeCommandHandler {
 
-    private final ArgumentWithoutValue force;
-    private final ArgumentWithoutValue l;
-    private final ArgumentWithoutValue path;
-    private final ArgumentWithoutValue name;
-    private final ArgumentWithoutValue rtName;
-    private final ArgumentWithValue serverGroups;
-    private final ArgumentWithoutValue allServerGroups;
-    private final ArgumentWithoutValue disabled;
-    private final ArgumentWithoutValue unmanaged;
-    private final ArgumentWithValue script;
+    protected final ArgumentWithoutValue force;
+    protected final ArgumentWithoutValue l;
+    protected final ArgumentWithoutValue path;
+    protected final ArgumentWithoutValue name;
+    protected final ArgumentWithoutValue rtName;
+    protected final ArgumentWithValue serverGroups;
+    protected final ArgumentWithoutValue allServerGroups;
+    protected final ArgumentWithoutValue disabled;
+    protected final ArgumentWithoutValue unmanaged;
+    protected final ArgumentWithValue script;
 
-    private static final String CLI_ARCHIVE_SUFFIX = ".cli";
+    protected static final String CLI_ARCHIVE_SUFFIX = ".cli";
 
     public DeployHandler(CommandContext ctx) {
         super(ctx, "deploy", true);
@@ -265,7 +265,10 @@ public class DeployHandler extends BatchModeCommandHandler {
         } else {
             f = null;
         }
+        doDepoyFile(ctx, client, args, unmanaged, f);
+    }
 
+    protected void doDepoyFile(CommandContext ctx, final ModelControllerClient client, ParsedCommandLine args, final boolean unmanaged, final File f) throws CommandFormatException {
         if (isCliArchive(f)) {
             final ModelNode request = buildRequest(ctx);
             if(request == null) {
