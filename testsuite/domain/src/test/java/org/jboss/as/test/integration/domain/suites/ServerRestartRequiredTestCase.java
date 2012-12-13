@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IN_SERIES;
@@ -44,9 +45,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
@@ -64,6 +68,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -158,6 +163,35 @@ public class ServerRestartRequiredTestCase {
         } finally {
             //
         }
+    }
+
+    @Test
+    public void testChangeGroup() throws Exception {
+
+        final ModelNode address = reloadTwoAddress;
+
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+        final ModelNode stopOP = new ModelNode();
+        stopOP.get(OP).set("stop");
+        stopOP.get(OP_ADDR).set(address);
+
+        // Stop and wait
+        executeForResult(stopOP, client);
+        waitUntilState(client, address, "DISABLED");
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+
+        final ModelNode updateGroup = composite.get(STEPS).add();
+        updateGroup.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        updateGroup.get(OP_ADDR).set(address);
+        updateGroup.get(NAME).set("group");
+        updateGroup.get(VALUE).set("reload-test-group");
+
+        // Execute composite operation
+        executeForResult(composite, client);
+
     }
 
     @Test
