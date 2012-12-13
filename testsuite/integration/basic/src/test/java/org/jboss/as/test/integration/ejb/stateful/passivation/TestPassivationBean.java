@@ -32,6 +32,7 @@ import javax.ejb.PrePassivate;
 import javax.ejb.Remote;
 import javax.ejb.Remove;
 import javax.ejb.Stateful;
+import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -54,6 +55,9 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
 
     @EJB
     private NestledBean nestledBean;
+    
+    @Inject
+    private ManagedBean managedBean;
 
     private String identificator;
     private boolean beenPassivated = false;
@@ -96,6 +100,14 @@ public class TestPassivationBean extends PassivationSuperClass implements TestPa
         e.setId(id);
         entityManager.persist(e);
         entityManager.flush();
+    }
+
+    public void setManagedBeanMessage(String message) {
+        this.managedBean.setMessage(message);
+    }
+
+    public String getManagedBeanMessage() {
+        return managedBean.getMessage();
     }
 
     @PostConstruct
