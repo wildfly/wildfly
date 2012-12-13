@@ -21,6 +21,9 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
@@ -28,6 +31,7 @@ import java.util.List;
 import org.jboss.as.clustering.jgroups.LogFactory;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -35,6 +39,9 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jgroups.Global;
@@ -53,7 +60,7 @@ public class JGroupsExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     // Temporary workaround for JGRP-1475
     // Configure JGroups to use jboss-logging.
@@ -97,6 +104,9 @@ public class JGroupsExtension implements Extension {
         subsystem.registerSubModel(new StackResource(registerRuntimeOnly));
 
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
+
+        // Register the model transformers
+        registerTransformers(registration);
     }
 
     /**
@@ -111,6 +121,45 @@ public class JGroupsExtension implements Extension {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), reader);
             }
         }
+    }
+
+
+        // Transformation
+
+    /**
+     * Register the transformers for older model versions.
+     *
+     * @param subsystem the subsystems registration
+     */
+    private static void registerTransformers(final SubsystemRegistration subsystem) {
+
+        // Transformations to the 1.1.0 Model
+        // - we need to reject expressions for transport (and similarly for protocol properties) for these operations
+        //   transport=TRANSPORT/property=<name>:add(value=<value>)
+        //   transport=TRANSPORT/property=<name>:write-attribute(name=value, value=<value>)
+        //   transport=TRANSPORT:add(...,properties=<list of properties>)
+
+        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+        final RejectExpressionValuesTransformer TRANSFORMER = new RejectExpressionValuesTransformer(PropertyResource.VALUE,
+                TransportResource.PROPERTIES, ProtocolResource.PROPERTIES);
+
+        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version110, ResourceTransformer.DEFAULT);
+        final TransformersSubRegistration stack = registration.registerSubResource(StackResource.STACK_PATH) ;
+
+        // reject expressions for transport properties, for the add and write-attribute op
+        final TransformersSubRegistration transport = stack.registerSubResource(TransportResource.TRANSPORT_PATH) ;
+        transport.registerOperationTransformer(ADD, TRANSFORMER);
+        final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResource.PROPERTY_PATH) ;
+        transport_property.registerOperationTransformer(ADD, TRANSFORMER);
+        transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+
+        // reject expressions for transport properties, for the add and write-attribute op
+        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResource.PROTOCOL_PATH) ;
+        protocol.registerOperationTransformer(ADD, TRANSFORMER);
+        final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResource.PROPERTY_PATH) ;
+        protocol_property.registerOperationTransformer(ADD, TRANSFORMER);
+        protocol_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, TRANSFORMER.getWriteAttributeTransformer());
+
     }
 
 }
