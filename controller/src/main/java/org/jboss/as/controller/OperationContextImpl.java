@@ -297,7 +297,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             acquireContainerMonitor();
             awaitContainerMonitor();
         }
-        doRemove(controller);
+        if (controller != null) {
+            doRemove(controller);
+        }
     }
 
     private void doRemove(final ServiceController<?> controller) {
